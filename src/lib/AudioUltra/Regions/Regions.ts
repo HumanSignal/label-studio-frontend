@@ -204,6 +204,7 @@ export class Regions {
     if (this.hoveredRegions.size > 0 && !e.shiftKey) {
       return;
     }
+    if (!this.layerGroup.isVisible) return;
 
     this.lock();
 
@@ -289,7 +290,7 @@ export class Regions {
     if (!this.updateable) return;
     const region = this.findRegionUnderCursor(e);
 
-    if (region?.updateable) {
+    if (this.layerGroup.isVisible && region?.updateable) {
       e.preventDefault();
       e.stopPropagation();
 
@@ -301,7 +302,7 @@ export class Regions {
     if (!this.updateable) return;
     const region = this.findRegionUnderCursor(e);
 
-    if (region?.updateable) {
+    if (this.layerGroup.isVisible && region?.updateable) {
       region.invoke("mouseUp", [region, e]);
     }
   };
@@ -309,7 +310,7 @@ export class Regions {
   private handleClick = (e: MouseEvent) => {
     const region = this.findRegionUnderCursor(e);
 
-    if (region) {
+    if (this.layerGroup.isVisible && region) {
       region.invoke("click", [region, e]);
     }
   };

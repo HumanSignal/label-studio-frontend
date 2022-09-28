@@ -1,5 +1,6 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { Waveform, WaveformOptions } from "../Waveform";
+import { Layer } from "../Visual/Layer";
 
 export const useWaveform = (
   containter: MutableRefObject<HTMLElement | null | undefined>,
@@ -15,6 +16,8 @@ export const useWaveform = (
   const [amp, setAmp] = useState(1);
   const [rate, setRate] = useState(1);
   const [muted, setMuted] = useState(false);
+  const [layers, setLayers] = useState<Layer[]>([]);
+  const [layerVisibility, setLayerVisibility] = useState(new Map());
 
 
   useEffect(() => {
@@ -40,6 +43,17 @@ export const useWaveform = (
     wf.on("muted", setMuted);
     wf.on("volumeChange", setVolume);
     wf.on("rateChanged", setRate);
+    wf.on("layersUpdated", (layers) => {
+      const layersArray = [];
+      const layerVis = new Map();
+
+      for (const layer of layers.values()) {
+        layersArray.push(layer);
+        layerVis.set(layer.name, layer.isVisible);
+      }
+      setLayers(layersArray);
+      setLayerVisibility(layerVis);
+    });
 
     return () => {
       wf.destroy();
@@ -109,5 +123,7 @@ export const useWaveform = (
     setRate,
     muted,
     setMuted,
+    layers,
+    layerVisibility,
   };
 };

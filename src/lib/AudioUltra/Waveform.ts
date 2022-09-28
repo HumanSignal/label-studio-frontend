@@ -3,15 +3,14 @@ import { MediaLoader } from "./Media/MediaLoader";
 import { Player } from "./Controls/Player";
 import { Tooltip, TooltipOptions } from "./Tooltip/Tooltip";
 import { Cursor, CursorOptions, CursorSymbol } from "./Cursor/Cursor";
-import { RegionGlobalEvents, RegionOptions } from "./Regions/Region";
+import { RegionGlobalEvents } from "./Regions/Region";
 import { Visualizer } from "./Visual/Visualizer";
-import { Regions,RegionsGlobalEvents,  RegionsOptions } from "./Regions/Regions";
+import { Regions, RegionsOptions } from "./Regions/Regions";
 import { Timeline, TimelineOptions } from "./Timeline/Timeline";
 import { Padding } from "./Common/Style";
 import { getCursorTime } from "./Common/Utils";
 import { PlayheadOptions } from "./Visual/PlayHead";
-import { RgbaColorArray } from "./Common/Color";
-
+import { Layer } from "./Visual/Layer";
 
 export interface WaveformOptions {
   /** URL of an audio or video */
@@ -142,7 +141,7 @@ export interface WaveformOptions {
     denoize: boolean,
   };
 }
-interface WaveformEventTypes extends RegionGlobalEvents, RegionsGlobalEvents {
+interface WaveformEventTypes extends RegionGlobalEvents {
   "load": () => void;
   "resize": (wf: Waveform, width: number, height: number) => void;
   "pause": () => void;
@@ -155,6 +154,7 @@ interface WaveformEventTypes extends RegionGlobalEvents, RegionsGlobalEvents {
   "volumeChange": (value: number) => void;
   "rateChanged": (value: number) => void;
   "scroll": (scroll: number) => void;
+  "layersUpdated": (layers: Map<string, Layer>) => void;
 }
 
 export class Waveform extends Events<WaveformEventTypes> {
@@ -290,24 +290,20 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.tooltip.destroy();
   }
 
-  setRegionDrawingColor(color?: string|RgbaColorArray) {
-    if (color) {
-      this.regions.setDrawingColor(color);
-    } else {
-      this.regions.resetDrawingColor();
-    }
-  }
-
-  addRegion(options: RegionOptions, render = true) {
-    return this.regions.addRegion(options, render);
-  }
-
-  updateRegion(options: RegionOptions, render = true) {
-    return this.regions.updateRegion(options, render);
+  addRegion(options: RegionOptions) {
+    this.regions.addRegion(options);
   }
 
   removeRegion(regionId: string) {
     this.regions.removeRegion(regionId);
+  }
+
+  getLayers() {
+    return this.visualizer.getLayers();
+  }
+
+  getLayer(name: string) {
+    return this.visualizer.getLayer(name);
   }
 
   /**
@@ -420,6 +416,7 @@ export class Waveform extends Events<WaveformEventTypes> {
    */
   private initEvents() {
     this.cursor.on("mouseMove", this.handleCursorMove);
+    this.visualizer.on("layersUpdated", () => this.invoke("layersUpdated", [this.getLayers()]));
   }
 
   /**

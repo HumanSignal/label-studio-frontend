@@ -10,12 +10,16 @@ import { rgba } from "../Common/Color";
 import { Cursor } from "../Cursor/Cursor";
 import { Padding } from "../Common/Style";
 import { TimelineOptions } from "../Timeline/Timeline";
+import { debounce } from "../../lib/Common/Utils";
 
 interface VisualizerEvents {
   draw: (visualizer: Visualizer) => void;
   initialized: (visualizer: Visualizer) => void;
   destroy: (visualizer: Visualizer) => void;
   mouseMove: (event: MouseEvent, cursor: Cursor) => void;
+  layersUpdated: (layers: Map<string, Layer>) => void;
+  layerAdded: (layer: Layer) => void;
+  layerRemoved: (layer: Layer) => void;
 }
 
 export type VisualizerOptions = Pick<WaveformOptions,
@@ -254,7 +258,6 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.useLayer("waveform", (layer) => {
       layer.clear();
-
       this.enabledChannels.forEach((channel) => {
         measure(`Render wave channel ${channel}`, () => {
           this.renderWave(channel, layer);
@@ -365,26 +368,27 @@ export class Visualizer extends Events<VisualizerEvents> {
   private drawMiddleLine() {
     this.useLayer("background", (layer) => {
       layer.clear();
+      if (layer.isVisible) {
+        // Set background
+        layer.save();
+        layer.fillStyle = this.backgroundColor.toString();
+        layer.fillRect(0, 0, this.width, this.height);
+        layer.restore();
 
-      // Set background
-      layer.save();
-      layer.fillStyle = this.backgroundColor.toString();
-      layer.fillRect(0, 0, this.width, this.height);
-      layer.restore();
+        // Draw middle line
+        layer.lineWidth = this.gridWidth;
+        layer.strokeStyle = this.gridColor.toString();
 
-      // Draw middle line
-      layer.lineWidth = this.gridWidth;
-      layer.strokeStyle = this.gridColor.toString();
+        // Draw middle line
+        const linePositionY = (this.height + this.reservedSpace) / 2;
 
-      // Draw middle line and the timeline border for top placement
-      const linePositionY = (this.height + this.reservedSpace) / 2;
-
-      layer.beginPath();
-      layer.moveTo(0, linePositionY);
-      layer.lineTo(this.width, linePositionY);
-      layer.closePath();
-      layer.stroke();
-      layer.restore();
+        layer.beginPath();
+        layer.moveTo(0, linePositionY);
+        layer.lineTo(this.width, linePositionY);
+        layer.closePath();
+        layer.stroke();
+        layer.restore();
+      }
     });
   }
 
@@ -448,7 +452,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.wrapper = document.createElement('div');
 
     this.createLayer({ name: 'main' });
-    this.createLayer({ name: 'background', offscreen: true, zIndex: 0 });
+    this.createLayer({ name: 'background', offscreen: true, zIndex: 0, isVisible: false });
     this.createLayer({ name: 'waveform', offscreen: true, zIndex: 100 });
     this.createLayerGroup({ name: 'regions', offscreen: true, zIndex: 101, opacity: 0.5, compositeOperation: "source-over" });
     const controlsLayer = this.createLayer({ name: 'controls', offscreen: true, zIndex: 1000 });
@@ -466,8 +470,8 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.reservedSpace += height;
   }
 
-  createLayer(options : {name: string, groupName?:string, offscreen?: boolean, zIndex?: number, opacity?: number, compositeOperation?: CanvasCompositeOperation}) {
-    const { name, offscreen = false, zIndex = 1, opacity = 1, compositeOperation = "source-over" } = options;
+  createLayer(options : {name: string, groupName?:string, offscreen?: boolean, zIndex?: number, opacity?: number, compositeOperation?: CanvasCompositeOperation, isVisible?: boolean}) {
+    const { name, offscreen = false, zIndex = 1, opacity = 1, compositeOperation = "source-over", isVisible } = options;
 
     if (!options.groupName && this.layers.has(name)) throw new Error(`Layer ${name} already exists.`);
 
@@ -481,6 +485,7 @@ export class Visualizer extends Events<VisualizerEvents> {
       offscreen,
       compositeOperation,
       opacity,
+      isVisible,
     };
 
     let layer: Layer;
@@ -496,6 +501,12 @@ export class Visualizer extends Events<VisualizerEvents> {
       layer = new Layer(layerOptions);
       this.layers.set(name, layer);
     }
+
+    this.invoke("layerAdded", [layer]);
+    layer.on("layerUpdated", () => {
+      this.draw();
+      this.invokeLayersUpdated();
+    });
 
     return layer;
   }
@@ -517,20 +528,33 @@ export class Visualizer extends Events<VisualizerEvents> {
       opacity,
     });
 
+    this.invoke("layerAdded", [layer]);
+    layer.on("layerUpdated", () => {
+      this.draw();
+      this.invokeLayersUpdated();
+    });
     this.layers.set(name, layer);
-
     return layer;
   }
 
   removeLayer(name: string) {
     if (!this.layers.has(name)) throw new Error(`Layer ${name} does not exist.`);
+    const layer = this.layers.get(name);
 
-    this.layers.get(name)?.remove();
+    if(layer) {
+      this.invoke("layerRemoved", [layer]);
+      layer.off("layerUpdated", this.invokeLayersUpdated);
+      layer.remove();
+    }
     this.layers.delete(name);
   }
 
   getLayer(name: string) {
     return this.layers.get(name);
+  }
+
+  getLayers() {
+    return this.layers;
   }
 
   useLayer(name: string, callback: (layer: Layer, context: RenderingContext) => void) {
@@ -540,6 +564,8 @@ export class Visualizer extends Events<VisualizerEvents> {
       callback(layer, layer.context!);
     }
   }
+
+  private invokeLayersUpdated = debounce(() => this.invoke("layersUpdated", [this.layers]), 150);
 
   private attachEvents() {
     // Observers
@@ -556,6 +582,9 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     // Cursor events
     this.on("mouseMove", this.playHeadMove);
+
+    this.on("layerAdded", this.invokeLayersUpdated);
+    this.on("layerRemoved", this.invokeLayersUpdated);
 
     // WF events
     this.wf.on("playing", this.handlePlaying);
@@ -575,6 +604,9 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     // Cursor events
     this.off("mouseMove", this.playHeadMove);
+
+    this.off("layerAdded", this.invokeLayersUpdated);
+    this.off("layerRemoved", this.invokeLayersUpdated);
 
     // WF events
     this.wf.off("playing", this.handlePlaying);

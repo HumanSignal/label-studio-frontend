@@ -202,7 +202,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private mouseOver = (_: Segment, e: MouseEvent) => {
-    if (!this.updateable) return;
+    if (!this.updateable || !this.controller.layerGroup.isVisible) return;
     const isEdgeGrab = this.edgeGrabCheck(e);
 
     if (this.isDragging) return;
@@ -256,7 +256,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private mouseDown = (_: Segment, e: MouseEvent) => {
-    if (!this.updateable) return;
+    if (!this.updateable || !this.controller.layerGroup.isVisible) return;
     if (e.shiftKey || this.controller.isLocked) return;
     const { container } = this.visualizer;
     const scrollLeft = this.visualizer.getScrollLeft();

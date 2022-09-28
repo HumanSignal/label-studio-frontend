@@ -1,4 +1,5 @@
 import { clamp } from "../Common/Utils";
+import { Events } from "../Common/Events";
 import { LayerGroup } from "./LayerGroup";
 
 export type CanvasCompositeOperation =
@@ -40,6 +41,11 @@ export interface RendererOptions {
   compositeOperation?: CanvasCompositeOperation;
   compositeAsGroup?: boolean;
   opacity?: number;
+  isVisible?: boolean;
+}
+
+interface LayerEvents {
+  layerUpdated: (layer: Layer) => void;
 }
 
 export type RenderingContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
@@ -58,7 +64,7 @@ const textMetricKeys: TextMetricKeys[] = [
   "width",
 ];
 
-export class Layer {
+export class Layer extends Events<LayerEvents> {
   private container: HTMLElement;
   private group?: LayerGroup;
 
@@ -66,6 +72,7 @@ export class Layer {
   private _context!: RenderingContext;
   private compositeOperation: CanvasCompositeOperation = "source-over";
   private compositeAsGroup = false;
+
 
   /**
    * Float value of the layer opacity between 0 and 1.
@@ -80,6 +87,8 @@ export class Layer {
   offscreen = false;
 
   canvas!: HTMLCanvasElement | OffscreenCanvas;
+
+  isVisible = true;
 
   get context() {
     return this._context;
@@ -118,6 +127,7 @@ export class Layer {
   }
 
   constructor(options: RendererOptions) {
+    super();
     this.options = options;
     this.name = options.name;
     this.group = options.group ?? undefined;
@@ -128,8 +138,29 @@ export class Layer {
     this.compositeOperation = options.compositeOperation ?? this.compositeOperation;
     this.compositeAsGroup = options.compositeAsGroup ?? this.compositeAsGroup;
     this.opacity = options.opacity ?? this.opacity;
+    this.isVisible = options.isVisible ?? true;
 
     this.createCanvas();
+  }
+
+  setVisibility(visibility: boolean) {
+    this.isVisible = visibility;
+    if(visibility){
+      this.context.resetTransform();
+    } else {
+      this.clear();
+      this.context.setTransform(0, 0, 0, 0, 0, 0);
+    }
+    this.save();
+    this.invoke("layerUpdated", [this]);
+  }
+
+  show() {
+    this.setVisibility(true);
+  }
+
+  hide() {
+    this.setVisibility(false);
   }
 
   // Methods to operate the canvas
@@ -272,6 +303,7 @@ export class Layer {
   }
 
   appendTo(container: HTMLElement) {
+    this.container = container;
     if (!this.offscreen && this.canvas instanceof HTMLCanvasElement) {
       container.appendChild(this.canvas);
     }
@@ -339,6 +371,7 @@ export class Layer {
     canvas.height = height * pixelRatio;
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
+    canvas.style.visibility = this.isVisible ? "visible" : "hidden";
 
     this._context = canvas.getContext("2d")!;
 
@@ -368,8 +401,9 @@ export class Layer {
 
       // @todo - review this as it appears removing it corrects the scaling issues on high dpi displays
       // this._context.scale(pixelRatio, pixelRatio);
+      const globalAlpha = this.compositeAsGroup ? clamp(this.opacity * 1.5, 0, 1) : this.opacity;
 
-      this._context.globalAlpha = this.compositeAsGroup ? clamp(this.opacity * 1.5, 0, 1) : this.opacity;
+      this._context.globalAlpha = this.isVisible ? globalAlpha : 0;
       this._context.globalCompositeOperation = this.compositeOperation;
       this._context.imageSmoothingEnabled = false;
     } else {
@@ -380,6 +414,7 @@ export class Layer {
         bottom: "100%",
         opacity: 0,
         position: "absolute",
+        visibility: this.isVisible ? "visible" : "hidden",
       });
     }
 

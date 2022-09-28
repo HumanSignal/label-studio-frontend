@@ -61,6 +61,9 @@ export class Timeline {
     this.visualizer.on("initialized", () => {
       this.visualizer.on("draw", () => this.render());
     });
+    this.layer.on("layerUpdated", () => {
+      this.layer.isVisible ? this.render() : this.layer.clear();
+    });
   }
 
   render() {
