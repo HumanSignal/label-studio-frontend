@@ -219,7 +219,7 @@ const HtxVideoView = ({ item }) => {
   const handlePlay = useCallback(() => {
     setPlaying((playing) => {
       if (playing === false) {
-        if (item.synced) {
+        if (item.syncedObject) {
           item.triggerSyncPlay();
         } else {
           item.handleSyncPlay();
@@ -233,7 +233,7 @@ const HtxVideoView = ({ item }) => {
   const handlePause = useCallback(() => {
     setPlaying((playing) => {
       if (playing === true) {
-        if (item.synced) {
+        if (item.syncedObject) {
           item.triggerSyncPause();
         } else {
           item.handleSyncPause();

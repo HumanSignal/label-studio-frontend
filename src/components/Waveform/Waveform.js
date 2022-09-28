@@ -435,6 +435,14 @@ export default class Waveform extends React.Component {
     }
 
     this.wavesurfer.on("ready", () => {
+      const duration = this.wavesurfer.getDuration();
+
+      // overwrite to preserve the correct initial value
+      Object.assign(this.wavesurfer, {
+        getDuration: () => {
+          return duration;
+        },
+      });
       self.props.onCreate(this.wavesurfer);
 
       this.wavesurfer.container.onwheel = throttle(this.onWheel, 100);
@@ -452,7 +460,12 @@ export default class Waveform extends React.Component {
     /**
      * Play trigger of audio
      */
-    this.wavesurfer.on("play", self.props.handlePlay);
+    this.wavesurfer.on("play", () => {
+      if (this.wavesurfer.getCurrentTime() >= this.wavesurfer.getDuration()) {
+        this.wavesurfer.setCurrentTime(0);
+      }
+      self.props.handlePlay();
+    });
 
     this.wavesurfer.on("seek", self.props.handleSeek);
 
