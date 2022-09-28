@@ -398,7 +398,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   }, [zoom, canvasWidth, canvasHeight, videoDimensions]);
 
   useEffect(() => {
-    const loadingFailedCount = 300;
+    const loadingFailedCount = 350;
     let isLoaded = false;
     let timeout: NodeJS.Timeout | undefined = undefined;
     let readyState = 0;
@@ -407,18 +407,21 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     const checkVideoLoaded = () => {
       if (isLoaded) return;
 
-      if (loadAttempts > loadingFailedCount) {
-        const modalExists = document.querySelector('.ant-modal');
-
-        if (!modalExists) InfoModal.error('There has been an error rendering your video, please check the format is supported');
-        setLoading(false);
-        return;
-      }
       if (videoRef.current) {
         readyState = videoRef.current.readyState;
       }
       if (readyState === 0) {
         loadAttempts++;
+
+        // When the video is stuck in readyState 0 `UNSENT` for a long time, it is probably not going to load due to unsupported format.
+        // Even if it is on a slow network, it should still move to readyState 1 `OPENED` well within a few seconds.
+        if (loadAttempts > loadingFailedCount) {
+          const modalExists = document.querySelector('.ant-modal');
+
+          if (!modalExists) InfoModal.error('There has been an error rendering your video, please check the format is supported');
+          setLoading(false);
+          return;
+        }
       }
       if (videoRef.current?.readyState === 4) {
         isLoaded = true;
