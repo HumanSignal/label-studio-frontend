@@ -25,6 +25,7 @@ const TaskStore = types
      */
     data: types.maybeNull(types.string),
     queue: types.optional(types.maybeNull(types.string), null),
+    hasPrevTask:true,
   })
   .views(self => ({
     get app() {
@@ -44,6 +45,15 @@ const TaskStore = types
         return null;
       }
     },
-  }));
+  }))
+  .actions(self => {
+    function setHasPrevTask(value) {
+      self.hasPrevTask = value;
+    }
+
+    return {
+      setHasPrevTask,
+    };
+  });
 
 export default TaskStore;

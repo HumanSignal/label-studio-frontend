@@ -42,7 +42,7 @@ export const CurrentTask = observer(({ store }) => {
               name="prevnext"
               mod={{
                 prev: true,
-                disabled: !store.canGoPrevTask && !canPrepone,
+                disabled: !store.canGoPrevTask && !canPrepone || !store.task.hasPrevTask,
                 postpone: !store.canGoPrevTask && canPrepone,
               }}
               type="link"
