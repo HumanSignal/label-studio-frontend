@@ -1,18 +1,17 @@
-import { CSSProperties, FC, Fragment, useCallback, useMemo, useRef, useState } from "react";
+import { observer } from "mobx-react";
+import { CSSProperties, FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Block, Elem } from "../../utils/bem";
 import { DetailsPanel } from "./DetailsPanel/DetailsPanel";
 import { OutlinerPanel } from "./OutlinerPanel/OutlinerPanel";
-import { observer } from "mobx-react";
 
-import "./SidePanels.styl";
 import { IconDetails, IconHamburger } from "../../assets/icons";
-import { clamp } from "../../utils/utilities";
-import { PanelProps } from "./PanelBase";
-import { useEffect } from "react";
 import { useMedia } from "../../hooks/useMedia";
 import ResizeObserver from "../../utils/resize-observer";
-import { SidePanelsContext } from "./SidePanelsContext";
+import { clamp } from "../../utils/utilities";
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
+import { PanelProps } from "./PanelBase";
+import "./SidePanels.styl";
+import { SidePanelsContext } from "./SidePanelsContext";
 
 const maxWindowWidth = 980;
 
@@ -87,6 +86,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   const [viewportSizeMatch, setViewportSizeMatch] = useState(false);
   const [resizing, setResizing] = useState(false);
   const [positioning, setPositioning] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<"left" | "right" | undefined>();
   const localSnap = useRef(snap);
@@ -362,11 +362,12 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   useEffect(() => {
     const root = rootRef.current!;
     const checkContenFit = () => {
-      return (rootRef.current?.clientWidth ?? 0) < maxWindowWidth;
+      console.log("Content width", maxWindowWidth, root.clientWidth);
+      return (root.clientWidth ?? 0) < maxWindowWidth;
     };
 
     const observer = new ResizeObserver(() => {
-      const { clientWidth, clientHeight } = rootRef.current ?? {};
+      const { clientWidth, clientHeight } = root ?? {};
 
       // Remember current width and height of the viewport
       viewportSize.current.width = clientWidth ?? 0;
@@ -380,6 +381,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       observer.observe(root);
       setViewportSizeMatch(checkContenFit());
       setPanelMaxWidth(root.clientWidth * 0.4);
+      setInitialized(true);
     }
 
     return () => {
@@ -409,24 +411,28 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         }}
         mod={{ collapsed: sidepanelsCollapsed }}
       >
-        <Elem name="content" mod={{ resizing: resizing || positioning }}>
-          {children}
-        </Elem>
-        {panelsHidden !== true && (
+        {initialized && (
           <>
-            {Object.entries(panels).map(([key, panel]) => {
-              const content = panel.map(({ props, Component }, i) => <Component key={i} {...props} />);
+            <Elem name="content" mod={{ resizing: resizing || positioning }}>
+              {children}
+            </Elem>
+            {panelsHidden !== true && (
+              <>
+                {Object.entries(panels).map(([key, panel]) => {
+                  const content = panel.map(({ props, Component }, i) => <Component key={i} {...props} />);
 
-              if (key === 'detached') {
-                return <Fragment key={key}>{content}</Fragment>;
-              }
+                  if (key === 'detached') {
+                    return <Fragment key={key}>{content}</Fragment>;
+                  }
 
-              return (
-                <Elem key={key} name="wrapper" mod={{ align: key, snap: snap === key }}>
-                  {content}
-                </Elem>
-              );
-            })}
+                  return (
+                    <Elem key={key} name="wrapper" mod={{ align: key, snap: snap === key }}>
+                      {content}
+                    </Elem>
+                  );
+                })}
+              </>
+            )}
           </>
         )}
       </Block>
