@@ -444,13 +444,10 @@ export default types
       self.task = Task.create(taskObject);
       if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) === -1) {
         if (isPrevious) {
-          self.taskHistory = [
-            {
-              taskId: self.task.id,
-              annotationId: null,
-            },
-            ...self.taskHistory,
-          ];
+          self.taskHistory.unshift({
+            taskId: self.task.id,
+            annotationId: null,
+          });
         } else {
           self.taskHistory.push({
             taskId: self.task.id,
