@@ -361,21 +361,24 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
   useEffect(() => {
     const root = rootRef.current!;
+    const checkContenFit = () => {
+      return (rootRef.current?.clientWidth ?? 0) < maxWindowWidth;
+    };
+
     const observer = new ResizeObserver(() => {
-      const width = rootRef.current?.clientWidth ?? 0;
-      const height = rootRef.current?.clientHeight ?? 0;
-      const matches = (rootRef.current?.clientWidth ?? 0) < maxWindowWidth;
+      const { clientWidth, clientHeight } = rootRef.current ?? {};
 
       // Remember current width and height of the viewport
-      viewportSize.current.width = width;
-      viewportSize.current.height = height;
+      viewportSize.current.width = clientWidth ?? 0;
+      viewportSize.current.height = clientHeight ?? 0;
 
-      setViewportSizeMatch(matches);
+      setViewportSizeMatch(checkContenFit());
       setPanelMaxWidth(root.clientWidth * 0.4);
     });
 
     if (root) {
       observer.observe(root);
+      setViewportSizeMatch(checkContenFit());
       setPanelMaxWidth(root.clientWidth * 0.4);
     }
 
