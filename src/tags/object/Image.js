@@ -708,8 +708,8 @@ const Model = types.model({
 
     setZoomPosition(x, y) {
       const min = {
-        x: self.containerWidth - self.stageComponentSize.width * self.zoomScale,
-        y: self.containerHeight - self.stageComponentSize.height * self.zoomScale,
+        x: (isFF(FF_DEV_3377) ? self.canvasSize.width : self.containerWidth) - self.stageComponentSize.width * self.zoomScale,
+        y: (isFF(FF_DEV_3377) ? self.canvasSize.height : self.containerHeight) - self.stageComponentSize.height * self.zoomScale,
       };
 
       self.zoomingPositionX = clamp(x, min.x, 0);
