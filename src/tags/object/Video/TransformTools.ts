@@ -68,18 +68,27 @@ export const createBoundingBoxGetter = (workingArea: WorkingArea, enabled = true
   if (!enabled) return newBox;
 
   const box = getClientRect(newBox);
-  const isOut =
-    (box.x - workingArea.x) < 0 ||
-    (box.y - workingArea.y) < 0 ||
-    (box.x - workingArea.x) + box.width > workingArea.width ||
-    (box.y - workingArea.y) + box.height > workingArea.height;
+  const result = { ...newBox };
 
-  // if new bounding box is out of visible viewport, let's just skip transforming
-  // this logic can be improved by still allow some transforming if we have small available space
-  if (isOut) {
-    return oldBox;
+  if ((box.x - workingArea.x) < 0) {
+    result.x = workingArea.x;
+    result.width = oldBox.width + oldBox.x - workingArea.x;
   }
-  return newBox;
+
+  if ((box.y - workingArea.y) < 0) {
+    result.y = workingArea.y;
+    result.height = oldBox.height + oldBox.y - workingArea.y;
+  }
+
+  if ((box.x - workingArea.x) + box.width > workingArea.width) {
+    result.width = workingArea.width - (box.x - workingArea.x);
+  }
+
+  if ((box.y - workingArea.y) + box.height > workingArea.height) {
+    result.height = workingArea.height - (box.y - workingArea.y);
+  }
+
+  return result;
 };
 
 export const createOnDragMoveHandler = (workingArea: WorkingArea, enabled = true) => function(this: Transformer, e: KonvaEventObject<DragEvent>) {

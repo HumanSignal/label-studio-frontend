@@ -362,7 +362,6 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   useEffect(() => {
     const root = rootRef.current!;
     const checkContenFit = () => {
-      console.log("Content width", maxWindowWidth, root.clientWidth);
       return (root.clientWidth ?? 0) < maxWindowWidth;
     };
 
