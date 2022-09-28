@@ -1,4 +1,4 @@
-import { DetailedHTMLProps, forwardRef, useCallback, useEffect, useRef, useState, VideoHTMLAttributes } from "react";
+import { DetailedHTMLProps, forwardRef, useCallback, useEffect, useRef, VideoHTMLAttributes } from "react";
 
 type VirtualVideoProps = DetailedHTMLProps<VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>;
 
