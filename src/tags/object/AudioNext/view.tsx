@@ -9,16 +9,16 @@ interface AudioNextProps {
   item: any;
 }
 
+const numberify = (val: any, defaults: Record<string, number>) => {
+  const numVal = Number(val);
+  
+  return isNaN(val) ? defaults.default : (numVal < defaults.min ? defaults.min : (numVal > defaults.max ? defaults.max : numVal));
+};
+
 const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   const [playing, setPlaying] = useState(false);
   const [position, setPosition] = useState(1);
   const [audioLength, setAudioLength] = useState(0);
-
-  const numberify = (val: any, defaults: Record<string, number>) => {
-    const numVal = Number(val);
-    
-    return isNaN(val) ? defaults.default : (numVal < defaults.min ? defaults.min : (numVal > defaults.max ? defaults.max : numVal));
-  };
 
   const [zoom, setZoom] = useState(numberify(item.defaultzoom, WS_ZOOM_X));
   const [volume, setVolume] = useState(numberify(item.defaultvolume, WS_VOLUME));
