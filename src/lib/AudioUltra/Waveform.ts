@@ -3,9 +3,9 @@ import { MediaLoader } from "./Media/MediaLoader";
 import { Player } from "./Controls/Player";
 import { Tooltip, TooltipOptions } from "./Tooltip/Tooltip";
 import { Cursor, CursorOptions, CursorSymbol } from "./Cursor/Cursor";
-import { RegionGlobalEvents } from "./Regions/Region";
+import { RegionGlobalEvents, RegionOptions } from "./Regions/Region";
 import { Visualizer } from "./Visual/Visualizer";
-import { Regions, RegionsOptions } from "./Regions/Regions";
+import { Regions, RegionsGlobalEvents, RegionsOptions } from "./Regions/Regions";
 import { Timeline, TimelineOptions } from "./Timeline/Timeline";
 import { Padding } from "./Common/Style";
 import { getCursorTime } from "./Common/Utils";
@@ -141,7 +141,7 @@ export interface WaveformOptions {
     denoize: boolean,
   };
 }
-interface WaveformEventTypes extends RegionGlobalEvents {
+interface WaveformEventTypes extends RegionsGlobalEvents, RegionGlobalEvents {
   "load": () => void;
   "resize": (wf: Waveform, width: number, height: number) => void;
   "pause": () => void;
@@ -291,7 +291,7 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   addRegion(options: RegionOptions) {
-    this.regions.addRegion(options);
+    return this.regions.addRegion(options);
   }
 
   removeRegion(regionId: string) {

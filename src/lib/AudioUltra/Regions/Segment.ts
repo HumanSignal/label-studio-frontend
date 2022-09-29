@@ -91,7 +91,7 @@ export class Segment extends Events<SegmentEvents> {
   }
 
   update(options: Partial<SegmentOptions>) {
-    if (!this.updateable && !options.updateable) return;
+    if (!this.updateable && (options.updateable !== undefined && !options.updateable)) return;
 
     if (options.updateable !== undefined) {
       this.updateable = options.updateable;

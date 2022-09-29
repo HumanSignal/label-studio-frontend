@@ -53,12 +53,8 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     };
 
     const createRegion = (region: Region|Segment) => {
-      // @todo - create and add new region, or segment and listen to updates for changes to label selection when either
-      // are selected
-      console.log(region);
       item.addRegion(region);
     };
-
 
     const updateRegion = (region: Region|Segment) => {
       item.updateRegion(region);

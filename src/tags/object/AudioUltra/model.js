@@ -1,3 +1,4 @@
+import { observe } from "mobx";
 import { getRoot, getType, types } from "mobx-state-tree";
 import { customTypes } from "../../../core/CustomTypes";
 import { guidGenerator, restoreNewsnapshot } from "../../../core/Helpers.ts";
@@ -109,269 +110,304 @@ export const AudioModel = types.compose(
 
         return states && states.filter(s => getType(s).name === "LabelsModel" && s.isSelected);
       },
+
+      get activeState() {
+        const states = self.states();
+
+        return states && states.filter(s => getType(s).name === "LabelsModel" && s.isSelected)[0];
+      },
+
+      get activeLabel() {
+        const state = self.activeState;
+
+        return state?.selectedValues()?.[0];
+      },
     }))
-    .actions(self => ({
-      needsUpdate() {
-        self.handleNewRegions();
-        self.requestWSUpdate();
-      },
+    .actions(self => {
+      let dispose;
 
-      requestWSUpdate() {
-        if (!self._ws) return;
+      return {
+        afterCreate() {
+          dispose = observe(self, 'activeLabel', () => {
+            const activeState = self.activeState;
+            const selectedColor = activeState?.selectedColor;
+            const labels = activeState?.selectedValues();
+            const selectedRegions = self._ws.regions.selected;
 
-        setTimeout(() => {
-          self._ws.regions.redraw();
-        });
-      },
+            selectedRegions.forEach(r => {
+              r.update({ color: selectedColor ?? "#787878", labels: labels ?? [] });
+              self.updateRegion(r);
+            });
+            if (selectedRegions.length) {
+              self.requestWSUpdate();
+            }
+          }, false);
+        },
 
-      onReady() {
-        self.setReady(true);
-      },
+        needsUpdate() {
+          self.handleNewRegions();
+          self.requestWSUpdate();
+        },
 
-      handleSyncPlay() {
-        if (!self._ws) return;
-        if (self._ws.playing) return;
+        requestWSUpdate() {
+          if (!self._ws) return;
 
-        self._ws?.play();
-      },
-
-      handleSyncPause() {
-        if (!self._ws) return;
-        if (!self._ws.playing) return;
-
-        self._ws?.pause();
-      },
-
-      handleSyncSpeed() {},
-
-      handleSyncSeek(time) {
-        try {
-          if (self._ws && time !== self._ws.currentTime) {
-            self._ws.currentTime = time;
-          }
-        } catch (err) {
-          console.log(err);
-        }
-      },
-
-      handleNewRegions() {
-        if (!self._ws?.loaded) return;
-        self.regs.map(reg => {
-          if (reg._ws_region) {
-            self.updateWsRegion(reg);
-          } else {
-            self.createWsRegion(reg);
-          }
-        });
-      },
-
-      findRegionByWsRegion(wsRegion) {
-        return self.regs.find(r => r._ws_region?.id === wsRegion?.id);
-      },
-
-      getRegionColor() {
-        const control = self.activeStates()[0];
-
-        if (control) {
-          return control.selectedColor;
-        }
-
-        return null;
-      },
-
-      onHotKey(e) {
-        e && e.preventDefault();
-        self._ws.togglePlay();
-        return false;
-      },
-
-      fromStateJSON(obj, fromModel) {
-        let r;
-        let m;
-
-        const fm = self.annotation.names.get(obj.from_name);
-
-        fm.fromStateJSON(obj);
-
-        if (!fm.perregion && fromModel.type !== "labels") return;
-
-        const tree = {
-          pid: obj.id,
-          start: obj.value.start,
-          end: obj.value.end,
-          normalization: obj.normalization,
-          score: obj.score,
-          readonly: obj.readonly,
-        };
-
-        r = self.findRegion({ start: obj.value.start, end: obj.value.end });
-
-        if (fromModel) {
-          m = restoreNewsnapshot(fromModel);
-
-          if (!r) {
-            r = self.createRegion(tree, [m]);
-          } else {
-            r.states.push(m);
-          }
-        }
-
-        if (self._ws) {
-          self._ws.addRegion({
-            start: r.start,
-            end: r.end,
-            color: r.getColor(),
+          setTimeout(() => {
+            self._ws.regions.redraw();
           });
-        }
+        },
 
-        return r;
-      },
+        onReady() {
+          self.setReady(true);
+        },
 
-      setRangeValue(val) {
-        self.rangeValue = val;
-      },
+        handleSyncPlay() {
+          if (!self._ws) return;
+          if (self._ws.playing) return;
 
-      setPlaybackRate(val) {
-        self.playBackRate = val;
-      },
+          self._ws?.play();
+        },
 
-      createRegion(wsRegion, states) {
-        let bgColor = self.selectedregionbg;
-        const st = states.find(s => s.type === "labels");
+        handleSyncPause() {
+          if (!self._ws) return;
+          if (!self._ws.playing) return;
 
-        if (st) bgColor = Utils.Colors.convertToRGBA(st.getSelectedColor(), 0.3);
+          self._ws?.pause();
+        },
 
-        const r = AudioRegionModel.create({
-          id: wsRegion.id ? wsRegion.id : guidGenerator(),
-          pid: wsRegion.pid ? wsRegion.pid : guidGenerator(),
-          parentID: wsRegion.parent_id === null ? "" : wsRegion.parent_id,
-          start: wsRegion.start,
-          end: wsRegion.end,
-          score: wsRegion.score,
-          readonly: wsRegion.readonly,
-          regionbg: self.regionbg,
-          selectedregionbg: bgColor,
-          normalization: wsRegion.normalization,
-          states,
-        });
+        handleSyncSpeed() {},
 
-        r._ws_region = wsRegion;
+        handleSyncSeek(time) {
+          try {
+            if (self._ws && time !== self._ws.currentTime) {
+              self._ws.currentTime = time;
+            }
+          } catch (err) {
+            console.log(err);
+          }
+        },
 
-        self.regions.push(r);
-        self.annotation.addRegion(r);
-
-        return r;
-      },
-
-      selectRange(ev, ws_region) {
-        const selectedRegions = self.regs.filter(r => r.start >= ws_region.start && r.end <= ws_region.end);
-
-        ws_region.remove && ws_region.remove();
-        if (!selectedRegions.length) return;
-        // @todo: needs preventing drawing with ctrl pressed
-        // if (ev.ctrlKey || ev.metaKey) {
-        //   self.annotation.extendSelectionWith(selectedRegions);
-        //   return;
-        // }
-        self.annotation.selectAreas(selectedRegions);
-      },
-
-      addRegion(wsRegion) {
-        // area id is assigned to WS region during deserealization
-        const find_r = self.annotation.areas.get(wsRegion.id);
-
-        if (find_r) {
-          find_r._ws_region = wsRegion;
-          find_r.updateColor();
-          return find_r;
-        }
-
-        const states = self.getAvailableStates();
-
-        if (states.length === 0) {
-          // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
-          return;
-        }
-
-        const control = self.activeStates()[0];
-        const labels = { [control.valueType]: control.selectedValues() };
-
-        const r = self.annotation.createResult(wsRegion, labels, control, self);
-
-        r._ws_region = wsRegion;
+        handleNewRegions() {
+          if (!self._ws?.loaded) return;
         
-        return r;
-      },
+          self.regs.map(reg => {
+            if (reg._ws_region) {
+              self.updateWsRegion(reg);
+            } else {
+              self.createWsRegion(reg);
+            }
+          });
+        },
 
-      updateRegion(wsRegion) {
-        const r = self.findRegionByWsRegion(wsRegion);
+        findRegionByWsRegion(wsRegion) {
+          return self.regs.find(r => r._ws_region?.id === wsRegion?.id);
+        },
 
-        if (!r) return;
+        getRegionColor() {
+          const control = self.activeState;
 
-        r.onUpdateEnd();
-      },
+          if (control) {
+            return control.selectedColor;
+          }
 
-      /**
+          return null;
+        },
+
+        onHotKey(e) {
+          e && e.preventDefault();
+          self._ws.togglePlay();
+          return false;
+        },
+
+        fromStateJSON(obj, fromModel) {
+          let r;
+          let m;
+
+          const fm = self.annotation.names.get(obj.from_name);
+
+          fm.fromStateJSON(obj);
+
+          if (!fm.perregion && fromModel.type !== "labels") return;
+
+          const tree = {
+            pid: obj.id,
+            start: obj.value.start,
+            end: obj.value.end,
+            normalization: obj.normalization,
+            score: obj.score,
+            readonly: obj.readonly,
+          };
+
+          r = self.findRegion({ start: obj.value.start, end: obj.value.end });
+
+          if (fromModel) {
+            m = restoreNewsnapshot(fromModel);
+
+            if (!r) {
+              r = self.createRegion(tree, [m]);
+            } else {
+              r.states.push(m);
+            }
+          }
+
+          if (self._ws) {
+            self._ws.addRegion({
+              start: r.start,
+              end: r.end,
+              color: r.getColor(),
+            });
+          }
+
+          return r;
+        },
+
+        setRangeValue(val) {
+          self.rangeValue = val;
+        },
+
+        setPlaybackRate(val) {
+          self.playBackRate = val;
+        },
+
+        createRegion(wsRegion, states) {
+          let bgColor = self.selectedregionbg;
+          const st = states.find(s => s.type === "labels");
+
+          if (st) bgColor = Utils.Colors.convertToRGBA(st.getSelectedColor(), 0.3);
+
+          const r = AudioRegionModel.create({
+            id: wsRegion.id ? wsRegion.id : guidGenerator(),
+            pid: wsRegion.pid ? wsRegion.pid : guidGenerator(),
+            parentID: wsRegion.parent_id === null ? "" : wsRegion.parent_id,
+            start: wsRegion.start,
+            end: wsRegion.end,
+            score: wsRegion.score,
+            readonly: wsRegion.readonly,
+            regionbg: self.regionbg,
+            selectedregionbg: bgColor,
+            normalization: wsRegion.normalization,
+            states,
+          });
+
+          r._ws_region = wsRegion;
+
+          self.regions.push(r);
+          self.annotation.addRegion(r);
+
+          return r;
+        },
+
+        selectRange(ev, ws_region) {
+          const selectedRegions = self.regs.filter(r => r.start >= ws_region.start && r.end <= ws_region.end);
+
+          ws_region.remove && ws_region.remove();
+          if (!selectedRegions.length) return;
+          // @todo: needs preventing drawing with ctrl pressed
+          // if (ev.ctrlKey || ev.metaKey) {
+          //   self.annotation.extendSelectionWith(selectedRegions);
+          //   return;
+          // }
+          self.annotation.selectAreas(selectedRegions);
+        },
+
+        addRegion(wsRegion) {
+        // area id is assigned to WS region during deserealization
+          const find_r = self.annotation.areas.get(wsRegion.id);
+
+          if (find_r) {
+            find_r._ws_region = wsRegion;
+            find_r.updateColor();
+            return find_r;
+          }
+
+          const states = self.getAvailableStates();
+
+          if (states.length === 0) {
+          // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
+            return;
+          }
+
+          const control = self.activeState;
+          const labels = { [control.valueType]: control.selectedValues() };
+
+          const r = self.annotation.createResult(wsRegion, labels, control, self);
+
+          r._ws_region = wsRegion;
+        
+          return r;
+        },
+
+        updateRegion(wsRegion) {
+          const r = self.findRegionByWsRegion(wsRegion);
+
+          if (!r) return;
+
+          r.onUpdateEnd();
+        },
+
+        /**
      * Play and stop
      */
-      handlePlay() {
-        if (self._ws) {
-          self.playing = !self.playing;
-          self._ws.playing ? self.triggerSyncPlay() : self.triggerSyncPause();
-        }
-      },
-
-      handleSeek() {
-        if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === "paragraphs")) return;
-
-        self.triggerSyncSeek(self._ws.currentTime);
-      },
-
-      handleSpeed(speed) {
-        self.triggerSyncSpeed(speed);
-      },
-
-      createWsRegion(region) {
-        const options = region.wsRegionOptions();
-
-        options.labels = region.labels?.length ? region.labels : undefined;
-
-        const r = self._ws.addRegion(options, false);
-
-        region._ws_region = r;
-      },
-
-      updateWsRegion(region) {
-        const options = region.wsRegionOptions();
-
-        options.labels = region.labels?.length ? region.labels : undefined;
-
-        self._ws.updateRegion(options, false);
-      },
-
-      onLoad(ws) {
-        self._ws = ws;
-
-        console.log(self.annotation);
-        setTimeout(() => {
-          self.needsUpdate();
-        });
-      },
-
-      onError(error) {
-        self.errors = [error];
-      },
-
-      beforeDestroy() {
-        try {
-          if (isDefined(self._ws)) {
-            self._ws.destroy();
-            self._ws = null;
+        handlePlay() {
+          if (self._ws) {
+            self.playing = !self.playing;
+            self._ws.playing ? self.triggerSyncPlay() : self.triggerSyncPause();
           }
-        } catch (err) {
-          self._ws = null;
-          console.warn("Already destroyed");
-        }
-      },
-    })),
+        },
+
+        handleSeek() {
+          if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === "paragraphs")) return;
+
+          self.triggerSyncSeek(self._ws.currentTime);
+        },
+
+        handleSpeed(speed) {
+          self.triggerSyncSpeed(speed);
+        },
+
+        createWsRegion(region) {
+
+          const options = region.wsRegionOptions();
+
+          options.labels = region.labels?.length ? region.labels : undefined;
+
+          const r = self._ws.addRegion(options, false);
+
+          region._ws_region = r;
+        },
+
+        updateWsRegion(region) {
+          const options = region.wsRegionOptions();
+
+          options.labels = region.labels?.length ? region.labels : undefined;
+
+          self._ws.updateRegion(options, false);
+        },
+
+        onLoad(ws) {
+          self._ws = ws;
+
+          setTimeout(() => {
+            self.needsUpdate();
+          });
+        },
+
+        onError(error) {
+          self.errors = [error];
+        },
+
+        beforeDestroy() {
+          try {
+            if (dispose) dispose();
+            if (isDefined(self._ws)) {
+              self._ws.destroy();
+              self._ws = null;
+            }
+          } catch (err) {
+            self._ws = null;
+            console.warn("Already destroyed");
+          }
+        },
+      };
+    }),
 );

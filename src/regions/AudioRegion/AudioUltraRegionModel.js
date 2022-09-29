@@ -28,8 +28,6 @@ export const AudioUltraRegionModel = types
         deletable: !self.readonly,
       };
 
-      console.log(reg);
-
       return reg;
     },
   }))
@@ -163,6 +161,8 @@ export const AudioUltraRegionModel = types
       onUpdateEnd() {
         self.start = self._ws_region.start;
         self.end = self._ws_region.end;
+        // @todo: where are labels changed for the region?
+        // self.labels = self._ws_region.labels;
         self.notifyDrawingFinished();
       },
 
