@@ -1,6 +1,6 @@
 import { ChannelData } from "../Media/ChannelData";
 import { WaveformAudio } from "../Media/WaveformAudio";
-import { averageMinMax, clamp, defaults, filterData, measure, roundToStep } from "../Common/Utils";
+import { averageMinMax, clamp, debounce, defaults, filterData, measure, roundToStep } from "../Common/Utils";
 import { Waveform, WaveformOptions } from "../Waveform";
 import { CanvasCompositeOperation, Layer, RenderingContext } from "./Layer";
 import { Events } from "../Common/Events";
@@ -10,7 +10,6 @@ import { rgba } from "../Common/Color";
 import { Cursor } from "../Cursor/Cursor";
 import { Padding } from "../Common/Style";
 import { TimelineOptions } from "../Timeline/Timeline";
-import { debounce } from "../../lib/Common/Utils";
 
 interface VisualizerEvents {
   draw: (visualizer: Visualizer) => void;
