@@ -181,7 +181,7 @@ const Model = types
         // Ensure that the timestamps are incremental and formatted to proper numeric values
       } else {
         let current = 0;
-        let previous = 0;
+        let previous = -Infinity;
         const dataLength = data[self.keyColumn].length;
         const timestamps = Array.from({ length: dataLength });
 
