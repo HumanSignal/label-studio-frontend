@@ -171,12 +171,21 @@ const useEventHandlers = ({
 }) => {
   const onSelect = useCallback((_, evt) => {
     const multi = evt.nativeEvent.ctrlKey || (isMacOS() && evt.nativeEvent.metaKey);
-    const { node, selected } = evt;
+    const { node } = evt;
 
-    if (node.type.includes("region") || node.type.includes("range")) {
-      if (!multi) regions.selection.clear();
+    const self = node.item;
+    const annotation = self.annotation;
 
-      regions.toggleSelection(node.item, selected);
+    if (multi) {
+      annotation.toggleRegionSelection(self);
+    } else {
+      const wasNotSelected = !self.selected;
+
+      if (wasNotSelected) {
+        annotation.selectArea(self);
+      } else {
+        annotation.unselectAll();
+      }
     }
   }, []);
 
