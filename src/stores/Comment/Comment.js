@@ -10,6 +10,9 @@ export const Comment = types.model("Comment", {
   resolvedAt: types.optional(types.maybeNull(types.string), null),
   createdBy: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
   isResolved: false,
+  isEditMode: types.optional(types.boolean, false),
+  isDeleted: types.optional(types.boolean, false),
+  isConfirmDelete: types.optional(types.boolean, false),
 })
   .preProcessSnapshot((sn) => {
     return camelizeKeys(sn ?? {});
@@ -39,7 +42,39 @@ export const Comment = types.model("Comment", {
       }
     }
 
+    function setEditMode( newMode ) {
+      self.isEditMode = newMode;
+    }
+
+    function setDeleted( newMode ) {
+      self.isDeleted = newMode;
+    }
+
+    function setConfirmMode( newMode ) {
+      self.isConfirmDelete = newMode;
+    }
+
+    async function updateComment( comment ) {
+      await self.sdk.invoke("comments:update", {
+        id: self.id,
+        text: comment,
+      });
+      self.setEditMode(false);
+    }
+
+    async function deleteComment() {
+      await self.sdk.invoke("comments:delete", {
+        id: self.id,
+      });
+      self.setDeleted(true);
+    }
+
     return {
       toggleResolve,
+      setEditMode,
+      setDeleted,
+      setConfirmMode,
+      updateComment,
+      deleteComment,
     };
   });

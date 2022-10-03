@@ -8,64 +8,45 @@ import { observer } from "mobx-react";
 
 
 export type CommentFormProps = {
-  commentStore: any,
   value?: string,
   onChange?: (value: string) => void,
+  onSubmit?: (value: string) => void,
+  onBlur?: (e: FocusEvent) => void,
   inline?: boolean,
   rows?: number,
   maxRows?: number,
 }
 
-export const CommentForm: FC<CommentFormProps> = observer(({
-  commentStore,
+export const CommentFormBase: FC<CommentFormProps> = observer(({
   value = "", 
   inline = true,
   onChange,
+  onSubmit,
+  onBlur,
   rows = 1,
   maxRows = 4,
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const actionRef = useRef<{ update?: (text?: string) => void, el?: RefObject<HTMLTextAreaElement> }>({});
-  const clearTooltipMessage = () => commentStore.setTooltipMessage("");
-  const onSubmit = useCallback(async (e?: any) => {
+
+  const submitHandler = useCallback(async (e?: any) => {
     e?.preventDefault?.();
 
     if (!formRef.current) return;
     
     const comment = new FormData(formRef.current).get("comment") as string;
-
-    if (!comment.trim()) return;
     
-    clearTooltipMessage();
+    if (!comment.trim()) return;
 
-    try {
-      actionRef.current.update?.("");
-
-      await commentStore.addComment(comment);
-      
-    } catch(err) {
-      actionRef.current.update?.(comment || "");
-      console.error(err);
-    }
-  }, [commentStore]);
+    onSubmit?.(comment);
+  }, [onSubmit]);
 
   const onInput = useCallback((comment: string) => {
-    commentStore.setCurrentComment(comment || '');
-  }, [commentStore]);
-
-  
-  useEffect(() => {
-    commentStore.setAddedCommentThisSession(false);
-    clearTooltipMessage();
-  }, []);
-
-  useEffect(() => {
-    commentStore.setInputRef(actionRef.current.el);
-    commentStore.setCommentFormSubmit(() => onSubmit());
-  }, [actionRef, commentStore]);
+    onChange?.(comment || '');
+  }, [onChange]);
   
   return (
-    <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}> 
+    <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={submitHandler}> 
       <TextArea
         actionRef={actionRef}
         name="comment"
@@ -75,19 +56,14 @@ export const CommentForm: FC<CommentFormProps> = observer(({
         maxRows={maxRows}
         onChange={onChange}
         onInput={onInput}
-        onSubmit={inline ? onSubmit : undefined}
-        onBlur={clearTooltipMessage}
+        onSubmit={() => inline ? onSubmit?.(value) : undefined}
+        onBlur={(e) => onBlur?.(e)}
       />
       <Elem tag="div" name="primary-action">
         <button type="submit">
           <IconSend />
         </button>
       </Elem>
-      {commentStore.tooltipMessage && (
-        <Elem name="tooltipMessage">
-          {commentStore.tooltipMessage}
-        </Elem>
-      )}
     </Block>
   );
 });
