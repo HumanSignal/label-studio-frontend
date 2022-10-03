@@ -605,11 +605,14 @@ const useWaveSurfer = ({
 
     return () => {
       root.removeEventListener("click", handleClick);
-
-      Object.entries(wsi.getActivePlugins()).forEach(([name, active]) => {
-        if (active) wsi.destroyPlugin(name);
-      });
-      wsi.destroy();
+      try {
+        Object.entries(wsi.getActivePlugins()).forEach(([name, active]) => {
+          if (active) wsi.destroyPlugin(name);
+        });
+        wsi.destroy();
+      } catch (error) {
+        console.error("Error:", error);
+      }
     };
   }, []);
 
