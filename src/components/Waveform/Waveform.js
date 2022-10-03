@@ -277,6 +277,9 @@ export default class Waveform extends React.Component {
   };
 
   componentDidMount() {
+    /**
+     * @type {import("wavesurfer.js/types/params").WaveSurferParams}
+     */
     let wavesurferConfigure = {
       container: this.$waveform,
       waveColor: this.state.colors.waveColor,
@@ -323,8 +326,20 @@ export default class Waveform extends React.Component {
       ...wavesurferConfigure,
     });
 
+    if (this.props.defaultVolume) {
+      this.wavesurfer.setVolume(this.props.defaultVolume);
+    }
+
     if (this.props.muted) {
       this.wavesurfer.setVolume(0);
+    }
+
+    if (this.props.defaultSpeed) {
+      this.wavesurfer.setPlaybackRate(this.props.defaultSpeed);
+    }
+
+    if (this.props.defaultZoom) {
+      this.wavesurfer.zoom(this.props.defaultZoom);
     }
 
     this.wavesurfer.on("error", e => {

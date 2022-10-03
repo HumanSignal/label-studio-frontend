@@ -4,6 +4,7 @@ import { ParagraphsModel } from "./Paragraphs";
 import { RichTextModel } from "./RichText";
 import { TableModel } from "./Table";
 import { TimeSeriesModel } from "./TimeSeries";
+import { PagedViewModel } from "./PagedView";
 import { VideoModel } from "./Video";
 
 // stub files to keep docs of these tags
@@ -17,5 +18,6 @@ export {
   TimeSeriesModel,
   RichTextModel,
   VideoModel,
-  TableModel
+  TableModel,
+  PagedViewModel
 };

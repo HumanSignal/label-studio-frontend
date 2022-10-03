@@ -464,8 +464,9 @@ const Model = types.model({
 
   get imageTransform() {
     const imgStyle = {
-      width: `${self.stageWidth}px`,
-      height: `${self.stageHeight}px`,
+      // scale transform leaves gaps on image border, so much better to change image sizes
+      width: `${self.stageWidth * self.zoomScale}px`,
+      height: `${self.stageHeight * self.zoomScale}px`,
       transformOrigin: "left top",
       transform: "none",
       filter: `brightness(${self.brightnessGrade}%) contrast(${self.contrastGrade}%)`,
@@ -476,7 +477,6 @@ const Model = types.model({
       const { zoomingPositionX = 0, zoomingPositionY = 0 } = self;
 
       imgTransform.push("translate3d(" + zoomingPositionX + "px," + zoomingPositionY + "px, 0)");
-      imgTransform.push("scale3d(" + self.zoomScale + ", " + self.zoomScale + ", 1)");
     }
 
     if (self.rotation) {
@@ -502,7 +502,7 @@ const Model = types.model({
     return self.isSideways
       ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
       : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
-  }, 
+  },
 
   get coverScale() {
     return self.isSideways
@@ -650,15 +650,14 @@ const Model = types.model({
      * Set zoom
      */
     setZoom(scale) {
-      self.currentZoom = scale;
+      self.currentZoom = clamp(scale, 1, Infinity);
 
       // cool comment about all this stuff
       const maxScale = self.maxScale;
       const coverScale = self.coverScale;
-      const regionType = self.annotation.regionStore.regions.some(r => r.type === "polygonregion");
 
       if (maxScale > 1) { // image < container
-        if (scale < maxScale || !regionType) { // scale = 1 or before stage size is max
+        if (scale < maxScale) { // scale = 1 or before stage size is max
           self.stageZoom = scale; // scale stage
           self.zoomScale = 1; // don't scale image
         } else {
@@ -666,7 +665,7 @@ const Model = types.model({
           self.zoomScale = scale / maxScale; // scale image for the rest scale
         }
       } else { // image > container
-        if (scale > maxScale || regionType) { // scale = 1 or any other zoom bigger then viewport
+        if (scale > maxScale) { // scale = 1 or any other zoom bigger then viewport
           self.stageZoom = maxScale; // stage squizzed
           self.zoomScale = scale; // scale image for the rest scale : scale image usually
         } else { // negative zoom bigger than image negative scale
@@ -778,7 +777,7 @@ const Model = types.model({
         self.setZoom(zoomScale);
 
         stageScale = self.zoomScale;
-        
+
         const zoomingPosition = {
           x: -(mouseAbsolutePos.x - mouseRelativePos.x / stageScale) * stageScale,
           y: -(mouseAbsolutePos.y - mouseRelativePos.y / stageScale) * stageScale,

@@ -51,6 +51,12 @@ import { Button } from "../../common/Button/Button";
 class App extends Component {
   relationsRef = React.createRef();
 
+  componentDidMount() {
+    // Hack to activate app hotkeys
+    window.blur();
+    document.body.focus();
+  }
+
   renderSuccess() {
     return <Result status="success" title={getEnv(this.props.store).messages.DONE} />;
   }

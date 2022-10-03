@@ -141,13 +141,19 @@ const Model = types
     },
 
     get parseTimeFn() {
-      return self.timeformat && self.timecolumn ? d3.timeParse(self.timeformat) : Number;
+      return self.timeformat && self.timecolumn ? d3.utcParse(self.timeformat) : Number;
     },
 
     parseTime(time) {
       const parse = self.parseTimeFn;
 
-      return +parse(time);
+      const dt = parse(time);
+
+      if (dt instanceof Date) {
+        return dt.getTime();
+      }
+
+      return dt;
     },
 
     get dataObj() {
@@ -294,7 +300,7 @@ const Model = types
         const { timedisplayformat: format, isDate } = self;
 
         if (format === "date") self._format = formatTrackerTime;
-        else if (format) self._format = isDate ? d3.timeFormat(format) : d3.format(format);
+        else if (format) self._format = isDate ? d3.utcFormat(format) : d3.format(format);
         else self._format = String;
       }
       return self._format(time);

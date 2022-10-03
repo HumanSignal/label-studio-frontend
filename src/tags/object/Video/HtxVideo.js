@@ -18,6 +18,7 @@ import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
 import ResizeObserver from "../../../utils/resize-observer";
 import { useFullscreen } from "../../../hooks/useFullscreen";
+import { IconZoomIn } from "../../../assets/icons";
 
 // const hotkeys = Hotkey("Video", "Video Annotation");
 
@@ -53,9 +54,7 @@ const HtxVideoView = ({ item }) => {
   }, [videoLength]);
 
   const supportsRegions = useMemo(() => {
-    const controlType = item.control()?.type;
-
-    return controlType ? controlType.match("video") : false;
+    return isDefined(item?.videoControl());
   }, [item]);
 
   useEffect(() => {
@@ -310,23 +309,6 @@ const HtxVideoView = ({ item }) => {
         ))}
 
         <Block name="video" mod={{ fullscreen: isFullScreen }} ref={videoBlockRef}>
-          <Elem tag={Space} name="controls" align="end" size="small">
-            <Dropdown.Trigger
-              inline={isFullScreen}
-              content={(
-                <Menu size="medium" style={{ width: 150 }} closeDropdownOnItemClick={false}>
-                  <Menu.Item onClick={zoomIn}>Zoom In</Menu.Item>
-                  <Menu.Item onClick={zoomOut}>Zoom Out</Menu.Item>
-                  <Menu.Item onClick={zoomToFit}>Zoom To Fit</Menu.Item>
-                  <Menu.Item onClick={zoomReset}>Zoom 100%</Menu.Item>
-                </Menu>
-              )}
-            >
-              <Button size="small">
-                Zoom {Math.round(zoom * 100)}%
-              </Button>
-            </Dropdown.Trigger>
-          </Elem>
           <Elem
             name="main"
             ref={videoContainerRef}
@@ -372,6 +354,7 @@ const HtxVideoView = ({ item }) => {
             )}
           </Elem>
         </Block>
+
         {loaded && (
           <Elem
             name="timeline"
@@ -380,11 +363,34 @@ const HtxVideoView = ({ item }) => {
             length={videoLength}
             position={position}
             regions={regions}
+            allowFullscreen={false}
             fullscreen={isFullScreen}
             defaultStepSize={16}
             disableView={!supportsRegions}
             framerate={item.framerate}
             controls={{ FramesControl: true }}
+            customControls={[
+              {
+                position: "left",
+                component: () => {
+                  return (
+                    <Dropdown.Trigger
+                      inline={isFullScreen}
+                      content={(
+                        <Menu size="auto" closeDropdownOnItemClick={false}>
+                          <Menu.Item onClick={zoomIn}>Zoom In</Menu.Item>
+                          <Menu.Item onClick={zoomOut}>Zoom Out</Menu.Item>
+                          <Menu.Item onClick={zoomToFit}>Zoom To Fit</Menu.Item>
+                          <Menu.Item onClick={zoomReset}>Zoom 100%</Menu.Item>
+                        </Menu>
+                      )}
+                    >
+                      <Button size="small" nopadding><IconZoomIn/></Button>
+                    </Dropdown.Trigger>
+                  );
+                },
+              },
+            ]}
             onPositionChange={handleTimelinePositionChange}
             onPlay={handlePlay}
             onPause={handlePause}

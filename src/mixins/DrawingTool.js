@@ -169,7 +169,7 @@ const DrawingTool = types
       },
 
       canStartDrawing() {
-        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart();
+        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart() && !self.annotation.isDrawing;
       },
 
       initializeHotkeys() {
@@ -510,7 +510,7 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
         }
       },
       mousedownEv(ev, [x, y]) {
-        if (!self.canStartDrawing()) return;
+        if (!self.canStartDrawing() || self.annotation.isDrawing) return;
         lastEvent = MOUSE_DOWN_EVENT;
         startPoint = { x, y };
         self.mode = "drawing";

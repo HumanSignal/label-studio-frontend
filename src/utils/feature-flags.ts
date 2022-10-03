@@ -17,9 +17,6 @@ export const FF_DEV_1566 = "ff_front_dev_1566_shortcuts_in_results_010222_short"
 // User labels for Taxonomy
 export const FF_DEV_1536 = "ff_front_dev_1536_taxonomy_user_labels_150222_long";
 
-// Show or not dialog for rejection
-export const FF_DEV_1593 = "ff_front_1593_rejection_comment_040222_short";
-
 // New Audio 2.0 UI
 export const FF_DEV_1713 = "ff_front_DEV_1713_audio_ui_150222_short";
 
@@ -55,16 +52,12 @@ export const FF_DEV_2100_A = "ff_dev_2100_preselected_choices_250422_short";
 
 export const FF_DEV_2290 = "ff_front_dev_2290_draft_in_annotation_history_short";
 
-export const FF_DEV_2186 = "ff_front_dev_2186_comments_for_update";
-
 export const FF_DEV_2394 = "ff_front_dev_2394_zoomed_transforms_260522_short";
 
 // Make nested choices work according to the DES-107
 export const FF_DEV_2244 = "ff_front_dev_2244_nested_choices_des_107_160522_short";
 
 export const FF_DEV_2132 = "ff_front_dev_2132_rotating_bounding_box";
-
-export const FF_DEV_2458 = "ff_front_dev_2458_comments_for_skip_250522_short";
 
 export const FF_DEV_2480 = "ff_dev_2480_convenient_offsets_270522_short";
 
@@ -87,6 +80,19 @@ export const FF_DEV_2755 = "fflag_feat_dev_2755_regions_list_grouped_by_labels_w
 export const FF_DEV_3034 = "fflag-feat-dev-3034-comments-with-drafts-short";
 
 export const FF_DEV_3077 = "fflag_feat_front_dev_3077_repeater_tag_loading_performance_short";
+
+/**
+ * Audio + Paragraphs sync playback of chunk position
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short
+ */
+export const FF_DEV_2461 = "fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short";
+
+/**
+ * Creating separated regions if selection includes hidden phrases
+ * @see FF_DEV_2669 (allows filtering)
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_2918_labeling_filtered_paragraphs_250822_short
+ */
+export const FF_DEV_2918 = "fflag_fix_front_dev_2918_labeling_filtered_paragraphs_250822_short";
 
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {

@@ -110,16 +110,18 @@ const RegionProperty: FC<RegionPropertyProps> = ({
   }, [propertyType, isPrimitive]);
 
   const onChangeHandler = useCallback((value) => {
-    try {
-      region.setProperty(property, value);
-    } catch (err) {
-      console.error(err);
+    if (value !== region.getProperty(property)) {
+      try {
+        region.setProperty(property, value);
+      } catch (err) {
+        console.error(err);
+      }
     }
   }, [propertyType, isBoolean]);
 
   useEffect(() => {
-    const cancelObserve = observe(region, property, ({ newValue }) => {
-      setValue(newValue.storedValue);
+    const cancelObserve = observe(region, property, ({ newValue, oldValue }) => {
+      if (oldValue.storedValue !== newValue.storedValue) setValue(newValue.storedValue);
     });
 
     return () => cancelObserve();
@@ -161,13 +163,14 @@ interface RegionInputProps extends InputHTMLAttributes<HTMLInputElement>  {
 }
 
 const RegionInput: FC<RegionInputProps> = ({
-  onChange,
+  onChange: onChangeValue,
   type,
   value,
+  step,
   ...props
 }) => {
   const normalizeValue = (value: any, type: HTMLInputTypeAttribute) =>{
-    if (type === "number") return Number(Number(value ?? 0).toFixed(2));
+    // if (type === "number") return Number(Number(value ?? 0).toFixed(2));
     return value;
   };
 
@@ -178,8 +181,8 @@ const RegionInput: FC<RegionInputProps> = ({
     const newValue = safeValue ? normalizeValue(value, type) : value;
 
     setValue(newValue);
-    if (safeValue) onChange?.(newValue);
-  }, [onChange, type]);
+    if (safeValue) onChangeValue?.(newValue);
+  }, [onChangeValue, type]);
 
   const onChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
@@ -202,7 +205,6 @@ const RegionInput: FC<RegionInputProps> = ({
 
     if (e.key === "ArrowUp" || e.key === 'ArrowDown') {
       e.preventDefault();
-      console.log('arrow');
 
       const step = (e.altKey && e.shiftKey) ? 0.01 : e.shiftKey ? 10 : e.altKey ? 0.1 : 1;
       let newValue = Number(currentValue);
@@ -213,9 +215,9 @@ const RegionInput: FC<RegionInputProps> = ({
         newValue -= step;
       }
 
-      updateValue(parseFloat(newValue.toFixed(2)));
+      updateValue(normalizeValue(newValue, type));
     }
-  }, [currentValue, type, props.step]);
+  }, [currentValue, type, step]);
 
   useEffect(() => {
     updateValue(value);
@@ -226,7 +228,7 @@ const RegionInput: FC<RegionInputProps> = ({
       {...props}
       className={block?.elem("input").toClassName()}
       type="text"
-      step="0.01"
+      step={step}
       onChange={onChangeHandler}
       onKeyDown={onKeyDown}
       value={currentValue}

@@ -236,7 +236,12 @@ const Model = types.model({
   },
 
   onHotKey() {
-    return self.toggleSelected();
+    if(self.annotation.isDrawing) {
+      return false;
+    } else {
+      self.annotation.unselectAreas();
+      return self.toggleSelected();
+    }
   },
 
   _updateBackgroundColor(val) {
