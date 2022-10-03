@@ -67,25 +67,43 @@ export const getCommonBBox = (boxes: {
 export const createBoundingBoxGetter = (workingArea: WorkingArea, enabled = true) => (oldBox: Box, newBox: Box) => {
   if (!enabled) return newBox;
 
+  console.log(newBox);
+
   const box = getClientRect(newBox);
   const result = { ...newBox };
+  const isRotated = newBox.rotation !== 0;
 
-  if ((box.x - workingArea.x) < 0) {
+  const edgeReached = [
+    (box.x - workingArea.x) < 0,
+    (box.y - workingArea.y) < 0,
+    (box.x - workingArea.x) + box.width > workingArea.width,
+    (box.y - workingArea.y) + box.height > workingArea.height,
+  ];
+
+  // When left edge reached
+  if (edgeReached[0]) {
     result.x = workingArea.x;
     result.width = oldBox.width + oldBox.x - workingArea.x;
+    console.log('reached left');
   }
 
-  if ((box.y - workingArea.y) < 0) {
+  // When top edge reached
+  if (edgeReached[1]) {
     result.y = workingArea.y;
     result.height = oldBox.height + oldBox.y - workingArea.y;
+    console.log('reached top');
   }
 
-  if ((box.x - workingArea.x) + box.width > workingArea.width) {
+  // When right edge reached
+  if (edgeReached[2]) {
     result.width = workingArea.width - (box.x - workingArea.x);
+    console.log('reached right');
   }
 
-  if ((box.y - workingArea.y) + box.height > workingArea.height) {
+  // When bottom edge reached
+  if (edgeReached[3]) {
     result.height = workingArea.height - (box.y - workingArea.y);
+    console.log('reached bottom');
   }
 
   return result;
