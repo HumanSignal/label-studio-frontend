@@ -45,7 +45,7 @@ type VideoDimentions = {
   ratio: number,
 }
 
-const clampZoom = (value: number) => clamp(value, 0.25, 16);
+export const clampZoom = (value: number) => clamp(value, 0.1, 16);
 
 const zoomRatio = (
   canvasWidth: number,
