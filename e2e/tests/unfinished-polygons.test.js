@@ -159,8 +159,7 @@ Scenario("Init an annotation with old format of closed polygon result", async fu
   assert.strictEqual(result[0].value.closed, true);
 });
 
-// @TODO: Cancel skipping this test when the resizing of the image containing polygonal regions is correctly corrected. (was broken by DEV-3004)
-xScenario("Init an annotation with result of new format of polygon results", async function({ I, LabelStudio, AtLabels, AtImageView }) {
+Scenario("Init an annotation with result of new format of polygon results", async function({ I, LabelStudio, AtLabels, AtImageView }) {
   I.amOnPage("/");
   LabelStudio.setFeatureFlags(FLAGS);
   LabelStudio.init({
