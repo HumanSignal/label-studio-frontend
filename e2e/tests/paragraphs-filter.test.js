@@ -265,4 +265,4 @@ Scenario("Check different cases ", async ({ I, LabelStudio, AtSidebar, AtParagra
       "text": "Message",
     });
   }
-}).tag("@this");
+});
