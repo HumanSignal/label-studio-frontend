@@ -2,6 +2,7 @@ import { forwardRef, memo, MutableRefObject, useCallback, useEffect, useMemo, us
 import { Block, Elem } from "../../utils/bem";
 import { clamp, isDefined } from "../../utils/utilities";
 import "./VideoCanvas.styl";
+import { MAX_ZOOM, MIN_ZOOM } from "./VideoConstants";
 import { VirtualCanvas } from "./VirtualCanvas";
 import { VirtualVideo } from "./VirtualVideo";
 
@@ -45,7 +46,7 @@ type VideoDimentions = {
   ratio: number,
 }
 
-export const clampZoom = (value: number) => clamp(value, 0.1, 16);
+export const clampZoom = (value: number) => clamp(value, MIN_ZOOM, MAX_ZOOM);
 
 const zoomRatio = (
   canvasWidth: number,

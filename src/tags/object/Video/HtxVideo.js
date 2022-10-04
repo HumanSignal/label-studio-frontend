@@ -16,6 +16,7 @@ import { useFullscreen } from "../../../hooks/useFullscreen";
 import ResizeObserver from "../../../utils/resize-observer";
 import { VideoRegions } from "./VideoRegions";
 import "./Video.styl";
+import { ZOOM_STEP, ZOOM_STEP_WHEEL } from "../../../components/VideoCanvas/VideoConstants";
 
 // const hotkeys = Hotkey("Video", "Video Annotation");
 
@@ -136,7 +137,7 @@ const HtxVideoView = ({ item }) => {
   const onZoomChange = useCallback((e) => {
     if (!e.shiftKey) return;
 
-    const delta = e.deltaY * 0.01;
+    const delta = e.deltaY * ZOOM_STEP_WHEEL;
 
     requestAnimationFrame(() => {
       setZoom(zoom => zoom + delta);
@@ -170,11 +171,11 @@ const HtxVideoView = ({ item }) => {
   }, [panMode, pan]);
 
   const zoomIn = useCallback(() => {
-    setZoom(zoom + 0.1);
+    setZoom(zoom + ZOOM_STEP);
   }, [zoom]);
 
   const zoomOut = useCallback(() => {
-    setZoom(zoom - 0.1);
+    setZoom(zoom - ZOOM_STEP);
   }, [zoom]);
 
   const zoomToFit = useCallback(() => {
