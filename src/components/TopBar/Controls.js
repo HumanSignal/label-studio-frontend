@@ -36,9 +36,10 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const { userGenerate, sentUserGenerate, versions, results } = annotation;
   const buttons = [];
 
-  const disabled = store.isSubmitting || historySelected;
+  const isReady = store.annotationStore.selected.objects.every(object => object.isReady);
+  const disabled = store.isSubmitting || historySelected || !isReady;
   const submitDisabled = store.hasInterface("annotations:deny-empty") && results.length === 0;
-
+  
   const buttonHandler = useCallback(async (e, callback, tooltipMessage) => {
     const { addedCommentThisSession, currentComment, commentFormSubmit, inputRef } = store.commentStore;
 
