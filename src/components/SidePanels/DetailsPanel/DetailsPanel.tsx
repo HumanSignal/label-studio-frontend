@@ -31,7 +31,7 @@ const Content: FC<any> = observer(({
 }) => {
   return (
     <>
-      {(selection.size && selection.annotation.editable) ? (
+      {(selection.size) ? (
         <RegionsPanel regions={selection}/>
       ) : (
         <GeneralPanel currentEntity={currentEntity}/>
