@@ -88,7 +88,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   const canvasRef = useRef<HTMLCanvasElement>();
   const contextRef = useRef<CanvasRenderingContext2D | null>();
   const videoRef = useRef<HTMLVideoElement>();
-  const supportedFileTypeRef = useRef<boolean>(false);
+  const supportedFileTypeRef = useRef<boolean|null>(null);
 
   const canvasWidth = useMemo(() => props.width ?? 600, [props.width]);
   const canvasHeight = useMemo(() => props.height ?? 600, [props.height]);
@@ -164,11 +164,9 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     if (!videoRef.current) return;
     if (!contextRef.current) return;
 
-
     const video = videoRef.current;
 
     if (video) {
-      supportedFileTypeRef.current = video.readyState > 0;
       if (!playing) updateFrame(true);
 
       if (video.networkState === video.NETWORK_IDLE) {
@@ -401,34 +399,26 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   }, [zoom, canvasWidth, canvasHeight, videoDimensions]);
 
   useEffect(() => {
-    const loadingFailedCount = 300;
     let isLoaded = false;
+    let loadTimeout: NodeJS.Timeout | undefined = undefined;
     let timeout: NodeJS.Timeout | undefined = undefined;
-    let loadAttempts = 0;
 
     const checkVideoLoaded = () => {
       if (isLoaded) return;
 
-      if (!supportedFileTypeRef.current) {
-        loadAttempts++;
+      if (supportedFileTypeRef.current === false) {
+        const modalExists = document.querySelector('.ant-modal');
 
-        // When the video is stuck in readyState 0 `UNSENT` for a long time, it is probably not going to load due to unsupported format.
-        // Even if it is on a slow network, it should still move to readyState 1 `OPENED` well within a few seconds.
-        if (loadAttempts >= loadingFailedCount) {
-          const modalExists = document.querySelector('.ant-modal');
-
-          if (!modalExists) InfoModal.error('There has been an error rendering your video, please check the format is supported');
-          setLoading(false);
-          return;
-        }
+        if (!modalExists) InfoModal.error('There has been an error rendering your video, please check the format is supported');
+        setLoading(false);
+        return;
       }
 
       if (videoRef.current?.readyState === 4) {
         isLoaded = true;
         const video = videoRef.current;
 
-
-        setTimeout(() => {
+        loadTimeout = setTimeout(() => {
           const length = Math.ceil(video.duration * framerate);
           const [width, height] = [video.videoWidth, video.videoHeight];
 
@@ -460,6 +450,9 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     return () => {
       if (timeout) {
         clearTimeout(timeout);
+      }
+      if (loadTimeout) {
+        clearTimeout(loadTimeout);
       }
     };
   }, []);
@@ -518,6 +511,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         preload="auto"
         src={props.src}
         muted={props.muted ?? false}
+        canPlayType={supported => (supportedFileTypeRef.current = supported)}
         onPlay={handleVideoPlay}
         onPause={handleVideoPause}
         onLoadedData={delayedUpdate}
