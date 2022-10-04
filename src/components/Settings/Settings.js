@@ -9,7 +9,8 @@ import { Block, Elem } from "../../utils/bem";
 import { triggerResizeEvent } from "../../utils/utilities";
 
 import EditorSettings from "../../core/settings/editorsettings";
-import { getEnv, getRoot } from "mobx-state-tree";
+import * as TagSettings from "./TagSettings";
+import { useMemo } from "react";
 
 const HotkeysDescription = () => {
   const columns = [
@@ -54,9 +55,7 @@ const HotkeysDescription = () => {
 
 
 
-const TabPaneGeneral = (store) => {
-  const env = getEnv(getRoot(store));
-
+const GeneralSettings = observer(({ store }) => {
   return Object.keys(EditorSettings).map((obj, index)=> {
     return (
       <span key={index}>
@@ -71,9 +70,84 @@ const TabPaneGeneral = (store) => {
       </span>
     );
   });
+});
+
+const LayoutSettings = observer(({ store }) => {
+  return (
+    <>
+      <Checkbox
+        checked={store.settings.bottomSidePanel}
+        onChange={() => {
+          store.settings.toggleBottomSP();
+          setTimeout(triggerResizeEvent);
+        }}
+      >
+            Move sidepanel to the bottom
+      </Checkbox>
+
+      <br />
+      <Checkbox checked={store.settings.displayLabelsByDefault} onChange={store.settings.toggleSidepanelModel}>
+            Display Labels by default in Results panel
+      </Checkbox>
+
+      <br />
+      <Checkbox
+        value="Show Annotations panel"
+        defaultChecked={store.settings.showAnnotationsPanel}
+        onChange={() => {
+          store.settings.toggleAnnotationsPanel();
+        }}
+      >
+            Show Annotations panel
+      </Checkbox>
+      <br />
+      <Checkbox
+        value="Show Predictions panel"
+        defaultChecked={store.settings.showPredictionsPanel}
+        onChange={() => {
+          store.settings.togglePredictionsPanel();
+        }}
+      >
+            Show Predictions panel
+      </Checkbox>
+
+      {/* <br/> */}
+      {/* <Checkbox */}
+      {/*   value="Show image in fullsize" */}
+      {/*   defaultChecked={store.settings.imageFullSize} */}
+      {/*   onChange={() => { */}
+      {/*     store.settings.toggleImageFS(); */}
+      {/*   }} */}
+      {/* > */}
+      {/*   Show image in fullsize */}
+      {/* </Checkbox> */}
+    </>
+  );
+});
+
+const Settings = {
+  General: { name: "General", component: GeneralSettings },
+  Hotkeys: { name: "Hotkeys", component: HotkeysDescription },
+  Layout: { name: "Layout", component: LayoutSettings },
 };
 
+const DEFAULT_ACTIVE = Object.keys(Settings)[0];
+
 export default observer(({ store }) => {
+  const availableSettings = useMemo(() => {
+    const availableTags = Object.values(store.annotationStore.names.toJSON());
+    const settingsScreens = Object.values(TagSettings);
+
+    return availableTags.reduce((res, tagName) => {
+      const tagType = store.annotationStore.names.get(tagName).type;
+      const settings = settingsScreens.find(({ tagName }) => tagName.toLowerCase() === tagType.toLowerCase());
+
+      if (settings) res.push(settings);
+
+      return res;
+    }, []);
+  }, []);
+
   return (
     <Modal
       visible={store.showingSettings}
@@ -82,61 +156,17 @@ export default observer(({ store }) => {
       footer=""
       onCancel={store.toggleSettings}
     >
-      <Tabs defaultActiveKey="1">
-        <Tabs.TabPane tab="General" key="1">
-          {TabPaneGeneral(store)}
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Hotkeys" key="2">
-          <HotkeysDescription />
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Layout" key="3">
-          <Checkbox
-            checked={store.settings.bottomSidePanel}
-            onChange={() => {
-              store.settings.toggleBottomSP();
-              setTimeout(triggerResizeEvent);
-            }}
-          >
-            Move sidepanel to the bottom
-          </Checkbox>
-
-          <br />
-          <Checkbox checked={store.settings.displayLabelsByDefault} onChange={store.settings.toggleSidepanelModel}>
-            Display Labels by default in Results panel
-          </Checkbox>
-
-          <br />
-          <Checkbox
-            value="Show Annotations panel"
-            defaultChecked={store.settings.showAnnotationsPanel}
-            onChange={() => {
-              store.settings.toggleAnnotationsPanel();
-            }}
-          >
-            Show Annotations panel
-          </Checkbox>
-          <br />
-          <Checkbox
-            value="Show Predictions panel"
-            defaultChecked={store.settings.showPredictionsPanel}
-            onChange={() => {
-              store.settings.togglePredictionsPanel();
-            }}
-          >
-            Show Predictions panel
-          </Checkbox>
-
-          {/* <br/> */}
-          {/* <Checkbox */}
-          {/*   value="Show image in fullsize" */}
-          {/*   defaultChecked={store.settings.imageFullSize} */}
-          {/*   onChange={() => { */}
-          {/*     store.settings.toggleImageFS(); */}
-          {/*   }} */}
-          {/* > */}
-          {/*   Show image in fullsize */}
-          {/* </Checkbox> */}
-        </Tabs.TabPane>
+      <Tabs defaultActiveKey={DEFAULT_ACTIVE}>
+        {Object.entries(Settings).map(([key, { name, component }]) => (
+          <Tabs.TabPane tab={name} key={key}>
+            {React.createElement(component, { store })}
+          </Tabs.TabPane>
+        ))}
+        {availableSettings.map((Page) => (
+          <Tabs.TabPane tab={Page.title} key={Page.tagName}>
+            <Page store={store}/>
+          </Tabs.TabPane>
+        ))}
       </Tabs>
     </Modal>
   );

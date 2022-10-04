@@ -64,7 +64,6 @@ const TimelineComponent: FC<TimelineProps> = ({
   });
 
   const setInternalPosition = (newPosition: number) => {
-    // console.trace(`set position %c ${newPosition}`, "color: red");
     const clampedValue = clamp(newPosition, 1, length);
 
     if (clampedValue !== currentPosition) {
@@ -126,6 +125,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         playing={playing}
         volume={props.volume}
         controls={props.controls}
+        altHopSize={props.altHopSize}
         customControls={props.customControls}
         collapsed={viewCollapsed}
         onPlay={() => handlers.onPlay?.()}
