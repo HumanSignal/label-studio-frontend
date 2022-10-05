@@ -4,6 +4,7 @@ import { clamp, isDefined } from "../../utils/utilities";
 import "./VideoCanvas.styl";
 import { VirtualCanvas } from "./VirtualCanvas";
 import { VirtualVideo } from "./VirtualVideo";
+import InfoModal from "../../components/Infomodal/Infomodal";
 
 type VideoProps = {
   src: string,
@@ -87,6 +88,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   const canvasRef = useRef<HTMLCanvasElement>();
   const contextRef = useRef<CanvasRenderingContext2D | null>();
   const videoRef = useRef<HTMLVideoElement>();
+  const supportedFileTypeRef = useRef<boolean|null>(null);
 
   const canvasWidth = useMemo(() => props.width ?? 600, [props.width]);
   const canvasHeight = useMemo(() => props.height ?? 600, [props.height]);
@@ -398,15 +400,25 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
   useEffect(() => {
     let isLoaded = false;
+    let loadTimeout: NodeJS.Timeout | undefined = undefined;
+    let timeout: NodeJS.Timeout | undefined = undefined;
 
     const checkVideoLoaded = () => {
       if (isLoaded) return;
+
+      if (supportedFileTypeRef.current === false) {
+        const modalExists = document.querySelector('.ant-modal');
+
+        if (!modalExists) InfoModal.error('There has been an error rendering your video, please check the format is supported');
+        setLoading(false);
+        return;
+      }
 
       if (videoRef.current?.readyState === 4) {
         isLoaded = true;
         const video = videoRef.current;
 
-        setTimeout(() => {
+        loadTimeout = setTimeout(() => {
           const length = Math.ceil(video.duration * framerate);
           const [width, height] = [video.videoWidth, video.videoHeight];
 
@@ -430,10 +442,19 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         return;
       }
 
-      setTimeout(checkVideoLoaded, 10);
+      timeout = setTimeout(checkVideoLoaded, 10);
     };
 
     checkVideoLoaded();
+
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+      if (loadTimeout) {
+        clearTimeout(loadTimeout);
+      }
+    };
   }, []);
 
 
@@ -490,6 +511,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         preload="auto"
         src={props.src}
         muted={props.muted ?? false}
+        canPlayType={supported => (supportedFileTypeRef.current = supported)}
         onPlay={handleVideoPlay}
         onPause={handleVideoPause}
         onLoadedData={delayedUpdate}
