@@ -56,72 +56,85 @@ const HotkeysDescription = () => {
 
 
 const GeneralSettings = observer(({ store }) => {
-  return Object.keys(EditorSettings).map((obj, index)=> {
-    return (
-      <span key={index}>
-        <Checkbox
-          key={index}
-          checked={store.settings[obj]}
-          onChange={store.settings[EditorSettings[obj].onChangeEvent]}
-        >
-          {EditorSettings[obj].description}
-        </Checkbox>
-        <br />
-      </span>
-    );
-  });
+  return (
+    <Block name="settings">
+      {Object.keys(EditorSettings).map((obj, index)=> {
+        return (
+          <Elem name="field" key={index}>
+            <Checkbox
+              key={index}
+              checked={store.settings[obj]}
+              onChange={store.settings[EditorSettings[obj].onChangeEvent]}
+            >
+              {EditorSettings[obj].description}
+            </Checkbox>
+            <br />
+          </Elem>
+        );
+      })}
+    </Block>
+  );
 });
 
 const LayoutSettings = observer(({ store }) => {
   return (
-    <>
-      <Checkbox
-        checked={store.settings.bottomSidePanel}
-        onChange={() => {
-          store.settings.toggleBottomSP();
-          setTimeout(triggerResizeEvent);
-        }}
-      >
-            Move sidepanel to the bottom
-      </Checkbox>
+    <Block name="settings">
+      <Elem name="field">
+        <Checkbox
+          checked={store.settings.bottomSidePanel}
+          onChange={() => {
+            store.settings.toggleBottomSP();
+            setTimeout(triggerResizeEvent);
+          }}
+        >
+              Move sidepanel to the bottom
+        </Checkbox>
+      </Elem>
 
-      <br />
-      <Checkbox checked={store.settings.displayLabelsByDefault} onChange={store.settings.toggleSidepanelModel}>
+      <Elem name="field">
+        <Checkbox checked={store.settings.displayLabelsByDefault} onChange={store.settings.toggleSidepanelModel}>
             Display Labels by default in Results panel
-      </Checkbox>
+        </Checkbox>
+      </Elem>
 
-      <br />
-      <Checkbox
-        value="Show Annotations panel"
-        defaultChecked={store.settings.showAnnotationsPanel}
-        onChange={() => {
-          store.settings.toggleAnnotationsPanel();
-        }}
-      >
+      <Elem name="field">
+        <Checkbox
+          value="Show Annotations panel"
+          defaultChecked={store.settings.showAnnotationsPanel}
+          onChange={() => {
+            store.settings.toggleAnnotationsPanel();
+          }}
+        >
             Show Annotations panel
-      </Checkbox>
-      <br />
-      <Checkbox
-        value="Show Predictions panel"
-        defaultChecked={store.settings.showPredictionsPanel}
-        onChange={() => {
-          store.settings.togglePredictionsPanel();
-        }}
-      >
-            Show Predictions panel
-      </Checkbox>
+        </Checkbox>
+      </Elem>
 
-      {/* <br/> */}
-      {/* <Checkbox */}
-      {/*   value="Show image in fullsize" */}
-      {/*   defaultChecked={store.settings.imageFullSize} */}
-      {/*   onChange={() => { */}
-      {/*     store.settings.toggleImageFS(); */}
-      {/*   }} */}
-      {/* > */}
-      {/*   Show image in fullsize */}
-      {/* </Checkbox> */}
-    </>
+      <Elem name="field">
+        <Checkbox
+          value="Show Predictions panel"
+          defaultChecked={store.settings.showPredictionsPanel}
+          onChange={() => {
+            store.settings.togglePredictionsPanel();
+          }}
+        >
+              Show Predictions panel
+        </Checkbox>
+      </Elem>
+
+      {/* Saved for future use */}
+      {/* <Elem name="field">
+        <Checkbox
+          value="Show image in fullsize"
+          defaultChecked={store.settings.imageFullSize}
+          onChange={() => {
+            store.settings.toggleImageFS();
+          }}
+        >
+          Show image in fullsize
+        </Checkbox>
+
+      </Elem> */}
+    </Block>
   );
 });
 
