@@ -20,8 +20,6 @@ import ResizeObserver from "../../../utils/resize-observer";
 import { useFullscreen } from "../../../hooks/useFullscreen";
 import { IconZoomIn } from "../../../assets/icons";
 
-// const hotkeys = Hotkey("Video", "Video Annotation");
-
 const HtxVideoView = ({ item, store }) => {
   if (!item._value) return null;
 
