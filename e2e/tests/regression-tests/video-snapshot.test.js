@@ -46,7 +46,8 @@ Scenario("Restoring video regions from snapshots", async ({ I, LabelStudio, AtLa
   });
 
   I.say("waitForObjectsReady");
-  LabelStudio.waitForObjectsReady();
+  await LabelStudio.waitForObjectsReady();
+  await LabelStudio.clearModalIfPresent();
 
   {
     I.say("Check the video annotation creation");
@@ -57,7 +58,6 @@ Scenario("Restoring video regions from snapshots", async ({ I, LabelStudio, AtLa
 
   {
     I.say("Check restoring the snapshot from history");
-    LabelStudio.clearModalIfPresent();
     AtSidebar.seeRegions(1);
     AtSidebar.clickRegion(1);
     I.say("delete region");
