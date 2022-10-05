@@ -90,6 +90,11 @@ const Model = types
 
     onLoad(ws) {
       self._ws = ws;
+      const history = self.annotation.history;
+
+      // In cases where we do skipNextUndoState on region creation, we need to make sure
+      // that we don't skip the next undo state after it is resolved entirely.
+      setTimeout(() => history.setSkipNextUndoState(false), 0);
     },
 
     onError(error) {

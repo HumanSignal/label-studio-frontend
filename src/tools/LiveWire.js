@@ -20,7 +20,9 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model("LiveWireTool", {})
+  .model("LiveWireTool", {
+    isDrawingTool: true,
+  })
   .views(self => ({
     get viewClass() {
       return () => <ToolView item={self} />;

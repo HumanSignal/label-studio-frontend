@@ -470,6 +470,8 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
       <Elem name="controls">
         {controls.map((tag, idx) => {
           const View = Registry.getPerRegionView(tag.type, PER_REGION_MODES.REGION_LIST);
+          const color = item.getOneColor();
+          const css = color ? chroma(color).alpha(0.2).css() : undefined;
 
           return View ? (
             <View
@@ -478,7 +480,7 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
               area={item}
               collapsed={collapsed}
               setCollapsed={setCollapsed}
-              color={chroma(item.getOneColor()).alpha(0.2).css()}
+              color={css}
               outliner
             />
           ): null;
