@@ -410,7 +410,9 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
       if (supportedFileTypeRef.current === false) {
         const modalExists = document.querySelector('.ant-modal');
 
-        if (!modalExists) errorModal = InfoModal.error('There has been an error rendering your video, please check the format is supported');
+        if (!modalExists) {
+          errorModal = InfoModal.error('There has been an error rendering your video, please check the format is supported');
+        }
         setLoading(false);
         return;
       }
@@ -449,7 +451,9 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     checkVideoLoaded();
 
     return () => {
-      if (errorModal) errorModal.destroy();
+      if (errorModal) {
+        errorModal.destroy();
+      }
       if (timeout) {
         clearTimeout(timeout);
       }
