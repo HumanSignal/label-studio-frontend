@@ -46,7 +46,7 @@ Scenario("Restoring video regions from snapshots", async ({ I, LabelStudio, AtLa
   });
 
   I.say("waitForObjectsReady");
-  LabelStudio.waitForObjectsReady();
+  await LabelStudio.waitForObjectsReady();
 
   {
     I.say("Check the video annotation creation");
