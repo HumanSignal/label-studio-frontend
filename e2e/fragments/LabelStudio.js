@@ -27,6 +27,10 @@ module.exports = {
     I.executeScript(Helpers.setFeatureFlags, featureFlags);
   },
 
+  clearModalIfPresent() {
+    I.executeScript(Helpers.clearModalIfPresent);
+  },
+
   waitForObjectsReady() {
     I.executeScript(Helpers.waitForObjectsReady);
   },

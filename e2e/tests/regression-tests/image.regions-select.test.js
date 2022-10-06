@@ -108,7 +108,9 @@ Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtIma
     data: { image: IMAGE },
   };
   const setSelectAfterCreate = async (state) => {
-    Htx.settings.toggleSelectAfterCreate(state);
+    if (Htx.settings.selectAfterCreate !== state) {
+      Htx.settings.toggleSelectAfterCreate();
+    }
   };
 
   I.amOnPage("/");
@@ -127,8 +129,8 @@ Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtIma
   }
   I.pressKey(["u"]);
   if (current.shape === "Brush") {
-    await I.executeScript(setSelectAfterCreate, true);
-    I.click('[aria-label=brush-tool]');
+    // Switching to the move tool
+    I.pressKey(["v"]);
   }
 
   AtImageView.clickAt(canvasSize.width * 0.3, canvasSize.height * 0.3);

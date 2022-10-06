@@ -8,6 +8,7 @@ import Registry from "../../../core/Registry";
 import Types from "../../../core/Types";
 import { cloneNode, guidGenerator } from "../../../core/Helpers";
 import { checkD3EventLoop, fixMobxObserve, getOptimalWidth, getRegionColor, sparseValues } from "./helpers";
+import { markerSymbol } from "./symbols";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { TagParentMixin } from "../../../mixins/TagParentMixin";
 
@@ -29,6 +30,12 @@ import { TagParentMixin } from "../../../mixins/TagParentMixin";
  * @param {number} [height] height of the plot
  * @param {string=} [strokeColor=#f48a42] plot stroke color, expects hex value
  * @param {number=} [strokeWidth=1] plot stroke width
+ * @param {string=} [markerColor=#f48a42] plot stroke color, expects hex value
+ * @param {number=} [markerSize=0] plot stroke width
+ * @param {number=} [markerSymbol=circle] plot stroke width
+ * @param {string=} [timeRange] data range of x-axis / time axis
+ * @param {string=} [dataRange] data range of y-axis / data axis
+ * @param {string=} [showAxis] show or bide both axis 
  * @param {boolean} [fixedScale] if false current view scales to fit only displayed values; if given overwrites TimeSeries' fixedScale
  */
 
@@ -61,6 +68,15 @@ const TagAttrs = types.model({
 
   strokewidth: types.optional(types.string, "1"),
   strokecolor: types.optional(types.string, "#1f77b4"),
+
+  markersize: types.optional(types.string, "0"),
+  markercolor: types.optional(types.string, "#1f77b4"),
+  markersymbol: types.optional(types.string, "circle"),
+
+  datarange: types.maybe(types.string),
+  timerange: types.maybe(types.string),
+
+  showaxis: types.optional(types.boolean, true),
 
   fixedscale: types.maybe(types.boolean),
 
@@ -342,7 +358,7 @@ class ChannelD3 extends React.Component {
         const sticked = getRegion(d3.event.selection);
 
         brush.move(block, [x(sticked.start), x(sticked.end)]);
-        updateTracker(d3.mouse(this)[0]);
+        updateTracker(d3.mouse(this)[0], sticked.end - sticked.start);
       })
       .on("end", this.newBrushHandler)
       // replacing default filter to allow ctrl-click action
@@ -354,7 +370,7 @@ class ChannelD3 extends React.Component {
     this.gCreator.call(this.brushCreator);
   }
 
-  updateTracker = screenX => {
+  updateTracker = (screenX, brushWidth = 0) => {
     const { width } = this.state;
 
     if (screenX < 0 || screenX > width) return;
@@ -362,7 +378,7 @@ class ChannelD3 extends React.Component {
 
     this.trackerX = dataX;
     this.tracker.attr("transform", `translate(${this.x(dataX) + 0.5},0)`);
-    this.trackerTime.text(this.formatTime(dataX));
+    this.trackerTime.text(`${this.formatTime(dataX)}${brushWidth === 0 ? "" :  ` [${this.formatDuration(brushWidth)}]`}`);
     this.trackerValue.text(this.formatValue(dataY) + " " + this.props.item.units);
     this.trackerPoint.attr("cy", this.y(dataY));
     this.tracker.attr("text-anchor", screenX > width - 100 ? "end" : "start");
@@ -402,10 +418,14 @@ class ChannelD3 extends React.Component {
 
   renderXAxis = () => {
     const { item } = this.props;
+
+    if (!item.showaxis) return;
+
     const { width } = this.state;
     const { margin } = item.parent;
     const tickSize = this.height + margin.top;
     const shift = -margin.top;
+
     let g = this.main.select(".xaxis");
 
     if (!g.size()) {
@@ -438,6 +458,10 @@ class ChannelD3 extends React.Component {
   };
 
   renderYAxis = () => {
+    const { item } = this.props;
+
+    if (!item.showaxis) return;
+    
     // @todo usual .data([0]) trick doesn't work for some reason :(
     let g = this.main.select(".yaxis");
 
@@ -500,15 +524,26 @@ class ChannelD3 extends React.Component {
     if (!this.ref.current) return;
 
     const { data, item, range, time, column } = this.props;
-    const { isDate, formatTime, margin, slicesCount } = item.parent;
+    const { isDate, formatTime, formatDuration, margin, slicesCount } = item.parent;
     const height = this.height;
 
     this.zoomStep = slicesCount;
+    const markerId = `marker_${item.id}`;
     const clipPathId = `clip_${item.id}`;
 
-    const times = data[time];
-    const values = data[column];
-    const { series } = this.props;
+    let { series } = this.props;
+
+    series = series.filter(x => {
+      return x[column] !== null;
+    });
+
+    const times = series.map(x => {
+      return x[time];
+    });
+    
+    const values = series.map(x => {
+      return x[column];
+    });
 
     if (!values) {
       const names = Object.keys(data).filter(name => name !== time);
@@ -532,6 +567,7 @@ class ChannelD3 extends React.Component {
 
     this.formatValue = formatValue;
     this.formatTime = formatTime;
+    this.formatDuration = formatDuration;
 
     const offsetWidth = this.ref.current.offsetWidth;
     const width = offsetWidth ? offsetWidth - margin.left - margin.right : this.state.width;
@@ -556,7 +592,7 @@ class ChannelD3 extends React.Component {
 
     const stick = screenX => {
       const dataX = x.invert(screenX);
-      let i = d3.bisectRight(times, dataX);
+      let i = d3.bisectRight(times, dataX, 0, times.length - 1);
 
       if (times[i] - dataX > dataX - times[i - 1]) i--;
       return [times[i], values[i]];
@@ -586,6 +622,17 @@ class ChannelD3 extends React.Component {
       .style("display", "block")
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    const marker = main
+      .append("defs")
+      .append("marker")
+      .attr("id", markerId)
+      .attr("markerWidth", item.markersize)
+      .attr("markerHeight", item.markersize)
+      .attr("refX", item.markersize / 2)
+      .attr("refY", item.markersize / 2);
+
+    markerSymbol(marker, item.markersymbol, item.markersize, item.markercolor);
 
     main
       .append("clipPath")
@@ -623,7 +670,10 @@ class ChannelD3 extends React.Component {
       .attr("vector-effect", "non-scaling-stroke")
       .attr("fill", "none")
       .attr("stroke-width", item.strokewidth || 1)
-      .attr("stroke", item.strokecolor || "steelblue");
+      .attr("stroke", item.strokecolor || "steelblue")
+      .attr("marker-start", item.markersize > 0 ? `url(#${markerId})` : "")
+      .attr("marker-mid", item.markersize > 0 ? `url(#${markerId})` : "")
+      .attr("marker-end", item.markersize > 0 ? `url(#${markerId})` : "");
 
     this.renderTracker();
     this.updateTracker(0); // initial value, will be updated in setRangeWithScaling
@@ -663,6 +713,12 @@ class ChannelD3 extends React.Component {
     // overwrite parent's
     const fixedscale = item.fixedscale === undefined ? item.parent?.fixedscale : item.fixedscale;
 
+    if (item.timerange) {
+      const timerange = item.timerange.split(",").map(Number);
+
+      this.x.domain(timerange);
+    } 
+
     if (!fixedscale) {
       // array slice may slow it down, so just find a min-max by ourselves
       const { data, time, column } = this.props;
@@ -678,6 +734,14 @@ class ChannelD3 extends React.Component {
         if (min > values[i]) min = values[i];
         if (max < values[i]) max = values[i];
       }
+
+      if (item.datarange) {
+        const datarange = item.datarange.split(",");
+  
+        if (datarange[0] !== "") min = new Number(datarange[0]);
+        if (datarange[1] !== "") max = new Number(datarange[1]);
+      }
+
       // calc scale and shift
       const diffY = d3.extent(values).reduce((a, b) => b - a); // max - min
       const heightY = this.y.range().reduce((a, b) => a - b); // min - max because y range is inverted

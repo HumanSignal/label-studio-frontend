@@ -1,24 +1,22 @@
-import { useMemo } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../../../common/Button/Button";
 import { Dropdown } from "../../../common/Dropdown/Dropdown";
 import { Menu } from "../../../common/Menu/Menu";
-import { Space } from "../../../common/Space/Space";
 import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
 import ObjectTag from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
-import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
+import { clampZoom, VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
 import { defaultStyle } from "../../../core/Constants";
-// import { Hotkey } from "../../../core/Hotkey";
+import { useToggle } from "../../../hooks/useToggle";
 import { Block, Elem } from "../../../utils/bem";
 import { clamp, isDefined } from "../../../utils/utilities";
-import { useToggle } from "../../../hooks/useToggle";
 
-import "./Video.styl";
-import { VideoRegions } from "./VideoRegions";
-import ResizeObserver from "../../../utils/resize-observer";
-import { useFullscreen } from "../../../hooks/useFullscreen";
 import { IconZoomIn } from "../../../assets/icons";
+import { useFullscreen } from "../../../hooks/useFullscreen";
+import ResizeObserver from "../../../utils/resize-observer";
+import { VideoRegions } from "./VideoRegions";
+import "./Video.styl";
+import { ZOOM_STEP, ZOOM_STEP_WHEEL } from "../../../components/VideoCanvas/VideoConstants";
 
 // const hotkeys = Hotkey("Video", "Video Annotation");
 
@@ -34,7 +32,7 @@ const HtxVideoView = ({ item }) => {
 
   const [videoSize, setVideoSize] = useState(null);
   const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0, ratio: 1 });
-  const [zoom, setZoom] = useState(1);
+  const [zoom, _setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [panMode, setPanMode] = useState(false);
   const [isFullScreen, enterFullscreen, exitFullscren, handleFullscreenToggle] = useToggle(false);
@@ -57,16 +55,14 @@ const HtxVideoView = ({ item }) => {
     return isDefined(item?.videoControl());
   }, [item]);
 
-  useEffect(() => {
-    const block = videoContainerRef.current;
+  const setZoom = useCallback((value) => {
+    return _setZoom((currentZoom) => {
+      const newZoom = (value instanceof Function) ? value(currentZoom) : value;
 
-    if (block) {
-      setVideoSize([
-        block.clientWidth,
-        block.clientHeight,
-      ]);
-    }
+      return clampZoom(newZoom);
+    });
   }, []);
+
 
   useEffect(() => {
     const container = videoContainerRef.current;
@@ -138,13 +134,13 @@ const HtxVideoView = ({ item }) => {
     }
   }, [isFullScreen]);
 
-  const handleZoom = useCallback((e) => {
+  const onZoomChange = useCallback((e) => {
     if (!e.shiftKey) return;
 
-    const delta = e.deltaY * 0.01;
+    const delta = e.deltaY * ZOOM_STEP_WHEEL;
 
     requestAnimationFrame(() => {
-      setZoom(zoom => clamp(zoom + delta, 0.25, 16));
+      setZoom(zoom => zoom + delta);
     });
   }, []);
 
@@ -175,11 +171,11 @@ const HtxVideoView = ({ item }) => {
   }, [panMode, pan]);
 
   const zoomIn = useCallback(() => {
-    setZoom(clamp(zoom + 0.1, 0.25, 16));
+    setZoom(zoom + ZOOM_STEP);
   }, [zoom]);
 
   const zoomOut = useCallback(() => {
-    setZoom(clamp(zoom - 0.1, 0.25, 16));
+    setZoom(zoom - ZOOM_STEP);
   }, [zoom]);
 
   const zoomToFit = useCallback(() => {
@@ -313,7 +309,7 @@ const HtxVideoView = ({ item }) => {
             name="main"
             ref={videoContainerRef}
             style={{ height: Number(item.height) }}
-            onWheel={handleZoom}
+            onWheel={onZoomChange}
             onMouseDown={handlePan}
           >
             {videoSize && (
