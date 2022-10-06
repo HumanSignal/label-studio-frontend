@@ -86,7 +86,7 @@ function traverse(root) {
     const label = node.value;
     const path = [...parents, label]; // @todo node.alias || label; problems with showFullPath
     const depth = parents.length;
-    const obj = { label, path, depth, selected: node.selected };
+    const obj = { label, path, depth };
 
     if (node.children) {
       obj.children = uniq(node.children).map(child => visitNode(child, path));
@@ -241,18 +241,7 @@ const HtxTaxonomy = observer(({ item }) => {
     minWidth: item.minwidth,
     placeholder: item.placeholder,
   };
-  const flatItems = [];
-  const flattenItems = (root) => {
-    root.forEach(rootItem => {
-      flatItems.push(rootItem);
-      if(rootItem?.children?.length > 0) {
-        flattenItems(rootItem.children);
-      }
-    });
-  };
 
-  flattenItems(item.items);
-  
   return (
     <div style={{ ...style, ...visibleStyle }}>
       <Taxonomy
