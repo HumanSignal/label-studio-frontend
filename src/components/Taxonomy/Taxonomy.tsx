@@ -113,7 +113,7 @@ const UserLabelForm = ({ onAddLabel, onFinish, path }: UserLabelFormProps) => {
   );
 };
 
-const SelectedList = ({ isReadonly }) => {
+const SelectedList = ({ isReadonly } : { isReadonly: boolean }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
   const { showFullPath, pathSeparator = " / " } = useContext(TaxonomyOptionsContext);
 
@@ -442,7 +442,7 @@ const Taxonomy = ({
     };
 
     return [selected, setSelected];
-  }, [selected]);
+  }, [selected, items]);
 
   const optionsWithMaxUsages = useMemo(() => {
     const maxUsagesReached = options.maxUsages ? selected.length >= options.maxUsages : false;

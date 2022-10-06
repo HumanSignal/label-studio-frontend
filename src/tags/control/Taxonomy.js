@@ -14,6 +14,7 @@ import VisibilityMixin from "../../mixins/Visibility";
 import ControlBase from "./Base";
 import DynamicChildrenMixin from "../../mixins/DynamicChildrenMixin";
 import { FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
+import { isArraysEqual } from "../../utils/utilities";
 
 /**
  * Use the Taxonomy tag to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the Choice tag.
@@ -80,12 +81,12 @@ function uniq(nodes) {
   return filtered;
 }
 
-function traverse(root) {
+function traverse(root, selectedPaths) {
   const visitNode = function(node, parents = []) {
     const label = node.value;
     const path = [...parents, label]; // @todo node.alias || label; problems with showFullPath
     const depth = parents.length;
-    const obj = { label, path, depth, selected: node.selected };
+    const obj = { label, path, depth, selected: node.selected || selectedPaths.some(s => isArraysEqual(s, path)) };
 
     if (node.children) {
       obj.children = uniq(node.children).map(child => visitNode(child, path));
@@ -129,16 +130,19 @@ const Model = types
     get result() {
       if (self.perregion) {
         const area = self.annotation.highlightedNode;
+        
+        if (area) {
+          return self.annotation.results.find(r => r.from_name === self && r.area === area);
+        } else {
+          return self.annotation.results.find(r => r.type === self.type && self.items.some(i => r.value.taxonomy.some(t => isArraysEqual(i.path, t))));
+        }
 
-        if (!area) return null;
-
-        return self.annotation.results.find(r => r.from_name === self && r.area === area);
       }
       return self.annotation.results.find(r => r.from_name === self);
     },
 
     get items() {
-      const fromConfig = traverse(self.children);
+      const fromConfig = traverse(self.children, self.selected);
       const fromUsers = self.userLabels?.controls[self.name] ?? [];
 
       for (const label of fromUsers) {
@@ -186,15 +190,17 @@ const Model = types
     onChange(node, checked) {
       self.selected = checked.map(s => s.path ?? s);
       self.maxUsagesReached = self.selected.length >= self.maxusages;
-
       if (self.result) {
         self.result.area.setValue(self);
       } else {
         if (self.perregion) {
           const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
+          
+          if (area) {
+            area.setValue(self);
+          } else {
+            self.annotation.createResult({}, { taxonomy: self.selected }, self, self.toname);
+          }
         } else {
           self.annotation.createResult({}, { taxonomy: self.selected }, self, self.toname);
         }
@@ -245,7 +251,7 @@ const HtxTaxonomy = observer(({ item }) => {
   };
 
   flattenItems(item.items);
-  
+
   return (
     <div style={{ ...style, ...visibleStyle }}>
       <Taxonomy
