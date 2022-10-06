@@ -13,7 +13,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
-import { FF_DEV_2100, FF_DEV_2100_A, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
 import { CommentStore } from "../Comment/CommentStore";
 
@@ -477,6 +477,12 @@ export const Annotation = types
       self.unselectAll();
       self.names.forEach(tag => tag.needsUpdate && tag.needsUpdate());
       self.areas.forEach(area => area.updateAppearenceFromState && area.updateAppearenceFromState());
+      if (isFF(FF_DEV_2432)) {
+        const areas = Array.from(self.areas.values());
+        const filtered = areas.filter(area => area.isDrawing);
+
+        self.regionStore.selection._updateResultsFromRegions(filtered);
+      }
     },
 
     setInitialValues() {
@@ -737,7 +743,12 @@ export const Annotation = types
       const area = self.areas.put(areaRaw);
 
       if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
+      self.afterCreateResult(area, control);
 
+      return area;
+    },
+
+    afterCreateResult(area, control) {
       if (self.store.settings.selectAfterCreate) {
         if (!area.classification) {
           // some regions might need some actions right after creation (i.e. text)
@@ -748,8 +759,6 @@ export const Annotation = types
         // unselect labels after use, but consider "keep labels selected" settings
         if (control.type.includes("labels")) self.unselectAll(true);
       }
-
-      return area;
     },
 
     appendResults(results) {

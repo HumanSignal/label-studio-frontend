@@ -136,6 +136,8 @@ const _Tool = types
 
       _finishDrawing() {
         if (isFF(FF_DEV_2432)) {
+          const { currentArea, control } = self;
+
           self.currentArea.notifyDrawingFinished();
           self.currentArea.setDrawing(false);
           self.currentArea = null;
@@ -143,6 +145,7 @@ const _Tool = types
           self.annotation.history.unfreeze();
           self.mode = "viewing";
           self.disposeHotkeys();
+          self.annotation.afterCreateResult(currentArea, control);
         } else {
           Super._finishDrawing();
         }

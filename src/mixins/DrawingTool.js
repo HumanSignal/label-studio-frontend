@@ -123,7 +123,7 @@ const DrawingTool = types
       resumeUnfinishedRegion(existingUnclosedPolygon) {
         self.currentArea = existingUnclosedPolygon;
         self.currentArea.setDrawing(true);
-        self.applyActiveStates(self.currentArea);
+        self.annotation.regionStore.selection._updateResultsFromRegions([self.currentArea]);
         self.mode = "drawing";
         self.annotation.setIsDrawing(true);
         self.listenForClose?.();

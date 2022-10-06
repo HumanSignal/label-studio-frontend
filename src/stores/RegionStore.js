@@ -66,10 +66,13 @@ const SelectionMap = types.model(
       }
     },
     _updateResultsFromSelection() {
+      self._updateResultsFromRegions(self.selected.values());
+    },
+    _updateResultsFromRegions(regions) {
       const valuesFromControls = {};
       const controlsByName = {};
 
-      Array.from(self.selected.values()).map((region) => {
+      Array.from(regions).map((region) => {
         region.results.forEach(result => {
           const controlName = result.from_name.name;
           const currentValue = valuesFromControls[controlName];
