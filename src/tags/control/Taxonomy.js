@@ -14,6 +14,7 @@ import VisibilityMixin from "../../mixins/Visibility";
 import ControlBase from "./Base";
 import DynamicChildrenMixin from "../../mixins/DynamicChildrenMixin";
 import { FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
+import Tree from "../../core/Tree";
 
 /**
  * Use the Taxonomy tag to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the Choice tag.
@@ -160,6 +161,13 @@ const Model = types
       return fromConfig;
     },
 
+    get preselectedValues() { 
+      const items = Tree.filterChildrenOfType(self, 'ChoiceModel');
+
+      console.log("items", items);
+      return items.filter(c => c.selected).map(c => c.resultValue);
+    },
+
     get defaultChildType() {
       return "choice";
     },
@@ -250,7 +258,7 @@ const HtxTaxonomy = observer(({ item }) => {
     <div style={{ ...style, ...visibleStyle }}>
       <Taxonomy
         items={item.items}
-        selected={flatItems.filter(flatItem => flatItem.selected).map(flatItem => flatItem.path)}
+        selected={item.selected}
         onChange={item.onChange}
         onAddLabel={item.userLabels && item.onAddLabel}
         onDeleteLabel={item.userLabels && item.onDeleteLabel}
