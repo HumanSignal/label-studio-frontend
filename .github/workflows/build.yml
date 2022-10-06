@@ -60,7 +60,11 @@ jobs:
     # do this only for master branch (so only for push event)
     # because pr can contain unfinished job
     - name: "Run server"
-      run: npx serve -l tcp://localhost:3000 build &
+      run: |
+        cp -r public/files build/ &&
+        cp -r public/images build/ &&
+        cp -r public/styles build/ &&
+        npx serve -l tcp://localhost:3000 build &
       if: github.event_name == 'push'
 
     - id: wait_for_npx_server
