@@ -137,6 +137,7 @@ const _Tool = types
       _finishDrawing() {
         if (isFF(FF_DEV_2432)) {
           self.currentArea.notifyDrawingFinished();
+          self.currentArea.setDrawing(false);
           self.currentArea = null;
           self.annotation.setIsDrawing(false);
           self.annotation.history.unfreeze();

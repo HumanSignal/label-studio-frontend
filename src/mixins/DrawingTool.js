@@ -124,7 +124,9 @@ const DrawingTool = types
         self.currentArea = existingUnclosedPolygon;
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
+        self.mode = "drawing";
         self.annotation.setIsDrawing(true);
+        self.listenForClose?.();
       },
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
