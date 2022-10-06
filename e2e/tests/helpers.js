@@ -342,7 +342,7 @@ const getKonvaPixelColorFromPoint = ([x, y]) => {
 };
 
 const clearModalIfPresent = () => {
-  const modal = window.document.querySelector('.ant-modal-root');
+  const modal = window.document.querySelector('.ant-modal-wrapper');
 
   if (modal) {
     modal.remove();
