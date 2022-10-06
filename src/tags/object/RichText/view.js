@@ -56,7 +56,7 @@ class RichTextPieceView extends Component {
     const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
-    if (item.selectionenabled === false) return;
+    if (item.selectionenabled === false || item.annotation.editable === false) return;
     const label = states[0]?.selectedLabels?.[0];
     const value = states[0]?.selectedValues?.();
 
