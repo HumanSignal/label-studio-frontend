@@ -1,8 +1,6 @@
 // turn on headless mode when running with HEADLESS=true environment variable
 // HEADLESS=true npx codecept run
-const headless = process.env.HEADLESS !== 'false';
-
-console.log(process.env.HEADLESS, headless);
+const headless = process.env.HEADLESS;
 
 module.exports.config = {
   timeout: 60 * 30, // Time out after 30 minutes
