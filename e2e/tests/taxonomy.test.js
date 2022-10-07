@@ -33,7 +33,7 @@ const configShowFullPath = `<View>
     <Label value="LOC" background="orange"/>
     <Label value="MISC" background="green"/>
   </Labels>
-  <Taxonomy name="taxonomy" showFullPath="true" toName="text" perRegion="true" >
+  <Taxonomy name="taxonomy" showfullpath="true" toName="text" perRegion="true" >
     <Choice value="Archaea" />
     <Choice value="Bacteria" />
     <Choice value="Eukarya">
@@ -56,7 +56,7 @@ const annotationsShowFullPath = [
 ];
 const tests = [
   { title: "Check Taxonomy", params: { config, data }, annotations },
-  // { title: "Check Taxonomy with showFullPath", params: { configShowFullPath, data }, annotations: annotationsShowFullPath }
+  { title: "Check Taxonomy with showFullPath", params: { config: configShowFullPath, data }, annotations: annotationsShowFullPath },
 ];
 
 tests.forEach(t => {
