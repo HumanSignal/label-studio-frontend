@@ -20,6 +20,11 @@ class Annotations extends Helper {
     this.waitForEnabled(button, 60);
     this.click(button);
   }
+
+  seeAnnotationSubmitted() {
+    this.see(this._locateButton('Update'));
+    this.dontSee(this._locateButton('Submit'));
+  }
 }
 
 module.exports = Annotations;
