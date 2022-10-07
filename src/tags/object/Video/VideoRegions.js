@@ -4,6 +4,7 @@ import { inject, observer } from "mobx-react";
 import { Rectangle } from "./Rectangle";
 import Constants from "../../../core/Constants";
 import chroma from "chroma-js";
+import { observable, reaction } from "mobx";
 
 const MIN_SIZE = 5;
 
@@ -43,6 +44,23 @@ const VideoRegionsPure = ({
 
   const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked && !reg.readonly);
   const listenToEvents = !locked && item.annotation.editable;
+
+  useEffect(() => {
+    const runOnPropertyChange = (value) => {
+      console.log(value, 'value');
+    };
+
+    const _regions = observable([...regions]);
+
+    const reaction2 = reaction(
+      () => _regions.map(todo => todo.hidden),
+      titles => console.log("reaction 2:", titles),
+    );
+
+    return () => {
+      reaction2();
+    };
+  }, []);
 
   const workinAreaCoordinates = useMemo(() => {
     const resultWidth = videoDimensions.width * zoom;
