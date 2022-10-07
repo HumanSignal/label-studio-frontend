@@ -12,10 +12,8 @@ class Annotations extends Helper {
   }
 
   _clickSubmitButton(button) {
-    const { Playwright } = this.helpers;
-
-    Playwright.waitForEnabled(button, 60);
-    Playwright.click(button);
+    this._playwright.waitForEnabled(button, 60);
+    this._playwright.click(button);
   }
 
   submitAnnotation() {
@@ -27,8 +25,8 @@ class Annotations extends Helper {
   }
 
   seeAnnotationSubmitted() {
-    this.see(this._locateButton('Update'));
-    this.dontSee(this._locateButton('Submit'));
+    this._playwright.see(this._locateButton('Update'));
+    this._playwright.dontSee(this._locateButton('Submit'));
   }
 }
 
