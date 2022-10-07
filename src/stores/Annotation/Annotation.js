@@ -640,6 +640,7 @@ export const Annotation = types
         }
       });
 
+      self.history.onUpdate(self.updateObjects);
       self.startAutosave();
     },
 
