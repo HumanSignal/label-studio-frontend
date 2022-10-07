@@ -3,22 +3,27 @@ const Helper = require('@codeceptjs/helper');
 
 class Annotations extends Helper {
 
+  get _playwright() {
+    return this.helpers.Playwright;
+  }
+
   _locateButton(text) {
-    return locate('button').withText(text);
+    return this._playwright.locate('button').withText(text);
+  }
+
+  _clickSubmitButton(button) {
+    const { Playwright } = this.helpers;
+
+    Playwright.waitForEnabled(button, 60);
+    Playwright.click(button);
   }
 
   submitAnnotation() {
-    const button = this._locateButton('Submit');
-
-    this.waitForEnabled(button, 60);
-    this.click(button);
+    this._clickSubmitButton(this._locateButton('Submit'));
   }
 
   updateAnnotation() {
-    const button = this._locateButton('Update');
-
-    this.waitForEnabled(button, 60);
-    this.click(button);
+    this._clickSubmitButton(this._locateButton('Update'));
   }
 
   seeAnnotationSubmitted() {
