@@ -127,12 +127,18 @@ export const RegionDetailsMain: FC<{region: any}> = observer(({
   );
 });
 
-type RegionDetailsMetaProps = {region: any, editMode?: boolean, cancelEditMode?: () => void}
+type RegionDetailsMetaProps = {
+  region: any,
+  editMode?: boolean,
+  cancelEditMode?: () => void,
+  enterEditMode?: () => void,
+}
 
 export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
   region,
   editMode,
   cancelEditMode,
+  enterEditMode,
 }) => {
   const bem = useBEM();
 
@@ -140,10 +146,15 @@ export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
     <>
       {editMode ? (
         <textarea
+          autoFocus
           placeholder="Meta"
           className={bem.elem("meta-text").toClassName()}
           value={region.normInput}
           onChange={(e) => region.setNormInput(e.target.value)}
+          onBlur={() => {
+            region.setMetaInfo(region.normInput);
+            cancelEditMode?.();
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -153,7 +164,7 @@ export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
           }}
         />
       ) : region.meta?.text && (
-        <Elem name="meta-text">
+        <Elem name="meta-text" onClick={() => enterEditMode?.()}>
           {region.meta?.text}
         </Elem>
       )}
