@@ -142,6 +142,11 @@ export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
 }) => {
   const bem = useBEM();
 
+  const saveMeta = (value: string) => {
+    region.setMetaInfo(value);
+    region.setNormInput(value);
+  };
+
   return (
     <>
       {editMode ? (
@@ -150,21 +155,23 @@ export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
           placeholder="Meta"
           className={bem.elem("meta-text").toClassName()}
           value={region.normInput}
-          onChange={(e) => region.setNormInput(e.target.value)}
+          onChange={(e) => saveMeta(e.target.value)}
           onBlur={() => {
-            region.setMetaInfo(region.normInput);
+            saveMeta(region.normInput);
             cancelEditMode?.();
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
-              region.setMetaInfo(region.normInput);
+              saveMeta(region.normInput);
               cancelEditMode?.();
             }
           }}
         />
       ) : region.meta?.text && (
-        <Elem name="meta-text" onClick={() => enterEditMode?.()}>
+        <Elem name="meta-text"
+          onClick={() => enterEditMode?.()}
+        >
           {region.meta?.text}
         </Elem>
       )}
