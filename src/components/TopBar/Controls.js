@@ -36,7 +36,8 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const { userGenerate, sentUserGenerate, versions, results } = annotation;
   const buttons = [];
 
-  const isReady = store.annotationStore.selected.objects.every(object => object.isReady);
+
+  const isReady = store.annotationStore.selected.objects.every(object => object.isReady === undefined || object.isReady);
   const disabled = store.isSubmitting || historySelected || !isReady;
   const submitDisabled = store.hasInterface("annotations:deny-empty") && results.length === 0;
   
