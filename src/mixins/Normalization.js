@@ -11,10 +11,11 @@ const NormalizationMixin = types
     normInput: types.maybeNull(types.string),
   })
   .preProcessSnapshot((sn) => {
-    if (sn.meta) {
-      sn.normInput = sn.meta?.text?.[0] ?? null;
-    }
-    return sn;
+    if (!sn.meta) return sn;
+    return {
+      ...sn,
+      normInput: sn.meta?.text?.[0] ?? null,
+    };
   })
   .actions(self => ({
     /**
