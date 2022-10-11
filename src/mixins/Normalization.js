@@ -12,7 +12,7 @@ const NormalizationMixin = types
   })
   .preProcessSnapshot((sn) => {
     if (sn.meta) {
-      sn.normInput = sn.meta?.text[0] ?? null;
+      sn.normInput = sn.meta?.text?.[0] ?? null;
     }
     return sn;
   })
