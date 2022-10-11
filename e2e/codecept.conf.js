@@ -31,6 +31,9 @@ module.exports.config = {
     Selection: {
       require: "./helpers/Selection.js",
     },
+    Annotations: {
+      require: "./helpers/Annotations.ts",
+    },
   },
   include: {
     I: "./steps_file.js",
