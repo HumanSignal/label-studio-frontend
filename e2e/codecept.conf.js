@@ -32,7 +32,7 @@ module.exports.config = {
       require: "./helpers/Selection.js",
     },
     Annotations: {
-      require: "./helpers/Annotations.js",
+      require: "./helpers/Annotations.ts",
     },
   },
   include: {

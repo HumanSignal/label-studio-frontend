@@ -341,6 +341,14 @@ const getKonvaPixelColorFromPoint = ([x, y]) => {
   return colors;
 };
 
+const clearModalIfPresent = () => {
+  const modal = window.document.querySelector('.ant-modal-root');
+
+  if (modal) {
+    modal.remove();
+  }
+};
+
 const getCanvasSize = () => {
   const stage = window.Konva.stages[0];
 
@@ -557,6 +565,7 @@ module.exports = {
   isRotaterExist,
   switchRegionTreeView,
   hasSelectedRegion,
+  clearModalIfPresent,
 
   serialize,
   selectText,

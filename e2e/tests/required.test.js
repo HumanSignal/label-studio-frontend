@@ -119,8 +119,7 @@ Scenario("Check required param", async function({ I }) {
   I.click("Don't select me");
   I.submitAnnotation();
   // Annotation is submitted, so now we can only update it
-  I.dontSee("Submit");
-  I.see("Update");
+  I.seeAnnotationSubmitted();
 
   // Reload to check another combination
   I.executeScript(initLabelStudio, params);
@@ -204,8 +203,7 @@ Scenario("Check required param in complex config", async function({ I }) {
   waitForError("common-description");
   I.fillField("common-description", "some text");
   I.submitAnnotation();
-  I.dontSee("Submit");
-  I.see("Update");
+  I.seeAnnotationSubmitted();
 });
 
 Scenario("Check required param with visibleWhen='choice-unselected'", async function({ I, LabelStudio }) {
@@ -241,8 +239,7 @@ Scenario("Check required param with visibleWhen='choice-unselected'", async func
   I.click("Me neither");
   I.submitAnnotation();
   // Annotation is submitted, so now we can only update it
-  I.dontSee("Submit");
-  I.see("Update");
+  I.seeAnnotationSubmitted();
 
   // Reset to check another scenario
   LabelStudio.init(params);
@@ -258,6 +255,5 @@ Scenario("Check required param with visibleWhen='choice-unselected'", async func
 
   I.submitAnnotation();
   // Annotation is submitted, so now we can only update it
-  I.dontSee("Submit");
-  I.see("Update");
+  I.seeAnnotationSubmitted();
 });
