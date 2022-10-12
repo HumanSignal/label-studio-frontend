@@ -83,7 +83,7 @@ function uniq(nodes) {
 function traverse(root) {
   const visitNode = function(node, parents = []) {
     const label = node.value;
-    const path = [...parents, label]; // @todo node.alias || label; problems with showFullPath
+    const path = [...parents, node.alias ?? label];
     const depth = parents.length;
     const obj = { label, path, depth };
 
