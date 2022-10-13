@@ -18,10 +18,9 @@ import { VideoRegions } from "./VideoRegions";
 import "./Video.styl";
 import { ZOOM_STEP, ZOOM_STEP_WHEEL } from "../../../components/VideoCanvas/VideoConstants";
 
-// const hotkeys = Hotkey("Video", "Video Annotation");
-
-const HtxVideoView = ({ item }) => {
+const HtxVideoView = ({ item, store }) => {
   if (!item._value) return null;
+
   const videoBlockRef = useRef();
   const videoContainerRef = useRef();
   const mainContentRef = useRef();
@@ -359,6 +358,7 @@ const HtxVideoView = ({ item }) => {
             length={videoLength}
             position={position}
             regions={regions}
+            altHopSize={store.settings.videoHopSize}
             allowFullscreen={false}
             fullscreen={isFullScreen}
             defaultStepSize={16}
