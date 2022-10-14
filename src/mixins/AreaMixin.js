@@ -171,4 +171,17 @@ export const AreaMixin = types
       }
       self.updateAppearenceFromState && self.updateAppearenceFromState();
     },
+
+    setDefaultValue(tag) {
+      self.results.push({
+        area: self,
+        from_name: tag,
+        to_name: self.object,
+        type: tag.resultType,
+        value: {
+          [tag.valueType]: tag.preselectedValues,
+        },
+      });
+    },
+
   }));
