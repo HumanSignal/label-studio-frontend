@@ -7,7 +7,7 @@ const assert = require("assert");
 Feature("Taxonomy");
 
 const cases = {
-  taxonmy: {
+  taxonomy: {
     config: `<View>
       <Text name="text" value="$text"/>
       <Labels name="label" toName="text">
@@ -28,8 +28,21 @@ const cases = {
     </View>`,
     text: `To have faith is to trust yourself to the water`,
     annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonmy: ["Eukarya", "Extraterrestial"], taxonomyLabel: "Extraterrestial" },
-      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', taxonmy: ["Archaea"], taxonomyLabel: "Archaea" },
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonomy: [["Eukarya", "Extraterrestial"]], test: {
+        assertTrue: [
+          "Extraterrestial",
+        ],
+        assertFalse: [
+          "Eukarya",
+        ],
+      } },
+      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', taxonomy: [["Archaea"]], test: {
+        assertTrue: [
+          "Archaea",
+          "Extraterrestial",
+        ], 
+        assertFalse: [],
+      } },
     ],
   },
   taxonomyWithShowLabels: {
@@ -53,7 +66,15 @@ const cases = {
     </View>`,
     text: `To have faith is to trust yourself to the water`,
     annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonmy: ["Eukarya", "Extraterrestial"], taxonomyLabel: "Eukarya / Extraterrestial" },
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonomy: [["Eukarya", "Human"]], test: {
+        assertTrue: [
+          "Eukarya / Extraterrestial",
+          "Eukarya / Human",
+        ], 
+        assertFalse: [
+          "Bacteria",
+        ],
+      } },
     ],
   },
 };
@@ -69,7 +90,8 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
   const Taxonomy = cases[taxnomyName];
   const { annotations, config, text } = Taxonomy;
 
-  I.amOnPage("/");
+  await I.amOnPage("/");
+  const isOutliner = await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
 
   LabelStudio.init({ config, data: { text } });
 
@@ -81,14 +103,18 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
       rangeEnd: annotation.rangeEnd,
     });
     I.click(locate("span").withText(annotation.label));
-    I.click(locate("li").withText(annotation.text));
-  });
-
-  annotations.forEach(annotation => {
-    I.click(locate("li").withText(annotation.text));
+    I.click(isOutliner ? locate(".lsf-outliner-item__title").withText(annotation.text) : locate("li").withText(annotation.text));
   });
 
   const results = await I.executeScript(serialize);
+
+  annotations.forEach((annotation) => {
+    const regionEl = isOutliner ? locate(".lsf-outliner-item__title").withText(annotation.text) : locate("li").withText(annotation.text);
+
+    I.seeElement(regionEl);
+    I.click(regionEl);
+  });
+
 
   results.filter(result => result.value.labels).forEach((result, index) => {
     const annotation = annotations[index];
@@ -96,7 +122,8 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
     
     assert.deepEqual(result.value, expected);
 
-    locate("div").withText(annotation.taxonomyLabel);
+    annotation.test.assertTrue.forEach(label => I.seeElement(locate("div").withText(label)));
+    annotation.test.assertFalse.forEach(label => I.dontSeeElement(locate("div").withText(label)));
   });
   
 });
