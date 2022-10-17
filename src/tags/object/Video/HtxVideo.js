@@ -19,8 +19,9 @@ import ResizeObserver from "../../../utils/resize-observer";
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
 
-const HtxVideoView = ({ item }) => {
+const HtxVideoView = ({ item, store }) => {
   if (!item._value) return null;
+
   const videoBlockRef = useRef();
   const videoContainerRef = useRef();
   const mainContentRef = useRef();
@@ -361,6 +362,7 @@ const HtxVideoView = ({ item }) => {
             length={videoLength}
             position={position}
             regions={regions}
+            altHopSize={store.settings.videoHopSize}
             allowFullscreen={false}
             fullscreen={isFullScreen}
             defaultStepSize={16}

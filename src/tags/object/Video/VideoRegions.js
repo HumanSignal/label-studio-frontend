@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Layer, Rect, Stage, Transformer } from "react-konva";
 import Constants from "../../../core/Constants";
 import { Annotation } from "../../../stores/Annotation/Annotation";
+import { fixMobxObserve } from "../TimeSeries/helpers";
 import { Rectangle } from "./Rectangle";
 import { createBoundingBoxGetter, createOnDragMoveHandler } from "./TransformTools";
 
@@ -47,6 +48,10 @@ const VideoRegionsPure = ({
 
   const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked && !reg.readonly);
   const listenToEvents = !locked && item.annotation.editable;
+
+  // if region is not in lifespan, it's not rendered,
+  // so we observe all the sequences to rerender transformer
+  regions.map(reg => fixMobxObserve(reg.sequence));
 
   const workinAreaCoordinates = useMemo(() => {
     const resultWidth = videoDimensions.width * zoom;
@@ -167,6 +172,8 @@ const VideoRegionsPure = ({
     if (!tr) return;
 
     const stage = tr.getStage();
+    // @todo not an obvious way to not render transformer for hidden regions
+    // @todo could it be rewritten to usual react way?
     const shapes = selected.map(shape => stage.findOne("#" + shape.id)).filter(Boolean);
 
     tr.nodes(shapes);
