@@ -203,8 +203,8 @@ export const Annotation = types
     resultSnapshot: "",
   }))
   .actions(self => ({
-    reinitHistory() {
-      self.history.reinit();
+    reinitHistory(force = true) {
+      self.history.reinit(force);
       self.autosave && self.autosave.cancel();
       if (self.type === "annotation") self.setInitialValues();
     },
@@ -472,9 +472,15 @@ export const Annotation = types
       }
     },
 
-    // update some fragile parts after snapshot manipulations (undo/redo)
-    updateObjects() {
-      self.unselectAll();
+    /**
+     * update some fragile parts after snapshot manipulations (undo/redo)
+     *
+     * @param {boolean} [force=true] force update will unselect all regions
+     */
+    updateObjects(force = true) {
+      // Some async or lazy mode operations (ie. Images lazy load) need to reinitHistory without removing state selections
+      if (force) self.unselectAll();
+
       self.names.forEach(tag => tag.needsUpdate && tag.needsUpdate());
       self.areas.forEach(area => area.updateAppearenceFromState && area.updateAppearenceFromState());
     },
