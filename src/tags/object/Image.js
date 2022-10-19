@@ -900,7 +900,8 @@ const Model = types.model({
 
       //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
       if (_historyLength <= 1){
-        setTimeout(self.annotation.reinitHistory, 0);
+        // Don't force unselection of regions during the updateObjects callback from history reinit
+        setTimeout(() => self.annotation.reinitHistory(false), 0);
       }
     },
 
@@ -921,7 +922,8 @@ const Model = types.model({
       } else {
         self.sizeToAuto();
       }
-      setTimeout(self.annotation.reinitHistory, 0);
+      // Don't force unselection of regions during the updateObjects callback from history reinit
+      setTimeout(() => self.annotation.reinitHistory(false), 0);
     },
 
     checkLabels() {

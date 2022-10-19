@@ -60,6 +60,8 @@ const SettingsModel = types
     preserveSelectedTool: types.optional(types.boolean, true),
 
     enableSmoothing: types.optional(types.boolean, true),
+
+    videoHopSize: types.optional(types.number, 10),
   })
   .views(self => ({
     get annotation() {
@@ -207,6 +209,10 @@ const SettingsModel = types
 
     setSmoothing(value) {
       self.enableSmoothing = value;
+    },
+
+    setVideoHopSize(value) {
+      self.videoHopSize = value;
     },
   }));
 

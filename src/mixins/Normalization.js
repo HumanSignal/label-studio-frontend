@@ -10,6 +10,13 @@ const NormalizationMixin = types
     meta: types.frozen({}),
     normInput: types.maybeNull(types.string),
   })
+  .preProcessSnapshot((sn) => {
+    if (!sn.meta) return sn;
+    return {
+      ...sn,
+      normInput: sn.meta?.text?.[0] ?? null,
+    };
+  })
   .actions(self => ({
     /**
      * Set meta text

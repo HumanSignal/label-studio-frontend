@@ -105,22 +105,21 @@ Scenario("Check required param", async function({ I }) {
   // Add new Annotation to be able to submit it
   I.click('[aria-label="Annotations List Toggle"]');
   I.click('[aria-label="Create Annotation"]');
-  I.click("Submit");
+  I.submitAnnotation();
   waitForError("validation-label");
 
   I.click("Me neither");
-  I.click("Submit");
+  I.submitAnnotation();
   waitForError("validation-label");
 
   I.click("Valid");
-  I.click("Submit");
+  I.submitAnnotation();
   waitForError("easter-egg");
 
   I.click("Don't select me");
-  I.click("Submit");
+  I.submitAnnotation();
   // Annotation is submitted, so now we can only update it
-  I.dontSee("Submit");
-  I.see("Update");
+  I.seeAnnotationSubmitted();
 
   // Reload to check another combination
   I.executeScript(initLabelStudio, params);
@@ -129,7 +128,7 @@ Scenario("Check required param", async function({ I }) {
   I.click('[aria-label="Annotations List Toggle"]');
   I.click('[aria-label="Create Annotation"]');
   I.click("Valid");
-  I.click("Submit");
+  I.submitAnnotation();
   I.see("Warning");
   I.see('Checkbox "second" is required');
 });
@@ -153,59 +152,58 @@ Scenario("Check required param in complex config", async function({ I }) {
   I.executeScript(initLabelStudio, params);
 
   // we already have an annotation
-  I.click("Update");
+  I.updateAnnotation();
   waitForError("validation-label");
 
   // region stays selected after error, so per-region controls are visible
   I.click("Valid");
-  I.click("Update");
+  I.updateAnnotation();
   waitForError("common-description");
 
   I.fillField("common-description", "some text");
-  I.click("Update");
+  I.updateAnnotation();
   waitForError("region-description");
 
   // again stays visible
   I.fillField("region-description", "some description");
 
-  I.click("Update");
+  I.updateAnnotation();
   // after successful update region is unselected and no modals shown
   I.dontSee("Valid");
   I.dontSeeElement(".ant-modal");
 
   I.click("Required textarea");
-  I.click("Update");
+  I.updateAnnotation();
   waitForError("choice-description");
 
   I.click("Required choices");
-  I.click("Update");
+  I.updateAnnotation();
   waitForError("choice");
 
   I.click("Me neither");
   // select labeled region
   I.click(locate("li").withText("have"));
   I.see("Valid");
-  I.click("Update");
+  I.updateAnnotation();
   I.dontSee("Valid");
 
   I.click("Required textarea");
-  I.click("Update");
+  I.updateAnnotation();
   waitForError("choice-description");
   I.fillField("choice-description", "test text");
   // select labeled region
   I.click(locate("li").withText("have"));
   I.see("Valid");
-  I.click("Update");
+  I.updateAnnotation();
   I.dontSee("Valid");
 
   I.click('[aria-label="Annotations List Toggle"]');
   I.click('[aria-label="Create Annotation"]');
-  I.click("Submit");
+  I.submitAnnotation();
   waitForError("common-description");
   I.fillField("common-description", "some text");
-  I.click("Submit");
-  I.dontSee("Submit");
-  I.see("Update");
+  I.submitAnnotation();
+  I.seeAnnotationSubmitted();
 });
 
 Scenario("Check required param with visibleWhen='choice-unselected'", async function({ I, LabelStudio }) {
@@ -234,15 +232,14 @@ Scenario("Check required param with visibleWhen='choice-unselected'", async func
   I.click("Don't select me");
 
   // We should get error, cause "easter-egg" is visible and required
-  I.click("Submit");
+  I.submitAnnotation();
   waitForError("easter-egg");
 
   // Select the "Me neither" option to make the "easter-egg" block not required
   I.click("Me neither");
-  I.click("Submit");
+  I.submitAnnotation();
   // Annotation is submitted, so now we can only update it
-  I.dontSee("Submit");
-  I.see("Update");
+  I.seeAnnotationSubmitted();
 
   // Reset to check another scenario
   LabelStudio.init(params);
@@ -256,8 +253,7 @@ Scenario("Check required param with visibleWhen='choice-unselected'", async func
   I.click("Don't select me");
   I.click("Secret level");
 
-  I.click("Submit");
+  I.submitAnnotation();
   // Annotation is submitted, so now we can only update it
-  I.dontSee("Submit");
-  I.see("Update");
+  I.seeAnnotationSubmitted();
 });

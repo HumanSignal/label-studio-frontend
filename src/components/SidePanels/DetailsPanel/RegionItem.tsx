@@ -66,6 +66,7 @@ export const RegionItem: FC<RegionItemProps> = observer(({
           <MetaDetails
             region={region}
             editMode={editMode}
+            enterEditMode={() => setEditMode(true)}
             cancelEditMode={() => setEditMode(false)}
           />
         </Elem>
