@@ -751,7 +751,6 @@ class ChannelD3 extends React.Component {
 
       // calc scale and shift
       const diffY = d3.extent(values).reduce((a, b) => b - a); // max - min
-      // const heightY = this.y.range().reduce((a, b) => a - b); // min - max because y range is inverted
 
       scaleY = diffY / (max - min);
       translateY = min / diffY;
