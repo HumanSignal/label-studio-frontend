@@ -218,7 +218,11 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
           </div>
           <div className={[styles.taxonomy__item, customClassname].join(" ")}>
             <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
-              <LsChevron stroke="#09f" style={arrowStyle} />
+              <LsChevron className={[
+                "collapser",
+                isLeaf && "hidden",
+                !isLeaf && (isOpen ? "open" : "collapsed"),
+              ].filter(Boolean).join(" ")} stroke="#09f" style={arrowStyle} />
             </div>
             <input
               className="item"
