@@ -113,6 +113,7 @@ const DrawingTool = types
       createDrawingRegion(opts) {
         const control = self.control;
         const resultValue = control.getResultValue();
+
         self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
