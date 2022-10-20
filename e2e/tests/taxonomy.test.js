@@ -28,18 +28,19 @@ const cases = {
     </View>`,
     text: `To have faith is to trust yourself to the water`,
     annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonomy: [[["Eukarya", "Extraterrestial"]]], test: {
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonomy: [['Eukarya', 'Extraterrestial'], ['Archaea']], test: {
         assertTrue: [
-          "Extraterrestial",
+          'Extraterrestial',
+          'Archaea',
         ],
         assertFalse: [
-          "Eukarya",
+          'Eukarya',
         ],
       } },
-      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', taxonomy: [[["Archaea"]]], test: {
+      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', taxonomy: [['Archaea']], test: {
         assertTrue: [
-          "Archaea",
-          "Extraterrestial",
+          'Archaea',
+          'Extraterrestial',
         ], 
         assertFalse: [],
       } },
@@ -69,13 +70,13 @@ const cases = {
     </View>`,
     text: `To have faith is to trust yourself to the water`,
     annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonomy: [[["Eukarya", "Human"]]], test: {
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonomy: [['Eukarya', 'Human']], test: {
         assertTrue: [
-          "Eukarya / Extraterrestial",
-          "Eukarya / Human",
+          'Eukarya / Extraterrestial',
+          'Eukarya / Human',
         ], 
         assertFalse: [
-          "Bacteria",
+          'Bacteria',
         ],
       } },
     ],
@@ -104,18 +105,18 @@ const cases = {
     </View>`,
     text: `To have faith is to trust yourself to the water`,
     annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonomy: [[["Eukarya", "Extraterrestial"]]], test: {
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonomy: [['Eukarya', 'Extraterrestial']], test: {
         assertTrue: [
-          "Extraterrestial",
+          'Extraterrestial',
         ],
         assertFalse: [
-          "Eukarya",
+          'Eukarya',
         ],
       } },
-      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', taxonomy: [[["Archaea"]]], test: {
+      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', taxonomy: [['Archaea']], test: {
         assertTrue: [
-          "Archaea",
-          "Extraterrestial",
+          'Archaea',
+          'Extraterrestial',
         ], 
         assertFalse: [],
       } },
@@ -145,13 +146,13 @@ const cases = {
     </View>`,
     text: `To have faith is to trust yourself to the water`,
     annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonomy: [[["Eukarya", "Human"]]], test: {
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', taxonomy: [['Eukarya', 'Human']], test: {
         assertTrue: [
-          "Eukarya / Extraterrestial",
-          "Eukarya / Human",
+          'Eukarya / Extraterrestial',
+          'Eukarya / Human',
         ], 
         assertFalse: [
-          "Bacteria",
+          'Bacteria',
         ],
       } },
     ],
@@ -173,6 +174,7 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
   const { annotations, config, text, FF } = Taxonomy;
   const outlinerSelector = ".lsf-outliner-item__title";
   const sideBarRegionSelector = "li";
+  const taxonomyLabelSelector = ".lsf-taxonomy__label";
 
   I.amOnPage("/");
 
@@ -192,25 +194,26 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
     const regionEl = isOutliner ? locate(outlinerSelector).withText(annotation.label) : locate(sideBarRegionSelector).withText(annotation.text);
 
     I.seeElement(regionEl);
+    
+    I.wait(60);
+
+    I.click(regionEl);
+    annotation.test.assertTrue.forEach(label => I.seeElement(locate(taxonomyLabelSelector).withText(label)));
+    annotation.test.assertFalse.forEach(label => I.dontSeeElement(locate(taxonomyLabelSelector).withText(label)));
   });
 
   const results = await I.executeScript(serialize);
 
   results.filter(result => result.value.labels).forEach((result, index) => {
     const annotation = annotations[index];
-    const expected = { end: annotation.rangeEnd, labels: [annotation.label], start: annotation.rangeStart, text: annotation.text };
-    
+    const expected = {
+      end: annotation.rangeEnd,
+      labels: [annotation.label], 
+      start: annotation.rangeStart, 
+      text: annotation.text,
+    };
+
     assert.deepEqual(result.value, expected);
-
-    const regionEl = isOutliner ? locate(outlinerSelector).withText(annotation.label) : locate(".lsf-region-item__title").withText(annotation.label);
-
-    I.seeElement(regionEl);
-
-    I.wait(60);
-    // I.click(regionEl);
-
-    annotation.test.assertTrue.forEach(label => I.seeElement(locate("div").withText(label)));
-    annotation.test.assertFalse.forEach(label => I.dontSeeElement(locate("div").withText(label)));
   });
   
 });

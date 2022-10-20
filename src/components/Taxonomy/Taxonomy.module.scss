@@ -15,6 +15,38 @@
     white-space: nowrap;
     cursor: pointer;
   }
+  &__selected {
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 28px; // 24px button + 4px margin
+
+    div {
+      margin: 0 2px 4px 0;
+      background: hsl(0, 0%, 95%);
+      padding: 0; // all the right space should be a clickable button, so no padding
+      padding-left: 8px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    input[type="button"] {
+      border: none;
+      background: none;
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      line-height: 1;
+      font-weight: 500;
+      font-size: 20px;
+      color: #09f;
+
+      &:hover {
+        color: red;
+      }
+    }
+  }
 }
 
 .taxonomy > span > svg {
@@ -22,39 +54,6 @@
 }
 .taxonomy_open > span > svg {
   transform: none;
-}
-
-.taxonomy__selected {
-  display: flex;
-  flex-wrap: wrap;
-  min-height: 28px; // 24px button + 4px margin
-
-  div {
-    margin: 0 2px 4px 0;
-    background: hsl(0, 0%, 95%);
-    padding: 0; // all the right space should be a clickable button, so no padding
-    padding-left: 8px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-  }
-
-  input[type="button"] {
-    border: none;
-    background: none;
-    cursor: pointer;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    line-height: 1;
-    font-weight: 500;
-    font-size: 20px;
-    color: #09f;
-
-    &:hover {
-      color: red;
-    }
-  }
 }
 
 .taxonomy__dropdown {

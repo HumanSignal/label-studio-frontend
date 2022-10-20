@@ -5,6 +5,7 @@ import { useToggle } from "../../hooks/useToggle";
 import { isArraysEqual } from "../../utils/utilities";
 import { LsChevron } from "../../assets/icons";
 import TreeStructure from "../TreeStructure/TreeStructure";
+import { Elem } from "../../utils/bem";
 
 import styles from "./Taxonomy.module.scss";
 
@@ -129,12 +130,12 @@ const SelectedList = ({ isReadonly, flatItems } : { isReadonly:boolean, flatItem
   return (
     <div className={styles.taxonomy__selected}>
       {selectedLabels.map((path, index) => (
-        <div key={path.join("|")}>
+        <Elem name="label" key={path.join("|")}>
           {showFullPath ? path.join(pathSeparator) : path[path.length - 1]}
           {!isReadonly &&
             <input type="button" onClick={() => setSelected(selected[index], false)} value="×" />
           }
-        </div>
+        </Elem>
       ))}
     </div>
   );
