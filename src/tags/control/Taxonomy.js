@@ -164,8 +164,7 @@ const Model = types
 
     get preselectedValues() { 
       const items = Tree.filterChildrenOfType(self, 'ChoiceModel');
-
-      console.log("preselectedValues", items, self, items.filter(c => c.selected).map(c => c.resultValue));
+      
       return items.filter(c => c.selected).map(c => c.resultValue);
     },
 
