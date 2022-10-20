@@ -762,7 +762,6 @@ class ChannelD3 extends React.Component {
     const strongZoom = scale > this.zoomStep;
     const haveToSwitchData = strongZoom === this.useOptimizedData;
 
-
     if (this.optimizedSeries && haveToSwitchData) {
       this.useOptimizedData = !this.useOptimizedData;
       if (this.useOptimizedData) {
