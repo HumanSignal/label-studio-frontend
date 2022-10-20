@@ -144,7 +144,7 @@ const cases = {
     </View>`,
     text: `To have faith is to trust yourself to the water`,
     annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', clickTaxonomy: [['Eukarya', 'Human']], test: {
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', clickTaxonomy: [['Human']], test: {
         assertTrue: [
           'Eukarya / Extraterrestial',
           'Eukarya / Human',
