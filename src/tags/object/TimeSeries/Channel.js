@@ -533,10 +533,12 @@ class ChannelD3 extends React.Component {
 
     let { series } = this.props;
 
-    this.useOptimizedData = series.length > getOptimalWidth() * this.zoomStep;
+    const optimizedWidthWithZoom = getOptimalWidth() * this.zoomStep;
+    
+    this.useOptimizedData = series.length > optimizedWidthWithZoom;
 
     if (this.useOptimizedData) {
-      this.optimizedSeries = sparseValues(series, getOptimalWidth() * this.zoomStep);
+      this.optimizedSeries = sparseValues(series, optimizedWidthWithZoom);
       series = this.optimizedSeries;
     }
 
