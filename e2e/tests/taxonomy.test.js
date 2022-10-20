@@ -178,7 +178,7 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
 
   I.amOnPage("/");
 
-  LabelStudio.setFeatureFlags(FF);
+  LabelStudio.setFeatureFlags({ ff_dev_2007_rework_choices_280322_short: true, ...FF });
   LabelStudio.init({ config, data: { text } });
   
   const isOutliner = FF.ff_front_1170_outliner_030222_short;
@@ -195,9 +195,8 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
 
     I.seeElement(regionEl);
     
-    I.wait(60);
-
     I.click(regionEl);
+    
     annotation.test.assertTrue.forEach(label => I.seeElement(locate(taxonomyLabelSelector).withText(label)));
     annotation.test.assertFalse.forEach(label => I.dontSeeElement(locate(taxonomyLabelSelector).withText(label)));
   });
