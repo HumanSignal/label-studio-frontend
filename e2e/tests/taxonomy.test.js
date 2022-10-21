@@ -28,7 +28,8 @@ const cases = {
     </View>`,
     text: `To have faith is to trust yourself to the water`,
     annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', clickTaxonomy: ['Extraterrestial', 'Archaea'], test: {
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', test: {
+        clickTaxonomy: ['Extraterrestial', 'Archaea'],
         assertTrue: [
           'Archaea',
         ],
@@ -36,7 +37,8 @@ const cases = {
           'Extraterrestial',
         ],
       } },
-      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', clickTaxonomy: ['Archaea'], test: {
+      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', test: {
+        clickTaxonomy: ['Archaea'], 
         assertTrue: [
           'Archaea',
           'Extraterrestial',
@@ -69,7 +71,8 @@ const cases = {
     </View>`,
     text: `To have faith is to trust yourself to the water`,
     annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', clickTaxonomy: ['Human'], test: {
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', test: {
+        clickTaxonomy: ['Human'], 
         assertTrue: [
           'Eukarya / Extraterrestial',
           'Eukarya / Human',
@@ -104,14 +107,16 @@ const cases = {
     </View>`,
     text: `To have faith is to trust yourself to the water`,
     annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', clickTaxonomy: ['Extraterrestial'], test: {
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', test: {
+        clickTaxonomy: ['Extraterrestial'], 
         assertTrue: [
         ],
         assertFalse: [
           'Extraterrestial',
         ],
       } },
-      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', clickTaxonomy: ['Archaea'], test: {
+      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', test: {
+        clickTaxonomy: ['Archaea'], 
         assertTrue: [
           'Archaea',
           'Extraterrestial',
@@ -144,7 +149,8 @@ const cases = {
     </View>`,
     text: `To have faith is to trust yourself to the water`,
     annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', clickTaxonomy: [['Human']], test: {
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', test: {
+        clickTaxonomy: [['Human']], 
         assertTrue: [
           'Eukarya / Extraterrestial',
           'Eukarya / Human',
@@ -198,7 +204,7 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
 
     I.click(locate(".collapser.collapsed"));
 
-    annotation.clickTaxonomy.forEach(t => I.click(locate("label").withText(t)));
+    annotation.test.clickTaxonomy.forEach(t => I.click(locate("label").withText(t)));
 
     /* reseting clicks */
     I.click(locate(".collapser.open"));
