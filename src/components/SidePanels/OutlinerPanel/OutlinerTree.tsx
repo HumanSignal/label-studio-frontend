@@ -175,22 +175,21 @@ const useEventHandlers = ({
 
     const self = node?.item;
 
-    if (self) {
-      const annotation = self?.annotation;
-  
-      if (annotation) {
-        if (multi) {
-          annotation.toggleRegionSelection(self);
-        } else {
-          const wasNotSelected = !self.selected;
+    if (!self?.annotation) return;
     
-          if (wasNotSelected) {
-            annotation.selectArea(self);
-          } else {
-            annotation.unselectAll();
-          }
-        }
-      }
+    const annotation = self.annotation;
+
+    if (multi) {
+      annotation.toggleRegionSelection(self);
+      return;
+    }
+    
+    const wasNotSelected = !self.selected;
+
+    if (wasNotSelected) {
+      annotation.selectArea(self);
+    } else {
+      annotation.unselectAll();
     }
   }, []);
 
