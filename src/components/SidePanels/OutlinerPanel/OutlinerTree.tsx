@@ -173,18 +173,23 @@ const useEventHandlers = ({
     const multi = evt.nativeEvent.ctrlKey || (isMacOS() && evt.nativeEvent.metaKey);
     const { node } = evt;
 
-    const self = node.item;
-    const annotation = self.annotation;
+    const self = node?.item;
 
-    if (multi) {
-      annotation.toggleRegionSelection(self);
-    } else {
-      const wasNotSelected = !self.selected;
-
-      if (wasNotSelected) {
-        annotation.selectArea(self);
-      } else {
-        annotation.unselectAll();
+    if (self) {
+      const annotation = self?.annotation;
+  
+      if (annotation) {
+        if (multi) {
+          annotation.toggleRegionSelection(self);
+        } else {
+          const wasNotSelected = !self.selected;
+    
+          if (wasNotSelected) {
+            annotation.selectArea(self);
+          } else {
+            annotation.unselectAll();
+          }
+        }
       }
     }
   }, []);

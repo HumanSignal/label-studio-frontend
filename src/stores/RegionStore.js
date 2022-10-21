@@ -541,6 +541,7 @@ export default types.model("RegionStore", {
     });
   },
   highlight(area) {
+    area.shapeRef.parent.canvas._canvas.scrollIntoView();
     self.selection.highlight(area);
   },
 
