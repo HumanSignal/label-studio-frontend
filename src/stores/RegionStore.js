@@ -108,6 +108,7 @@ const SelectionMap = types.model(
     highlight(region) {
       self.clear();
       self.select(region);
+      region?.shapeRef?.parent?.canvas?._canvas?.scrollIntoView?.();
     },
   };
 });
@@ -541,7 +542,6 @@ export default types.model("RegionStore", {
     });
   },
   highlight(area) {
-    area.shapeRef.parent.canvas._canvas.scrollIntoView();
     self.selection.highlight(area);
   },
 
