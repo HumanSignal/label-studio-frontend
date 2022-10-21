@@ -84,10 +84,10 @@ class RichTextPieceView extends Component {
       normedRange.isText = item.type === "text";
       normedRange.dynamic = this.props.store.autoAnnotation;
 
-      const perRegionParentWithPreselectedValues = item.parent.filter(parent => parent.perregion && (parent.preselectedValues?.length ?? 0) > 0);
+      const selectedAnnotation = window.Htx.annotationStore.selected.toNames.get('text').filter(annotation => annotation.perregion && (annotation.preselectedValues?.length ?? 0) > 0);
       const newRegion = item.addRegion(normedRange, this.doubleClickSelection);
       
-      perRegionParentWithPreselectedValues.forEach(parent => newRegion.setDefaultValue(parent));
+      selectedAnnotation.forEach(annotation => newRegion.setDefaultValue(annotation));
     }, {
       window: rootEl?.contentWindow ?? window,
       granularity: label?.granularity ?? item.granularity,
