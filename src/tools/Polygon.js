@@ -125,9 +125,6 @@ const _Tool = types
         if (isFF(FF_DEV_2432)) {
           self.annotation.history.freeze();
           self.mode = "drawing";
-
-          self.initializeHotkeys();
-
           self.currentArea = self.createRegion(self.createRegionOptions({ x, y }));
         } else {
           Super.startDrawing(x, y);
@@ -144,7 +141,6 @@ const _Tool = types
           self.annotation.setIsDrawing(false);
           self.annotation.history.unfreeze();
           self.mode = "viewing";
-          self.disposeHotkeys();
           self.annotation.afterCreateResult(currentArea, control);
         } else {
           Super._finishDrawing();
