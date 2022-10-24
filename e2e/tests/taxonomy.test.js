@@ -7,50 +7,6 @@ const assert = require("assert");
 Feature("Taxonomy");
 
 const cases = {
-  taxonomyPerRegion: {
-    config: `<View>
-      <Text name="text" value="$text"/>
-      <Labels name="label" toName="text">
-        <Label value="PER" background="red"/>
-        <Label value="ORG" background="darkorange"/>
-        <Label value="LOC" background="orange"/>
-        <Label value="MISC" background="green"/>
-      </Labels>
-      <Taxonomy name="taxonomy" toName="text" perRegion="true" >
-        <Choice value="Archaea" />
-        <Choice value="Bacteria" />
-        <Choice value="Eukarya">
-          <Choice value="Human" />
-          <Choice value="Oppossum" />
-          <Choice value="Extraterrestial" selected="true" />
-        </Choice>
-      </Taxonomy>
-    </View>`,
-    text: `To have faith is to trust yourself to the water`,
-    annotations: [
-      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', test: {
-        clickTaxonomy: ['Extraterrestial', 'Archaea'],
-        assertTrue: [
-          'Archaea',
-        ],
-        assertFalse: [
-          'Extraterrestial',
-        ],
-      } },
-      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', test: {
-        clickTaxonomy: ['Archaea'], 
-        assertTrue: [
-          'Archaea',
-          'Extraterrestial',
-        ], 
-        assertFalse: [],
-      } },
-    ],
-    isPerRegion: true,
-    FF: {
-      ff_front_1170_outliner_030222_short: false,
-    },
-  },
   taxonomy: {
     config: `<View>
       <Text name="text" value="$text"/>
@@ -91,6 +47,50 @@ const cases = {
       } },
     ],
     isPerRegion: false,
+    FF: {
+      ff_front_1170_outliner_030222_short: false,
+    },
+  },
+  taxonomyPerRegion: {
+    config: `<View>
+      <Text name="text" value="$text"/>
+      <Labels name="label" toName="text">
+        <Label value="PER" background="red"/>
+        <Label value="ORG" background="darkorange"/>
+        <Label value="LOC" background="orange"/>
+        <Label value="MISC" background="green"/>
+      </Labels>
+      <Taxonomy name="taxonomy" toName="text" perRegion="true" >
+        <Choice value="Archaea" />
+        <Choice value="Bacteria" />
+        <Choice value="Eukarya">
+          <Choice value="Human" />
+          <Choice value="Oppossum" />
+          <Choice value="Extraterrestial" selected="true" />
+        </Choice>
+      </Taxonomy>
+    </View>`,
+    text: `To have faith is to trust yourself to the water`,
+    annotations: [
+      { label: 'PER', rangeStart: 0, rangeEnd: 2, text: 'To', test: {
+        clickTaxonomy: ['Extraterrestial', 'Archaea'],
+        assertTrue: [
+          'Archaea',
+        ],
+        assertFalse: [
+          'Extraterrestial',
+        ],
+      } },
+      { label: 'PER', rangeStart: 3, rangeEnd: 7, text: 'have', test: {
+        clickTaxonomy: ['Archaea'], 
+        assertTrue: [
+          'Archaea',
+          'Extraterrestial',
+        ], 
+        assertFalse: [],
+      } },
+    ],
+    isPerRegion: true,
     FF: {
       ff_front_1170_outliner_030222_short: false,
     },
@@ -233,6 +233,7 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
   LabelStudio.setFeatureFlags({ ff_dev_2007_rework_choices_280322_short: true, ...FF });
   LabelStudio.init({ config, data: { text } });
   
+  const isOutliner = FF.ff_front_1170_outliner_030222_short;
 
   annotations.forEach(annotation => {
     let regionEl;
@@ -245,8 +246,6 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
         rangeEnd: annotation.rangeEnd,
       });
     
-      const isOutliner = FF.ff_front_1170_outliner_030222_short;
-
       regionEl = isOutliner ? locate(outlinerSelector).withText(annotation.label) : locate(sideBarRegionSelector).withText(annotation.text);
   
       I.seeElement(regionEl);
@@ -260,10 +259,11 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
     
     /* reseting clicks */
     I.click(locate(".collapser.open"));
-    I.click(locate("span").withText("Click to add..."));
     if (isPerRegion) {
       I.click(regionEl);
       I.click(locate(".lsf-label__text").withText(annotation.label));
+    } else {
+      I.click(locate("span").withText("Click to add..."));
     }
   });
 
@@ -280,22 +280,14 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
 
     assert.deepEqual(result.value, expected);
 
-    let regionEl;
-
     if (isPerRegion) {
-      const isOutliner = FF.ff_front_1170_outliner_030222_short;
-
-      regionEl = isOutliner ? locate(outlinerSelector).withText(annotation.label) : locate(sideBarRegionSelector).withText(annotation.text);
+      const regionEl = isOutliner ? locate(outlinerSelector).withText(annotation.label) : locate(sideBarRegionSelector).withText(annotation.text);
   
       I.click(regionEl);
     }
     
     annotation.test.assertTrue.forEach(label => I.seeElement(locate(taxonomyLabelSelector).withText(label)));
     annotation.test.assertFalse.forEach(label => I.dontSeeElement(locate(taxonomyLabelSelector).withText(label)));
-
-    if (isPerRegion) {
-      I.click(regionEl);
-    }
   });
   
 });
