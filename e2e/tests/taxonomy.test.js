@@ -233,7 +233,6 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
   LabelStudio.setFeatureFlags({ ff_dev_2007_rework_choices_280322_short: true, ...FF });
   LabelStudio.init({ config, data: { text } });
   
-  const isOutliner = FF.ff_front_1170_outliner_030222_short;
 
   annotations.forEach(annotation => {
     let regionEl;
@@ -246,6 +245,8 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
         rangeEnd: annotation.rangeEnd,
       });
     
+      const isOutliner = FF.ff_front_1170_outliner_030222_short;
+
       regionEl = isOutliner ? locate(outlinerSelector).withText(annotation.label) : locate(sideBarRegionSelector).withText(annotation.text);
   
       I.seeElement(regionEl);
@@ -282,6 +283,8 @@ Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current 
     let regionEl;
 
     if (isPerRegion) {
+      const isOutliner = FF.ff_front_1170_outliner_030222_short;
+
       regionEl = isOutliner ? locate(outlinerSelector).withText(annotation.label) : locate(sideBarRegionSelector).withText(annotation.text);
   
       I.click(regionEl);
