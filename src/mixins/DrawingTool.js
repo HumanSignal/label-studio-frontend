@@ -153,7 +153,6 @@ const DrawingTool = types
       },
 
       startDrawing(x, y) {
-        console.log("DrawingTool startDrawing");
         self.annotation.history.freeze();
         self.mode = "drawing";
         self.currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
