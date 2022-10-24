@@ -40,7 +40,7 @@ const HtxVideoView = ({ item, store }) => {
     onEnterFullscreen() { enterFullscreen(); },
     onExitFullscreen() { exitFullscren(); },
   });
-  const limitCanvasDrawingBoundaries = isFF(FF_DEV_3350);
+  const limitCanvasDrawingBoundaries = !store.settings.videoDrawOutside;
 
   const setPosition = useCallback((value) => {
     if (value !== position) {

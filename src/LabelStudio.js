@@ -1,9 +1,7 @@
-import { render, unmountComponentAtNode } from "react-dom";
 import App from "./components/App/App";
 import { configureStore } from "./configureStore";
 import { LabelStudio as LabelStudioReact } from './Component';
 import { registerPanels } from "./registerPanels";
-import { configure } from "mobx";
 import { EventInvoker } from './utils/events';
 import legacyEvents from './core/External';
 import { toCamelCase } from "strman";
@@ -12,16 +10,25 @@ import { Hotkey } from "./core/Hotkey";
 import defaultOptions from './defaultOptions';
 import { destroy } from "mobx-state-tree";
 
-configure({
-  isolateGlobalState: true,
-});
+import { createRoot } from 'react-dom/client';
+import ToolsManager from "./tools/Manager";
 
 export class LabelStudio {
   static instances = new Set();
 
   static destroyAll() {
+    ToolsManager.removeAllTools();
     this.instances.forEach(inst => inst.destroy());
     this.instances.clear();
+
+    window.Htx = null;
+    window.ToolManager = null;
+    delete window.Htx;
+    delete window.ToolManager;
+  }
+
+  static getInstance(idx) {
+    return Array.from(this.instances)[idx];
   }
 
   constructor(root, userOptions = {}) {
@@ -57,20 +64,36 @@ export class LabelStudio {
   async createApp() {
     const { store, getRoot } = await configureStore(this.options, this.events);
     const rootElement = getRoot(this.root);
+    const reactRoot = createRoot(rootElement);
 
     this.store = store;
     window.Htx = this.store;
 
-    render((
+    reactRoot.render(
       <App
         store={this.store}
         panels={registerPanels(this.options.panels) ?? []}
-      />
-    ), rootElement);
+      />,
+    );
 
     const destructor = () => {
-      unmountComponentAtNode(rootElement);
+      Hotkey.unbindAll();
+      this.events.removeAll();
+      reactRoot.unmount();
       destroy(this.store);
+
+      // Remove references
+      this.options = null;
+      this.root = null;
+      this.events = null;
+      this.store = null;
+
+      delete this.options;
+      delete this.root;
+      delete this.events;
+      delete this.store;
+
+      this.constructor.instances.delete(this);
     };
 
     this.destroy = destructor;

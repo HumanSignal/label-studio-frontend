@@ -64,6 +64,16 @@ export const getCommonBBox = (boxes: {
   };
 };
 
+const getCenter = (box: Box) => {
+  return getCorner(
+    box.x,
+    box.y,
+    box.x + box.width / 2,
+    box.height / 2,
+    box.rotation,
+  );
+};
+
 export const createBoundingBoxGetter = (workingArea: WorkingArea, enabled = true) => (oldBox: Box, newBox: Box) => {
   if (!enabled) return newBox;
 
@@ -82,28 +92,25 @@ export const createBoundingBoxGetter = (workingArea: WorkingArea, enabled = true
 
   // When left edge reached
   if (edgeReached[0]) {
+    result.y = oldBox.y;
     result.x = workingArea.x;
     result.width = oldBox.width + oldBox.x - workingArea.x;
-    console.log('reached left');
   }
 
   // When top edge reached
   if (edgeReached[1]) {
     result.y = workingArea.y;
     result.height = oldBox.height + oldBox.y - workingArea.y;
-    console.log('reached top');
   }
 
   // When right edge reached
   if (edgeReached[2]) {
     result.width = workingArea.width - (box.x - workingArea.x);
-    console.log('reached right');
   }
 
   // When bottom edge reached
   if (edgeReached[3]) {
     result.height = workingArea.height - (box.y - workingArea.y);
-    console.log('reached bottom');
   }
 
   return result;
