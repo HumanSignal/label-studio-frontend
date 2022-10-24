@@ -3,20 +3,6 @@ import { types } from "mobx-state-tree";
 import Utils from "../utils";
 import throttle from "lodash.throttle";
 import { MIN_SIZE } from "../tools/Base";
-import { Hotkey } from "../core/Hotkey";
-import { FF_DEV_2576, isFF } from "../utils/feature-flags";
-
-const hotkeys = Hotkey("Polygons");
-
-const initializeHotkeys = (self) =>{
-  hotkeys.addNamed("polygon:undo", () => self.getCurrentArea()?.undoPoints(self));
-  hotkeys.addNamed("polygon:redo", () => self.getCurrentArea()?.redoPoints());
-};
-
-const disposeHotkeys = () => {
-  hotkeys.removeNamed("polygon:undo");
-  hotkeys.removeNamed("polygon:redo");
-};
 
 const DrawingTool = types
   .model("DrawingTool", {
@@ -167,13 +153,9 @@ const DrawingTool = types
       },
 
       startDrawing(x, y) {
+        console.log("DrawingTool startDrawing");
         self.annotation.history.freeze();
         self.mode = "drawing";
-
-        if (isFF(FF_DEV_2576)) {
-          initializeHotkeys(self);
-        }
-
         self.currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
       },
       finishDrawing() {
@@ -193,10 +175,6 @@ const DrawingTool = types
         self.annotation.setIsDrawing(false);
         self.annotation.history.unfreeze();
         self.mode = "viewing";
-
-        if (isFF(FF_DEV_2576)) {
-          disposeHotkeys();
-        }
       },
     };
   });
