@@ -108,6 +108,7 @@ const SelectionMap = types.model(
     highlight(region) {
       self.clear();
       self.select(region);
+      region?.shapeRef?.parent?.canvas?._canvas?.scrollIntoView?.();
     },
   };
 });
