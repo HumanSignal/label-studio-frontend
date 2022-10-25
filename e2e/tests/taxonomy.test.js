@@ -214,15 +214,15 @@ const cases = {
   },
 };
 
-const taxonomyTable = new DataTable(["taxnomyName"]);
+const taxonomyTable = new DataTable(["taxonomyName"]);
 
 for (const taxonomyName of Object.keys(cases)) {
   taxonomyTable.add([taxonomyName]);
 }
 
 Data(taxonomyTable).Scenario("Check Taxonomy", async ({ I, LabelStudio, current }) => {
-  const { taxnomyName } = current;
-  const Taxonomy = cases[taxnomyName];
+  const { taxonomyName } = current;
+  const Taxonomy = cases[taxonomyName];
   const { annotations, config, text, isPerRegion, FF } = Taxonomy;
   const outlinerSelector = ".lsf-outliner-item__title";
   const sideBarRegionSelector = "li";
