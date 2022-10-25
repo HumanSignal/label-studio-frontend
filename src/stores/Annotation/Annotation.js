@@ -750,6 +750,9 @@ export const Annotation = types
       };
 
       const area = self.areas.put(areaRaw);
+      const childrenWithPreselectedValues = self.toNames.get(object?.name ?? object)?.toJSON?.()?.filter(item => item.perregion && (item.preselectedValues?.length ?? 0) > 0);
+      
+      childrenWithPreselectedValues?.forEach(item => area.setDefaultValue(item));
 
       if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
 
