@@ -137,13 +137,13 @@ export const Annotation = types
     //   return self.list.root;
     // },
 
-    get names() {
-      return self.list.names;
-    },
+    // get names() {
+    //   return self.list.names;
+    // },
 
-    get toNames() {
-      return self.list.toNames;
-    },
+    // get toNames() {
+    //   return self.list.toNames;
+    // },
 
     get objects() {
       return Array.from(self.names.values()).filter(tag => !tag.toname);
@@ -225,6 +225,9 @@ export const Annotation = types
     isDraftSaving: false,
     versions: {},
     resultSnapshot: "",
+    names: new Map(),
+    toNames: new Map(),
+    ids: new Map(),
   }))
   .actions(self => ({
     reinitHistory(force = true) {
@@ -675,6 +678,17 @@ export const Annotation = types
     },
 
     afterCreate() {
+      const { names, toNames } = Tree.extractNames(self.root);
+
+      names.forEach((tag, name) => self.names.set(name, tag));
+      toNames.forEach((tags, name) => self.toNames.set(name, tags));
+
+      Tree.traverseTree(self.root, node => {
+        self.ids.set(Tree.cleanUpId(node.id ?? node.name), node);
+
+        if (self.store.task && node.updateValue) node.updateValue(self.store);
+      });
+
       if (self.userGenerate && !self.sentUserGenerate) {
         self.loadedDate = new Date();
       }
@@ -1012,8 +1026,9 @@ export const Annotation = types
     deserializeSingleResult(obj, getArea, createArea) {
       if (obj["type"] !== "relation") {
         const { id, value: rawValue, type, ...data } = obj;
+        let { from_name, to_name } = data;
 
-        const object = self.names.get(obj.to_name) ?? {};
+        const object = self.names.get(data.to_name) ?? {};
         const tagType = object.type;
 
         // avoid duplicates of the same areas in different annotations/predictions
@@ -1030,12 +1045,15 @@ export const Annotation = types
           return newValue;
         };
 
+        to_name = `${to_name}@${self.id}`;
+        from_name = `${from_name}@${self.id}`;
+
         let area = getArea(areaId);
 
         if (!area) {
           const areaSnapshot = {
             id: areaId,
-            object: data.to_name,
+            object: to_name,
             ...data,
             // We need to omit value properties due to there may be conflicting property types, for example a text.
             ...omitValueFields(value),
@@ -1045,7 +1063,7 @@ export const Annotation = types
           area = createArea(areaSnapshot);
         }
 
-        area.addResult({ ...data, id: resultId, type, value });
+        area.addResult({ ...data, id: resultId, type, value, from_name, to_name });
 
         // if there is merged result with region data and type and also with the labels
         // and object allows such merge — create new result with these labels

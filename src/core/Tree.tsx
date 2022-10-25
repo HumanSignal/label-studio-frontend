@@ -309,6 +309,47 @@ function traverseTree(root: IAnyStateTreeNode, cb: (node: IAnyStateTreeNode) => 
   visitNode(root);
 }
 
+const cleanUpId = (id: string) => id.replace(/@.*/, '');
+
+function extractNames(root: IAnyStateTreeNode) {
+  const objects: IAnyStateTreeNode[] = [];
+  const names = new Map<string, IAnyStateTreeNode>();
+  const toNames = new Map<string, IAnyStateTreeNode[]>();
+
+  // hacky way to get all the available object tag names
+  const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
+
+  traverseTree(root, node => {
+    if (node.name) {
+      names.set(cleanUpId(node.name), node);
+      if (objectTypes.includes(node.type)) objects.push(cleanUpId(node.name));
+    }
+  });
+
+  // initialize toName bindings [DOCS] name & toName are used to
+  // connect different components to each other
+  traverseTree(root, node => {
+    const isControlTag = node.name && !objectTypes.includes(node.type);
+    // auto-infer missed toName if there is only one object tag in the config
+
+    if (isControlTag && !node.toname && objects.length === 1) {
+      node.toname = objects[0];
+    }
+
+    if (node && node.toname) {
+      const val = toNames.get(node.toname);
+
+      if (val) {
+        val.push(cleanUpId(node.name));
+      } else {
+        toNames.set(node.toname, [cleanUpId(node.name)]);
+      }
+    }
+  });
+
+  return { names, toNames };
+}
+
 export default {
   renderItem,
   renderChildren,
@@ -317,4 +358,6 @@ export default {
   filterChildrenOfType,
   cssConverter,
   traverseTree,
+  extractNames,
+  cleanUpId,
 };
