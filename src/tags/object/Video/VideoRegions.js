@@ -43,7 +43,7 @@ const VideoRegionsPure = ({
   const stageRef = useRef();
 
   const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked && !reg.readonly);
-  const listenToEvents = !locked && item.annotation.editable;
+  const listenToEvents = !locked;
 
   // if region is not in lifespan, it's not rendered,
   // so we observe all the sequences to rerender transformer
@@ -188,9 +188,8 @@ const VideoRegionsPure = ({
             workingArea={workinAreaCoordinates}
             draggable={!isDrawing && !locked}
             selected={reg.selected || reg.inSelection}
-            listening={(!reg.locked && !reg.readonly)}
+            listening={listenToEvents}
             onClick={(e) => {
-              // if (!reg.annotation.editable || reg.parent.getSkipInteractions()) return;
               if (store.annotationStore.selected.relationMode) {
                 stageRef.current.container().style.cursor = Constants.DEFAULT_CURSOR;
               }

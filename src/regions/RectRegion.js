@@ -418,7 +418,7 @@ const HtxRectangleView = ({ item }) => {
           }
         }}
         onClick={e => {
-          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
+          if (item.parent.getSkipInteractions()) return;
           if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
           }
@@ -426,7 +426,7 @@ const HtxRectangleView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
-        listening={!suggestion && item.editable && !item.annotation.isDrawing}
+        listening={!suggestion && !item.annotation.isDrawing}
       />
       <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
     </RegionWrapper>

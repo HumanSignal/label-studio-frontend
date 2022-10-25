@@ -592,8 +592,6 @@ const HtxPolygonView = ({ item }) => {
 
         e.cancelBubble = true;
 
-        // if (!item.editable) return;
-
         if (!item.closed) return;
 
         if (store.annotationStore.selected.relationMode) {
@@ -605,7 +603,7 @@ const HtxPolygonView = ({ item }) => {
       }}
       {...dragProps}
       draggable={item.editable && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
-      listening={!suggestion && item.editable}
+      listening={!suggestion}
     >
       <LabelOnPolygon item={item} color={regionStyles.strokeColor} />
 
