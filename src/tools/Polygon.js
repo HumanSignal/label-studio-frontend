@@ -123,7 +123,6 @@ const _Tool = types
 
       startDrawing(x, y) {
         if (isFF(FF_DEV_2432)) {
-          self.annotation.history.freeze();
           self.mode = "drawing";
           self.currentArea = self.createRegion(self.createRegionOptions({ x, y }));
         } else {
@@ -139,7 +138,6 @@ const _Tool = types
           self.currentArea.setDrawing(false);
           self.currentArea = null;
           self.annotation.setIsDrawing(false);
-          self.annotation.history.unfreeze();
           self.mode = "viewing";
           self.annotation.afterCreateResult(currentArea, control);
         } else {
