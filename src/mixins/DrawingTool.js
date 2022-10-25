@@ -106,6 +106,14 @@ const DrawingTool = types
         self.annotation.setIsDrawing(true);
         return self.currentArea;
       },
+      resumeUnfinishedRegion(existingUnclosedPolygon) {
+        self.currentArea = existingUnclosedPolygon;
+        self.currentArea.setDrawing(true);
+        self.annotation.regionStore.selection._updateResultsFromRegions([self.currentArea]);
+        self.mode = "drawing";
+        self.annotation.setIsDrawing(true);
+        self.listenForClose?.();
+      },
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
 
