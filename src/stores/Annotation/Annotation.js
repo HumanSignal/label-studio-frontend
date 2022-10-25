@@ -95,13 +95,9 @@ export const Annotation = types
     const updateIds = item => {
       const children = item.children?.map(updateIds);
 
-      if (item.id) {
-        return { ...item, children, id: item.id + "@" + sn.id };
-      } else if (item.name) {
-        return { ...item, children, name: item.name + "@" + sn.id };
-      }
-
-      if (children) return { ...item, children };
+      if (children) item = { ...item, children };
+      if (item.id) item = { ...item, id: item.id + "@" + sn.id };
+      if (item.name) item = { ...item, name: item.name + "@" + sn.id };
 
       return item;
     };
