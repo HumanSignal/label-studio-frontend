@@ -6,6 +6,7 @@ import RegionStore from "../RegionStore";
 import RelationStore from "../RelationStore";
 import TimeTraveller from "../../core/TimeTraveller";
 import Tree, { TRAVERSE_STOP } from "../../core/Tree";
+import Types from "../../core/Types";
 import Utils from "../../utils";
 import { delay, isDefined } from "../../utils/utilities";
 import { guidGenerator } from "../../core/Helpers";
@@ -83,10 +84,31 @@ export const Annotation = types
     commentStore: types.optional(CommentStore, {
       comments: [],
     }),
+
+    // root: types.frozen({}),
+    root: Types.allModelsTypes(),
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
     let user = sn.user ?? sn.completed_by ?? undefined;
+
+    const updateIds = item => {
+      const children = item.children?.map(updateIds);
+
+      if (item.id) {
+        return { ...item, children, id: item.id + "@" + sn.id };
+      } else if (item.name) {
+        return { ...item, children, name: item.name + "@" + sn.id };
+      }
+
+      if (children) return { ...item, children };
+
+      return item;
+    };
+
+    const root = updateIds(sn.root.toJSON());
+
+    console.log('ROOT', sn, root);
 
     if (user && typeof user !== 'number') {
       user = user.id;
@@ -94,6 +116,7 @@ export const Annotation = types
 
     return {
       ...sn,
+      root,
       user,
       ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
       skipped: sn.skipped || sn.was_cancelled,
@@ -109,9 +132,10 @@ export const Annotation = types
       return getParent(self, 2);
     },
 
-    get root() {
-      return self.list.root;
-    },
+    // @todo copy of root for every annotation!
+    // get root() {
+    //   return self.list.root;
+    // },
 
     get names() {
       return self.list.names;
