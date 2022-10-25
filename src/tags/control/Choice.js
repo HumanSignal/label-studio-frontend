@@ -39,6 +39,7 @@ import { LsChevron } from "../../assets/icons";
  * @param {string} [hotkey]    - Hotkey for the selection
  */
 const TagAttrs = types.model({
+  id: types.identifier,
   selected: types.optional(types.boolean, false),
   alias: types.maybeNull(types.string),
   value: types.maybeNull(types.string),

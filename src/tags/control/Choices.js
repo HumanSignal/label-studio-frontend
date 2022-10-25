@@ -84,7 +84,8 @@ const { Option } = Select;
  * @param {boolean} [allowNested]      - Allow to use `children` field in dynamic choices to nest them. Submitted result will contain array of arrays, every item is a list of values from topmost parent choice down to selected one.
  */
 const TagAttrs = types.model({
-  name: types.identifier,
+  name: types.string,
+  id: types.identifier,
   toname: types.maybeNull(types.string),
 
   showinline: types.maybeNull(types.boolean),
