@@ -3,7 +3,7 @@ import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { isDefined } from "../utils/utilities";
-import { FF_DEV_1372, isFF } from "../utils/feature-flags";
+import { FF_DEV_1170, FF_DEV_1372, isFF } from "../utils/feature-flags";
 
 const Result = types
   .model("Result", {
@@ -47,6 +47,7 @@ const Result = types
       "ellipselabels",
       "timeserieslabels",
       "choices",
+      "datetime",
       "number",
       "taxonomy",
       "textarea",
@@ -56,10 +57,11 @@ const Result = types
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
+      datetime: types.maybe(types.string),
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
-      choices: types.maybe(types.array(types.string)),
+      choices: types.maybe(types.array(types.union(types.string, types.array(types.string)))),
       // pairwise
       selected: types.maybe(types.enumeration(["left", "right"])),
       // @todo all other *labels
@@ -112,13 +114,19 @@ const Result = types
     get hasValue() {
       const value = self.mainValue;
 
-      if (!value) return false;
+      if (!isDefined(value)) return false;
       if (Array.isArray(value)) return value.length > 0;
       return true;
     },
 
     get editable() {
-      return self.readonly === false && self.annotation.editable === true;
+      // @todo readonly is not defined here, so we have to fix this
+      // @todo and as it's used only in region list view of textarea get rid of this getter
+      if (isFF(FF_DEV_1170)) {
+        // The value of self.area.editable is always false whenever region is locked, so we need to check if it's explicitly readonly on the area.
+        return !self.readonly && self.annotation.editable === true && !self.area.readonly;
+      }
+      return !self.readonly && self.annotation.editable === true && self.area.editable === true;
     },
 
     getSelectedString(joinstr = " ") {
@@ -248,15 +256,19 @@ const Result = types
       const { from_name, to_name, type, score, value } = getSnapshot(self);
       const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize(options) : {};
+      // cut off annotation id
+      const id = self.area?.cleanId;
 
       if (!data) return null;
       if (!self.isSubmitable) return null;
-      // with `mergeLabelsAndResults` control uses only one result even with external `Labels`
-      if (type === "labels" && self.to_name.mergeLabelsAndResults) return null;
-      // cut off annotation id
-      const id = self.area.cleanId;
 
       if (!isDefined(data.value)) data.value = {};
+      // with `mergeLabelsAndResults` control uses only one result even with external `Labels`
+      if (self.to_name.mergeLabelsAndResults) {
+        if (type === "labels") return null;
+        // add labels to the main region, not nested ones
+        if (self.area?.labels?.length && !self.from_name.perregion) data.value.labels = self.area.labels;
+      }
 
       const contolMeta = self.from_name.metaValue;
 
@@ -280,6 +292,8 @@ const Result = types
       }
 
       if (typeof score === "number") data.score = score;
+
+      if (!self.editable) data.readonly = true;
 
       return data;
     },

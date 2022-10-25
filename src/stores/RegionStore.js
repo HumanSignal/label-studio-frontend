@@ -1,18 +1,29 @@
-import { getEnv, getParent, onPatch, types } from "mobx-state-tree";
+import { destroy, detach, getEnv, getParent, onPatch, types } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
 import { isDefined } from "../utils/utilities";
 import { AllRegionsType } from "../regions";
 import { debounce } from "../utils/debounce";
 import Tree, { TRAVERSE_STOP } from "../core/Tree";
+import { FF_DEV_2755, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("RegionStore");
+
+const localStorageKeys = {
+  sort: "outliner:sort",
+  sortDirection: "outliner:sort-direction",
+  group: "outliner:group",
+  view: "regionstore:view",
+};
 
 const SelectionMap = types.model(
   {
     selected: types.optional(types.map(types.safeReference(AllRegionsType)), {}),
   }).views(self => {
   return {
+    get keys() {
+      return Array.from(self.selected.keys());
+    },
     get annotation() {
       return getParent(self).annotation;
     },
@@ -21,6 +32,9 @@ const SelectionMap = types.model(
     },
     get size() {
       return self.selected.size;
+    },
+    get list() {
+      return Array.from(self.selected.values());
     },
     isSelected(region) {
       return self.selected.has(region.id);
@@ -94,17 +108,31 @@ const SelectionMap = types.model(
     highlight(region) {
       self.clear();
       self.select(region);
+      region?.shapeRef?.parent?.canvas?._canvas?.scrollIntoView?.();
     },
   };
 });
 
 export default types.model("RegionStore", {
-  sort: types.optional(types.enumeration(["date", "score"]), "date"),
-  sortOrder: types.optional(types.enumeration(["asc", "desc"]), "asc"),
+  sort: types.optional(
+    types.enumeration(["date", "score"]),
+    window.localStorage.getItem(localStorageKeys.sort) ?? "date",
+  ),
 
-  group: types.optional(types.enumeration(["type", "label"]), "type"),
+  sortOrder: types.optional(
+    types.enumeration(["asc", "desc"]),
+    window.localStorage.getItem(localStorageKeys.sortDirection) ?? "asc",
+  ),
 
-  view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
+  group: types.optional(
+    types.enumeration(["type", "label", "manual"]),
+    () => window.localStorage.getItem(localStorageKeys.group) ?? "manual",
+  ),
+
+  view: types.optional(
+    types.enumeration(["regions", "labels"]),
+    window.localStorage.getItem(localStorageKeys.view) ?? "regions",
+  ),
   selection: types.optional(SelectionMap, {}),
 }).views(self => {
   let lastClickedItem;
@@ -188,90 +216,168 @@ export default types.model("RegionStore", {
       return sorted;
     },
 
+    getRegionsTree(enrich) {
+      if (self.group === null || self.group === "manual") {
+        return self.asTree(enrich);
+      } else if (self.group === 'label') {
+        return self.asLabelsTree(enrich);
+      } else if (self.group === 'type') {
+        return self.asTypeTree(enrich);
+      } else {
+        console.error(`Grouping by ${self.group} is not implemented`);
+      }
+    },
+
     asTree(enrich) {
+      const regions = self.sortedRegions;
+      const tree = [];
+      const lookup = new Map();
+      const onClick = createClickRegionInTreeHandler(tree);
+
       // every region has a parentID
       // parentID is an empty string - "" if it's top level
       // or it can contain a string key to the parent region
       // [ { id: "1", parentID: "" }, { id: "2", parentID: "1" } ]
       // would create a tree of two elements
 
-      const arr = self.sortedRegions;
-      const tree = [],
-        lookup = {};
+      regions.forEach((el, idx) => {
+        const result = enrich(el, idx, onClick);
 
-      const onClick = createClickRegionInTreeHandler(tree);
+        Object.assign(result, {
+          item: el,
+          children: [],
+          isArea: true,
+        });
 
-      arr.forEach((el, idx) => {
-        lookup[el.id] = enrich(el, idx, onClick);
-        lookup[el.id]["item"] = el;
-        lookup[el.id]["children"] = [];
-        lookup[el.id].isArea = true;
+        lookup.set(el.cleanId, result);
       });
 
-      Object.keys(lookup).forEach(key => {
-        const el = lookup[key];
-        const pid = el["item"].parentID;
+      lookup.forEach((el => {
+        const pid = el.item.parentID;
+        const parent = pid ? (lookup.get(pid) ?? lookup.get(pid.replace(/#(.+)/i, ''))) : null;
 
-        if (pid) {
-          let parent = lookup[pid];
+        if (parent) return parent.children.push(el);
 
-          if (!parent) parent = lookup[`${pid}#${self.annotation.id}`];
-          if (parent) {
-            parent.children.push(el);
-            return;
-          }
-        }
         tree.push(el);
-      });
+      }));
 
       return tree;
     },
 
     asLabelsTree(enrich) {
       // collect all label states into two maps
-      let labels = {};
-      const map = {};
+      const groups = {};
+      const result = [];
+      const onClick = createClickRegionInTreeHandler(result);
+      let index = 0;
+      const getLabelGroup = (label, key) => {
+        const labelGroup = groups[key];
 
-      self.regions.forEach(r => {
-        const selectedLabels = r.labeling?.selectedLabels || r.emptyLabel && [r.emptyLabel];
+        if (labelGroup) return labelGroup;
 
-        if (selectedLabels) {
-          selectedLabels.forEach(s => {
-            const key = `${s.value}#${s.id}`;
+        return groups[key] = {
+          ...enrich(label, index, true),
+          id: key,
+          isGroup: true,
+          isNotLabel: true,
+          children: [],
+        };
+      };
+      const getRegionLabel = (region) => region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
+      const addToLabelGroup = (key, label, region) => {
+        const group = getLabelGroup(label, key);
+        const groupId = group.id;
+        const labelHotKey = getRegionLabel(region)?.[0]?.hotkey;
 
-            labels[key] = s;
-            if (key in map) map[key].push(r);
-            else map[key] = [r];
-          });
-        } else {
-          const key = `_empty`;
-
-          labels = { [key]: { id: key, isNotLabel: true }, ...labels };
-          if (key in map) map[key].push(r);
-          else map[key] = [r];
+        if( isFF( FF_DEV_2755 ) ) {
+          group.hotkey = labelHotKey;
+          group.pos = groupId.slice(0, groupId.indexOf('#'));
         }
-      });
-
-      // create the tree
-      let idx = 0;
-      const tree = [];
-      const onClick = createClickRegionInTreeHandler(tree);
-
-      Object.keys(labels).forEach(key => {
-        const el = enrich(labels[key], idx, true, map[key]);
-
-        el["children"] = map[key].map(r => {
-          const child = enrich(r, idx++, false, null, onClick);
-
-          child.item = r;
-          child.isArea = true;
-          return child;
+        group.children.push({
+          ...enrich(region, index, false, null, onClick, groupId),
+          item: region,
+          isArea: true,
         });
+      };
+      const addRegionsToLabelGroup = (labels, region) => {
+        if (labels) {
+          for(const label of labels) {
+            addToLabelGroup(`${label.value}#${label.id}`, label, region);
+          }
+        } else {
+          addToLabelGroup('no-label', undefined, region);
+        }
+      };
 
-        tree.push(el);
-      });
+      for (const region of self.regions) {
+        addRegionsToLabelGroup(region.labeling?.selectedLabels, region);
 
-      return tree;
+        index++;
+      }
+
+      const groupsArray = Object.values(groups);
+
+      if( isFF( FF_DEV_2755 ) ) {
+        groupsArray.sort((a, b) => a.hotkey > b.hotkey ? 1 : a.hotkey < b.hotkey ? -1 : 0);
+      }
+      result.push(
+        ...groupsArray,
+      );
+
+      return result;
+    },
+
+    asTypeTree(enrich) {
+      // collect all label states into two maps
+      const groups = {};
+      const result = [];
+      const onClick = createClickRegionInTreeHandler(result);
+
+      let index = 0;
+
+      const getTypeGroup = (region, key) => {
+        const group = groups[key];
+
+        if (group) return group;
+
+        const groupingEntity = {
+          type: "tool",
+          value: key.replace('region', ''),
+          background: '#000',
+        };
+
+        return groups[key] = {
+          ...enrich(groupingEntity, index, true),
+          id: key,
+          key,
+          isArea: false,
+          children: [],
+          isGroup: true,
+          type: region.type,
+          entity: region,
+        };
+      };
+
+      const addToLabelGroup = (region) => {
+        const key = region.type;
+        const group = getTypeGroup(region, key);
+
+        group.children.push({
+          ...enrich(region, index, false, null, onClick),
+          item: region,
+          isArea: true,
+        });
+      };
+
+      for (const region of self.regions) {
+        addToLabelGroup(region);
+
+        index++;
+      }
+
+      result.push(...Object.values(groups));
+
+      return result;
     },
 
     get hasSelection() {
@@ -283,6 +389,10 @@ export default types.model("RegionStore", {
 
     get selectedIds() {
       return Array.from(self.selection.selected.values()).map(reg => reg.id);
+    },
+
+    get persistantView() {
+      return window.localStorage.getItem(localStorageKeys.view) ?? self.view;
     },
   };
 }).actions(self => ({
@@ -297,6 +407,10 @@ export default types.model("RegionStore", {
   },
 
   setView(view) {
+    if( isFF( FF_DEV_2755 ) ) {
+      window.localStorage.setItem(localStorageKeys.view, view);
+      console.log("setView", window.localStorage.getItem(localStorageKeys.view));
+    }
     self.view = view;
   },
 
@@ -304,14 +418,19 @@ export default types.model("RegionStore", {
     if (self.sort === sort) {
       self.toggleSortOrder();
     } else {
-      self.sortOrder = "desc";
+      self.sortOrder = "asc";
       self.sort = sort;
     }
+
+    window.localStorage.setItem(localStorageKeys.sort, self.sort);
+    window.localStorage.setItem(localStorageKeys.sortDirection, self.sortOrder);
+
     self.initHotkeys();
   },
 
-  setGroup(group) {
+  setGrouping(group) {
     self.group = group;
+    window.localStorage.setItem(localStorageKeys.group, self.group);
   },
 
   /**
@@ -319,20 +438,16 @@ export default types.model("RegionStore", {
    * @param {obj} region
    */
   deleteRegion(region) {
-    const arr = self.regions;
+    detach(region);
 
     // find regions that have that region as a parent
     const children = self.filterByParentID(region.id);
 
     children && children.forEach(r => r.setParentID(region.parentID));
 
-    for (let i = 0; i < arr.length; i++) {
-      if (arr[i] === region) {
-        arr.splice(i, 1);
-      }
-    }
-
     getEnv(self).events.invoke("entityDelete", region);
+
+    destroy(region);
     self.initHotkeys();
   },
 
@@ -354,7 +469,7 @@ export default types.model("RegionStore", {
         self.initHotkeys();
       }
     });
-    self.view = self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions";
+    self.view = window.localStorage.getItem(localStorageKeys.view) ?? (self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions");
   },
 
   // init Alt hotkeys for regions selection

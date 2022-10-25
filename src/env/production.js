@@ -55,6 +55,7 @@ function configureApplication(params) {
     // remove: params.remove || Requests.remover,
 
     // communication with the user
+    settings: params.settings || {},
     alert: m => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },
 
@@ -63,7 +64,7 @@ function configureApplication(params) {
     onUpdateAnnotation: params.onUpdateAnnotation ? ouCB : External.onUpdateAnnotation,
     onDeleteAnnotation: params.onDeleteAnnotation ? odCB : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
-    onCancelSkippingTask: params.onCancelSkippingTask ? params.onCancelSkippingTask : External.onCancelSkippingTask,
+    onUnskipTask: params.onUnskipTask ? params.onUnskipTask : External.onUnskipTask,
     onSubmitDraft: params.onSubmitDraft,
     onTaskLoad: params.onTaskLoad || External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad || External.onLabelStudioLoad,

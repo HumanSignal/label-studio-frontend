@@ -7,7 +7,7 @@ const URL_CORS_DOCS = "https://labelstud.io/guide/storage.html#Troubleshoot-CORS
 export default {
   DONE: "Done!",
   NO_COMP_LEFT: "No more annotations",
-  NO_NEXT_TASK: "No more data available for labeling",
+  NO_NEXT_TASK: "No More Tasks Left in Queue",
   NO_ACCESS: "You don't have access to this task",
 
   CONFIRM_TO_DELETE_ALL_REGIONS: "Please confirm you want to delete all labeled regions",
@@ -32,9 +32,7 @@ export default {
   },
 
   ERR_PARENT_TAG_UNEXPECTED: ({ validType, value }) => {
-    return `Tag <b>${value}</b> must be a child of one of the tags <b>${[]
-      .concat(validType)
-      .join(", ")}</b>.`;
+    return `Tag <b>${value}</b> must be a child of one of the tags <b>${[].concat(validType).join(", ")}</b>.`;
   },
 
   ERR_BAD_TYPE: ({ modelName, field, validType }) => {

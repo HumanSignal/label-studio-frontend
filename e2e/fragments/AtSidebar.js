@@ -1,3 +1,5 @@
+const { assert } = require("assert");
+
 /* global inject, locate */
 const { I } = inject();
 
@@ -9,7 +11,7 @@ module.exports = {
   _selectedRegionsLocator: locate(".lsf-entity"),
   seeRegions(count) {
     if (count) {
-      I.see(`Regions\n\u00A0${count}`, this._sideBarLocator);
+      I.seeElement(this._regionsCounterLocator.withText(`${count}`));
     } else {
       I.seeElement(this._regionGroupButton.withText("Regions"));
       I.dontSeeElement(this._regionGroupButton.withDescendant(this._regionsCounterLocator));
@@ -17,8 +19,8 @@ module.exports = {
   },
   dontSeeRegions(count) {
     if (count) {
-      I.dontSee(`Regions\n\u00A0${count}`, this._sideBarLocator);
-    } else if (count===+count) {
+      I.dontSeeElement(this._regionsCounterLocator.withText(`${count}`));
+    } else if (count === +count) {
       I.seeElement(this._regionGroupButton.withDescendant(this._regionsCounterLocator));
     } else {
       I.dontSee("Regions", this._sideBarLocator);
@@ -50,5 +52,8 @@ module.exports = {
   },
   clickRegion(text) {
     I.click(this._regionLocator.withText(`${text}`));
+  },
+  selectTool(tool) {
+    I.click(`[aria-label=${tool}-tool]`);
   },
 };

@@ -5,7 +5,8 @@ import { types } from "mobx-state-tree";
 import BaseTool from "./Base";
 import ToolMixin from "../mixins/Tool";
 import { Tool } from "../components/Toolbar/Tool";
-import { IconHandTool, IconZoomIn, IconZoomOut } from "../assets/icons";
+import { FlyoutMenu } from "../components/Toolbar/FlyoutMenu";
+import { IconExpand, IconHandTool, IconZoomIn, IconZoomOut } from "../assets/icons";
 
 const ToolView = observer(({ item }) => {
   return (
@@ -30,6 +31,25 @@ const ToolView = observer(({ item }) => {
         onClick={() => {
           item.handleZoom(1);
         }}
+      />
+      <FlyoutMenu
+        icon={<IconExpand />}
+        items={[
+          {
+            label: `Zoom to fit`,
+            shortcut: "shift+1",
+            onClick: () => {
+              item.sizeToFit();
+            },
+          },
+          {
+            label: `Zoom to actual size`,
+            shortcut: "shift+2",
+            onClick: () => {
+              item.sizeToOriginal();
+            },
+          },
+        ]}
       />
       <Tool
         icon={<IconZoomOut />}
@@ -96,7 +116,10 @@ const _Tool = types
       }
     },
 
-    mousedownEv() {
+    mousedownEv(ev) {
+      // don't pan on right click
+      if (ev.button === 2) return;
+
       self.mode = "moving";
       self.stageContainer.style.cursor = "grabbing";
     },
@@ -105,6 +128,24 @@ const _Tool = types
       const item = self.obj;
 
       item.handleZoom(val);
+    },
+
+    sizeToFit() {
+      const item = self.obj;
+
+      item.sizeToFit();
+    },
+
+    sizeToAuto() {
+      const item = self.obj;
+
+      item.sizeToAuto();
+    },
+
+    sizeToOriginal() {
+      const item = self.obj;
+
+      item.sizeToOriginal();
     },
   }));
 

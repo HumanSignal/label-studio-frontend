@@ -151,4 +151,4 @@ Scenario("Drawing shapes and undoing after that", async function({ I, LabelStudi
     I.pressKey(['CommandOrControl', 'Z']);
     AtSidebar.seeRegions(0);
   }
-});
+}).retry(2);

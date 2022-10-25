@@ -7,7 +7,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 const ESLintPlugin = require('eslint-webpack-plugin');
-const { EnvironmentPlugin } = require("webpack");
+const { EnvironmentPlugin, DefinePlugin } = require("webpack");
 
 const workingDirectory = process.env.WORK_DIR
   ? path.resolve(__dirname, process.env.WORK_DIR)

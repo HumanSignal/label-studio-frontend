@@ -4,6 +4,7 @@ import { inject, observer } from "mobx-react";
 import { Rectangle } from "./Rectangle";
 import Constants from "../../../core/Constants";
 import chroma from "chroma-js";
+import { fixMobxObserve } from "../TimeSeries/helpers";
 
 const MIN_SIZE = 5;
 
@@ -41,7 +42,12 @@ const VideoRegionsPure = ({
   const [isDrawing, setDrawingMode] = useState(false);
   const stageRef = useRef();
 
-  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden);
+  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked && !reg.readonly);
+  const listenToEvents = !locked && item.annotation.editable;
+
+  // if region is not in lifespan, it's not rendered,
+  // so we observe all the sequences to rerender transformer
+  regions.map(reg => fixMobxObserve(reg.sequence));
 
   const workinAreaCoordinates = useMemo(() => {
     const resultWidth = videoDimensions.width * zoom;
@@ -148,17 +154,20 @@ const VideoRegionsPure = ({
     if (!tr) return;
 
     const stage = tr.getStage();
+    // @todo not an obvious way to not render transformer for hidden regions
+    // @todo could it be rewritten to usual react way?
     const shapes = selected.map(shape => stage.findOne("#" + shape.id)).filter(Boolean);
 
     tr.nodes(shapes);
     tr.getLayer().batchDraw();
   };
 
-  const eventHandlers = !locked ? {
+  const eventHandlers = listenToEvents ? {
     onMouseDown: handleMouseDown,
     onMouseMove: handleMouseMove,
     onMouseUp: handleMouseUp,
   } : {};
+
 
   return (
     <Stage
@@ -166,7 +175,7 @@ const VideoRegionsPure = ({
       width={width}
       height={height}
       style={{ position: "absolute", zIndex: 1 }}
-      listening={locked === false}
+      listening={listenToEvents}
       {...eventHandlers}
     >
       <Layer {...layerProps}>
@@ -179,6 +188,7 @@ const VideoRegionsPure = ({
             workingArea={workinAreaCoordinates}
             draggable={!isDrawing && !locked}
             selected={reg.selected || reg.inSelection}
+            listening={(!reg.locked && !reg.readonly)}
             onClick={(e) => {
               // if (!reg.annotation.editable || reg.parent.getSkipInteractions()) return;
               if (store.annotationStore.selected.relationMode) {

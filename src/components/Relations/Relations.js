@@ -132,7 +132,7 @@ const ListItem = observer(({ item }) => {
   );
 });
 
-export default observer(({ store }) => {
+const RelationsComponent = ({ store }) => {
   const annotation = store.annotationStore.selected;
   const { relations } = annotation.relationStore;
   const hasRelations = relations.length > 0;
@@ -170,4 +170,8 @@ export default observer(({ store }) => {
       </Elem>
     </Block>
   );
-});
+};
+
+export const Relations = observer(RelationsComponent);
+
+export default Relations;

@@ -10,6 +10,7 @@ const RegionMixin = types
     pid: types.optional(types.string, guidGenerator),
 
     score: types.maybeNull(types.number),
+
     readonly: types.optional(types.boolean, false),
 
     hidden: types.optional(types.boolean, false),

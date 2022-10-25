@@ -1,9 +1,11 @@
 import { inject, observer } from "mobx-react";
 import React, { useEffect } from "react";
-import { Block } from "../../utils/bem";
-import { AnnotationHistory } from "./AnnotationHistory";
-import "./CurrentEntity.styl";
+import { Space } from "../../common/Space/Space";
+import { Block, Elem } from "../../utils/bem";
+import { FF_DEV_2290, isFF } from "../../utils/feature-flags";
 import { DraftPanel } from "../DraftPanel/DraftPanel";
+import { AnnotationHistory } from "./AnnotationHistory.tsx";
+import "./CurrentEntity.styl";
 
 const injector = inject('store');
 
@@ -11,6 +13,7 @@ export const CurrentEntity = injector(observer(({
   entity,
   showHistory = true,
 }) => {
+  const showDraftInHistory = isFF(FF_DEV_2290);
 
   useEffect(()=>{
     const copyToClipboard = (ev) => {
@@ -37,8 +40,9 @@ export const CurrentEntity = injector(observer(({
 
     const copyHandler = (ev) =>{
       const selection = window.getSelection();
+      const exceptionList = ['input', 'textarea'];
 
-      if (!selection.isCollapsed) return;
+      if (!selection.isCollapsed || exceptionList.includes( ev.target.tagName.toLowerCase())) return;
 
       copyToClipboard(ev);
     };
@@ -101,11 +105,21 @@ export const CurrentEntity = injector(observer(({
       {/* </Space>
       </Elem> */}
 
-      <DraftPanel item={entity} />
-
-      {showHistory && !entity.userGenerate && (
-        <AnnotationHistory/>
+      {!showDraftInHistory && (
+        <DraftPanel item={entity} />
       )}
+
+      {/* {showHistory && !entity.userGenerate && ( */}
+      {showHistory && (
+        <Elem tag={Space} spread name="title">
+          Annotation History
+          <Elem name="id">#{entity.pk ?? entity.id}</Elem>
+        </Elem>
+      )}
+      <AnnotationHistory
+        enabled={showHistory}
+        showDraft={showDraftInHistory}
+      />
     </Block>
   ) : null;
 }));

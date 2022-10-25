@@ -56,7 +56,7 @@ class RichTextPieceView extends Component {
     const root = rootEl?.contentDocument?.body ?? rootEl;
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
-    if (item.selectionenabled === false) return;
+    if (item.selectionenabled === false || item.annotation.editable === false) return;
     const label = states[0]?.selectedLabels?.[0];
     const value = states[0]?.selectedValues?.();
 
@@ -108,7 +108,7 @@ class RichTextPieceView extends Component {
       this._selectionMode = false;
       return;
     }
-    if (!this.props.item.clickablelinks && matchesSelector(event.target, "a")) {
+    if (!this.props.item.clickablelinks && matchesSelector(event.target, "a[href]")) {
       event.preventDefault();
       return;
     }
@@ -325,7 +325,7 @@ class RichTextPieceView extends Component {
     // fix unselectable links
     const style = doc.createElement("style");
 
-    style.textContent = "body a { pointer-events: all; }";
+    style.textContent = "body a[href] { pointer-events: all; }";
     doc.head.appendChild(style);
 
     // // @todo make links selectable; dragstart supressing doesn't help — they are still draggable

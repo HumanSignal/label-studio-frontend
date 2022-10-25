@@ -1,15 +1,19 @@
-import React, { Component } from "react";
-import { Checkbox, Form, Radio } from "antd";
+import React, { Component, useCallback, useState } from "react";
+import { Button, Checkbox, Form, Radio } from "antd";
 import { inject, observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
 import Hint from "../../components/Hint/Hint";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
-import Tree from "../../core/Tree";
+import Tree, { TRAVERSE_STOP } from "../../core/Tree";
 import Types from "../../core/Types";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { TagParentMixin } from "../../mixins/TagParentMixin";
+import { FF_DEV_2007, FF_DEV_2244, isFF } from "../../utils/feature-flags";
+import { Block, Elem } from "../../utils/bem";
+import "./Choice/Choice.styl";
+import { LsChevron } from "../../assets/icons";
 
 /**
  * The Choice tag represents a single choice for annotations. Use with the Choices tag or Taxonomy tag to provide specific choice options.
@@ -40,6 +44,7 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   style: types.maybeNull(types.string),
+  ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {} ),
 });
 
 const Model = types
@@ -50,6 +55,7 @@ const Model = types
     // hierarchical Choices used for Taxonomy
     children: Types.unionArray(["choice"]),
     parentTypes: Types.tagsTypes(["Choices", "Taxonomy"]),
+    readonly: types.optional(types.boolean, false),
   })
   .views(self => ({
     get isCheckbox() {
@@ -66,13 +72,54 @@ const Model = types
     canBeUsed() {
       return true;
     },
+    get isLeaf() {
+      if (!self.nestedResults) return true;
+
+      return !self.children?.length;
+    },
+
+    get sel() {
+      return !isFF(FF_DEV_2244) || self.isLeaf ? self._sel : self.children.every(child => child.sel === true);
+    },
+
+    get indeterminate() {
+      return isFF(FF_DEV_2244) && (self.isLeaf ? false : !self.sel && self.children.some(child => child.sel === true));
+    },
+
+    get parentChoice() {
+      return Types.getParentTagOfTypeString(self, "choice");
+    },
+    get isSkipped() {
+      return !self.nestedResults && !!self.parentChoice;
+    },
+    get nestedResults() {
+      return isFF(FF_DEV_2007) && self.parent?.allownested !== false;
+    },
+    get _resultValue() {
+      return self.alias ?? self._value;
+    },
+    get resultValue() {
+      if (isFF(FF_DEV_2007) && self.nestedResults) {
+        const value = [];
+        let choice = self;
+
+        while (choice) {
+          value.unshift(choice._resultValue);
+          choice = choice.parentChoice;
+        }
+        return value;
+      } else {
+        return self._resultValue;
+      }
+    },
   }))
   .volatile(() => ({
     // `selected` is a predefined parameter, we cannot use it for state, so use `sel`
-    sel: false,
+    _sel: false,
   }))
   .actions(self => ({
     toggleSelected() {
+      if (self.parent?.readonly || self.annotation?.readonly) return;
       const choices = self.parent;
       const selected = self.sel;
 
@@ -88,7 +135,12 @@ const Model = types
     },
 
     setSelected(val) {
-      self.sel = val;
+      self._sel = val;
+      if (!self.isLeaf) {
+        self.children.forEach((child)=>{
+          child.setSelected(val);
+        });
+      }
     },
   }))
   .actions(self => {
@@ -120,7 +172,7 @@ class HtxChoiceView extends Component {
 
     const props = {
       checked: item.sel,
-      disabled: item.parent?.readonly,
+      disabled: item.parent?.readonly || item.annotation?.readonly,
       onChange: ev => {
         if (!item.annotation.editable) return;
         item.toggleSelected();
@@ -152,7 +204,69 @@ class HtxChoiceView extends Component {
   }
 }
 
-const HtxChoice = inject("store")(observer(HtxChoiceView));
+// `name` can't be passed into bem components
+const nameWrapper = (Component, name) => {
+  return props => <Component {...props} name={name} />;
+};
+
+const HtxNewChoiceView = ({ item, store }) => {
+  let style = {};
+
+  if (item.style) style = Tree.cssConverter(item.style);
+
+  const showHotkey =
+    (store.settings.enableTooltips || store.settings.enableLabelTooltips) &&
+    store.settings.enableHotkeys &&
+    item.hotkey;
+
+  const changeHandler = useCallback((ev) => {
+    if (!item.annotation.editable) return;
+    item.toggleSelected();
+    ev.nativeEvent.target.blur();
+  }, []);
+
+  const [collapsed, setCollapsed] = useState(false);
+  const toogleCollapsed = useCallback(() => setCollapsed(collapsed => !collapsed), []);
+
+  return (
+    <Block name="choice"
+      mod={{ layout: item.parent.layout, leaf: item.isLeaf, notLeaf: !item.isLeaf, hidden: !item.visible }}>
+      <Elem name="item" mod={{ notLeaf: !item.isLeaf }} style={style}>
+        <Elem
+          name="checkbox"
+          component={nameWrapper(item.isCheckbox ? Checkbox : Radio, item._value)}
+          mod={{ notLeaf: !item.isLeaf }}
+          checked={item.sel}
+          indeterminate={!item.sel && item.indeterminate}
+          disabled={item.parent?.readonly || item.annotation?.readonly}
+          onChange={changeHandler}
+        >
+          {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
+          {showHotkey && (<Hint>[{item.hotkey}]</Hint>)}
+        </Elem>
+        {!item.isLeaf ? (
+          <Elem name="toggle" mod={{ collapsed }} component={Button} type="text" onClick={toogleCollapsed}>
+            <LsChevron />
+          </Elem>
+        ) : false}
+      </Elem>
+      {
+        item.nestedResults && item.children?.length
+          ? <Elem name="children" mod={{ collapsed }}>{Tree.renderChildren(item)}</Elem>
+          : null
+      }
+    </Block>
+  );
+};
+
+const HtxOldChoice = inject("store")(observer(HtxChoiceView));
+const HtxNewChoice = inject("store")(observer(HtxNewChoiceView));
+
+const HtxChoice = (props) => {
+  const HtxChoiceComponent = !isFF(FF_DEV_2007) ? HtxOldChoice : HtxNewChoice;
+
+  return <HtxChoiceComponent {...props} />;
+};
 
 Registry.addTag("choice", ChoiceModel, HtxChoice);
 

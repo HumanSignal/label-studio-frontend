@@ -17,6 +17,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { clamp } from "../../utils/utilities";
 import { guidGenerator } from "../../utils/unique";
 import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
+import { FF_DEV_2394, FF_DEV_3377, isFF } from "../../utils/feature-flags";
 
 /**
  * The Image tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -35,6 +36,7 @@ import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
  * @meta_description Customize Label Studio with the Image tag to annotate images for computer vision machine learning and data science projects.
  * @param {string} name                       - Name of the element
  * @param {string} value                      - Data field containing a path or URL to the image
+ * @param {boolean} [smoothing]               - Enable smoothing, by default it uses user settings
  * @param {string=} [width=100%]              - Image width
  * @param {string=} [maxWidth=750px]          - Maximum image width
  * @param {boolean=} [zoom=false]             - Enable zooming an image with the mouse wheel
@@ -48,6 +50,9 @@ import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
  * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
  * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
  * @param {boolean} [crosshair=false]         - Show crosshair cursor
+ * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
+ * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
+ * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -57,6 +62,7 @@ const TagAttrs = types.model({
   height: types.maybeNull(types.string),
   maxwidth: types.optional(types.string, "100%"),
   maxheight: types.optional(types.string, "calc(100vh - 194px)"),
+  smoothing: types.maybeNull(types.boolean),
 
   // rulers: types.optional(types.boolean, true),
   grid: types.optional(types.boolean, false),
@@ -75,6 +81,13 @@ const TagAttrs = types.model({
   rotatecontrol: types.optional(types.boolean, false),
   crosshair: types.optional(types.boolean, false),
   selectioncontrol: types.optional(types.boolean, true),
+
+  // this property is just to turn lazyload off to e2e tests
+  lazyoff: types.optional(types.boolean, false),
+
+  horizontalalignment: types.optional(types.enumeration(["left", "center", "right"]), "left"),
+  verticalalignment: types.optional(types.enumeration(["top", "center", "bottom"]), "top"),
+  defaultzoom: types.optional(types.enumeration(["auto", "original", "fit"]), "fit"),
 });
 
 const IMAGE_CONSTANTS = {
@@ -214,14 +227,8 @@ const Model = types.model({
   naturalWidth: types.optional(types.integer, 1),
   naturalHeight: types.optional(types.integer, 1),
 
-  /**
-   * Initial width and height of the image
-   */
-  initialWidth: types.optional(types.integer, 1),
-  initialHeight: types.optional(types.integer, 1),
-
-  stageWidth: types.optional(types.integer, 1),
-  stageHeight: types.optional(types.integer, 1),
+  stageWidth: types.optional(types.number, 1),
+  stageHeight: types.optional(types.number, 1),
 
   /**
    * Zoom Scale
@@ -272,6 +279,11 @@ const Model = types.model({
   // Container's sizes causing limits to calculate a scale factor
   containerWidth: 1,
   containerHeight: 1,
+
+  stageZoom: 1,
+  stageZoomX: 1,
+  stageZoomY: 1,
+  currentZoom: 1,
 })).views(self => ({
   get store() {
     return getRoot(self);
@@ -366,7 +378,7 @@ const Model = types.model({
   },
 
   get fillerHeight() {
-    if ((self.rotation + 360) % 180 === 90) {
+    if (self.isSideways) {
       return `${self.naturalWidth / self.naturalHeight * 100}%`;
     } else {
       return `${self.naturalHeight / self.naturalWidth * 100}%`;
@@ -412,16 +424,34 @@ const Model = types.model({
     return getType(name).name;
   },
 
+  get isSideways() {
+    return (self.rotation + 360) % 180 === 90;
+  },
+
   get stageComponentSize() {
-    if ((self.rotation + 360) % 180 === 90) {
+    if (self.isSideways) {
       return {
         width: self.stageHeight,
         height: self.stageWidth,
       };
     }
     return {
-      width: self.stageWidth ,
+      width: self.stageWidth,
       height: self.stageHeight,
+    };
+  },
+
+  get canvasSize() {
+    if (self.isSideways) {
+      return {
+        width: isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoomX : Math.round(self.naturalHeight * self.stageZoomX),
+        height: isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoomY : Math.round(self.naturalWidth * self.stageZoomY),
+      };
+    }
+
+    return {
+      width: isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoomX : Math.round(self.naturalWidth * self.stageZoomX),
+      height: isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoomY : Math.round(self.naturalHeight * self.stageZoomY),
     };
   },
 
@@ -434,10 +464,12 @@ const Model = types.model({
 
   get imageTransform() {
     const imgStyle = {
-      width: `${self.stageWidth}px`,
-      height: `${self.stageHeight}px`,
+      // scale transform leaves gaps on image border, so much better to change image sizes
+      width: `${self.stageWidth * self.zoomScale}px`,
+      height: `${self.stageHeight * self.zoomScale}px`,
       transformOrigin: "left top",
-      transform: "none",
+      // We should always set some transform to make the image rendering in the same way all the time
+      transform: "translate3d(0,0,0)",
       filter: `brightness(${self.brightnessGrade}%) contrast(${self.contrastGrade}%)`,
     };
     const imgTransform = [];
@@ -446,7 +478,6 @@ const Model = types.model({
       const { zoomingPositionX = 0, zoomingPositionY = 0 } = self;
 
       imgTransform.push("translate3d(" + zoomingPositionX + "px," + zoomingPositionY + "px, 0)");
-      imgTransform.push("scale3d(" + self.zoomScale + ", " + self.zoomScale + ", 1)");
     }
 
     if (self.rotation) {
@@ -466,6 +497,18 @@ const Model = types.model({
       imgStyle.transform = imgTransform.join(" ");
     }
     return imgStyle;
+  },
+
+  get maxScale() {
+    return self.isSideways
+      ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
+      : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+  },
+
+  get coverScale() {
+    return self.isSideways
+      ? Math.max(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
+      : Math.max(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
   },
 }))
 
@@ -606,11 +649,51 @@ const Model = types.model({
     /**
      * Set zoom
      */
-    setZoom(scale, x, y) {
+    setZoom(scale) {
+      self.currentZoom = clamp(scale, 1, Infinity);
+
+      // cool comment about all this stuff
+      const maxScale = self.maxScale;
+      const coverScale = self.coverScale;
+
+      if (maxScale > 1) { // image < container
+        if (scale < maxScale) { // scale = 1 or before stage size is max
+          self.stageZoom = scale; // scale stage
+          self.zoomScale = 1; // don't scale image
+        } else {
+          self.stageZoom = maxScale; // scale stage to max
+          self.zoomScale = scale / maxScale; // scale image for the rest scale
+        }
+      } else { // image > container
+        if (scale > maxScale) { // scale = 1 or any other zoom bigger then viewport
+          self.stageZoom = maxScale; // stage squizzed
+          self.zoomScale = scale; // scale image for the rest scale : scale image usually
+        } else { // negative zoom bigger than image negative scale
+          self.stageZoom = scale; // squize stage more
+          self.zoomScale = 1; // don't scale image
+        }
+      }
+
+      if (self.zoomScale > 1) {
+        // zoomScale scales image above maxScale, so scale the rest of stage the same way
+        const z = Math.min(maxScale * self.zoomScale, coverScale);
+
+        if (self.containerWidth / self.naturalWidth > self.containerHeight / self.naturalHeight) {
+          self.stageZoomX = z;
+          self.stageZoomY = self.stageZoom;
+        } else {
+          self.stageZoomX = self.stageZoom;
+          self.stageZoomY = z;
+        }
+      } else {
+        self.stageZoomX = self.stageZoom;
+        self.stageZoomY = self.stageZoom;
+      }
+    },
+
+    updateImageAfterZoom() {
       const { stageWidth, stageHeight } = self;
-      
-      self.zoomScale = scale;
-      self.setZoomPosition(x, y);
+
       self._recalculateImageParams();
 
       if (stageWidth !== self.stageWidth || stageHeight !== self.stageHeight) {
@@ -624,46 +707,84 @@ const Model = types.model({
     },
 
     setZoomPosition(x, y) {
-      self.zoomingPositionX = clamp(
-        x,
-        self.stageComponentSize.width - self.stageComponentSize.width * self.zoomScale,
-        0,
-      );
-      self.zoomingPositionY = clamp(
-        y,
-        self.stageComponentSize.height - self.stageComponentSize.height * self.zoomScale,
-        0,
-      );
+      const min = {
+        x: (isFF(FF_DEV_3377) ? self.canvasSize.width : self.containerWidth) - self.stageComponentSize.width * self.zoomScale,
+        y: (isFF(FF_DEV_3377) ? self.canvasSize.height : self.containerHeight) - self.stageComponentSize.height * self.zoomScale,
+      };
+
+      self.zoomingPositionX = clamp(x, min.x, 0);
+      self.zoomingPositionY = clamp(y, min.y, 0);
     },
 
-    handleZoom(val, mouseRelativePos = { x: self.stageWidth / 2, y: self.stageHeight / 2 }) {
+    resetZoomPositionToCenter() {
+      const { containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
+      const { width, height } = stageComponentSize;
+
+      self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
+    },
+
+    sizeToFit() {
+      const { maxScale } = self;
+
+      self.defaultzoom = "fit";
+      self.setZoom(maxScale);
+      self.updateImageAfterZoom();
+      self.resetZoomPositionToCenter();
+    },
+
+    sizeToOriginal() {
+      const { maxScale } = self;
+
+      self.defaultzoom = "original";
+      self.setZoom(maxScale > 1 ? 1 : 1 / maxScale);
+      self.updateImageAfterZoom();
+      self.resetZoomPositionToCenter();
+    },
+
+    sizeToAuto() {
+      self.defaultzoom = "auto";
+      self.setZoom(1);
+      self.updateImageAfterZoom();
+      self.resetZoomPositionToCenter();
+    },
+
+    handleZoom(val, mouseRelativePos = { x: self.canvasSize.width / 2, y: self.canvasSize.height / 2 }) {
       if (val) {
-        self.freezeHistory();
-        let stageScale = self.stageScale;
-        let zoomScale = self.zoomScale;
+        let zoomScale = self.currentZoom;
+
+        zoomScale = val > 0 ? zoomScale * self.zoomBy : zoomScale / self.zoomBy;
+        if (self.negativezoom !== true && zoomScale <= 1) {
+          self.setZoom(1);
+          self.setZoomPosition(0, 0);
+          self.updateImageAfterZoom();
+          return;
+        }
+        if (zoomScale <= 1) {
+          self.setZoom(zoomScale);
+          self.setZoomPosition(0, 0);
+          self.updateImageAfterZoom();
+          return;
+        }
+
+        // DON'T TOUCH THIS
+        let stageScale = self.zoomScale;
 
         const mouseAbsolutePos = {
           x: (mouseRelativePos.x - self.zoomingPositionX) / stageScale,
           y: (mouseRelativePos.y - self.zoomingPositionY) / stageScale,
         };
 
-        stageScale = val > 0 ? stageScale * self.zoomBy : stageScale / self.zoomBy;
-        zoomScale = val > 0 ? zoomScale * self.zoomBy : zoomScale / self.zoomBy;
+        self.setZoom(zoomScale);
+
+        stageScale = self.zoomScale;
 
         const zoomingPosition = {
           x: -(mouseAbsolutePos.x - mouseRelativePos.x / stageScale) * stageScale,
           y: -(mouseAbsolutePos.y - mouseRelativePos.y / stageScale) * stageScale,
         };
 
-        if (self.negativezoom !== true && zoomScale <= 1) {
-          self.setZoom(1, 0, 0);
-          return;
-        }
-        if (zoomScale <= 1) {
-          self.setZoom(zoomScale, 0, 0);
-          return;
-        }
-        self.setZoom(zoomScale, zoomingPosition.x, zoomingPosition.y);
+        self.setZoomPosition(zoomingPosition.x, zoomingPosition.y);
+        self.updateImageAfterZoom();
       }
     },
 
@@ -689,11 +810,6 @@ const Model = types.model({
       const currentTool = self.getToolsManager().findSelectedTool();
 
       currentTool?.updateCursor?.();
-
-      // Konva updates ref repeatedly and this breaks brush scaling
-      if (self.initialWidth > 1) return;
-      self.initialWidth = ref && ref.attrs && ref.attrs.width ? ref.attrs.width : 1;
-      self.initialHeight = ref && ref.attrs && ref.attrs.height ? ref.attrs.height : 1;
     },
 
     // @todo remove
@@ -705,12 +821,15 @@ const Model = types.model({
       self.rotation = (self.rotation + degree + 360) % 360;
       let ratioK = 1 / self.stageRatio;
 
-      if ((self.rotation + 360) % 180 === 90) {
+      if (self.isSideways) {
         self.stageRatio = self.naturalWidth / self.naturalHeight;
       } else {
         self.stageRatio = 1;
       }
       ratioK = ratioK * self.stageRatio;
+
+      self.setZoom(self.currentZoom);
+
       if (degree === -90) {
         this.setZoomPosition(
           self.zoomingPositionY * ratioK,
@@ -727,20 +846,13 @@ const Model = types.model({
           self.zoomingPositionX * ratioK,
         );
       }
+
+      self.updateImageAfterZoom();
     },
 
     _recalculateImageParams() {
-      let k;
-
-      if ((self.rotation + 360) % 180 === 90) {
-        k = Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth, self.zoomScale);
-      } else {
-        k = Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight, self.zoomScale);
-      }
-
-      self.stageWidth = Math.round(self.naturalWidth * k);
-      self.stageHeight = Math.round(self.naturalHeight * k);
-      self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
+      self.stageWidth = isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoom : Math.round(self.naturalWidth * self.stageZoom);
+      self.stageHeight = isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoom : Math.round(self.naturalHeight * self.stageZoom);
     },
 
     _updateImageSize({ width, height, userResize }) {
@@ -750,6 +862,13 @@ const Model = types.model({
       if (width > 1 && height > 1) {
         self.containerWidth = width;
         self.containerHeight = height;
+
+        // reinit zoom to calc stageW/H
+        self.setZoom(self.currentZoom);
+
+        if (isFF(FF_DEV_2394)) {
+          self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
+        }
         self._recalculateImageParams();
       }
 
@@ -764,12 +883,25 @@ const Model = types.model({
     },
 
     _updateRegionsSizes({ width, height, naturalWidth, naturalHeight, userResize }) {
+      const _historyLength = self.annotation?.history?.history?.length;
+
+      self.annotation.history.freeze();
+
       self.regions.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
       self.regs.forEach(shape => {
         shape.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
       });
+      self.drawingRegion?.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
+
+      setTimeout(self.annotation.history.unfreeze, 0);
+
+      //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
+      if (_historyLength <= 1){
+        // Don't force unselection of regions during the updateObjects callback from history reinit
+        setTimeout(() => self.annotation.reinitHistory(false), 0);
+      }
     },
 
     updateImageSize(ev) {
@@ -783,7 +915,14 @@ const Model = types.model({
       // mobx do some batch update here, so we have to reset it asynchronously
       // this happens only after initial load, so it's safe
       self.setReady(true);
-      setTimeout(self.annotation.reinitHistory, 0);
+
+      if (self.defaultzoom === "fit") {
+        self.sizeToFit();
+      } else {
+        self.sizeToAuto();
+      }
+      // Don't force unselection of regions during the updateObjects callback from history reinit
+      setTimeout(() => self.annotation.reinitHistory(false), 0);
     },
 
     checkLabels() {

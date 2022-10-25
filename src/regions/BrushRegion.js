@@ -169,7 +169,23 @@ const Model = types
         return self.touches.length;
       },
       get bboxCoords() {
-        if (!self.imageData) return null;
+        if (!self.imageData) {
+          const points = { x: [], y:[] };
+
+          for(let i = 0; i in (self.touches?.[0]?.points ?? []); i += 2) {
+            const curX = (self.touches?.[0]?.points ?? [])[i];
+            const curY = (self.touches?.[0]?.points ?? [])[i+1];
+
+            points.x.push(curX);
+            points.y.push(curY);
+          }
+          return {
+            left: Math.min(...points.x),
+            top: Math.min(...points.y),
+            right: Math.max(...points.x),
+            bottom: Math.max(...points.y),
+          };
+        }
         const imageBBox = Geometry.getImageDataBBox(self.imageData.data, self.imageData.width, self.imageData.height);
 
         if (!imageBBox) return null;
@@ -304,7 +320,7 @@ const Model = types
       },
 
       updateImageSize(wp, hp, sw, sh) {
-        if (self.parent.initialWidth > 1 && self.parent.initialHeight > 1) {
+        if (self.parent.stageWidth > 1 && self.parent.stageHeight > 1) {
           self.touches.forEach(stroke => stroke.updateImageSize(wp, hp, sw, sh));
 
           self.needsUpdate = self.needsUpdate + 1;
@@ -340,17 +356,17 @@ const Model = types
        *   }
        * }
        * @typedef {Object} BrushRegionResult
-       * @property {number} original_width width of the original image (px)
-       * @property {number} original_height height of the original image (px)
-       * @property {number} image_rotation rotation degree of the image (deg)
+       * @property {number} original_width  - Width of the original image (px)
+       * @property {number} original_height - Height of the original image (px)
+       * @property {number} image_rotation  - Rotation degree of the image (deg)
        * @property {Object} value
-       * @property {"rle"} value.format format of the masks, only RLE is supported for now
-       * @property {number[]} value.rle RLE-encoded image
+       * @property {"rle"} value.format     - Format of the masks, only RLE is supported for now
+       * @property {number[]} value.rle     - RLE-encoded image
        */
 
       /**
        * @param {object} options
-       * @param {boolean} [options.fast] saving only touches, without RLE
+       * @param {boolean} [options.fast] Saving only touches, without RLE
        * @return {BrushRegionResult}
        */
       serialize(options) {

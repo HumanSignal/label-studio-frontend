@@ -1,5 +1,5 @@
-import React, { RefObject, useEffect, useRef, useState } from "react";
-import { FixedSizeList } from "react-window";
+import React, { RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { VariableSizeList } from "react-window";
 
 type ExtendedData = Readonly<{
   id: string,
@@ -57,6 +57,7 @@ const countChildNodes = (item: RowItem[]) => {
 };
 
 const blankItem = (path: string[], depth: number): RowItem => ({ label: "", depth, path, isOpen: true });
+let heightAccumulator: { [key: string]: number } = {};
 
 const TreeStructure = ({
   items,
@@ -65,6 +66,7 @@ const TreeStructure = ({
   rowHeight,
   maxHeightPercentage,
   minWidth,
+  maxWidth,
   transformationCallback,
   defaultExpanded,
 }: {
@@ -74,6 +76,7 @@ const TreeStructure = ({
   rowHeight: number,
   maxHeightPercentage: number,
   minWidth: number,
+  maxWidth: number,
   defaultExpanded: boolean,
   transformationCallback: transformationCallback,
 }) => {
@@ -81,17 +84,35 @@ const TreeStructure = ({
 
   const [data, setData] = useState<ExtendedData[]>();
   const [openNodes, setOpenNodes] = useState<{ [key: string]: number }>({});
-  const [height, setHeight] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+  const [width, setWidth] = useState(minWidth);
+  const listRef = useRef<RefObject<HTMLDivElement> | any>();
   const containerRef = useRef<RefObject<HTMLDivElement> | any>();
+  const scrollableElement = containerRef.current?.firstChild;
+  
+  if (scrollableElement) scrollableElement.style.overflowX = "hidden";
 
-  const calcHeight = () => {
-    const visibleHeight = (data?.length || 0) * rowHeight;
+  const rowHeightCalc = (index: number): number => {
+    return heightAccumulator[`${index}`] || rowHeight;
+  };
+
+  const rowHeightReCalcAll = () => {
+    heightAccumulator = {};
+    listRef.current.resetAfterIndex(0);
+  };
+
+  const containerHeightCalc = () => {
+    listRef.current.resetAfterIndex(0);
+
+    const visibleHeight = listRef.current?._outerRef.firstChild?.offsetHeight;
     const maxHeight = maxHeightPercentage * 0.01 * browserHeight;
 
     return visibleHeight > maxHeight ? maxHeight : visibleHeight;
   };
 
-  const updateHeight = () => setHeight(calcHeight());
+  const updateHeight = () => {
+    setContainerHeight(containerHeightCalc());
+  };
 
   const toggle = (id: string) => {
     const toggleItem = defaultExpanded
@@ -104,13 +125,66 @@ const TreeStructure = ({
 
     setOpenNodes({ ...openNodes, ...toggleItem });
     setData(recursiveTreeWalker({ items, toggleItem }));
-    updateHeight();
+    setContainerHeight(maxHeightPercentage * 0.01 * browserHeight);
+    rowHeightReCalcAll();
   };
-
+  
   const addInside = (id?: string) => {
-    if (id) setData(recursiveTreeWalker({ items, addInsideId: id }));
+    if (id) {
+      setData(recursiveTreeWalker({ items, addInsideId: id }));
+    }
     else setData(recursiveTreeWalker({ items }));
     updateHeight();
+
+  };
+
+  const Row = ({
+    data: dataGetter,
+    index,
+    rowStyle: style,
+    rowComponent: RowComponent,
+  }: {
+    data: (
+      index: number,
+    ) => {
+      row:
+      | Readonly<{
+        id: string,
+        isLeaf: boolean,
+        name: string,
+        nestingLevel: number,
+        padding: number,
+        path: string[],
+      }>
+      | undefined,
+    },
+    index: number,
+    rowStyle: any,
+    rowComponent: React.FC<any>,
+  }) => {
+    const item = dataGetter(index);
+
+    const dimensionCallback = useCallback((rowRef) => {
+      const key = `${index}`;
+      const scrollbarWidth = scrollableElement?.offsetWidth - scrollableElement?.clientWidth || 0;
+      const itemWidth = rowRef.offsetWidth + scrollbarWidth + 5;
+      const itemHeight = rowRef.scrollHeight;
+
+      if (width < itemWidth) {
+        if (maxWidth < itemWidth) {
+          heightAccumulator[key] = itemHeight;
+          setWidth(maxWidth);
+        } else {
+          heightAccumulator[key] = rowHeight;
+          setWidth(itemWidth);
+        }
+      } else heightAccumulator[key] = rowHeight;
+      updateHeight();
+    }, [width]);
+
+    return (
+      <RowComponent {...{ item, style, dimensionCallback, maxWidth }} />
+    );
   };
 
   const recursiveTreeWalker = ({
@@ -132,7 +206,7 @@ const TreeStructure = ({
       const id = `${label}-${definedDepth}`;
       const addInside = addInsideId === id;
       const isOpen = (toggleItem && toggleItem[id]) || openNodes[id] || addInside || (defaultExpanded ? 1 : 2);
-
+      
       const transformedData: ExtendedData = transformationCallback({
         node: items[i],
         nestingLevel: definedDepth,
@@ -160,19 +234,23 @@ const TreeStructure = ({
   useEffect(() => {
     setData(recursiveTreeWalker({ items }));
   }, [items]);
-  useEffect(() => updateHeight(), [data]);
+
+  useEffect(() => {
+    if (data?.length === 0) updateHeight();
+  }, [data]);
 
   return (
     <div ref={containerRef}>
-      <FixedSizeList
-        height={height}
+      <VariableSizeList
+        ref={listRef}
+        height={containerHeight + 4}
         itemCount={data?.length || 0}
-        itemSize={rowHeight}
-        width={containerRef?.current?.offsetWidth || minWidth}
+        itemSize={rowHeightCalc}
+        width={width}
         itemData={(index: number) => ({ row: data && data[index], toggle, addInside })}
       >
-        {rowComponent}
-      </FixedSizeList>
+        {({ data, index, style }) => <Row data={data} rowStyle={style} index={index} rowComponent={rowComponent} />}
+      </VariableSizeList>
     </div>
   );
 };

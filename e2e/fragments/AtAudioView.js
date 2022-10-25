@@ -5,6 +5,9 @@ const Helpers = require("../tests/helpers");
 
 module.exports = {
   waitForAudio() {
-    I.executeAsyncScript(Helpers.waitForAudio);
+    I.executeScript(Helpers.waitForAudio);
+  },
+  getCurrentAudioTime() {
+    return I.executeScript(Helpers.getCurrentAudioTime);
   },
 };

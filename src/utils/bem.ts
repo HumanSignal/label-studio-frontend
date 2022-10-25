@@ -18,7 +18,7 @@ interface CNMod {
   [key: string]: unknown;
 }
 
-interface CN {
+export interface CN {
   block: (name: string) => CN;
   elem: (name: string) => CN;
   mod: (mods?: CNMod) => CN;
@@ -244,5 +244,7 @@ export const BemWithSpecifiContext = (context?: Context<CN | null>) => {
 
 export const { Block, Elem } = BemWithSpecifiContext(BlockContext);
 
-
+export const useBEM = () => {
+  return useContext(BlockContext)!;
+};
 

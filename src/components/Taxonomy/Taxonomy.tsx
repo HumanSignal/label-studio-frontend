@@ -4,7 +4,7 @@ import { Dropdown, Menu } from "antd";
 import { useToggle } from "../../hooks/useToggle";
 import { isArraysEqual } from "../../utils/utilities";
 import { LsChevron } from "../../assets/icons";
-import TreeStructure, { RowItem } from "../TreeStructure/TreeStructure";
+import TreeStructure from "../TreeStructure/TreeStructure";
 
 import styles from "./Taxonomy.module.scss";
 
@@ -25,6 +25,8 @@ type TaxonomyOptions = {
   showFullPath?: boolean,
   pathSeparator?: string,
   maxUsages?: number,
+  maxWidth?: number,
+  minWidth?: number,
   placeholder?: string,
 };
 
@@ -41,6 +43,7 @@ type TaxonomyProps = {
   onAddLabel?: onAddLabelCallback,
   onDeleteLabel?: onDeleteLabelCallback,
   options?: TaxonomyOptions,
+  isReadonly?: boolean,
 };
 
 type TaxonomySelectedContextValue = [TaxonomyPath[], (path: TaxonomyPath, value: boolean) => any];
@@ -56,10 +59,9 @@ type UserLabelFormProps = {
 
 interface RowProps {
   style: any;
-  index: number;
-  data: (
-    index: number,
-  ) => {
+  dimensionCallback: (ref: any) => void;
+  maxWidth: number;
+  item: {
     row: {
       id: string,
       isOpen: boolean,
@@ -69,8 +71,8 @@ interface RowProps {
       name: string,
       padding: number,
       isLeaf: boolean,
+      origin?: any,
     },
-    origin?: any,
     children?: any,
     toggle: (id: string) => void,
     addInside: (id?: string) => void,
@@ -111,16 +113,27 @@ const UserLabelForm = ({ onAddLabel, onFinish, path }: UserLabelFormProps) => {
   );
 };
 
-const SelectedList = () => {
+const SelectedList = ({ isReadonly, flatItems } : { isReadonly:boolean, flatItems:TaxonomyItem[] }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
   const { showFullPath, pathSeparator = " / " } = useContext(TaxonomyOptionsContext);
 
+  const selectedLabels = selected.map((selectedItem: string[]) =>
+    selectedItem.map(
+      (value: string) => {
+        const label = flatItems.find(taxonomyItem => taxonomyItem.path[taxonomyItem.path.length - 1] === value)?.label;
+        
+        return label ?? value;  
+      }),
+  );
+  
   return (
     <div className={styles.taxonomy__selected}>
-      {selected.map(path => (
+      {selectedLabels.map((path, index) => (
         <div key={path.join("|")}>
           {showFullPath ? path.join(pathSeparator) : path[path.length - 1]}
-          <input type="button" onClick={() => setSelected(path, false)} value="×" />
+          {!isReadonly &&
+            <input type="button" onClick={() => setSelected(selected[index], false)} value="×" />
+          }
         </div>
       ))}
     </div>
@@ -133,9 +146,7 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
-const Item: React.FC<RowProps> = (props: RowProps) => {
-  const { style, data, index } = props;
-  const item = data(index);
+const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: RowProps) => {
   const {
     row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf },
     toggle,
@@ -151,7 +162,7 @@ const Item: React.FC<RowProps> = (props: RowProps) => {
   const limitReached = maxUsagesReached && !checked;
   const disabled = onlyLeafsAllowed || limitReached;
 
-  const onClick = () => leafsOnly && toggle(id);
+  const onClick = () => onlyLeafsAllowed && toggle(id);
   const arrowStyle = !isLeaf ? { transform: isOpen ? "rotate(180deg)" : "rotate(90deg)" } : { display: "none" };
 
   const title = onlyLeafsAllowed
@@ -175,65 +186,92 @@ const Item: React.FC<RowProps> = (props: RowProps) => {
   }, [item, onDeleteLabel]);
 
   const customClassname =
-    item.origin === "session"
+    item.row.origin === "session"
       ? styles.taxonomy__item_session
-      : item.origin === "user"
+      : item.row.origin === "user"
         ? styles.taxonomy__item_user
         : "";
 
   const isAddingItem = name === "" && onAddLabel;
 
+  const itemContainer = useRef<any>();
+  const scrollSpace = maxWidth - itemContainer.current?.parentElement.offsetWidth || 0;
+  const labelMaxWidth = maxWidth - padding - scrollSpace - 90;
+  
+  useEffect(() => {
+    const container = itemContainer?.current;
+    
+    if (container) {
+      container.toggle = toggle;
+      dimensionCallback(container);
+    }
+  }, []);
+  
+
   return (
-    <div style={{ paddingLeft: padding, ...style }}>
+    <div ref={itemContainer} style={{ paddingLeft: padding, maxWidth, ...style, width: "fit-content" }}>
       {!isAddingItem ? (
-        <div className={[styles.taxonomy__item, customClassname].join(" ")}>
-          <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
-            <LsChevron stroke="#09f" style={arrowStyle} />
+        <>
+          <div className={styles.taxonomy__measure}>
+            <label>{name}</label>
           </div>
-          <label onClick={onClick} title={title} className={disabled ? styles.taxonomy__collapsable : undefined}>
+          <div className={[styles.taxonomy__item, customClassname].join(" ")}>
+            <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
+              <LsChevron stroke="#09f" style={arrowStyle} />
+            </div>
             <input
+              className="item"
+              id={id}
               type="checkbox"
               disabled={disabled}
               checked={checked}
               ref={setIndeterminate}
               onChange={e => setSelected(path, e.currentTarget.checked)}
             />
-            {name}
-          </label>
-          {!isFiltering && (
-            <div className={styles.taxonomy__extra}>
-              <span className={styles.taxonomy__extra_count}>{childCount}</span>
-              {onAddLabel && (
-                <div className={styles.taxonomy__extra_actions}>
-                  <Dropdown
-                    destroyPopupOnHide // important for long interactions with huge taxonomy
-                    trigger={["click"]}
-                    overlay={(
-                      <Menu>
-                        <Menu.Item
-                          key="add-inside"
-                          className={styles.taxonomy__action}
-                          onClick={() => {
-                            addChild(id);
-                          }}
-                        >
-                          Add Inside
-                        </Menu.Item>
-                        {item.origin === "session" && (
-                          <Menu.Item key="delete" className={styles.taxonomy__action} onClick={onDelete}>
-                            Delete
+            <label
+              htmlFor={id}
+              style={{ maxWidth: `${labelMaxWidth}px` }}
+              onClick={onClick}
+              title={title}
+              className={disabled ? styles.taxonomy__collapsable : undefined}
+            >
+              {name}
+            </label>
+            {!isFiltering && (
+              <div className={styles.taxonomy__extra}>
+                <span className={styles.taxonomy__extra_count}>{childCount}</span>
+                {onAddLabel && (
+                  <div className={styles.taxonomy__extra_actions}>
+                    <Dropdown
+                      destroyPopupOnHide // important for long interactions with huge taxonomy
+                      trigger={["click"]}
+                      overlay={(
+                        <Menu>
+                          <Menu.Item
+                            key="add-inside"
+                            className={styles.taxonomy__action}
+                            onClick={() => {
+                              addChild(id);
+                            }}
+                          >
+                            Add Inside
                           </Menu.Item>
-                        )}
-                      </Menu>
-                    )}
-                  >
-                    <div>...</div>
-                  </Dropdown>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+                          {item.row.origin === "session" && (
+                            <Menu.Item key="delete" className={styles.taxonomy__action} onClick={onDelete}>
+                              Delete
+                            </Menu.Item>
+                          )}
+                        </Menu>
+                      )}
+                    >
+                      <div>...</div>
+                    </Dropdown>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </>
       ) : (
         <UserLabelForm key="" onAddLabel={onAddLabel} onFinish={() => addChild()} path={path} />
       )}
@@ -291,7 +329,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
   const [search, setSearch] = useState("");
   const predicate = (item: TaxonomyItem) => item.label.toLocaleLowerCase().includes(search);
   const onInput = (e: FormEvent<HTMLInputElement>) => setSearch(e.currentTarget.value.toLocaleLowerCase());
-  const { onAddLabel } = useContext(TaxonomyOptionsContext);
+  const { onAddLabel, minWidth, maxWidth } = useContext(TaxonomyOptionsContext);
   const [isAdding, addInside, closeForm] = useToggle(false);
 
   const list = search ? filterTreeByPredicate(flatten, predicate) : items;
@@ -307,27 +345,28 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
   }, [show]);
 
   const dataTransformation = ({
-    node: { children, label, depth, path },
+    node: { children, depth, label, origin, path },
     nestingLevel,
     isFiltering,
     isOpen,
     childCount,
   }: {
-    node: RowItem,
+    node: TaxonomyItem,
     nestingLevel: number,
     isFiltering: boolean,
     isOpen: boolean,
     childCount: number | undefined,
   }) => ({
+    childCount,
     id: `${label}-${depth}`,
+    isFiltering,
     isLeaf: !children?.length,
+    isOpen,
     isOpenByDefault: true,
     name: label,
-    childCount,
     nestingLevel,
+    origin,
     padding: nestingLevel * 10 + 10,
-    isFiltering,
-    isOpen,
     path,
   });
 
@@ -341,18 +380,17 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
         onInput={onInput}
         ref={inputRef}
       />
-      {show && (
-        <TreeStructure
-          items={list}
-          rowComponent={Item}
-          flatten={search !== ""}
-          rowHeight={30}
-          defaultExpanded={false}
-          maxHeightPercentage={50}
-          minWidth={300}
-          transformationCallback={dataTransformation}
-        />
-      )}
+      <TreeStructure
+        items={list}
+        rowComponent={Item}
+        flatten={search !== ""}
+        rowHeight={30}
+        defaultExpanded={false}
+        maxHeightPercentage={50}
+        minWidth={Number(minWidth) || 200}
+        maxWidth={Number(maxWidth) || 600}
+        transformationCallback={dataTransformation}
+      />
       {onAddLabel && search === "" && (
         <div className={styles.taxonomy__add__container}>
           {isAdding ? (
@@ -375,6 +413,7 @@ const Taxonomy = ({
   onAddLabel,
   onDeleteLabel,
   options = {},
+  isReadonly = false,
 }: TaxonomyProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const taxonomyRef = useRef<HTMLDivElement>(null);
@@ -387,13 +426,7 @@ const Taxonomy = ({
     if ([e.target, e.target.parentNode].some(n => n?.classList?.contains(cn))) return;
     if (!taxonomyRef.current?.contains(e.target)) close();
   }, []);
-  const onEsc = useCallback(e => {
-    if (e.key === "Escape") {
-      close();
-      e.stopPropagation();
-    }
-  }, []);
-
+ 
   const isOpenClassName = isOpen ? styles.taxonomy_open : "";
 
   const flatten = useMemo(() => {
@@ -408,6 +441,7 @@ const Taxonomy = ({
   }, [items]);
 
   const [selected, setInternalSelected] = useState(externalSelected);
+  
   const contextValue: TaxonomySelectedContextValue = useMemo(() => {
     const setSelected = (path: TaxonomyPath, value: boolean) => {
       const newSelected = value ? [...selected, path] : selected.filter(current => !isArraysEqual(current, path));
@@ -425,31 +459,74 @@ const Taxonomy = ({
     return { ...options, maxUsagesReached, onAddLabel, onDeleteLabel };
   }, [options, options.maxUsages, options.maxUsages ? selected : 0]);
 
+  const onKeyDown = useCallback(e => {
+    const taxonomyList: NodeListOf<HTMLElement> | undefined = taxonomyRef.current?.querySelectorAll('.item');
+    const searchInput = taxonomyRef.current?.querySelector("input");
+    const focusedElement: HTMLInputElement | Element | any  = document.activeElement || undefined;
+    const taxonomyHasItems = taxonomyList && taxonomyList.length > 0;
+    const index = (taxonomyList && focusedElement)
+      ? Array.from(taxonomyList).findIndex((taxonomyItem => taxonomyItem.id === focusedElement.id))
+      : -1;
+    const shiftFocus = (index: number, shift: number) => taxonomyHasItems && taxonomyList[index + shift].focus();
+    // to not scroll the dropdown during jumping over checkboxes
+    const dontDoubleScroll = (e: KeyboardEvent) => {
+      if (["text", "checkbox"].includes((e.target as HTMLInputElement).type)) e.preventDefault();
+    };
+
+    switch (e.key) {
+      case "Escape":
+        close();
+        e.stopPropagation();
+        break;
+      case "ArrowDown":
+        dontDoubleScroll(e);
+        if (e.shiftKey) {
+          setOpen(true);
+          searchInput && searchInput.focus();
+        }
+        if (index >= 0) shiftFocus(index, 1);
+        if (searchInput === focusedElement) shiftFocus(0, 0);
+        break;
+      case "ArrowUp":
+        dontDoubleScroll(e);
+        if (index > 0) shiftFocus(index, -1);
+        else if (index === 0) searchInput && searchInput.focus();
+        break;
+      case "ArrowRight":
+        if (index >= 0) focusedElement.parentNode?.parentNode?.toggle(focusedElement.id);
+        searchInput && searchInput.focus();
+        break;
+      default:
+        break;
+    }   
+  }, []);
+
   useEffect(() => {
     setInternalSelected(externalSelected);
   }, [externalSelected]);
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.addEventListener("click", onClickOutside, true);
-      document.body.addEventListener("keydown", onEsc);
-    } else {
+    document.body.addEventListener("click", onClickOutside, true);
+    document.body.addEventListener("keydown", onKeyDown);
+    return () => {
       document.body.removeEventListener("click", onClickOutside);
-      document.body.removeEventListener("keydown", onEsc);
-    }
-  }, [isOpen]);
+      document.body.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
 
   return (
     <TaxonomySelectedContext.Provider value={contextValue}>
       <TaxonomyOptionsContext.Provider value={optionsWithMaxUsages}>
-        <SelectedList />
-        <div className={[styles.taxonomy, isOpenClassName].join(" ")} ref={taxonomyRef}>
-          <span onClick={() => setOpen(val => !val)}>
-            {options.placeholder || "Click to add..."}
-            <LsChevron stroke="#09f" />
-          </span>
-          <TaxonomyDropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} />
-        </div>
+        <SelectedList isReadonly={isReadonly} flatItems={flatten} />
+        {!isReadonly && (
+          <div className={[styles.taxonomy, isOpenClassName].join(" ")} ref={taxonomyRef}>
+            <span onClick={() => setOpen(val => !val)}>
+              {options.placeholder || "Click to add..."}
+              <LsChevron stroke="#09f" />
+            </span>
+            <TaxonomyDropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} />
+          </div>
+        )}
       </TaxonomyOptionsContext.Provider>
     </TaxonomySelectedContext.Provider>
   );

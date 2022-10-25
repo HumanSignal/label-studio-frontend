@@ -1,0 +1,155 @@
+.tree
+  user-select none
+
+  &-list
+    display block
+
+  &-treenode
+    min-height 32px
+    display flex
+    padding 0 4px
+    align-items center
+    position relative
+    max-width 100%
+    box-sizing border-box
+
+    &:hover,
+    &-selected
+      background-color var(--selection-color, rgba(#000, 0.04))
+
+    &:hover .outliner-item__controls
+      display grid
+
+  &-switcher
+    width 24px
+    height 24px
+    opacity 0.4
+    transform rotate(-90deg)
+
+    &_open
+      transform rotate(0deg)
+
+    &-noop
+      display none
+      width calc(24px - 16px)
+
+  &-node
+    &-content-wrapper
+      flex 1
+      padding 0 4px
+      display flex
+      align-items center
+      max-width 100%
+
+  &-iconEle
+    height 24px
+    display flex
+    flex none
+    height: 32px;
+    max-width 24px
+    width min-content
+    align-items center
+    justify-content center
+    align-self: flex-start;
+    color var(--icon-color)
+
+    svg
+      width 24px
+      height 24px
+
+  &-indent
+    display inline-block
+    height 0
+
+    &-unit
+      width 24px
+      display inline-block
+
+  &-title
+    flex 1
+    padding-left 5px
+
+  &__node
+    &_hidden
+      opacity 0.4
+
+.outliner-item
+  min-height 32px
+  position relative
+
+  &__content
+    display flex
+    min-height 32px
+    align-items center
+    justify-content space-between
+
+  &__index
+    width 18px
+    height 18px
+    display flex
+    font-size 9px
+    color #fff
+    margin-right 4px
+    text-align center
+    align-items center
+    border-radius 4px
+    justify-content center
+    background-color var(--text-color, #000)
+
+  &__title
+    flex 1
+    color var(--text-color, #000)
+
+  &__controls
+    top 0
+    right 0
+    height 32px
+    display none
+    position absolute
+    align-items center
+    justify-content center
+    grid-template-columns repeat(5, 32px)
+
+    &_withControls
+      grid-template-columns repeat(6, 32px)
+
+  &__control
+    width 32px
+    height 32px
+    display flex
+    align-items center
+    justify-content center
+
+    &_type
+      &_score
+        font-family 'Roboto Mono'
+
+      &_predict
+        color $magic_color
+
+  &:hover &__controls
+    display grid
+
+.ocr
+  background none
+  position relative
+  padding 0 0 8px 0
+
+  ~/_hidden &
+    background: #fff
+
+  &_empty
+    display none
+
+  &_collapsed
+    height: 36px
+    overflow-y hidden
+
+  &__collapse
+    position absolute
+    width: 24px
+    height: 24px
+    top: 6px
+    right: 8px
+    opacity 0.25
+    padding: 0

@@ -3,6 +3,20 @@ import { types } from "mobx-state-tree";
 import Utils from "../utils";
 import throttle from "lodash.throttle";
 import { MIN_SIZE } from "../tools/Base";
+import { Hotkey } from "../core/Hotkey";
+import { FF_DEV_2576, isFF } from "../utils/feature-flags";
+
+const hotkeys = Hotkey("Polygons");
+
+const initializeHotkeys = (self) =>{
+  hotkeys.addNamed("polygon:undo", () => self.getCurrentArea()?.undoPoints(self));
+  hotkeys.addNamed("polygon:redo", () => self.getCurrentArea()?.redoPoints());
+};
+
+const disposeHotkeys = () => {
+  hotkeys.removeNamed("polygon:undo");
+  hotkeys.removeNamed("polygon:redo");
+};
 
 const DrawingTool = types
   .model("DrawingTool", {
@@ -103,10 +117,13 @@ const DrawingTool = types
         self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
+        self.annotation.setIsDrawing(true);
         return self.currentArea;
       },
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
+
+        if(!currentArea) return;
         const source = currentArea.toJSON();
         const value = Object.keys(currentArea.serialize().value).reduce((value, key) => {
           value[key] = source[key];
@@ -146,13 +163,18 @@ const DrawingTool = types
       },
 
       canStartDrawing() {
-        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart();
+        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart() && !self.annotation.isDrawing;
       },
 
       startDrawing(x, y) {
         self.annotation.history.freeze();
         self.mode = "drawing";
-        self.createDrawingRegion(self.createRegionOptions({ x, y }));
+
+        if (isFF(FF_DEV_2576)) {
+          initializeHotkeys(self);
+        }
+
+        self.currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
       },
       finishDrawing() {
         if (!self.beforeCommitDrawing()) {
@@ -168,8 +190,13 @@ const DrawingTool = types
         self._resetState();
       },
       _resetState(){
+        self.annotation.setIsDrawing(false);
         self.annotation.history.unfreeze();
         self.mode = "viewing";
+
+        if (isFF(FF_DEV_2576)) {
+          disposeHotkeys();
+        }
       },
     };
   });
@@ -384,4 +411,137 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
     };
   });
 
-export { DrawingTool, TwoPointsDrawingTool, MultipleClicksDrawingTool };
+const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
+  .views((self) => ({
+    canStart() {
+      return !this.current();
+    },
+    get defaultDimensions() {
+      return {
+        width: self.MIN_SIZE.X,
+        height: self.MIN_SIZE.Y,
+      };
+    },
+  }))
+  .actions(self => {
+    let points = [];
+    let lastEvent = 0;
+    const DEFAULT_MODE = 0;
+    const MOUSE_DOWN_EVENT = 1;
+    const MOUSE_UP_EVENT = 2;
+    const CLICK_EVENT = 3;
+    const DRAG_MODE = 4;
+    const DBL_CLICK_EVENT = 5;
+    let currentMode = DEFAULT_MODE;
+    let startPoint = null;
+    const Super = {
+      finishDrawing: self.finishDrawing,
+    };
+
+    return {
+      canStartDrawing() {
+        return !self.isIncorrectControl();
+      },
+      updateDraw: (x, y) => {
+        if (currentMode === DEFAULT_MODE)
+          self.getCurrentArea()?.draw(x, y, points);
+        else if (currentMode === DRAG_MODE)
+          self.draw(x, y);
+      },
+
+      nextPoint(x, y) {
+        points.push({ x, y });
+        self.getCurrentArea().draw(x, y, points);
+      },
+      draw(x, y) {
+        const shape = self.getCurrentArea();
+
+        if (!shape) return;
+        const { stageWidth, stageHeight } = self.obj;
+
+        let { x1, y1, x2, y2 } = Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x, y });
+
+        x1 = Math.max(0, x1);
+        y1 = Math.max(0, y1);
+        x2 = Math.min(stageWidth, x2);
+        y2 = Math.min(stageHeight, y2);
+
+        shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
+      },
+
+      finishDrawing(x, y) {
+        if (self.isDrawing) {
+          points = [];
+          startPoint = null;
+          currentMode = DEFAULT_MODE;
+          Super.finishDrawing(x, y);
+          setTimeout(()=>{
+            self._finishDrawing();
+          });
+        } else return;
+      },
+
+      mousemoveEv(_, [x, y]) {
+        if(self.isDrawing){
+          if(lastEvent === MOUSE_DOWN_EVENT) {
+            currentMode = DRAG_MODE;
+          }
+
+          if (currentMode === DRAG_MODE && startPoint) {
+            self.startDrawing(startPoint.x, startPoint.y);
+            self.updateDraw(x, y);
+          } else if (currentMode === DEFAULT_MODE) {
+            self.updateDraw(x, y);
+          }
+        }
+      },
+      mousedownEv(ev, [x, y]) {
+        if (!self.canStartDrawing() || self.annotation.isDrawing) return;
+        lastEvent = MOUSE_DOWN_EVENT;
+        startPoint = { x, y };
+        self.mode = "drawing";
+      },
+      mouseupEv(ev, [x, y]) {
+        if (!self.canStartDrawing()) return;
+        if(self.isDrawing) {
+          if (currentMode === DRAG_MODE) {
+            self.draw(x, y);
+            self.finishDrawing(x, y);
+          }
+          lastEvent = MOUSE_UP_EVENT;
+        }
+      },
+      clickEv(ev, [x, y]) {
+        if (!self.canStartDrawing()) return;
+        if (currentMode === DEFAULT_MODE) {
+          self._clickEv(ev, [x, y]);
+        }
+        lastEvent = CLICK_EVENT;
+      },
+      _clickEv(ev, [x, y]) {
+        if (points.length >= 2) {
+          self.finishDrawing(x, y);
+        } else if (points.length === 0) {
+          points = [{ x, y }];
+          self.startDrawing(x, y);
+        } else {
+          self.nextPoint(x, y);
+        }
+      },
+
+      dblclickEv(_, [x, y]) {
+        lastEvent = DBL_CLICK_EVENT;
+        if (!self.canStartDrawing()) return;
+        if (currentMode === DEFAULT_MODE) {
+          self.startDrawing(x, y);
+          if (!self.isDrawing) return;
+          x += self.defaultDimensions.width;
+          y += self.defaultDimensions.height;
+          self.draw(x, y);
+          self.finishDrawing(x, y);
+        }
+      },
+    };
+  });
+
+export { DrawingTool, TwoPointsDrawingTool, MultipleClicksDrawingTool, ThreePointsDrawingTool };

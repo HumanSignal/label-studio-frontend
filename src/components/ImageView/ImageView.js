@@ -1,4 +1,4 @@
-import React, { Component, createRef, forwardRef, Fragment, memo, useRef, useState } from "react";
+import React, { Component, createRef, forwardRef, Fragment, memo, useEffect, useRef, useState } from "react";
 import { Group, Layer, Line, Rect, Stage } from "react-konva";
 import { observer } from "mobx-react";
 import { getRoot, isAlive } from "mobx-state-tree";
@@ -21,7 +21,7 @@ import ResizeObserver from "../../utils/resize-observer";
 import { debounce } from "../../utils/debounce";
 import Constants from "../../core/Constants";
 import { fixRectToFit } from "../../utils/image";
-import { FF_DEV_1285, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, isFF } from "../../utils/feature-flags";
 
 Konva.showWarnings = false;
 
@@ -50,7 +50,7 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
-  return useObserver(() => (region.inSelection !== showSelected ? null : Tree.renderItem(region, false)));
+  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, false));
 });
 
 const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
@@ -289,7 +289,31 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
+
   const scale = 1 / (item.zoomScale || 1);
+
+  const [isMouseWheelClick, setIsMouseWheelClick] = useState(false);
+  const [shift, setShift] = useState(false);
+  const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
+
+  const dragHandler = (e) => setIsMouseWheelClick(e.buttons === 4);
+
+  const handleKey = (e) => setShift(e.shiftKey);
+
+  useEffect(()=>{  
+    window.addEventListener("keydown", handleKey);
+    window.addEventListener("keyup", handleKey);
+    window.addEventListener("mousedown", dragHandler);
+    window.addEventListener("mouseup", dragHandler);
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener("keyup", handleKey);
+      window.removeEventListener("mousedown", dragHandler);
+      window.removeEventListener("mouseup", dragHandler);
+    };
+  },[]);
+
+  const disableTransform = item.zoomScale > 1 && (shift || isPanTool || isMouseWheelClick);
 
   let supportsTransform = true;
   let supportsRotate = true;
@@ -301,20 +325,22 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
     supportsScale = supportsScale && true;
   });
 
-  supportsTransform = supportsTransform && (item.selectedRegions.length > 1 || (item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer);
-
+  supportsTransform =
+    supportsTransform &&
+    (item.selectedRegions.length > 1 ||
+      ((item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer));
+  
   return (
     <Layer scaleX={scale} scaleY={scale}>
       {selectionArea.isActive ? (
         <SelectionRect item={selectionArea} />
-      ) : (!supportsTransform && item.selectedRegions.length > 1 ? (
+      ) : !supportsTransform && item.selectedRegions.length > 1 ? (
         <SelectionBorders item={item} selectionArea={selectionArea} />
-      ) : null)}
-
+      ) : null}
       <ImageTransformer
         item={item}
         rotateEnabled={supportsRotate}
-        supportsTransform={supportsTransform}
+        supportsTransform={!disableTransform && supportsTransform}
         supportsScale={supportsScale}
         selectedShapes={item.selectedRegions}
         singleNodeMode={item.selectedRegions.length === 1}
@@ -326,10 +352,11 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
 });
 
 const Selection = observer(({ item, selectionArea }) => {
+
   return (
     <>
       <SelectedRegions key="selected-regions" item={item} selectedRegions={item.selectedRegions} />
-      <SelectionLayer item={item} selectionArea={selectionArea} />
+      <SelectionLayer item={item} selectionArea={selectionArea}/>
     </>
   );
 });
@@ -426,43 +453,121 @@ export default observer(
 
     imageRef = createRef();
     crosshairRef = createRef();
+    handleDeferredMouseDown = null;
+    deferredClickTimeout = null;
+    skipMouseUp = false;
+
+    constructor(props) {
+      super(props);
+
+      if (typeof props.item.smoothing === 'boolean')
+        props.store.settings.setSmoothing(props.item.smoothing);
+    }
 
     handleOnClick = e => {
       const { item } = this.props;
+    
+      if (isFF(FF_DEV_1442)) {
+        this.handleDeferredMouseDown?.();
+      }
+      if (this.skipMouseUp) {
+        this.skipMouseUp = false;
+        return;
+      }
+
+      if (!item.annotation.editable) return;
+
       const evt = e.evt || e;
 
       return item.event("click", evt, evt.offsetX, evt.offsetY);
     };
 
+    resetDeferredClickTimeout = () => {
+      if (this.deferredClickTimeout) {
+        clearTimeout(this.deferredClickTimeout);
+      }
+    }
+
+    handleDeferredClick = (handleDeferredMouseDown, handleDeselection, eligibleToDeselect = false) => {
+      this.handleDeferredMouseDown = (skipDeselect = false) => {
+        if (eligibleToDeselect && !skipDeselect) {
+          handleDeselection();
+        }  else {
+          handleDeferredMouseDown();
+        }
+      };
+      this.deferredClickTimeout = setTimeout(() => {
+        this.handleDeferredMouseDown = handleDeferredMouseDown;
+        this.handleDeferredMouseDown?.();
+        this.handleDeferredMouseDown = null;
+      }, 100);
+    }
+
     handleMouseDown = e => {
       const { item } = this.props;
-
+  
       item.updateSkipInteractions(e);
 
       // item.freezeHistory();
       const p = e.target.getParent();
 
+      if (!item.annotation.editable) return;
       if (p && p.className === "Transformer") return;
 
-      if (
+      const handleMouseDown = () => {
+        if (
         // create regions over another regions with Cmd/Ctrl pressed
-        item.getSkipInteractions() ||
-        e.target === e.target.getStage() ||
-        findClosestParent(
-          e.target,
-          el => el.nodeType === "Group" && ["ruler", "segmentation"].indexOf(el?.attrs?.name) > -1,
-        )
-      ) {
-        window.addEventListener("mousemove", this.handleGlobalMouseMove);
-        window.addEventListener("mouseup", this.handleGlobalMouseUp);
-        const { offsetX: x, offsetY: y } = e.evt;
-        // store the canvas coords for calculations in further events
-        const { left, top } = this.props.item.containerRef.getBoundingClientRect();
+          item.getSkipInteractions() ||
+          e.target === item.stageRef ||
+          findClosestParent(
+            e.target,
+            el => el.nodeType === "Group" && ["ruler", "segmentation"].indexOf(el?.attrs?.name) > -1,
+          )
+        ) {
+          window.addEventListener("mousemove", this.handleGlobalMouseMove);
+          window.addEventListener("mouseup", this.handleGlobalMouseUp);
+          const { offsetX: x, offsetY: y } = e.evt;
+          // store the canvas coords for calculations in further events
+          const { left, top } = item.containerRef.getBoundingClientRect();
 
-        this.canvasX = left;
-        this.canvasY = top;
-        return item.event("mousedown", e, x, y);
+          this.canvasX = left;
+          this.canvasY = top;
+          item.event("mousedown", e, x, y);
+
+          return true;
+        }
+      };
+
+      const selectedTool = item.getToolsManager().findSelectedTool();
+      const eligibleToolForDeselect = [
+        undefined,
+        "EllipseTool",
+        "EllipseTool-dynamic",
+        "RectangleTool",
+        "RectangleTool-dynamic",
+        "PolygonTool",
+        "PolygonTool-dynamic",
+        "Rectangle3PointTool",
+        "Rectangle3PointTool-dynamic",
+      ].includes(selectedTool?.fullName);
+
+      if (isFF(FF_DEV_1442) && eligibleToolForDeselect) {
+        const targetIsCanvas = e.target === item.stageRef;
+        const annotationHasSelectedRegions = item.annotation.selectedRegions.length > 0;
+        const eligibleToDeselect = targetIsCanvas && annotationHasSelectedRegions;
+
+        const handleDeselection = () => {
+          item.annotation.unselectAll();
+          this.skipMouseUp = true;
+        };
+
+        this.handleDeferredClick(handleMouseDown, handleDeselection, eligibleToDeselect);
+        return;
       }
+
+      const result = handleMouseDown();
+
+      if (result) return result;
 
       return true;
     };
@@ -473,7 +578,7 @@ export default observer(
     handleGlobalMouseUp = e => {
       window.removeEventListener("mousemove", this.handleGlobalMouseMove);
       window.removeEventListener("mouseup", this.handleGlobalMouseUp);
-
+      
       if (e.target && e.target.tagName === "CANVAS") return;
 
       const { item } = this.props;
@@ -499,6 +604,10 @@ export default observer(
     handleMouseUp = e => {
       const { item } = this.props;
 
+      if (isFF(FF_DEV_1442)) {
+        this.resetDeferredClickTimeout();
+      }
+  
       item.freezeHistory();
       item.setSkipInteractions(false);
 
@@ -507,13 +616,20 @@ export default observer(
 
     handleMouseMove = e => {
       const { item } = this.props;
-
+      
       item.freezeHistory();
 
       this.updateCrosshair(e);
 
       const isMouseWheelClick = e.evt && e.evt.buttons === 4;
-      const isShiftDrag = e.evt && e.evt.buttons === 1 && e.evt.shiftKey;
+      const isDragging = e.evt && e.evt.buttons === 1;
+      const isShiftDrag = isDragging && e.evt.shiftKey;
+
+      if (isFF(FF_DEV_1442) && isDragging) {
+        this.resetDeferredClickTimeout();
+        this.handleDeferredMouseDown?.(true);
+        this.handleDeferredMouseDown = null;
+      }
 
       if ((isMouseWheelClick || isShiftDrag) && item.zoomScale > 1) {
         item.setSkipInteractions(true);
@@ -630,8 +746,11 @@ export default observer(
     }, 16);
 
     componentDidMount() {
+      const { store, item } = this.props;
+      const annotation = store.annotationStore.selected;
+
       window.addEventListener("resize", this.onResize);
-      this.attachObserver(this.props.item.containerRef);
+      this.attachObserver(item.containerRef);
       this.updateReadyStatus();
 
       hotkeys.addDescription("shift", "Pan image");
@@ -660,7 +779,7 @@ export default observer(
       hotkeys.removeDescription("shift");
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate() {
       this.onResize();
       this.updateReadyStatus();
     }
@@ -687,6 +806,7 @@ export default observer(
     }
 
     render() {
+
       const { item, store } = this.props;
 
       // @todo stupid but required check for `resetState()`
@@ -709,6 +829,21 @@ export default observer(
         containerStyle["height"] = item.height;
       }
 
+      if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1){
+        containerStyle["imageRendering"] = 'pixelated';
+      }
+      
+      const imagePositionClassnames =  [
+        styles["image_position"],
+        styles[`image_position__${item.verticalalignment === "center" ? "middle" : item.verticalalignment}`],
+        styles[`image_position__${item.horizontalalignment}`],
+      ];
+
+      const wrapperClasses = [
+        styles.wrapperComponent,
+        item.images.length > 1 ? styles.withGallery : styles.wrapper,
+      ];
+
       const {
         brushRegions,
         shapeRegions,
@@ -729,15 +864,7 @@ export default observer(
       return (
         <ObjectTag
           item={item}
-          className={item.images.length > 1 ? styles.withGallery : styles.wrapper}
-          style={{
-            flex: 1,
-            position: "relative",
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            alignSelf: "stretch",
-          }}
+          className={wrapperClasses.join(" ")}
         >
           <div
             ref={node => {
@@ -755,11 +882,11 @@ export default observer(
               style={{ width: "100%", marginTop: item.fillerHeight }}
             />
             <div
-              className={styles.frame}
-              style={{
-                width: item.stageComponentSize.width,
-                height: item.stageComponentSize.height,
-              }}
+              className={[
+                styles.frame,
+                ...imagePositionClassnames,
+              ].join(" ")}
+              style={item.canvasSize}
             >
               <img
                 ref={ref => {
@@ -773,77 +900,93 @@ export default observer(
                 alt="LS"
               />
             </div>
-          </div>
-          {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
-          {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (
-            <Stage
-              ref={ref => {
-                item.setStageRef(ref);
-              }}
-              style={{ position: "absolute", top: 0, left: 0 }}
-              className={"image-element"}
-              width={item.stageComponentSize.width}
-              height={item.stageComponentSize.height}
-              scaleX={item.stageScale}
-              scaleY={item.stageScale}
-              x={item.zoomingPositionX}
-              y={item.zoomingPositionY}
-              offsetX={item.stageTranslate.x}
-              offsetY={item.stageTranslate.y}
-              rotation={item.rotation}
-              onClick={this.handleOnClick}
-              onMouseEnter={() => {
-                if (this.crosshairRef.current) {
-                  this.crosshairRef.current.updateVisibility(true);
-                }
-              }}
-              onMouseLeave={() => {
-                if (this.crosshairRef.current) {
-                  this.crosshairRef.current.updateVisibility(false);
-                }
-              }}
-              onDragMove={this.updateCrosshair}
-              onMouseDown={this.handleMouseDown}
-              onMouseMove={this.handleMouseMove}
-              onMouseUp={this.handleMouseUp}
-              onWheel={item.zoom ? this.handleZoom : () => {
-              }}
-            >
-              {/* Hack to keep stage in place when there's no regions */}
-              {regions.length === 0 && (
-                <Layer>
-                  <Line points={[0, 0, 0, 1]} stroke="rgba(0,0,0,0)" />
-                </Layer>
-              )}
-              {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
+            {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
+            {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (
+              <Stage
+                ref={ref => {
+                  item.setStageRef(ref);
+                }}
+                className={[styles[`image-element`],
+                  ...imagePositionClassnames,
+                ].join(" ")}
+                width={item.canvasSize.width}
+                height={item.canvasSize.height}
+                scaleX={item.zoomScale}
+                scaleY={item.zoomScale}
+                x={item.zoomingPositionX}
+                y={item.zoomingPositionY}
+                offsetX={item.stageTranslate.x}
+                offsetY={item.stageTranslate.y}
+                rotation={item.rotation}
+                onClick={this.handleOnClick}
+                onMouseEnter={() => {
+                  if (this.crosshairRef.current) {
+                    this.crosshairRef.current.updateVisibility(true);
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (this.crosshairRef.current) {
+                    this.crosshairRef.current.updateVisibility(false);
+                  }
+                  const { width: stageWidth, height: stageHeight } = item.canvasSize;
+                  const { offsetX: mouseposX, offsetY: mouseposY } = e.evt;
+                  const newEvent = { ...e };
 
-              {renderableRegions.map(([groupName, list]) => {
-                const isBrush = groupName.match(/brush/i) !== null;
-                const isSuggestion = groupName.match("suggested") !== null;
+                  if (mouseposX <= 0) {
+                    e.offsetX = 0;
+                  } else if (mouseposX >= stageWidth) {
+                    e.offsetX = stageWidth;
+                  }
+                  
+                  if (mouseposY <= 0) {
+                    e.offsetY = 0;
+                  } else if (mouseposY >= stageHeight) {
+                    e.offsetY = stageHeight;
+                  }
+                  this.handleMouseMove(newEvent);
+                }}
+                onDragMove={this.updateCrosshair}
+                onMouseDown={this.handleMouseDown}
+                onMouseMove={this.handleMouseMove}
+                onMouseUp={this.handleMouseUp}
+                onWheel={item.zoom ? this.handleZoom : () => {
+                }}
+              >
+                {/* Hack to keep stage in place when there's no regions */}
+                {regions.length === 0 && (
+                  <Layer>
+                    <Line points={[0, 0, 0, 1]} stroke="rgba(0,0,0,0)" />
+                  </Layer>
+                )}
+                {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
 
-                return list.length > 0 ? (
-                  <Regions
-                    key={groupName}
-                    name={groupName}
-                    regions={list}
-                    useLayers={isBrush === false}
-                    suggestion={isSuggestion}
+                {renderableRegions.map(([groupName, list]) => {
+                  const isBrush = groupName.match(/brush/i) !== null;
+                  const isSuggestion = groupName.match("suggested") !== null;
+
+                  return list.length > 0 ? (
+                    <Regions
+                      key={groupName}
+                      name={groupName}
+                      regions={list}
+                      useLayers={isBrush === false}
+                      suggestion={isSuggestion}
+                    />
+                  ) : <Fragment key={groupName} />;
+                })}
+                <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
+                <DrawingRegion item={item} />
+
+                {item.crosshair && (
+                  <Crosshair
+                    ref={this.crosshairRef}
+                    width={isFF(FF_DEV_1285) ? item.stageWidth : item.stageComponentSize.width}
+                    height={isFF(FF_DEV_1285) ? item.stageHeight : item.stageComponentSize.height}
                   />
-                ) : <Fragment key={groupName} />;
-              })}
-
-              <Selection item={item} selectionArea={item.selectionArea} />
-              <DrawingRegion item={item} />
-
-              {item.crosshair && (
-                <Crosshair
-                  ref={this.crosshairRef}
-                  width={isFF(FF_DEV_1285) ? item.stageWidth : item.stageComponentSize.width}
-                  height={isFF(FF_DEV_1285) ? item.stageHeight : item.stageComponentSize.height}
-                />
-              )}
-            </Stage>
-          )}
+                )}
+              </Stage>
+            )}
+          </div>
           {this.renderTools()}
           {item.images.length > 1 && (
             <div className={styles.gallery}>

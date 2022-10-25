@@ -1,6 +1,7 @@
-import { getRoot, onSnapshot, types } from "mobx-state-tree";
+import { getEnv, getRoot, onSnapshot, types } from "mobx-state-tree";
 
 import { Hotkey } from "../core/Hotkey";
+import EditorSettings from "../core/settings/editorsettings";
 import Utils from "../utils";
 
 const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
@@ -57,6 +58,10 @@ const SettingsModel = types
     // showScore: types.optional(types.boolean, false),
 
     preserveSelectedTool: types.optional(types.boolean, true),
+
+    enableSmoothing: types.optional(types.boolean, true),
+
+    videoHopSize: types.optional(types.number, 10),
   })
   .views(self => ({
     get annotation() {
@@ -90,6 +95,16 @@ const SettingsModel = types
           Object.keys(lsp).forEach(k => {
             if (k in self) self[k] = lsp[k];
           });
+      } else {
+        const env = getEnv(self);
+
+        Object.keys(EditorSettings).map((obj, index) => {
+          if( typeof env.settings[obj] === 'boolean'){
+            self[obj] = env.settings[obj];
+          }else{
+            self[obj] = EditorSettings[obj].defaultValue;
+          }
+        });
       }
 
       // capture changes and save it
@@ -186,6 +201,18 @@ const SettingsModel = types
 
     togglePredictionsPanel() {
       self.showPredictionsPanel = !self.showPredictionsPanel;
+    },
+
+    toggleSmoothing() {
+      self.enableSmoothing = !self.enableSmoothing;
+    },
+
+    setSmoothing(value) {
+      self.enableSmoothing = value;
+    },
+
+    setVideoHopSize(value) {
+      self.videoHopSize = value;
     },
   }));
 

@@ -1,24 +1,24 @@
+import { getRoot, types } from "mobx-state-tree";
 import React, { useContext } from "react";
 import { Rect } from "react-konva";
-import { getRoot, types } from "mobx-state-tree";
-
-import Constants  from "../core/Constants";
-import DisabledMixin from "../mixins/Normalization";
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
+import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
+import Constants from "../core/Constants";
+import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
+import { useRegionStyles } from "../hooks/useRegionColor";
+import { AreaMixin } from "../mixins/AreaMixin";
+import { KonvaRegionMixin } from "../mixins/KonvaRegion";
+import { default as DisabledMixin, default as NormalizationMixin } from "../mixins/Normalization";
+import RegionsMixin from "../mixins/Regions";
 import WithStatesMixin from "../mixins/WithStates";
 import { ImageModel } from "../tags/object/Image";
-import { LabelOnRect } from "../components/ImageView/LabelOnRegion";
-import { guidGenerator } from "../core/Helpers";
-import { AreaMixin } from "../mixins/AreaMixin";
-import { createDragBoundFunc, fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
-import { useRegionStyles } from "../hooks/useRegionColor";
-import { AliveRegion } from "./AliveRegion";
-import { KonvaRegionMixin } from "../mixins/KonvaRegion";
-import { ImageViewContext } from "../components/ImageView/ImageViewContext";
-import { RegionWrapper } from "./RegionWrapper";
 import { rotateBboxCoords } from "../utils/bboxCoords";
+import { createDragBoundFunc, fixRectToFit, getBoundingBoxAfterChanges } from "../utils/image";
+import { AliveRegion } from "./AliveRegion";
+import { EditableRegion } from "./EditableRegion";
+import { RegionWrapper } from "./RegionWrapper";
+
 
 /**
  * Rectangle object for Bounding Box
@@ -38,7 +38,7 @@ const Model = types
     height: types.number,
 
     rotation: 0,
-
+    rotationAtCreation: 0,
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
   .volatile(() => ({
@@ -67,6 +67,14 @@ const Model = types
     _supportsTransform: true,
     // depends on region and object tag; they both should correctly handle the `hidden` flag
     hideable: true,
+
+    editableFields: [
+      { property: "x", label: "X" },
+      { property: "y", label: "Y" },
+      { property: "width", label: "W" },
+      { property: "height", label: "H" },
+      { property: "rotation", label: "icon:angle" },
+    ],
   }))
   .volatile(() => {
     return {
@@ -95,6 +103,7 @@ const Model = types
     },
   }))
   .actions(self => ({
+
     afterCreate() {
       self.startX = self.x;
       self.startY = self.y;
@@ -118,6 +127,69 @@ const Model = types
       }
       self.checkSizes();
       self.updateAppearenceFromState();
+    },
+
+    getDistanceBetweenPoints(pointA, pointB) {
+      const { x: xA, y: yA } = pointA;
+      const { x: xB, y: yB } = pointB;
+      const distanceX = xA - xB;
+      const distanceY = yA - yB;
+      
+      return Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+    },
+
+    getHeightOnPerpendicular(pointA, pointB, cursor) {
+      const dx1 = pointB.x - pointA.x;
+      const dy1 = pointB.y - pointA.y;
+      const dy2 = pointB.y - cursor.y;
+      const dx2 = dy2 / dx1 * dy1; // dx2 / dy1 = dy2 / dx1 (triangle is rotated)
+      const dx3 = cursor.x - pointB.x - dx2;
+      const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+      const d3 = dx3 / d2 * dx2; // dx3 / d2 = d3 / dx2 (triangle is inverted)
+      const h = d2 + d3;
+
+      return Math.abs(h);
+    },
+
+    isAboveTheLine(a, b, c){
+      return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) < 0;
+    },
+
+    draw(x, y, points) {
+      const oldHeight = self.height;
+
+      if (points.length === 1) {
+        self.width = self.getDistanceBetweenPoints({ x, y }, self);
+        self.rotation = self.rotationAtCreation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
+      } else if (points.length === 2) {
+        const { y: firstPointY, x: firstPointX } = points[0];
+        const { y: secondPointY, x: secondPointX } = points[1];
+
+        if (self.isAboveTheLine(points[0], points[1], { x, y })) {
+          self.x = secondPointX;
+          self.y = secondPointY;
+          self.rotation = self.rotationAtCreation + 180;
+        } else {
+          self.x = firstPointX;
+          self.y = firstPointY;
+          self.rotation = self.rotationAtCreation;
+        }
+        self.height = self.getHeightOnPerpendicular(points[0], points[1], { x, y });
+
+      }
+      
+      self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+
+      const areaBBoxCoords = self?.bboxCoords;
+      
+      if (
+        areaBBoxCoords?.left < 0 || 
+        areaBBoxCoords?.top < 0 || 
+        areaBBoxCoords?.right > self.parent.stageWidth || 
+        areaBBoxCoords?.bottom > self.parent.stageHeight
+      ) {
+        self.height = oldHeight;
+      }
     },
 
     // @todo not used
@@ -228,10 +300,10 @@ const Model = types
         original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: self.convertXToPerc(self.x),
-          y: self.convertYToPerc(self.y),
-          width: self.convertHDimensionToPerc(self.width),
-          height: self.convertVDimensionToPerc(self.height),
+          x: (self.parent.stageWidth > 1) ? self.convertXToPerc(self.x) : self.x,
+          y: (self.parent.stageWidth > 1) ? self.convertYToPerc(self.y) : self.y,
+          width: (self.parent.stageWidth > 1) ? self.convertHDimensionToPerc(self.width) : self.width,
+          height: (self.parent.stageWidth > 1) ? self.convertVDimensionToPerc(self.height) : self.height,
           rotation: self.rotation,
         },
       };
@@ -246,6 +318,7 @@ const RectRegionModel = types.compose(
   DisabledMixin,
   AreaMixin,
   KonvaRegionMixin,
+  EditableRegion,
   Model,
 );
 
@@ -353,7 +426,7 @@ const HtxRectangleView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
-        listening={!suggestion && item.editable}
+        listening={!suggestion && item.editable && !item.annotation.isDrawing}
       />
       <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
     </RegionWrapper>

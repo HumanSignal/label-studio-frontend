@@ -1,21 +1,17 @@
-import React from "react";
 import { flow, getType, types } from "mobx-state-tree";
-import { observe } from "mobx";
-
+import { createRef } from "react";
 import { customTypes } from "../../../core/CustomTypes";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
+import IsReadyMixin from "../../../mixins/IsReadyMixin";
+import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import RegionsMixin from "../../../mixins/Regions";
-import { RichTextRegionModel } from "../../../regions/RichTextRegion";
 import Utils from "../../../utils";
 import { parseValue } from "../../../utils/data";
 import messages from "../../../utils/messages";
-import { rangeToGlobalOffset } from "../../../utils/selection-tools";
+import { findRangeNative, rangeToGlobalOffset } from "../../../utils/selection-tools";
 import { escapeHtml, isValidObjectURL } from "../../../utils/utilities";
 import ObjectBase from "../Base";
-import * as xpath from "xpath-range";
-import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
-import IsReadyMixin from "../../../mixins/IsReadyMixin";
 
 const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
 
@@ -39,15 +35,15 @@ const WARNING_MESSAGES = {
  * @name Text
  * @param {string} name                                   - name of the element
  * @param {string} value                                  - value of the element
- * @param {url|text} [valueType=url|text]                – source of the data
+ * @param {url|text} [valueType=url|text]                 – source of the data, check (Data retrieval)[https://labelstud.io/guide/tasks.html] page for more inforamtion
  * @param {boolean} [inline=false]                        - whether to embed html directly to LS or use iframe (only HyperText)
  * @param {boolean} [saveTextResult=true]                 – whether or not to save selected text to the serialized data
  * @param {boolean} [selectionEnabled=true]               - enable or disable selection
- * @param {boolean} [clickableLinks=false]                 – allow annotator to open resources from links
+ * @param {boolean} [clickableLinks=false]                – allow annotator to open resources from links
  * @param {string} [highlightColor]                       - hex string with highlight color, if not provided uses the labels color
  * @param {boolean} [showLabels=true]                     - whether or not to show labels next to the region
  * @param {none|base64|base64unicode} [encoding]          - decode value from an encoded string
- * @param {symbol|word|sentence|paragraph} [granularity]   - control region selection granularity
+ * @param {symbol|word|sentence|paragraph} [granularity]  - control region selection granularity
  */
 const TagAttrs = types.model("RichTextModel", {
   name: types.identifier,
@@ -112,11 +108,11 @@ const Model = types
   }))
   .volatile(() => ({
     // the only visible iframe/div
-    visibleNodeRef: React.createRef(),
+    visibleNodeRef: createRef(),
     // regions highlighting is much faster in a hidden iframe/div; applyHighlights() works here
-    workingNodeRef: React.createRef(),
+    workingNodeRef: createRef(),
     // xpaths should be calculated over original document without regions' spans
-    originalContentRef: React.createRef(),
+    originalContentRef: createRef(),
     // toggle showing which node to modify — visible or working
     useWorkingNode: false,
 
@@ -182,12 +178,16 @@ const Model = types
 
         // clean up the html — remove scripts and iframes
         // nodes count better be the same, so replace them with stubs
+
+
         val = val
+          .toString()
           .replace(/(<head.*?>)(.*?)(<\/head>)/,(match, opener, body, closer) => {
-            return [opener,body.replace(/<script\b.*?<\/script>/g,"<!--ls-stub></ls-stub-->"),closer].join("");
+            return [opener,body.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi,"<!--ls-stub></ls-stub-->"),closer].join("");
           })
-          .replace(/<script\b.*?<\/script>/g, "<ls-stub></ls-stub>")
-          .replace(/<iframe\b.*?(?:\/>|<\/iframe>)/g, "<ls-stub></ls-stub>");
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi, "<ls-stub></ls-stub>")
+          .replace(/<iframe\b.*?(?:\/>|<\/iframe>)/g, "<ls-stub></ls-stub>")
+          .replace(/\bon[a-z]+\s*=\s*(?:(['"])(?!\1).+?\1|(?:\S+?\(.*?\)(?=[\s>])))(.*?)/gi, "");
 
         self._value = val;
 
@@ -280,11 +280,18 @@ const Model = types
 
         const [soff, eoff] = rangeToGlobalOffset(range._range, root);
 
+        area.updateGlobalOffsets(soff, eoff);
+
         if (range.isText) {
           area.updateTextOffsets(soff, eoff);
-        }
+        } else {
+          // reapply globalOffsets to original document to get correct xpaths and offsets
+          const original = area._getRootNode(true);
+          const originalRange = findRangeNative(soff, eoff, original);
 
-        area.updateGlobalOffsets(soff, eoff);
+          // @todo if originalRange is missed we are really fucked up
+          if (originalRange) area._fixXPaths(originalRange, original);
+        }
 
         area.applyHighlight();
 

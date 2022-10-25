@@ -22,10 +22,10 @@ const RequiredMixin = types
 
               if (label && label !== self.whentagname) continue;
             }
+          }
 
-            if (self.whenlabelvalue && !reg.hasLabel(self.whenlabelvalue)) {
-              continue;
-            }
+          if (self.whenlabelvalue && !reg.hasLabel(self.whenlabelvalue)) {
+            continue;
           }
 
           if (!s?.hasValue) {

@@ -21,6 +21,8 @@ const Relation = types
     relations: types.maybeNull(RelationsModel),
 
     showMeta: types.optional(types.boolean, false),
+
+    visible: true,
   })
   .views(self => ({
     get parent() {
@@ -83,6 +85,10 @@ const Relation = types
         self.parent.removeHighlight();
       }
     },
+
+    toggleVisibility() {
+      self.visible = !self.visible;
+    },
   }));
 
 const RelationStore = types
@@ -98,6 +104,11 @@ const RelationStore = types
       // so some relations can temporarily lose nodes they are connected to during undo/redo
       return self._relations.filter(r => isValidReference(() => r.node1) && isValidReference(() => r.node2));
     },
+
+    get size() {
+      return self.relations.length;
+    },
+
   }))
   .actions(self => ({
     findRelations(node1, node2) {
@@ -131,6 +142,7 @@ const RelationStore = types
     },
 
     deleteRelation(rl) {
+      self._relations = self._relations.filter( r => r.id !== rl.id);
       destroy(rl);
     },
 

@@ -5,17 +5,20 @@ import ToolMixin from "../mixins/Tool";
 import { MultipleClicksDrawingTool } from "../mixins/DrawingTool";
 import { NodeViews } from "../components/Node/Node";
 import { observe } from "mobx";
+import { FF_DEV_2432, isFF } from "../utils/feature-flags";
 
 const _Tool = types
   .model("PolygonTool", {
     group: "segmentation",
     shortcut: "P",
+    isDrawingTool: true,
   })
   .views(self => {
     const Super = {
       createRegionOptions: self.createRegionOptions,
       isIncorrectControl: self.isIncorrectControl,
       isIncorrectLabel: self.isIncorrectLabel,
+      startDrawing: self.startDrawing,
     };
 
     return {
@@ -63,6 +66,17 @@ const _Tool = types
         });
       },
 
+      startDrawing(x, y) {
+        if (isFF(FF_DEV_2432)) {
+          self.annotation.history.freeze();
+          self.mode = "drawing";
+
+          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }));
+        } else {
+          Super.startDrawing(x, y);
+        }
+      },
+
       isIncorrectControl() {
         return Super.isIncorrectControl() && self.current() === null;
       },
@@ -83,9 +97,12 @@ const _Tool = types
     let closed;
 
     return {
-      handleToolSwitch() {
-        if (self.getCurrentArea()?.isDrawing) {
-          if (self.getCurrentArea().canClose()) self.finishDrawing();
+      handleToolSwitch(tool) {
+
+        if (self.getCurrentArea()?.isDrawing && tool.toolName !== 'ZoomPanTool') {
+          const shape = self.getCurrentArea()?.toJSON();
+          
+          if (shape?.points?.length > 2) self.finishDrawing();
           else self.cleanupUncloseableShape();
         }
       },
@@ -93,6 +110,8 @@ const _Tool = types
         closed = false;
         disposer = observe(self.getCurrentArea(), "closed", () => {
           if (self.getCurrentArea().closed && !closed) {
+            if (isFF(FF_DEV_2432)) self.mode = "viewing";
+
             self.finishDrawing();
           }
         }, true);

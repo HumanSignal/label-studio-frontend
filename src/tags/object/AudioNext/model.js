@@ -7,8 +7,10 @@ import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import { SyncMixin } from "../../../mixins/SyncMixin";
 import { AudioRegionModel } from "../../../regions/AudioRegion";
 import Utils from "../../../utils";
+import { FF_DEV_2461, isFF } from "../../../utils/feature-flags";
 import { isDefined } from "../../../utils/utilities";
 import ObjectBase from "../Base";
+import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
 
 
 /**
@@ -31,29 +33,38 @@ import ObjectBase from "../Base";
  * @param {string} name - Name of the element
  * @param {string} value - Data field containing path or a URL to the audio
  * @param {boolean=} [volume=false] - Whether to show a volume slider (from 0 to 1)
+ * @param {string} [defaultvolume=1] - Default volume level (from 0 to 1)
  * @param {boolean} [speed=false] - Whether to show a speed slider (from 0.5 to 3)
+ * @param {string} [defaultspeed=1] - Default speed level (from 0.5 to 2)
  * @param {boolean} [zoom=true] - Whether to show the zoom slider
+ * @param {string} [defaultzoom=1] - Default zoom level (from 1 to 1500)
  * @param {string} [hotkey] - Hotkey used to play or pause audio
  * @param {string} [sync] object name to sync with
  * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
  * @param {string} [cursorcolor=#333] - Audio pane cursor color. Color should be specify in hex decimal string
+ * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform
  * @param {boolean} [autocenter=true] – Always place cursor in the middle of the view
  * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
  */
 const TagAttrs = types.model({
   name: types.identifier,
   value: types.maybeNull(types.string),
+  muted: types.optional(types.boolean, false),
   zoom: types.optional(types.boolean, true),
+  defaultzoom: types.optional(types.string, WS_ZOOM_X.default.toString()),
   volume: types.optional(types.boolean, true),
+  defaultvolume: types.optional(types.string, WS_VOLUME.default.toString()),
   speed: types.optional(types.boolean, true),
+  defaultspeed: types.optional(types.string, WS_SPEED.default.toString()),
   hotkey: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
   height: types.optional(types.string, "88"),
   cursorwidth: types.optional(types.string, "2"),
   cursorcolor: types.optional(customTypes.color, "#333"),
+  defaultscale: types.optional(types.string, "1"),
   autocenter: types.optional(types.boolean, true),
-  scrollparent: types.optional(types.boolean,true),
+  scrollparent: types.optional(types.boolean, true),
 });
 
 export const AudioModel = types.compose(
@@ -102,8 +113,6 @@ export const AudioModel = types.compose(
     .actions(self => ({
       needsUpdate() {
         self.handleNewRegions();
-
-        if (self.sync) self.initSync();
       },
 
       onReady() {
@@ -111,19 +120,33 @@ export const AudioModel = types.compose(
       },
 
       handleSyncPlay() {
+        if (!self._ws) return;
+        if (self._ws.isPlaying()) return;
+
         self._ws?.play();
       },
 
       handleSyncPause() {
+        if (!self._ws) return;
+        if (!self._ws.isPlaying()) return;
+
         self._ws?.pause();
       },
 
+      handleSyncSpeed() {},
+
       handleSyncSeek(time) {
-        self._ws && (self._ws.setCurrentTime(time));
+        try {
+          if (self._ws && time !== self._ws.getCurrentTime()) {
+            self._ws.setCurrentTime(time);
+          }
+        } catch (err) {
+          console.log(err);
+        }
       },
 
       handleNewRegions() {
-        if (!self._ws) return;
+        if (!self._ws?.isReady) return;
         self.regs.map(reg => {
           if (reg._ws_region) return;
           self.createWsRegion(reg);
@@ -268,12 +291,20 @@ export const AudioModel = types.compose(
      * Play and stop
      */
       handlePlay() {
-        self.playing = !self.playing;
-        self._ws.isPlaying() ? self.triggerSyncPlay() : self.triggerSyncPause();
+        if (self._ws) {
+          self.playing = !self.playing;
+          self._ws.isPlaying() ? self.triggerSyncPlay() : self.triggerSyncPause();
+        }
       },
 
       handleSeek() {
+        if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === "paragraphs")) return;
+
         self.triggerSyncSeek(self._ws.getCurrentTime());
+      },
+
+      handleSpeed(speed) {
+        self.triggerSyncSpeed(speed);
       },
 
       createWsRegion(region) {
@@ -285,10 +316,16 @@ export const AudioModel = types.compose(
 
       onLoad(ws) {
         self._ws = ws;
+        const history = self.annotation.history;
 
         self.regs.forEach(reg => {
           self.createWsRegion(reg);
         });
+
+
+        // In cases where we do skipNextUndoState on region creation, we need to make sure
+        // that we don't skip the next undo state after it is resolved entirely.
+        setTimeout(() => history.setSkipNextUndoState(false), 0);
       },
 
       onError(error) {

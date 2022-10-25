@@ -1,6 +1,6 @@
 /**
- * Libraries
- */
+* Libraries
+*/
 import React, { Component } from "react";
 import { Result, Spin } from "antd";
 import { getEnv, getRoot } from "mobx-state-tree";
@@ -30,24 +30,32 @@ import "../../tags/visual";
 /**
  * Styles
  */
-import styles from "./App.module.scss";
 import { TreeValidation } from "../TreeValidation/TreeValidation";
 import { guidGenerator } from "../../utils/unique";
 import Grid from "./Grid";
 import { SidebarPage, SidebarTabs } from "../SidebarTabs/SidebarTabs";
 import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
+import { SidePanels } from "../SidePanels/SidePanels";
 import { Block, Elem } from "../../utils/bem";
 import './App.styl';
 import { Space } from "../../common/Space/Space";
 import { DynamicPreannotationsControl } from "../AnnotationTab/DynamicPreannotationsControl";
 import { isDefined } from "../../utils/utilities";
+import { FF_DEV_1170, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
+import { Button } from "../../common/Button/Button";
 
 /**
  * App
  */
 class App extends Component {
   relationsRef = React.createRef();
+
+  componentDidMount() {
+    // Hack to activate app hotkeys
+    window.blur();
+    document.body.focus();
+  }
 
   renderSuccess() {
     return <Result status="success" title={getEnv(this.props.store).messages.DONE} />;
@@ -57,9 +65,29 @@ class App extends Component {
     return <Result status="success" title={getEnv(this.props.store).messages.NO_COMP_LEFT} />;
   }
 
-  renderNothingToLabel() {
-    return <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />;
+  renderNothingToLabel(store) {
+    return (
+      <Block
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          paddingBottom: "30vh",
+        }}
+      >
+        <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />
+        <Block name="sub__result">You have completed all tasks in the queue!</Block>
+        {store.canGoPrevTask && (
+          <Button onClick={() => store.prevTask()} look="outlined" style={{ margin: "16px 0" }}>
+            Go to Previous Task
+          </Button>
+        )}
+      </Block>
+    );
   }
+
+
 
   renderNoAccess() {
     return <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />;
@@ -168,7 +196,7 @@ class App extends Component {
 
     if (store.isLoading) return this.renderLoader();
 
-    if (store.noTask) return this.renderNothingToLabel();
+    if (store.noTask) return this.renderNothingToLabel(store);
 
     if (store.noAccess) return this.renderNoAccess();
 
@@ -177,20 +205,19 @@ class App extends Component {
     if (!root) return this.renderNoAnnotation();
 
     const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
-    const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;
-    const stCommon = [
-      settings.bottomSidePanel ? styles.commonbsp : styles.common,
-      viewingAll ? styles["view-all"] : "",
-      "ls-common",
-    ].join(" ");
-    const stMenu = settings.bottomSidePanel ? styles.menubsp : styles.menu;
 
-    const mainContainerClass = [styles["main-content-wrapper"]];
+    const mainContent = (
+      <Block name="main-content">
+        {as.validation === null
+          ? this._renderUI(as.selectedHistory?.root ?? root, as)
+          : this.renderConfigValidationException(store)}
+      </Block>
+    );
 
-    if (store.hasInterface("side-column")) mainContainerClass.push(styles["with-side-column"]);
+    const newUIEnabled = isFF(FF_DEV_1170);
 
     return (
-      <div className={stEditor + " ls-editor"}>
+      <Block name="editor" mod={{ fullscreen: settings.fullscreen }}>
         <Settings store={store} />
         <Provider store={store}>
           {store.showingDescription && (
@@ -200,32 +227,43 @@ class App extends Component {
           )}
 
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
-          <div className={stCommon}>
-            <div className={mainContainerClass.join(" ")}>
-              {as.validation === null
-                ? this._renderUI(as.selectedHistory?.root ?? root, as)
-                : this.renderConfigValidationException(store)}
-            </div>
-            {(viewingAll === false) && (
-              <div className={stMenu + " ls-menu"}>
-                {store.hasInterface("side-column") && (
-                  <SidebarTabs active="annotation">
-                    <SidebarPage name="annotation" title="Annotation">
-                      <AnnotationTab store={store}/>
-                    </SidebarPage>
-                    {this.props.panels.map(({ name, title, Component }) => (
-                      <SidebarPage key={name} name={name} title={title}>
-                        <Component/>
-                      </SidebarPage>
-                    ))}
-                  </SidebarTabs>
+          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled }}>
+            {newUIEnabled ? (
+              <SidePanels
+                panelsHidden={viewingAll}
+                currentEntity={as.selectedHistory ?? as.selected}
+                regions={as.selected.regionStore}
+              >
+                {mainContent}
+              </SidePanels>
+            ) : (
+              <>
+                {mainContent}
+
+                {(viewingAll === false) && (
+                  <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
+                    {store.hasInterface("side-column") && (
+                      <SidebarTabs active="annotation">
+                        <SidebarPage name="annotation" title="Annotation">
+                          <AnnotationTab store={store}/>
+                        </SidebarPage>
+
+                        {this.props.panels.map(({ name, title, Component }) => (
+                          <SidebarPage key={name} name={name} title={title}>
+                            <Component/>
+                          </SidebarPage>
+                        ))}
+                      </SidebarTabs>
+                    )}
+                  </Block>
                 )}
-              </div>
+              </>
             )}
-          </div>
+
+          </Block>
         </Provider>
         {store.hasInterface("debug") && <Debug store={store} />}
-      </div>
+      </Block>
     );
   }
 

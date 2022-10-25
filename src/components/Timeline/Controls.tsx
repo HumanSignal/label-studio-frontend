@@ -1,22 +1,24 @@
-import React, { FC, MouseEvent, useContext, useEffect, useMemo, useState } from "react";
+import React, { FC, memo, MouseEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { IconBackward, IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconFastForward, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
 import { Button, ButtonProps } from "../../common/Button/Button";
 import { Space } from "../../common/Space/Space";
 import { Block, Elem } from "../../utils/bem";
+import { isDefined } from "../../utils/utilities";
 import { TimelineContext } from "./Context";
 import "./Controls.styl";
 import * as SideControls from "./SideControls";
-import { TimelineControlsProps, TimelineControlsStepHandler, TimelineProps, TimelineStepFunction } from "./Types";
+import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineControlsStepHandler, TimelineCustomControls, TimelineProps, TimelineStepFunction } from "./Types";
 
-const relativePosition = (pos: number, fps: number) => {
-  const roundedFps = Math.floor(fps);
-  const value = Math.floor(pos % roundedFps);
-  const result = Math.floor(value > 0 ? value : roundedFps);
+const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
+  const roundedFps = Math.round(fps).toString();
+  const fpsMs = 1000 / fps;
+  const currentSecond = (time * 1000) % 1000;
+  const result = Math.round(currentSecond / fpsMs).toString();
 
-  return result.toString().padStart(roundedFps.toString().length, '0');
+  return result.padStart(roundedFps.length, '0');
 };
 
-export const Controls: FC<TimelineControlsProps> = ({
+export const Controls: FC<TimelineControlsProps> = memo(({
   length,
   position,
   frameRate,
@@ -24,12 +26,14 @@ export const Controls: FC<TimelineControlsProps> = ({
   collapsed,
   extraControls,
   fullscreen,
+  altHopSize,
   disableFrames,
   allowFullscreen,
   allowViewCollapse,
   onRewind,
   onForward,
-  onPlayToggle,
+  onPlay,
+  onPause,
   onFullScreenToggle,
   onStepBackward,
   onPositionChange,
@@ -43,23 +47,28 @@ export const Controls: FC<TimelineControlsProps> = ({
   const [startReached, endReached] = [position === 1, position === length];
 
   const duration = useMemo(() => {
-    return length / frameRate;
+    return Math.max((length - 1) / frameRate, 0);
   }, [length, frameRate]);
 
   const currentTime = useMemo(() => {
-    return position / frameRate;
+    return (position - 1) / frameRate;
   }, [position, frameRate]);
 
+  const customControls = useCustomControls(props.customControls);
   const stepHandlerWrapper = (handler: TimelineControlsStepHandler, stepSize?: TimelineStepFunction) => (e: MouseEvent<HTMLButtonElement>) => {
     handler(e, stepSize ?? undefined);
   };
+
+  const handlePlay = useCallback(() => {
+    playing ? onPause?.() : onPlay?.();
+  }, [playing, onPlay, onPause]);
 
   useEffect(() => {
     const keyboardHandler = (e: KeyboardEvent) => {
       if (!settings?.stepSize) return;
       const altMode = e.key === "Shift";
 
-      if (e.type === 'keydown' && altMode) {
+      if (e.type === 'keydown' && altMode && !altControlsMode) {
         setAltControlsMode(true);
       } else if (e.type === 'keyup' && altMode && altControlsMode) {
         setAltControlsMode(false);
@@ -76,24 +85,25 @@ export const Controls: FC<TimelineControlsProps> = ({
   }, [altControlsMode]);
 
   return (
-    <Block name="timeline-controls" tag={Space} spread>
-      <Elem name="group" tag={Space} size="small">
+    <Block name="timeline-controls" tag={Space} spread style={{ gridAutoColumns: 'auto' }}>
+      <Elem name="group" tag={Space} size="small" style={{ gridAutoColumns: 'auto' }}>
         {props.controls && Object.entries(props.controls).map(([name, enabled]) => {
           if (enabled === false) return;
 
           const Component = SideControls[name as keyof typeof SideControls];
 
-          return (
+          return isDefined(Component) && (
             <Component
               key={name}
               length={length}
-              position={position}
+              position={position - 1}
               volume={props.volume}
               onPositionChange={onPositionChange}
               onVolumeChange={props.onVolumeChange}
             />
           );
         })}
+        {customControls?.left}
       </Elem>
 
       <Elem name="main-controls">
@@ -101,6 +111,7 @@ export const Controls: FC<TimelineControlsProps> = ({
           {extraControls}
         </Elem>
         <Elem name="group" tag={Space} collapsed>
+          {customControls?.leftCenter}
           <AltControls
             showAlterantive={altControlsMode && !disableFrames}
             main={(
@@ -128,19 +139,21 @@ export const Controls: FC<TimelineControlsProps> = ({
                 <ControlButton
                   onClick={() => onRewind?.()}
                   disabled={startReached}
+                  hotkey={settings?.skipToBeginning}
                 >
                   <IconRewind/>
                 </ControlButton>
                 <ControlButton
-                  onClick={() => onRewind?.()}
+                  onClick={() => onRewind?.(altHopSize)}
                   disabled={startReached}
+                  hotkey={settings?.hopBackward}
                 >
                   <IconBackward/>
                 </ControlButton>
               </>
             )}
           />
-          <ControlButton onClick={() => onPlayToggle?.(!playing)} hotkey={settings?.playpauseHotkey}>
+          <ControlButton onClick={handlePlay} hotkey={settings?.playpauseHotkey}>
             {playing ? <IconPause/> : <IconPlay/>}
           </ControlButton>
           <AltControls
@@ -168,31 +181,38 @@ export const Controls: FC<TimelineControlsProps> = ({
             alt={(
               <>
                 <ControlButton
-                  onClick={() => onForward?.()}
+                  onClick={() => onForward?.(altHopSize)}
                   disabled={endReached}
+                  hotkey={settings?.hopForward}
                 >
                   <IconForward/>
                 </ControlButton>
                 <ControlButton
                   onClick={() => onForward?.()}
                   disabled={endReached}
+                  hotkey={settings?.skipToEnd}
                 >
                   <IconFastForward/>
                 </ControlButton>
               </>
             )}
           />
+          {customControls?.rightCenter}
         </Elem>
         <Elem name="group" tag={Space} collapsed>
           {!disableFrames && allowViewCollapse && (
             <ControlButton
+              tooltip="Toggle Timeline"
               onClick={() => onToggleCollapsed?.(!collapsed)}
             >
               {collapsed ? <IconExpand/> : <IconCollapse/>}
             </ControlButton>
           )}
           {allowFullscreen && (
-            <ControlButton onClick={() => onFullScreenToggle?.(false)}>
+            <ControlButton
+              tooltip="Fullscreen"
+              onClick={() => onFullScreenToggle?.(false)}
+            >
               {fullscreen ? (
                 <IconFullscreenExit/>
               ) : (
@@ -204,6 +224,7 @@ export const Controls: FC<TimelineControlsProps> = ({
       </Elem>
 
       <Elem name="group" tag={Space} size="small">
+        {customControls?.right}
         <TimeDisplay
           currentTime={currentTime}
           duration={duration}
@@ -215,7 +236,7 @@ export const Controls: FC<TimelineControlsProps> = ({
       </Elem>
     </Block>
   );
-};
+});
 
 export const ControlButton: FC<ButtonProps & {disabled?: boolean}> = ({ children, ...props }) => {
   return (
@@ -246,21 +267,19 @@ const TimeDisplay: FC<TimeDisplay> = ({
   length,
   formatPosition,
 }) => {
-  const formatter = formatPosition ?? relativePosition;
+  const pos = position - 1;
+  const formatter = formatPosition ?? positionFromTime;
+  const commonOptions = { position: pos, fps: framerate, length };
+  const currentTimeFormatted = formatter({ time: currentTime, ...commonOptions });
+  const totalTimeFormatted = formatter({ time: duration, ...commonOptions });
 
   return (
     <Elem name="time">
       <Elem name="time-section">
-        <Time
-          time={currentTime}
-          position={formatter(position, framerate)}
-        />
+        <Time time={currentTime} position={currentTimeFormatted}/>
       </Elem>
       <Elem name="time-section">
-        <Time
-          time={duration}
-          position={formatter(length, framerate)}
-        />
+        <Time time={Math.max(duration, 0)} position={totalTimeFormatted}/>
       </Elem>
     </Elem>
   );
@@ -291,3 +310,22 @@ const AltControls: FC<AltControlsProps> = (props) => {
   return props.showAlterantive ? props.alt : props.main;
 };
 
+type ControlGroups = Record<TimelineCustomControls["position"], JSX.Element[]>;
+
+const useCustomControls = (
+  customControls?: TimelineCustomControls[],
+): ControlGroups | null => {
+  if (!customControls) return null;
+
+  const groups = customControls?.reduce<ControlGroups>((groups, item) => {
+    const group = groups[item.position] ?? [];
+    const component = item.component instanceof Function ? item.component() : item.component;
+
+    group.push(component);
+    groups[item.position] = group;
+
+    return groups;
+  }, {} as ControlGroups);
+
+  return groups;
+};

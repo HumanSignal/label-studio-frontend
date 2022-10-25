@@ -21,27 +21,33 @@ jobs:
       with:
         node-version: "${{ env.NODE }}"
 
+    - name: Get CPU info
+      id: "cpu-info"
+      run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
+
     - name: Upgrade Yarn
       run: npm install -g yarn@1.22
 
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn cache dir)"
+      run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
     - name: Configure yarn cache
       uses: actions/cache@v3
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/package.json') }}-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
     - name: Print Yarn cache size
       run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
     - name: Install dependencies
-      run: rm package-lock.json && yarn install
+      run: yarn install --frozen-lockfile
 
     - name: Unit tests
-      run: yarn test
+      run: yarn test && yarn test:coverage
 
     - name: Build distribution package
       timeout-minutes: 10
@@ -53,17 +59,53 @@ jobs:
     # run http-server with build in background (will be killed after job ends)
     # do this only for master branch (so only for push event)
     # because pr can contain unfinished job
-    - run: npx serve -l tcp://localhost:3000 build &
+    - name: "Run server"
+      run: |
+        cp -r public/files build/ &&
+        cp -r public/images build/ &&
+        cp -r public/styles build/ &&
+        npx serve -l tcp://localhost:3000 build &
       if: github.event_name == 'push'
+
     - id: wait_for_npx_server
+      name: "Wait for server"
       timeout-minutes: 1
       run: |
         while [ "$(curl -s -o /dev/null -L -w ''%{http_code}'' "http://localhost:3000/")" != "200" ]; do
           echo "=> Waiting for service to become available" && sleep 2s
         done
-    - run: yarn run test:e2e:headless
-      timeout-minutes: 15
+
+    - name: "Setup e2e"
       if: github.event_name == 'push'
+      timeout-minutes: 1
+      run: |
+        set -euo pipefail
+        cd e2e
+        yarn install --frozen-lockfile
+
+    - name: Run e2e test suite
+      if: github.event_name == 'push'
+      timeout-minutes: 30
+      run: |
+        set -euo pipefail
+        cd e2e
+        yarn run test:ci ${{ steps.cpu-info.outputs.cores-count }}
+
+    # - name: "Convert coverage report to Istanbul"
+    #   if: github.event_name == 'push'
+    #   run: |
+    #     set -euo pipefail
+    #     cd e2e
+    #     yarn run coverage:istanbul
+    #     yarn run coverage:report
+
+    # - name: "Upload e2e coverage to Codecov"
+    #   uses: codecov/codecov-action@v3.1.0
+    #   with:
+    #     name: codecov-general
+    #     directory: ./e2e/output/coverage
+    #     token: ${{ secrets.CODECOV_TOKEN }}
+    #     fail_ci_if_error: true
 
     - uses: actions/upload-artifact@v3
       if: ${{ failure() }}

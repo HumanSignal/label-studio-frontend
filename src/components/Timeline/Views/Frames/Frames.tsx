@@ -1,5 +1,6 @@
 import { clamp } from "lodash";
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemoizedHandlers } from "../../../../hooks/useMemoizedHandlers";
 import { Block, Elem } from "../../../../utils/bem";
 import { isDefined } from "../../../../utils/utilities";
 import { TimelineViewProps } from "../../Types";
@@ -24,23 +25,27 @@ export const Frames: FC<TimelineViewProps> = ({
   playing,
   regions,
   onScroll,
-  onChange,
+  onPositionChange,
   onResize,
-  onToggleVisibility,
-  onDeleteRegion,
   onSelectRegion,
+  ...props
 }) => {
   const scrollMultiplier = 1.25;
-  const timelineStartOffset = 150;
+  const timelineStartOffset = props.leftOffset ?? 150;
 
   const scrollable = useRef<HTMLDivElement>();
   const [hoverEnabled, setHoverEnabled] = useState(true);
   const [hoverOffset, setHoverOffset] = useState<number | null>(null);
   const [offsetX, setOffsetX] = useState(offset);
   const [offsetY, setOffsetY] = useState(0);
+  const [regionSelectionDisabled, setRegionSelectionDisabled] = useState(false);
   const viewWidth = useMemo(() => {
     return length * step;
   }, [length, step]);
+
+  const handlers = useMemoizedHandlers({
+    onPositionChange,
+  });
 
   const background = useMemo(() => {
     const bg = [
@@ -70,7 +75,7 @@ export const Frames: FC<TimelineViewProps> = ({
   const setIndicatorOffset = useCallback((value) => {
     const frame = toSteps(roundToStep(value, step), step);
 
-    onChange?.(clamp(frame + 1, 1, length));
+    handlers.onPositionChange?.(clamp(frame + 1, 1, length));
   }, [step, length, position]);
 
   const scrollHandler = useCallback((e) => {
@@ -89,8 +94,6 @@ export const Frames: FC<TimelineViewProps> = ({
     }
 
   }, [scrollable, offsetX, offsetY, setScroll]);
-
-  const timelineOffsetSteps = roundToStep(timelineStartOffset, step);
 
   const currentOffsetX = useMemo(() => {
     const value = roundToStep(offsetX, step);
@@ -168,6 +171,42 @@ export const Frames: FC<TimelineViewProps> = ({
     return value - currentOffsetX + timelineStartOffset;
   }, [position, currentOffsetX, step, length]);
 
+  const onFrameScrub = useCallback((e: MouseEvent) => {
+    const dimensions = scrollable.current!.getBoundingClientRect();
+    const offsetLeft = dimensions.left;
+    const rightLimit = dimensions.width - timelineStartOffset;
+
+    const getMouseToFrame = (e: MouseEvent | globalThis.MouseEvent) => {
+      const mouseOffset = e.pageX - offsetLeft - timelineStartOffset;
+
+      return mouseOffset + currentOffsetX;
+    };
+
+    const offset = getMouseToFrame(e);
+
+    setIndicatorOffset(offset);
+
+    const onMouseMove = (e: globalThis.MouseEvent) => {
+      const offset = getMouseToFrame(e);
+
+      if (offset >= 0 && offset <= rightLimit) {
+        setHoverEnabled(false);
+        setRegionSelectionDisabled(true);
+        setIndicatorOffset(offset);
+      }
+    };
+
+    const onMouseUp = () => {
+      setHoverEnabled(true);
+      setRegionSelectionDisabled(false);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  }, [currentOffsetX, setIndicatorOffset]);
+
   useEffect(() => {
     if (scrollable.current) {
       scrollable.current.scrollLeft = currentOffsetX;
@@ -233,7 +272,7 @@ export const Frames: FC<TimelineViewProps> = ({
           <Elem
             name="hover"
             style={{ left: roundToStep(hoverOffset, step), marginLeft: timelineStartOffset }}
-            data-frame={toSteps(currentOffsetX + hoverOffset, step) + 1}
+            data-frame={toSteps(currentOffsetX + hoverOffset, step)}
           />
         )}
       </Elem>
@@ -247,22 +286,65 @@ export const Frames: FC<TimelineViewProps> = ({
         onMouseMove={hoverHandler}
         onMouseLeave={() => setHoverOffset(null)}
         onClickCapture={scrollClickHandler}
+        onMouseDown={onFrameScrub}
       >
         <Elem name="filler">
-          <Elem name="keypoints">
-            {regions.map(region => region.sequence.length > 0 ? (
-              <Keypoints
-                key={region.id}
-                region={region}
-                startOffset={timelineStartOffset}
-                onSelectRegion={onSelectRegion}
-              />
-            ) : null)}
-          </Elem>
+          <KeypointsVirtual
+            regions={regions}
+            scrollTop={currentOffsetY}
+            startOffset={timelineStartOffset}
+            onSelectRegion={onSelectRegion}
+            disabled={regionSelectionDisabled}
+          />
         </Elem>
       </Elem>
 
       <Elem name="background" style={{ backgroundImage: background }}/>
     </Block>
+  );
+};
+
+interface KeypointsVirtualProps {
+  regions: any[];
+  startOffset: number;
+  scrollTop: number;
+  disabled?: boolean;
+  onSelectRegion: TimelineViewProps["onSelectRegion"];
+}
+
+const KeypointsVirtual: FC<KeypointsVirtualProps> = ({
+  regions,
+  startOffset,
+  scrollTop,
+  disabled,
+  onSelectRegion,
+}) => {
+  const extra = 5;
+  const height = 24;
+  const bounds = useMemo(() => {
+    const sIdx = clamp(Math.ceil(scrollTop / height) - 1, 0, regions.length);
+    const eIdx = clamp(sIdx + (Math.ceil(165 / height) - 1), 0, regions.length);
+
+    return [
+      clamp(sIdx - extra, 0, regions.length),
+      clamp(eIdx + extra, 0, regions.length),
+    ];
+  }, [scrollTop, regions.length]);
+
+  return (
+    <Elem name="keypoints" style={{ height: regions.length * height }}>
+      {regions.map((region, i) => {
+        return region.sequence.length > 0 ? (
+          <Keypoints
+            key={region.id}
+            idx={i + 1}
+            region={region}
+            startOffset={startOffset}
+            onSelectRegion={disabled ? undefined : onSelectRegion}
+            renderable={bounds[0] <= i && i <= bounds[1]}
+          />
+        ) : null;
+      })}
+    </Elem>
   );
 };

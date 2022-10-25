@@ -87,7 +87,7 @@ Scenario("Check simple nested Choices for Text", async function({ I }) {
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
 
   I.see("Positive");
   I.dontSee("Emotional");
@@ -109,7 +109,7 @@ Scenario("Check good nested Choice for Text", async function({ I, AtLabels, AtSi
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
 
   I.click("Positive");
   I.see("Laughter");
@@ -119,7 +119,7 @@ Scenario("Check good nested Choice for Text", async function({ I, AtLabels, AtSi
 
   I.seeElement(personTag);
   I.click(personTag);
-  I.executeAsyncScript(selectText, {
+  I.executeScript(selectText, {
     selector: ".lsf-htx-richtext",
     rangeStart: 51,
     rangeEnd: 55,

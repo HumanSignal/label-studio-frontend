@@ -10,7 +10,6 @@ function onSubmitAnnotation() {}
  * Callback on update annotation
  */
 function onUpdateAnnotation() {}
-
 /**
  * Callback on delete annotation
  */
@@ -24,7 +23,7 @@ function onSkipTask() {}
 /**
  * Callback on unskip task
  */
-function onCancelSkippingTask() {}
+function onUnskipTask() {}
 
 /**
  * Callback on task load
@@ -84,7 +83,7 @@ export default {
   onGroundTruth,
   onLabelStudioLoad,
   onSkipTask,
-  onCancelSkippingTask,
+  onUnskipTask,
   onSubmitAnnotation,
   onSubmitDraft,
   onTaskLoad,

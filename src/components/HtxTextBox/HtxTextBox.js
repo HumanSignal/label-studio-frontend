@@ -105,7 +105,7 @@ export class HtxTextBox extends React.Component {
       ref: this.inputRef,
       value,
       onBlur: isFF(FF_DEV_1566) ? ()=>{
-        this.props.onChange(this.state.value);
+        onChange(this.state.value);
       } : this.save,
       onFocus,
       onChange: e => {
@@ -145,7 +145,7 @@ export class HtxTextBox extends React.Component {
   }
 
   renderView() {
-    const { onChange, onDelete, text, onFocus, ...props } = this.props;
+    const { onChange, onDelete, text, ...props } = this.props;
 
     return (
       <>

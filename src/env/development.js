@@ -23,6 +23,7 @@ import { AudioRegions } from "../examples/audio_regions";
 import { TranscribeAudio } from "../examples/transcribe_audio";
 import { VideoRectangles } from "../examples/video_bboxes";
 import { VideoClassification } from "../examples/video";
+import { VideoAudio } from "../examples/video_audio";
 
 /**
  * Image
@@ -53,6 +54,7 @@ import { RichTextPlainRemote } from "../examples/rich_text_plain_remote";
 /**
  * Different
  */
+import { DateTime } from "../examples/datetime";
 import { Pairwise } from "../examples/pairwise";
 import { Repeater } from "../examples/repeater";
 import { Table } from "../examples/table";
@@ -66,7 +68,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ImageOCR;
+const data = VideoRectangles;
 
 function getData(task) {
   if (task && task.data) {
@@ -133,14 +135,16 @@ function rootElement(element) {
  * @param {object} params
  */
 function configureApplication(params) {
+
   const options = {
+    settings: params.settings || {},
     alert: m => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },
     onSubmitAnnotation: params.onSubmitAnnotation ? params.onSubmitAnnotation : External.onSubmitAnnotation,
     onUpdateAnnotation: params.onUpdateAnnotation ? params.onUpdateAnnotation : External.onUpdateAnnotation,
     onDeleteAnnotation: params.onDeleteAnnotation ? params.onDeleteAnnotation : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
-    onCancelSkippingTask: params.onCancelSkippingTask ? params.onCancelSkippingTask : External.onCancelSkippingTask,
+    onUnskipTask: params.onUnskipTask ? params.onUnskipTask : External.onUnskipTask,
     onSubmitDraft: params.onSubmitDraft,
     onTaskLoad: params.onTaskLoad ? params.onTaskLoad : External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad ? params.onLabelStudioLoad : External.onLabelStudioLoad,

@@ -43,8 +43,8 @@ import { customTypes } from "../../core/CustomTypes";
  * @param {string} name Name of the element
  * @param {string} value Data field containing path or a URL to the audio
  * @param {string} hotkey Hotkey used to play or pause audio
- * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
- * @param {string} [cursorcolor=#333] - Audio pane cursor color. Color should be specify in hex decimal string
+ * @param {string} [cursorwidth=1] - Audio pane cursor width. It is measured in pixels.
+ * @param {string} [cursorcolor=#333] - Audio pane cursor color. The color should be specified in hex decimal string
  */
 
 const TagAttrs = types.model({
@@ -90,6 +90,11 @@ const Model = types
 
     onLoad(ws) {
       self._ws = ws;
+      const history = self.annotation.history;
+
+      // In cases where we do skipNextUndoState on region creation, we need to make sure
+      // that we don't skip the next undo state after it is resolved entirely.
+      setTimeout(() => history.setSkipNextUndoState(false), 0);
     },
 
     onError(error) {

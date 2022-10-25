@@ -1,6 +1,7 @@
+import { FF_DEV_2480, isFF } from "./feature-flags";
 import { clamp, isDefined } from "./utilities";
 
-const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
+export const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
 const isText = text => text && /[\w']/i.test(text);
 const isSpace = text => text && /[\s\t]/i.test(text);
@@ -221,11 +222,12 @@ export const captureSelection = (
   if (granularity !== "symbol") {
     trimSelection(selection);
   }
-  const selectionText = selection.toString().replace(/[\n\r]/g, "\\n");
 
   if (selection.isCollapsed) return;
 
   applyTextGranularity(selection, granularity);
+
+  const selectionText = selection.toString().replace(/[\n\r]/g, "\\n");
 
   for (let i = 0; i < selection.rangeCount; i++) {
     const range = fixRange(selection.getRangeAt(i));
@@ -275,11 +277,13 @@ const applyTextGranularity = (selection, granularity) => {
  * @param {HTMLElement} commonContainer
  * @param {HTMLElement} node
  * @param {number} offset
+ * @param {string} direction forward, backward, forward-next, backward-next
+ *                           "-next" when we need to skip node if it's a text node
  */
-const textNodeLookup = (commonContainer, node, offset, direction) => {
+const textNodeLookup = (commonContainer, node, offset, direction = "forward") => {
   const startNode = node === commonContainer ? node.childNodes[offset] : node;
 
-  if (isTextNode(startNode)) return startNode;
+  if (isTextNode(startNode) && !direction.endsWith("next")) return startNode;
 
   const walker = commonContainer.ownerDocument.createTreeWalker(commonContainer, NodeFilter.SHOW_ALL);
   let currentNode = walker.nextNode();
@@ -290,7 +294,9 @@ const textNodeLookup = (commonContainer, node, offset, direction) => {
     currentNode = walker.nextNode();
   }
 
-  if (currentNode && direction === "backward") return lastTextNode;
+  if (currentNode && direction.startsWith("backward")) return lastTextNode;
+
+  if (direction === "forward-next") currentNode = walker.nextNode();
 
   while (currentNode) {
     if (isTextNode(currentNode)) return currentNode;
@@ -299,23 +305,55 @@ const textNodeLookup = (commonContainer, node, offset, direction) => {
 };
 
 /**
- * Fix range if it contains non-text nodes
+ * Fix range if it contains non-text nodes and shrink it down to the better fit.
+ * The main goal here is to get the most relevant xpath+offset combination.
+ * i.e. `start` should point to the element, containing first char, not parent,
+ * not root, not some previous element with `startOffset` on the last char.
  * @param {Range} range
  */
 const fixRange = range => {
-  const { startOffset, endOffset, commonAncestorContainer: commonContainer } = range;
-  let { startContainer, endContainer } = range;
+  const { endOffset, commonAncestorContainer: commonContainer } = range;
+  let { startOffset, startContainer, endContainer } = range;
 
   if (!isTextNode(startContainer)) {
     startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward");
     if (!startContainer) return null;
     range.setStart(startContainer, 0);
+    startOffset = 0;
+  }
+
+  // if user started selection from the end of the tag, start could be this tag,
+  // so we should move it to more relevant one
+  const selectionFromTheEnd = startContainer.wholeText.length === startOffset;
+  // we skip ephemeral whitespace only text nodes, like \n between tags in original html
+  const isBasicallyEmpty = textNode => /^\s*$/.test(textNode.wholeText);
+
+  if (isFF(FF_DEV_2480) && (selectionFromTheEnd || isBasicallyEmpty(startContainer))) {
+    do {
+      startContainer = textNodeLookup(commonContainer, startContainer, startOffset, "forward-next");
+      if (!startContainer) return null;
+    } while (isBasicallyEmpty(startContainer));
+
+    range.setStart(startContainer, 0);
+    startOffset = 0;
   }
 
   if (!isTextNode(endContainer)) {
+    let isIncluded = false;
+
     endContainer = textNodeLookup(commonContainer, endContainer, endOffset, "backward");
     if (!endContainer) return null;
-    const isIncluded = !!range.toString().match(endContainer.wholeText)?.length;
+
+    if (isFF(FF_DEV_2480)) {
+      while (/^\s*$/.test(endContainer.wholeText)) {
+        endContainer = textNodeLookup(commonContainer, endContainer, endOffset, "backward-next");
+        if (!endContainer) return null;
+      }
+      // we skip empty whitespace only text nodes, so we need the found one to be included
+      isIncluded = true;
+    } else {
+      isIncluded = range.toString().includes(endContainer.wholeText);
+    }
 
     range.setEnd(endContainer, isIncluded ? endContainer.length : 0);
   }

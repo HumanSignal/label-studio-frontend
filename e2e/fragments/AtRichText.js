@@ -6,7 +6,7 @@ const Helpers = require("../tests/helpers");
 module.exports = {
   _rootSelector: ".lsf-htx-richtext",
   selectTextByGlobalOffset(startOffset, endOffset) {
-    I.executeAsyncScript(Helpers.selectText, {
+    I.executeScript(Helpers.selectText, {
       selector: ".lsf-htx-richtext",
       rangeStart: startOffset,
       rangeEnd: endOffset,

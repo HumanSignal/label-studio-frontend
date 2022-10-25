@@ -251,7 +251,7 @@ const createSpanStylesheet = (document, identifier, color) => {
   };
 
   const classNames = {
-    active: `${className}.${stateClass.active}`,
+    active: `${className}.${stateClass.active}:not(.${stateClass.hidden})`,
     highlighted: `${className}.${stateClass.highlighted}`,
   };
 
@@ -264,7 +264,7 @@ const createSpanStylesheet = (document, identifier, color) => {
 
   const rules = {
     [className]: `
-      background-color: var(${variables.color});
+      background-color: var(${variables.color}) !important;
       cursor: var(${variables.cursor}, pointer);
       border: 1px dashed transparent;
     `,
@@ -278,7 +278,7 @@ const createSpanStylesheet = (document, identifier, color) => {
       line-height: 0;
     `,
     [classNames.active]: `
-      color: ${Utils.Colors.contrastColor(initialActiveColor)};
+      color: ${Utils.Colors.contrastColor(initialActiveColor)} !important;
       ${variables.color}: ${initialActiveColor}
     `,
     [classNames.highlighted]: `
@@ -287,8 +287,9 @@ const createSpanStylesheet = (document, identifier, color) => {
     `,
     [`${className}.${stateClass.hidden}`]: `
       border: none;
-      background: none;
       padding: 0;
+      pointer-events: none;
+      ${variables.color}: transparent;
     `,
     [`${className}.${stateClass.hidden}::before`]: `
       display: none

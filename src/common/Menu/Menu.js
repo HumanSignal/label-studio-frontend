@@ -1,12 +1,12 @@
-import React, { useCallback, useMemo } from "react";
+import { forwardRef, useCallback, useMemo } from "react";
 import { Block, cn } from "../../utils/bem";
 import { useDropdown } from "../Dropdown/DropdownTrigger";
 import "./Menu.styl";
 import { MenuContext } from "./MenuContext";
 import { MenuItem } from "./MenuItem";
 
-export const Menu = React.forwardRef(
-  ({ children, className, style, size, selectedKeys, closeDropdownOnItemClick }, ref) => {
+export const Menu = forwardRef(
+  ({ children, className, style, size, selectedKeys, closeDropdownOnItemClick, allowClickSelected }, ref) => {
     const dropdown = useDropdown();
 
     const selected = useMemo(() => {
@@ -25,8 +25,12 @@ export const Menu = React.forwardRef(
       return !!dropdown;
     }, [dropdown]);
 
+    const contextValue = useMemo(() => {
+      return { selected, allowClickSelected };
+    }, [selected, allowClickSelected]);
+
     return (
-      <MenuContext.Provider value={{ selected }}>
+      <MenuContext.Provider value={contextValue}>
         <Block ref={ref} tag="ul" name="menu" mod={{ size, collapsed }} mix={className} style={style} onClick={clickHandler}>
           {children}
         </Block>

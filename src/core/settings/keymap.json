@@ -55,6 +55,16 @@
     "mac": "command+shift+z",
     "description": "Redo"
   },
+  "polygon:undo": {
+    "key": "ctrl+z",
+    "mac": "command+z",
+    "description": "Undo"
+  },
+  "polygon:redo": {
+    "key": "ctrl+shift+z",
+    "mac": "command+shift+z",
+    "description": "Redo"
+  },
   "region:delete-all": {
     "key": "ctrl+backspace",
     "mac": "command+backspace",
@@ -71,6 +81,14 @@
   "region:visibility": {
     "key": "alt+h",
     "description": "Toggle selected region visibility"
+  },
+  "region:lock": {
+    "key": "alt+l",
+    "description": "Lock selected region"
+  },
+  "region:meta": {
+    "key": "alt+m",
+    "description": "Edit selected region meta"
   },
   "region:unselect": {
     "key": "u",
@@ -128,5 +146,21 @@
   "video:fastforward": {
     "key": "shift+ctrl+alt+right",
     "description": "Go to last frame"
+  },
+  "video:hop-backward": {
+    "key": "shift+alt+left",
+    "description": "Hop Backward"
+  },
+  "video:hop-forward": {
+    "key": "shift+alt+right",
+    "description": "Hop Forward"
+  },
+  "repeater:next-page": {
+    "key": "alt+right",
+    "description": "Next Page"
+  },
+  "repeater:previous-page": {
+    "key": "alt+left",
+    "description": "Previous Page"
   }
 }

@@ -12,6 +12,7 @@ export interface SpaceProps {
   stretch?: boolean;
   align?: 'start' | 'end';
   collapsed?: boolean;
+  truncated?: boolean;
   className?: string;
 }
 
@@ -25,10 +26,11 @@ export const Space: FC<SpaceProps> = ({
   stretch,
   align,
   collapsed,
+  truncated,
   ...rest
 }) => {
   return (
-    <Block name="space" mod={{ direction, size, spread, stretch, align, collapsed }} mix={className} style={style} {...rest}>
+    <Block name="space" mod={{ direction, size, spread, stretch, align, collapsed, truncated }} mix={className} style={style} {...rest}>
       {children}
     </Block>
   );

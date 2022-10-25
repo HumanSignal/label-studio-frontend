@@ -1,7 +1,7 @@
 /* global inject */
 const { I } = inject();
 
-function startErrorsCollector(done) {
+function startErrorsCollector() {
   function CEErrorsCollector() {
     this.errors = [];
     this.errorHandler = this.errorHandler.bind(this);
@@ -25,27 +25,25 @@ function startErrorsCollector(done) {
     window.removeEventListener("error", this.errorHandler);
   };
   window._ceErrorsCollector = new CEErrorsCollector();
-  done();
 }
 
-function stopErrorsCollector(done) {
+function stopErrorsCollector() {
   window._ceErrorsCollector.destroy();
-  done();
 }
 
-function getErrors(done) {
-  done(window._ceErrorsCollector.errors);
+function getErrors() {
+  return window._ceErrorsCollector.errors;
 }
 
 module.exports = {
   run() {
-    I.executeAsyncScript(startErrorsCollector);
+    I.executeScript(startErrorsCollector);
   },
   stop() {
-    I.executeAsyncScript(stopErrorsCollector);
+    I.executeScript(stopErrorsCollector);
   },
   async grabErrors() {
-    const errors = await I.executeAsyncScript(getErrors);
+    const errors = await I.executeScript(getErrors);
 
     return errors;
   },

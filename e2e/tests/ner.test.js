@@ -63,7 +63,7 @@ Scenario("NER labeling for HyperText", async function({ I }) {
   };
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
 
   // create regions inside iframe
   I.switchTo("iframe");

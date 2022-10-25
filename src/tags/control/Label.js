@@ -17,6 +17,7 @@ import { TagParentMixin } from "../../mixins/TagParentMixin";
 import ToolsManager from "../../tools/Manager";
 import Utils from "../../utils";
 import { parseValue } from "../../utils/data";
+import { FF_DEV_2128, isFF } from "../../utils/feature-flags";
 
 /**
  * Label tag represents a single label. Use with the Labels tag, including BrushLabels, EllipseLabels, HyperTextLabels, KeyPointLabels, and other Labels tags to specify the value of a specific label.
@@ -45,6 +46,7 @@ import { parseValue } from "../../utils/data";
  * @param {string} [background=#36B37E]     - Background color of an active label in hexadecimal
  * @param {string} [selectedColor=#ffffff]  - Color of text in an active label in hexadecimal
  * @param {symbol|word} [granularity]       - Set control based on symbol or word selection (only for Text)
+ * @param {string} [html]                   - HTML code is used to display label button instead of raw text provided by `value` (should be properly escaped)
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
@@ -61,6 +63,7 @@ const TagAttrs = types.model({
   granularity: types.maybeNull(types.enumeration(["symbol", "word", "sentence", "paragraph"])),
   groupcancontain: types.maybeNull(types.string),
   // childrencheck: types.optional(types.enumeration(["any", "all"]), "any")
+  ...(isFF(FF_DEV_2128) ? { html: types.maybeNull(types.string) } : {} ),
 });
 
 const Model = types.model({
@@ -233,7 +236,12 @@ const Model = types.model({
   },
 
   onHotKey() {
-    return self.toggleSelected();
+    if(self.annotation.isDrawing) {
+      return false;
+    } else {
+      self.annotation.unselectAreas();
+      return self.toggleSelected();
+    }
   },
 
   _updateBackgroundColor(val) {
@@ -260,7 +268,7 @@ const HtxLabelView = inject("store")(
         item.toggleSelected();
         return false;
       }}>
-        {item._value}
+        {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
         {item.showalias === true && item.alias && (
           <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
         )}

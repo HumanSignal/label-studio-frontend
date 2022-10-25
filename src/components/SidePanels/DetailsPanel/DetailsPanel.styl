@@ -1,0 +1,43 @@
+.details
+  --details-section-border-color #E1E0E0
+
+
+  &__section
+    border-top 1px solid var(--details-section-border-color)
+
+    &:last-child
+      border-bottom 1px solid var(--details-section-border-color)
+
+    &-head
+      display flex
+      height 48px
+      padding 0 16px
+      font-size 15px
+      font-weight 500
+      align-items center
+      justify-content space-between
+
+      span
+        opacity 0.6
+        font-weight normal
+
+.region-actions
+  margin 8px
+  height 36px
+  display flex
+  align-items stretch
+  justify-content space-between
+
+  &__group
+    display grid
+    grid-column-gap 8px
+    grid-auto-flow column
+    grid-auto-columns 36px
+    align-items center
+
+    &_align
+      &_left
+        justify-content flex-start
+
+      &_right
+        justify-content flex-end

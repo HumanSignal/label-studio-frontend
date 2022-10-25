@@ -76,7 +76,7 @@ Scenario("Checking mass toggling of visibility", async ({ I, AtImageView, AtSide
         I.dontSeeElement(ONE_HIDDEN_SELECTOR);
         break;
     }
-    const count = await I.executeAsyncScript(countKonvaShapes);
+    const count = await I.executeScript(countKonvaShapes);
 
     assert.strictEqual(count, num);
   };
@@ -94,7 +94,7 @@ Scenario("Checking mass toggling of visibility", async ({ I, AtImageView, AtSide
   };
 
   await I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, { annotations, config, data });
+  I.executeScript(initLabelStudio, { annotations, config, data });
   AtImageView.waitForImage();
   AtSidebar.seeRegions(3);
   await checkVisible(3);
@@ -118,7 +118,7 @@ Scenario("Checking mass toggling of visibility", async ({ I, AtImageView, AtSide
 
 Scenario("Hiding bulk visibility toggle", ({ I, AtImageView, AtLabels, AtSidebar }) => {
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, { config, data });
+  I.executeScript(initLabelStudio, { config, data });
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);
   I.dontSeeElement(ALL_VISIBLE_SELECTOR);
@@ -148,7 +148,7 @@ Scenario("Checking regions grouped by label", async ({ I, AtImageView }) => {
         I.dontSeeElement(ONE_HIDDEN_SELECTOR);
         break;
     }
-    const count = await I.executeAsyncScript(countKonvaShapes);
+    const count = await I.executeScript(countKonvaShapes);
 
     assert.strictEqual(count, num);
   };
@@ -166,9 +166,9 @@ Scenario("Checking regions grouped by label", async ({ I, AtImageView }) => {
   };
 
   await I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, { annotations, config, data });
+  I.executeScript(initLabelStudio, { annotations, config, data });
   AtImageView.waitForImage();
-  I.executeAsyncScript(switchRegionTreeView, "labels");
+  I.executeScript(switchRegionTreeView, "labels");
   I.see("Labels");
   await checkVisible(3);
   hideOne();
@@ -218,7 +218,7 @@ Data(examplesTable).Scenario("Check visibility switcher through all examples", (
   result.forEach(r => !ids.includes(r.id) && Object.keys(r.value).length > 1 && ids.push(r.id));
 
   I.amOnPage("/");
-  I.executeAsyncScript(initLabelStudio, params);
+  I.executeScript(initLabelStudio, params);
   const regionsCount = ids.length;
 
   AtSidebar.seeRegions(regionsCount);

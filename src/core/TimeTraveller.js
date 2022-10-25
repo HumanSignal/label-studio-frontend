@@ -22,6 +22,9 @@ const TimeTraveller = types
     get canRedo() {
       return self.undoIdx < self.history.length - 1;
     },
+    get hasChanges() {
+      return self.history.length > 1;
+    },
   }))
   .actions(self => {
     let targetStore;
@@ -32,8 +35,8 @@ const TimeTraveller = types
     let changesDuringFreeze = false;
     let replaceNextUndoState = false;
 
-    function triggerHandlers() {
-      updateHandlers.forEach(handler => handler());
+    function triggerHandlers(force = true) {
+      updateHandlers.forEach(handler => handler(force));
     }
 
     return {
@@ -56,6 +59,10 @@ const TimeTraveller = types
           if (changesDuringFreeze) self.recordNow();
           self.setReplaceNextUndoState(false);
         }
+      },
+
+      setSkipNextUndoState(value = true) {
+        self.skipNextUndoState = value;
       },
 
       setReplaceNextUndoState(value = true) {
@@ -87,18 +94,18 @@ const TimeTraveller = types
           return;
         }
 
-        self.history.splice(self.undoIdx + !replaceNextUndoState, self.history.length);
-        self.history.push(recorder);
+        // mutate history to trigger history-related UI items
+        self.history = self.history.slice(0, self.undoIdx + !replaceNextUndoState).concat(recorder);
         self.undoIdx = self.history.length - 1;
         replaceNextUndoState = false;
         changesDuringFreeze = false;
       },
 
-      reinit() {
+      reinit(force = true) {
         self.history = [getSnapshot(targetStore)];
         self.undoIdx = 0;
         self.createdIdx = 0;
-        triggerHandlers();
+        triggerHandlers(force);
       },
 
       afterCreate() {
