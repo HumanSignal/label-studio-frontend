@@ -160,7 +160,7 @@ const LabelsModel = types.compose(
 const HtxLabels = observer(({ item }) => {
   return (
     <Block name="labels" mod={{ hidden: !item.visible, inline: item.showinline }}>
-      {Tree.renderChildren(item)}
+      {Tree.renderChildren(item, item.annotation)}
     </Block>
   );
 });

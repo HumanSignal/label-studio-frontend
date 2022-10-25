@@ -253,7 +253,7 @@ const HtxNewChoiceView = ({ item, store }) => {
       </Elem>
       {
         item.nestedResults && item.children?.length
-          ? <Elem name="children" mod={{ collapsed }}>{Tree.renderChildren(item)}</Elem>
+          ? <Elem name="children" mod={{ collapsed }}>{Tree.renderChildren(item, item.annotation)}</Elem>
           : null
       }
     </Block>

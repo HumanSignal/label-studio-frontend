@@ -317,8 +317,8 @@ const HtxChoices = observer(({ item }) => {
         <ChoicesSelectLayout item={item} />
       ) : (
         !isFF(FF_DEV_2007)
-          ? <Form layout={item.layout}>{Tree.renderChildren(item)}</Form> 
-          : Tree.renderChildren(item)
+          ? <Form layout={item.layout}>{Tree.renderChildren(item, item.annotation)}</Form>
+          : Tree.renderChildren(item, item.annotation)
       )}
     </Block>
   );

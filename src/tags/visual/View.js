@@ -113,7 +113,7 @@ const HtxView = observer(({ item }) => {
 
   return (
     <div className={item.classname} style={style}>
-      {Tree.renderChildren(item)}
+      {Tree.renderChildren(item, item.annotation)}
     </div>
   );
 });

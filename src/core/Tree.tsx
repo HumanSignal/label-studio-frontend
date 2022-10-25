@@ -18,6 +18,11 @@ interface ConfigNode extends ConfigNodeBaseProps {
   value?: string;
 }
 
+interface IAnnotation {
+  id: string;
+  ids: Map<string, IAnyStateTreeNode>;
+}
+
 export const TRAVERSE_SKIP = "skip";
 export const TRAVERSE_STOP = "stop";
 
@@ -223,7 +228,14 @@ function treeToModel(html: string, store: { task: { dataObj: Record<string, any>
  * Render items of tree
  * @param {*} el
  */
-function renderItem(el: IAnyStateTreeNode, includeKey = true) {
+function renderItem(ref: IAnyStateTreeNode, annotation: IAnnotation, includeKey = true) {
+  const el = annotation.ids.get(cleanUpId(ref.id ?? ref.name));
+
+  if (!el) {
+    console.error(`Can't find element ${ref.id ?? ref.name} in annotation ${annotation.id}`);
+    return null;
+  }
+
   const type = getType(el);
   const identifierAttribute = type.identifierAttribute;
   const typeName = type.name;
@@ -241,10 +253,10 @@ function renderItem(el: IAnyStateTreeNode, includeKey = true) {
  *
  * @param {*} item
  */
-function renderChildren(item: IAnyStateTreeNode) {
+function renderChildren(item: IAnyStateTreeNode, annotation: IAnnotation) {
   if (item && item.children && item.children.length) {
     return item.children.map((el: IAnyStateTreeNode) => {
-      return renderItem(el);
+      return renderItem(el, annotation);
     });
   } else {
     return null;

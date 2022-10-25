@@ -332,7 +332,7 @@ const HtxTextArea = observer(({ item }) => {
 
   return (item.displaymode === PER_REGION_MODES.TAG ? (
     <div style={visibleStyle}>
-      {Tree.renderChildren(item)}
+      {Tree.renderChildren(item, item.annotation)}
 
       {item.showSubmit && (
         <Form
