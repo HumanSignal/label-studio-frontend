@@ -124,7 +124,10 @@ const _Tool = types
       startDrawing(x, y) {
         if (isFF(FF_DEV_2432)) {
           self.mode = "drawing";
-          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }));
+          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }), true);
+          self.currentArea.setDrawing(true);
+          self.applyActiveStates(self.currentArea);
+          self.annotation.setIsDrawing(true);
         } else {
           Super.startDrawing(x, y);
         }

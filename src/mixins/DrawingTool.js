@@ -132,11 +132,11 @@ const DrawingTool = types
         newArea.notifyDrawingFinished();
         return newArea;
       },
-      createRegion(opts) {
+      createRegion(opts, skipAfterCreate = false) {
         const control = self.control;
         const resultValue = control.getResultValue();
 
-        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj);
+        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj, skipAfterCreate);
         self.applyActiveStates(self.currentArea);
         return self.currentArea;
       },
