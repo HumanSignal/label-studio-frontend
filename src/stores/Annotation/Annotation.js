@@ -726,7 +726,7 @@ export const Annotation = types
       Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
     },
 
-    createResult(areaValue, resultValue, control, object) {
+    createResult(areaValue, resultValue, control, object, skipAfrerCreate = false) {
       const result = {
         from_name: control.name,
         // @todo should stick to area
@@ -749,13 +749,13 @@ export const Annotation = types
       const area = self.areas.put(areaRaw);
 
       if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
-      self.afterCreateResult(area, control);
+      if (!skipAfrerCreate) self.afterCreateResult(area, control);
 
       return area;
     },
 
     afterCreateResult(area, control) {
-      if (!self.isDrawing && self.store.settings.selectAfterCreate) {
+      if (self.store.settings.selectAfterCreate) {
         if (!area.classification) {
           // some regions might need some actions right after creation (i.e. text)
           // and some may be already deleted (i.e. bboxes)

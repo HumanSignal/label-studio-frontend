@@ -128,11 +128,11 @@ const _Tool = types
 
           self.initializeHotkeys();
 
-          self.annotation.setIsDrawing(true);
-          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }));
+          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }), true);
 
           self.currentArea.setDrawing(true);
           self.applyActiveStates(self.currentArea);
+          self.annotation.setIsDrawing(true);
         } else {
           Super.startDrawing(x, y);
         }
