@@ -439,11 +439,16 @@ export const Annotation = types
       if (!region.classification) getEnv(self).events.invoke('entityDelete', region);
 
       self.relationStore.deleteNodeRelation(region);
+
       if (region.type === "polygonregion") {
         detach(region);
       }
 
       destroy(region);
+
+      // If the annotation was in a drawing state and the user deletes it, we need to reset the drawing state
+      // to avoid the user being stuck in a drawing state
+      self.setIsDrawing(false);
     },
 
     deleteArea(area) {
