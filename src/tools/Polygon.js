@@ -94,7 +94,6 @@ const _Tool = types
 
     return {
       handleToolSwitch(tool) {
-
         self.stopListening();
         if (self.getCurrentArea()?.isDrawing && tool.toolName !== 'ZoomPanTool') {
           const shape = self.getCurrentArea()?.toJSON();
@@ -125,9 +124,8 @@ const _Tool = types
         if (isFF(FF_DEV_2432)) {
           self.mode = "drawing";
           self.currentArea = self.createRegion(self.createRegionOptions({ x, y }), true);
-          self.currentArea.setDrawing(true);
+          self.setDrawing(true);
           self.applyActiveStates(self.currentArea);
-          self.annotation.setIsDrawing(true);
         } else {
           Super.startDrawing(x, y);
         }
@@ -138,9 +136,8 @@ const _Tool = types
           const { currentArea, control } = self;
 
           self.currentArea.notifyDrawingFinished();
-          self.currentArea.setDrawing(false);
+          self.setDrawing(false);
           self.currentArea = null;
-          self.annotation.setIsDrawing(false);
           self.mode = "viewing";
           self.annotation.afterCreateResult(currentArea, control);
         } else {
@@ -148,15 +145,37 @@ const _Tool = types
         }
       },
 
+      setDrawing(drawing) {
+        self.currentArea?.setDrawing(drawing);
+        self.annotation.setIsDrawing(drawing);
+      },
+
       deleteRegion() {
         if (isFF(FF_DEV_2432)) {
           const { currentArea } = self;
 
+          self.setDrawing(false);
           self.currentArea = null;
-          if (currentArea) currentArea.deleteRegion();
+          if (currentArea) {
+            currentArea.deleteRegion();
+          }
         } else {
           Super.deleteRegion();
         }
+      },
+
+      undo() {
+        const points = self.currentArea?.points?.length ?? 0;
+        const stopDrawingAfterNextUndo = points <= 1;
+
+        self.annotation.undo();
+
+        if(stopDrawingAfterNextUndo) {
+          self.setDrawing(false);
+        }
+      },
+      redo() {
+        self.annotation.redo();
       },
     };
   });
