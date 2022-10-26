@@ -38,10 +38,6 @@ import ControlBase from "./Base";
  * @param {number=} [strokeWidth=1]   - Width of stroke
  * @param {boolean=} [canRotate=true] - Show or hide rotation option
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const ModelAttrs = types.model("EllipseLabelsModel", {
   type: "ellipselabels",
@@ -52,7 +48,6 @@ const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   EllipseModel,
-  TagAttrs,
   LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
   ControlBase,

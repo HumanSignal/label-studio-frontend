@@ -33,7 +33,7 @@ import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
  */
 
 const TagAttrs = types.model({
-  name: types.identifier,
+  name: types.string,
   toname: types.maybeNull(types.string),
   strokewidth: types.optional(types.string, "15"),
 });

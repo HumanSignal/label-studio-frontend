@@ -68,7 +68,8 @@ import { FF_DEV_2007_DEV_2008, isFF } from "../../../utils/feature-flags";
  * @param {string} [value]                   - Task data field containing a list of dynamically loaded labels (see example below)
  */
 const TagAttrs = types.model({
-  name: types.identifier,
+  id: types.identifier,
+  name: types.string,
   toname: types.maybeNull(types.string),
 
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),

@@ -32,7 +32,7 @@ import { FF_DEV_2132, isFF } from "../../utils/feature-flags";
  * @param {boolean} [smartOnly]           - Only show smart tool for interactive pre-annotations
  */
 const TagAttrs = types.model({
-  name: types.identifier,
+  name: types.string,
   toname: types.maybeNull(types.string),
 
   opacity: types.optional(customTypes.range(), "0.2"),

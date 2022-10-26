@@ -97,7 +97,9 @@ export const Annotation = types
 
       if (children) item = { ...item, children };
       if (item.id) item = { ...item, id: (item.name ?? item.id) + "@" + sn.id };
-      if (item.name) item = { ...item, name: item.name + "@" + sn.id };
+      // @todo fallback for tags with name as id:
+      // if (item.name) item = { ...item, name: item.name + "@" + sn.id };
+      // @todo soon no such tags should left
 
       return item;
     };

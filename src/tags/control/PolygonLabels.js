@@ -39,10 +39,6 @@ import ControlBase from "./Base";
  * @param {small|medium|large} [pointSize=medium]   - Size of polygon handle points
  * @param {rectangle|circle} [pointStyle=rectangle] - Style of points
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const Validation = types.model({
   controlledTags: Types.unionTag(["Image"]),
@@ -57,7 +53,6 @@ const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   PolygonModel,
-  TagAttrs,
   Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
