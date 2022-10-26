@@ -352,9 +352,9 @@ function extractNames(root: IAnyStateTreeNode) {
       const val = toNames.get(node.toname);
 
       if (val) {
-        val.push(cleanUpId(node.name));
+        val.push(names.get(cleanUpId(node.name)));
       } else {
-        toNames.set(node.toname, [cleanUpId(node.name)]);
+        toNames.set(node.toname, [names.get(cleanUpId(node.name))]);
       }
     }
   });
