@@ -1,10 +1,11 @@
 import React from "react";
 import { getParentOfType, getType } from "mobx-state-tree";
+import { IAnyComplexType, IAnyStateTreeNode } from "mobx-state-tree/dist/internal";
 
 import Registry from "./Registry";
 import { parseValue } from "../utils/data";
+import { FF_DEV_3391, isFF } from "../utils/feature-flags";
 import { guidGenerator } from "../utils/unique";
-import { IAnyComplexType, IAnyStateTreeNode } from "mobx-state-tree/dist/internal";
 
 interface ConfigNodeBaseProps {
   id: string;
@@ -71,7 +72,9 @@ function tagIntoObject(
   const props = attrsToProps(node, replaces);
   const type = node.tagName.toLowerCase();
   const indexFlag = props.indexflag ?? "{{idx}}";
-  const id = node.getAttribute('name') ?? guidGenerator();
+  const id = isFF(FF_DEV_3391)
+    ? node.getAttribute('name') ?? guidGenerator()
+    : guidGenerator();
   const data: ConfigNode = {
     ...props,
     id,
@@ -229,7 +232,13 @@ function treeToModel(html: string, store: { task: { dataObj: Record<string, any>
  * @param {*} el
  */
 function renderItem(ref: IAnyStateTreeNode, annotation: IAnnotation, includeKey = true) {
-  const el = annotation.ids.get(cleanUpId(ref.id ?? ref.name));
+  let el = ref;
+
+  if (isFF(FF_DEV_3391)) {
+    if (!annotation) return null;
+
+    el = annotation.ids.get(cleanUpId(ref.id ?? ref.name));
+  }
 
   if (!el) {
     console.error(`Can't find element ${ref.id ?? ref.name} in annotation ${annotation.id}`);

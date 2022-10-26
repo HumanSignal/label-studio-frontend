@@ -1,11 +1,18 @@
 import { getRoot, types } from "mobx-state-tree";
 import Types from "../core/Types";
+import { FF_DEV_3391, isFF } from "../utils/feature-flags";
 
 export const AnnotationMixin = types.model("AnnotationMixin", {
 
 }).views((self) => ({
   get annotation() {
-    return Types.getParentOfTypeString(self, "Annotation");
+    if (isFF(FF_DEV_3391)) {
+      return Types.getParentOfTypeString(self, "Annotation");
+    }
+
+    const as = self.annotationStore;
+
+    return as?.selectedHistory ?? as?.selected;
   },
 
   get annotationStore() {
