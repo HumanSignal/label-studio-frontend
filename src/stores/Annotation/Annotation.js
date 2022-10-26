@@ -755,7 +755,7 @@ export const Annotation = types
     },
 
     afterCreateResult(area, control) {
-      if (self.store.settings.selectAfterCreate) {
+      if (!self.isDrawing && self.store.settings.selectAfterCreate) {
         if (!area.classification) {
           // some regions might need some actions right after creation (i.e. text)
           // and some may be already deleted (i.e. bboxes)
