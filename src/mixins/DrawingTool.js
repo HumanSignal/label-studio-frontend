@@ -120,6 +120,14 @@ const DrawingTool = types
         self.annotation.setIsDrawing(true);
         return self.currentArea;
       },
+      resumeUnfinishedRegion(existingUnclosedPolygon) {
+        self.currentArea = existingUnclosedPolygon;
+        self.currentArea.setDrawing(true);
+        self.annotation.regionStore.selection._updateResultsFromRegions([self.currentArea]);
+        self.mode = "drawing";
+        self.annotation.setIsDrawing(true);
+        self.listenForClose?.();
+      },
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
 
@@ -138,11 +146,11 @@ const DrawingTool = types
         newArea.notifyDrawingFinished();
         return newArea;
       },
-      createRegion(opts) {
+      createRegion(opts, skipAfterCreate = false) {
         const control = self.control;
         const resultValue = control.getResultValue();
 
-        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj);
+        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj, skipAfterCreate);
         self.applyActiveStates(self.currentArea);
         return self.currentArea;
       },
@@ -166,13 +174,23 @@ const DrawingTool = types
         return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart() && !self.annotation.isDrawing;
       },
 
+      initializeHotkeys() {
+        if (isFF(FF_DEV_2576)) {
+          initializeHotkeys(self);
+        }
+      },
+
+      disposeHotkeys() {
+        if (isFF(FF_DEV_2576)) {
+          disposeHotkeys();
+        }
+      },
+
       startDrawing(x, y) {
         self.annotation.history.freeze();
         self.mode = "drawing";
 
-        if (isFF(FF_DEV_2576)) {
-          initializeHotkeys(self);
-        }
+        self.initializeHotkeys();
 
         self.currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
       },
@@ -194,9 +212,7 @@ const DrawingTool = types
         self.annotation.history.unfreeze();
         self.mode = "viewing";
 
-        if (isFF(FF_DEV_2576)) {
-          disposeHotkeys();
-        }
+        self.disposeHotkeys();
       },
     };
   });

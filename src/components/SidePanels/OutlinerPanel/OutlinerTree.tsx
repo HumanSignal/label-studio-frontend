@@ -173,19 +173,23 @@ const useEventHandlers = ({
     const multi = evt.nativeEvent.ctrlKey || (isMacOS() && evt.nativeEvent.metaKey);
     const { node } = evt;
 
-    const self = node.item;
+    const self = node?.item;
+
+    if (!self?.annotation) return;
+    
     const annotation = self.annotation;
 
     if (multi) {
       annotation.toggleRegionSelection(self);
-    } else {
-      const wasNotSelected = !self.selected;
+      return;
+    }
+    
+    const wasNotSelected = !self.selected;
 
-      if (wasNotSelected) {
-        annotation.selectArea(self);
-      } else {
-        annotation.unselectAll();
-      }
+    if (wasNotSelected) {
+      annotation.selectArea(self);
+    } else {
+      annotation.unselectAll();
     }
   }, []);
 
