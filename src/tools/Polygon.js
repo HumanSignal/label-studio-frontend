@@ -163,21 +163,6 @@ const _Tool = types
           Super.deleteRegion();
         }
       },
-
-      undo() {
-        const points = self.currentArea?.points?.length ?? 0;
-        const stopDrawingAfterNextUndo = points <= 1;
-
-        self.annotation.undo();
-
-        if(stopDrawingAfterNextUndo) {
-          self.setDrawing(false);
-        }
-      },
-
-      redo() {
-        self.annotation.redo();
-      },
     };
   });
 

@@ -459,10 +459,23 @@ export const Annotation = types
       const { history, regionStore } = self;
 
       if (history && history.canUndo) {
+        let stopDrawingAfterNextUndo = false;
         const selectedIds = regionStore.selectedIds;
+        const currentRegion = regionStore.findRegion(selectedIds[0] ?? regionStore.regions[0]?.id);
+
+        if (currentRegion?.type === "polygonregion") {
+          const points = currentRegion?.points?.length ?? 0;
+
+          stopDrawingAfterNextUndo = points <= 1;
+        }
 
         history.undo();
         regionStore.selectRegionsByIds(selectedIds);
+
+        if (stopDrawingAfterNextUndo) {
+          currentRegion.setDrawing(false);
+          self.setIsDrawing(false);
+        }
       }
     },
 
