@@ -174,6 +174,7 @@ const _Tool = types
           self.setDrawing(false);
         }
       },
+
       redo() {
         self.annotation.redo();
       },
