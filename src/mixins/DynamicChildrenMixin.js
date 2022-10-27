@@ -1,4 +1,4 @@
-import { types } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 import ProcessAttrsMixin from "./ProcessAttrs";
 import { parseValue } from "../utils/data";
 
@@ -26,7 +26,7 @@ const DynamicChildrenMixin = types.model({
     };
 
     return {
-      updateChildren(data) {
+      updateWithDynamicChildren(data) {
         const list = (self.children ?? []).concat(prepareDynamicChildrenData(data));
 
         self.children = list;
@@ -37,7 +37,6 @@ const DynamicChildrenMixin = types.model({
         // we may need to rewrite this, initRoot and the other related methods
         // (actually a lot of them) to work asynchronously as well
 
-        self.loading = true;
         setTimeout(() => {
           self.updateDynamicChildren(store);
         });
@@ -47,15 +46,12 @@ const DynamicChildrenMixin = types.model({
         if (self.locked !== true) {
           const valueFromTask = parseValue(self.value, store.task.dataObj);
 
-          if (!valueFromTask) {
-            return;
-          }
+          if (!valueFromTask) return;
 
-          self.updateChildren(valueFromTask);
+          self.updateWithDynamicChildren(valueFromTask);
           // self.generateDynamicChildren(valueFromTask, store);
           if (self.annotation) self.needsUpdate?.();
         }
-        self.loading = false;
       },
 
       generateDynamicChildren(data, store) {

@@ -16,6 +16,9 @@ export const SharedStoreModel = types.model("SharedStoreModel", {
     lock() {
       self.locked = true;
     },
+    unlock() {
+      self.locked = false;
+    },
     destroy() {
       self.clear();
       detach(self);

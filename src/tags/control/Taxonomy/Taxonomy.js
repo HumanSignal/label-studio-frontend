@@ -179,15 +179,20 @@ const Model = types
 
       if (isFF(FF_DEV_3617) && self.store && children.length !== self.children.length) {
         setTimeout(() => self.updateChildren());
+      } else {
+        self.loading = false;
       }
     },
 
     updateChildren() {
       const children = ChildrenSnapshots.get(self.name) ?? [];
 
-      self._children = children;
-      self.children = ChildrenSnapshots.get(self.name) ?? [];
-      ChildrenSnapshots.delete(self.name);
+      if (children) {
+        self._children = children;
+        self.children = ChildrenSnapshots.get(self.name) ?? [];
+        self.store.unlock();
+        ChildrenSnapshots.delete(self.name);
+      }
 
       self.loading = false;
     },
@@ -239,8 +244,10 @@ const Model = types
   }))
   .preProcessSnapshot((sn) => {
     if (isFF(FF_DEV_3617)) {
-      if (!ChildrenSnapshots.has(sn.name)) {
-        ChildrenSnapshots.set(sn.name, sn._children ?? sn.children ?? []);
+      const children = sn._children ?? sn.children;
+
+      if (children && !ChildrenSnapshots.has(sn.name)) {
+        ChildrenSnapshots.set(sn.name, children);
       }
 
       delete sn._children;
