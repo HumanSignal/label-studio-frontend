@@ -194,7 +194,6 @@ function attrsToProps(node: Element, replaces?: Record<string, string>): Record<
  * @param {string} html
  */
 function treeToModel(html: string, store: { task: { dataObj: Record<string, any> }}): ConfigNode {
-  console.time("Parse tree");
   const parser = new DOMParser();
 
   const doc = parser.parseFromString(html, 'application/xml');
@@ -205,7 +204,6 @@ function treeToModel(html: string, store: { task: { dataObj: Record<string, any>
   if (parserError) {
     throw new Error(parserError);
   }
-  console.timeEnd("Parse tree");
 
   return tagIntoObject(root, store.task?.dataObj ?? {});
 

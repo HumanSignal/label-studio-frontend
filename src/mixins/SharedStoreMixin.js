@@ -53,13 +53,10 @@ export const SharedStoreMixin = (childrenType) => types.model("SharedStore", {
     },
   }))
   .preProcessSnapshot((sn) => {
-    console.log({ sn });
     const storeId = sn.sharedstore ?? sn.name;
 
-    console.log({ storeId });
     if (storeId && !SharedStore[storeId]) {
       SharedStore[storeId] = SharedStoreModel(childrenType ?? []).create({ children: sn.children });
-      console.log(SharedStore, SharedStore[storeId]);
     }
 
     return sn;

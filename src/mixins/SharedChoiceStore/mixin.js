@@ -21,7 +21,6 @@ export const SharedStoreMixin = types.model("SharedStoreMixin", {
     set children(val) {
       self.store?.lock();
       self.store.setChildren(val);
-      console.log("Children Set");
     },
 
     get sharedChildren() {

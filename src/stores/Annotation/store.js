@@ -186,8 +186,6 @@ const AnnotationStoreModel = types
       const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
       const objects = [];
 
-      console.log(modelClass, rootModel);
-
       self.validate(VALIDATORS.CONFIG, rootModel);
 
       try {

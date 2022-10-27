@@ -48,11 +48,7 @@ const SelectionMap = types.model(
 
   return {
     beforeUnselect(region) {
-      try {
-        region.perRegionTags.forEach(tag => tag.submitChanges?.());
-      } catch {
-        console.log(region);
-      }
+      region.perRegionTags.forEach(tag => tag.submitChanges?.());
     },
     afterUnselect(region) {
       region.afterUnselectRegion?.();

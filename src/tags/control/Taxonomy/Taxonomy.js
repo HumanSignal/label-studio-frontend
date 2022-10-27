@@ -100,8 +100,6 @@ function traverse(root) {
 
 const ChildrenSnapshots = new Map();
 
-console.log(ChildrenSnapshots);
-
 const Model = types
   .model({
     pid: types.optional(types.string, guidGenerator),
