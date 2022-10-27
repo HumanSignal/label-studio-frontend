@@ -36,10 +36,11 @@ export const KonvaRegionMixin = types.model({})
         const ev = e?.evt || e;
         const additiveMode = ev?.ctrlKey || ev?.metaKey;
 
-        if (self.isDrawing || annotation.isDrawing) return;
+        if (annotation.editable && (self.isDrawing || annotation.isDrawing)) return;
+
         if (e) e.cancelBubble = true;
 
-        if (annotation.relationMode) {
+        if (annotation.editable && annotation.relationMode) {
           annotation.addRelation(self);
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
