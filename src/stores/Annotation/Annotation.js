@@ -461,7 +461,7 @@ export const Annotation = types
       if (history && history.canUndo) {
         let stopDrawingAfterNextUndo = false;
         const selectedIds = regionStore.selectedIds;
-        const currentRegion = regionStore.findRegion(selectedIds[0] ?? regionStore.regions[0]?.id);
+        const currentRegion = regionStore.findRegion(selectedIds[selectedIds.length - 1] ?? regionStore.regions[regionStore.regions.length - 1]?.id);
 
         if (currentRegion?.type === "polygonregion") {
           const points = currentRegion?.points?.length ?? 0;
