@@ -94,6 +94,7 @@ export const Annotation = types
 
     return {
       ...sn,
+      readonly: sn.readonly ?? (isDefined(sn.editable) ? !sn.editable : sn.type === "prediction"),
       user,
       ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
       skipped: sn.skipped || sn.was_cancelled,
