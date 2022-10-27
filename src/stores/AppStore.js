@@ -191,7 +191,7 @@ export default types
 
       if (hasHistory) {
         const lastTaskId = self.taskHistory[self.taskHistory.length - 1].taskId;
-        
+
         return self.task.id !== lastTaskId;
       }
       return false;

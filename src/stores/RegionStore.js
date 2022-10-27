@@ -6,6 +6,7 @@ import { AllRegionsType } from "../regions";
 import { debounce } from "../utils/debounce";
 import Tree, { TRAVERSE_STOP } from "../core/Tree";
 import { FF_DEV_2755, isFF } from "../utils/feature-flags";
+import { toJS } from "mobx";
 
 const hotkeys = Hotkey("RegionStore");
 
@@ -47,7 +48,11 @@ const SelectionMap = types.model(
 
   return {
     beforeUnselect(region) {
-      region.perRegionTags.forEach(tag => tag.submitChanges?.());
+      try {
+        region.perRegionTags.forEach(tag => tag.submitChanges?.());
+      } catch {
+        console.log(region);
+      }
     },
     afterUnselect(region) {
       region.afterUnselectRegion?.();
@@ -95,7 +100,7 @@ const SelectionMap = types.model(
       self.afterUnselect(region);
     },
     clear() {
-      const regionEntries = self.selected.toJS();
+      const regionEntries = self.selected;
 
       for (const [, region] of regionEntries) {
         self.beforeUnselect(region);

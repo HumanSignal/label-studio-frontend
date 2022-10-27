@@ -11,10 +11,11 @@ import { ViewModel } from "../../tags/visual";
 import { FF_DEV_1621, FF_DEV_3034, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
 import { HistoryItem } from "./HistoryItem";
+import { StoreExtender } from "../../mixins/SharedChoiceStore/extender";
 
 const SelectedItem = types.union(Annotation, HistoryItem);
 
-export default types
+const AnnotationStoreModel = types
   .model("AnnotationStore", {
     selected: types.maybeNull(types.reference(SelectedItem)),
     selectedHistory: types.maybeNull(types.safeReference(SelectedItem)),
@@ -118,9 +119,9 @@ export default types
     }
 
     /**
-     * Select annotation
-     * @param {*} id
-     */
+   * Select annotation
+   * @param {*} id
+   */
     function selectAnnotation(id, options = {}) {
       if (!self.annotations.length) return null;
 
@@ -145,14 +146,14 @@ export default types
       getEnv(self).events.invoke('deleteAnnotation', self.store, annotation);
 
       /**
-       * MST destroy annotation
-       */
+     * MST destroy annotation
+     */
       destroy(annotation);
 
       self.selected = null;
       /**
-       * Select other annotation
-       */
+     * Select other annotation
+     */
       if (self.annotations.length > 0) {
         self.selectAnnotation(self.annotations[0].id);
       }
@@ -203,6 +204,7 @@ export default types
 
       // initialize toName bindings [DOCS] name & toName are used to
       // connect different components to each other
+      console.time("Initialize bindings");
       Tree.traverseTree(self.root, node => {
         const isControlTag = node.name && !objectTypes.includes(node.type);
         // auto-infer missed toName if there is only one object tag in the config
@@ -223,6 +225,7 @@ export default types
 
         if (self.store.task && node.updateValue) node.updateValue(self.store);
       });
+      console.timeEnd("Initialize bindings");
 
       return self.root;
     }
@@ -285,8 +288,8 @@ export default types
         let actual_user;
 
         if (isFF(FF_DEV_3034)) {
-          // drafts can be created by other user, but we don't have much info
-          // so parse "id", get email and find user by it
+        // drafts can be created by other user, but we don't have much info
+        // so parse "id", get email and find user by it
           const email = item.createdBy?.replace(/,\s*\d+$/, '');
           const user = email && self.store.users.find(user => user.email === email);
 
@@ -363,7 +366,7 @@ export default types
     function selectHistory(item) {
       self.selectedHistory = item;
       setTimeout(() => {
-        // update classifications after render
+      // update classifications after render
         const updatedItem = item ?? self.selected;
 
         updatedItem?.results
@@ -373,7 +376,7 @@ export default types
     }
 
     function addAnnotationFromPrediction(entity) {
-      // immutable work, because we'll change ids soon
+    // immutable work, because we'll change ids soon
       const s = entity._initialAnnotationObj.map(r => ({ ...r }));
       const c = self.addAnnotation({ userGenerate: true, result: s });
 
@@ -479,3 +482,8 @@ export default types
       deleteAnnotation,
     };
   });
+
+export default types.compose("AnnotationStore",
+  AnnotationStoreModel,
+  StoreExtender,
+);

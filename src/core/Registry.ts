@@ -115,6 +115,8 @@ class _Registry {
 
 const Registry = new _Registry();
 
+window.Registry = Registry;
+
 Registry.getTool = Registry.getTool.bind(Registry);
 Registry.getModelByTag = Registry.getModelByTag.bind(Registry);
 

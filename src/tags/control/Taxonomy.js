@@ -14,6 +14,7 @@ import VisibilityMixin from "../../mixins/Visibility";
 import ControlBase from "./Base";
 import DynamicChildrenMixin from "../../mixins/DynamicChildrenMixin";
 import { FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
+import { SharedStoreMixin } from "../../mixins/SharedChoiceStore/mixin";
 
 /**
  * Use the Taxonomy tag to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the Choice tag.
@@ -63,24 +64,20 @@ const TagAttrs = types.model({
   ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, "") } : {}),
 });
 
-/**
- * Filter uniq nodes by value
- * @param {ConfigItem} nodes
- */
-function uniq(nodes) {
-  const filtered = [];
-  const uniqValues = [];
-
-  for (const node of nodes) {
-    if (uniqValues.includes(node.value)) continue;
-    filtered.push(node);
-    uniqValues.push(node.value);
-  }
-
-  return filtered;
-}
-
 function traverse(root) {
+  const visitUnique = (nodes, path = []) => {
+    const uniq = new Set();
+    const result = [];
+
+    for(const child of nodes) {
+      if (uniq.has(child.value)) continue;
+      uniq.add(child.value);
+      result.push(visitNode(child, path));
+    }
+
+    return result;
+  };
+
   const visitNode = function(node, parents = []) {
     const label = node.value;
     const path = [...parents, node.alias ?? label];
@@ -88,16 +85,15 @@ function traverse(root) {
     const obj = { label, path, depth };
 
     if (node.children) {
-      obj.children = uniq(node.children).map(child => visitNode(child, path));
+      obj.children = visitUnique(node.children, path);
     }
 
     return obj;
   };
 
-  // @todo check childrens with only one child
-  return Array.isArray(root) ? uniq(root).map(n => visitNode(n)) : (
-    isFF(FF_DEV_2007_DEV_2008) && !root ? [] : visitNode(root)
-  );
+  if (!root) return [];
+  if (isFF(FF_DEV_2007_DEV_2008) && !Array.isArray(root)) return visitUnique([root]);
+  return visitUnique(root);
 }
 
 const Model = types
@@ -107,13 +103,19 @@ const Model = types
     readonly: types.optional(types.boolean, false),
 
     type: "taxonomy",
-    children: Types.unionArray(["choice"]),
+    _children: Types.unionArray(["choice"]),
   })
   .volatile(() => ({
     maxUsagesReached: false,
     selected: [],
   }))
   .views(self => ({
+    get children() {
+      return self._children;
+    },
+    set children(val) {
+      self._children = val;
+    },
     get userLabels() {
       return self.annotation.store.userLabels;
     },
@@ -209,13 +211,19 @@ const Model = types
       self.userLabels?.deleteLabel(self.name, path);
     },
 
-  }));
+  }))
+  .preProcessSnapshot((sn) => {
+    sn._children = sn._children ?? sn.children;
+    delete sn.children;
+    return sn;
+  });
 
 const TaxonomyModel = types.compose("TaxonomyModel",
   ControlBase,
   TagAttrs,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
   Model,
+  SharedStoreMixin,
   RequiredMixin,
   PerRegionMixin,
   VisibilityMixin,

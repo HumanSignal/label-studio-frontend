@@ -938,7 +938,7 @@ export const Annotation = types
           if(readonly) {
             self.setReadonly(true);
           }
-          
+
           self.deserializeSingleResult(obj,
             (id) => areas.get(id),
             (snapshot) => areas.put(snapshot),
