@@ -17,6 +17,7 @@ const DynamicChildrenMixin = types.model({
       ...obj,
       children: prepareDynamicChildrenData(obj.children),
     }));
+
     const postprocessDynamicChildren = (children, store) => {
       children?.forEach(item => {
         postprocessDynamicChildren(item.children, store);
@@ -36,37 +37,36 @@ const DynamicChildrenMixin = types.model({
         // we may need to rewrite this, initRoot and the other related methods
         // (actually a lot of them) to work asynchronously as well
 
-        if (self.sharedStoreModel?.locked !== true) {
+        self.loading = true;
+        setTimeout(() => {
+          self.updateDynamicChildren(store);
+        });
+      },
+
+      updateDynamicChildren(store) {
+        if (self.locked !== true) {
           const valueFromTask = parseValue(self.value, store.task.dataObj);
 
-          if (!valueFromTask) return;
+          if (!valueFromTask) {
+            return;
+          }
 
-          self.generateDynamicChildren(valueFromTask, store);
+          self.updateChildren(valueFromTask);
+          // self.generateDynamicChildren(valueFromTask, store);
           if (self.annotation) self.needsUpdate?.();
         }
+        self.loading = false;
       },
 
       generateDynamicChildren(data, store) {
-        if (self.locked === true) return;
-        console.groupCollapsed("Generate dynamic children");
-        console.log(self.locked);
-        console.time("generateDynamicChildren");
-        console.time("updateChildren");
-        self.updateChildren(data);
-        console.timeEnd("updateChildren");
-
         if (self.children) {
           const children = self.children;
           const len = children.length;
           const start = len - data.length;
           const slice = children.slice(start, len);
 
-          console.time("postprocessDynamicChildren");
           postprocessDynamicChildren(slice, store);
-          console.timeEnd("postprocessDynamicChildren");
         }
-        console.timeEnd("generateDynamicChildren");
-        console.groupEnd("Generate dynamic children");
       },
     };
   });

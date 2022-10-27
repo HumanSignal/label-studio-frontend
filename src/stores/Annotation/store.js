@@ -8,7 +8,7 @@ import { guidGenerator } from "../../core/Helpers";
 import { DataValidator, ValidationError, VALIDATORS } from "../../core/DataValidator";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import { ViewModel } from "../../tags/visual";
-import { FF_DEV_1621, FF_DEV_3034, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1621, FF_DEV_3034, FF_DEV_3617, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
 import { HistoryItem } from "./HistoryItem";
 import { StoreExtender } from "../../mixins/SharedChoiceStore/extender";
@@ -186,6 +186,8 @@ const AnnotationStoreModel = types
       const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
       const objects = [];
 
+      console.log(modelClass, rootModel);
+
       self.validate(VALIDATORS.CONFIG, rootModel);
 
       try {
@@ -195,17 +197,14 @@ const AnnotationStoreModel = types
         return showError(e);
       }
 
+      // initialize toName bindings [DOCS] name & toName are used to
+      // connect different components to each other
       Tree.traverseTree(self.root, node => {
         if (node?.name) {
           self.names.put(node);
           if (objectTypes.includes(node.type)) objects.push(node.name);
         }
-      });
 
-      // initialize toName bindings [DOCS] name & toName are used to
-      // connect different components to each other
-      console.time("Initialize bindings");
-      Tree.traverseTree(self.root, node => {
         const isControlTag = node.name && !objectTypes.includes(node.type);
         // auto-infer missed toName if there is only one object tag in the config
 
@@ -225,7 +224,6 @@ const AnnotationStoreModel = types
 
         if (self.store.task && node.updateValue) node.updateValue(self.store);
       });
-      console.timeEnd("Initialize bindings");
 
       return self.root;
     }
@@ -485,5 +483,5 @@ const AnnotationStoreModel = types
 
 export default types.compose("AnnotationStore",
   AnnotationStoreModel,
-  StoreExtender,
+  ...(isFF(FF_DEV_3617) ? [StoreExtender] : []),
 );

@@ -1,6 +1,6 @@
-import { getParent, getParentOfType, getRoot, types } from "mobx-state-tree";
-import { SharedStoreModel } from "./model";
+import { types } from "mobx-state-tree";
 import Types from "../../core/Types";
+import { SharedStoreModel } from "./model";
 
 const StoreIds = new Set();
 const Stores = new Map();

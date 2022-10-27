@@ -48,7 +48,6 @@ function allModelsTypes() {
   const args = [
     {
       dispatcher: sn => {
-        console.log({ sn });
         if (!sn) return types.literal(undefined);
         if (Registry.tags.includes(sn.type)) {
           return Registry.getModelByTag(sn.type);
@@ -121,7 +120,5 @@ const Types = {
   tagsArray,
   toolsArray,
 };
-
-window.Types = Types;
 
 export default Types;
