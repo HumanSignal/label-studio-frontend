@@ -8,7 +8,7 @@ import { guidGenerator } from "../../core/Helpers";
 import { DataValidator, ValidationError, VALIDATORS } from "../../core/DataValidator";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import { ViewModel } from "../../tags/visual";
-import { FF_DEV_1621, FF_DEV_3034, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1621, FF_DEV_3034, FF_DEV_3391, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
 import { HistoryItem } from "./HistoryItem";
 
@@ -165,7 +165,7 @@ export default types
     }
 
     function initRoot(config) {
-      // if (self.root) return;
+      if (self.root) return;
 
       if (!config) {
         return (self.root = ViewModel.create({ id:"empty" }));
@@ -182,8 +182,8 @@ export default types
       }
       const modelClass = Registry.getModelByTag(rootModel.type);
       // hacky way to get all the available object tag names
-      // const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
-      // const objects = [];
+      const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
+      const objects = [];
 
       self.validate(VALIDATORS.CONFIG, rootModel);
 
@@ -194,20 +194,46 @@ export default types
         return showError(e);
       }
 
-      // Tree.traverseTree(self.root, node => {
-      //   if (node?.name) {
-      //     self.names.put(node);
-      //     if (objectTypes.includes(node.type)) objects.push(node.name);
-      //   }
-      // });
+      if (isFF(FF_DEV_3391)) {
+        const { names, toNames } = Tree.extractNames(self.root);
 
-      const { names, toNames } = Tree.extractNames(self.root);
+        names.forEach(tag => self.names.put(tag));
+        toNames.forEach((tags, name) => self.toNames.set(name, tags));
 
-      names.forEach(tag => self.names.put(tag));
-      toNames.forEach((tags, name) => self.toNames.set(name, tags));
-      // self.toNames = toNames;
+        Tree.traverseTree(self.root, node => {
+          if (self.store.task && node.updateValue) node.updateValue(self.store);
+        });
+
+        return self.root;
+      }
 
       Tree.traverseTree(self.root, node => {
+        if (node?.name) {
+          self.names.put(node);
+          if (objectTypes.includes(node.type)) objects.push(node.name);
+        }
+      });
+
+      // initialize toName bindings [DOCS] name & toName are used to
+      // connect different components to each other
+      Tree.traverseTree(self.root, node => {
+        const isControlTag = node.name && !objectTypes.includes(node.type);
+        // auto-infer missed toName if there is only one object tag in the config
+
+        if (isControlTag && !node.toname && objects.length === 1) {
+          node.toname = objects[0];
+        }
+
+        if (node && node.toname) {
+          const val = self.toNames.get(node.toname);
+
+          if (val) {
+            val.push(node.name);
+          } else {
+            self.toNames.set(node.toname, [node.name]);
+          }
+        }
+
         if (self.store.task && node.updateValue) node.updateValue(self.store);
       });
 

@@ -241,7 +241,7 @@ function renderItem(ref: IAnyStateTreeNode, annotation: IAnnotation, includeKey 
   }
 
   if (!el) {
-    console.error(`Can't find element ${ref.id ?? ref.name} in annotation ${annotation.id}`);
+    console.error(`Can't find element ${ref.id ?? ref.name} in annotation ${annotation?.id}`);
     return null;
   }
 

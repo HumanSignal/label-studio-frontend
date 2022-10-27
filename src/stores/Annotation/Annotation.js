@@ -14,7 +14,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
-import { FF_DEV_2100, FF_DEV_2100_A, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2100, FF_DEV_2100_A, FF_DEV_3391, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
 import { CommentStore } from "../Comment/CommentStore";
 
@@ -85,12 +85,12 @@ export const Annotation = types
       comments: [],
     }),
 
-    // root: types.frozen({}),
-    root: Types.allModelsTypes(),
+    ...(isFF(FF_DEV_3391) ? { root: Types.allModelsTypes() } : {}),
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
     let user = sn.user ?? sn.completed_by ?? undefined;
+    let root;
 
     const updateIds = item => {
       const children = item.children?.map(updateIds);
@@ -104,9 +104,9 @@ export const Annotation = types
       return item;
     };
 
-    const root = updateIds(sn.root.toJSON());
-
-    console.log('ROOT', sn, root);
+    if (isFF(FF_DEV_3391)) {
+      root = updateIds(sn.root.toJSON());
+    }
 
     if (user && typeof user !== 'number') {
       user = user.id;
@@ -114,13 +114,28 @@ export const Annotation = types
 
     return {
       ...sn,
-      root,
+      ...(isFF(FF_DEV_3391) ? { root } : {}),
       user,
       ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
       skipped: sn.skipped || sn.was_cancelled,
       acceptedState: sn.accepted_state ?? sn.acceptedState ?? null,
     };
   })
+  .views(self => isFF(FF_DEV_3391)
+    ? {}
+    : {
+      get root() {
+        return self.list.root;
+      },
+
+      get names() {
+        return self.list.names;
+      },
+
+      get toNames() {
+        return self.list.toNames;
+      },
+    })
   .views(self => ({
     get store() {
       return getRoot(self);
@@ -129,19 +144,6 @@ export const Annotation = types
     get list() {
       return getParent(self, 2);
     },
-
-    // @todo copy of root for every annotation!
-    // get root() {
-    //   return self.list.root;
-    // },
-
-    // get names() {
-    //   return self.list.names;
-    // },
-
-    // get toNames() {
-    //   return self.list.toNames;
-    // },
 
     get objects() {
       return Array.from(self.names.values()).filter(tag => !tag.toname);
@@ -223,10 +225,14 @@ export const Annotation = types
     isDraftSaving: false,
     versions: {},
     resultSnapshot: "",
-    names: new Map(),
-    toNames: new Map(),
-    ids: new Map(),
   }))
+  .volatile(() => isFF(FF_DEV_3391)
+    ? {
+      names: new Map(),
+      toNames: new Map(),
+      ids: new Map(),
+    }
+    : {})
   .actions(self => ({
     reinitHistory(force = true) {
       self.history.reinit(force);
@@ -676,16 +682,18 @@ export const Annotation = types
     },
 
     afterCreate() {
-      const { names, toNames } = Tree.extractNames(self.root);
+      if (isFF(FF_DEV_3391)) {
+        const { names, toNames } = Tree.extractNames(self.root);
 
-      names.forEach((tag, name) => self.names.set(name, tag));
-      toNames.forEach((tags, name) => self.toNames.set(name, tags));
+        names.forEach((tag, name) => self.names.set(name, tag));
+        toNames.forEach((tags, name) => self.toNames.set(name, tags));
 
-      Tree.traverseTree(self.root, node => {
-        self.ids.set(Tree.cleanUpId(node.id ?? node.name), node);
+        Tree.traverseTree(self.root, node => {
+          self.ids.set(Tree.cleanUpId(node.id ?? node.name), node);
 
-        if (self.store.task && node.updateValue) node.updateValue(self.store);
-      });
+          if (self.store.task && node.updateValue) node.updateValue(self.store);
+        });
+      }
 
       if (self.userGenerate && !self.sentUserGenerate) {
         self.loadedDate = new Date();
@@ -1043,8 +1051,10 @@ export const Annotation = types
           return newValue;
         };
 
-        to_name = `${to_name}@${self.id}`;
-        from_name = `${from_name}@${self.id}`;
+        if (isFF(FF_DEV_3391)) {
+          to_name = `${to_name}@${self.id}`;
+          from_name = `${from_name}@${self.id}`;
+        }
 
         let area = getArea(areaId);
 
