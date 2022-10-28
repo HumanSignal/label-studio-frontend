@@ -756,7 +756,9 @@ export const Annotation = types
         results: [result],
       };
 
-      const area = self.areas.put(areaRaw);
+      const area = self?.areas?.put(areaRaw);
+
+      alert(areaRaw);
 
       if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
       if (!skipAfrerCreate) self.afterCreateResult(area, control);
