@@ -774,7 +774,7 @@ class ChannelD3 extends React.Component {
       if (this.optimizedSeries) {
         this.path.datum(this.slices[left]);
         this.path.attr("d", this.lineSlice);
-        if (left !== right) {
+        if (left !== right && this.slices[right]) {
           this.path2.datum(this.slices[right]);
           this.path2.attr("d", this.lineSlice);
         } else {
