@@ -35,6 +35,7 @@ const ToolView = observer(({ item }) => {
       active={item.selected}
       extraShortcuts={item.extraShortcuts}
       tool={item}
+      disabled={!item.getSelectedShape}
       onClick={() => {
         if (item.selected) return;
 
@@ -50,7 +51,7 @@ const _Tool = types
   .model("EraserTool", {
     strokeWidth: types.optional(types.number, 10),
     group: "segmentation",
-    isDrawingTool: true,
+    isDrawingTool: false,
   })
   .volatile(() => ({
     index: 9999,
@@ -92,7 +93,6 @@ const _Tool = types
   }))
   .actions(self => {
     let brush;
-    let noSelectedRegions;
 
     return {
       updateCursor() {
@@ -121,10 +121,6 @@ const _Tool = types
         if (self.mode !== "drawing") return;
         self.mode = "viewing";
         brush.endPath();
-        if(noSelectedRegions) {
-          self.annotation.unselectAreas();
-          noSelectedRegions = false;
-        }
       },
 
       mousemoveEv(ev, [x, y]) {
@@ -157,11 +153,7 @@ const _Tool = types
 
         brush = self.getSelectedShape;
 
-        if (!brush & !noSelectedRegions) {
-          self.obj.regs.forEach(region => self.annotation.selectArea(region));
-          noSelectedRegions = true;
-          brush = self.getSelectedShape;
-        }
+        if (!brush) return;
 
         if (brush && brush.type === "brushregion") {
           self.mode = "drawing";
