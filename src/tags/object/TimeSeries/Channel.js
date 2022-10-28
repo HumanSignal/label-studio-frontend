@@ -3,7 +3,6 @@ import { observer } from "mobx-react";
 import { getRoot, types } from "mobx-state-tree";
 
 import * as d3 from "d3";
-import ObjectBase from "../Base";
 import Registry from "../../../core/Registry";
 import Types from "../../../core/Types";
 import { cloneNode, guidGenerator } from "../../../core/Helpers";
@@ -101,7 +100,7 @@ const Model = types
     },
   }));
 
-const ChannelModel = types.compose("ChannelModel", TagParentMixin, Model, TagAttrs, ObjectBase);
+const ChannelModel = types.compose("ChannelModel", TagParentMixin, Model, TagAttrs);
 
 class ChannelD3 extends React.Component {
   ref = React.createRef();
