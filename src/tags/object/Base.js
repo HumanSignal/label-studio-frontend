@@ -2,9 +2,17 @@ import { types } from "mobx-state-tree";
 import isMatch from "lodash.ismatch";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import { FF_DEV_3391, isFF } from "../../utils/feature-flags";
 
 const ObjectBase = types
   .model({
+    ...(isFF(FF_DEV_3391)
+      ? {
+        id: types.identifier,
+        name: types.string,
+      } : {
+        name: types.identifier,
+      }),
     // TODO there should be a better way to force an update
     _needsUpdate: types.optional(types.number, 0),
   })

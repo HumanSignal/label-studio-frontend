@@ -50,7 +50,6 @@ const isFFDev2461 = isFF(FF_DEV_2461);
  * @param {string} [textKey=text]        - The key field to use for the text
  */
 const TagAttrs = types.model("ParagraphsModel", {
-  name: types.identifier,
   value: types.maybeNull(types.string),
   valuetype: types.optional(types.enumeration(["json", "url"]), () => (window.LS_SECURE_MODE ? "url" : "json")),
   audiourl: types.maybeNull(types.string),

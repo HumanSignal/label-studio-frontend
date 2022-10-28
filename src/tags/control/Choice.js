@@ -10,7 +10,7 @@ import Tree, { TRAVERSE_STOP } from "../../core/Tree";
 import Types from "../../core/Types";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { TagParentMixin } from "../../mixins/TagParentMixin";
-import { FF_DEV_2007, FF_DEV_2244, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2007, FF_DEV_2244, FF_DEV_3391, isFF } from "../../utils/feature-flags";
 import { Block, Elem } from "../../utils/bem";
 import "./Choice/Choice.styl";
 import { LsChevron } from "../../assets/icons";
@@ -39,7 +39,7 @@ import { LsChevron } from "../../assets/icons";
  * @param {string} [hotkey]    - Hotkey for the selection
  */
 const TagAttrs = types.model({
-  id: types.identifier,
+  ...(isFF(FF_DEV_3391) ? { id: types.identifier } : {}),
   selected: types.optional(types.boolean, false),
   alias: types.maybeNull(types.string),
   value: types.maybeNull(types.string),

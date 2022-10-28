@@ -48,7 +48,6 @@ import { customTypes } from "../../core/CustomTypes";
  */
 
 const TagAttrs = types.model({
-  name: types.identifier,
   value: types.maybeNull(types.string),
   zoom: types.optional(types.boolean, false),
   volume: types.optional(types.boolean, false),

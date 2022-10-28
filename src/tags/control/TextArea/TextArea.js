@@ -60,7 +60,6 @@ const { TextArea } = Input;
  * @param {boolean} [perRegion]            - Use this tag to label regions instead of whole objects
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
   allowsubmit: types.optional(types.boolean, true),
   label: types.optional(types.string, ""),

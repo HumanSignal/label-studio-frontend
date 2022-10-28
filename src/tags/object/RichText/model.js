@@ -46,8 +46,6 @@ const WARNING_MESSAGES = {
  * @param {symbol|word|sentence|paragraph} [granularity]  - control region selection granularity
  */
 const TagAttrs = types.model("RichTextModel", {
-  name: types.string,
-  id: types.identifier,
   value: types.maybeNull(types.string),
 
   /** Defines the type of data to be shown */

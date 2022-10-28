@@ -39,7 +39,6 @@ const TagAttrs = types.model({
  */
 const ModelAttrs = types
   .model({
-    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "relations",
     children: Types.unionArray(["relations", "relation"]),

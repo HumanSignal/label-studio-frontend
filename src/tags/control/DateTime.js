@@ -47,7 +47,6 @@ const zero = n => (n < 10 ? "0" : "") + n;
  * @param {boolean} [perRegion]      - Use this option to label regions instead of the whole object
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   format: types.maybeNull(types.string),

@@ -39,7 +39,6 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @param {boolean} [perRegion]               - Use this tag to rate regions instead of the whole object
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   maxrating: types.optional(types.string, "5"),

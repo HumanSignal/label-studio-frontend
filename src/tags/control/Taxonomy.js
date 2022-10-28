@@ -51,7 +51,6 @@ import { FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
  * @param {string} [placeholder=]      - What to display as prompt on the input
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
   leafsonly: types.optional(types.boolean, false),
   showfullpath: types.optional(types.boolean, false),

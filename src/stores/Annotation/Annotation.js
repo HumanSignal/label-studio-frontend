@@ -689,7 +689,11 @@ export const Annotation = types
         toNames.forEach((tags, name) => self.toNames.set(name, tags));
 
         Tree.traverseTree(self.root, node => {
-          self.ids.set(Tree.cleanUpId(node.id ?? node.name), node);
+          const id = node.id ?? node.name;
+
+          if (id) {
+            self.ids.set(Tree.cleanUpId(id), node);
+          }
 
           if (self.store.task && node.updateValue) node.updateValue(self.store);
         });

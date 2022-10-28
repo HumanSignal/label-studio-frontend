@@ -39,7 +39,6 @@ import ControlBase from "./Base";
  * @param {boolean} [slider=false]            - Use slider look instead of input; use min and max to add your constraints
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   min: types.maybeNull(types.string),

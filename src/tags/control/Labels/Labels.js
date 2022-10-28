@@ -69,8 +69,6 @@ import "./Labels.styl";
  * @param {string} [value]                   - Task data field containing a list of dynamically loaded labels (see example below)
  */
 const TagAttrs = types.model({
-  id: types.identifier,
-  name: types.string,
   toname: types.maybeNull(types.string),
 
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
