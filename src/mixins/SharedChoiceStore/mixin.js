@@ -2,9 +2,38 @@ import { types } from "mobx-state-tree";
 import Types from "../../core/Types";
 import { SharedStoreModel } from "./model";
 
+/**
+ * StoreIds and Stores act as a cache.
+ *
+ * The reason behind those is that we're creating a new store on the `preProcessSnapshot` when there's no
+ * access to the State Tree. When the store is created, it's put into the cache and retrieved back in the
+ * `afterCreate` hook of the model.
+ *
+ * StoreIds is just a map of existing store IDs to reference to during the `preProcessSnapshot`.
+ */
 const StoreIds = new Set();
 const Stores = new Map();
 
+/**
+ * SharedStoreMixin, when injected into the model, provides an AnnotationStore level shared storages to
+ * reduce the memory footprint and computation time.
+ *
+ * It was specifically designed to be used with Repeater tag where the memory issues are the most sound.
+ *
+ * This mixin provedes a `sharedStore` property to the model which is a reference to the shared store.
+ *
+ * The concept behind it is that whenever a model is parsing a snapshot, children are subtracted from the
+ * initial snapshot, and put into the newly created SharedStore.
+ *
+ * The store is then put into the cache and attached to the model in the `afterCreate` hook. Any subsequent
+ * models lookup the store in the cache first and use its id instead of creating a new one.
+ *
+ * When the store is fullfilled with children, it's locked and cannot be modified anymore. The allows the model
+ * not to process children anymore and just use the store.
+ *
+ * Shared Stores live on the AnnotationStore level meaning that even if the user switches between annotations or
+ * create new ones, they will all use the same shared store decreasing the memory footprint and computation time.
+ */
 export const SharedStoreMixin = types.model("SharedStoreMixin", {
   sharedstore: types.optional(types.maybeNull(types.string), null),
   store: types.optional(types.maybeNull(types.reference(SharedStoreModel)), null),
