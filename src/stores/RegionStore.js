@@ -6,7 +6,6 @@ import { AllRegionsType } from "../regions";
 import { debounce } from "../utils/debounce";
 import Tree, { TRAVERSE_STOP } from "../core/Tree";
 import { FF_DEV_2755, isFF } from "../utils/feature-flags";
-import { toJS } from "mobx";
 
 const hotkeys = Hotkey("RegionStore");
 
