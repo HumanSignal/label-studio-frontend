@@ -80,7 +80,6 @@ export class HtxTextBox extends React.Component {
   };
 
   save = () => {
-    alert('save ' + this.state.value);
     this.props.onChange(this.state.value);
     this.setEditing(false);
   };
@@ -106,12 +105,10 @@ export class HtxTextBox extends React.Component {
       ref: this.inputRef,
       value,
       onBlur: isFF(FF_DEV_1566) ? ()=>{
-        alert('change '+ this.state.value);
         onChange(this.state.value);
       } : this.save,
       onFocus,
       onChange: e => {
-        alert(e.target.value);
         this.setValue(e.target.value);
         this.updateHeight();
       },
