@@ -11,12 +11,6 @@ const PolygonPoint = types
   .model("PolygonPoint", {
     id: types.optional(types.identifier, guidGenerator),
 
-    relativeX: types.optional(types.number, 0),
-    relativeY: types.optional(types.number, 0),
-
-    initX: types.optional(types.number, 0),
-    initY: types.optional(types.number, 0),
-
     x: types.number,
     y: types.number,
 
@@ -27,6 +21,10 @@ const PolygonPoint = types
   })
   .volatile(() => ({
     selected: false,
+    relativeX: 0,
+    relativeY: 0,
+    initX: 0,
+    initY: 0,
   }))
   .views(self => ({
     get parent() {
