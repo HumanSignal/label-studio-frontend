@@ -92,6 +92,7 @@ const _Tool = types
   }))
   .actions(self => {
     let brush;
+    let noSelectedRegions;
 
     return {
       updateCursor() {
@@ -120,6 +121,10 @@ const _Tool = types
         if (self.mode !== "drawing") return;
         self.mode = "viewing";
         brush.endPath();
+        if(noSelectedRegions) {
+          self.annotation.unselectAreas();
+          noSelectedRegions = false;
+        }
       },
 
       mousemoveEv(ev, [x, y]) {
@@ -151,7 +156,12 @@ const _Tool = types
           return;
 
         brush = self.getSelectedShape;
-        if (!brush) return;
+
+        if (!brush & !noSelectedRegions) {
+          self.obj.regs.forEach(region => self.annotation.selectArea(region));
+          noSelectedRegions = true;
+          brush = self.getSelectedShape;
+        }
 
         if (brush && brush.type === "brushregion") {
           self.mode = "drawing";
