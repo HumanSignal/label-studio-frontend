@@ -758,6 +758,8 @@ export const Annotation = types
 
       const area = self?.areas?.put(areaRaw);
 
+      if (!area) return;
+
       if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
       if (!skipAfrerCreate) self.afterCreateResult(area, control);
 
