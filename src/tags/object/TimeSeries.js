@@ -808,7 +808,7 @@ const HtxTimeSeriesViewRTS = ({ item }) => {
   return (
     <div ref={ref} className="htx-timeseries">
       <ObjectTag item={item}>
-        {Tree.renderChildren(item)}
+        {Tree.renderChildren(item, item.annotation)}
         <Overview data={item.dataObj} series={item.dataHash} item={item} range={item.brushRange} />
       </ObjectTag>
     </div>

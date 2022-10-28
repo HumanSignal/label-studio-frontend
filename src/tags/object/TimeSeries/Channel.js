@@ -10,6 +10,7 @@ import { checkD3EventLoop, fixMobxObserve, getOptimalWidth, getRegionColor, spar
 import { markerSymbol } from "./symbols";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { TagParentMixin } from "../../../mixins/TagParentMixin";
+import { FF_DEV_3391, isFF } from "../../../utils/feature-flags";
 
 /**
  * Channel tag can be used to label time series data
@@ -84,6 +85,7 @@ const TagAttrs = types.model({
 
 const Model = types
   .model("ChannelModel", {
+    ...(isFF(FF_DEV_3391) ? { id: types.identifier } : {}),
     type: "channel",
     children: Types.unionArray(["channel", "view"]),
     parentTypes: Types.tagsTypes(["TimeSeries"]),
