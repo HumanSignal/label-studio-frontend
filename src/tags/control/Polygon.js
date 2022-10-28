@@ -1,12 +1,17 @@
 import { types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
+import { Hotkey } from "../../core/Hotkey";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
 import Types from "../../core/Types";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
+import { FF_DEV_2576, isFF } from "../../utils/feature-flags";
+
+
+const hotkeys = Hotkey("Polygons");
 
 /**
  * Use the Polygon tag to add polygons to an image without selecting a label. This can be useful when you have only one label to assign to the polygon. Use for image segmentation tasks.
@@ -59,7 +64,32 @@ const Model = types
   })
   .volatile(() => ({
     toolNames: ['Polygon'],
-  }));
+  }))
+  .actions(self => {
+    return {
+      initializeHotkeys() {
+        if (isFF(FF_DEV_2576)) {
+          hotkeys.addNamed("polygon:undo", () => self.annotation.undo());
+          hotkeys.addNamed("polygon:redo", () => self.annotation.redo());
+        }
+      },
+
+      disposeHotkeys() {
+        if (isFF(FF_DEV_2576)) {
+          hotkeys.removeNamed("polygon:undo");
+          hotkeys.removeNamed("polygon:redo");
+        }
+      },
+
+      afterCreate() {
+        self.initializeHotkeys();
+      },
+
+      beforeDestroy() {
+        self.disposeHotkeys();
+      },
+    };
+  });
 
 const PolygonModel = types.compose(
   "PolygonModel",
@@ -68,8 +98,8 @@ const PolygonModel = types.compose(
   SeparatedControlMixin,
   TagAttrs,
   Validation,
-  Model,
   ToolManagerMixin,
+  Model,
 );
 
 const HtxView = () => null;

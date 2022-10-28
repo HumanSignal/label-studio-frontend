@@ -13,7 +13,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
-import { FF_DEV_2100, FF_DEV_2100_A, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
 import { CommentStore } from "../Comment/CommentStore";
 
@@ -439,11 +439,16 @@ export const Annotation = types
       if (!region.classification) getEnv(self).events.invoke('entityDelete', region);
 
       self.relationStore.deleteNodeRelation(region);
+
       if (region.type === "polygonregion") {
         detach(region);
       }
 
       destroy(region);
+
+      // If the annotation was in a drawing state and the user deletes it, we need to reset the drawing state
+      // to avoid the user being stuck in a drawing state
+      self.setIsDrawing(false);
     },
 
     deleteArea(area) {
@@ -454,10 +459,23 @@ export const Annotation = types
       const { history, regionStore } = self;
 
       if (history && history.canUndo) {
+        let stopDrawingAfterNextUndo = false;
         const selectedIds = regionStore.selectedIds;
+        const currentRegion = regionStore.findRegion(selectedIds[selectedIds.length - 1] ?? regionStore.regions[regionStore.regions.length - 1]?.id);
+
+        if (currentRegion?.type === "polygonregion") {
+          const points = currentRegion?.points?.length ?? 0;
+
+          stopDrawingAfterNextUndo = points <= 1;
+        }
 
         history.undo();
         regionStore.selectRegionsByIds(selectedIds);
+
+        if (stopDrawingAfterNextUndo) {
+          currentRegion.setDrawing(false);
+          self.setIsDrawing(false);
+        }
       }
     },
 
@@ -483,6 +501,12 @@ export const Annotation = types
 
       self.names.forEach(tag => tag.needsUpdate && tag.needsUpdate());
       self.areas.forEach(area => area.updateAppearenceFromState && area.updateAppearenceFromState());
+      if (isFF(FF_DEV_2432)) {
+        const areas = Array.from(self.areas.values());
+        const filtered = areas.filter(area => area.isDrawing);
+
+        self.regionStore.selection._updateResultsFromRegions(filtered);
+      }
     },
 
     setInitialValues() {
@@ -729,7 +753,7 @@ export const Annotation = types
       Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
     },
 
-    createResult(areaValue, resultValue, control, object) {
+    createResult(areaValue, resultValue, control, object, skipAfrerCreate = false) {
       const result = {
         from_name: control.name,
         // @todo should stick to area
@@ -755,7 +779,12 @@ export const Annotation = types
       childrenWithPreselectedValues?.forEach(item => area.setDefaultValue(item));
 
       if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
+      if (!skipAfrerCreate) self.afterCreateResult(area, control);
 
+      return area;
+    },
+
+    afterCreateResult(area, control) {
       if (self.store.settings.selectAfterCreate) {
         if (!area.classification) {
           // some regions might need some actions right after creation (i.e. text)
@@ -766,8 +795,6 @@ export const Annotation = types
         // unselect labels after use, but consider "keep labels selected" settings
         if (control.type.includes("labels")) self.unselectAll(true);
       }
-
-      return area;
     },
 
     appendResults(results) {
