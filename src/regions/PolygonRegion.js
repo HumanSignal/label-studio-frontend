@@ -67,8 +67,6 @@ const Model = types
     },
   }))
   .actions(self => {
-    let _historyPoints = [];
-
     return {
       afterCreate() {
         if (!self.points.length) return;
@@ -148,8 +146,6 @@ const Model = types
       addPoint(x, y) {
         if (self.closed) return;
         self._addPoint(x, y);
-
-        _historyPoints = [...self.points];
       },
 
       setPoints(points) {
@@ -170,25 +166,6 @@ const Model = types
         };
 
         self.points.splice(insertIdx, 0, p);
-      },
-
-      undoPoints(drawingTool){
-        if(self.points.length === 1){
-          drawingTool.cleanupUncloseableShape();
-          _historyPoints = [];
-
-          return;
-        }
-
-        this.deletePoint(self.points[self.points.length - 1]);
-      },
-
-      redoPoints(){
-        const historyPoints = _historyPoints[self.points.length];
-
-        if (historyPoints) {
-          this._addPoint(historyPoints.x, historyPoints.y);
-        }
       },
 
       _addPoint(x, y) {

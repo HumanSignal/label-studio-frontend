@@ -94,7 +94,6 @@ const _Tool = types
 
     return {
       handleToolSwitch(tool) {
-
         self.stopListening();
         if (self.getCurrentArea()?.isDrawing && tool.toolName !== 'ZoomPanTool') {
           const shape = self.getCurrentArea()?.toJSON();
@@ -123,16 +122,10 @@ const _Tool = types
 
       startDrawing(x, y) {
         if (isFF(FF_DEV_2432)) {
-          self.annotation.history.freeze();
           self.mode = "drawing";
-
-          self.initializeHotkeys();
-
           self.currentArea = self.createRegion(self.createRegionOptions({ x, y }), true);
-
-          self.currentArea.setDrawing(true);
+          self.setDrawing(true);
           self.applyActiveStates(self.currentArea);
-          self.annotation.setIsDrawing(true);
         } else {
           Super.startDrawing(x, y);
         }
@@ -143,24 +136,29 @@ const _Tool = types
           const { currentArea, control } = self;
 
           self.currentArea.notifyDrawingFinished();
-          self.currentArea.setDrawing(false);
+          self.setDrawing(false);
           self.currentArea = null;
-          self.annotation.setIsDrawing(false);
-          self.annotation.history.unfreeze();
           self.mode = "viewing";
-          self.disposeHotkeys();
           self.annotation.afterCreateResult(currentArea, control);
         } else {
           Super._finishDrawing();
         }
       },
 
+      setDrawing(drawing) {
+        self.currentArea?.setDrawing(drawing);
+        self.annotation.setIsDrawing(drawing);
+      },
+
       deleteRegion() {
         if (isFF(FF_DEV_2432)) {
           const { currentArea } = self;
 
+          self.setDrawing(false);
           self.currentArea = null;
-          if (currentArea) currentArea.deleteRegion();
+          if (currentArea) {
+            currentArea.deleteRegion();
+          }
         } else {
           Super.deleteRegion();
         }
