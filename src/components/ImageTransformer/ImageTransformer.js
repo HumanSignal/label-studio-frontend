@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import { MIN_SIZE } from "../../tools/Base";
 import { getBoundingBoxAfterChanges } from "../../utils/image";
 import LSTransformer from "./LSTransformer";
-import { FF_DEV_2394, isFF } from "../../utils/feature-flags";
+import LSTransformerOld from "./LSTransformerOld";
+import { FF_DEV_2394, FF_DEV_2671, isFF } from "../../utils/feature-flags";
 
 const EPSILON = 0.001;
 
@@ -175,12 +176,56 @@ export default class TransformerComponent extends Component {
     });
   };
 
-  render() {
-    if (!this.props.supportsTransform) return null;
-
+  renderLSTransformer(){
     return (
       <>
         <LSTransformer
+          ref={node => {
+            this.transformer = node;
+
+            if (this.transformer) {
+              this.transformer.rotateEnabled(false);
+            }
+          }}
+          resizeEnabled={true}
+          ignoreStroke={true}
+          keepRatio={this.props.singleNodeMode !== true}
+          useSingleNodeRotation={this.props.useSingleNodeRotation}
+          rotateEnabled={this.props.rotateEnabled}
+          borderDash={[3, 1]}
+          // borderStroke={"red"}
+          boundBoxFunc={this.constrainSizes}
+          anchorSize={8}
+          flipEnabled={false}
+          zoomedIn={this.props.item.zoomScale > 1}
+          onDragStart={e => {
+            const { item: { selectedRegionsBBox } } = this.props;
+
+            this.freeze();
+
+            if (!this.transformer || e.target !== e.currentTarget || !selectedRegionsBBox) return;
+
+            this.draggingAreaBBox = {
+              x: selectedRegionsBBox.left,
+              y: selectedRegionsBBox.top,
+              width: selectedRegionsBBox.right - selectedRegionsBBox.left,
+              height: selectedRegionsBBox.bottom - selectedRegionsBBox.top,
+            };
+          }}
+          dragBoundFunc={this.dragBoundFunc}
+          onDragEnd={() => {
+            this.unfreeze();
+          }}
+          backSelector={this.props.draggableBackgroundSelector}
+        />
+      </>
+    );
+  }
+
+  renderOldLSTransformer(){
+    return (
+      <>
+        <LSTransformerOld
           ref={node => {
             this.transformer = node;
           }}
@@ -217,5 +262,15 @@ export default class TransformerComponent extends Component {
         />
       </>
     );
+  }
+
+  render() {
+    if (!this.props.supportsTransform) return null;
+
+    if (isFF(FF_DEV_2671)) {
+      return this.renderLSTransformer();
+    } else {
+      return this.renderOldLSTransformer();
+    }
   }
 }

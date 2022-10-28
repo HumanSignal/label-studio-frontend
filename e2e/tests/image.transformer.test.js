@@ -179,6 +179,9 @@ Data(shapesTable).Scenario("Check transformer existing for different shapes, the
   isTransformerExist = await AtImageView.isTransformerExist();
   assert.strictEqual(isTransformerExist, Shape.hasMoveToolTransformer);
 
+  // Deselect the previous selected region
+  I.pressKey(["u"]);
+
   // Select 2 regions
   AtImageView.drawThroughPoints([
     [bbox1.x - 5, bbox1.y - 5],
@@ -419,7 +422,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       );
 
       // Undo changes
-      I.pressKey(["ctrl", "z"]);
+      I.pressKey(["CommandOrControl", "z"]);
 
       // Rotate for 90 degrees clockwise instead
       AtImageView.drawThroughPoints([
@@ -484,7 +487,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       assert.notStrictEqual(Math.round(rectangleResult[0].value.rotation), 45);
 
       // Undo changes
-      I.pressKey(["ctrl", "z"]);
+      I.pressKey(["CommandOrControl", "z"]);
 
       // Rotate for 90 degrees clockwise instead
       AtImageView.drawThroughPoints([

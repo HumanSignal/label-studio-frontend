@@ -54,6 +54,7 @@ import { RichTextPlainRemote } from "../examples/rich_text_plain_remote";
 /**
  * Different
  */
+import { DateTime } from "../examples/datetime";
 import { Pairwise } from "../examples/pairwise";
 import { Repeater } from "../examples/repeater";
 import { Table } from "../examples/table";
@@ -134,7 +135,7 @@ function rootElement(element) {
  * @param {object} params
  */
 function configureApplication(params) {
-  console.log('julio params', params);
+
   const options = {
     settings: params.settings || {},
     alert: m => console.log(m), // Noop for demo: window.alert(m)
@@ -143,7 +144,7 @@ function configureApplication(params) {
     onUpdateAnnotation: params.onUpdateAnnotation ? params.onUpdateAnnotation : External.onUpdateAnnotation,
     onDeleteAnnotation: params.onDeleteAnnotation ? params.onDeleteAnnotation : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
-    onCancelSkippingTask: params.onCancelSkippingTask ? params.onCancelSkippingTask : External.onCancelSkippingTask,
+    onUnskipTask: params.onUnskipTask ? params.onUnskipTask : External.onUnskipTask,
     onSubmitDraft: params.onSubmitDraft,
     onTaskLoad: params.onTaskLoad ? params.onTaskLoad : External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad ? params.onLabelStudioLoad : External.onLabelStudioLoad,

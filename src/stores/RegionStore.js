@@ -5,6 +5,7 @@ import { isDefined } from "../utils/utilities";
 import { AllRegionsType } from "../regions";
 import { debounce } from "../utils/debounce";
 import Tree, { TRAVERSE_STOP } from "../core/Tree";
+import { FF_DEV_2755, isFF } from "../utils/feature-flags";
 
 const hotkeys = Hotkey("RegionStore");
 
@@ -12,6 +13,7 @@ const localStorageKeys = {
   sort: "outliner:sort",
   sortDirection: "outliner:sort-direction",
   group: "outliner:group",
+  view: "regionstore:view",
 };
 
 const SelectionMap = types.model(
@@ -64,10 +66,13 @@ const SelectionMap = types.model(
       }
     },
     _updateResultsFromSelection() {
+      self._updateResultsFromRegions(self.selected.values());
+    },
+    _updateResultsFromRegions(regions) {
       const valuesFromControls = {};
       const controlsByName = {};
 
-      Array.from(self.selected.values()).map((region) => {
+      Array.from(regions).map((region) => {
         region.results.forEach(result => {
           const controlName = result.from_name.name;
           const currentValue = valuesFromControls[controlName];
@@ -106,6 +111,7 @@ const SelectionMap = types.model(
     highlight(region) {
       self.clear();
       self.select(region);
+      region?.shapeRef?.parent?.canvas?._canvas?.scrollIntoView?.();
     },
   };
 });
@@ -123,10 +129,13 @@ export default types.model("RegionStore", {
 
   group: types.optional(
     types.enumeration(["type", "label", "manual"]),
-    window.localStorage.getItem(localStorageKeys.group) ?? "manual",
+    () => window.localStorage.getItem(localStorageKeys.group) ?? "manual",
   ),
 
-  view: types.optional(types.enumeration(["regions", "labels"]), "regions"),
+  view: types.optional(
+    types.enumeration(["regions", "labels"]),
+    window.localStorage.getItem(localStorageKeys.view) ?? "regions",
+  ),
   selection: types.optional(SelectionMap, {}),
 }).views(self => {
   let lastClickedItem;
@@ -210,8 +219,19 @@ export default types.model("RegionStore", {
       return sorted;
     },
 
-    asTree(enrich) {
+    getRegionsTree(enrich) {
+      if (self.group === null || self.group === "manual") {
+        return self.asTree(enrich);
+      } else if (self.group === 'label') {
+        return self.asLabelsTree(enrich);
+      } else if (self.group === 'type') {
+        return self.asTypeTree(enrich);
+      } else {
+        console.error(`Grouping by ${self.group} is not implemented`);
+      }
+    },
 
+    asTree(enrich) {
       const regions = self.sortedRegions;
       const tree = [];
       const lookup = new Map();
@@ -247,26 +267,12 @@ export default types.model("RegionStore", {
       return tree;
     },
 
-    getRegionsTree(enrich) {
-      if (self.group === null || self.group === "manual") {
-        return self.asTree(enrich);
-      } else if (self.group === 'label') {
-        return self.asLabelsTree(enrich);
-      } else if (self.group === 'type') {
-        return self.asTypeTree(enrich);
-      } else {
-        console.error(`Grouping by ${self.group} is not implemented`);
-      }
-    },
-
     asLabelsTree(enrich) {
       // collect all label states into two maps
       const groups = {};
       const result = [];
       const onClick = createClickRegionInTreeHandler(result);
-
       let index = 0;
-
       const getLabelGroup = (label, key) => {
         const labelGroup = groups[key];
 
@@ -275,33 +281,51 @@ export default types.model("RegionStore", {
         return groups[key] = {
           ...enrich(label, index, true),
           id: key,
+          isGroup: true,
           isNotLabel: true,
           children: [],
         };
       };
+      const getRegionLabel = (region) => region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
+      const addToLabelGroup = (key, label, region) => {
+        const group = getLabelGroup(label, key);
+        const groupId = group.id;
+        const labelHotKey = getRegionLabel(region)?.[0]?.hotkey;
 
-      const addToLabelGroup = (labels, region) => {
-        for(const label of labels) {
-          const key = `${label.value}#${label.id}`;
-          const group = getLabelGroup(label, key);
-
-          group.children.push({
-            ...enrich(region, index, false, null, onClick),
-            item: region,
-            isArea: true,
-          });
+        if( isFF( FF_DEV_2755 ) ) {
+          group.hotkey = labelHotKey;
+          group.pos = groupId.slice(0, groupId.indexOf('#'));
+        }
+        group.children.push({
+          ...enrich(region, index, false, null, onClick, groupId),
+          item: region,
+          isArea: true,
+        });
+      };
+      const addRegionsToLabelGroup = (labels, region) => {
+        if (labels) {
+          for(const label of labels) {
+            addToLabelGroup(`${label.value}#${label.id}`, label, region);
+          }
+        } else {
+          addToLabelGroup('no-label', undefined, region);
         }
       };
 
       for (const region of self.regions) {
-        const labelsForRegion = region.labeling?.selectedLabels || region.emptyLabel && [region.emptyLabel];
-
-        addToLabelGroup(labelsForRegion, region);
+        addRegionsToLabelGroup(region.labeling?.selectedLabels, region);
 
         index++;
       }
 
-      result.push(...Object.values(groups));
+      const groupsArray = Object.values(groups);
+
+      if( isFF( FF_DEV_2755 ) ) {
+        groupsArray.sort((a, b) => a.hotkey > b.hotkey ? 1 : a.hotkey < b.hotkey ? -1 : 0);
+      }
+      result.push(
+        ...groupsArray,
+      );
 
       return result;
     },
@@ -331,6 +355,7 @@ export default types.model("RegionStore", {
           key,
           isArea: false,
           children: [],
+          isGroup: true,
           type: region.type,
           entity: region,
         };
@@ -368,6 +393,10 @@ export default types.model("RegionStore", {
     get selectedIds() {
       return Array.from(self.selection.selected.values()).map(reg => reg.id);
     },
+
+    get persistantView() {
+      return window.localStorage.getItem(localStorageKeys.view) ?? self.view;
+    },
   };
 }).actions(self => ({
   addRegion(region) {
@@ -381,6 +410,10 @@ export default types.model("RegionStore", {
   },
 
   setView(view) {
+    if( isFF( FF_DEV_2755 ) ) {
+      window.localStorage.setItem(localStorageKeys.view, view);
+      console.log("setView", window.localStorage.getItem(localStorageKeys.view));
+    }
     self.view = view;
   },
 
@@ -439,7 +472,7 @@ export default types.model("RegionStore", {
         self.initHotkeys();
       }
     });
-    self.view = self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions";
+    self.view = window.localStorage.getItem(localStorageKeys.view) ?? (self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions");
   },
 
   // init Alt hotkeys for regions selection

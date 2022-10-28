@@ -103,11 +103,20 @@ const DrawingTool = types
         self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
+        self.annotation.setIsDrawing(true);
         return self.currentArea;
+      },
+      resumeUnfinishedRegion(existingUnclosedPolygon) {
+        self.currentArea = existingUnclosedPolygon;
+        self.currentArea.setDrawing(true);
+        self.annotation.regionStore.selection._updateResultsFromRegions([self.currentArea]);
+        self.mode = "drawing";
+        self.annotation.setIsDrawing(true);
+        self.listenForClose?.();
       },
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
-        
+
         if(!currentArea) return;
         const source = currentArea.toJSON();
         const value = Object.keys(currentArea.serialize().value).reduce((value, key) => {
@@ -123,11 +132,11 @@ const DrawingTool = types
         newArea.notifyDrawingFinished();
         return newArea;
       },
-      createRegion(opts) {
+      createRegion(opts, skipAfterCreate = false) {
         const control = self.control;
         const resultValue = control.getResultValue();
 
-        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj);
+        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj, skipAfterCreate);
         self.applyActiveStates(self.currentArea);
         return self.currentArea;
       },
@@ -148,15 +157,13 @@ const DrawingTool = types
       },
 
       canStartDrawing() {
-        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart();
+        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart() && !self.annotation.isDrawing;
       },
 
       startDrawing(x, y) {
         self.annotation.history.freeze();
         self.mode = "drawing";
-        const currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
-
-        self.currentArea = currentArea;
+        self.currentArea = self.createDrawingRegion(self.createRegionOptions({ x, y }));
       },
       finishDrawing() {
         if (!self.beforeCommitDrawing()) {
@@ -172,6 +179,7 @@ const DrawingTool = types
         self._resetState();
       },
       _resetState(){
+        self.annotation.setIsDrawing(false);
         self.annotation.history.unfreeze();
         self.mode = "viewing";
       },
@@ -416,12 +424,15 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
     };
 
     return {
-      updateDraw: throttle(function(x, y) {
+      canStartDrawing() {
+        return !self.isIncorrectControl();
+      },
+      updateDraw: (x, y) => {
         if (currentMode === DEFAULT_MODE)
           self.getCurrentArea()?.draw(x, y, points);
         else if (currentMode === DRAG_MODE)
           self.draw(x, y);
-      }, 48), // 3 frames, optimized enough and not laggy yet
+      },
 
       nextPoint(x, y) {
         points.push({ x, y });
@@ -442,6 +453,7 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
 
         shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
       },
+
       finishDrawing(x, y) {
         if (self.isDrawing) {
           points = [];
@@ -453,11 +465,13 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
           });
         } else return;
       },
+
       mousemoveEv(_, [x, y]) {
         if(self.isDrawing){
           if(lastEvent === MOUSE_DOWN_EVENT) {
             currentMode = DRAG_MODE;
           }
+
           if (currentMode === DRAG_MODE && startPoint) {
             self.startDrawing(startPoint.x, startPoint.y);
             self.updateDraw(x, y);
@@ -467,11 +481,13 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
         }
       },
       mousedownEv(ev, [x, y]) {
+        if (!self.canStartDrawing() || self.annotation.isDrawing) return;
         lastEvent = MOUSE_DOWN_EVENT;
         startPoint = { x, y };
         self.mode = "drawing";
       },
       mouseupEv(ev, [x, y]) {
+        if (!self.canStartDrawing()) return;
         if(self.isDrawing) {
           if (currentMode === DRAG_MODE) {
             self.draw(x, y);
@@ -481,6 +497,7 @@ const ThreePointsDrawingTool = DrawingTool.named("ThreePointsDrawingTool")
         }
       },
       clickEv(ev, [x, y]) {
+        if (!self.canStartDrawing()) return;
         if (currentMode === DEFAULT_MODE) {
           self._clickEv(ev, [x, y]);
         }

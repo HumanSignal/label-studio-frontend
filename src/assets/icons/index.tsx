@@ -4,6 +4,8 @@ export { ReactComponent as LsRemove } from "./remove.svg";
 export { ReactComponent as LsTrash } from "./trash.svg";
 export { ReactComponent as LsPlus } from "./plus.svg";
 export { ReactComponent as LsSparks } from "./sparks.svg";
+export { ReactComponent as LsComment } from "./comment_check.svg";
+export { ReactComponent as LsCommentRed } from "./comment_red.svg";
 export { ReactComponent as LsParentLink } from "./parent_link.svg";
 export { ReactComponent as LsAnnotation } from "./annotation.svg";
 export { ReactComponent as LsGrid } from "./grid.svg";
@@ -19,6 +21,7 @@ export { ReactComponent as LsDate } from "./date.svg";
 export { ReactComponent as IconPlusCircle } from "./plus_circle.svg";
 export { ReactComponent as IconSlow } from "./slow.svg";
 export { ReactComponent as IconFast } from "./fast.svg";
+export { ReactComponent as IconEllipsis } from "./ellipsis.svg";
 
 export { ReactComponent as IconCheck } from "./check.svg";
 export { ReactComponent as IconCross } from "./cross.svg";
@@ -42,6 +45,8 @@ export { ReactComponent as IconPolygonTool } from './tools/polygon-tool.svg';
 export { ReactComponent as IconPolygonToolSmart } from './tools/polygon-tool-smart.svg';
 export { ReactComponent as IconRectangleTool } from './tools/rectangle-tool.svg';
 export { ReactComponent as IconRectangleToolSmart } from './tools/rectangle-tool-smart.svg';
+export { ReactComponent as IconRectangle3PointTool } from './tools/rectangle-3point-tool.svg';
+export { ReactComponent as IconRectangle3PointToolSmart } from './tools/rectangle-3point-tool-smart.svg';
 export { ReactComponent as IconEraserTool } from './tools/eraser-tool.svg';
 export { ReactComponent as IconHandTool } from './tools/hand-tool.svg';
 export { ReactComponent as IconBrightnessTool } from "./tools/brightness-tool.svg";
@@ -49,6 +54,7 @@ export { ReactComponent as IconContrastTool } from "./tools/contrast-tool.svg";
 
 export { ReactComponent as IconZoomIn } from './tools/magnify-tool.svg';
 export { ReactComponent as IconZoomOut } from './tools/minify-tool.svg';
+export { ReactComponent as IconExpand } from './tools/expand-tool.svg';
 export { ReactComponent as IconMoveTool } from './tools/move-tool.svg';
 export { ReactComponent as IconRotateLeftTool } from './tools/rotate-left-tool.svg';
 export { ReactComponent as IconRotateRightTool } from './tools/rotate-right-tool.svg';
@@ -70,7 +76,8 @@ export { ReactComponent as IconSpeed } from "./speed.svg";
 export { ReactComponent as IconTagAlt } from "./tag-alt.svg";
 export { ReactComponent as IconSortUp } from "./sort-up.svg";
 export { ReactComponent as IconSortDown } from "./sort-down.svg";
-export { ReactComponent as IconCollapseLeft } from "./collapse-left.svg";
+export { ReactComponent as IconArrowLeft } from "./arrow-left.svg";
+export { ReactComponent as IconArrowRight } from "./arrow-right.svg";
 
 
 // Relations
@@ -82,3 +89,4 @@ export { ReactComponent as IconRelationBi } from "./relations/bi.svg";
 export { ReactComponent as IconPropertyAngle } from "./properties/angle.svg";
 
 export * from "./annotation";
+export * from "./outliner";

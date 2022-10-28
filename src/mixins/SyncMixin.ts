@@ -35,6 +35,7 @@ const SyncMixin = types
     handleSyncPlay() { console.error("handleSyncPlay should be implemented"); },
     handleSyncPause() { console.error("handleSyncPause should be implemented"); },
     handleSyncSeek(time: number) { console.error("handleSyncSeek should be implemented"); },
+    handleSyncSpeed(speed: number) { console.error("handleSyncSpeed should be implemented"); },
     attachObject() {
       self.syncedObject = (self as any).annotation?.names?.get(self.sync);
     },
@@ -52,6 +53,10 @@ const SyncMixin = types
       self.timeSync?.seek(time);
     },
 
+    triggerSyncSpeed(speed: number) {
+      self.timeSync?.speed(speed);
+    },
+
     afterAttach() {
       if (self.sync && self.sync !== (self as any).name) {
         const syncObject = sync.register((self as any).name);
@@ -60,6 +65,7 @@ const SyncMixin = types
           play: self.handleSyncPlay,
           pause: self.handleSyncPause,
           seek: self.handleSyncSeek,
+          speed: self.handleSyncSpeed,
         });
 
         self.timeSync = syncObject;

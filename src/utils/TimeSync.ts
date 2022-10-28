@@ -1,4 +1,7 @@
 import { EventInvoker } from "./events";
+import { FF_DEV_2461, isFF } from "./feature-flags";
+
+const isFFDev2461 = isFF(FF_DEV_2461);
 
 let instance: TimeSync;
 
@@ -6,9 +9,10 @@ interface TimeSyncHandler {
   play: () => void;
   pause: () => void;
   seek: (time: number) => void;
+  speed: (speed: number) => void;
 }
 
-type TimeSyncEvent = "play" | "pause" | "seek";
+type TimeSyncEvent = "play" | "pause" | "seek" | "speed";
 
 export class TimeSyncSubscriber {
   private name: string;
@@ -19,6 +23,7 @@ export class TimeSyncSubscriber {
 
   playing = false;
   currentTime = 0;
+  currentSpeed = 1;
 
   constructor(name: string, sync: TimeSync, object: any) {
     this.name = name;
@@ -49,6 +54,7 @@ export class TimeSyncSubscriber {
 
     // Initial sync
     this.currentTime = this.sync.members.get(target)?.currentTime ?? this.currentTime;
+    this.currentSpeed = this.sync.members.get(target)?.currentSpeed ?? this.currentSpeed;
     this.playing = this.sync.members.get(target)?.playing ?? this.playing;
   }
 
@@ -75,11 +81,10 @@ export class TimeSyncSubscriber {
   }
 
   seek(time: number) {
-    if (time === this.currentTime){
-      this.lockedEvents.delete("seek");
+    if (!isFFDev2461 && time === this.currentTime){
+      this.releaseEvent("seek");
       return;
     }
-
     this.currentTime = time;
 
     this.whenUnlocked("seek", () => {
@@ -88,18 +93,36 @@ export class TimeSyncSubscriber {
     });
   }
 
+  speed(speed: number) {
+    this.currentSpeed = speed;
+
+    this.whenUnlocked("speed", () => {
+      this.events.invoke("speed", speed);
+      this.subscribers.forEach(sub => sub.speed(this.currentSpeed));
+    });
+  }
+
   private lockEvent(event: TimeSyncEvent) {
     this.lockedEvents.add(event);
   }
 
+  private releaseEvent(event: TimeSyncEvent) {
+    this.lockedEvents.delete(event);
+  }
+
   private whenUnlocked(event: TimeSyncEvent, fn: () => void) {
     if (this.lockedEvents.has(event)) {
-      this.lockedEvents.delete(event);
+      if (!isFFDev2461) {
+        this.releaseEvent(event);
+      }
       return;
     }
 
     this.lockEvent(event);
     fn();
+    if (isFFDev2461) {
+      this.releaseEvent(event);
+    }
   }
 }
 

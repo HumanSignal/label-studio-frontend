@@ -4,7 +4,7 @@ const headless = process.env.HEADLESS;
 
 module.exports.config = {
   timeout: 60 * 30, // Time out after 30 minutes
-  tests: "./tests/*.test.js",
+  tests: "./tests/**/*.test.js",
   output: "./output",
   helpers: {
     // Puppeteer: {
@@ -31,6 +31,9 @@ module.exports.config = {
     Selection: {
       require: "./helpers/Selection.js",
     },
+    Annotations: {
+      require: "./helpers/Annotations.ts",
+    },
   },
   include: {
     I: "./steps_file.js",
@@ -42,6 +45,7 @@ module.exports.config = {
     AtLabels: "./fragments/AtLabels.js",
     AtSettings: "./fragments/AtSettings.js",
     AtTopbar: "./fragments/AtTopbar.js",
+    AtParagraphs: "./fragments/AtParagraphs.js",
     ErrorsCollector: "./fragments/ErrorsCollector.js",
   },
   bootstrap: null,

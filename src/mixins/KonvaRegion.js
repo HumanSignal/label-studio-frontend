@@ -14,9 +14,9 @@ export const KonvaRegionMixin = types.model({})
       get canRotate() {
         return self.control?.canrotate && self.supportsRotate;
       },
-      
+
       get supportsTransform() {
-        return this._supportsTransform && this.editable;
+        return this._supportsTransform && this.editable && !this.hidden;
       },
     };
   })
@@ -36,7 +36,7 @@ export const KonvaRegionMixin = types.model({})
         const ev = e?.evt || e;
         const additiveMode = ev?.ctrlKey || ev?.metaKey;
 
-        if (!annotation.editable || self.isDrawing) return;
+        if (!annotation.editable || self.isDrawing || annotation.isDrawing) return;
         if (e) e.cancelBubble = true;
 
         if (annotation.relationMode) {

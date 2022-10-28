@@ -15,28 +15,16 @@ import CursorPlugin from "wavesurfer.js/src/plugin/cursor";
 import { useMemoizedHandlers } from "../../../../hooks/useMemoizedHandlers";
 import { useMemo } from "react";
 import { WaveSurferParams } from "wavesurfer.js/types/params";
-
-const ZOOM_X = {
-  min: 10,
-  max: 1500,
-  step: 10,
-  default: 10,
-};
-
-const SPEED = {
-  min: 0.5,
-  max: 2,
-  step: 0.01,
-  default: 1,
-};
+import ResizeObserver from "../../../../utils/resize-observer";
+import { WS_SPEED, WS_ZOOM_X } from "../../../../tags/object/AudioNext/constants";
 
 export const Wave: FC<TimelineViewProps> = ({
   position,
   length,
   regions,
   volume = 1,
-  zoom = ZOOM_X.default,
-  speed = SPEED.default,
+  zoom = WS_ZOOM_X.default,
+  speed = WS_SPEED.default,
   onReady,
   onPositionChange,
   onSeek,
@@ -49,6 +37,7 @@ export const Wave: FC<TimelineViewProps> = ({
   const { data } = useContext(TimelineContext);
 
   const tracker = useRef<NodeJS.Timeout | null>(null);
+  const rootRef = useRef<HTMLDivElement>();
   const waveRef = useRef<HTMLElement>();
   const timelineRef = useRef<HTMLElement>();
   const bodyRef = useRef<HTMLElement>();
@@ -58,11 +47,16 @@ export const Wave: FC<TimelineViewProps> = ({
   const [scrollOffset, setScrollOffset] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [scale, setScale] = useState(parseInt(data.defaultscale, 10) || 1);
+  const storedPosition = useRef({
+    zoom: currentZoom,
+    scroll: scrollOffset,
+  });
   const shouldStartOver = useRef(false);
 
   const setZoom = useCallback((value: number) => {
-    const newValue = clamp(value, ZOOM_X.min, ZOOM_X.max);
+    const newValue = clamp(value, WS_ZOOM_X.min, WS_ZOOM_X.max);
 
+    storedPosition.current.zoom = newValue;
     setCurrentZoom(newValue);
   }, []);
 
@@ -118,6 +112,13 @@ export const Wave: FC<TimelineViewProps> = ({
     }
   }, [onPause]);
 
+  const scrollTo = useCallback((value: number) => {
+    const surfer = waveRef.current?.querySelector("wave");
+
+    storedPosition.current.scroll = value;
+    if (surfer) surfer.scrollLeft = value;
+  }, []);
+
   const handleFinished = useCallback(() => {
     startOver();
     handlePause();
@@ -152,7 +153,10 @@ export const Wave: FC<TimelineViewProps> = ({
     onPlayFinished: () => handlers.onFinish(),
     onAddRegion,
     onReady,
-    onScroll: (p) => setScrollOffset(p),
+    onScroll: (p) => {
+      storedPosition.current.scroll = p;
+      setScrollOffset(p);
+    },
     onSeek: (p) => {
       resetStartOver();
       handlers.onSeek?.(p);
@@ -211,6 +215,7 @@ export const Wave: FC<TimelineViewProps> = ({
       const wsi = ws.current;
 
       if (wsi && wsi.params.minPxPerSec !== currentZoom) ws.current?.zoom(currentZoom);
+      scrollTo(storedPosition.current.scroll);
     });
   }, [currentZoom, scrollOffset]);
 
@@ -221,9 +226,7 @@ export const Wave: FC<TimelineViewProps> = ({
 
   // Handle waveform scrolling position change
   useEffect(() => {
-    const surfer = waveRef.current?.querySelector("wave");
-
-    if (surfer)  surfer.scrollLeft = scrollOffset;
+    scrollTo(scrollOffset);
   }, [scrollOffset]);
 
   // Handle volume change
@@ -240,6 +243,25 @@ export const Wave: FC<TimelineViewProps> = ({
       wsi.drawBuffer();
     }
   }, [scale]);
+
+  useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      const wsi = ws.current;
+
+      requestAnimationFrame(() => {
+        if (wsi) wsi.drawBuffer();
+        scrollTo(storedPosition.current.scroll);
+      });
+    });
+
+    if (rootRef.current) {
+      observer.observe(rootRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   // Handle wheel events for scrolling and pinch-to-zoom
   useEffect(() => {
@@ -287,27 +309,30 @@ export const Wave: FC<TimelineViewProps> = ({
   }, [cursorPosition]);
 
   return (
-    <Block name="wave">
+    <Block name="wave" ref={rootRef}>
       <Elem name="controls">
         <Space spread style={{ gridAutoColumns: 'auto' }}>
           <Range
             continuous
             value={speed}
-            {...SPEED}
-            resetValue={SPEED.default}
+            resetValue={WS_SPEED.default}
+            step={WS_SPEED.step}
+            min={WS_SPEED.min}
+            max={WS_SPEED.max}
             minIcon={<IconSlow style={{ color: "#99A0AE" }} />}
             maxIcon={<IconFast style={{ color: "#99A0AE" }} />}
             onChange={(value) => onSpeedChange?.(Number(value))}
           />
-
           <Range
             continuous
             value={currentZoom}
-            {...ZOOM_X}
-            resetValue={ZOOM_X.default}
+            resetValue={WS_ZOOM_X.default}
+            step={WS_ZOOM_X.step}
+            min={WS_ZOOM_X.min}
+            max={WS_ZOOM_X.max}
             minIcon={<IconZoomOut />}
             maxIcon={<IconZoomIn />}
-            onChange={value => setZoom(Number(value))}
+            onChange={value =>  setZoom(Number(value)) }
           />
         </Space>
       </Elem>
@@ -379,7 +404,6 @@ const useWaveSurfer = ({
 
   useEffect(() => {
     const root = containter.current!;
-
     const wsi = WaveSurfer.create({
       autoCenter: true,
       scrollParent: true,
@@ -396,6 +420,7 @@ const useWaveSurfer = ({
       loopSelection: true,
       audioRate: speed,
       pixelRatio: 1,
+      minPxPerSec: WS_ZOOM_X.default,
       plugins: [
         RegionsPlugin.create({
           slop: 5,
@@ -426,6 +451,8 @@ const useWaveSurfer = ({
         }),
       ],
     });
+
+    Object.assign(window, { wsi });
 
     wsi.setCurrentTime = (time: number) => {
       const duration = wsi.getDuration();
@@ -541,7 +568,7 @@ const useWaveSurfer = ({
 
     wsi.setPlaybackRate(speed);
 
-    wsi.zoom(ZOOM_X.default);
+    wsi.zoom(WS_ZOOM_X.default);
 
     wsi.on("scroll", (e) => onScroll(e.target.scrollLeft));
 
@@ -578,11 +605,14 @@ const useWaveSurfer = ({
 
     return () => {
       root.removeEventListener("click", handleClick);
-
-      Object.entries(wsi.getActivePlugins()).forEach(([name, active]) => {
-        if (active) wsi.destroyPlugin(name);
-      });
-      wsi.destroy();
+      try {
+        Object.entries(wsi.getActivePlugins()).forEach(([name, active]) => {
+          if (active) wsi.destroyPlugin(name);
+        });
+        wsi.destroy();
+      } catch (error) {
+        console.error("Error:", error);
+      }
     };
   }, []);
 

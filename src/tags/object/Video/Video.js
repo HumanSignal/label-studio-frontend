@@ -40,7 +40,7 @@ import Types from "../../../core/Types";
  * @param {number} [frameRate=24] videp frame rate per second; default is 24
  * @param {string} [sync] object name to sync with
  * @param {boolean} [muted=false] muted video
- * @param {number} [heihght=600] heihght of the video
+ * @param {number} [height=600] height of the video
  */
 
 const TagAttrs = types.model({
@@ -62,6 +62,7 @@ const Model = types
   })
   .volatile(() => ({
     errors: [],
+    speed:1,
     ref: React.createRef(),
     frame: 1,
     length: 1,
@@ -81,6 +82,10 @@ const Model = types
 
     control() {
       return self.annotation.toNames.get(self.name)?.find(s => !s.type.endsWith("labels"));
+    },
+
+    videoControl() {
+      return self.annotation.toNames.get(self.name)?.find(s => s.type.includes("video"));
     },
 
     states() {
@@ -121,6 +126,10 @@ const Model = types
       self.ref.current?.pause();
     },
 
+    handleSyncSpeed(speed) {
+      self.speed = speed;
+    },
+
     handleSeek() {
       if (self.ref.current) {
         self.triggerSyncSeek(self.ref.current.currentTime);
@@ -153,7 +162,8 @@ const Model = types
     },
 
     addRegion(data) {
-      const control = self.control();
+      const control = self.videoControl() ?? self.control();
+
 
       const sequence = [
         {

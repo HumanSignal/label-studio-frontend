@@ -16,6 +16,7 @@ const Model = types
 
     start: types.number,
     end: types.number,
+    channel: types.optional(types.number, 0),
 
     selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
   })
@@ -41,6 +42,7 @@ const Model = types
         id: self.id,
         start: self.start,
         end: self.end,
+        channel: self.channel,
         color: "orange",
       };
 
@@ -59,6 +61,7 @@ const Model = types
      *   "value": {
      *     "start": 3.1,
      *     "end": 8.2,
+     *     "channel": 0,
      *     "labels": ["Voice"]
      *   }
      * }
@@ -67,6 +70,7 @@ const Model = types
      * @property {Object} value
      * @property {number} value.start start time of the fragment (seconds)
      * @property {number} value.end end time of the fragment (seconds)
+     * @property {number} value.channel channel identifier which was targeted
      */
 
     /**
@@ -78,6 +82,7 @@ const Model = types
         value: {
           start: self.start,
           end: self.end,
+          channel: self.channel,
         },
       };
 
@@ -113,7 +118,16 @@ const Model = types
       const el = self.wsRegionElement(wsRegion);
 
       if (!el) return;
-      const classes = [el.className, "htx-highlight", "htx-highlight-last"];
+
+      const lastClassList = el.className.split(' ');
+
+      for(const obj in lastClassList){
+        if(lastClassList[obj].indexOf('htx-label') >= 0){
+          lastClassList.splice(obj, 1);
+        }
+      }
+
+      const classes = [...new Set([...lastClassList, "htx-highlight", "htx-highlight-last"])];
 
       if (!self.parent.showlabels && !settings.showLabels) {
         classes.push("htx-no-label");
@@ -125,7 +139,12 @@ const Model = types
 
         classes.push(cssCls);
       }
+
       el.className = classes.filter(Boolean).join(" ");
+
+      // Annotation must visually be drawn across both channels
+      el.style.top = "0px";
+      el.style.height = "100%";
     },
 
     /**
@@ -157,6 +176,8 @@ const Model = types
     setHighlight(val) {
       self._highlighted = val;
 
+      if (!self._ws_region) return;
+
       if (val) {
         self.updateColor(0.8);
         self._ws_region.element.style.border = Constants.HIGHLIGHTED_CSS_BORDER;
@@ -171,13 +192,7 @@ const Model = types
     },
 
     onClick(wavesurfer, ev) {
-      // if (! self.editable) return;
-
       if (!self.annotation.relationMode) {
-        // Object.values(wavesurfer.regions.list).forEach(r => {
-        //   // r.update({ color: self.selectedregionbg });
-        // });
-
         self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
       }
 
@@ -201,6 +216,7 @@ const Model = types
     onUpdateEnd() {
       self.start = self._ws_region.start;
       self.end = self._ws_region.end;
+      self.channel = self._ws_region.channelIdx ?? 0;
       self.updateColor(self.selected ? 0.8 : 0.3);
       self.notifyDrawingFinished();
     },

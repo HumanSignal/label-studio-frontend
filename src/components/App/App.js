@@ -51,6 +51,12 @@ import { Button } from "../../common/Button/Button";
 class App extends Component {
   relationsRef = React.createRef();
 
+  componentDidMount() {
+    // Hack to activate app hotkeys
+    window.blur();
+    document.body.focus();
+  }
+
   renderSuccess() {
     return <Result status="success" title={getEnv(this.props.store).messages.DONE} />;
   }
@@ -211,7 +217,7 @@ class App extends Component {
     const newUIEnabled = isFF(FF_DEV_1170);
 
     return (
-      <Block name="editor" mod={{ fullscreen: settings.fullscreen }}>
+      <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !newUIEnabled }}>
         <Settings store={store} />
         <Provider store={store}>
           {store.showingDescription && (
@@ -221,11 +227,11 @@ class App extends Component {
           )}
 
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
-          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel || newUIEnabled }}>
+          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled }}>
             {newUIEnabled ? (
               <SidePanels
                 panelsHidden={viewingAll}
-                currentEntity={as.selected}
+                currentEntity={as.selectedHistory ?? as.selected}
                 regions={as.selected.regionStore}
               >
                 {mainContent}
@@ -233,7 +239,7 @@ class App extends Component {
             ) : (
               <>
                 {mainContent}
- 
+
                 {(viewingAll === false) && (
                   <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
                     {store.hasInterface("side-column") && (
@@ -241,7 +247,7 @@ class App extends Component {
                         <SidebarPage name="annotation" title="Annotation">
                           <AnnotationTab store={store}/>
                         </SidebarPage>
- 
+
                         {this.props.panels.map(({ name, title, Component }) => (
                           <SidebarPage key={name} name={name} title={title}>
                             <Component/>
@@ -253,19 +259,19 @@ class App extends Component {
                 )}
               </>
             )}
- 
+
           </Block>
         </Provider>
         {store.hasInterface("debug") && <Debug store={store} />}
       </Block>
     );
   }
- 
+
   _notifyScroll = () => {
     if (this.relationsRef.current) {
       this.relationsRef.current.onResize();
     }
   };
 }
- 
+
 export default observer(App);

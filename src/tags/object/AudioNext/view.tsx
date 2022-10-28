@@ -2,20 +2,27 @@ import { observer } from "mobx-react";
 import { FC, useCallback, useState } from "react";
 import { ObjectTag } from "../../../components/Tags/Object";
 import { Timeline } from "../../../components/Timeline/Timeline";
-import { Block, Elem } from "../../../utils/bem";
+import { Block } from "../../../utils/bem";
+import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
 
 interface AudioNextProps {
   item: any;
 }
+
+const numberify = (val: any, defaults: Record<string, number>) => {
+  const numVal = Number(val);
+  
+  return isNaN(val) ? defaults.default : (numVal < defaults.min ? defaults.min : (numVal > defaults.max ? defaults.max : numVal));
+};
 
 const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   const [playing, setPlaying] = useState(false);
   const [position, setPosition] = useState(1);
   const [audioLength, setAudioLength] = useState(0);
 
-  const [zoom, setZoom] = useState(1);
-  const [volume, setVolume] = useState(1);
-  const [speed, setSpeed] = useState(1);
+  const [zoom, setZoom] = useState(numberify(item.defaultzoom, WS_ZOOM_X));
+  const [volume, setVolume] = useState(numberify(item.defaultvolume, WS_VOLUME));
+  const [speed, setSpeed] = useState(numberify(item.defaultspeed, WS_SPEED));
 
   const handleReady = useCallback((data: any) => {
     setAudioLength(data.duration * 1000);
@@ -30,6 +37,11 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   const handleSeek = useCallback((frame: number) => {
     setPosition(frame);
     item.handleSeek();
+  }, []);
+
+  const handleSpeed = useCallback((speed: number) => {
+    setSpeed(speed);
+    item.handleSpeed(speed);
   }, []);
 
   const formatPosition = useCallback(({ time, fps }): string => {
@@ -87,7 +99,7 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
         speed={speed}
         volume={volume}
         controls={{
-          VolumeControl: item.volume,
+          AudioVolumeControl: item.volume,
           SpeedControl: item.speed,
           ZoomControl: item.zoom,
         }}
@@ -107,7 +119,7 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
         onPause={handlePause}
         onZoom={setZoom}
         onVolumeChange={setVolume}
-        onSpeedChange={setSpeed}
+        onSpeedChange={handleSpeed}
         formatPosition={formatPosition}
       />
     </ObjectTag>

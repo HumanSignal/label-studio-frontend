@@ -1,5 +1,5 @@
 .current-task
-  padding 0 8px 0 8px
+  padding 0 8px 0 16px
   display flex
   align-content center
   align-items center
@@ -54,6 +54,9 @@
     &_next
       grid-area n
       transform rotate(-90deg)
+
+    &_next&_postpone::before
+      border-color #09f
 
     &_prev
       grid-area p

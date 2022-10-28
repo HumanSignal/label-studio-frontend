@@ -7,4 +7,7 @@ module.exports = {
   waitForAudio() {
     I.executeScript(Helpers.waitForAudio);
   },
+  getCurrentAudioTime() {
+    return I.executeScript(Helpers.getCurrentAudioTime);
+  },
 };

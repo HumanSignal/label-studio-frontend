@@ -9,7 +9,7 @@ Scenario("Travel through history with the selected brush region", async function
   LabelStudio.init({
     data: { image: IMAGE },
     config: `<View>
-      <Image name="img" value="$image" />
+      <Image name="img" value="$image" defaultZoom="auto"/>
       <Brush name="tag" toName="img" />
       <Labels name="labels">
         <Label value="1"></Label>
@@ -44,14 +44,14 @@ Scenario("Travel through history with the selected brush region", async function
   AtSidebar.seeSelectedRegion();
 
   I.say("Go back through history");
-  I.pressKey(["ctrl", "z"]);
+  I.pressKey(["CommandOrControl", "z"]);
 
   I.say("The brush region still should be selected (1 stroke, 1 region)");
   AtSidebar.seeRegions(1);
   AtSidebar.seeSelectedRegion();
 
   I.say("Try the same with redo");
-  I.pressKey(["ctrl", "shift", "z"]);
+  I.pressKey(["CommandOrControl", "shift", "z"]);
 
   I.say("The brush region still should be selected (2 strokes, 1 region)");
   AtSidebar.seeRegions(1);
@@ -63,7 +63,7 @@ Scenario("Travel through history after moving the rectangle region", async funct
   LabelStudio.init({
     data: { image: IMAGE },
     config: `<View>
-    <Image name="img" value="$image" />
+    <Image name="img" value="$image" defaultZoom="auto" />
     <Rectangle name="tag" toName="img" />
     <Labels name="labels">
         <Label value="1"></Label>
@@ -95,21 +95,21 @@ Scenario("Travel through history after moving the rectangle region", async funct
   AtSidebar.seeSelectedRegion();
 
   I.say("Go back through history");
-  I.pressKey(["ctrl", "z"]);
+  I.pressKey(["CommandOrControl", "z"]);
 
   I.say("The rectangle region still should be selected (moved 1 time)");
   AtSidebar.seeRegions(1);
   AtSidebar.seeSelectedRegion();
 
   I.say("Repeat going back through history");
-  I.pressKey(["ctrl", "z"]);
+  I.pressKey(["CommandOrControl", "z"]);
 
   I.say("The rectangle region still should be selected (moved 0 times)");
   AtSidebar.seeRegions(1);
   AtSidebar.seeSelectedRegion();
 
   I.say("Try the same with redo");
-  I.pressKey(["ctrl", "shift", "z"]);
+  I.pressKey(["CommandOrControl", "shift", "z"]);
 
   I.say("The brush region still should be selected (moved 1 time)");
   AtSidebar.seeRegions(1);

@@ -66,6 +66,7 @@ export const RegionItem: FC<RegionItemProps> = observer(({
           <MetaDetails
             region={region}
             editMode={editMode}
+            enterEditMode={() => setEditMode(true)}
             cancelEditMode={() => setEditMode(false)}
           />
         </Elem>
@@ -83,38 +84,36 @@ const RegionAction: FC<any> = observer(({
 }) => {
   const entityButtons: JSX.Element[] = [];
 
-  if (hasEditableRegions) {
-    entityButtons.push((
-      <RegionActionButton
-        key="relation"
-        icon={<IconLink/>}
-        primary={annotation.relationMode}
-        onClick={() => {
-          if (annotation.relationMode) {
-            annotation.stopRelationMode();
-          } else {
-            annotation.startRelationMode(region);
-          }
-        }}
-        hotkey="region:relation"
-      />
-    ));
+  entityButtons.push((
+    <RegionActionButton
+      key="relation"
+      icon={<IconLink/>}
+      primary={annotation.relationMode}
+      onClick={() => {
+        if (annotation.relationMode) {
+          annotation.stopRelationMode();
+        } else {
+          annotation.startRelationMode(region);
+        }
+      }}
+      hotkey="region:relation"
+    />
+  ));
 
-    entityButtons.push((
-      <RegionActionButton
-        key="meta"
-        icon={<IconPlusAlt/>}
-        primary={editMode}
-        onClick={() => onEditModeChange(!editMode)}
-        hotkey="region:meta"
-      />
-    ));
-  }
+  entityButtons.push((
+    <RegionActionButton
+      key="meta"
+      icon={<IconPlusAlt/>}
+      primary={editMode}
+      onClick={() => onEditModeChange(!editMode)}
+      hotkey="region:meta"
+    />
+  ));
 
   return (
     <Block name="region-actions">
       <Elem name="group" mod={{ align: "left" }}>
-        {entityButtons}
+        {!(region.readonly || region.locked || !region.editable) && entityButtons}
       </Elem>
       <Elem name="group" mod={{ align: "right" }}>
         <RegionActionButton
@@ -130,6 +129,7 @@ const RegionAction: FC<any> = observer(({
         />
         <RegionActionButton
           danger
+          disabled={region.readonly || region.locked || !region.editable}
           icon={<IconTrash/>}
           onClick={() => annotation.deleteRegion(region)}
         />

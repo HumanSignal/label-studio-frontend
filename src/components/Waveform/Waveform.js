@@ -262,7 +262,6 @@ export default class Waveform extends React.Component {
     }
 
     const step = e.deltaY > 0 ? 5 : -5;
-    // console.log(e.evt.deltaY);
 
     this.onZoomPlus(e, step);
   };
@@ -277,6 +276,9 @@ export default class Waveform extends React.Component {
   };
 
   componentDidMount() {
+    /**
+     * @type {import("wavesurfer.js/types/params").WaveSurferParams}
+     */
     let wavesurferConfigure = {
       container: this.$waveform,
       waveColor: this.state.colors.waveColor,
@@ -323,8 +325,20 @@ export default class Waveform extends React.Component {
       ...wavesurferConfigure,
     });
 
+    if (this.props.defaultVolume) {
+      this.wavesurfer.setVolume(this.props.defaultVolume);
+    }
+
     if (this.props.muted) {
       this.wavesurfer.setVolume(0);
+    }
+
+    if (this.props.defaultSpeed) {
+      this.wavesurfer.setPlaybackRate(this.props.defaultSpeed);
+    }
+
+    if (this.props.defaultZoom) {
+      this.wavesurfer.zoom(this.props.defaultZoom);
     }
 
     this.wavesurfer.on("error", e => {
@@ -394,6 +408,10 @@ export default class Waveform extends React.Component {
 
         reg._region = region;
         reg.color = region.selectedregionbg;
+
+        // If the region channel is not set, set it to the audio region channel
+        if (reg.channelIdx === -1)
+          reg.channelIdx = region.channel;
 
         reg.on("click", (ev) => region.onClick(self.wavesurfer, ev));
         reg.on("update-end", () => region.onUpdateEnd(self.wavesurfer));

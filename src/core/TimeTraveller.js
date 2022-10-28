@@ -35,8 +35,8 @@ const TimeTraveller = types
     let changesDuringFreeze = false;
     let replaceNextUndoState = false;
 
-    function triggerHandlers() {
-      updateHandlers.forEach(handler => handler());
+    function triggerHandlers(force = true) {
+      updateHandlers.forEach(handler => handler(force));
     }
 
     return {
@@ -101,11 +101,11 @@ const TimeTraveller = types
         changesDuringFreeze = false;
       },
 
-      reinit() {
+      reinit(force = true) {
         self.history = [getSnapshot(targetStore)];
         self.undoIdx = 0;
         self.createdIdx = 0;
-        triggerHandlers();
+        triggerHandlers(force);
       },
 
       afterCreate() {

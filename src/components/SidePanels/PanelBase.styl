@@ -1,4 +1,8 @@
 .panel
+  --header-height: 24px
+  --header-border-radius 0
+  --header-background rgb(242, 242, 242)
+
   height 100%
   z-index 10
   background-color #fff
@@ -7,35 +11,43 @@
   &_alignment
     &_left
       border-right 1px solid rgba(#000, 0.1)
+      --header-border-radius 0 4px 4px 0
 
     &_right
       border-left 1px solid rgba(#000, 0.1)
+      --header-border-radius 4px 0 0 4px
 
   &_detached
     top 0
     left 0
     position absolute
-    border 1px solid rgba(#000, 0.1)
+    border 1px solid rgba(137, 128, 152, 0.16)
+    box-shadow: 0px 6px 10px 4px rgba(38, 38, 38, 0.15), 0px 2px 3px rgba(38, 38, 38, 0.3);
 
-  &_hidden
+  &_hidden:not(&_detached)
     top 0
-    width 40px
-    margin 8px
-    height 40px
+    width 22px
     border none
-    border-radius 7px
-    background-color #fff
-    box-shadow 0px 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 5px 10px rgba(0, 0, 0, 0.1)
+    margin 8px 0
+    background none
+    height calc(100% - 16px)
+
+    --header-background rgba(#413C4A, 0.08)
+    --icon-color #898098
 
     ~/_detached &
       margin 0
 
+    &:hover
+      --icon-color #096DD9
+      --header-background rgba(#096DD9, 0.16)
+
   &__header
     top 0
-    height 24px
+    height var(--header-height)
     z-index 2
     display flex
-    cursor pointer
+    cursor move
     font-size 13px
     font-weight 700
     line-height 16px
@@ -44,7 +56,7 @@
     position sticky
     align-items center
     justify-content space-between
-    background-color rgb(242, 242, 242)
+    background-color var(--header-background)
 
     ~/_alignment_left &
       text-align left
@@ -56,30 +68,93 @@
       flex-direction row-reverse
       padding 4px 12px 4px 0
 
-      svg
-        transform rotate(180deg)
+  &_hidden:not(&_detached) &__header
+    padding 0
+    width 100%
+    height 100%
+    cursor pointer
+    line-height normal
+    justify-content center
+    border-radius var(--header-border-radius)
 
-    ~/_hidden &
-      padding 0
-      width 100%
-      height 100%
-      color #000
-      line-height normal
-      justify-content center
-      background-color transparent
+  &__toggle
+    width 24px
+    height 24px
+    display flex
+    position relative
+    align-items center
+    justify-content center
+    color var(--icon-color)
+
+    svg
+      display block
+
+    &:hover
+      background-color rgba(#096DD9, 0.16)
+
+  &:not(&_detached)&_hidden &__toggle
+    pointer-events none
+
+  &_hidden:not(&_detached) &__toggle
+    background-color transparent
+
+  // Toggle button tooltip styles
+  &:not(&_hidden) &__toggle:hover,
+  &_hidden&&_detached &__toggle:hover,
+  &_hidden:not(&_detached) &__header:hover &__toggle
+    &::before
+      color #fff
+      font-size 16px
+      font-weight 500
+      padding 4px 16px
+      position absolute
+      white-space nowrap
+      border-radius 4px
+      background-color #262626
+      content attr(data-tooltip)
+
+  // Panel is hidden and snapped to one of the sides
+  &_hidden&:not(&_detached)&_alignment_left &__toggle,
+  &_hidden&:not(&_detached)&_alignment_right &__toggle
+    &::before
+      top 50%
+      transform translate(0, -50%)
+
+  &_hidden&:not(&_detached)&_alignment_left &__toggle
+    &::before
+      left calc(100% + 4px)
+
+  &_hidden&:not(&_detached)&_alignment_right &__toggle
+    &::before
+      right calc(100% + 4px)
+
+  // Panel is visible and snapped to one of the sides
+  &:not(&_hidden):not(&_detached) &__toggle
+    &::before
+      left 50%
+      top calc(100% + 4px)
+      transform translate(-50%, 0)
+
+  // Panel is visible and floating
+  &_detached &__toggle
+    &::before
+      left 50%
+      bottom calc(100% + 4px)
+      transform translate(-50%, 0)
 
   &__content
     width 100%
     height 100%
-    overflow auto
-    styled-scrollbars()
 
     ~/_resizing
       pointer-events none
 
   &__body
     z-index 1
+    overflow auto
+    height calc(100% - var(--header-height))
     position relative
+    styled-scrollbars()
 
   &__resizer
     --size 12px
