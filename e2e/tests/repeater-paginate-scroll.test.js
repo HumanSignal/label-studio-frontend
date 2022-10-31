@@ -196,11 +196,11 @@ Scenario("Outliner Regions will scroll view window on region click", async funct
 
 Scenario("Regions will scroll view window on region click", async function({ I, LabelStudio }) {
   const params = { config: configScroll, annotations, data };
-  
+
+  I.amOnPage("/");
   LabelStudio.setFeatureFlags({
     ff_front_1170_outliner_030222_short: true,
   });
-  I.amOnPage("/");
   I.executeScript(initLabelStudio, params);
   
   I.click(locate(".lsf-region-item__title").withText("Document Author"));
