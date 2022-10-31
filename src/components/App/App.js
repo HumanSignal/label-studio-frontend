@@ -217,7 +217,7 @@ class App extends Component {
     const newUIEnabled = isFF(FF_DEV_1170);
 
     return (
-      <Block name="editor" mod={{ fullscreen: settings.fullscreen }}>
+      <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !newUIEnabled }}>
         <Settings store={store} />
         <Provider store={store}>
           {store.showingDescription && (
