@@ -226,8 +226,8 @@ const Model = types
       setLayerRef(ref) {
         if (ref) {
           ref.canvas._canvas.style.opacity = self.opacity;
+          self.layerRef = ref;
         }
-        self.layerRef = ref;
       },
 
       cacheImageData() {
@@ -284,6 +284,7 @@ const Model = types
       },
 
       addPoint(x, y) {
+        console.log("BrushRegion addPoint",x, y);
         self.preDraw(x, y);
         cachedPoints.push(x);
         cachedPoints.push(y);

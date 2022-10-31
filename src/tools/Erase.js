@@ -134,9 +134,7 @@ const _Tool = types
         )
           return;
 
-        const shape = self.getSelectedShape;
-
-        if (shape && shape.type === "brushregion") {
+        if (brush?.type === "brushregion") {
           self.addPoint(x, y);
         }
       },
