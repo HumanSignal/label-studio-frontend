@@ -5,10 +5,14 @@ const { initLabelStudio } = require("./helpers");
 
 Feature("Repeater paginate on region click");
 
-Scenario("Outliner will paginate view window on region click", async function({ I }) {
-  const params = { config, annotations, data };
+Scenario("Outliner Regions will paginate view window on region click", async function({ I, LabelStudio }) {
+  const params = { config: configPagination, annotations, data };
 
   I.amOnPage("/");
+  const outlinerIsOn = await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
+
+  if (!outlinerIsOn) return;
+
   I.executeScript(initLabelStudio, params);
   I.click(locate(".lsf-outliner-item__title").withText("Document Author"));
   I.seeElement(locate(".lsf-label__hotkey").withText("6"));
@@ -22,6 +26,67 @@ Scenario("Outliner will paginate view window on region click", async function({ 
   I.seeElement(locate(".lsf-label__hotkey").withText("2"));
   I.seeElement(locate(".lsf-pagination__page-indicator").withText("1"));
 
+});
+
+Scenario("Regions will paginate view window on region click", async function({ I, LabelStudio }) {
+  const params = { config: configPagination, annotations, data };
+
+  I.amOnPage("/");
+  const outlinerIsOn = await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
+
+  if (outlinerIsOn) return;
+  I.executeScript(initLabelStudio, params);
+  I.click(locate(".lsf-region-item__title").withText("Document Author"));
+  I.seeElement(locate(".lsf-label__hotkey").withText("6"));
+  I.seeElement(locate(".lsf-pagination__page-indicator").withText("2"));
+
+  I.click(locate(".lsf-region-item__title").withText("Document Title"));
+  I.seeElement(locate(".lsf-label__hotkey").withText("7"));
+  I.seeElement(locate(".lsf-pagination__page-indicator").withText("3"));
+
+  I.click(locate(".lsf-region-item__title").withText("Document Date"));
+  I.seeElement(locate(".lsf-label__hotkey").withText("2"));
+  I.seeElement(locate(".lsf-pagination__page-indicator").withText("1"));
+
+});
+
+Scenario("Outliner Regions will scroll view window on region click", async function({ I, LabelStudio }) {
+  const params = { config: configScroll, annotations, data };
+
+  I.amOnPage("/");
+  const outlinerIsOn = await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
+
+  if (!outlinerIsOn) return;
+
+  I.executeScript(initLabelStudio, params);
+  I.click(locate(".lsf-outliner-item__title").withText("Document Author"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("6"));
+
+  I.click(locate(".lsf-outliner-item__title").withText("Document Title"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("7"));
+
+  I.click(locate(".lsf-outliner-item__title").withText("Document Date"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("2"));
+
+});
+
+Scenario("Regions will scroll view window on region click", async function({ I, LabelStudio }) {
+  const params = { config: configScroll, annotations, data };
+
+  I.amOnPage("/");
+  const outlinerIsOn = await LabelStudio.hasFF("ff_front_1170_outliner_030222_short");
+
+  if (outlinerIsOn) return;
+
+  I.executeScript(initLabelStudio, params);
+  I.click(locate(".lsf-region-item__title").withText("Document Author"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("6"));
+
+  I.click(locate(".lsf-region-item__title").withText("Document Title"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("7"));
+
+  I.click(locate(".lsf-region-item__title").withText("Document Date"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("2"));
 
 });
 
@@ -39,7 +104,7 @@ const data = {
   ],
 };
 
-const config = `
+const configPagination = `
   <View>
     <Repeater on="$images" indexFlag="{{idx}}" mode="pagination" >
       <Image name="page_{{idx}}" value="$images[{{idx}}].url"/>
@@ -51,6 +116,20 @@ const config = `
     </Repeater>
   </View>
 `;
+
+const configScroll = `
+  <View>
+    <Repeater on="$images" indexFlag="{{idx}}" >
+      <Image name="page_{{idx}}" value="$images[{{idx}}].url"/>
+      <RectangleLabels name="labels_{{idx}}" toName="page_{{idx}}">
+        <Label value="Document Title" />
+        <Label value="Document Date" />
+        <Label value="Document Author" background="yellow"/>
+      </RectangleLabels>
+    </Repeater>
+  </View>
+`;
+
 
 const annotations = [
   {
