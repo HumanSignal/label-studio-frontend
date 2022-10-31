@@ -14,6 +14,7 @@ Scenario("Outliner Regions will paginate view window on region click", async fun
   if (!outlinerIsOn) return;
 
   I.executeScript(initLabelStudio, params);
+  I.waitForVisible(locate(".lsf-outliner-item__title"));
   I.click(locate(".lsf-outliner-item__title").withText("Document Author"));
   I.seeElement(locate(".lsf-label__hotkey").withText("6"));
   I.seeElement(locate(".lsf-pagination__page-indicator").withText("2"));
@@ -36,6 +37,7 @@ Scenario("Regions will paginate view window on region click", async function({ I
 
   if (outlinerIsOn) return;
   I.executeScript(initLabelStudio, params);
+  I.waitForVisible(locate(".lsf-outliner-item__title"));
   I.click(locate(".lsf-region-item__title").withText("Document Author"));
   I.seeElement(locate(".lsf-label__hotkey").withText("6"));
   I.seeElement(locate(".lsf-pagination__page-indicator").withText("2"));
@@ -59,6 +61,7 @@ Scenario("Outliner Regions will scroll view window on region click", async funct
   if (!outlinerIsOn) return;
 
   I.executeScript(initLabelStudio, params);
+  I.waitForVisible(locate(".lsf-outliner-item__title"));
   I.click(locate(".lsf-outliner-item__title").withText("Document Author"));
   I.waitForVisible(locate(".lsf-label__hotkey").withText("6"));
 
@@ -79,6 +82,7 @@ Scenario("Regions will scroll view window on region click", async function({ I, 
   if (outlinerIsOn) return;
 
   I.executeScript(initLabelStudio, params);
+  I.waitForVisible(locate(".lsf-outliner-item__title"));
   I.click(locate(".lsf-region-item__title").withText("Document Author"));
   I.waitForVisible(locate(".lsf-label__hotkey").withText("6"));
 
