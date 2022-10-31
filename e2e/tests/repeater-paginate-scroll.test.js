@@ -200,7 +200,6 @@ Scenario("Regions will scroll view window on region click", async function({ I, 
   LabelStudio.setFeatureFlags({
     ff_front_1170_outliner_030222_short: true,
   });
-  I.refreshPage();
   I.amOnPage("/");
   I.executeScript(initLabelStudio, params);
   
