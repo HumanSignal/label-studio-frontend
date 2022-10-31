@@ -1,7 +1,9 @@
+import { render, unmountComponentAtNode } from "react-dom";
 import App from "./components/App/App";
 import { configureStore } from "./configureStore";
 import { LabelStudio as LabelStudioReact } from './Component';
 import { registerPanels } from "./registerPanels";
+import { configure } from "mobx";
 import { EventInvoker } from './utils/events';
 import legacyEvents from './core/External';
 import { toCamelCase } from "strman";
@@ -9,9 +11,11 @@ import { isDefined } from "./utils/utilities";
 import { Hotkey } from "./core/Hotkey";
 import defaultOptions from './defaultOptions';
 import { destroy } from "mobx-state-tree";
-
-import { createRoot } from 'react-dom/client';
 import ToolsManager from "./tools/Manager";
+
+configure({
+  isolateGlobalState: true,
+});
 
 export class LabelStudio {
   static instances = new Set();
@@ -64,22 +68,21 @@ export class LabelStudio {
   async createApp() {
     const { store, getRoot } = await configureStore(this.options, this.events);
     const rootElement = getRoot(this.root);
-    const reactRoot = createRoot(rootElement);
 
     this.store = store;
     window.Htx = this.store;
 
-    reactRoot.render(
+    render((
       <App
         store={this.store}
         panels={registerPanels(this.options.panels) ?? []}
-      />,
-    );
+      />
+    ), rootElement);
 
     const destructor = () => {
       Hotkey.unbindAll();
       this.events.removeAll();
-      reactRoot.unmount();
+      unmountComponentAtNode(rootElement);
       destroy(this.store);
 
       // Remove references
