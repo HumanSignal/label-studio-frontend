@@ -274,7 +274,7 @@ const Model = types
     get keysRange() {
       const keys = self.dataObj?.[self.keyColumn];
 
-      if (!keys) return [];
+      if (!keys?.length) return [];
       return [keys[0], keys[keys.length - 1]];
     },
 
@@ -540,7 +540,7 @@ const Model = types
         return;
       }
       // if current view already restored by PersistentState
-      if (self.brushRange.length) return;
+      if (self.brushRange?.length) return;
 
       const percentToLength = percent => times[Math.round((times.length - 1) * percent)];
       const boundaries = self.defaultOverviewWidth.map(percentToLength);
@@ -793,13 +793,13 @@ const HtxTimeSeriesViewRTS = ({ item }) => {
   const ref = React.createRef();
 
   React.useEffect(() => {
-    if (item && item.brushRange.length) {
+    if (item?.brushRange?.length) {
       item._nodeReference = ref.current;
     }
   }, [item, ref]);
 
   // the last thing updated during initialisation
-  if (!item.brushRange.length || !item.data)
+  if (!item?.brushRange?.length || !item.data)
     return (
       <div style={{ textAlign: "center", height: 100 }}>
         <Spin size="large" delay={300} />
