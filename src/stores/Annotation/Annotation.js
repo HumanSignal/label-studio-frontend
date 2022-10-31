@@ -520,7 +520,7 @@ export const Annotation = types
         }
       });
 
-      // @todo deal with `defaultValue`s
+      // @todo deal with `defaulthttps://github.com/heartexlabs/label-studio-frontend/pull/899/files#diff-54c46de3667aec2ccad8009c8940a5dccba3acd3ba8de3bb3b803842857f922eValue`s
     },
 
     setDefaultValues() {
@@ -536,6 +536,7 @@ export const Annotation = types
         }
 
         if (couldHavePreselectedValues && tag.preselectedValues?.length) {
+          console.log("setDefaultValues", tag.valueType, tag.preselectedValues, self.selected, self.preselectedValues);
           self.createResult({}, { [tag.valueType]: tag.preselectedValues }, tag, tag.toname);
         }
       });
@@ -774,9 +775,14 @@ export const Annotation = types
       };
 
       const area = self.areas.put(areaRaw);
-      const childrenWithPreselectedValues = self.toNames.get(object?.name ?? object)?.toJSON?.()?.filter(item => item.perregion && (item.preselectedValues?.length ?? 0) > 0);
-      
-      childrenWithPreselectedValues?.forEach(item => area.setDefaultValue(item));
+      const childrenWithPreselectedValues = self.toNames.get(object?.name ?? object)?.toJSON?.()?.filter(item => (item.preselectedValues?.length ?? 0) > 0);
+      const preRegionChildWithPreselectedValues = childrenWithPreselectedValues.filter(item => item.perregion);
+      const annotationChildWithPreselectedValues = childrenWithPreselectedValues.filter(item => !item.perregion);
+
+      preRegionChildWithPreselectedValues?.forEach(item => area.setDefaultValue(item));
+      annotationChildWithPreselectedValues?.forEach(item => item.selected = item.preselectedValues);
+
+      console.log("annotationChildWithPreselectedValues", annotationChildWithPreselectedValues, self);
 
       if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
       if (!skipAfrerCreate) self.afterCreateResult(area, control);
@@ -1075,6 +1081,7 @@ export const Annotation = types
     },
 
     prepareValue(value, type) {
+      console.log("prepareValue", value, type);
       switch (type) {
         case "text":
         case "hypertext":
