@@ -150,7 +150,6 @@ const _Tool = types
           return;
 
         brush = self.getSelectedShape;
-
         if (!brush) return;
 
         if (brush && brush.type === "brushregion") {

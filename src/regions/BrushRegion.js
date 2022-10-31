@@ -284,7 +284,6 @@ const Model = types
       },
 
       addPoint(x, y) {
-        console.log("BrushRegion addPoint",x, y);
         self.preDraw(x, y);
         cachedPoints.push(x);
         cachedPoints.push(y);
