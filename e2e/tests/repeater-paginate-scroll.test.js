@@ -5,93 +5,7 @@ const { initLabelStudio } = require("./helpers");
 
 Feature("Repeater paginate on region click");
 
-Scenario("Outliner Regions will paginate view window on region click", async function({ I, LabelStudio }) {
-  const params = { config: configPagination, annotations, data };
 
-
-  I.amOnPage("/");
-  LabelStudio.setFeatureFlags({
-    ff_front_1170_outliner_030222_short: true,
-  });
-  I.executeScript(initLabelStudio, params);
-  I.waitForVisible(locate(".lsf-outliner-item__title"));
-  I.click(locate(".lsf-outliner-item__title").withText("Document Author"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("6"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("2"));
-
-  I.click(locate(".lsf-outliner-item__title").withText("Document Title"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("7"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("3"));
-
-  I.click(locate(".lsf-outliner-item__title").withText("Document Date"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("2"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("1"));
-
-});
-
-Scenario("Regions will paginate view window on region click", async function({ I, LabelStudio }) {
-  const params = { config: configPagination, annotations, data };
-
-  I.amOnPage("/");
-  LabelStudio.setFeatureFlags({
-    ff_front_1170_outliner_030222_short: false,
-  });
-  I.executeScript(initLabelStudio, params);
-  I.waitForVisible(locate(".lsf-region-item__title"));
-  I.click(locate(".lsf-region-item__title").withText("Document Author"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("6"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("2"));
-
-  I.click(locate(".lsf-region-item__title").withText("Document Title"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("7"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("3"));
-
-  I.click(locate(".lsf-region-item__title").withText("Document Date"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("2"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("1"));
-
-});
-
-Scenario("Outliner Regions will scroll view window on region click", async function({ I, LabelStudio }) {
-  const params = { config: configScroll, annotations, data };
-
-  I.amOnPage("/");
-  LabelStudio.setFeatureFlags({
-    ff_front_1170_outliner_030222_short: true,
-  });
-  I.executeScript(initLabelStudio, params);
-  I.waitForVisible(locate(".lsf-outliner-item__title"));
-  I.click(locate(".lsf-outliner-item__title").withText("Document Author"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("6"));
-
-  I.click(locate(".lsf-outliner-item__title").withText("Document Title"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("7"));
-
-  I.click(locate(".lsf-outliner-item__title").withText("Document Date"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("2"));
-
-});
-
-Scenario("Regions will scroll view window on region click", async function({ I, LabelStudio }) {
-  const params = { config: configScroll, annotations, data };
-  
-  LabelStudio.setFeatureFlags({
-    ff_front_1170_outliner_030222_short: true,
-  });
-  I.refreshPage();
-  I.amOnPage("/");
-  I.executeScript(initLabelStudio, params);
-  I.waitForVisible(locate(".lsf-region-item__title"));
-  I.click(locate(".lsf-region-item__title").withText("Document Author"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("6"));
-
-  I.click(locate(".lsf-region-item__title").withText("Document Title"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("7"));
-
-  I.click(locate(".lsf-region-item__title").withText("Document Date"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("2"));
-
-});
 
 const data = {
   images: [
@@ -213,3 +127,91 @@ const annotations = [
     ],
   },
 ];
+
+Scenario("Outliner Regions will paginate view window on region click", async function({ I, LabelStudio }) {
+  const params = { config: configPagination, annotations, data };
+
+  I.amOnPage("/");
+  LabelStudio.setFeatureFlags({
+    ff_front_1170_outliner_030222_short: true,
+  });
+  I.executeScript(initLabelStudio, params);
+
+  I.click(locate(".lsf-outliner-item__title").withText("Document Author"));
+  I.seeElement(locate(".lsf-label__hotkey").withText("6"));
+  I.seeElement(locate(".lsf-pagination__page-indicator").withText("2"));
+
+  I.click(locate(".lsf-outliner-item__title").withText("Document Title"));
+  I.seeElement(locate(".lsf-label__hotkey").withText("7"));
+  I.seeElement(locate(".lsf-pagination__page-indicator").withText("3"));
+
+  I.click(locate(".lsf-outliner-item__title").withText("Document Date"));
+  I.seeElement(locate(".lsf-label__hotkey").withText("2"));
+  I.seeElement(locate(".lsf-pagination__page-indicator").withText("1"));
+
+});
+
+Scenario("Regions will paginate view window on region click", async function({ I, LabelStudio }) {
+  const params = { config: configPagination, annotations, data };
+
+  I.amOnPage("/");
+  LabelStudio.setFeatureFlags({
+    ff_front_1170_outliner_030222_short: false,
+  });
+  I.executeScript(initLabelStudio, params);
+
+  I.click(locate(".lsf-region-item__title").withText("Document Author"));
+  I.seeElement(locate(".lsf-label__hotkey").withText("6"));
+  I.seeElement(locate(".lsf-pagination__page-indicator").withText("2"));
+
+  I.click(locate(".lsf-region-item__title").withText("Document Title"));
+  I.seeElement(locate(".lsf-label__hotkey").withText("7"));
+  I.seeElement(locate(".lsf-pagination__page-indicator").withText("3"));
+
+  I.click(locate(".lsf-region-item__title").withText("Document Date"));
+  I.seeElement(locate(".lsf-label__hotkey").withText("2"));
+  I.seeElement(locate(".lsf-pagination__page-indicator").withText("1"));
+
+});
+
+Scenario("Outliner Regions will scroll view window on region click", async function({ I, LabelStudio }) {
+  const params = { config: configScroll, annotations, data };
+
+  I.amOnPage("/");
+  LabelStudio.setFeatureFlags({
+    ff_front_1170_outliner_030222_short: true,
+  });
+  I.executeScript(initLabelStudio, params);
+
+  I.click(locate(".lsf-outliner-item__title").withText("Document Author"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("6"));
+
+  I.click(locate(".lsf-outliner-item__title").withText("Document Title"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("7"));
+
+  I.click(locate(".lsf-outliner-item__title").withText("Document Date"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("2"));
+
+});
+
+Scenario("Regions will scroll view window on region click", async function({ I, LabelStudio }) {
+  const params = { config: configScroll, annotations, data };
+  
+  LabelStudio.setFeatureFlags({
+    ff_front_1170_outliner_030222_short: true,
+  });
+  I.refreshPage();
+  I.amOnPage("/");
+  I.executeScript(initLabelStudio, params);
+  
+  I.click(locate(".lsf-region-item__title").withText("Document Author"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("6"));
+
+  I.click(locate(".lsf-region-item__title").withText("Document Title"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("7"));
+
+  I.click(locate(".lsf-region-item__title").withText("Document Date"));
+  I.waitForVisible(locate(".lsf-label__hotkey").withText("2"));
+
+});
+
