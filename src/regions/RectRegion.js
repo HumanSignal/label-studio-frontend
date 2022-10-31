@@ -300,10 +300,10 @@ const Model = types
         original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: self.convertXToPerc(self.x),
-          y: self.convertYToPerc(self.y),
-          width: self.convertHDimensionToPerc(self.width),
-          height: self.convertVDimensionToPerc(self.height),
+          x: (self.parent.stageWidth > 1) ? self.convertXToPerc(self.x) : self.x,
+          y: (self.parent.stageWidth > 1) ? self.convertYToPerc(self.y) : self.y,
+          width: (self.parent.stageWidth > 1) ? self.convertHDimensionToPerc(self.width) : self.width,
+          height: (self.parent.stageWidth > 1) ? self.convertVDimensionToPerc(self.height) : self.height,
           rotation: self.rotation,
         },
       };
