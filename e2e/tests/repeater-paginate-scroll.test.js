@@ -71,24 +71,6 @@ const annotations = [
         original_height: 1035,
       },
       {
-        id: "Eg3_P8-ZRu",
-        type: "taxonomy",
-        value: {
-          x: 8.247422680412368,
-          y: 54.22647527910686,
-          width: 75.46391752577318,
-          height: 9.090909090909092,
-          rotation: 0,
-          taxonomy: [["Archaea"]],
-        },
-        origin: "manual",
-        to_name: "page_0",
-        from_name: "categories_0",
-        image_rotation: 0,
-        original_width: 800,
-        original_height: 1035,
-      },
-      {
         id: "yd33DCnE52",
         type: "rectanglelabels",
         value: {
@@ -193,6 +175,11 @@ Scenario("Regions will paginate view window on region click and page advance", a
 
 });
 
+const checkScrollToSelectedPersists = (I, label) => {
+  I.click(locate(".lsf-outliner-item__title").withText(label));
+  I.waitForVisible(locate(".lsf-label_selected").withText(label));
+};
+
 Scenario("Outliner Regions will scroll view window on region click", async function({ I, LabelStudio }) {
   const params = { config: configScroll, annotations, data };
 
@@ -202,14 +189,11 @@ Scenario("Outliner Regions will scroll view window on region click", async funct
   });
   I.executeScript(initLabelStudio, params);
 
-  I.click(locate(".lsf-outliner-item__title").withText("Document Author"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("6"));
+  annotations[0].result.forEach(result => {
+    const label = result.value?.rectanglelabels[0];
 
-  I.click(locate(".lsf-outliner-item__title").withText("Document Title"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("7"));
-
-  I.click(locate(".lsf-outliner-item__title").withText("Document Date"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("2"));
+    checkScrollToSelectedPersists(I, label);
+  });
 
 });
 
@@ -222,14 +206,11 @@ Scenario("Regions will scroll view window on region click", async function({ I, 
   });
   I.executeScript(initLabelStudio, params);
   
-  I.click(locate(".lsf-region-item__title").withText("Document Author"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("6"));
+  annotations[0].result.forEach(result => {
+    const label = result.value?.rectanglelabels[0];
 
-  I.click(locate(".lsf-region-item__title").withText("Document Title"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("7"));
-
-  I.click(locate(".lsf-region-item__title").withText("Document Date"));
-  I.waitForVisible(locate(".lsf-label__hotkey").withText("2"));
+    checkScrollToSelectedPersists(I, label);
+  });
 
 });
 
