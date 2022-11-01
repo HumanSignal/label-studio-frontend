@@ -67,6 +67,7 @@ export const Comment = types.model("Comment", {
         id: self.id,
       });
       self.setDeleted(true);
+      self.setConfirmMode(false);
     }
 
     return {
