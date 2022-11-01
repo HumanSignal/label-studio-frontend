@@ -11,8 +11,20 @@ import { SharedStoreModel } from "./model";
  *
  * StoreIds is just a map of existing store IDs to reference to during the `preProcessSnapshot`.
  */
+export const Stores = new Map();
 const StoreIds = new Set();
-const Stores = new Map();
+
+console.log({ StoreIds, Stores });
+
+/**
+ * Defines the ID to group SharedStores by.
+ */
+const SharedStoreID = types.optional(types.maybeNull(types.string), null);
+
+/**
+ * Defines the Store model referenced from the Annotation Store
+ */
+const Store = types.optional(types.maybeNull(types.late(() => types.reference(SharedStoreModel))), null);
 
 /**
  * SharedStoreMixin, when injected into the model, provides an AnnotationStore level shared storages to
@@ -35,8 +47,8 @@ const Stores = new Map();
  * create new ones, they will all use the same shared store decreasing the memory footprint and computation time.
  */
 export const SharedStoreMixin = types.model("SharedStoreMixin", {
-  sharedstore: types.optional(types.maybeNull(types.string), null),
-  store: types.optional(types.maybeNull(types.reference(SharedStoreModel)), null),
+  sharedstore: SharedStoreID,
+  store: Store,
 })
   .views((self) => ({
     get children() {
@@ -87,4 +99,9 @@ export const SharedStoreMixin = types.model("SharedStoreMixin", {
     return sn;
   });
 
+export const destroy = () => {
+  console.log("destroying");
+  Stores.clear();
+  StoreIds.clear();
+};
 

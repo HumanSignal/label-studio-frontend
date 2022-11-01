@@ -105,8 +105,6 @@ export const FF_DEV_3617 = "fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix";
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
-    [FF_DEV_2007_DEV_2008]: true,
-    [FF_DEV_3617]: true,
   };
 }
 
@@ -119,3 +117,5 @@ export function isFF(id: string) {
     return window.APP_SETTINGS?.feature_flags_default_value === true;
   }
 }
+
+Object.assign(window, { getFeatureFlags, isFF });

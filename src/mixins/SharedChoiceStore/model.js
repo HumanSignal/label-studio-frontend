@@ -28,6 +28,5 @@ export const SharedStoreModel = types.model("SharedStoreModel", {
     destroy() {
       self.clear();
       detach(self);
-      self.die();
     },
   }));

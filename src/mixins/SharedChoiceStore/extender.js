@@ -1,5 +1,6 @@
-import { detach, types } from "mobx-state-tree";
+import { destroy, detach, types } from "mobx-state-tree";
 import { SharedStoreModel } from "./model";
+import { Stores } from "./mixin";
 
 /**
  * StoreExtender injects into the AnnotationStore and holds every created SharedStore.
@@ -13,10 +14,24 @@ export const StoreExtender = types.model("StoreExtender", {
   addSharedStore(store) {
     self.sharedStores.set(store.id, store);
   },
+  beforeReset() {
+    self.sharedStores.forEach((store) => {
+      detach(store);
+    });
+    self.sharedStores.clear();
+  },
+  afterReset() {
+    Stores.forEach((store) => {
+      self.addSharedStore(store);
+    });
+    console.log("Shared store has been %crestored", "color: green", Stores);
+  },
   beforeDestroy() {
     self.sharedStores.forEach((store) => {
       detach(store);
-      store.die();
+      destroy(store);
     });
+    self.sharedStores.clear();
+    console.log("Shared store has been %cdestroyed", "color: red");
   },
 }));
