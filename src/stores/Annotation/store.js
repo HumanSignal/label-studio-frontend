@@ -11,6 +11,7 @@ import { ViewModel } from "../../tags/visual";
 import { FF_DEV_1621, FF_DEV_3034, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
 import { HistoryItem } from "./HistoryItem";
+import { isDefined } from "../../utils/utilities";
 
 const SelectedItem = types.union(Annotation, HistoryItem);
 
@@ -241,7 +242,12 @@ export default types
 
       if (!self.root) initRoot(config);
 
-      const pk = options.pk || options.id;
+      let pk = options.pk || options.id;
+
+      if (options.type === "annotation" && pk && isNaN(pk)) {
+        /* something happened where our annotation pk was replaced with the id */
+        pk = self.annotations?.[self.annotations.length - 1]?.storedValue?.pk;
+      }
 
       //
       const node = {
@@ -365,6 +371,10 @@ export default types
       setTimeout(() => {
         // update classifications after render
         const updatedItem = item ?? self.selected;
+
+        Array.from(updatedItem.names.values())
+          .filter(t => t.isClassification)
+          .forEach(t => t.updateFromResult([]));
 
         updatedItem?.results
           .filter(r => r.area.classification)

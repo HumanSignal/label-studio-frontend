@@ -64,6 +64,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @param {string} [timeColumn] Column name or index that provides temporal values. If your time series data has no temporal column then one is automatically generated.
  * @param {string} [timeFormat] Pattern used to parse values inside timeColumn, parsing is provided by d3, and follows `strftime` implementation
  * @param {string} [timeDisplayFormat] Format used to display temporal value. Can be a number or a date. If a temporal column is a date, use strftime to format it. If it's a number, use [d3 number](https://github.com/d3/d3-format#locale_format) formatting.
+ * @param {string} [durationDisplayFormat] Format used to display temporal duration value for brush range. If the temporal column is a date, use strftime to format it. If it's a number, use [d3 number](https://github.com/d3/d3-format#locale_format) formatting.
  * @param {string} [sep=,] Separator for your CSV file.
  * @param {string} [overviewChannels] Comma-separated list of channel names or indexes displayed in overview.
  * @param {string} [overviewWidth=25%] Default width of overview window in percents
@@ -78,6 +79,7 @@ const TagAttrs = types.model({
   sep: ",",
   timeformat: "",
   timedisplayformat: "",
+  durationdisplayformat: ".0f",
   overviewchannels: "", // comma-separated list of channels to show
   overviewwidth: "25%",
 
@@ -181,7 +183,7 @@ const Model = types
         // Ensure that the timestamps are incremental and formatted to proper numeric values
       } else {
         let current = 0;
-        let previous = 0;
+        let previous = -Infinity;
         const dataLength = data[self.keyColumn].length;
         const timestamps = Array.from({ length: dataLength });
 
@@ -272,7 +274,7 @@ const Model = types
     get keysRange() {
       const keys = self.dataObj?.[self.keyColumn];
 
-      if (!keys) return [];
+      if (!keys?.length) return [];
       return [keys[0], keys[keys.length - 1]];
     },
 
@@ -305,6 +307,17 @@ const Model = types
       }
       return self._format(time);
     },
+
+    formatDuration(duration) {
+      if (!self._formatDuration) {
+        const { durationdisplayformat: format, isDate } = self;
+
+        if (format) self._formatDuration = isDate ? d3.utcFormat(format) : d3.format(format);
+        else self._formatDuration = String;
+      }
+      return self._formatDuration(duration);
+    },
+
   }))
 
   .actions(self => ({
@@ -527,7 +540,7 @@ const Model = types
         return;
       }
       // if current view already restored by PersistentState
-      if (self.brushRange.length) return;
+      if (self.brushRange?.length) return;
 
       const percentToLength = percent => times[Math.round((times.length - 1) * percent)];
       const boundaries = self.defaultOverviewWidth.map(percentToLength);
@@ -780,13 +793,13 @@ const HtxTimeSeriesViewRTS = ({ item }) => {
   const ref = React.createRef();
 
   React.useEffect(() => {
-    if (item && item.brushRange.length) {
+    if (item?.brushRange?.length) {
       item._nodeReference = ref.current;
     }
   }, [item, ref]);
 
   // the last thing updated during initialisation
-  if (!item.brushRange.length || !item.data)
+  if (!item?.brushRange?.length || !item.data)
     return (
       <div style={{ textAlign: "center", height: 100 }}>
         <Spin size="large" delay={300} />
