@@ -13,7 +13,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
-import { FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1598, FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
 import { CommentStore } from "../Comment/CommentStore";
 
@@ -122,7 +122,12 @@ export const Annotation = types
     },
 
     get objects() {
-      return Array.from(self.names.values()).filter(tag => !tag.toname);
+      // Without correct validation toname may be null for control tags so we need to check isObjectTag instead of it
+      return Array.from(self.names.values()).filter(
+        isFF(FF_DEV_1598)
+          ? tag => tag.isObjectTag
+          : tag => !tag.toname,
+      );
     },
 
     get regions() {
@@ -745,6 +750,11 @@ export const Annotation = types
     },
 
     createResult(areaValue, resultValue, control, object, skipAfrerCreate = false) {
+      // Without correct validation object may be null, but it it shouldn't be so in results - so we should find any
+      if (isFF(FF_DEV_1598) && !object && control.type === "textarea") {
+        object = self.objects[0];
+      }
+
       const result = {
         from_name: control.name,
         // @todo should stick to area
@@ -764,7 +774,11 @@ export const Annotation = types
         results: [result],
       };
 
-      const area = self.areas.put(areaRaw);
+
+      //TODO: MST is crashing if we don't validate areas?, this problem isn't happening locally. So to reproduce you have to test in production or environment
+      const area = self?.areas?.put(areaRaw);
+
+      if (!area) return;
 
       if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
       if (!skipAfrerCreate) self.afterCreateResult(area, control);
@@ -965,7 +979,7 @@ export const Annotation = types
           if(readonly) {
             self.setReadonly(true);
           }
-          
+
           self.deserializeSingleResult(obj,
             (id) => areas.get(id),
             (snapshot) => areas.put(snapshot),
