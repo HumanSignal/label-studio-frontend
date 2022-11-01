@@ -24,7 +24,6 @@ export const StoreExtender = types.model("StoreExtender", {
     Stores.forEach((store) => {
       self.addSharedStore(store);
     });
-    console.log("Shared store has been %crestored", "color: green", Stores);
   },
   beforeDestroy() {
     self.sharedStores.forEach((store) => {
@@ -32,6 +31,5 @@ export const StoreExtender = types.model("StoreExtender", {
       destroy(store);
     });
     self.sharedStores.clear();
-    console.log("Shared store has been %cdestroyed", "color: red");
   },
 }));

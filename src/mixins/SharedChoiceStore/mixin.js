@@ -14,8 +14,6 @@ import { SharedStoreModel } from "./model";
 export const Stores = new Map();
 const StoreIds = new Set();
 
-console.log({ StoreIds, Stores });
-
 /**
  * Defines the ID to group SharedStores by.
  */
