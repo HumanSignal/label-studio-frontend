@@ -85,7 +85,7 @@ jobs:
 
     - name: Run e2e test suite
       if: github.event_name == 'push'
-      timeout-minutes: 50
+      timeout-minutes: 20 # 8-10 minutes is enough to pass tests
       run: |
         set -euo pipefail
         cd e2e
