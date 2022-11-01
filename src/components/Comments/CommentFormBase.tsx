@@ -34,9 +34,9 @@ export const CommentFormBase: FC<CommentFormProps> = observer(({
 
     if (!formRef.current) return;
     
-    const comment = new FormData(formRef.current).get("comment") as string;
+    const comment = (new FormData(formRef.current).get("comment") as string)?.trim();
     
-    if (!comment.trim()) return;
+    if (!comment) return;
 
     onSubmit?.(comment);
   }, [onSubmit]);
