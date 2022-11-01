@@ -12,7 +12,7 @@ export const GroundTruth = observer(({ entity, disabled = false, size = "md" }) 
     ? "Unset this result as a ground truth"
     : "Set this result as a ground truth";
 
-  return (!entity.skipped && !entity.userGenerate && entity.type !== 'prediction') ? (
+  return (!entity.skipped && !entity.userGenerate && entity.type !== 'prediction') && (
     <Block name="ground-truth" mod={{ disabled, size }}>
       <Tooltip placement="topLeft" title={title}>
         <Elem
@@ -33,5 +33,5 @@ export const GroundTruth = observer(({ entity, disabled = false, size = "md" }) 
         </Elem>
       </Tooltip>
     </Block>
-  ) : <Block name="ground-truth" mod={{ size }}></Block>;
+  );
 });
