@@ -10,7 +10,7 @@ import "./TopBar.styl";
 export const TopBar = observer(({ store }) => {
   const annotationStore = store.annotationStore;
   const entity = annotationStore?.selected;
-  const isPrediction = entity?.type === 'prediction';
+  const isReadonly = entity?.readonly;
 
   const isViewAll = annotationStore?.viewingAll === true;
 
@@ -34,7 +34,7 @@ export const TopBar = observer(({ store }) => {
             <DynamicPreannotationsToggle />
           </Elem>
         )}
-        {!isViewAll && store.hasInterface("controls") && (store.hasInterface("review") || !isPrediction) && (
+        {!isViewAll && store.hasInterface("controls") && (store.hasInterface("review") || !isReadonly) && (
           <Elem name="section" mod={{ flat: true }} style={{ width: 320, boxSizing: 'border-box' }}>
             <Controls annotation={entity}/>
           </Elem>

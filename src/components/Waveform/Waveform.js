@@ -262,7 +262,6 @@ export default class Waveform extends React.Component {
     }
 
     const step = e.deltaY > 0 ? 5 : -5;
-    // console.log(e.evt.deltaY);
 
     this.onZoomPlus(e, step);
   };
@@ -409,6 +408,10 @@ export default class Waveform extends React.Component {
 
         reg._region = region;
         reg.color = region.selectedregionbg;
+
+        // If the region channel is not set, set it to the audio region channel
+        if (reg.channelIdx === -1)
+          reg.channelIdx = region.channel;
 
         reg.on("click", (ev) => region.onClick(self.wavesurfer, ev));
         reg.on("update-end", () => region.onUpdateEnd(self.wavesurfer));

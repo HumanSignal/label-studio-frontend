@@ -43,7 +43,7 @@ const VideoRegionsPure = ({
   const stageRef = useRef();
 
   const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked && !reg.readonly);
-  const listenToEvents = !locked && item.annotation.editable;
+  const listenToEvents = !locked;
 
   // if region is not in lifespan, it's not rendered,
   // so we observe all the sequences to rerender transformer
@@ -113,7 +113,7 @@ const VideoRegionsPure = ({
   }, [isDrawing, workinAreaCoordinates, videoDimensions]);
 
   const handleMouseDown = e => {
-    if (e.target !== stageRef.current) return;
+    if (e.target !== stageRef.current || item.annotation?.readonly) return;
 
     const { x, y } = normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY);
     // const { offsetX: x, offsetY: y } = e.evt;
@@ -124,7 +124,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseMove = e => {
-    if (!isDrawing) return false;
+    if (!isDrawing || item.annotation?.readonly) return false;
 
     const { x, y } = normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY);
     // const { offsetX: x, offsetY: y } = e.evt;
@@ -137,7 +137,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseUp = e => {
-    if (!isDrawing) return false;
+    if (!isDrawing || item.annotation?.readonly) return false;
 
     const { x, y } = normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY);
     // const { offsetX: x, offsetY: y } = e.evt;
@@ -168,7 +168,6 @@ const VideoRegionsPure = ({
     onMouseUp: handleMouseUp,
   } : {};
 
-
   return (
     <Stage
       ref={stageRef}
@@ -186,11 +185,10 @@ const VideoRegionsPure = ({
             reg={reg}
             frame={item.frame}
             workingArea={workinAreaCoordinates}
-            draggable={!isDrawing && !locked}
+            draggable={reg.editable && !isDrawing && !locked}
             selected={reg.selected || reg.inSelection}
-            listening={(!reg.locked && !reg.readonly)}
+            listening={listenToEvents}
             onClick={(e) => {
-              // if (!reg.annotation.editable || reg.parent.getSkipInteractions()) return;
               if (store.annotationStore.selected.relationMode) {
                 stageRef.current.container().style.cursor = Constants.DEFAULT_CURSOR;
               }
@@ -201,16 +199,16 @@ const VideoRegionsPure = ({
           />
         ))}
       </Layer>
-      {isDrawing && (
+      {item.annotation?.editable && isDrawing ? (
         <Layer {...layerProps}>
           <SelectionRect {...newRegion}/>
         </Layer>
-      )}
-      {selected?.length > 0 && (
+      ): null}
+      {item.annotation?.editable && selected?.length > 0 ? (
         <Layer>
           <Transformer ref={initTransform} keepRatio={false} ignoreStroke flipEnabled={false} />
         </Layer>
-      )}
+      ): null}
     </Stage>
   );
 };

@@ -245,7 +245,7 @@ const HtxKeyPointView = ({ item }) => {
           }
         }}
         onClick={e => {
-          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
+          if (item.parent.getSkipInteractions()) return;
 
           if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = "default";
@@ -256,7 +256,7 @@ const HtxKeyPointView = ({ item }) => {
         }}
         {...props}
         draggable={item.editable}
-        listening={!suggestion && item.editable}
+        listening={!suggestion}
       />
       <LabelOnKP item={item} color={regionStyles.strokeColor}/>
     </Fragment>

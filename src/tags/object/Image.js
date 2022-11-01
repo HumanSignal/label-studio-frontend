@@ -593,6 +593,7 @@ const Model = types.model({
     deleteDrawingRegion() {
       const { drawingRegion } = self;
 
+      if (!drawingRegion) return;
       self.drawingRegion = null;
       destroy(drawingRegion);
     },

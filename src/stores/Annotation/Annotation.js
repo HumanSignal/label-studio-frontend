@@ -14,7 +14,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
-import { FF_DEV_2100, FF_DEV_2100_A, FF_DEV_3391, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, FF_DEV_3391, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
 import { CommentStore } from "../Comment/CommentStore";
 
@@ -115,6 +115,7 @@ export const Annotation = types
     return {
       ...sn,
       ...(isFF(FF_DEV_3391) ? { root } : {}),
+      readonly: sn.readonly ?? (isDefined(sn.editable) ? !sn.editable : sn.type === "prediction"),
       user,
       ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
       skipped: sn.skipped || sn.was_cancelled,
@@ -514,6 +515,12 @@ export const Annotation = types
 
       self.names.forEach(tag => tag.needsUpdate && tag.needsUpdate());
       self.areas.forEach(area => area.updateAppearenceFromState && area.updateAppearenceFromState());
+      if (isFF(FF_DEV_2432)) {
+        const areas = Array.from(self.areas.values());
+        const filtered = areas.filter(area => area.isDrawing);
+
+        self.regionStore.selection._updateResultsFromRegions(filtered);
+      }
     },
 
     setInitialValues() {
@@ -768,7 +775,7 @@ export const Annotation = types
       Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
     },
 
-    createResult(areaValue, resultValue, control, object) {
+    createResult(areaValue, resultValue, control, object, skipAfrerCreate = false) {
       const result = {
         from_name: control.name,
         // @todo should stick to area
@@ -791,7 +798,12 @@ export const Annotation = types
       const area = self.areas.put(areaRaw);
 
       if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
+      if (!skipAfrerCreate) self.afterCreateResult(area, control);
 
+      return area;
+    },
+
+    afterCreateResult(area, control) {
       if (self.store.settings.selectAfterCreate) {
         if (!area.classification) {
           // some regions might need some actions right after creation (i.e. text)
@@ -802,8 +814,6 @@ export const Annotation = types
         // unselect labels after use, but consider "keep labels selected" settings
         if (control.type.includes("labels")) self.unselectAll(true);
       }
-
-      return area;
     },
 
     appendResults(results) {
