@@ -77,40 +77,23 @@ const getCenter = (box: Box) => {
 export const createBoundingBoxGetter = (workingArea: WorkingArea, enabled = true) => (oldBox: Box, newBox: Box) => {
   if (!enabled) return newBox;
 
-  console.log(newBox);
-
   const box = getClientRect(newBox);
   const result = { ...newBox };
-  const isRotated = newBox.rotation !== 0;
 
   const edgeReached = [
-    (box.x - workingArea.x) < 0,
-    (box.y - workingArea.y) < 0,
-    (box.x - workingArea.x) + box.width > workingArea.width,
-    (box.y - workingArea.y) + box.height > workingArea.height,
+    (box.x - workingArea.x) < 0,                               // x0
+    (box.y - workingArea.y) < 0,                               // y0
+    (box.x - workingArea.x) + box.width > workingArea.width,   // x1
+    (box.y - workingArea.y) + box.height > workingArea.height, // y1
   ];
 
-  // When left edge reached
-  if (edgeReached[0]) {
+  // If any edge is caught, stop the movement
+  if (edgeReached.some(Boolean)) {
+    result.x = oldBox.x;
     result.y = oldBox.y;
-    result.x = workingArea.x;
-    result.width = oldBox.width + oldBox.x - workingArea.x;
-  }
-
-  // When top edge reached
-  if (edgeReached[1]) {
-    result.y = workingArea.y;
-    result.height = oldBox.height + oldBox.y - workingArea.y;
-  }
-
-  // When right edge reached
-  if (edgeReached[2]) {
-    result.width = workingArea.width - (box.x - workingArea.x);
-  }
-
-  // When bottom edge reached
-  if (edgeReached[3]) {
-    result.height = workingArea.height - (box.y - workingArea.y);
+    result.width = oldBox.width;
+    result.height = oldBox.height;
+    result.rotation = oldBox.rotation;
   }
 
   return result;
