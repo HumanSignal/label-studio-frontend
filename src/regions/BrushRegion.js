@@ -226,8 +226,8 @@ const Model = types
       setLayerRef(ref) {
         if (ref) {
           ref.canvas._canvas.style.opacity = self.opacity;
+          self.layerRef = ref;
         }
-        self.layerRef = ref;
       },
 
       cacheImageData() {
