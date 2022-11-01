@@ -3,9 +3,7 @@
 /* global Feature, Scenario, locate */
 const { initLabelStudio } = require("./helpers");
 
-Feature("Repeater paginate on region click");
-
-
+Feature("Repeater paginate and scroll");
 
 const data = {
   images: [
@@ -63,6 +61,7 @@ const annotations = [
           rotation: 0,
           rectanglelabels: ["Document Date"],
         },
+        page: 1,
         origin: "manual",
         to_name: "page_0",
         from_name: "labels_0",
@@ -81,6 +80,7 @@ const annotations = [
           rotation: 0,
           rectanglelabels: ["Document Title"],
         },
+        page: 3,
         origin: "manual",
         to_name: "page_2",
         from_name: "labels_2",
@@ -99,6 +99,7 @@ const annotations = [
           rotation: 0,
           rectanglelabels: ["Document Author"],
         },
+        page: 2,
         origin: "manual",
         to_name: "page_1",
         from_name: "labels_1",
@@ -110,18 +111,24 @@ const annotations = [
   },
 ];
 
+const checkScrollToSelectedPersists = (I, label, outliner) => {
+  I.click(locate(`.lsf-${outliner ? 'outliner' : 'region'}-item__title`).withText(label));
+  I.waitForVisible(locate(".lsf-label_selected").withText(label));
+};
+
+const checkPaginateToSelectedPersists = (I, label, page, outliner) => {
+  checkScrollToSelectedPersists(I, label, outliner);
+  I.seeElement(locate(".lsf-pagination__page-indicator").withText(`${page}`));
+};
 
 const checkPaginationButtons = (I) => {
+  I.click(locate(".lsf-pagination__btn_arrow-left-double"));
+  I.seeElement(locate(".lsf-pagination__page-indicator").withText("1"));
+
   I.click(locate(".lsf-pagination__btn_arrow-right"));
   I.seeElement(locate(".lsf-pagination__page-indicator").withText("2"));
 
   I.click(locate(".lsf-pagination__btn_arrow-right"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("3"));
-
-  I.click(locate(".lsf-pagination__btn_arrow-left-double"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("1"));
-
-  I.click(locate(".lsf-pagination__btn_arrow-right-double"));
   I.seeElement(locate(".lsf-pagination__page-indicator").withText("3"));
 };
 
@@ -134,17 +141,11 @@ Scenario("Outliner Regions will paginate view window on region click and page ad
   });
   I.executeScript(initLabelStudio, params);
 
-  I.click(locate(".lsf-outliner-item__title").withText("Document Author"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("6"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("2"));
+  annotations[0].result.forEach(result => {
+    const label = result.value?.rectanglelabels[0];
 
-  I.click(locate(".lsf-outliner-item__title").withText("Document Title"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("7"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("3"));
-
-  I.click(locate(".lsf-outliner-item__title").withText("Document Date"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("2"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("1"));
+    checkPaginateToSelectedPersists(I, label, result.page, true);
+  });
 
   checkPaginationButtons(I);
 
@@ -159,26 +160,15 @@ Scenario("Regions will paginate view window on region click and page advance", a
   });
   I.executeScript(initLabelStudio, params);
 
-  I.click(locate(".lsf-region-item__title").withText("Document Author"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("6"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("2"));
+  annotations[0].result.forEach(result => {
+    const label = result.value?.rectanglelabels[0];
 
-  I.click(locate(".lsf-region-item__title").withText("Document Title"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("7"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("3"));
-
-  I.click(locate(".lsf-region-item__title").withText("Document Date"));
-  I.seeElement(locate(".lsf-label__hotkey").withText("2"));
-  I.seeElement(locate(".lsf-pagination__page-indicator").withText("1"));
+    checkPaginateToSelectedPersists(I, label, result.page, false);
+  });
 
   checkPaginationButtons(I);
 
 });
-
-const checkScrollToSelectedPersists = (I, label) => {
-  I.click(locate(".lsf-outliner-item__title").withText(label));
-  I.waitForVisible(locate(".lsf-label_selected").withText(label));
-};
 
 Scenario("Outliner Regions will scroll view window on region click", async function({ I, LabelStudio }) {
   const params = { config: configScroll, annotations, data };
@@ -192,7 +182,7 @@ Scenario("Outliner Regions will scroll view window on region click", async funct
   annotations[0].result.forEach(result => {
     const label = result.value?.rectanglelabels[0];
 
-    checkScrollToSelectedPersists(I, label);
+    checkScrollToSelectedPersists(I, label, true);
   });
 
 });
@@ -209,7 +199,7 @@ Scenario("Regions will scroll view window on region click", async function({ I, 
   annotations[0].result.forEach(result => {
     const label = result.value?.rectanglelabels[0];
 
-    checkScrollToSelectedPersists(I, label);
+    checkScrollToSelectedPersists(I, label, false);
   });
 
 });
