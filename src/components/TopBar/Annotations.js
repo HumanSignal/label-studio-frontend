@@ -98,7 +98,7 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
         extra={(
           <Elem name={'icons'}>
             {renderCommentIcon(ent)}
-            {groundTruthEnabled && <GroundTruth entity={ent} disabled/>}
+            {groundTruthEnabled ? <GroundTruth entity={ent} disabled /> : <Block name="ground-truth" mod={{ size: "md" }}></Block>}
           </Elem>
         )}
       />
