@@ -533,9 +533,22 @@ class ChannelD3 extends React.Component {
 
     let { series } = this.props;
 
+    const optimizedWidthWithZoom = getOptimalWidth() * this.zoomStep;
+    
+    this.useOptimizedData = series.length > optimizedWidthWithZoom;
+
+    if (this.useOptimizedData) {
+      this.optimizedSeries = sparseValues(series, optimizedWidthWithZoom);
+      series = this.optimizedSeries;
+    }
+
     series = series.filter(x => {
       return x[column] !== null;
     });
+
+    if (this.optimizedSeries) {
+      this.optimizedSeries = series;
+    }
 
     const times = series.map(x => {
       return x[time];
@@ -557,10 +570,6 @@ class ChannelD3 extends React.Component {
 
     // initially it checks do we even need this optimization
     // but then this is a switch between optimized and original data
-    this.useOptimizedData = series.length > getOptimalWidth() * this.zoomStep;
-    if (this.useOptimizedData) {
-      this.optimizedSeries = sparseValues(series, getOptimalWidth() * this.zoomStep);
-    }
     this.slices = item.parent?.dataSlices;
 
     const formatValue = d3.format(item.displayformat);
@@ -660,7 +669,7 @@ class ChannelD3 extends React.Component {
 
     this.path = pathContainer
       .append("path")
-      .datum(this.useOptimizedData ? this.optimizedSeries : series)
+      .datum(series)
       .attr("d", this.line);
     // to render different zoomed slices of path
     this.path2 = pathContainer.append("path");
@@ -744,10 +753,9 @@ class ChannelD3 extends React.Component {
 
       // calc scale and shift
       const diffY = d3.extent(values).reduce((a, b) => b - a); // max - min
-      const heightY = this.y.range().reduce((a, b) => a - b); // min - max because y range is inverted
 
       scaleY = diffY / (max - min);
-      translateY = (min / diffY) * heightY;
+      translateY = min / diffY;
 
       this.y.domain([min, max]);
     }
