@@ -20,7 +20,7 @@ export const CommentItem: FC<{ comment: any }> = observer(({ comment }) => {
   const initialComment = comment.text;
   const [currentComment, setCurrentComment] = useState(initialComment);
 
-  if (comment.isDeleted) return <></>;
+  if (comment.isDeleted) return null;
 
   return (
     <Block name="comment-item" mod={{ resolved }}>
