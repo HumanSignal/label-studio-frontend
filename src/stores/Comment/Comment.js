@@ -1,4 +1,4 @@
-import { getEnv, types } from "mobx-state-tree";
+import { flow, getEnv, types } from "mobx-state-tree";
 import Utils from "../../utils";
 import { camelizeKeys } from "../../utils/utilities";
 import { UserExtended } from "../UserStore";
@@ -26,13 +26,13 @@ export const Comment = types.model("Comment", {
     },
   }))
   .actions(self => {
-    async function toggleResolve() {
-      if (!self.isPersisted) return;
+    const toggleResolve = flow(function* () {
+      if (!self.isPersisted || self.isDeleted) return;
 
       self.isResolved = !self.isResolved;
 
       try {
-        await self.sdk.invoke("comments:update", {
+        yield self.sdk.invoke("comments:update", {
           id: self.id,
           is_resolved: self.isResolved,
         });
@@ -40,7 +40,7 @@ export const Comment = types.model("Comment", {
         self.isResolved = !self.isResolved;
         throw err;
       }
-    }
+    });
 
     function setEditMode( newMode ) {
       self.isEditMode = newMode;
@@ -54,21 +54,27 @@ export const Comment = types.model("Comment", {
       self.isConfirmDelete = newMode;
     }
 
-    async function updateComment( comment ) {
-      await self.sdk.invoke("comments:update", {
-        id: self.id,
-        text: comment,
-      });
-      self.setEditMode(false);
-    }
+    const updateComment = flow(function* ( comment ) {
+      if (self.isPersisted && !self.isDeleted) {
+        yield self.sdk.invoke("comments:update", {
+          id: self.id,
+          text: comment,
+        });
+      }
 
-    async function deleteComment() {
-      await self.sdk.invoke("comments:delete", {
-        id: self.id,
-      });
+      self.setEditMode(false);
+    });
+
+    const deleteComment = flow(function* () {
+      if (self.isPersisted && !self.isDeleted && self.isConfirmDelete) {
+        yield self.sdk.invoke("comments:delete", {
+          id: self.id,
+        });
+      }
+
       self.setDeleted(true);
       self.setConfirmMode(false);
-    }
+    });
 
     return {
       toggleResolve,
