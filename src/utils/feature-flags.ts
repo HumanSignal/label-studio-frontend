@@ -102,6 +102,12 @@ export const FF_DEV_2918 = "fflag_fix_front_dev_2918_labeling_filtered_paragraph
  */
 export const FF_DEV_3377 = "fflag_fix_front_dev_3377_image_regions_shift_on_resize_280922_short";
 
+/**
+ * Fixing "Auto Detect" tool undo functionality and bugs with skipNextUndoState.
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_1284_auto_detect_undo_281022_short
+ */
+export const FF_DEV_1284 = "fflag_fix_front_dev_1284_auto_detect_undo_281022_short";
+
 function getFeatureFlags() {
   return window.APP_SETTINGS?.feature_flags || {
     // ff_front_DEV_1713_audio_ui_150222_short: true,

@@ -13,7 +13,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
-import { FF_DEV_1598, FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1284, FF_DEV_1598, FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
 import { CommentStore } from "../Comment/CommentStore";
 
@@ -925,21 +925,32 @@ export const Annotation = types
       });
 
       if (getRoot(self).autoAcceptSuggestions) {
+        if (isFF(FF_DEV_1284)) {
+          self.history.setReplaceNextUndoState(true);
+        }
         self.acceptAllSuggestions();
       } else {
         self.suggestions.forEach((suggestion) => {
           if (['richtextregion', 'text', 'textrange'].includes(suggestion.type)) {
             self.acceptSuggestion(suggestion.id);
+            if (isFF(FF_DEV_1284)) {
+              // This is necessary to prevent the occurrence of new steps in the history after updating objects at the end of current method
+              history.setReplaceNextUndoState(true);
+            }
           }
         });
       }
 
       const { history } = self;
 
-      history.freeze("richtext:suggestions");
+      if (!isFF(FF_DEV_1284)) {
+        history.freeze("richtext:suggestions");
+      }
       self.objects.forEach(obj => obj.needsUpdate?.({ suggestions: true }));
-      history.setReplaceNextUndoState(true);
-      history.unfreeze("richtext:suggestions");
+      if (!isFF(FF_DEV_1284)) {
+        history.setReplaceNextUndoState(true);
+        history.unfreeze("richtext:suggestions");
+      }
     },
 
     cleanClassificationAreas() {
@@ -1107,19 +1118,25 @@ export const Annotation = types
       Array.from(self.suggestions.keys()).forEach((id) => {
         self.acceptSuggestion(id);
       });
-      self.deleteAllDynamicregions();
+      self.deleteAllDynamicregions(isFF(FF_DEV_1284));
     },
 
     rejectAllSuggestions() {
       Array.from(self.suggestions.keys).forEach((id) => {
         self.suggestions.delete(id);
       });
-      self.deleteAllDynamicregions();
+      self.deleteAllDynamicregions(isFF(FF_DEV_1284));
     },
 
-    deleteAllDynamicregions() {
+    deleteAllDynamicregions(silent = false) {
       self.regions.forEach(r => {
-        r.dynamic && r.deleteRegion();
+        if (r.dynamic) {
+          if (silent) {
+            // dirty hack to prevent sending regionFinishedDrawing notification
+            r.setDrawing(true);
+          }
+          r.deleteRegion();
+        }
       });
     },
 

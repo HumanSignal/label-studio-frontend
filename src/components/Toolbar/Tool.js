@@ -70,7 +70,7 @@ export const Tool = ({
     currentShortcut = shortcut;
     if (shortcut && !hotkeys.hasKey(shortcut)) {
       hotkeys.addKey(shortcut, () => {
-        if(!tool.disabled && !tool?.annotation?.isDrawing) {
+        if(!tool?.disabled && !tool?.annotation?.isDrawing) {
           if (tool?.isDrawingTool){
             tool.annotation.unselectAreas();
           }
