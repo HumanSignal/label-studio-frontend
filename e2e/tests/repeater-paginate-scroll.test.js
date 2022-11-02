@@ -111,6 +111,13 @@ const annotations = [
   },
 ];
 
+const annotationsEmpty = [
+  {
+    id: 38,
+    result: [],
+  },
+];
+
 const checkScrollToSelectedPersists = (I, label, outliner) => {
   I.click(locate(`.lsf-${outliner ? 'outliner' : 'region'}-item__title`).withText(label));
   I.waitForVisible(locate(".lsf-label_selected").withText(label));
@@ -132,6 +139,13 @@ const checkPaginationButtons = (I) => {
   I.seeElement(locate(".lsf-pagination__page-indicator").withText("3"));
 };
 
+const checkSubmit = (I) => {
+  I.click('[aria-label="Annotations List Toggle"]');
+  I.click('[aria-label="Create Annotation"]');
+  I.submitAnnotation();
+  I.seeAnnotationSubmitted();
+};
+
 Scenario("Outliner Regions will paginate view window on region click and page advance", async function({ I, LabelStudio }) {
   const params = { config: configPagination, annotations, data };
 
@@ -148,6 +162,7 @@ Scenario("Outliner Regions will paginate view window on region click and page ad
   });
 
   checkPaginationButtons(I);
+  checkSubmit(I);
 
 });
 
@@ -167,6 +182,7 @@ Scenario("Regions will paginate view window on region click and page advance", a
   });
 
   checkPaginationButtons(I);
+  checkSubmit(I);
 
 });
 
@@ -184,6 +200,7 @@ Scenario("Outliner Regions will scroll view window on region click", async funct
 
     checkScrollToSelectedPersists(I, label, true);
   });
+  checkSubmit(I);
 
 });
 
@@ -201,6 +218,7 @@ Scenario("Regions will scroll view window on region click", async function({ I, 
 
     checkScrollToSelectedPersists(I, label, false);
   });
+  checkSubmit(I);
 
 });
 
