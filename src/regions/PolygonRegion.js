@@ -21,7 +21,7 @@ import { observer } from "mobx-react";
 import { minMax } from "../utils/utilities";
 import { createDragBoundFunc } from "../utils/image";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
-import { FF_DEV_2431, FF_DEV_2432, isFF } from "../utils/feature-flags";
+import { FF_DEV_2432, isFF } from "../utils/feature-flags";
 
 const Model = types
   .model({
@@ -549,7 +549,7 @@ const HtxPolygonView = ({ item }) => {
   const stage = item.parent.stageRef;
 
   useEffect(() => {
-    if (isFF(FF_DEV_2431) && !item.closed) item.control.tools.Polygon.resumeUnfinishedRegion(item);
+    if (isFF(FF_DEV_2432) && !item.closed) item.control.tools.Polygon.resumeUnfinishedRegion(item);
   }, [item.closed]);
 
   return (
