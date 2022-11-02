@@ -56,7 +56,14 @@ export const CommentFormBase: FC<CommentFormProps> = observer(({
         maxRows={maxRows}
         onChange={onChange}
         onInput={onInput}
-        onSubmit={() => inline ? onSubmit?.(value) : undefined}
+        onSubmit={(newValue) => { 
+          if (!inline) return;
+
+          newValue = newValue.trim();
+          if (!newValue) return;
+
+          onSubmit?.(newValue);
+        }}
         onBlur={(e) => onBlur?.(e)}
       />
       <Elem tag="div" name="primary-action">
