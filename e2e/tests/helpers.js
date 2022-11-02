@@ -14,6 +14,7 @@ async function initLabelStudio({
   annotations = [{ result: [] }],
   predictions = [],
   settings = {},
+  additionalInterfaces = [],
   params = {},
 }) {
   if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
@@ -34,6 +35,7 @@ async function initLabelStudio({
     "predictions:tabs",
     "predictions:menu",
     "edit-history",
+    ...additionalInterfaces,
   ];
   const task = { data, annotations, predictions };
 
@@ -132,6 +134,19 @@ const hasFF = (fflag) => {
   if (!window.APP_SETTINGS || !window.APP_SETTINGS.feature_flags) return true;
 
   return window.APP_SETTINGS.feature_flags[fflag] === true;
+};
+
+const createAddEventListenerScript = (eventName, callback) => {
+  const args = (new Array(callback.length)).fill().map((v, idx) => {
+    return `v${idx}`;
+  }).join(", ");
+
+  return new Function("", `
+    function ${eventName}(${args}) {
+      return (${callback.toString()})(${args});
+    }
+    window.labelStudio.on("${eventName}",${eventName});
+`);
 };
 
 /**
@@ -623,6 +638,7 @@ module.exports = {
   createLabelStudioInitFunction,
   setFeatureFlags,
   hasFF,
+  createAddEventListenerScript,
   waitForImage,
   waitForAudio,
   getCurrentAudioTime,

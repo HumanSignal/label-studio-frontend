@@ -66,8 +66,7 @@ Scenario("Drafts for unfinished polygons", async function({ I, LabelStudio, AtLa
   assert.strictEqual(draft[0].value.closed, false);
 });
 
-// Skipping this scenario can be canceled if the polygon drawing steps are saved in the history.
-xScenario("Saving polygon drawing steps to history", async function({ I, LabelStudio, AtLabels, AtImageView }) {
+Scenario("Saving polygon drawing steps to history", async function({ I, LabelStudio, AtLabels, AtImageView }) {
   I.amOnPage("/");
   LabelStudio.setFeatureFlags(FLAGS);
   LabelStudio.init({

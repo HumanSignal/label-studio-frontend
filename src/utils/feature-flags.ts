@@ -81,6 +81,8 @@ export const FF_DEV_3034 = "fflag-feat-dev-3034-comments-with-drafts-short";
 
 export const FF_DEV_3077 = "fflag_feat_front_dev_3077_repeater_tag_loading_performance_short";
 
+export const FF_DEV_1598 = "ff_front_dev_1598_empty_toname_240222_short";
+
 /**
  * Audio + Paragraphs sync playback of chunk position
  * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short
@@ -106,6 +108,12 @@ export const FF_DEV_3350 = "fflag_fix_front_dev_3350_restrict_drawing_area_short
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_3377_image_regions_shift_on_resize_280922_short
  */
 export const FF_DEV_3377 = "fflag_fix_front_dev_3377_image_regions_shift_on_resize_280922_short";
+
+/**
+ * Fixing "Auto Detect" tool undo functionality and bugs with skipNextUndoState.
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_1284_auto_detect_undo_281022_short
+ */
+export const FF_DEV_1284 = "fflag_fix_front_dev_1284_auto_detect_undo_281022_short";
 
 if (window.APP_SETTINGS) {
   Object.assign(window.APP_SETTINGS.feature_flags, {

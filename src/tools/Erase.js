@@ -35,6 +35,7 @@ const ToolView = observer(({ item }) => {
       active={item.selected}
       extraShortcuts={item.extraShortcuts}
       tool={item}
+      disabled={!item.getSelectedShape}
       onClick={() => {
         if (item.selected) return;
 
@@ -50,7 +51,7 @@ const _Tool = types
   .model("EraserTool", {
     strokeWidth: types.optional(types.number, 10),
     group: "segmentation",
-    isDrawingTool: true,
+    isDrawingTool: false,
   })
   .volatile(() => ({
     index: 9999,
@@ -133,9 +134,7 @@ const _Tool = types
         )
           return;
 
-        const shape = self.getSelectedShape;
-
-        if (shape && shape.type === "brushregion") {
+        if (brush?.type === "brushregion") {
           self.addPoint(x, y);
         }
       },
