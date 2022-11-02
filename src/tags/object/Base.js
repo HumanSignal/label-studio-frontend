@@ -2,11 +2,13 @@ import { types } from "mobx-state-tree";
 import isMatch from "lodash.ismatch";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import { BaseTag } from "../TagBase";
 
 const ObjectBase = types
   .model({
     // TODO there should be a better way to force an update
     _needsUpdate: types.optional(types.number, 0),
+    isObjectTag: true,
   })
   .views(self => ({
     findRegion(params) {
@@ -73,4 +75,4 @@ const ObjectBase = types
     };
   });
 
-export default types.compose(ObjectBase, AnnotationMixin);
+export default types.compose(ObjectBase, BaseTag, AnnotationMixin);

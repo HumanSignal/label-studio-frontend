@@ -240,7 +240,12 @@ const AnnotationStoreModel = types
 
       if (!self.root) initRoot(config);
 
-      const pk = options.pk || options.id;
+      let pk = options.pk || options.id;
+
+      if (options.type === "annotation" && pk && isNaN(pk)) {
+        /* something happened where our annotation pk was replaced with the id */
+        pk = self.annotations?.[self.annotations.length - 1]?.storedValue?.pk;
+      }
 
       //
       const node = {
@@ -364,6 +369,10 @@ const AnnotationStoreModel = types
       setTimeout(() => {
       // update classifications after render
         const updatedItem = item ?? self.selected;
+
+        Array.from(updatedItem.names.values())
+          .filter(t => t.isClassification)
+          .forEach(t => t.updateFromResult([]));
 
         updatedItem?.results
           .filter(r => r.area.classification)
