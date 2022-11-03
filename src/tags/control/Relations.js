@@ -3,7 +3,6 @@ import { types } from "mobx-state-tree";
 import Registry from "../../core/Registry";
 import Types from "../../core/Types";
 import { guidGenerator } from "../../core/Helpers";
-import ControlBase from "./Base";
 
 /**
  * Use the Relations tag to create label relations between regions. Use to provide many values to apply to the relationship between two labeled regions.
@@ -62,7 +61,7 @@ const ModelAttrs = types
     },
   }));
 
-const RelationsModel = types.compose("RelationsModel", ModelAttrs, TagAttrs, ControlBase);
+const RelationsModel = types.compose("RelationsModel", ModelAttrs, TagAttrs);
 
 const HtxRelations = () => {
   return null;
