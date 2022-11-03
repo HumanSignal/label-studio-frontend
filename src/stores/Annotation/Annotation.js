@@ -770,9 +770,9 @@ export const Annotation = types
 
     createResult(areaValue, resultValue, control, object) {
       const result = {
-        from_name: control.name,
+        from_name: self.names.get(control.name),
         // @todo should stick to area
-        to_name: object,
+        to_name: self.names.get(object.name ?? object),
         type: control.resultType,
         value: resultValue,
         readonly: self.readonly,
