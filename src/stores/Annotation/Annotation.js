@@ -769,10 +769,12 @@ export const Annotation = types
     },
 
     createResult(areaValue, resultValue, control, object) {
+      const objectTag = self.names.get(object.name ?? object);
+
       const result = {
         from_name: self.names.get(control.name),
         // @todo should stick to area
-        to_name: self.names.get(object.name ?? object),
+        to_name: objectTag,
         type: control.resultType,
         value: resultValue,
         readonly: self.readonly,
@@ -780,7 +782,7 @@ export const Annotation = types
 
       const areaRaw = {
         id: guidGenerator(),
-        object,
+        object: objectTag,
         // data for Model instance
         ...areaValue,
         // for Model detection

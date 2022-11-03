@@ -571,8 +571,10 @@ const Model = types.model({
     },
 
     createDrawingRegion(areaValue, resultValue, control, dynamic) {
+      const controlTag = self.annotation.names.get(control.name);
+
       const result = {
-        from_name: control.name,
+        from_name: controlTag,
         to_name: self,
         type: control.resultType,
         value: resultValue,
