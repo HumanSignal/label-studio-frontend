@@ -39,7 +39,7 @@ function unionTag(arr) {
 function tagsTypes(arr) {
   const type = types.frozen(arr.map(val => val.toLowerCase()));
 
-  type.describe = ()=>`(${arr.join("|")})`;
+  type.describe = () => `(${arr.join("|")})`;
   type.value = arr;
   return type;
 }
@@ -109,4 +109,16 @@ function getParentTagOfTypeString(node, str) {
 const oneOfTools = _oneOf(Registry.getTool, "Not expecting tool: ");
 const toolsArray = _mixedArray(oneOfTools);
 
-export default { unionArray, allModelsTypes, unionTag, tagsTypes, isType, getParentOfTypeString, getParentTagOfTypeString, tagsArray, toolsArray };
+const Types = {
+  unionArray,
+  allModelsTypes,
+  unionTag,
+  tagsTypes,
+  isType,
+  getParentOfTypeString,
+  getParentTagOfTypeString,
+  tagsArray,
+  toolsArray,
+};
+
+export default Types;

@@ -144,7 +144,7 @@ const Model = types
     },
   }))
   .actions(self => {
-    if (self.parent.type === "choices") return {
+    if (self.parent?.type === "choices") return {
       onHotKey() {
         return self.toggleSelected();
       },
