@@ -6,29 +6,31 @@ export const AnnotationMixin = types.model("AnnotationMixin", {
 
 }).views((self) => ({
   get annotation() {
-    const root = getRoot(self);
-
-    // if that's a Tool (they live in separate tree)
-    if (root === self) {
-      if (self.control) {
-        return self.control.annotation;
-      } else if (self.obj) {
-        return self.obj.annotation;
-      }
-      return null;
-    }
-
-    // if annotation history item selected
-    if (root.annotationStore?.selectedHistory) {
-      return root.annotationStore.selectedHistory;
-    }
-
-    // return connected annotation, not the globally selected one
     if (isFF(FF_DEV_3391)) {
+      const root = getRoot(self);
+
+      // if that's a Tool (they live in separate tree)
+      if (root === self) {
+        if (self.control) {
+          return self.control.annotation;
+        } else if (self.obj) {
+          return self.obj.annotation;
+        }
+        return null;
+      }
+
+      // if annotation history item selected
+      if (root.annotationStore?.selectedHistory) {
+        return root.annotationStore.selectedHistory;
+      }
+
+      // return connected annotation, not the globally selected one
       return Types.getParentOfTypeString(self, "Annotation");
     }
 
-    return root.annotationStore?.selected;
+    const as = self.annotationStore;
+
+    return as?.selectedHistory ?? as?.selected;
   },
 
   get annotationStore() {
