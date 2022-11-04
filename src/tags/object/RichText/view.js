@@ -214,7 +214,7 @@ class RichTextPieceView extends Component {
     // Apply highlight to ranges of a current tag
     // Also init regions' offsets and html range on initial load
 
-    if (initial) {
+    if (initial && item.annotation) {
       const { history, pauseAutosave, startAutosave } = item.annotation;
 
       pauseAutosave();
