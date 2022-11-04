@@ -130,10 +130,10 @@ const SelectedList = ({ isReadonly, flatItems } : { isReadonly:boolean, flatItem
     <div className={styles.taxonomy__selected}>
       {selectedLabels.map((path, index) => (
         <div key={path.join("|")}>
-          {showFullPath ? path.join(pathSeparator) : path[path.length - 1]}
-          {!isReadonly &&
+          <span>{showFullPath ? path.join(pathSeparator) : path[path.length - 1]}</span>
+          {!isReadonly ? (
             <input type="button" onClick={() => setSelected(selected[index], false)} value="×" />
-          }
+          ): null}
         </div>
       ))}
     </div>
