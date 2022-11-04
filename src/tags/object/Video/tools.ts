@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import { KonvaNode, WorkingArea } from "./types";
+import { MIN_SIZE } from "../../../tools/Base";
 
 export const getNodeAbsoluteDimensions = (node: KonvaNode, workingArea: WorkingArea) => {
   const { realWidth: width, realHeight: height } = workingArea;
@@ -21,8 +21,8 @@ export const normalizeNodeDimentions = <T extends KonvaNode>(node: T, shapeType:
 
   switch (shapeType) {
     case "rect": {
-      node.width(Math.max(3, node.width() * scaleX));
-      node.height(Math.max(3, node.height() * scaleY));
+      node.width(Math.max(MIN_SIZE.X, node.width() * scaleX));
+      node.height(Math.max(MIN_SIZE.Y, node.height() * scaleY));
       break;
     }
   }
