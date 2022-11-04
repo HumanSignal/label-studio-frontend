@@ -11,6 +11,7 @@ import { isDefined } from "./utils/utilities";
 import { Hotkey } from "./core/Hotkey";
 import defaultOptions from './defaultOptions';
 import { destroy } from "mobx-state-tree";
+import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
 
 configure({
   isolateGlobalState: true,
@@ -70,6 +71,7 @@ export class LabelStudio {
 
     const destructor = () => {
       unmountComponentAtNode(rootElement);
+      destroySharedStore();
       destroy(this.store);
     };
 

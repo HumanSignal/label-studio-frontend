@@ -4,7 +4,6 @@ import { ReactComponent as IconSend } from "../../assets/icons/send.svg";
 
 import "./CommentForm.styl";
 import { TextArea } from "../../common/TextArea/TextArea";
-import { Tooltip } from "../../../src/common/Tooltip/Tooltip";
 import { observer } from "mobx-react";
 
 

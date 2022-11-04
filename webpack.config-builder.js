@@ -289,7 +289,7 @@ module.exports = ({withDevServer = true} = {}) => ({
   },
   plugins: withDevServer ? [
     ...plugins,
-    new webpack.HotModuleReplacementPlugin(),
+    // new webpack.HotModuleReplacementPlugin(),
   ] : plugins,
   optimization: optimizer(),
   performance: {

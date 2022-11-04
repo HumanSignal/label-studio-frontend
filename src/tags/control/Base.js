@@ -1,8 +1,10 @@
 import { types } from "mobx-state-tree";
+import { BaseTag } from "../TagBase";
 
 const ControlBase = types.model({
   smart: true,
   smartonly: false,
+  isControlTag: true,
 }).views(self => ({
   // historically two "types" were used and we should keep that backward compatibility:
   // 1. name of control tag for describing labeled region;
@@ -23,4 +25,4 @@ const ControlBase = types.model({
   },
 }));
 
-export default ControlBase;
+export default types.compose(ControlBase, BaseTag);

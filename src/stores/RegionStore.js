@@ -98,7 +98,7 @@ const SelectionMap = types.model(
       self.afterUnselect(region);
     },
     clear() {
-      const regionEntries = self.selected.toJS();
+      const regionEntries = self.selected;
 
       for (const [, region] of regionEntries) {
         self.beforeUnselect(region);
