@@ -8,7 +8,7 @@ import mergeRefs from "../Utils/mergeRefs";
 
 export type TextAreaProps = {
   value?: string|null,
-  onSubmit?: () => void|Promise<void>,
+  onSubmit?: (value: string) => void|Promise<void>,
   onChange?: (value: string) => void,
   onInput?: (value: string) => void,
   onFocus?: (e: FocusEvent) => void,
@@ -139,9 +139,10 @@ export const TextArea: FC<TextAreaProps> = ({
     const listener = (event: KeyboardEvent) => {
       if (!textAreaRef.current) return;
       if (event.key === "Enter" && (event.ctrlKey || isMacOS() && event.metaKey)) {
-        onSubmit();
+        onSubmit(textAreaRef.current.value);
       }
     };
+
 
     if (textAreaRef.current) {
       textAreaRef.current.addEventListener("keydown", listener);

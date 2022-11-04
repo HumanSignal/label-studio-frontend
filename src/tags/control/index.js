@@ -16,7 +16,7 @@ import { RatingModel } from "./Rating";
 import { RectangleLabelsModel } from "./RectangleLabels";
 import { RectangleModel } from "./Rectangle";
 import { ShortcutModel } from "./Shortcut";
-import { TaxonomyModel } from "./Taxonomy";
+import { TaxonomyModel } from "./Taxonomy/Taxonomy";
 import { TextAreaModel } from "./TextArea/TextArea";
 import { TimeSeriesLabelsModel } from "./TimeSeriesLabels";
 import { ParagraphLabelsModel } from "./ParagraphLabels";

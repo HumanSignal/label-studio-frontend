@@ -11,7 +11,7 @@ import { isDefined } from "./utils/utilities";
 import { Hotkey } from "./core/Hotkey";
 import defaultOptions from './defaultOptions';
 import { destroy } from "mobx-state-tree";
-import ToolsManager from "./tools/Manager";
+import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
 
 configure({
   isolateGlobalState: true,
@@ -21,18 +21,8 @@ export class LabelStudio {
   static instances = new Set();
 
   static destroyAll() {
-    ToolsManager.removeAllTools();
     this.instances.forEach(inst => inst.destroy());
     this.instances.clear();
-
-    window.Htx = null;
-    window.ToolManager = null;
-    delete window.Htx;
-    delete window.ToolManager;
-  }
-
-  static getInstance(idx) {
-    return Array.from(this.instances)[idx];
   }
 
   constructor(root, userOptions = {}) {
@@ -80,23 +70,9 @@ export class LabelStudio {
     ), rootElement);
 
     const destructor = () => {
-      Hotkey.unbindAll();
-      this.events.removeAll();
       unmountComponentAtNode(rootElement);
+      destroySharedStore();
       destroy(this.store);
-
-      // Remove references
-      this.options = null;
-      this.root = null;
-      this.events = null;
-      this.store = null;
-
-      delete this.options;
-      delete this.root;
-      delete this.events;
-      delete this.store;
-
-      this.constructor.instances.delete(this);
     };
 
     this.destroy = destructor;
