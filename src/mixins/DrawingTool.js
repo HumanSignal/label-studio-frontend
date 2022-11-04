@@ -138,12 +138,8 @@ const DrawingTool = types
         const control = self.control;
         const resultValue = control.getResultValue();
 
-
-        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj, skipAfterCreate, true);
+        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj, skipAfterCreate);
         self.applyActiveStates(self.currentArea);
-
-        self.currentArea.selectRegion();
-
         return self.currentArea;
       },
       deleteRegion() {
@@ -322,7 +318,6 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
     return {
       nextPoint(x, y) {
         self.getCurrentArea().addPoint(x, y);
-        console.log('heartex point', x, y);
         pointsCount++;
       },
       listenForClose() {

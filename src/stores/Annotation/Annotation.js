@@ -749,7 +749,7 @@ export const Annotation = types
       Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
     },
 
-    createResult(areaValue, resultValue, control, object, skipAfrerCreate = false, selectWhileDraw = false) {
+    createResult(areaValue, resultValue, control, object, skipAfrerCreate = false) {
       // Without correct validation object may be null, but it it shouldn't be so in results - so we should find any
       if (isFF(FF_DEV_1598) && !object && control.type === "textarea") {
         object = self.objects[0];
@@ -778,12 +778,9 @@ export const Annotation = types
       //TODO: MST is crashing if we don't validate areas?, this problem isn't happening locally. So to reproduce you have to test in production or environment
       const area = self?.areas?.put(areaRaw);
 
-      console.log('heartex area', area);
-
       if (!area) return;
 
       if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
-      // if (selectWhileDraw) self.selectArea(area);
       if (!skipAfrerCreate) self.afterCreateResult(area, control);
 
       return area;

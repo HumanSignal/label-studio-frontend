@@ -123,7 +123,7 @@ const _Tool = types
       startDrawing(x, y) {
         if (isFF(FF_DEV_2432)) {
           self.mode = "drawing";
-          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }), true, true);
+          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }), true);
           self.setDrawing(true);
           self.applyActiveStates(self.currentArea);
         } else {
@@ -139,8 +139,6 @@ const _Tool = types
           self.setDrawing(false);
           self.currentArea = null;
           self.mode = "viewing";
-          console.log('currentArea heartex', currentArea);
-          console.log('control heartex', control);
           self.annotation.afterCreateResult(currentArea, control);
         } else {
           Super._finishDrawing();
