@@ -14,7 +14,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
-import { FF_DEV_2100, FF_DEV_2100_A, FF_DEV_3391, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1284, FF_DEV_1598, FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, FF_DEV_3391, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
 import { CommentStore } from "../Comment/CommentStore";
 
@@ -146,7 +146,12 @@ export const Annotation = types
     },
 
     get objects() {
-      return Array.from(self.names.values()).filter(tag => !tag.toname);
+      // Without correct validation toname may be null for control tags so we need to check isObjectTag instead of it
+      return Array.from(self.names.values()).filter(
+        isFF(FF_DEV_1598)
+          ? tag => tag.isObjectTag
+          : tag => !tag.toname,
+      );
     },
 
     get regions() {
@@ -470,11 +475,16 @@ export const Annotation = types
       if (!region.classification) getEnv(self).events.invoke('entityDelete', region);
 
       self.relationStore.deleteNodeRelation(region);
+
       if (region.type === "polygonregion") {
         detach(region);
       }
 
       destroy(region);
+
+      // If the annotation was in a drawing state and the user deletes it, we need to reset the drawing state
+      // to avoid the user being stuck in a drawing state
+      self.setIsDrawing(false);
     },
 
     deleteArea(area) {
@@ -485,10 +495,23 @@ export const Annotation = types
       const { history, regionStore } = self;
 
       if (history && history.canUndo) {
+        let stopDrawingAfterNextUndo = false;
         const selectedIds = regionStore.selectedIds;
+        const currentRegion = regionStore.findRegion(selectedIds[selectedIds.length - 1] ?? regionStore.regions[regionStore.regions.length - 1]?.id);
+
+        if (currentRegion?.type === "polygonregion") {
+          const points = currentRegion?.points?.length ?? 0;
+
+          stopDrawingAfterNextUndo = points <= 1;
+        }
 
         history.undo();
         regionStore.selectRegionsByIds(selectedIds);
+
+        if (stopDrawingAfterNextUndo) {
+          currentRegion.setDrawing(false);
+          self.setIsDrawing(false);
+        }
       }
     },
 
@@ -514,6 +537,12 @@ export const Annotation = types
 
       self.names.forEach(tag => tag.needsUpdate && tag.needsUpdate());
       self.areas.forEach(area => area.updateAppearenceFromState && area.updateAppearenceFromState());
+      if (isFF(FF_DEV_2432)) {
+        const areas = Array.from(self.areas.values());
+        const filtered = areas.filter(area => area.isDrawing);
+
+        self.regionStore.selection._updateResultsFromRegions(filtered);
+      }
     },
 
     setInitialValues() {
@@ -768,7 +797,11 @@ export const Annotation = types
       Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
     },
 
-    createResult(areaValue, resultValue, control, object) {
+    createResult(areaValue, resultValue, control, object, skipAfrerCreate = false) {
+      // Without correct validation object may be null, but it it shouldn't be so in results - so we should find any
+      if (isFF(FF_DEV_1598) && !object && control.type === "textarea") {
+        object = self.objects[0];
+      }
       const objectTag = self.names.get(object.name ?? object);
 
       const result = {
@@ -790,10 +823,19 @@ export const Annotation = types
         results: [result],
       };
 
-      const area = self.areas.put(areaRaw);
+
+      //TODO: MST is crashing if we don't validate areas?, this problem isn't happening locally. So to reproduce you have to test in production or environment
+      const area = self?.areas?.put(areaRaw);
+
+      if (!area) return;
 
       if (!area.classification) getEnv(self).events.invoke('entityCreate', area);
+      if (!skipAfrerCreate) self.afterCreateResult(area, control);
 
+      return area;
+    },
+
+    afterCreateResult(area, control) {
       if (self.store.settings.selectAfterCreate) {
         if (!area.classification) {
           // some regions might need some actions right after creation (i.e. text)
@@ -804,8 +846,6 @@ export const Annotation = types
         // unselect labels after use, but consider "keep labels selected" settings
         if (control.type.includes("labels")) self.unselectAll(true);
       }
-
-      return area;
     },
 
     appendResults(results) {
@@ -934,21 +974,32 @@ export const Annotation = types
       });
 
       if (getRoot(self).autoAcceptSuggestions) {
+        if (isFF(FF_DEV_1284)) {
+          self.history.setReplaceNextUndoState(true);
+        }
         self.acceptAllSuggestions();
       } else {
         self.suggestions.forEach((suggestion) => {
           if (['richtextregion', 'text', 'textrange'].includes(suggestion.type)) {
             self.acceptSuggestion(suggestion.id);
+            if (isFF(FF_DEV_1284)) {
+              // This is necessary to prevent the occurrence of new steps in the history after updating objects at the end of current method
+              history.setReplaceNextUndoState(true);
+            }
           }
         });
       }
 
       const { history } = self;
 
-      history.freeze("richtext:suggestions");
+      if (!isFF(FF_DEV_1284)) {
+        history.freeze("richtext:suggestions");
+      }
       self.objects.forEach(obj => obj.needsUpdate?.({ suggestions: true }));
-      history.setReplaceNextUndoState(true);
-      history.unfreeze("richtext:suggestions");
+      if (!isFF(FF_DEV_1284)) {
+        history.setReplaceNextUndoState(true);
+        history.unfreeze("richtext:suggestions");
+      }
     },
 
     cleanClassificationAreas() {
@@ -988,7 +1039,7 @@ export const Annotation = types
           if(readonly) {
             self.setReadonly(true);
           }
-          
+
           self.deserializeSingleResult(obj,
             (id) => areas.get(id),
             (snapshot) => areas.put(snapshot),
@@ -1122,19 +1173,25 @@ export const Annotation = types
       Array.from(self.suggestions.keys()).forEach((id) => {
         self.acceptSuggestion(id);
       });
-      self.deleteAllDynamicregions();
+      self.deleteAllDynamicregions(isFF(FF_DEV_1284));
     },
 
     rejectAllSuggestions() {
       Array.from(self.suggestions.keys).forEach((id) => {
         self.suggestions.delete(id);
       });
-      self.deleteAllDynamicregions();
+      self.deleteAllDynamicregions(isFF(FF_DEV_1284));
     },
 
-    deleteAllDynamicregions() {
+    deleteAllDynamicregions(silent = false) {
       self.regions.forEach(r => {
-        r.dynamic && r.deleteRegion();
+        if (r.dynamic) {
+          if (silent) {
+            // dirty hack to prevent sending regionFinishedDrawing notification
+            r.setDrawing(true);
+          }
+          r.deleteRegion();
+        }
       });
     },
 

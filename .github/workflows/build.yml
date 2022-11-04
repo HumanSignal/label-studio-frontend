@@ -23,14 +23,14 @@ jobs:
 
     - name: Get CPU info
       id: "cpu-info"
-      run: echo "::set-output name=cores-count::$(cat /proc/cpuinfo  | grep processor | wc -l)"
+      run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
 
     - name: Upgrade Yarn
       run: npm install -g yarn@1.22
 
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn cache dir)"
+      run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
     - name: Configure yarn cache
       uses: actions/cache@v3
@@ -85,7 +85,7 @@ jobs:
 
     - name: Run e2e test suite
       if: github.event_name == 'push'
-      timeout-minutes: 30
+      timeout-minutes: 20 # 8-10 minutes is enough to pass tests
       run: |
         set -euo pipefail
         cd e2e
