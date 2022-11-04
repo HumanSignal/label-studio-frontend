@@ -3,6 +3,7 @@ import { types } from "mobx-state-tree";
 import Registry from "../../core/Registry";
 import ControlBase from "./Base";
 import { customTypes } from "../../core/CustomTypes";
+import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
@@ -57,6 +58,7 @@ const Model = types
 
 const KeyPointModel = types.compose("KeyPointModel",
   ControlBase,
+  AnnotationMixin,
   SeparatedControlMixin,
   TagAttrs,
   Model,
