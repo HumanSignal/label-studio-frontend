@@ -103,12 +103,14 @@ const DrawingTool = types
         self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
+        self.annotation.selectArea(self.currentArea);
         self.annotation.setIsDrawing(true);
         return self.currentArea;
       },
       resumeUnfinishedRegion(existingUnclosedPolygon) {
         self.currentArea = existingUnclosedPolygon;
         self.currentArea.setDrawing(true);
+        self.annotation.selectArea(self.currentArea);
         self.annotation.regionStore.selection._updateResultsFromRegions([self.currentArea]);
         self.mode = "drawing";
         self.annotation.setIsDrawing(true);
@@ -136,8 +138,12 @@ const DrawingTool = types
         const control = self.control;
         const resultValue = control.getResultValue();
 
-        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj, skipAfterCreate);
+
+        self.currentArea = self.annotation.createResult(opts, resultValue, control, self.obj, skipAfterCreate, true);
         self.applyActiveStates(self.currentArea);
+
+        self.currentArea.selectRegion();
+
         return self.currentArea;
       },
       deleteRegion() {
@@ -316,6 +322,7 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
     return {
       nextPoint(x, y) {
         self.getCurrentArea().addPoint(x, y);
+        console.log('heartex point', x, y);
         pointsCount++;
       },
       listenForClose() {
