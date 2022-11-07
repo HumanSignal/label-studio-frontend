@@ -103,14 +103,12 @@ const DrawingTool = types
         self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
-        self.annotation.selectArea(self.currentArea);
         self.annotation.setIsDrawing(true);
         return self.currentArea;
       },
       resumeUnfinishedRegion(existingUnclosedPolygon) {
         self.currentArea = existingUnclosedPolygon;
         self.currentArea.setDrawing(true);
-        self.annotation.selectArea(self.currentArea);
         self.annotation.regionStore.selection._updateResultsFromRegions([self.currentArea]);
         self.mode = "drawing";
         self.annotation.setIsDrawing(true);
