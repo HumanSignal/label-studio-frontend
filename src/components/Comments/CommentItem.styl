@@ -73,7 +73,6 @@
     display flex
     gap 8px
     align-items flex-start
-    overflow hidden
 
 
   &__actions
@@ -105,4 +104,13 @@
 
     ~/_resolved &
       color var(--comment-item-content-color-resolved)
+
+  &__question
+    padding 0
+  
+  &__controls
+    display flex
+    justify-content space-between
+    padding var(--comment-item-padding)
+
 

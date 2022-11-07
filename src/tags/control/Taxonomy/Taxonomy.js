@@ -2,18 +2,21 @@ import React from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
-import Infomodal from "../../components/Infomodal/Infomodal";
-import { Taxonomy } from "../../components/Taxonomy/Taxonomy";
-import { guidGenerator } from "../../core/Helpers";
-import Registry from "../../core/Registry";
-import Types from "../../core/Types";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
-import PerRegionMixin from "../../mixins/PerRegion";
-import RequiredMixin from "../../mixins/Required";
-import VisibilityMixin from "../../mixins/Visibility";
-import ControlBase from "./Base";
-import DynamicChildrenMixin from "../../mixins/DynamicChildrenMixin";
-import { FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
+import Infomodal from "../../../components/Infomodal/Infomodal";
+import { Taxonomy } from "../../../components/Taxonomy/Taxonomy";
+import { guidGenerator } from "../../../core/Helpers";
+import Registry from "../../../core/Registry";
+import Types from "../../../core/Types";
+import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
+import PerRegionMixin from "../../../mixins/PerRegion";
+import RequiredMixin from "../../../mixins/Required";
+import VisibilityMixin from "../../../mixins/Visibility";
+import ControlBase from "../Base";
+import DynamicChildrenMixin from "../../../mixins/DynamicChildrenMixin";
+import { FF_DEV_2007_DEV_2008, FF_DEV_3617, isFF } from "../../../utils/feature-flags";
+import { SharedStoreMixin } from "../../../mixins/SharedChoiceStore/mixin";
+import { Spin } from "antd";
+import "./Taxonomy.styl";
 
 /**
  * Use the Taxonomy tag to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the Choice tag.
@@ -63,42 +66,39 @@ const TagAttrs = types.model({
   ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, "") } : {}),
 });
 
-/**
- * Filter uniq nodes by value
- * @param {ConfigItem} nodes
- */
-function uniq(nodes) {
-  const filtered = [];
-  const uniqValues = [];
-
-  for (const node of nodes) {
-    if (uniqValues.includes(node.value)) continue;
-    filtered.push(node);
-    uniqValues.push(node.value);
-  }
-
-  return filtered;
-}
-
 function traverse(root) {
+  const visitUnique = (nodes, path = []) => {
+    const uniq = new Set();
+    const result = [];
+
+    for(const child of nodes) {
+      if (uniq.has(child.value)) continue;
+      uniq.add(child.value);
+      result.push(visitNode(child, path));
+    }
+
+    return result;
+  };
+
   const visitNode = function(node, parents = []) {
     const label = node.value;
-    const path = [...parents, label]; // @todo node.alias || label; problems with showFullPath
+    const path = [...parents, node.alias ?? label];
     const depth = parents.length;
     const obj = { label, path, depth };
 
     if (node.children) {
-      obj.children = uniq(node.children).map(child => visitNode(child, path));
+      obj.children = visitUnique(node.children, path);
     }
 
     return obj;
   };
 
-  // @todo check childrens with only one child
-  return Array.isArray(root) ? uniq(root).map(n => visitNode(n)) : (
-    isFF(FF_DEV_2007_DEV_2008) && !root ? [] : visitNode(root)
-  );
+  if (!root) return [];
+  if (isFF(FF_DEV_2007_DEV_2008) && !Array.isArray(root)) return visitUnique([root]);
+  return visitUnique(root);
 }
+
+const ChildrenSnapshots = new Map();
 
 const Model = types
   .model({
@@ -107,12 +107,21 @@ const Model = types
     readonly: types.optional(types.boolean, false),
 
     type: "taxonomy",
-    children: Types.unionArray(["choice"]),
+    [isFF(FF_DEV_3617) ? "_children" : "children"]: Types.unionArray(["choice"]),
   })
   .volatile(() => ({
     maxUsagesReached: false,
     selected: [],
+    loading: true,
   }))
+  .views(self => isFF(FF_DEV_3617) ? ({
+    get children() {
+      return self._children;
+    },
+    set children(val) {
+      self._children = val;
+    },
+  }) : ({}))
   .views(self => ({
     get userLabels() {
       return self.annotation.store.userLabels;
@@ -165,6 +174,29 @@ const Model = types
     },
   }))
   .actions(self => ({
+    afterAttach() {
+      const children = ChildrenSnapshots.get(self.name) ?? [];
+
+      if (isFF(FF_DEV_3617) && self.store && children.length !== self.children.length) {
+        setTimeout(() => self.updateChildren());
+      } else {
+        self.loading = false;
+      }
+    },
+
+    updateChildren() {
+      const children = ChildrenSnapshots.get(self.name) ?? [];
+
+      if (children) {
+        self._children = children;
+        self.children = ChildrenSnapshots.get(self.name) ?? [];
+        self.store.unlock();
+        ChildrenSnapshots.delete(self.name);
+      }
+
+      self.loading = false;
+    },
+
     requiredModal() {
       Infomodal.warning(self.requiredmessage || `Taxonomy "${self.name}" is required.`);
     },
@@ -209,13 +241,28 @@ const Model = types
       self.userLabels?.deleteLabel(self.name, path);
     },
 
-  }));
+  }))
+  .preProcessSnapshot((sn) => {
+    if (isFF(FF_DEV_3617)) {
+      const children = sn._children ?? sn.children;
+
+      if (children && !ChildrenSnapshots.has(sn.name)) {
+        ChildrenSnapshots.set(sn.name, children);
+      }
+
+      delete sn._children;
+      delete sn.children;
+    }
+
+    return sn;
+  });
 
 const TaxonomyModel = types.compose("TaxonomyModel",
   ControlBase,
   TagAttrs,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
   Model,
+  ...(isFF(FF_DEV_3617) ? [SharedStoreMixin] : []),
   RequiredMixin,
   PerRegionMixin,
   VisibilityMixin,
@@ -237,15 +284,21 @@ const HtxTaxonomy = observer(({ item }) => {
 
   return (
     <div style={{ ...style, ...visibleStyle }}>
-      <Taxonomy
-        items={item.items}
-        selected={item.selected}
-        onChange={item.onChange}
-        onAddLabel={item.userLabels && item.onAddLabel}
-        onDeleteLabel={item.userLabels && item.onDeleteLabel}
-        options={options}
-        isReadonly={item.annotation.readonly}
-      />
+      {(item.loading && isFF(FF_DEV_3617)) ? (
+        <div className="lsf-taxonomy">
+          <Spin size="small"/>
+        </div>
+      ) : (
+        <Taxonomy
+          items={item.items}
+          selected={item.selected}
+          onChange={item.onChange}
+          onAddLabel={item.userLabels && item.onAddLabel}
+          onDeleteLabel={item.userLabels && item.onDeleteLabel}
+          options={options}
+          isReadonly={item.annotation.readonly}
+        />
+      )}
     </div>
   );
 });

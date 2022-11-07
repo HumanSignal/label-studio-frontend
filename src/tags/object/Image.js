@@ -17,7 +17,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { clamp } from "../../utils/utilities";
 import { guidGenerator } from "../../utils/unique";
 import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
-import { FF_DEV_2394, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2394, FF_DEV_3377, isFF } from "../../utils/feature-flags";
 
 /**
  * The Image tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -227,8 +227,8 @@ const Model = types.model({
   naturalWidth: types.optional(types.integer, 1),
   naturalHeight: types.optional(types.integer, 1),
 
-  stageWidth: types.optional(types.integer, 1),
-  stageHeight: types.optional(types.integer, 1),
+  stageWidth: types.optional(types.number, 1),
+  stageHeight: types.optional(types.number, 1),
 
   /**
    * Zoom Scale
@@ -444,14 +444,14 @@ const Model = types.model({
   get canvasSize() {
     if (self.isSideways) {
       return {
-        width: Math.round(self.naturalHeight * self.stageZoomX),
-        height: Math.round(self.naturalWidth * self.stageZoomY),
+        width: isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoomX : Math.round(self.naturalHeight * self.stageZoomX),
+        height: isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoomY : Math.round(self.naturalWidth * self.stageZoomY),
       };
     }
 
     return {
-      width: Math.round(self.naturalWidth * self.stageZoomX),
-      height: Math.round(self.naturalHeight * self.stageZoomY),
+      width: isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoomX : Math.round(self.naturalWidth * self.stageZoomX),
+      height: isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoomY : Math.round(self.naturalHeight * self.stageZoomY),
     };
   },
 
@@ -468,7 +468,8 @@ const Model = types.model({
       width: `${self.stageWidth * self.zoomScale}px`,
       height: `${self.stageHeight * self.zoomScale}px`,
       transformOrigin: "left top",
-      transform: "none",
+      // We should always set some transform to make the image rendering in the same way all the time
+      transform: "translate3d(0,0,0)",
       filter: `brightness(${self.brightnessGrade}%) contrast(${self.contrastGrade}%)`,
     };
     const imgTransform = [];
@@ -593,6 +594,7 @@ const Model = types.model({
     deleteDrawingRegion() {
       const { drawingRegion } = self;
 
+      if (!drawingRegion) return;
       self.drawingRegion = null;
       destroy(drawingRegion);
     },
@@ -707,8 +709,8 @@ const Model = types.model({
 
     setZoomPosition(x, y) {
       const min = {
-        x: self.containerWidth - self.stageComponentSize.width * self.zoomScale,
-        y: self.containerHeight - self.stageComponentSize.height * self.zoomScale,
+        x: (isFF(FF_DEV_3377) ? self.canvasSize.width : self.containerWidth) - self.stageComponentSize.width * self.zoomScale,
+        y: (isFF(FF_DEV_3377) ? self.canvasSize.height : self.containerHeight) - self.stageComponentSize.height * self.zoomScale,
       };
 
       self.zoomingPositionX = clamp(x, min.x, 0);
@@ -850,8 +852,8 @@ const Model = types.model({
     },
 
     _recalculateImageParams() {
-      self.stageWidth = Math.round(self.naturalWidth * self.stageZoom);
-      self.stageHeight = Math.round(self.naturalHeight * self.stageZoom);
+      self.stageWidth = isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoom : Math.round(self.naturalWidth * self.stageZoom);
+      self.stageHeight = isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoom : Math.round(self.naturalHeight * self.stageZoom);
     },
 
     _updateImageSize({ width, height, userResize }) {
@@ -898,7 +900,8 @@ const Model = types.model({
 
       //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
       if (_historyLength <= 1){
-        setTimeout(self.annotation.reinitHistory, 0);
+        // Don't force unselection of regions during the updateObjects callback from history reinit
+        setTimeout(() => self.annotation.reinitHistory(false), 0);
       }
     },
 
@@ -919,7 +922,8 @@ const Model = types.model({
       } else {
         self.sizeToAuto();
       }
-      setTimeout(self.annotation.reinitHistory, 0);
+      // Don't force unselection of regions during the updateObjects callback from history reinit
+      setTimeout(() => self.annotation.reinitHistory(false), 0);
     },
 
     checkLabels() {

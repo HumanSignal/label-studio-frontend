@@ -6,6 +6,7 @@ import { Typography } from "antd";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
+import { clamp } from "../../utils/utilities";
 
 /**
  * Use the Header tag to show a header on the labeling interface.
@@ -39,7 +40,7 @@ const Model = types.model({
 const HeaderModel = types.compose("HeaderModel", Model, ProcessAttrsMixin);
 
 const HtxHeader = observer(({ item }) => {
-  const size = parseInt(item.size);
+  const size = clamp(parseInt(item.size), 1, 5);
   const style = item.style ? Tree.cssConverter(item.style) : { margin: "10px 0" };
 
   if (!style.fontSize && size > 4) {

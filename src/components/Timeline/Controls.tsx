@@ -46,6 +46,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   duration,
   extraControls,
   fullscreen,
+  altHopSize,
   disableFrames,
   allowFullscreen,
   allowViewCollapse,
@@ -205,7 +206,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
                   <IconRewind/>
                 </ControlButton>
                 <ControlButton
-                  onClick={() => onRewind?.(10)}
+                  onClick={() => onRewind?.(altHopSize)}
                   disabled={startReached}
                   hotkey={settings?.hopBackward}
                 >
@@ -242,7 +243,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
             alt={(
               <>
                 <ControlButton
-                  onClick={() => onForward?.(10)}
+                  onClick={() => onForward?.(altHopSize)}
                   disabled={endReached}
                   hotkey={settings?.hopForward}
                 >

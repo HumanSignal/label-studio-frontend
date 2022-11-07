@@ -25,6 +25,7 @@ export interface TimelineProps<D extends ViewTypes = "frames"> {
   allowViewCollapse?: boolean;
   allowSeek?: boolean;
   hopSize?: number;
+  altHopSize?: number;
   data?: any;
   controlsOnTop?: boolean;
   controls?: TimelineControls;
@@ -158,6 +159,7 @@ export interface TimelineControlsProps {
   allowFullscreen?: boolean;
   allowViewCollapse?: boolean;
   controls?: TimelineProps["controls"];
+  altHopSize?: TimelineProps["altHopSize"];
   customControls?: TimelineCustomControls[];
   onRewind: (steps?: number) => void;
   onForward: (steps?: number) => void;

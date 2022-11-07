@@ -43,6 +43,7 @@ import { ImageTools } from "../examples/image_tools";
  */
 import { HTMLDocument } from "../examples/html_document";
 import { Taxonomy } from "../examples/taxonomy";
+import { TaxonomyLarge } from "../examples/taxonomy_large";
 
 /**
  * RichText (HTML or plain text)
@@ -68,7 +69,7 @@ import { TimeSeriesSingle } from "../examples/timeseries_single";
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = VideoRectangles;
+const data = TaxonomyLarge;
 
 function getData(task) {
   if (task && task.data) {
