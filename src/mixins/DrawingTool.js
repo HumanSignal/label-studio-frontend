@@ -104,6 +104,7 @@ const DrawingTool = types
         self.currentArea.setDrawing(true);
         self.applyActiveStates(self.currentArea);
         self.annotation.setIsDrawing(true);
+        self.annotation.selectArea(self.currentArea);
         return self.currentArea;
       },
       resumeUnfinishedRegion(existingUnclosedPolygon) {
@@ -112,6 +113,7 @@ const DrawingTool = types
         self.annotation.regionStore.selection._updateResultsFromRegions([self.currentArea]);
         self.mode = "drawing";
         self.annotation.setIsDrawing(true);
+        self.annotation.selectArea(self.currentArea);
         self.listenForClose?.();
       },
       commitDrawingRegion() {
