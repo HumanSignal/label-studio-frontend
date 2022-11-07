@@ -410,6 +410,37 @@ Scenario("Continue annotating after closing region from draft", async function({
 
 });
 
+Scenario("Change label on unfinished polygons", async function({ I, LabelStudio, AtLabels, AtImageView }) {
+  I.amOnPage("/");
+  LabelStudio.init({
+    config: CONFIG,
+    data: {
+      image: IMAGE,
+    },
+    params: {
+      onSubmitDraft: saveDraftLocally,
+    },
+  });
+  LabelStudio.setFeatureFlags(FLAGS);
+
+  AtImageView.waitForImage();
+
+  await AtImageView.lookForStage();
+
+  I.say("start drawing polygon without finishing it");
+  AtLabels.clickLabel("Hello");
+  AtImageView.drawByClickingPoints([[50,50], [100, 50], [100, 80]]);
+  AtLabels.clickLabel("World");
+
+  I.say("wait until autosave");
+  I.waitForFunction(()=>!!window.LSDraft, .5);
+  I.say("check result");
+  const draft = await I.executeScript(getLocallySavedDraft);
+
+  assert.strictEqual(draft[0].value.polygonlabels[0], 'World');
+});
+
+
 const selectedLabelsVariants = new DataTable(["labels"]);
 
 selectedLabelsVariants.add([["Label 1"]]);

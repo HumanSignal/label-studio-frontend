@@ -500,12 +500,12 @@ export default observer(
         this.handleDeferredMouseDown = handleDeferredMouseDown;
         this.handleDeferredMouseDown?.();
         this.handleDeferredMouseDown = null;
-      }, 100);
+      }, this.props.item.annotation.isDrawing ? 0 : 100);
     }
 
     handleMouseDown = e => {
       const { item } = this.props;
-  
+
       item.updateSkipInteractions(e);
 
       // item.freezeHistory();
