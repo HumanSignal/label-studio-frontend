@@ -85,6 +85,10 @@ const Model = types.model({
     focusable: true,
   };
 }).views(self => ({
+  get isEditable() {
+    return self.editable && !self.annotation.readonly;
+  },
+
   get valueType() {
     return "text";
   },

@@ -68,7 +68,7 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
   const params = { onFocus: e => onFocus(e, item) };
   const { parent } = item;
   const { relationMode } = item.annotation;
-  const editable = item.annotation.editable || parent.editable;
+  const editable = parent.isEditable;
 
   if (relationMode) {
     classes.push(styles.relation);
