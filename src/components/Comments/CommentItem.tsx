@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { Tooltip } from "antd";
 import { IconCheck, IconEllipsis } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
@@ -19,9 +19,27 @@ export const CommentItem: FC<{ comment: any }> = observer(({ comment }) => {
   const currentUser = window.APP_SETTINGS?.user;
   const initialComment = comment.text;
   const [currentComment, setCurrentComment] = useState(initialComment);
+  const [isEdited, setIsEdited] = useState<Date | boolean | undefined>();
 
   if (comment.isDeleted) return null;
+  
+  useEffect(() => {
+    if (comment.isEditMode) setIsEdited(false);
+    else if (isEdited === false) setIsEdited((new Date()));
+  }, [comment.isEditMode]);
 
+  const TimeTracker = () => {
+    const time = isEdited ? isEdited : comment.createdAt;
+  
+    return comment.isPersisted && comment.createdAt && (
+      <Elem name="date">
+        <Tooltip placement="topRight" title={new Date(time).toLocaleString()}>
+          {`${isEdited ? "edited" : "created"} ${humanDateDiff(time)}`}
+        </Tooltip>
+      </Elem>
+    );
+  };
+  
   return (
     <Block name="comment-item" mod={{ resolved }}>
       <Space spread size="medium" truncated>
@@ -43,14 +61,7 @@ export const CommentItem: FC<{ comment: any }> = observer(({ comment }) => {
           <Elem name="saving" mod={{ hide: comment.isPersisted }}>
             <Elem name="dot" />
           </Elem>
-
-          {comment.isPersisted && comment.createdAt && (
-            <Elem name="date">
-              <Tooltip placement="topRight" title={new Date(comment.createdAt).toLocaleString()}>
-                {humanDateDiff(comment.createdAt)}
-              </Tooltip>
-            </Elem>
-          )}
+          <TimeTracker />
         </Space>
       </Space>
 
