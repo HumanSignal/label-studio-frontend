@@ -290,6 +290,7 @@ const DateTimeModel = types.compose(
 
 const HtxDateTime = inject("store")(
   observer(({ item }) => {
+    const disabled = item.annotation.readonly;
     const visibleStyle = item.perRegionVisible() ? { margin: "0 0 1em" } : { display: "none" };
     const visual = {
       style: { width: "auto", marginRight: "4px" },
@@ -322,7 +323,7 @@ const HtxDateTime = inject("store")(
     return (
       <div style={visibleStyle}>
         {item.showMonth && (
-          <select {...visual} name={item.name + "-date"} value={item.month} onChange={item.onMonthChange}>
+          <select {...visual} disabled={disabled} name={item.name + "-date"} value={item.month} onChange={item.onMonthChange}>
             <option value="">Month...</option>
             {item.months.map((month, index) => (
               <option key={month} value={index + 1}>
@@ -332,7 +333,7 @@ const HtxDateTime = inject("store")(
           </select>
         )}
         {item.showYear && (
-          <select {...visual} name={item.name + "-year"} value={item.year || ""} onChange={item.onYearChange}>
+          <select {...visual} disabled={disabled} name={item.name + "-year"} value={item.year || ""} onChange={item.onYearChange}>
             <option value="">Year...</option>
             {item.years.map(year => (
               <option key={year} value={year}>
@@ -345,6 +346,7 @@ const HtxDateTime = inject("store")(
           <input
             {...visual}
             type="date"
+            disabled={disabled}
             name={item.name + "-date"}
             value={dateInputValue}
             min={item.min}
@@ -357,6 +359,7 @@ const HtxDateTime = inject("store")(
           <input
             {...visual}
             type="time"
+            disabled={disabled}
             name={item.name + "-time"}
             value={item.time ?? ""}
             min={minTime}

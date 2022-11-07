@@ -174,10 +174,12 @@ const HtxNumber = inject("store")(
   observer(({ item, store }) => {
     const visibleStyle = item.perRegionVisible() ? { display: "flex", alignItems: "center" } : { display: "none" };
     const sliderStyle = item.slider ? { padding: '9px 0px', border: 0 } : {};
+    const disabled = item.annotation.readonly;
       
     return (
       <div style={visibleStyle}>
         <input
+          disabled={disabled}
           style={sliderStyle}
           type={item.slider ? "range" : "number"}
           name={item.name}
