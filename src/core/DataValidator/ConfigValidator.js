@@ -130,12 +130,12 @@ const getTypeDescription = (type, withNullType = true) => {
 /**
  * Flatten config tree for faster iterations and searches
  * @param {object} tree
- * @param {string} parent
+ * @param {string | null;;} parent
+ * @param {string[]} parentParentTypes
+ * @param {object[]} result
  * @returns {object[]}
  */
-const flattenTree = (tree, parent = null, parentParentTypes = ["view"]) => {
-  const result = [];
-
+const flattenTree = (tree, parent = null, parentParentTypes = ["view"], result) => {
   if (!tree.children) return [];
 
   for (const child of tree.children) {
@@ -150,7 +150,7 @@ const flattenTree = (tree, parent = null, parentParentTypes = ["view"]) => {
 
     /* Recursively add children if exist */
     if (child.children instanceof Array) {
-      result.push(...flattenTree(child, child, parentTypes));
+      flattenTree(child, child, parentTypes, result);
     }
   }
 
@@ -259,7 +259,9 @@ export class ConfigValidator {
    * @param {*} node
    */
   static validate(root) {
-    const flatTree = flattenTree(root);
+    const flatTree = [];
+
+    flattenTree(root, null, [], flatTree);
     const propertiesToSkip = ["id", "children", "name", "toname", "controlledTags", "parentTypes"];
     const validationResult = [];
 
@@ -276,7 +278,7 @@ export class ConfigValidator {
       if (toNameValidation !== null) validationResult.push(toNameValidation);
 
       // Validate by parentUnexpected parent tag
-      const parentValidation = validateParentTag(child, model, flatTree);
+      const parentValidation = validateParentTag(child, model);
 
       if (parentValidation !== null) validationResult.push(parentValidation);
 
