@@ -11,11 +11,11 @@ import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import ControlBase from "./Base";
 
 /**
- * Use the BrushLabels tag for image segmentation tasks where you want to apply a mask or use a brush to draw a region on the image.
+ * The `BrushLabels` tag for image segmentation tasks are used when you want to apply a mask or use a brush to draw a region on the image.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
- * <!--Basic image segmentation labeling configuration-->
+ * Basic image segmentation labeling configuration:
  * <View>
  *   <BrushLabels name="labels" toName="image">
  *     <Label value="Person" />
