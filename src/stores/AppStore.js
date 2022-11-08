@@ -480,6 +480,7 @@ export default types
     // to prevent from sending duplicating requests.
     // Better to return request's Promise from SDK to make this work perfect.
     function handleSubmittingFlag(fn, defaultMessage = "Error during submit") {
+      if (self.isSubmitting) return;
       self.setFlags({ isSubmitting: true });
       const res = fn();
       // Wait for request, max 5s to not make disabled forever broken button;
@@ -527,12 +528,14 @@ export default types
     }
 
     function skipTask(extraData) {
+      if (self.isSubmitting) return;
       handleSubmittingFlag(() => {
         getEnv(self).events.invoke('skipTask', self, extraData);
       }, "Error during skip, try again");
     }
 
     function unskipTask() {
+      if (self.isSubmitting) return;
       handleSubmittingFlag(() => {
         getEnv(self).events.invoke('unskipTask', self);
       }, "Error during cancel skipping task, try again");
