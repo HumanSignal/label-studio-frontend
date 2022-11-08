@@ -15,7 +15,7 @@ import ControlBase from "./Base";
  *
  * Use with the following data types: image.
  * @example
- * Basic image segmentation labeling configuration:
+ * <!--Basic image segmentation labeling configuration-->
  * <View>
  *   <BrushLabels name="labels" toName="image">
  *     <Label value="Person" />
