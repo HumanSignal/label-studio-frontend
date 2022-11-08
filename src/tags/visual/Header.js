@@ -9,7 +9,7 @@ import Tree from "../../core/Tree";
 import { clamp } from "../../utils/utilities";
 
 /**
- * Use the Header tag to show a header on the labeling interface.
+ * The `Header` tag is used to show a header on the labeling interface.
  * @example
  * <!-- Display a header on the labeling interface based on a field in the data -->
  * <View>
