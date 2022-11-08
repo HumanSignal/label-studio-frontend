@@ -120,7 +120,7 @@ const Model = types
   }))
   .actions(self => ({
     toggleSelected() {
-      if (self.parent?.readonly || self.annotation?.readonly) return;
+      if (self.parent?.readonly || self.annotation?.editable === false) return;
       const choices = self.parent;
       const selected = self.sel;
 
@@ -145,7 +145,7 @@ const Model = types
     },
   }))
   .actions(self => {
-    if (self.parent.type === "choices") return {
+    if (self.parent?.type === "choices") return {
       onHotKey() {
         return self.toggleSelected();
       },
@@ -173,7 +173,7 @@ class HtxChoiceView extends Component {
 
     const props = {
       checked: item.sel,
-      disabled: item.parent?.readonly || item.annotation?.readonly,
+      disabled: item.parent?.readonly || item.annotation?.editable === false,
       onChange: ev => {
         if (!item.annotation.editable) return;
         item.toggleSelected();
@@ -239,7 +239,7 @@ const HtxNewChoiceView = ({ item, store }) => {
           mod={{ notLeaf: !item.isLeaf }}
           checked={item.sel}
           indeterminate={!item.sel && item.indeterminate}
-          disabled={item.parent?.readonly || item.annotation?.readonly}
+          disabled={item.parent?.readonly || item.annotation?.editable === false}
           onChange={changeHandler}
         >
           {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }

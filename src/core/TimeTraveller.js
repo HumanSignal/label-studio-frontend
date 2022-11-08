@@ -1,4 +1,5 @@
 import { applySnapshot, getEnv, getSnapshot, onSnapshot, resolvePath, types } from "mobx-state-tree";
+import { FF_DEV_1284, isFF } from "../utils/feature-flags";
 
 /**
  * Time Traveller
@@ -142,6 +143,12 @@ const TimeTraveller = types
         self.skipNextUndoState = true;
         applySnapshot(targetStore, self.history[idx]);
         triggerHandlers();
+        if (isFF(FF_DEV_1284)) {
+          setTimeout(()=>{
+            // Prevent skiping next undo state if onSnapshot event was somehow missed after applying snapshot
+            self.setSkipNextUndoState(false);
+          });
+        }
       },
 
       reset() {

@@ -22,7 +22,7 @@ const perRegionConfig = `
       <Label value="Planet"></Label>
       <Label value="Moonwalker" background="blue"></Label>
     </RectangleLabels>
-    <TextArea name="answer" toName="img" perRegion="true" />
+    <TextArea name="answer" toName="img" perRegion="true" editable="true" />
   </View>`;
 
 const createRegion = (from_name, type, values) => ({

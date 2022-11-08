@@ -135,6 +135,7 @@ const HtxPagedView = observer(({ item }) => {
         pageSizeSelectable={false}
         size={"medium"}
         onChange={(page, maxPerPage = pageSize) => {
+          item.annotation.unselectAll();
           setPage(page);
           if (maxPerPage !== pageSize) {
             setStoredPageSize('repeater', maxPerPage);

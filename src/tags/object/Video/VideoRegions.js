@@ -113,7 +113,7 @@ const VideoRegionsPure = ({
   }, [isDrawing, workinAreaCoordinates, videoDimensions]);
 
   const handleMouseDown = e => {
-    if (e.target !== stageRef.current || item.annotation?.readonly) return;
+    if (e.target !== stageRef.current || item.annotation?.editable === false) return;
 
     const { x, y } = normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY);
     // const { offsetX: x, offsetY: y } = e.evt;
@@ -124,7 +124,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseMove = e => {
-    if (!isDrawing || item.annotation?.readonly) return false;
+    if (!isDrawing || item.annotation?.editable === false) return false;
 
     const { x, y } = normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY);
     // const { offsetX: x, offsetY: y } = e.evt;
@@ -137,7 +137,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseUp = e => {
-    if (!isDrawing || item.annotation?.readonly) return false;
+    if (!isDrawing || item.annotation?.editable === false) return false;
 
     const { x, y } = normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY);
     // const { offsetX: x, offsetY: y } = e.evt;

@@ -61,14 +61,11 @@ const ToolMixin = types
     },
 
     get shouldPreserveSelectedState() {
-      try {
-        const settings = getRoot(self.obj).settings;
+      if (!self.obj) return false;
 
-        return settings.preserveSelectedTool;
-      } catch (err) {
-        console.log('something is missing');
-        return false;
-      }
+      const settings = getRoot(self.obj).settings;
+
+      return settings.preserveSelectedTool;
     },
 
     get isPreserved() {

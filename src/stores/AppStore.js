@@ -1,6 +1,6 @@
 /* global LSF_VERSION */
 
-import { flow, getEnv, getSnapshot, types } from "mobx-state-tree";
+import { destroy, detach, flow, getEnv, getSnapshot, types } from "mobx-state-tree";
 
 import uniqBy from "lodash/uniqBy";
 import InfoModal from "../components/Infomodal/Infomodal";
@@ -191,7 +191,7 @@ export default types
 
       if (hasHistory) {
         const lastTaskId = self.taskHistory[self.taskHistory.length - 1].taskId;
-        
+
         return self.task.id !== lastTaskId;
       }
       return false;
@@ -581,13 +581,16 @@ export default types
       // Same with hotkeys
       Hotkey.unbindAll();
       self.attachHotkeys();
+      const oldAnnotationStore = self.annotationStore;
+
+      if (oldAnnotationStore) {
+        oldAnnotationStore.beforeReset?.();
+        detach(oldAnnotationStore);
+        destroy(oldAnnotationStore);
+      }
 
       self.annotationStore = AnnotationStore.create({ annotations: [] });
       self.initialized = false;
-
-      // const c = self.annotationStore.addInitialAnnotation();
-
-      // self.annotationStore.selectAnnotation(c.id);
     }
 
     /**
@@ -598,6 +601,7 @@ export default types
     function initializeStore({ annotations, completions, predictions, annotationHistory }) {
       const as = self.annotationStore;
 
+      as.afterReset?.();
       as.initRoot(self.config);
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
@@ -625,7 +629,6 @@ export default types
       if (current) current.setInitialValues();
 
       self.setHistory(annotationHistory);
-      /* eslint-enable no-unused-expressions */
 
       if (!self.initialized) {
         self.initialized = true;

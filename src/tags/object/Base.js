@@ -3,6 +3,7 @@ import isMatch from "lodash.ismatch";
 import InfoModal from "../../components/Infomodal/Infomodal";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { FF_DEV_3391, isFF } from "../../utils/feature-flags";
+import { BaseTag } from "../TagBase";
 
 const ObjectBase = types
   .model({
@@ -15,6 +16,7 @@ const ObjectBase = types
       }),
     // TODO there should be a better way to force an update
     _needsUpdate: types.optional(types.number, 0),
+    isObjectTag: true,
   })
   .views(self => ({
     findRegion(params) {
@@ -81,4 +83,4 @@ const ObjectBase = types
     };
   });
 
-export default types.compose(ObjectBase, AnnotationMixin);
+export default types.compose(ObjectBase, BaseTag, AnnotationMixin);
