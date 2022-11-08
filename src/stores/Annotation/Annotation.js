@@ -64,6 +64,7 @@ export const Annotation = types
     dragMode: types.optional(types.boolean, false),
 
     editable: types.optional(types.boolean, true),
+    readonly: types.optional(types.boolean, false),
 
     relationMode: types.optional(types.boolean, false),
     relationStore: types.optional(RelationStore, {
@@ -78,7 +79,6 @@ export const Annotation = types
       regions: [],
     }),
 
-    readonly: types.optional(types.boolean, false),
     isDrawing: types.optional(types.boolean, false),
 
     commentStore: types.optional(CommentStore, {
@@ -116,6 +116,7 @@ export const Annotation = types
       ...sn,
       ...(isFF(FF_DEV_3391) ? { root } : {}),
       user,
+      editable: sn.editable ?? (sn.type === "annotation"),
       ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
       skipped: sn.skipped || sn.was_cancelled,
       acceptedState: sn.accepted_state ?? sn.acceptedState ?? null,
@@ -602,7 +603,8 @@ export const Annotation = types
 
     startAutosave: flow(function *() {
       if (!getEnv(self).events.hasEvent('submitDraft')) return;
-      if (self.type !== "annotation") return;
+      // view all must never trigger autosave
+      if (!self.editable) return;
 
       // some async tasks should be performed after deserialization
       // so start autosave on next tick
