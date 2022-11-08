@@ -259,11 +259,9 @@ export class ConfigValidator {
    * @param {*} node
    */
   static validate(root) {
-    console.log(root);
     const flatTree = [];
 
     flattenTree(root, null, [], flatTree);
-    console.log({ flatTree });
     const propertiesToSkip = ["id", "children", "name", "toname", "controlledTags", "parentTypes"];
     const validationResult = [];
 
