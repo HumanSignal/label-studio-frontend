@@ -96,9 +96,9 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
           onAnnotationSelect?.(ent, ent.type === 'prediction');
         }}
         extra={(
-          <Elem name={'icons'}>
-            {renderCommentIcon(ent)}
-            {groundTruthEnabled && <GroundTruth entity={ent} disabled/>}
+          <Elem name={'icons'} >
+            <Elem name="icon-column">{renderCommentIcon(ent)}</Elem>
+            <Elem name="icon-column">{groundTruthEnabled && <GroundTruth entity={ent} disabled />}</Elem>
           </Elem>
         )}
       />
