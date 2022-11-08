@@ -6,7 +6,7 @@ import { isDefined } from "../../utils/utilities";
 import { IconBan } from "../../assets/icons";
 
 import "./Controls.styl";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -36,14 +36,17 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const { userGenerate, sentUserGenerate, versions, results } = annotation;
   const buttons = [];
 
+  const [isInProgress, setIsInProgress] = useState(false);
 
   // const isReady = store.annotationStore.selected.objects.every(object => object.isReady === undefined || object.isReady);
-  const disabled = store.isSubmitting || historySelected; // || !isReady;
+  const disabled = store.isSubmitting || historySelected || isInProgress; // || !isReady;
   const submitDisabled = store.hasInterface("annotations:deny-empty") && results.length === 0;
   
   const buttonHandler = useCallback(async (e, callback, tooltipMessage) => {
     const { addedCommentThisSession, currentComment, commentFormSubmit, inputRef } = store.commentStore;
 
+    if (isInProgress) return;
+    setIsInProgress(true);
     if(!inputRef.current || addedCommentThisSession){
       callback();
     } else if((currentComment ?? "").trim()) {
@@ -59,6 +62,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       });
       commentsInput.focus({ preventScroll: true });
     }
+    setIsInProgress(false);
   }, [
     store.rejectAnnotation, 
     store.skipTask, 
@@ -66,6 +70,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     store.commentStore.inputRef, 
     store.commentStore.commentFormSubmit, 
     store.commentStore.addedCommentThisSession,
+    isInProgress,
   ]);
 
   const RejectButton = useMemo(() => {
