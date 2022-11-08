@@ -1,4 +1,4 @@
-import { destroy, detach, getEnv, getParent, getRoot, isAlive, onSnapshot, types } from "mobx-state-tree";
+import { destroy, detach, flow, getEnv, getParent, getRoot, isAlive, onSnapshot, types } from "mobx-state-tree";
 
 import Constants from "../../core/Constants";
 import { Hotkey } from "../../core/Hotkey";
@@ -600,13 +600,13 @@ export const Annotation = types
       self.startAutosave();
     },
 
-    async startAutosave() {
+    startAutosave: flow(function *() {
       if (!getEnv(self).events.hasEvent('submitDraft')) return;
       if (self.type !== "annotation") return;
 
       // some async tasks should be performed after deserialization
       // so start autosave on next tick
-      await delay(0);
+      yield delay(0);
 
       if (self.autosave) {
         self.autosave.cancel();
@@ -635,7 +635,7 @@ export const Annotation = types
       );
 
       onSnapshot(self.areas, self.autosave);
-    },
+    }),
 
     pauseAutosave() {
       if (!self.autosave) return;
@@ -967,6 +967,8 @@ export const Annotation = types
     },
 
     setSuggestions(rawSuggestions) {
+      const { history } = self;
+
       self.suggestions.clear();
 
       self.deserializeResults(rawSuggestions, {
@@ -989,8 +991,6 @@ export const Annotation = types
           }
         });
       }
-
-      const { history } = self;
 
       if (!isFF(FF_DEV_1284)) {
         history.freeze("richtext:suggestions");
