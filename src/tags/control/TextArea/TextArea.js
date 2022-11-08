@@ -86,7 +86,7 @@ const Model = types.model({
   };
 }).views(self => ({
   get isEditable() {
-    return self.editable && !self.annotation.readonly;
+    return self.editable && self.annotation.editable;
   },
 
   get valueType() {

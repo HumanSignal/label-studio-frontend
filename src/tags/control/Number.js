@@ -174,12 +174,12 @@ const HtxNumber = inject("store")(
   observer(({ item, store }) => {
     const visibleStyle = item.perRegionVisible() ? { display: "flex", alignItems: "center" } : { display: "none" };
     const sliderStyle = item.slider ? { padding: '9px 0px', border: 0 } : {};
-    const disabled = item.annotation.readonly;
+    const disabled = !item.annotation.editable;
       
     return (
       <div style={visibleStyle}>
         <input
-          disabled={disabled}
+          readOnly={disabled}
           style={sliderStyle}
           type={item.slider ? "range" : "number"}
           name={item.name}
@@ -187,7 +187,7 @@ const HtxNumber = inject("store")(
           step={item.step ?? 1}
           min={isDefined(item.min) ? Number(item.min) : undefined}
           max={isDefined(item.max) ? Number(item.max) : undefined}
-          onChange={item.onChange}
+          onChange={disabled ? undefined : item.onChange}
         />
         {item.slider && <output style={{ marginLeft: "5px" }}>{item.number ?? item.defaultvalue ?? ""}</output>}
         {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (

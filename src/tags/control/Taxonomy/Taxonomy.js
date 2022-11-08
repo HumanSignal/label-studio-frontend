@@ -296,7 +296,7 @@ const HtxTaxonomy = observer(({ item }) => {
           onAddLabel={item.userLabels && item.onAddLabel}
           onDeleteLabel={item.userLabels && item.onDeleteLabel}
           options={options}
-          isReadonly={item.annotation.readonly}
+          isReadonly={!item.annotation.editable}
         />
       )}
     </div>
