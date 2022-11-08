@@ -432,8 +432,9 @@ export default types
     /**
      *
      * @param {*} taskObject
+     * @param {*[]} taskHistory
      */
-    function assignTask(taskObject) {
+    function assignTask(taskObject, taskHistory) {
       if (taskObject && !Utils.Checkers.isString(taskObject.data)) {
         taskObject = {
           ...taskObject,
@@ -441,7 +442,9 @@ export default types
         };
       }
       self.task = Task.create(taskObject);
-      if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) === -1) {
+      if (taskHistory) {
+        self.taskHistory = taskHistory;
+      } else if (!self.taskHistory.some((x) => x.taskId === self.task.id)) {
         self.taskHistory.push({
           taskId: self.task.id,
           annotationId: null,
