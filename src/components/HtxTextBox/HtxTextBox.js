@@ -158,7 +158,21 @@ export class HtxTextBox extends React.Component {
     );
   }
 
+  renderReadonly() {
+    const { text, ...props } = this.props;
+
+    return (
+      <Paragraph {...props}>
+        <span ref={this.textRef}>{text}</span>
+      </Paragraph>
+    );
+  }
+
   render() {
+    if (this.props.isReadonly) {
+      return this.renderReadonly();
+    }
+
     return this.state.editing || this.props.onlyEdit ? this.renderEdit() : this.renderView();
   }
 }

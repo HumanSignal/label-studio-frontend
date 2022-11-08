@@ -61,6 +61,7 @@ interface RowProps {
   style: any;
   dimensionCallback: (ref: any) => void;
   maxWidth: number;
+  isReadonly?: boolean;
   item: {
     row: {
       id: string,
@@ -130,10 +131,10 @@ const SelectedList = ({ isReadonly, flatItems } : { isReadonly:boolean, flatItem
     <div className={styles.taxonomy__selected}>
       {selectedLabels.map((path, index) => (
         <div key={path.join("|")}>
-          {showFullPath ? path.join(pathSeparator) : path[path.length - 1]}
-          {!isReadonly &&
+          <span>{showFullPath ? path.join(pathSeparator) : path[path.length - 1]}</span>
+          {!isReadonly ? (
             <input type="button" onClick={() => setSelected(selected[index], false)} value="×" />
-          }
+          ): null}
         </div>
       ))}
     </div>
@@ -146,7 +147,7 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
-const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: RowProps) => {
+const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth, isReadonly }: RowProps) => {
   const {
     row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf },
     toggle,
@@ -160,7 +161,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
   const isChildSelected = selected.some(current => isSubArray(current, path));
   const onlyLeafsAllowed = leafsOnly && !isLeaf;
   const limitReached = maxUsagesReached && !checked;
-  const disabled = onlyLeafsAllowed || limitReached;
+  const disabled = onlyLeafsAllowed || limitReached || isReadonly;
 
   const onClick = () => onlyLeafsAllowed && toggle(id);
   const arrowStyle = !isLeaf ? { transform: isOpen ? "rotate(180deg)" : "rotate(90deg)" } : { display: "none" };
@@ -240,7 +241,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth }: 
             {!isFiltering && (
               <div className={styles.taxonomy__extra}>
                 <span className={styles.taxonomy__extra_count}>{childCount}</span>
-                {onAddLabel && (
+                {!isReadonly && onAddLabel && (
                   <div className={styles.taxonomy__extra_actions}>
                     <Dropdown
                       destroyPopupOnHide // important for long interactions with huge taxonomy
@@ -284,6 +285,7 @@ type TaxonomyDropdownProps = {
   flatten: TaxonomyItem[],
   items: TaxonomyItem[],
   show: boolean,
+  isReadonly?: boolean,
 };
 
 const filterTreeByPredicate = (flatten: TaxonomyItem[], predicate: (item: TaxonomyItem) => boolean) => {
@@ -324,7 +326,7 @@ const filterTreeByPredicate = (flatten: TaxonomyItem[], predicate: (item: Taxono
   return roots;
 };
 
-const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdownProps) => {
+const TaxonomyDropdown = ({ show, flatten, items, dropdownRef, isReadonly }: TaxonomyDropdownProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const predicate = (item: TaxonomyItem) => item.label.toLocaleLowerCase().includes(search);
@@ -382,6 +384,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
       />
       <TreeStructure
         items={list}
+        isReadonly={isReadonly}
         rowComponent={Item}
         flatten={search !== ""}
         rowHeight={30}
@@ -395,11 +398,11 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef }: TaxonomyDropdow
         <div className={styles.taxonomy__add__container}>
           {isAdding ? (
             <UserLabelForm path={[]} onAddLabel={onAddLabel} onFinish={closeForm} />
-          ) : (
+          ) : !isReadonly ? (
             <div className={styles.taxonomy__add}>
               <button onClick={addInside}>Add</button>
             </div>
-          )}
+          ): null}
         </div>
       )}
     </div>
@@ -518,15 +521,13 @@ const Taxonomy = ({
     <TaxonomySelectedContext.Provider value={contextValue}>
       <TaxonomyOptionsContext.Provider value={optionsWithMaxUsages}>
         <SelectedList isReadonly={isReadonly} flatItems={flatten} />
-        {!isReadonly && (
-          <div className={[styles.taxonomy, isOpenClassName].join(" ")} ref={taxonomyRef}>
-            <span onClick={() => setOpen(val => !val)}>
-              {options.placeholder || "Click to add..."}
-              <LsChevron stroke="#09f" />
-            </span>
-            <TaxonomyDropdown show={isOpen} items={items} flatten={flatten} dropdownRef={dropdownRef} />
-          </div>
-        )}
+        <div className={[styles.taxonomy, isOpenClassName].join(" ")} ref={taxonomyRef}>
+          <span onClick={() => setOpen(val => !val)}>
+            {options.placeholder || (isReadonly ? "Click to view..." : "Click to add...")}
+            <LsChevron stroke="#09f" />
+          </span>
+          <TaxonomyDropdown show={isOpen} isReadonly={isReadonly} items={items} flatten={flatten} dropdownRef={dropdownRef} />
+        </div>
       </TaxonomyOptionsContext.Provider>
     </TaxonomySelectedContext.Provider>
   );
