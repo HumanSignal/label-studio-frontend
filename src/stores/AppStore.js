@@ -444,7 +444,7 @@ export default types
       self.task = Task.create(taskObject);
       if (taskHistory) {
         self.taskHistory = taskHistory;
-      } else if (self.taskHistory.some((x) => x.taskId === self.task.id)) {
+      } else if (!self.taskHistory.some((x) => x.taskId === self.task.id)) {
         self.taskHistory.push({
           taskId: self.task.id,
           annotationId: null,
