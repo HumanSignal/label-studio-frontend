@@ -6,7 +6,7 @@ import { guidGenerator } from "../../core/Helpers";
 import { customTypes } from "../../core/CustomTypes";
 
 /**
- * The Relation tag represents a single relation label. Use with the Relations tag to specify the value of a label to apply to a relation between regions.
+ * The `Relation` tag represents a single relation label. Use with the `Relations` tag to specify the value of a label to apply to a relation between regions.
  *
  * @example
  * <!--Basic labeling configuration to apply the label "similar" to a relation identified between two labeled regions of text -->

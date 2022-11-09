@@ -12,9 +12,9 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * Use the TimeSeriesLabels tag to create a labeled time range.
+ * The `TimeSeriesLabels` tag is used to create a labeled time range.
  *
- * Use with the following data types: time series
+ * Use with the following data types: time series.
  * @example
  * <!--Basic labeling configuration to apply labels to identified regions of a time series with one channel -->
  * <View>

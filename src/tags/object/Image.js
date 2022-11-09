@@ -20,9 +20,9 @@ import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
 import { FF_DEV_2394, FF_DEV_3377, isFF } from "../../utils/feature-flags";
 
 /**
- * The Image tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
+ * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
  *
- * Use with the following data types: images
+ * Use with the following data types: images.
  *
  * When you annotate image regions with this tag, the annotations are saved as percentages of the original size of the image, from 0-100.
  * @example

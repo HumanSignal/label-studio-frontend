@@ -8,9 +8,9 @@ import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
 /**
- * Use the Ellipse tag to add an elliptical bounding box to an image. Use for bounding box image segmentation tasks with ellipses.
+ * The `Ellipse` tag is used to add an elliptical bounding box to an image. Use for bounding box image segmentation tasks with ellipses.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic image segmentation with ellipses labeling configuration-->
  * <View>

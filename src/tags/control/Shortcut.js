@@ -13,7 +13,7 @@ import { customTypes } from "../../core/CustomTypes";
 import chroma from "chroma-js";
 
 /**
- * Use the Shortcut tag to define a shortcut that annotators can use to add a predefined object, such as a specific label value, with a hotkey or keyboard shortcut.
+ * The `Shortcut` tag to define a shortcut that annotators can use to add a predefined object, such as a specific label value, with a hotkey or keyboard shortcut.
  *
  * Use with the following data types:
  * - Audio

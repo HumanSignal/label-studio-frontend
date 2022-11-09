@@ -10,9 +10,9 @@ import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import ControlBase from "./Base";
 
 /**
- * The HyperTextLabels tag creates labeled hyper text (HTML). Use with the HyperText object tag to annotate HTML text or HTML elements for named entity recognition tasks.
+ * The `HyperTextLabels` tag creates labeled hyper text (HTML). Use with the HyperText object tag to annotate HTML text or HTML elements for named entity recognition tasks.
  *
- * Use with the following data types: HTML
+ * Use with the following data types: HTML.
  * @example
  * <!--Basic semantic text labeling configuration-->
  * <View>

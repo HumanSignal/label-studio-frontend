@@ -69,6 +69,7 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
   const { parent } = item;
   const { relationMode } = item.annotation;
   const editable = parent.isEditable;
+  const deleteable = parent.isDeleteable;
 
   if (relationMode) {
     classes.push(styles.relation);
@@ -111,7 +112,8 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
   return (
     <div {...divAttrs} className={styles.row} data-testid="textarea-region">
       <HtxTextBox
-        isReadonly={!editable}
+        isEditable={editable}
+        isDeleteable={deleteable}
         onlyEdit={parent.transcription}
         id={`TextAreaRegion-${item.id}`}
         name={name}
