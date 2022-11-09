@@ -11,9 +11,9 @@ import { PolygonModel } from "./Polygon";
 import ControlBase from "./Base";
 
 /**
- * Use the PolygonLabels tag to create labeled polygons. Use to apply labels to polygons in semantic segmentation tasks.
+ * The `PolygonLabels` tag is used to create labeled polygons. Use to apply labels to polygons in semantic segmentation tasks.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic labeling configuration for polygonal semantic segmentation of images -->
  * <View>
