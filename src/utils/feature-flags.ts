@@ -114,6 +114,12 @@ export const FF_DEV_3617 = "fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix";
  */
 export const FF_DEV_1284 = "fflag_fix_front_dev_1284_auto_detect_undo_281022_short";
 
+/**
+ * Fixing problem when undo causes request to ML Backend
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_3706_undo_with_ml_backend_081122_short
+  * */
+export const FF_DEV_3706 = "fflag_fix_front_dev_3706_undo_with_ml_backend_081122_short";
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),

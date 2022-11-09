@@ -13,7 +13,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
-import { FF_DEV_1284, FF_DEV_1598, FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1284, FF_DEV_1598, FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, FF_DEV_3706, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
 import { CommentStore } from "../Comment/CommentStore";
 
@@ -441,7 +441,12 @@ export const Annotation = types
 
       children && children.forEach(r => r.setParentID(region.parentID));
 
-      if (!region.classification) getEnv(self).events.invoke('entityDelete', region);
+      if (!region.classification) {
+        getEnv(self).events.invoke('entityDelete', region);
+        if (isFF(FF_DEV_3706)) {
+          region.notifyDrawingFinished({ destroy: true });
+        }
+      }
 
       self.relationStore.deleteNodeRelation(region);
 
