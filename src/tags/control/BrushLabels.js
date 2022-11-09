@@ -11,7 +11,7 @@ import { HtxLabels, LabelsModel } from "./Labels/Labels";
 import ControlBase from "./Base";
 
 /**
- * The `BrushLabels` tag for image segmentation tasks are used when you want to apply a mask or use a brush to draw a region on the image.
+ * The `BrushLabels` tag for image segmentation tasks is used in the area where you want to apply a mask or use a brush to draw a region on the image.
  *
  * Use with the following data types: image.
  * @example
