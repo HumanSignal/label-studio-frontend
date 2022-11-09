@@ -27,7 +27,6 @@ import messages from "../../utils/messages";
  */
 const Model = types
   .model({
-    name: types.identifier,
     type: "table",
     value: types.maybeNull(types.string),
     _value: types.frozen([]),

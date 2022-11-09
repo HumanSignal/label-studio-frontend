@@ -84,7 +84,6 @@ const { Option } = Select;
  * @param {boolean} [allowNested]      - Allow to use `children` field in dynamic choices to nest them. Submitted result will contain array of arrays, every item is a list of values from topmost parent choice down to selected one.
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   showinline: types.maybeNull(types.boolean),
@@ -316,8 +315,8 @@ const HtxChoices = observer(({ item }) => {
         <ChoicesSelectLayout item={item} />
       ) : (
         !isFF(FF_DEV_2007)
-          ? <Form layout={item.layout}>{Tree.renderChildren(item)}</Form> 
-          : Tree.renderChildren(item)
+          ? <Form layout={item.layout}>{Tree.renderChildren(item, item.annotation)}</Form>
+          : Tree.renderChildren(item, item.annotation)
       )}
     </Block>
   );

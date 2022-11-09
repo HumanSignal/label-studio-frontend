@@ -54,7 +54,6 @@ import "./Taxonomy.styl";
  * @param {string} [placeholder=]      - What to display as prompt on the input
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
   leafsonly: types.optional(types.boolean, false),
   showfullpath: types.optional(types.boolean, false),
@@ -187,9 +186,9 @@ const Model = types
     updateChildren() {
       const children = ChildrenSnapshots.get(self.name) ?? [];
 
-      if (children) {
+      if (children.length) {
         self._children = children;
-        self.children = ChildrenSnapshots.get(self.name) ?? [];
+        self.children = [...children];
         self.store.unlock();
         ChildrenSnapshots.delete(self.name);
       }
@@ -271,7 +270,7 @@ const TaxonomyModel = types.compose("TaxonomyModel",
 
 const HtxTaxonomy = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };
-  const visibleStyle = item.perRegionVisible() || item.isVisible ? {} : { display: "none" };
+  const visibleStyle = item.perRegionVisible() && item.isVisible ? {} : { display: "none" };
   const options = {
     showFullPath: item.showfullpath,
     leafsOnly: item.leafsonly,
@@ -296,7 +295,7 @@ const HtxTaxonomy = observer(({ item }) => {
           onAddLabel={item.userLabels && item.onAddLabel}
           onDeleteLabel={item.userLabels && item.onDeleteLabel}
           options={options}
-          isReadonly={item.annotation.readonly}
+          isEditable={item.annotation.editable}
         />
       )}
     </div>

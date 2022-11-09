@@ -92,7 +92,7 @@ const HtxCollapse = observer(({ item }) => {
   return (
     <Collapse bordered={item.bordered} accordion={item.accordion}>
       {Tree.filterChildrenOfType(item, "PanelModel").map(i => (
-        <Panel key={i._value} header={i._value}>{Tree.renderChildren(i)}</Panel>
+        <Panel key={i._value} header={i._value}>{Tree.renderChildren(i, item.annotation)}</Panel>
       ))}
     </Collapse>
   );

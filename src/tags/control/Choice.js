@@ -10,7 +10,7 @@ import Tree, { TRAVERSE_STOP } from "../../core/Tree";
 import Types from "../../core/Types";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { TagParentMixin } from "../../mixins/TagParentMixin";
-import { FF_DEV_2007, FF_DEV_2244, isFF } from "../../utils/feature-flags";
+import { FF_DEV_2007, FF_DEV_2244, FF_DEV_3391, isFF } from "../../utils/feature-flags";
 import { Block, Elem } from "../../utils/bem";
 import "./Choice/Choice.styl";
 import { LsChevron } from "../../assets/icons";
@@ -39,6 +39,7 @@ import { LsChevron } from "../../assets/icons";
  * @param {string} [hotkey]    - Hotkey for the selection
  */
 const TagAttrs = types.model({
+  ...(isFF(FF_DEV_3391) ? { id: types.identifier } : {}),
   selected: types.optional(types.boolean, false),
   alias: types.maybeNull(types.string),
   value: types.maybeNull(types.string),
@@ -119,7 +120,7 @@ const Model = types
   }))
   .actions(self => ({
     toggleSelected() {
-      if (self.parent?.readonly || self.annotation?.readonly) return;
+      if (self.parent?.readonly || !self.annotation?.editable) return;
       const choices = self.parent;
       const selected = self.sel;
 
@@ -172,7 +173,7 @@ class HtxChoiceView extends Component {
 
     const props = {
       checked: item.sel,
-      disabled: item.parent?.readonly || item.annotation?.readonly,
+      disabled: item.parent?.readonly,
       onChange: ev => {
         if (!item.annotation.editable) return;
         item.toggleSelected();
@@ -238,7 +239,7 @@ const HtxNewChoiceView = ({ item, store }) => {
           mod={{ notLeaf: !item.isLeaf }}
           checked={item.sel}
           indeterminate={!item.sel && item.indeterminate}
-          disabled={item.parent?.readonly || item.annotation?.readonly}
+          disabled={item.parent?.readonly}
           onChange={changeHandler}
         >
           {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
@@ -252,7 +253,7 @@ const HtxNewChoiceView = ({ item, store }) => {
       </Elem>
       {
         item.nestedResults && item.children?.length
-          ? <Elem name="children" mod={{ collapsed }}>{Tree.renderChildren(item)}</Elem>
+          ? <Elem name="children" mod={{ collapsed }}>{Tree.renderChildren(item, item.annotation)}</Elem>
           : null
       }
     </Block>

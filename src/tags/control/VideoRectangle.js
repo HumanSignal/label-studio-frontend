@@ -28,7 +28,6 @@ import ControlBase from "./Base";
  * @param {string} toName Name of the element to control (video)
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
 });
 
