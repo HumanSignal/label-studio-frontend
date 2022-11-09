@@ -89,6 +89,10 @@ const Model = types.model({
     return self.editable && self.annotation.editable;
   },
 
+  get isDeleteable() {
+    return self.annotation.editable;
+  },
+
   get valueType() {
     return "text";
   },
