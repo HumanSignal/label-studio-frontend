@@ -19,9 +19,9 @@ import { Spin } from "antd";
 import "./Taxonomy.styl";
 
 /**
- * Use the Taxonomy tag to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the Choice tag.
+ * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
  *
- * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
  * @example
  * <!--Labeling configuration for providing a taxonomy of choices in response to a passage of text -->
  * <View>

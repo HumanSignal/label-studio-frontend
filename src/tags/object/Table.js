@@ -13,7 +13,7 @@ import { parseTypeAndOption, parseValue } from "../../utils/data";
 import messages from "../../utils/messages";
 
 /**
- * Use the Table tag to display object keys and values in a table.
+ * The `Table` tag is used to display object keys and values in a table.
  * @example
  * <!-- Basic labeling configuration for text in a table -->
  * <View>

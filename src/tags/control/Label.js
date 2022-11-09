@@ -20,7 +20,7 @@ import { parseValue } from "../../utils/data";
 import { FF_DEV_2128, isFF } from "../../utils/feature-flags";
 
 /**
- * Label tag represents a single label. Use with the Labels tag, including BrushLabels, EllipseLabels, HyperTextLabels, KeyPointLabels, and other Labels tags to specify the value of a specific label.
+ * The `Label` tag represents a single label. Use with the `Labels` tag, including `BrushLabels`, `EllipseLabels`, `HyperTextLabels`, `KeyPointLabels`, and other `Labels` tags to specify the value of a specific label.
  *
  * @example
  * <!--Basic named entity recognition labeling configuration for text-->
