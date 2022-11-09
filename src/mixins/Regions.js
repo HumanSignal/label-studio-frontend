@@ -1,6 +1,7 @@
 import { getEnv, getParent, getRoot, getType, types } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import { AnnotationMixin } from "./AnnotationMixin";
+import { FF_DEV_3706, isFF } from "../utils/feature-flags";
 
 const RegionsMixin = types
   .model({
@@ -97,7 +98,9 @@ const RegionsMixin = types
       },
 
       beforeDestroy() {
-        self.notifyDrawingFinished({ destroy: true });
+        if (!isFF(FF_DEV_3706)) {
+          self.notifyDrawingFinished({ destroy: true });
+        }
       },
 
       setLocked(locked) {

@@ -1,4 +1,4 @@
-/* global Feature, Scenario */
+/* global Feature, Scenario, DataTable, Data */
 
 Feature("Smart tools history");
 
@@ -474,6 +474,45 @@ function getRectangleSuggestions(reg, group) {
   window.labelStudio.store.loadSuggestions(new Promise((resolve) => resolve(suggestions)), x => x);
 }
 
+
+
+const createTextConfig = (params = {}) => {
+  return `
+<View>
+    <Labels name="ner" toName="text" ${paramsToAttrs(params)}>
+      <Label value="Person"></Label>
+      <Label value="Words"></Label>
+    </Labels>
+    <Text name="text" valueType="url" value="$text" />
+  </View>
+`;
+};
+
+const TEXT_URL = "https://htx-pub.s3.amazonaws.com/example.txt";
+
+function getSimpleTextSuggestions(reg, group) {
+  const allSuggestions = [
+    {
+      id: "Hnyt9sO_RX",
+      from_name: "ner",
+      to_name: "text",
+      type: "labels",
+      origin: "manual",
+      value: { start: 0, end: 17, labels: ["Person"] },
+    },
+    {
+      id: "tQHRBpvGo0",
+      from_name: "ner",
+      to_name: "text",
+      type: "labels",
+      origin: "manual",
+      value: { start: 453, end: 474, labels: ["Words"] },
+    },
+  ];
+
+  window.labelStudio.store.loadSuggestions(new Promise((resolve) => resolve(allSuggestions)), x => x);
+}
+
 Scenario("Undo regions auto-annotated from predictions", async function({ I, LabelStudio, AtImageView, AtSidebar }) {
   I.amOnPage("/");
   LabelStudio.init({
@@ -585,4 +624,52 @@ Scenario("Undo if there are no regions auto-annotated from predictions", async f
   I.say("There should be one history step");
   I.seeElement(":not([disabled])[aria-label=\"Undo\"]");
   I.seeElement("[disabled][aria-label=\"Redo\"]");
+});
+
+const forceAutoAcceptSuggestionsTable = new DataTable(["forceAutoAcceptSuggestions"]);
+
+forceAutoAcceptSuggestionsTable.add([true]);
+forceAutoAcceptSuggestionsTable.add([false]);
+
+Data(forceAutoAcceptSuggestionsTable).Scenario("Checking that undo does not create new regions", async function({ I, LabelStudio, AtLabels, AtSidebar, AtRichText, current }) {
+  const { forceAutoAcceptSuggestions } = current;
+
+  I.amOnPage("/");
+  LabelStudio.setFeatureFlags({
+    fflag_fix_front_dev_1284_auto_detect_undo_281022_short: true,
+    fflag_fix_front_dev_3706_undo_with_ml_backend_081122_short: true,
+  });
+  LabelStudio.init({
+    config: createTextConfig({
+      smartonly: true,
+    }),
+    data: {
+      text: TEXT_URL,
+    },
+    additionalInterfaces: [
+      "auto-annotation",
+    ],
+    events: {
+      regionFinishedDrawing: getSimpleTextSuggestions,
+    },
+    params: {
+      forceAutoAnnotation: true,
+      forceAutoAcceptSuggestions,
+    },
+  });
+
+  I.seeElement("[disabled][aria-label=\"Undo\"]");
+  I.seeElement("[disabled][aria-label=\"Redo\"]");
+  AtSidebar.seeRegions(0);
+
+  AtLabels.clickLabel("Words");
+  AtRichText.dblClickOnWord("who");
+  I.seeElement(":not([disabled])[aria-label=\"Undo\"]");
+  I.seeElement("[disabled][aria-label=\"Redo\"]");
+  AtSidebar.seeRegions(3 - forceAutoAcceptSuggestions);
+
+  I.pressKey(["ctrl", "z"]);
+  I.seeElement("[disabled][aria-label=\"Undo\"]");
+  I.seeElement(":not([disabled])[aria-label=\"Redo\"]");
+  AtSidebar.seeRegions(0);
 });
