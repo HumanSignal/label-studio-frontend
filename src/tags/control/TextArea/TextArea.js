@@ -23,9 +23,9 @@ import { FF_DEV_1564_DEV_1565, isFF } from "../../../utils/feature-flags";
 const { TextArea } = Input;
 
 /**
- * Use the TextArea tag to display a text area for user input. Use for transcription, paraphrasing, or captioning tasks.
+ * The `TextArea` tag is used to display a text area for user input. Use for transcription, paraphrasing, or captioning tasks.
  *
- * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
  * @example
  * <!--Basic labeling configuration to display only a text area -->
  * <View>
