@@ -20,11 +20,11 @@ import { SyncMixin } from "../../../mixins/SyncMixin";
 const isFFDev2461 = isFF(FF_DEV_2461);
 
 /**
- * The Paragraphs tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
- * The Paragraphs tag expects task data formatted as an array of objects like the following:
+ * The `Paragraphs` tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
+ * The `Paragraphs` tag expects task data formatted as an array of objects like the following:
  * [{ $nameKey: "Author name", $textKey: "Text" }, ... ]
  *
- * Use with the following data types: text
+ * Use with the following data types: text.
  * @example
  * <!--Labeling configuration to label paragraph regions of text containing dialogue-->
  * <View>
