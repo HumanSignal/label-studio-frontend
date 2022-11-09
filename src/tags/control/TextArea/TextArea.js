@@ -307,6 +307,7 @@ const HtxTextArea = observer(({ item }) => {
     label: item.label,
     placeholder: item.placeholder,
     onChange: ev => {
+      if (!item.annotation.editable) return;
       const { value } = ev.target;
 
       item.setValue(value);
@@ -317,7 +318,13 @@ const HtxTextArea = observer(({ item }) => {
   if (rows > 1) {
     // allow to add multiline text with shift+enter
     props.onKeyDown = e => {
-      if (e.key === "Enter" && e.shiftKey && item.allowsubmit && item._value) {
+      if (
+        e.key === "Enter" &&
+        e.shiftKey &&
+        item.allowsubmit &&
+        item._value &&
+        item.annotation.editable
+      ) {
         e.preventDefault();
         e.stopPropagation();
         item.addText(item._value);
@@ -326,7 +333,7 @@ const HtxTextArea = observer(({ item }) => {
     };
   }
 
-  if (!item.annotation.editable) props["disabled"] = true;
+  if (item.annotation.readonly) props["disabled"] = true;
 
   const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
 
@@ -344,7 +351,7 @@ const HtxTextArea = observer(({ item }) => {
       {item.showSubmit && (
         <Form
           onFinish={() => {
-            if (item.allowsubmit && item._value) {
+            if (item.allowsubmit && item._value && item.annotation.editable) {
               item.addText(item._value);
               item.setValue("");
             }
@@ -439,6 +446,7 @@ const HtxTextAreaResult = observer(({
   const editable = item.editable && item.from_name.editable && !item.area.readonly;
 
   const changeHandler = useCallback((idx, val) => {
+    if (!item.isEditable) return;
     const newValue = value.toJSON();
 
     newValue.splice(idx, 1, val);
@@ -446,6 +454,7 @@ const HtxTextAreaResult = observer(({
   }, [value]);
 
   const deleteHandler = useCallback((idx) => {
+    if (!item.isDeleteable) return;
     const newValue = value.toJSON();
 
     newValue.splice(idx, 1);
@@ -550,7 +559,7 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
   if (isTextArea) {
     // allow to add multiline text with shift+enter
     props.onKeyDown = e => {
-      if ((e.key === "Enter" && !e.shiftKey) || e.key === "Escape") {
+      if (((e.key === "Enter" && !e.shiftKey) || e.key === "Escape") && item.annotation.editable) {
         e.preventDefault();
         e.stopPropagation();
         if (item.allowsubmit && item._value) {
@@ -562,7 +571,7 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
     };
   }
 
-  if (!item.annotation.editable) props["disabled"] = true;
+  if (item.annotation.readonly) props["disabled"] = true;
 
   const showAddButton = (item.annotation.editable && rows !== 1) || item.showSubmitButton;
   const itemStyle = {};
@@ -590,7 +599,7 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
         <Elem name="form"
           tag={Form}
           onFinish={() => {
-            if (item.allowsubmit && item._value) {
+            if (item.allowsubmit && item._value && item.annotation.editable) {
               submitValue();
             }
             return false;
