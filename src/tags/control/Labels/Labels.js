@@ -20,7 +20,7 @@ import "../Label";
 import "./Labels.styl";
 
 /**
- * The Labels tag provides a set of labels for labeling regions in tasks for machine learning and data science projects. Use the Labels tag to create a set of labels that can be assigned to identified region and specify the values of labels to assign to regions.
+ * The `Labels` tag provides a set of labels for labeling regions in tasks for machine learning and data science projects. Use the `Labels` tag to create a set of labels that can be assigned to identified region and specify the values of labels to assign to regions.
  *
  * All types of Labels can have dynamic value to load labels from task. This task data should contain a list of options to create underlying <Label>s. All the parameters from options will be transferred to corresponding tags.
  *

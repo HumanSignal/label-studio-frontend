@@ -14,9 +14,9 @@ import { FF_DEV_2576, isFF } from "../../utils/feature-flags";
 const hotkeys = Hotkey("Polygons");
 
 /**
- * Use the Polygon tag to add polygons to an image without selecting a label. This can be useful when you have only one label to assign to the polygon. Use for image segmentation tasks.
+ * The `Polygon` tag is used to add polygons to an image without selecting a label. This can be useful when you have only one label to assign to the polygon. Use for image segmentation tasks.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic labeling configuration for polygonal image segmentation -->
  * <View>

@@ -16,7 +16,7 @@ import "./Choice/Choice.styl";
 import { LsChevron } from "../../assets/icons";
 
 /**
- * The Choice tag represents a single choice for annotations. Use with the Choices tag or Taxonomy tag to provide specific choice options.
+ * The `Choice` tag represents a single choice for annotations. Use with the `Choices` tag or `Taxonomy` tag to provide specific choice options.
  *
  * @example
  * <!--Basic text classification labeling configuration-->

@@ -24,11 +24,11 @@ import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-fla
 const { Option } = Select;
 
 /**
- * Use the Choices tag to create a group of choices, with radio buttons or checkboxes. Can be used for single or multi-class classification. Use for advanced classification tasks where annotators can choose one or multiple answers.
+ * The `Choices` tag is used to create a group of choices, with radio buttons or checkboxes. It can be used for single or multi-class classification. Also, it is used for advanced classification tasks where annotators can choose one or multiple answers.
  *
  * Choices can have dynamic value to load labels from task. This task data should contain a list of options to create underlying <Choice>s. All the parameters from options will be transferred to corresponding tags.
  *
- * The Choices tag can be used with any data types.
+ * The `Choices` tag can be used with any data types.
  * @example
  * <!--Basic text classification labeling configuration-->
  * <View>
