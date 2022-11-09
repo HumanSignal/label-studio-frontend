@@ -137,6 +137,7 @@ const Node: FC<any> = observer(({ className, node }) => {
   return (
     <Block name="node" tag="span" className={className}>
       {labelName}
+      {node.isDrawing && <Elem tag="span" name="incomplete"> - Unfinished</Elem>}
       {" "}
       {getContent(node)}
     </Block>

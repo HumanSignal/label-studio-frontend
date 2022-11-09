@@ -315,7 +315,10 @@ const RootTitle: FC<any> = observer(({
     <Block name="outliner-item">
       <Elem name="content">
         {!props.isGroup && <Elem name="index">{props.idx + 1}</Elem>}
-        <Elem name="title">{label}</Elem>
+        <Elem name="title">
+          {label}
+          {item.isDrawing && <Elem tag="span" name="incomplete"> - Unfinished</Elem>}
+        </Elem>
         <RegionControls
           hovered={hovered}
           item={item}
