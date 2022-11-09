@@ -7,11 +7,11 @@ import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
 /**
- * Use the Brush tag for image segmentation tasks where you want to apply a mask or use a brush to draw a region on the image.
+ * The `Brush` tag is used for image segmentation tasks where you want to apply a mask or use a brush to draw a region on the image.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
- * <!--Basic image segmentation labeling configuration-->
+ * Basic image segmentation labeling configuration:
  * <View>
  *   <Brush name="labels" toName="image">
  *     <Label value="Person" />
