@@ -6,7 +6,7 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * The `Relations` tag to create label relations between regions. Use to provide many values to apply to the relationship between two labeled regions.
+ * The `Relations` tag is used to create label relations between regions. Use to provide many values to apply to the relationship between two labeled regions.
  *
  * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
  * @example
