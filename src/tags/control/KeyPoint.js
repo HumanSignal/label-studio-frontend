@@ -7,9 +7,9 @@ import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
 import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
 /**
- * Use the KeyPoint tag to add a key point to an image without selecting a label. This can be useful when you have only one label to assign to the key point.
+ * The `KeyPoint` tag is used to add a key point to an image without selecting a label. This can be useful when you have only one label to assign to the key point.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic keypoint image labeling configuration-->
  * <View>
