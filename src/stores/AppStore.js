@@ -442,6 +442,7 @@ export default types
         };
       }
 
+
       self.task = Task.create(taskObject);
       if (taskHistory) {
         self.taskHistory = taskHistory;
@@ -476,6 +477,7 @@ export default types
     /* eslint-enable no-unused-vars */
 
     function submitDraft(c, params = {}) {
+      console.log('heartex submit draft');
       return new Promise(resolve => {
         const events = getEnv(self).events;
 
@@ -507,6 +509,15 @@ export default types
 
     function submitAnnotation() {
       if (self.isSubmitting) return;
+
+      if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) !== self.taskHistory.length - 1) {
+        self.taskHistory = self.taskHistory.filter(a => a.taskId !== self.task.id);
+
+        self.taskHistory.splice(self.taskHistory.length - 1, 0, {
+          taskId: self.task.id,
+          annotationId: null,
+        });
+      }
 
       const entity = self.annotationStore.selected;
       const event = entity.exists ? 'updateAnnotation' : 'submitAnnotation';
