@@ -42,8 +42,6 @@ export const RegionItem: FC<RegionItemProps> = observer(({
     return chroma(bgColor).alpha(1);
   }, [region]);
 
-  console.log("region", region);
-
   return (
     <Block name="detailed-region" mod={{ compact }}>
       <Elem name="head" style={{ color: color.css() }}>
