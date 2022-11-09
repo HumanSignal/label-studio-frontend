@@ -32,7 +32,7 @@ const { TextArea } = Input;
  *   <TextArea name="ta"></TextArea>
  * </View>
  * @example
- * <!--You can combine the TextArea tag with other tags for OCR or other transcription tasks-->
+ * <!--You can combine the `TextArea` tag with other tags for OCR or other transcription tasks-->
  * <View>
  *   <Image name="image" value="$ocr"/>
  *   <Labels name="label" toName="image">
