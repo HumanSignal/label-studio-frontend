@@ -13,9 +13,9 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { customTypes } from "../../core/CustomTypes";
 
 /**
- * The Audio tag plays a simple audio file. Use this tag for basic audio annotation tasks such as classification or transcription.
+ * The `Audio` tag plays a simple audio file. Use this tag for basic audio annotation tasks such as classification or transcription.
  *
- * Use with the following data types: audio
+ * Use with the following data types: audio.
  * @example
  * <!--Play audio on the labeling interface-->
  * <View>

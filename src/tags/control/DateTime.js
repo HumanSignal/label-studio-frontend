@@ -290,6 +290,7 @@ const DateTimeModel = types.compose(
 
 const HtxDateTime = inject("store")(
   observer(({ item }) => {
+    const disabled = !item.annotation.editable;
     const visibleStyle = item.perRegionVisible() ? { margin: "0 0 1em" } : { display: "none" };
     const visual = {
       style: { width: "auto", marginRight: "4px" },
@@ -322,7 +323,7 @@ const HtxDateTime = inject("store")(
     return (
       <div style={visibleStyle}>
         {item.showMonth && (
-          <select {...visual} name={item.name + "-date"} value={item.month} onChange={item.onMonthChange}>
+          <select {...visual} name={item.name + "-date"} value={item.month} onChange={disabled ? undefined : item.onMonthChange}>
             <option value="">Month...</option>
             {item.months.map((month, index) => (
               <option key={month} value={index + 1}>
@@ -332,7 +333,7 @@ const HtxDateTime = inject("store")(
           </select>
         )}
         {item.showYear && (
-          <select {...visual} name={item.name + "-year"} value={item.year || ""} onChange={item.onYearChange}>
+          <select {...visual} name={item.name + "-year"} value={item.year || ""} onChange={disabled ? undefined : item.onYearChange}>
             <option value="">Year...</option>
             {item.years.map(year => (
               <option key={year} value={year}>
@@ -345,23 +346,25 @@ const HtxDateTime = inject("store")(
           <input
             {...visual}
             type="date"
+            readOnly={disabled}
             name={item.name + "-date"}
             value={dateInputValue}
             min={item.min}
             max={item.max}
-            onChange={handleDateInputValueChange}
-            onBlur={handleDateOnBlur}
+            onChange={disabled ? undefined : handleDateInputValueChange}
+            onBlur={disabled ? undefined : handleDateOnBlur}
           />
         )}
         {item.showTime && (
           <input
             {...visual}
             type="time"
+            readOnly={disabled}
             name={item.name + "-time"}
             value={item.time ?? ""}
             min={minTime}
             max={maxTime}
-            onChange={item.onTimeChange}
+            onChange={disabled ? undefined : item.onTimeChange}
           />
         )}
       </div>

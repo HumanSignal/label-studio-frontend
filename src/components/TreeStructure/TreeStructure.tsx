@@ -69,8 +69,10 @@ const TreeStructure = ({
   maxWidth,
   transformationCallback,
   defaultExpanded,
+  isEditable,
 }: {
   items: any[],
+  isEditable?: boolean,
   rowComponent: React.FC<any>,
   flatten: boolean,
   rowHeight: number,
@@ -130,12 +132,13 @@ const TreeStructure = ({
   };
   
   const addInside = (id?: string) => {
+    if (!isEditable) return;
+
     if (id) {
       setData(recursiveTreeWalker({ items, addInsideId: id }));
     }
     else setData(recursiveTreeWalker({ items }));
     updateHeight();
-
   };
 
   const Row = ({
@@ -183,7 +186,7 @@ const TreeStructure = ({
     }, [width]);
 
     return (
-      <RowComponent {...{ item, style, dimensionCallback, maxWidth }} />
+      <RowComponent {...{ isEditable, item, style, dimensionCallback, maxWidth }} />
     );
   };
 

@@ -354,7 +354,7 @@ const HtxEllipseView = ({ item }) => {
           }
         }}
         onClick={e => {
-          if (!item.annotation.editable || item.parent.getSkipInteractions()) return;
+          if (item.parent.getSkipInteractions()) return;
 
           if (store.annotationStore.selected.relationMode) {
             stage.container().style.cursor = Constants.DEFAULT_CURSOR;
@@ -364,7 +364,7 @@ const HtxEllipseView = ({ item }) => {
           item.onClickRegion(e);
         }}
         draggable={item.editable}
-        listening={!suggestion && item.editable}
+        listening={!suggestion}
       />
       <LabelOnEllipse item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth}/>
     </Fragment>

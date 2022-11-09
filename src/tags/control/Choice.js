@@ -16,7 +16,7 @@ import "./Choice/Choice.styl";
 import { LsChevron } from "../../assets/icons";
 
 /**
- * The Choice tag represents a single choice for annotations. Use with the Choices tag or Taxonomy tag to provide specific choice options.
+ * The `Choice` tag represents a single choice for annotations. Use with the `Choices` tag or `Taxonomy` tag to provide specific choice options.
  *
  * @example
  * <!--Basic text classification labeling configuration-->
@@ -119,7 +119,7 @@ const Model = types
   }))
   .actions(self => ({
     toggleSelected() {
-      if (self.parent?.readonly || self.annotation?.readonly) return;
+      if (self.parent?.readonly || !self.annotation?.editable) return;
       const choices = self.parent;
       const selected = self.sel;
 
@@ -172,7 +172,7 @@ class HtxChoiceView extends Component {
 
     const props = {
       checked: item.sel,
-      disabled: item.parent?.readonly || item.annotation?.readonly,
+      disabled: item.parent?.readonly,
       onChange: ev => {
         if (!item.annotation.editable) return;
         item.toggleSelected();
@@ -238,7 +238,7 @@ const HtxNewChoiceView = ({ item, store }) => {
           mod={{ notLeaf: !item.isLeaf }}
           checked={item.sel}
           indeterminate={!item.sel && item.indeterminate}
-          disabled={item.parent?.readonly || item.annotation?.readonly}
+          disabled={item.parent?.readonly}
           onChange={changeHandler}
         >
           {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
