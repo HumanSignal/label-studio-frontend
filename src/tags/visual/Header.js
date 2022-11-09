@@ -6,6 +6,7 @@ import { Typography } from "antd";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
+import { guidGenerator } from "../../utils/unique";
 import { clamp } from "../../utils/utilities";
 
 /**
@@ -29,6 +30,7 @@ import { clamp } from "../../utils/utilities";
  * @param {boolean} [underline=false] - Whether to underline the header
  */
 const Model = types.model({
+  id: types.optional(types.identifier, guidGenerator),
   type: "header",
   size: types.optional(types.string, "4"),
   style: types.maybeNull(types.string),

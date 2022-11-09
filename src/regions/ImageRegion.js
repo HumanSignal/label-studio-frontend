@@ -230,8 +230,6 @@ const RegionMixin = types
     onClickRegion() {
       const annotation = self.annotation;
 
-      if (!annotation.editable) return;
-
       if (annotation.relationMode) {
         annotation.addRelation(self);
         annotation.stopRelationMode();

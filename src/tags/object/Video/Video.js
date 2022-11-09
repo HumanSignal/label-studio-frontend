@@ -44,7 +44,6 @@ import Types from "../../../core/Types";
  */
 
 const TagAttrs = types.model({
-  name: types.identifier,
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   framerate: types.optional(types.string, "24"),

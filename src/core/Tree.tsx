@@ -1,10 +1,11 @@
 import React from "react";
 import { getParentOfType, getType } from "mobx-state-tree";
+import { IAnyComplexType, IAnyStateTreeNode } from "mobx-state-tree/dist/internal";
 
 import Registry from "./Registry";
 import { parseValue } from "../utils/data";
+import { FF_DEV_3391, isFF } from "../utils/feature-flags";
 import { guidGenerator } from "../utils/unique";
-import { IAnyComplexType, IAnyStateTreeNode } from "mobx-state-tree/dist/internal";
 
 interface ConfigNodeBaseProps {
   id: string;
@@ -16,6 +17,11 @@ interface ConfigNode extends ConfigNodeBaseProps {
   // [key: string]: string,
   children?: ConfigNode[];
   value?: string;
+}
+
+interface IAnnotation {
+  id: string;
+  ids: Map<string, IAnyStateTreeNode>;
 }
 
 export const TRAVERSE_SKIP = "skip";
@@ -66,9 +72,12 @@ function tagIntoObject(
   const props = attrsToProps(node, replaces);
   const type = node.tagName.toLowerCase();
   const indexFlag = props.indexflag ?? "{{idx}}";
+  const id = isFF(FF_DEV_3391)
+    ? node.getAttribute('name') ?? guidGenerator()
+    : guidGenerator();
   const data: ConfigNode = {
     ...props,
-    id: guidGenerator(),
+    id,
     tagName: node.tagName,
     type,
   };
@@ -222,7 +231,20 @@ function treeToModel(html: string, store: { task: { dataObj: Record<string, any>
  * Render items of tree
  * @param {*} el
  */
-function renderItem(el: IAnyStateTreeNode, includeKey = true) {
+function renderItem(ref: IAnyStateTreeNode, annotation: IAnnotation, includeKey = true) {
+  let el = ref;
+
+  if (isFF(FF_DEV_3391)) {
+    if (!annotation) return null;
+
+    el = annotation.ids.get(cleanUpId(ref.id ?? ref.name));
+  }
+
+  if (!el) {
+    console.error(`Can't find element ${ref.id ?? ref.name} in annotation ${annotation?.id}`);
+    return null;
+  }
+
   const type = getType(el);
   const identifierAttribute = type.identifierAttribute;
   const typeName = type.name;
@@ -240,10 +262,10 @@ function renderItem(el: IAnyStateTreeNode, includeKey = true) {
  *
  * @param {*} item
  */
-function renderChildren(item: IAnyStateTreeNode) {
+function renderChildren(item: IAnyStateTreeNode, annotation: IAnnotation) {
   if (item && item.children && item.children.length) {
     return item.children.map((el: IAnyStateTreeNode) => {
-      return renderItem(el);
+      return renderItem(el, annotation);
     });
   } else {
     return null;
@@ -308,6 +330,47 @@ function traverseTree(root: IAnyStateTreeNode, cb: (node: IAnyStateTreeNode) => 
   visitNode(root);
 }
 
+const cleanUpId = (id: string) => id.replace(/@.*/, '');
+
+function extractNames(root: IAnyStateTreeNode) {
+  const objects: IAnyStateTreeNode[] = [];
+  const names = new Map<string, IAnyStateTreeNode>();
+  const toNames = new Map<string, IAnyStateTreeNode[]>();
+
+  // hacky way to get all the available object tag names
+  const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
+
+  traverseTree(root, node => {
+    if (node.name) {
+      names.set(cleanUpId(node.name), node);
+      if (objectTypes.includes(node.type)) objects.push(cleanUpId(node.name));
+    }
+  });
+
+  // initialize toName bindings [DOCS] name & toName are used to
+  // connect different components to each other
+  traverseTree(root, node => {
+    const isControlTag = node.name && !objectTypes.includes(node.type);
+    // auto-infer missed toName if there is only one object tag in the config
+
+    if (isControlTag && !node.toname && objects.length === 1) {
+      node.toname = objects[0];
+    }
+
+    if (node && node.toname) {
+      const val = toNames.get(node.toname);
+
+      if (val) {
+        val.push(names.get(cleanUpId(node.name)));
+      } else {
+        toNames.set(node.toname, [names.get(cleanUpId(node.name))]);
+      }
+    }
+  });
+
+  return { names, toNames };
+}
+
 export default {
   renderItem,
   renderChildren,
@@ -316,4 +379,6 @@ export default {
   filterChildrenOfType,
   cssConverter,
   traverseTree,
+  extractNames,
+  cleanUpId,
 };

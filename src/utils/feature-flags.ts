@@ -102,6 +102,9 @@ export const FF_DEV_2918 = "fflag_fix_front_dev_2918_labeling_filtered_paragraph
  */
 export const FF_DEV_3377 = "fflag_fix_front_dev_3377_image_regions_shift_on_resize_280922_short";
 
+// Refactoring to use separate trees for every annotation to allow real annotations in View All
+export const FF_DEV_3391 = "fflag_fix_front_dev_3391_interactive_view_all";
+
 /**
  * Addresses the memory leak issue in Taxonomy with Repeater
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix
