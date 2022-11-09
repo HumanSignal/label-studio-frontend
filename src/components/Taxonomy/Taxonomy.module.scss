@@ -33,10 +33,13 @@
     margin: 0 2px 4px 0;
     background: hsl(0, 0%, 95%);
     padding: 0; // all the right space should be a clickable button, so no padding
-    padding-left: 8px;
     border-radius: 4px;
     display: flex;
     align-items: center;
+
+    span {
+      padding-inline: 8px;
+    }
   }
 
   input[type="button"] {
@@ -50,6 +53,7 @@
     font-weight: 500;
     font-size: 20px;
     color: #09f;
+    margin-left: -8px; // to align with the right edge of the text
 
     &:hover {
       color: red;
