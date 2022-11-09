@@ -186,9 +186,9 @@ const Model = types
     updateChildren() {
       const children = ChildrenSnapshots.get(self.name) ?? [];
 
-      if (children) {
+      if (children.length) {
         self._children = children;
-        self.children = ChildrenSnapshots.get(self.name) ?? [];
+        self.children = [...children];
         self.store.unlock();
         ChildrenSnapshots.delete(self.name);
       }
