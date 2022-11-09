@@ -1,6 +1,6 @@
 import { Typography } from "antd";
 import { observer } from "mobx-react";
-import { FC, useMemo } from "react";
+import { FC, useEffect, useMemo, useRef } from "react";
 import { Tag } from "../../../common/Tag/Tag";
 import { PER_REGION_MODES } from "../../../mixins/PerRegionModes";
 import { Block, Elem, useBEM } from "../../../utils/bem";
@@ -127,33 +127,61 @@ export const RegionDetailsMain: FC<{region: any}> = observer(({
   );
 });
 
-type RegionDetailsMetaProps = {region: any, editMode?: boolean, cancelEditMode?: () => void}
+type RegionDetailsMetaProps = {
+  region: any,
+  editMode?: boolean,
+  cancelEditMode?: () => void,
+  enterEditMode?: () => void,
+}
 
 export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
   region,
   editMode,
   cancelEditMode,
+  enterEditMode,
 }) => {
   const bem = useBEM();
+  const input = useRef<HTMLTextAreaElement | null>();
+
+  const saveMeta = (value: string) => {
+    region.setMetaInfo(value);
+    region.setNormInput(value);
+  };
+
+  useEffect(() => {
+    if (editMode &&  input.current) {
+      const { current } = input;
+
+      current.focus();
+      current.setSelectionRange(current.value.length, current.value.length);
+    }
+  }, [editMode]);
 
   return (
     <>
       {editMode ? (
         <textarea
+          ref={el => input.current = el}
           placeholder="Meta"
           className={bem.elem("meta-text").toClassName()}
           value={region.normInput}
-          onChange={(e) => region.setNormInput(e.target.value)}
+          onChange={(e) => saveMeta(e.target.value)}
+          onBlur={() => {
+            saveMeta(region.normInput);
+            cancelEditMode?.();
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
-              region.setMetaInfo(region.normInput);
+              saveMeta(region.normInput);
               cancelEditMode?.();
             }
           }}
         />
       ) : region.meta?.text && (
-        <Elem name="meta-text">
+        <Elem name="meta-text"
+          onClick={() => enterEditMode?.()}
+        >
           {region.meta?.text}
         </Elem>
       )}

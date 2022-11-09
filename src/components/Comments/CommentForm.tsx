@@ -4,7 +4,6 @@ import { ReactComponent as IconSend } from "../../assets/icons/send.svg";
 
 import "./CommentForm.styl";
 import { TextArea } from "../../common/TextArea/TextArea";
-import { Tooltip } from "../../../src/common/Tooltip/Tooltip";
 import { observer } from "mobx-react";
 
 
@@ -27,9 +26,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
 }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const actionRef = useRef<{ update?: (text?: string) => void, el?: RefObject<HTMLTextAreaElement> }>({});
-  const clearTooltipMessage = () => {
-    commentStore.setTooltipMessage("");
-  };
+  const clearTooltipMessage = () => commentStore.setTooltipMessage("");
   const onSubmit = useCallback(async (e?: any) => {
     e?.preventDefault?.();
 
@@ -79,7 +76,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
         onChange={onChange}
         onInput={onInput}
         onSubmit={inline ? onSubmit : undefined}
-        onBlur={() => commentStore.currentComment ? onSubmit() : clearTooltipMessage()}
+        onBlur={clearTooltipMessage}
       />
       <Elem tag="div" name="primary-action">
         <button type="submit">

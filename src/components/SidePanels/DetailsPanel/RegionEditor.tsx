@@ -141,7 +141,7 @@ const RegionProperty: FC<RegionPropertyProps> = ({
           type={getInputType(propertyType)}
           step="0.01"
           value={value}
-          onChange={(v) => onChangeHandler(v)}
+          onChange={(v) => onChangeHandler(Number(v))}
         />
       ) : options ? (
         <select

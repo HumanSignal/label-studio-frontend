@@ -1,5 +1,5 @@
 import Konva from "konva";
-import React, { memo, useContext, useMemo } from "react";
+import React, { memo, useContext, useEffect, useMemo } from "react";
 import { Group, Line } from "react-konva";
 import { destroy, detach, getRoot, types } from "mobx-state-tree";
 
@@ -21,6 +21,7 @@ import { observer } from "mobx-react";
 import { minMax } from "../utils/utilities";
 import { createDragBoundFunc } from "../utils/image";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import { FF_DEV_2432, isFF } from "../utils/feature-flags";
 
 const Model = types
   .model({
@@ -30,11 +31,11 @@ const Model = types
     object: types.late(() => types.reference(ImageModel)),
 
     points: types.array(types.union(PolygonPoint, types.array(types.number)), []),
+    closed: true,
 
     coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
   })
   .volatile(() => ({
-    closed: false,
     mouseOverStartPoint: false,
     selectedPoint: null,
     hideable: true,
@@ -49,7 +50,7 @@ const Model = types
       return getRoot(self);
     },
     get bboxCoords() {
-      return self.points.reduce((bboxCoords, point) => {
+      return self.points?.length && self.points.reduce((bboxCoords, point) => {
         if (bboxCoords && point) return {
           left: Math.min(bboxCoords.left, point.x),
           top: Math.min(bboxCoords.top, point.y),
@@ -66,8 +67,6 @@ const Model = types
     },
   }))
   .actions(self => {
-    let _historyPoints = [];
-
     return {
       afterCreate() {
         if (!self.points.length) return;
@@ -81,7 +80,7 @@ const Model = types
             index,
           }));
         }
-        if (self.points.length > 2) self.closed = true;
+        if (!isFF(FF_DEV_2432)) self.closed = self.points.length > 2;
         self.checkSizes();
       },
 
@@ -147,8 +146,6 @@ const Model = types
       addPoint(x, y) {
         if (self.closed) return;
         self._addPoint(x, y);
-
-        _historyPoints = [...self.points];
       },
 
       setPoints(points) {
@@ -169,25 +166,6 @@ const Model = types
         };
 
         self.points.splice(insertIdx, 0, p);
-      },
-
-      undoPoints(drawingTool){
-        if(self.points.length === 1){
-          drawingTool.cleanupUncloseableShape();
-          _historyPoints = [];
-
-          return;
-        }
-
-        this.deletePoint(self.points[self.points.length - 1]);
-      },
-
-      redoPoints(){
-        const historyPoints = _historyPoints[self.points.length];
-
-        if (historyPoints) {
-          this._addPoint(historyPoints.x, historyPoints.y);
-        }
       },
 
       _addPoint(x, y) {
@@ -297,13 +275,17 @@ const Model = types
        * @return {PolygonRegionResult}
        */
       serialize() {
-        if (self.points.length < 3) return null;
+        if (!isFF(FF_DEV_2432) && self.points.length < 3) return null;
         return {
           original_width: self.parent.naturalWidth,
           original_height: self.parent.naturalHeight,
           image_rotation: self.parent.rotation,
           value: {
             points: self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
+            ...(isFF(FF_DEV_2432)
+              ? { closed : self.closed }
+              : {}
+            ),
           },
         };
       },
@@ -565,6 +547,10 @@ const HtxPolygonView = ({ item }) => {
   if (!item.parent) return null;
 
   const stage = item.parent.stageRef;
+
+  useEffect(() => {
+    if (isFF(FF_DEV_2432) && !item.closed) item.control.tools.Polygon.resumeUnfinishedRegion(item);
+  }, [item.closed]);
 
   return (
     <Group

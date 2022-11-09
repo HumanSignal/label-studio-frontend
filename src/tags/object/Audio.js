@@ -13,9 +13,9 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import { customTypes } from "../../core/CustomTypes";
 
 /**
- * The Audio tag plays a simple audio file. Use this tag for basic audio annotation tasks such as classification or transcription.
+ * The `Audio` tag plays a simple audio file. Use this tag for basic audio annotation tasks such as classification or transcription.
  *
- * Use with the following data types: audio
+ * Use with the following data types: audio.
  * @example
  * <!--Play audio on the labeling interface-->
  * <View>
@@ -90,6 +90,11 @@ const Model = types
 
     onLoad(ws) {
       self._ws = ws;
+      const history = self.annotation.history;
+
+      // In cases where we do skipNextUndoState on region creation, we need to make sure
+      // that we don't skip the next undo state after it is resolved entirely.
+      setTimeout(() => history.setSkipNextUndoState(false), 0);
     },
 
     onError(error) {

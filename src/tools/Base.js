@@ -24,6 +24,7 @@ const ToolView = observer(({ item }) => {
 const BaseTool = types
   .model("BaseTool", {
     smart: false,
+    isDrawingTool: false,
   })
   .volatile(() => ({
     dynamic: false,

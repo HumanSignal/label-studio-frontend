@@ -24,7 +24,7 @@ const wrapper = (_type, value, title) => {
       custom.title = "Info";
   }
 
-  custom.type({
+  return custom.type({
     title: title ? title : custom.title,
     content: value,
   });
@@ -36,7 +36,7 @@ const wrapper = (_type, value, title) => {
  * @param {string} title
  */
 const error = (value, title) => {
-  wrapper(`error`, value, title);
+  return wrapper(`error`, value, title);
 };
 
 /**
@@ -45,7 +45,7 @@ const error = (value, title) => {
  * @param {string} title
  */
 const warning = (value, title) => {
-  wrapper(`warning`, value, title);
+  return wrapper(`warning`, value, title);
 };
 
 /**
@@ -54,7 +54,7 @@ const warning = (value, title) => {
  * @param {string} title
  */
 const success = (value, title) => {
-  wrapper(`success`, value, title);
+  return wrapper(`success`, value, title);
 };
 
 /**
@@ -63,7 +63,7 @@ const success = (value, title) => {
  * @param {string} title
  */
 const info = (value, title) => {
-  wrapper(`info`, value, title);
+  return wrapper(`info`, value, title);
 };
 
 export default { error, warning, success, info };

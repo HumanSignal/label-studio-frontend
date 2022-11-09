@@ -4,7 +4,7 @@ import { Dropdown, Menu } from "antd";
 import { useToggle } from "../../hooks/useToggle";
 import { isArraysEqual } from "../../utils/utilities";
 import { LsChevron } from "../../assets/icons";
-import TreeStructure, { RowItem } from "../TreeStructure/TreeStructure";
+import TreeStructure from "../TreeStructure/TreeStructure";
 
 import styles from "./Taxonomy.module.scss";
 
@@ -113,17 +113,26 @@ const UserLabelForm = ({ onAddLabel, onFinish, path }: UserLabelFormProps) => {
   );
 };
 
-const SelectedList = ({ isReadonly }) => {
+const SelectedList = ({ isReadonly, flatItems } : { isReadonly:boolean, flatItems:TaxonomyItem[] }) => {
   const [selected, setSelected] = useContext(TaxonomySelectedContext);
   const { showFullPath, pathSeparator = " / " } = useContext(TaxonomyOptionsContext);
 
+  const selectedLabels = selected.map((selectedItem: string[]) =>
+    selectedItem.map(
+      (value: string) => {
+        const label = flatItems.find(taxonomyItem => taxonomyItem.path[taxonomyItem.path.length - 1] === value)?.label;
+        
+        return label ?? value;  
+      }),
+  );
+  
   return (
     <div className={styles.taxonomy__selected}>
-      {selected.map(path => (
+      {selectedLabels.map((path, index) => (
         <div key={path.join("|")}>
           {showFullPath ? path.join(pathSeparator) : path[path.length - 1]}
           {!isReadonly &&
-            <input type="button" onClick={() => setSelected(path, false)} value="×" />
+            <input type="button" onClick={() => setSelected(selected[index], false)} value="×" />
           }
         </div>
       ))}
@@ -508,7 +517,7 @@ const Taxonomy = ({
   return (
     <TaxonomySelectedContext.Provider value={contextValue}>
       <TaxonomyOptionsContext.Provider value={optionsWithMaxUsages}>
-        <SelectedList isReadonly={isReadonly}/>
+        <SelectedList isReadonly={isReadonly} flatItems={flatten} />
         {!isReadonly && (
           <div className={[styles.taxonomy, isOpenClassName].join(" ")} ref={taxonomyRef}>
             <span onClick={() => setOpen(val => !val)}>

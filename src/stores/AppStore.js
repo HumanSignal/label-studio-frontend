@@ -1,6 +1,6 @@
 /* global LSF_VERSION */
 
-import { flow, getEnv, getSnapshot, types } from "mobx-state-tree";
+import { destroy, detach, flow, getEnv, getSnapshot, types } from "mobx-state-tree";
 
 import uniqBy from "lodash/uniqBy";
 import InfoModal from "../components/Infomodal/Infomodal";
@@ -191,7 +191,7 @@ export default types
 
       if (hasHistory) {
         const lastTaskId = self.taskHistory[self.taskHistory.length - 1].taskId;
-        
+
         return self.task.id !== lastTaskId;
       }
       return false;
@@ -432,8 +432,9 @@ export default types
     /**
      *
      * @param {*} taskObject
+     * @param {*[]} taskHistory
      */
-    function assignTask(taskObject, isPrevious) {
+    function assignTask(taskObject, taskHistory, isPrevious) {
       if (taskObject && !Utils.Checkers.isString(taskObject.data)) {
         taskObject = {
           ...taskObject,
@@ -442,7 +443,9 @@ export default types
       }
 
       self.task = Task.create(taskObject);
-      if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) === -1) {
+      if (taskHistory) {
+        self.taskHistory = taskHistory;
+      } else if (!self.taskHistory.some((x) => x.taskId === self.task.id)) {
         if (isPrevious) {
           self.taskHistory.unshift({
             taskId: self.task.id,
@@ -488,6 +491,7 @@ export default types
     // to prevent from sending duplicating requests.
     // Better to return request's Promise from SDK to make this work perfect.
     function handleSubmittingFlag(fn, defaultMessage = "Error during submit") {
+      if (self.isSubmitting) return;
       self.setFlags({ isSubmitting: true });
       const res = fn();
       // Wait for request, max 5s to not make disabled forever broken button;
@@ -535,12 +539,14 @@ export default types
     }
 
     function skipTask(extraData) {
+      if (self.isSubmitting) return;
       handleSubmittingFlag(() => {
         getEnv(self).events.invoke('skipTask', self, extraData);
       }, "Error during skip, try again");
     }
 
     function unskipTask() {
+      if (self.isSubmitting) return;
       handleSubmittingFlag(() => {
         getEnv(self).events.invoke('unskipTask', self);
       }, "Error during cancel skipping task, try again");
@@ -589,13 +595,16 @@ export default types
       // Same with hotkeys
       Hotkey.unbindAll();
       self.attachHotkeys();
+      const oldAnnotationStore = self.annotationStore;
+
+      if (oldAnnotationStore) {
+        oldAnnotationStore.beforeReset?.();
+        detach(oldAnnotationStore);
+        destroy(oldAnnotationStore);
+      }
 
       self.annotationStore = AnnotationStore.create({ annotations: [] });
       self.initialized = false;
-
-      // const c = self.annotationStore.addInitialAnnotation();
-
-      // self.annotationStore.selectAnnotation(c.id);
     }
 
     /**
@@ -606,6 +615,7 @@ export default types
     function initializeStore({ annotations, completions, predictions, annotationHistory }) {
       const as = self.annotationStore;
 
+      as.afterReset?.();
       as.initRoot(self.config);
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
@@ -633,7 +643,6 @@ export default types
       if (current) current.setInitialValues();
 
       self.setHistory(annotationHistory);
-      /* eslint-enable no-unused-expressions */
 
       if (!self.initialized) {
         self.initialized = true;

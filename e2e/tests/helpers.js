@@ -8,13 +8,15 @@
  * @param {object[]} params.annotations
  * @param {object[]} params.predictions
  */
-const initLabelStudio = async ({
+async function initLabelStudio({
   config,
   data,
   annotations = [{ result: [] }],
   predictions = [],
   settings = {},
-}) => {
+  additionalInterfaces = [],
+  params = {},
+}) {
   if (window.Konva && window.Konva.stages.length) window.Konva.stages.forEach(stage => stage.destroy());
 
   const interfaces = [
@@ -33,11 +35,89 @@ const initLabelStudio = async ({
     "predictions:tabs",
     "predictions:menu",
     "edit-history",
+    ...additionalInterfaces,
   ];
   const task = { data, annotations, predictions };
 
   window.LabelStudio.destroyAll();
-  new window.LabelStudio("label-studio", { interfaces, config, task, settings });
+  window.labelStudio = new window.LabelStudio("label-studio", { interfaces, config, task, settings, ...params });
+}
+
+const createMethodInjectionIntoScript = (fnName, fn) => {
+  const args = (new Array(fn.length)).fill().map((v, idx) => {
+    return `v${idx}`;
+  }).join(", ");
+  let fnBody = fn.toString();
+
+  if ((/^(?:(?!function)(?!async)[a-zA-Z])+/).test(fnBody)) {
+    fnBody = `function ${fnBody}`;
+  }
+  return (
+    `${fnName}(${args}) {
+  return (${fnBody})(${args});
+}`);
+};
+
+const FN_PREFIX = "fn_";
+const prepareInitialParams = (value, prefix = FN_PREFIX) => {
+  if (Array.isArray(value)) {
+    const result = [];
+    let functions = [];
+
+    value.forEach((val, key) => {
+      const [resParam, resFns] = prepareInitialParams(val, `${prefix}_${key}`);
+
+      result.push(resParam);
+      functions = [...functions, ...resFns];
+    });
+    return [result, functions];
+  }
+  if (typeof value === "object") {
+    const result = {};
+    let functions = [];
+
+    Object.keys(value).forEach(key => {
+      const param = value[key];
+      const [resParam, resFns] = prepareInitialParams(param, `${prefix}_${key}`);
+
+      result[key] = resParam;
+      functions = [...functions, ...resFns];
+    });
+    return [result, functions];
+  }
+  if (typeof value === "function") {
+    const injection = createMethodInjectionIntoScript(prefix, value);
+
+    return [prefix, [injection]];
+  }
+  return [value, []];
+};
+
+const createLabelStudioInitFunction = (params) => {
+  const [preparedParams, fns] = prepareInitialParams(params);
+
+  return new Function("", `
+function linkFunctions(value) {
+ if (Array.isArray(value)) {
+    return value.map(val => linkFunctions(val));
+ }
+ if (typeof value === "object") {
+   const result = {};
+   Object.keys(value).forEach(key => {
+       result[key] = linkFunctions(value[key])
+   })
+   return result;
+ }
+ if (typeof value === "string" && value.startsWith("fn_")) {
+   return fns[value];
+ }
+ return value;
+}  
+function ${createMethodInjectionIntoScript("initLabelStudio", initLabelStudio)}
+const fns = {${fns.join(",")}};
+const params = ${JSON.stringify(preparedParams)};
+initLabelStudio(linkFunctions(params));
+`);
 };
 
 const setFeatureFlags = (featureFlags) => {
@@ -54,6 +134,19 @@ const hasFF = (fflag) => {
   if (!window.APP_SETTINGS || !window.APP_SETTINGS.feature_flags) return true;
 
   return window.APP_SETTINGS.feature_flags[fflag] === true;
+};
+
+const createAddEventListenerScript = (eventName, callback) => {
+  const args = (new Array(callback.length)).fill().map((v, idx) => {
+    return `v${idx}`;
+  }).join(", ");
+
+  return new Function("", `
+    function ${eventName}(${args}) {
+      return (${callback.toString()})(${args});
+    }
+    window.labelStudio.on("${eventName}",${eventName});
+`);
 };
 
 /**
@@ -341,6 +434,14 @@ const getKonvaPixelColorFromPoint = ([x, y]) => {
   return colors;
 };
 
+const clearModalIfPresent = () => {
+  const modal = window.document.querySelector('.ant-modal-root');
+
+  if (modal) {
+    modal.remove();
+  }
+};
+
 const getCanvasSize = () => {
   const stage = window.Konva.stages[0];
 
@@ -517,6 +618,13 @@ function _not(predicate) {
   };
 }
 
+function saveDraftLocally(ls, annotation) {
+  window.LSDraft = annotation.serializeAnnotation();
+}
+function getLocallySavedDraft() {
+  return window.LSDraft;
+}
+
 function omitBy(object, predicate) {
   return _pickBy(object, _not(predicate));
 }
@@ -527,8 +635,10 @@ function hasSelectedRegion() {
 
 module.exports = {
   initLabelStudio,
+  createLabelStudioInitFunction,
   setFeatureFlags,
   hasFF,
+  createAddEventListenerScript,
   waitForImage,
   waitForAudio,
   getCurrentAudioTime,
@@ -557,9 +667,13 @@ module.exports = {
   isRotaterExist,
   switchRegionTreeView,
   hasSelectedRegion,
+  clearModalIfPresent,
 
   serialize,
   selectText,
+
+  saveDraftLocally,
+  getLocallySavedDraft,
 
   omitBy,
   dumpJSON,

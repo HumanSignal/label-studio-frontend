@@ -171,12 +171,25 @@ const useEventHandlers = ({
 }) => {
   const onSelect = useCallback((_, evt) => {
     const multi = evt.nativeEvent.ctrlKey || (isMacOS() && evt.nativeEvent.metaKey);
-    const { node, selected } = evt;
+    const { node } = evt;
 
-    if (node.type.includes("region") || node.type.includes("range")) {
-      if (!multi) regions.selection.clear();
+    const self = node?.item;
 
-      regions.toggleSelection(node.item, selected);
+    if (!self?.annotation) return;
+    
+    const annotation = self.annotation;
+
+    if (multi) {
+      annotation.toggleRegionSelection(self);
+      return;
+    }
+    
+    const wasNotSelected = !self.selected;
+
+    if (wasNotSelected) {
+      annotation.selectArea(self);
+    } else {
+      annotation.unselectAll();
     }
   }, []);
 
@@ -470,6 +483,8 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
       <Elem name="controls">
         {controls.map((tag, idx) => {
           const View = Registry.getPerRegionView(tag.type, PER_REGION_MODES.REGION_LIST);
+          const color = item.getOneColor();
+          const css = color ? chroma(color).alpha(0.2).css() : undefined;
 
           return View ? (
             <View
@@ -478,7 +493,7 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
               area={item}
               collapsed={collapsed}
               setCollapsed={setCollapsed}
-              color={chroma(item.getOneColor()).alpha(0.2).css()}
+              color={css}
               outliner
             />
           ): null;

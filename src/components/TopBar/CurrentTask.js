@@ -4,6 +4,7 @@ import { Button } from "../../common/Button/Button";
 import { Block, Elem } from "../../utils/bem";
 import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
 import { guidGenerator } from "../../utils/unique";
+import { isDefined } from "../../utils/utilities";
 import "./CurrentTask.styl";
 
 
@@ -15,6 +16,7 @@ export const CurrentTask = observer(({ store }) => {
   const historyEnabled = store.hasInterface('topbar:prevnext');
   // @todo some interface?
   const canPostpone = isFF(FF_DEV_3034)
+    && !isDefined(store.annotationStore.selected.pk)
     && !store.canGoNextTask
     && !store.hasInterface('review')
     && store.hasInterface("postpone");
@@ -46,7 +48,7 @@ export const CurrentTask = observer(({ store }) => {
                 postpone: !store.canGoPrevTask && canPrepone,
               }}
               type="link"
-              disabled={!historyEnabled || !store.canGoPrevTask && !canPrepone}
+              disabled={!historyEnabled || !store.canGoPrevTask && !canPrepone || !store.task.hasPrevTask}
               onClick={store.canGoPrevTask ? store.prevTask : () => store.postponeTask('prevTask')}
               style={{ background: 'none', backgroundColor: 'none' }}
             />

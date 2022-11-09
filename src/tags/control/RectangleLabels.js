@@ -12,9 +12,9 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * The RectangleLabels tag creates labeled rectangles. Use to apply labels to bounding box semantic segmentation tasks.
+ * The `RectangleLabels` tag creates labeled rectangles. Use to apply labels to bounding box semantic segmentation tasks.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic labeling configuration for applying labels to rectangular bounding boxes on an image -->
  * <View>

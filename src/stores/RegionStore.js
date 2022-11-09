@@ -66,10 +66,13 @@ const SelectionMap = types.model(
       }
     },
     _updateResultsFromSelection() {
+      self._updateResultsFromRegions(self.selected.values());
+    },
+    _updateResultsFromRegions(regions) {
       const valuesFromControls = {};
       const controlsByName = {};
 
-      Array.from(self.selected.values()).map((region) => {
+      Array.from(regions).map((region) => {
         region.results.forEach(result => {
           const controlName = result.from_name.name;
           const currentValue = valuesFromControls[controlName];
@@ -95,7 +98,7 @@ const SelectionMap = types.model(
       self.afterUnselect(region);
     },
     clear() {
-      const regionEntries = self.selected.toJS();
+      const regionEntries = self.selected;
 
       for (const [, region] of regionEntries) {
         self.beforeUnselect(region);
@@ -108,6 +111,7 @@ const SelectionMap = types.model(
     highlight(region) {
       self.clear();
       self.select(region);
+      region?.shapeRef?.parent?.canvas?._canvas?.scrollIntoView?.();
     },
   };
 });
