@@ -11,9 +11,9 @@ import { EllipseModel } from "./Ellipse";
 import ControlBase from "./Base";
 
 /**
- * The EllipseLabels tag creates labeled ellipses. Use to apply labels to ellipses for semantic segmentation.
+ * The `EllipseLabels` tag creates labeled ellipses. Use to apply labels to ellipses for semantic segmentation.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic semantic image segmentation labeling configuration-->
  * <View>
