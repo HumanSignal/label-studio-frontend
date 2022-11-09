@@ -7,9 +7,9 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 import ControlBase from "./Base";
 
 /**
- * Use the Pairwise tag to compare two different objects and select one item from the list. If you want annotators to compare two objects and determine whether they are similar or not, use the Choices tag.
+ * The `Pairwise` tag is used to compare two different objects and select one item from the list. If you want annotators to compare two objects and determine whether they are similar or not, use the `Choices` tag.
  *
- * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
  * @example
  * <!--Basic labeling configuration to compare two passages of text -->
  * <View>
