@@ -11,9 +11,9 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * The ParagraphLabels tag creates labeled paragraphs. Use with the Paragraphs tag to label a paragraph of text.
+ * The `ParagraphLabels` tag creates labeled paragraphs. Use with the `Paragraphs` tag to label a paragraph of text.
  *
- * Use with the following data types: paragraphs
+ * Use with the following data types: paragraphs.
  * @example
  * <!--Basic labeling configuration to label paragraphs -->
  * <View>
