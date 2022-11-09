@@ -71,10 +71,10 @@ export const createBoundingBoxGetter = (workingArea: WorkingArea, enabled = true
   const result = { ...newBox };
 
   const edgeReached = [
-    (box.x - workingArea.x) < 0,                               // x0
-    (box.y - workingArea.y) < 0,                               // y0
-    (box.x - workingArea.x) + box.width > workingArea.width,   // x1
-    (box.y - workingArea.y) + box.height > workingArea.height, // y1
+    box.x <= workingArea.x,                                   // x0
+    box.y <= workingArea.y,                                   // y0
+    box.x + box.width >= workingArea.x + workingArea.width,   // x1
+    box.y + box.height >= workingArea.y + workingArea.height, // y1
   ];
 
   // If any edge is caught, stop the movement

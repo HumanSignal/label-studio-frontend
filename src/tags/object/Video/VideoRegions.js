@@ -118,9 +118,11 @@ const VideoRegionsPure = ({
 
   const inBounds = (x, y) => {
     if (allowRegionsOutsideWorkingArea) return true;
-    if (x < 0 || x > workinAreaCoordinates.realWidth) return false;
-    if (y < 0 || y > workinAreaCoordinates.realHeight) return false;
-    return true;
+
+    return x > 0 &&
+           y > 0 &&
+           x < workinAreaCoordinates.realWidth &&
+           y < workinAreaCoordinates.realHeight;
   };
 
   const limitCoordinates = ({ x, y }) => {
@@ -135,8 +137,9 @@ const VideoRegionsPure = ({
     if (e.target !== stageRef.current) return;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
+    const isInBounds = inBounds(x, y);
 
-    if (inBounds(x, y)) {
+    if (isInBounds) {
       item.annotation.unselectAreas();
       setNewRegion({ x, y, width: 0, height: 0 });
       setDrawingMode(true);
