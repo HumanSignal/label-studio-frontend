@@ -105,7 +105,7 @@ const _Tool = types
       listenForClose() {
         closed = false;
         disposer = observe(self.getCurrentArea(), "closed", () => {
-          if (self.getCurrentArea().closed && !closed) {
+          if (self.getCurrentArea()?.closed && !closed) {
             self.finishDrawing();
           }
         }, true);
