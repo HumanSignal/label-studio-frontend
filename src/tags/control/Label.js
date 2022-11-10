@@ -240,14 +240,15 @@ const Model = types.model({
   },
 
   onClick() {
-    return self.onLabelInteract();
+    self.onLabelInteract();
+    return false;
   },
 
   onLabelInteract() {
-    if(!self.annotation.isDrawing) {
-      self.toggleSelected();
+    if(self.annotation.isDrawing) {
+      return false;
     } 
-    return false;
+    return self.toggleSelected();
   },
 
   _updateBackgroundColor(val) {
