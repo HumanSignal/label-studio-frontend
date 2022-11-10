@@ -137,6 +137,10 @@ const AnnotationHistoryComponent: FC<any> = ({
                 return;
               }
 
+              if (annotation.history.history.length) {
+                annotation.saveDraftImmediately();
+              }
+
               if (isLastItem || isSelected) {
                 // last history state and draft are actual annotation, not from history
                 // and if user clicks on already selected item we should switch to last state
