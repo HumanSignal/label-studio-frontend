@@ -239,7 +239,6 @@ const Model = types.model({
     if(self.annotation.isDrawing) {
       return false;
     } else {
-      self.annotation.unselectAreas();
       return self.toggleSelected();
     }
   },
