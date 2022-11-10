@@ -156,16 +156,11 @@ export default observer(({ store, annotation }) => {
         <Fragment>{node?.results.map(renderResult)}</Fragment>
       </div>
 
-      {node.isDrawing && (
-        <>
-          <Space spread>
-            {entityButtons}
-          </Space>
-          <Elem name="warning">
-            <IconWarning />
-            <Elem name="warning-text">Incomplete region</Elem>
-          </Elem>
-        </>
+      {node?.isDrawing && (
+        <Elem name="warning">
+          <IconWarning />
+          <Elem name="warning-text">Incomplete polygon</Elem>
+        </Elem>
       )}
 
       <div className={styles.block + " ls-entity-buttons"}>

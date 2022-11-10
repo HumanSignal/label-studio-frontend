@@ -138,9 +138,9 @@ const Node: FC<any> = observer(({ className, node }) => {
   return (
     <Block name="node" tag="span" className={className}>
       {labelName}
-      {node.isDrawing && (
+      {node?.isDrawing && (
         <Elem tag="span" name="incomplete">
-          <Tooltip title="Incomplete region">
+          <Tooltip title="Incomplete polygon">
             <IconWarning />
           </Tooltip>
         </Elem>
