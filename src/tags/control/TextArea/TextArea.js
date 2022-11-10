@@ -447,7 +447,7 @@ const HtxTextAreaResult = observer(({
   const editable = item.editable && item.from_name.editable && !item.area.readonly;
 
   const changeHandler = useCallback((idx, val) => {
-    if (!item.isEditable) return;
+    if (!item.from_name.isEditable) return;
     const newValue = value.toJSON();
 
     newValue.splice(idx, 1, val);
@@ -455,7 +455,7 @@ const HtxTextAreaResult = observer(({
   }, [value]);
 
   const deleteHandler = useCallback((idx) => {
-    if (!item.isDeleteable) return;
+    if (!item.from_name.isDeleteable) return;
     const newValue = value.toJSON();
 
     newValue.splice(idx, 1);
