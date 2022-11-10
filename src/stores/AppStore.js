@@ -477,7 +477,6 @@ export default types
     /* eslint-enable no-unused-vars */
 
     function submitDraft(c, params = {}) {
-      console.log('heartex submit draft');
       return new Promise(resolve => {
         const events = getEnv(self).events;
 
