@@ -47,7 +47,7 @@ const VideoRegionsPure = ({
   const stageRef = useRef();
 
   const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked && !reg.readonly);
-  const listenToEvents = !locked && item.annotation.editable;
+  const listenToEvents = !locked;
 
   // if region is not in lifespan, it's not rendered,
   // so we observe all the sequences to rerender transformer
@@ -134,7 +134,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseDown = e => {
-    if (e.target !== stageRef.current) return;
+    if (e.target !== stageRef.current || !item.annotation?.editable) return;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
     const isInBounds = inBounds(x, y);
@@ -147,7 +147,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseMove = e => {
-    if (!isDrawing) return false;
+    if (!isDrawing || !item.annotation?.editable) return false;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
 
@@ -159,7 +159,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseUp = e => {
-    if (!isDrawing) return false;
+    if (!isDrawing || !item.annotation?.editable) return false;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
 
@@ -210,12 +210,12 @@ const VideoRegionsPure = ({
           stageRef={stageRef}
         />
       </Layer>
-      {isDrawing && (
+      {item.annotation?.editable && isDrawing ? (
         <Layer {...layerProps}>
           <SelectionRect {...newRegion}/>
         </Layer>
-      )}
-      {selected?.length > 0 && (
+      ): null}
+      {item.annotation?.editable && selected?.length > 0 ? (
         <Layer>
           <Transformer
             ref={initTransform}
@@ -226,7 +226,7 @@ const VideoRegionsPure = ({
             onDragMove={createOnDragMoveHandler(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
           />
         </Layer>
-      )}
+      ): null}
     </Stage>
   );
 };
@@ -249,9 +249,9 @@ const RegionsLayer = observer(({
           reg={reg}
           frame={item.frame}
           workingArea={workinAreaCoordinates}
-          draggable={!isDrawing && !locked}
+          draggable={reg.editable && !isDrawing && !locked}
           selected={reg.selected || reg.inSelection}
-          listening={!reg.locked && !reg.readonly}
+          listening={!reg.locked}
           stageRef={stageRef}
           onDragMove={onDragMove}
         />

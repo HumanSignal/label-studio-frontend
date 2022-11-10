@@ -19,9 +19,9 @@ import { Spin } from "antd";
 import "./Taxonomy.styl";
 
 /**
- * Use the Taxonomy tag to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the Choice tag.
+ * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
  *
- * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
  * @example
  * <!--Labeling configuration for providing a taxonomy of choices in response to a passage of text -->
  * <View>
@@ -54,7 +54,6 @@ import "./Taxonomy.styl";
  * @param {string} [placeholder=]      - What to display as prompt on the input
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
   leafsonly: types.optional(types.boolean, false),
   showfullpath: types.optional(types.boolean, false),
@@ -187,9 +186,9 @@ const Model = types
     updateChildren() {
       const children = ChildrenSnapshots.get(self.name) ?? [];
 
-      if (children) {
+      if (children.length) {
         self._children = children;
-        self.children = ChildrenSnapshots.get(self.name) ?? [];
+        self.children = [...children];
         self.store.unlock();
         ChildrenSnapshots.delete(self.name);
       }
@@ -271,7 +270,7 @@ const TaxonomyModel = types.compose("TaxonomyModel",
 
 const HtxTaxonomy = observer(({ item }) => {
   const style = { marginTop: "1em", marginBottom: "1em" };
-  const visibleStyle = item.perRegionVisible() || item.isVisible ? {} : { display: "none" };
+  const visibleStyle = item.perRegionVisible() && item.isVisible ? {} : { display: "none" };
   const options = {
     showFullPath: item.showfullpath,
     leafsOnly: item.leafsonly,
@@ -296,7 +295,7 @@ const HtxTaxonomy = observer(({ item }) => {
           onAddLabel={item.userLabels && item.onAddLabel}
           onDeleteLabel={item.userLabels && item.onDeleteLabel}
           options={options}
-          isReadonly={item.annotation.readonly}
+          isEditable={item.annotation.editable}
         />
       )}
     </div>

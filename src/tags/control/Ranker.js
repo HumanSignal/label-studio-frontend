@@ -31,9 +31,9 @@ const RankerItemModel = types
   }));
 
 /**
- * Use the Ranker tag to rank the results from models. This tag uses the "prediction" field from a labeling task instead of the "data" field to display content for labeling on the interface. Carefully structure your labeling tasks to work with this tag. See [import pre-annotated data](../guide/predictions.html).
+ * The `Ranker` tag is used to rank the results from models. This tag uses the "prediction" field from a labeling task instead of the "data" field to display content for labeling on the interface. Carefully structure your labeling tasks to work with this tag. See [import pre-annotated data](../guide/predictions.html).
  *
- * Use with the following data types: text
+ * Use with the following data types: text.
  *
  * The Ranker tag renders a given list of strings and allows you to drag and reorder them.
  * To see this tag in action:

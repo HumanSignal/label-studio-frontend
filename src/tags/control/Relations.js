@@ -3,12 +3,11 @@ import { types } from "mobx-state-tree";
 import Registry from "../../core/Registry";
 import Types from "../../core/Types";
 import { guidGenerator } from "../../core/Helpers";
-import ControlBase from "./Base";
 
 /**
- * Use the Relations tag to create label relations between regions. Use to provide many values to apply to the relationship between two labeled regions.
+ * The `Relations` tag is used to create label relations between regions. Use to provide many values to apply to the relationship between two labeled regions.
  *
- * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
  * @example
  * <!--Basic labeling configuration to apply the label "similar" or "dissimilar" to a relation identified between two labeled regions of text -->
  * <View>
@@ -39,7 +38,6 @@ const TagAttrs = types.model({
  */
 const ModelAttrs = types
   .model({
-    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "relations",
     children: Types.unionArray(["relations", "relation"]),
@@ -63,7 +61,7 @@ const ModelAttrs = types
     },
   }));
 
-const RelationsModel = types.compose("RelationsModel", ModelAttrs, TagAttrs, ControlBase);
+const RelationsModel = types.compose("RelationsModel", ModelAttrs, TagAttrs);
 
 const HtxRelations = () => {
   return null;
