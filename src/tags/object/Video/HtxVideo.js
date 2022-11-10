@@ -173,26 +173,29 @@ const HtxVideoView = ({ item, store }) => {
 
   const zoomIn = useCallback(() => {
     setZoom(zoom + ZOOM_STEP);
+    setPan(prev => ({
+      x: prev.x + prev.x / zoom,
+      y: prev.y + prev.y / zoom,
+    }));
   }, [zoom]);
 
   const zoomOut = useCallback(() => {
     setZoom(zoom - ZOOM_STEP);
+    setPan(prev => ({
+      x: prev.x - prev.x / zoom,
+      y: prev.y - prev.y / zoom,
+    }));
   }, [zoom]);
 
   const zoomToFit = useCallback(() => {
     setZoom(item.ref.current.videoDimensions.ratio);
+    setPan({ x: 0, y: 0 });
   }, []);
 
   const zoomReset = useCallback(() => {
     setZoom(1);
     setPan({ x: 0, y: 0 });
   });
-
-  useEffect(() => {
-    if (item?.ref?.current?.videoDimensions?.ratio && zoom <= item.ref.current.videoDimensions.ratio) {
-      setPan({ x: 0, y: 0 });
-    }
-  }, [zoom, setPan]);
 
   // VIDEO EVENT HANDLERS
   const handleFrameChange = useCallback((position, length) => {
