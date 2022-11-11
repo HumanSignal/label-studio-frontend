@@ -41,10 +41,10 @@ const VideoRegionsPure = ({
   locked = false,
   allowRegionsOutsideWorkingArea = true,
   pan = { x: 0, y: 0 },
+  stageRef,
 }) => {
   const [newRegion, setNewRegion] = useState();
   const [isDrawing, setDrawingMode] = useState(false);
-  const stageRef = useRef();
 
   const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked && !reg.readonly);
   const listenToEvents = !locked;
