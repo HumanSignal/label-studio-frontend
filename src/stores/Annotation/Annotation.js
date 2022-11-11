@@ -6,6 +6,7 @@ import RegionStore from "../RegionStore";
 import RelationStore from "../RelationStore";
 import TimeTraveller from "../../core/TimeTraveller";
 import Tree, { TRAVERSE_STOP } from "../../core/Tree";
+import Types from "../../core/Types";
 import Utils from "../../utils";
 import { delay, isDefined } from "../../utils/utilities";
 import { guidGenerator } from "../../core/Helpers";
@@ -13,7 +14,7 @@ import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import Area from "../../regions/Area";
 import throttle from "lodash.throttle";
 import { UserExtended } from "../UserStore";
-import { FF_DEV_1284, FF_DEV_1598, FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1284, FF_DEV_1598, FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, FF_DEV_3391, isFF } from "../../utils/feature-flags";
 import Result from "../../regions/Result";
 import { CommentStore } from "../Comment/CommentStore";
 
@@ -63,6 +64,7 @@ export const Annotation = types
     dragMode: types.optional(types.boolean, false),
 
     editable: types.optional(types.boolean, true),
+    readonly: types.optional(types.boolean, false),
 
     relationMode: types.optional(types.boolean, false),
     relationStore: types.optional(RelationStore, {
@@ -77,16 +79,34 @@ export const Annotation = types
       regions: [],
     }),
 
-    readonly: types.optional(types.boolean, false),
     isDrawing: types.optional(types.boolean, false),
 
     commentStore: types.optional(CommentStore, {
       comments: [],
     }),
+
+    ...(isFF(FF_DEV_3391) ? { root: Types.allModelsTypes() } : {}),
   })
   .preProcessSnapshot(sn => {
     // sn.draft = Boolean(sn.draft);
     let user = sn.user ?? sn.completed_by ?? undefined;
+    let root;
+
+    const updateIds = item => {
+      const children = item.children?.map(updateIds);
+
+      if (children) item = { ...item, children };
+      if (item.id) item = { ...item, id: (item.name ?? item.id) + "@" + sn.id };
+      // @todo fallback for tags with name as id:
+      // if (item.name) item = { ...item, name: item.name + "@" + sn.id };
+      // @todo soon no such tags should left
+
+      return item;
+    };
+
+    if (isFF(FF_DEV_3391)) {
+      root = updateIds(sn.root.toJSON());
+    }
 
     if (user && typeof user !== 'number') {
       user = user.id;
@@ -94,12 +114,29 @@ export const Annotation = types
 
     return {
       ...sn,
+      ...(isFF(FF_DEV_3391) ? { root } : {}),
       user,
+      editable: sn.editable ?? (sn.type === "annotation"),
       ground_truth: sn.honeypot ?? sn.ground_truth ?? false,
       skipped: sn.skipped || sn.was_cancelled,
       acceptedState: sn.accepted_state ?? sn.acceptedState ?? null,
     };
   })
+  .views(self => isFF(FF_DEV_3391)
+    ? {}
+    : {
+      get root() {
+        return self.list.root;
+      },
+
+      get names() {
+        return self.list.names;
+      },
+
+      get toNames() {
+        return self.list.toNames;
+      },
+    })
   .views(self => ({
     get store() {
       return getRoot(self);
@@ -107,18 +144,6 @@ export const Annotation = types
 
     get list() {
       return getParent(self, 2);
-    },
-
-    get root() {
-      return self.list.root;
-    },
-
-    get names() {
-      return self.list.names;
-    },
-
-    get toNames() {
-      return self.list.toNames;
     },
 
     get objects() {
@@ -207,6 +232,13 @@ export const Annotation = types
     versions: {},
     resultSnapshot: "",
   }))
+  .volatile(() => isFF(FF_DEV_3391)
+    ? {
+      names: new Map(),
+      toNames: new Map(),
+      ids: new Map(),
+    }
+    : {})
   .actions(self => ({
     reinitHistory(force = true) {
       self.history.reinit(force);
@@ -571,7 +603,8 @@ export const Annotation = types
 
     startAutosave: flow(function *() {
       if (!getEnv(self).events.hasEvent('submitDraft')) return;
-      if (self.type !== "annotation") return;
+      // view all must never trigger autosave
+      if (!self.editable) return;
 
       // some async tasks should be performed after deserialization
       // so start autosave on next tick
@@ -680,6 +713,23 @@ export const Annotation = types
     },
 
     afterCreate() {
+      if (isFF(FF_DEV_3391)) {
+        const { names, toNames } = Tree.extractNames(self.root);
+
+        names.forEach((tag, name) => self.names.set(name, tag));
+        toNames.forEach((tags, name) => self.toNames.set(name, tags));
+
+        Tree.traverseTree(self.root, node => {
+          const id = node.id ?? node.name;
+
+          if (id) {
+            self.ids.set(Tree.cleanUpId(id), node);
+          }
+
+          if (self.store.task && node.updateValue) node.updateValue(self.store);
+        });
+      }
+
       if (self.userGenerate && !self.sentUserGenerate) {
         self.loadedDate = new Date();
       }
@@ -754,11 +804,12 @@ export const Annotation = types
       if (isFF(FF_DEV_1598) && !object && control.type === "textarea") {
         object = self.objects[0];
       }
+      const objectTag = self.names.get(object.name ?? object);
 
       const result = {
-        from_name: control.name,
+        from_name: self.names.get(control.name),
         // @todo should stick to area
-        to_name: object,
+        to_name: objectTag,
         type: control.resultType,
         value: resultValue,
         readonly: self.readonly,
@@ -766,7 +817,7 @@ export const Annotation = types
 
       const areaRaw = {
         id: guidGenerator(),
-        object,
+        object: objectTag,
         // data for Model instance
         ...areaValue,
         // for Model detection
@@ -1040,8 +1091,9 @@ export const Annotation = types
     deserializeSingleResult(obj, getArea, createArea) {
       if (obj["type"] !== "relation") {
         const { id, value: rawValue, type, ...data } = obj;
+        let { from_name, to_name } = data;
 
-        const object = self.names.get(obj.to_name) ?? {};
+        const object = self.names.get(data.to_name) ?? {};
         const tagType = object.type;
 
         // avoid duplicates of the same areas in different annotations/predictions
@@ -1058,12 +1110,17 @@ export const Annotation = types
           return newValue;
         };
 
+        if (isFF(FF_DEV_3391)) {
+          to_name = `${to_name}@${self.id}`;
+          from_name = `${from_name}@${self.id}`;
+        }
+
         let area = getArea(areaId);
 
         if (!area) {
           const areaSnapshot = {
             id: areaId,
-            object: data.to_name,
+            object: to_name,
             ...data,
             // We need to omit value properties due to there may be conflicting property types, for example a text.
             ...omitValueFields(value),
@@ -1073,7 +1130,7 @@ export const Annotation = types
           area = createArea(areaSnapshot);
         }
 
-        area.addResult({ ...data, id: resultId, type, value });
+        area.addResult({ ...data, id: resultId, type, value, from_name, to_name });
 
         // if there is merged result with region data and type and also with the labels
         // and object allows such merge — create new result with these labels

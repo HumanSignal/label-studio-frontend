@@ -50,7 +50,7 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
-  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, false));
+  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, region.annotation, false));
 });
 
 const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
@@ -466,7 +466,7 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
-    
+
       if (isFF(FF_DEV_1442)) {
         this.handleDeferredMouseDown?.();
       }
@@ -474,8 +474,6 @@ export default observer(
         this.skipMouseUp = false;
         return;
       }
-
-      if (!item.annotation.editable) return;
 
       const evt = e.evt || e;
 

@@ -6,6 +6,7 @@ import { Input } from "antd";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import { FF_DEV_3391, isFF } from "../../utils/feature-flags";
 
 /**
  * Use the Filter tag to add a filter search for a large number of labels or choices. Use with the Labels tag or Choices tag.
@@ -44,7 +45,13 @@ const Model = types
   .model({
     type: "filter",
     _value: types.maybeNull(types.string),
-    name: types.identifier,
+    ...(isFF(FF_DEV_3391)
+      ? {
+        id: types.identifier,
+        name: types.string,
+      } : {
+        name: types.identifier,
+      }),
     toname: types.maybeNull(types.string),
   })
   .views(self => ({

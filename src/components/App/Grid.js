@@ -7,6 +7,7 @@ import { observe } from "mobx";
 import Konva from "konva";
 import { Annotation } from "./Annotation";
 import { isDefined } from "../../utils/utilities";
+import { FF_DEV_3391, isFF } from "../../utils/feature-flags";
 import { moveStylesBetweenHeadTags } from "../../utils/html";
 
 /***** DON'T TRY THIS AT HOME *****/
@@ -51,7 +52,7 @@ export default class Grid extends Component {
   }
 
   componentDidMount() {
-    if (this.props.annotations[0] !== this.props.store.selected) {
+    if (!isFF(FF_DEV_3391) && this.props.annotations[0] !== this.props.store.selected) {
       this.startRenderCycle();
     }
   }
@@ -151,7 +152,8 @@ export default class Grid extends Component {
 
   render() {
     const i = this.state.item;
-    const { annotations, store: { selected } } = this.props;
+    const { annotations } = this.props;
+    const selected = isFF(FF_DEV_3391) ? null : this.props.store.selected;
     const isRenderingNext = i < annotations.length && annotations[i] === selected;
 
     return (
@@ -166,20 +168,23 @@ export default class Grid extends Component {
                 bordered={false}
                 style={{ height: 44 }}
               />
-              {!this.state.loaded.has(c.id) && (
-                <div style={{
-                  top: 0,
-                  left: 0,
-                  position: 'absolute',
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <Spin size="large" />
-                </div>
-              )}
+              {isFF(FF_DEV_3391)
+                ? <Annotation root={this.props.root} annotation={c} />
+                : !this.state.loaded.has(c.id) && (
+                  <div style={{
+                    top: 0,
+                    left: 0,
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <Spin size="large" />
+                  </div>
+                )
+              }
             </div>
           ))}
           {isRenderingNext && (

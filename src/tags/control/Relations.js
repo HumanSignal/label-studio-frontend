@@ -3,7 +3,6 @@ import { types } from "mobx-state-tree";
 import Registry from "../../core/Registry";
 import Types from "../../core/Types";
 import { guidGenerator } from "../../core/Helpers";
-import ControlBase from "./Base";
 
 /**
  * The `Relations` tag is used to create label relations between regions. Use to provide many values to apply to the relationship between two labeled regions.
@@ -39,7 +38,6 @@ const TagAttrs = types.model({
  */
 const ModelAttrs = types
   .model({
-    id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: "relations",
     children: Types.unionArray(["relations", "relation"]),
@@ -63,7 +61,7 @@ const ModelAttrs = types
     },
   }));
 
-const RelationsModel = types.compose("RelationsModel", ModelAttrs, TagAttrs, ControlBase);
+const RelationsModel = types.compose("RelationsModel", ModelAttrs, TagAttrs);
 
 const HtxRelations = () => {
   return null;

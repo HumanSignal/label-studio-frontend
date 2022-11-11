@@ -42,9 +42,6 @@ import ControlBase from "./Base";
  * @param {number=} [strokeWidth=1]          - Width of the stroke
  */
 const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-
   opacity: types.optional(types.string, "0.9"),
   fillcolor: types.maybeNull(types.string),
 

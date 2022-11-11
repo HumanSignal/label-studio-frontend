@@ -118,7 +118,7 @@ const HtxPagedView = observer(({ item }) => {
     const pageView = [];
 
     for (let i = 0; i < pageSize; i++) {
-      pageView.push(Tree.renderChildren(item.children[i + (pageSize * (page - 1))]));
+      pageView.push(Tree.renderChildren(item.children[i + (pageSize * (page - 1))], item.annotation));
     }
 
     return pageView;

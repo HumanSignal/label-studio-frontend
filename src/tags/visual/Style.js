@@ -3,6 +3,7 @@ import { types } from "mobx-state-tree";
 import { observer } from "mobx-react";
 
 import Registry from "../../core/Registry";
+import { guidGenerator } from "../../utils/unique";
 
 /**
  * The `Style` tag is used in combination with the View tag to apply custom CSS properties to the labeling interface. See the [CSS Reference](https://www.w3schools.com/cssref/default.asp) on the W3Schools page for a full list of available properties that you can reference. You can also adjust default Label Studio CSS classes. Use the browser developer tools to inspect the element on the UI and locate the class name, then specify that class name in the `Style` tag.
@@ -61,6 +62,7 @@ import Registry from "../../core/Registry";
  * @param {string} [CSS property]  - CSS property and value to apply.
  */
 const Model = types.model({
+  id: types.optional(types.identifier, guidGenerator),
   type: "style",
   value: types.optional(types.string, ""),
 });

@@ -33,13 +33,13 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const isReview = store.hasInterface("review");
   
   const historySelected = isDefined(store.annotationStore.selectedHistory);
-  const { userGenerate, sentUserGenerate, versions, results } = annotation;
+  const { userGenerate, sentUserGenerate, versions, results, editable: annotationEditable } = annotation;
   const buttons = [];
 
   const [isInProgress, setIsInProgress] = useState(false);
 
   // const isReady = store.annotationStore.selected.objects.every(object => object.isReady === undefined || object.isReady);
-  const disabled = store.isSubmitting || historySelected || isInProgress; // || !isReady;
+  const disabled = !annotationEditable || store.isSubmitting || historySelected || isInProgress; // || !isReady;
   const submitDisabled = store.hasInterface("annotations:deny-empty") && results.length === 0;
   
   const buttonHandler = useCallback(async (e, callback, tooltipMessage) => {

@@ -39,10 +39,6 @@ import ControlBase from "./Base";
  * @param {number} [strokeWidth=1]   - Width of stroke
  * @param {boolean} [canRotate=true] - Show or hide rotation control
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const Validation = types.model({
   controlledTags: Types.unionTag(["Image"]),
@@ -58,7 +54,6 @@ const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   RectangleModel,
-  TagAttrs,
   Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),
