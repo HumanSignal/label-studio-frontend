@@ -1,5 +1,6 @@
 import { getEnv, getParent, getRoot, getType, types } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
+import { toPrecision } from "../utils/utilities";
 import { AnnotationMixin } from "./AnnotationMixin";
 
 const RegionsMixin = types
@@ -154,26 +155,20 @@ const RegionsMixin = types
         return { width: height, height: width };
       },
 
-      toPrecision(val, precision = 14) {
-        const precisionFactor = Math.pow(10, precision);
-
-        return Math.floor(val * precisionFactor) / precisionFactor;
-      },
-
       convertXToPerc(x) {
-        return self.toPrecision((x * 100) / self.parent.stageWidth);
+        return toPrecision((x * 100) / self.parent.stageWidth);
       },
 
       convertYToPerc(y) {
-        return self.toPrecision((y * 100) / self.parent.stageHeight);
+        return toPrecision((y * 100) / self.parent.stageHeight);
       },
 
       convertHDimensionToPerc(hd) {
-        return self.toPrecision((hd * (self.scaleX || 1) * 100) / self.parent.stageWidth);
+        return toPrecision((hd * (self.scaleX || 1) * 100) / self.parent.stageWidth);
       },
 
       convertVDimensionToPerc(vd) {
-        return self.toPrecision((vd * (self.scaleY || 1) * 100) / self.parent.stageHeight);
+        return toPrecision((vd * (self.scaleY || 1) * 100) / self.parent.stageHeight);
       },
 
       // update region appearence based on it's current states, for

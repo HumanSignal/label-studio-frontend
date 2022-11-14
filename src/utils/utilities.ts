@@ -1,6 +1,16 @@
 import { formatDistanceToNow } from "date-fns";
 import { toCamelCase } from "strman";
 
+const MAX_PRECISION_DIGITS = 14;
+const MAX_PRECISION_FACTOR = 10 ** MAX_PRECISION_DIGITS;
+
+/**
+ * Internal helper to calculate a value with maximal decimal precision which can be guaranteed.
+ */
+export const toPrecision = (value: number): number => {
+  return Math.floor(value * MAX_PRECISION_FACTOR) / MAX_PRECISION_FACTOR;
+};
+
 /**
  * Internal helper to check if parameter is a string
  * @param {*} value
