@@ -6,7 +6,7 @@ import Constants from "../../../core/Constants";
 import chroma from "chroma-js";
 import { fixMobxObserve } from "../TimeSeries/helpers";
 
-const MIN_SIZE = 5;
+export const MIN_SIZE = 5;
 
 const SelectionRect = (props) => {
   return (

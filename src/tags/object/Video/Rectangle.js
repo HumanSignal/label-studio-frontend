@@ -3,6 +3,7 @@ import { Group, Rect } from "react-konva";
 import { observer } from "mobx-react";
 import { useRegionStyles } from "../../../hooks/useRegionColor";
 import { LabelOnVideoBbox } from "../../../components/ImageView/LabelOnRegion";
+import { MIN_SIZE } from "./VideoRegions";
 
 const getNodeAbsoluteDimensions = (node, workingArea) => {
   const { realWidth: width, realHeight: height } = workingArea;
@@ -54,8 +55,8 @@ const RectanglePure = ({ reg, frame, workingArea, ...rest }) => {
           const scaleX = node.scaleX();
           const scaleY = node.scaleY();
           // set minimal value
-          const w = Math.max(3, node.width() * scaleX);
-          const h = Math.max(3, node.height() * scaleY);
+          const w = Math.max(MIN_SIZE, node.width() * scaleX);
+          const h = Math.max(MIN_SIZE, node.height() * scaleY);
 
           node.scaleX(1);
           node.scaleY(1);
