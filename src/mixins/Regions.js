@@ -154,20 +154,26 @@ const RegionsMixin = types
         return { width: height, height: width };
       },
 
+      toPrecision(val, precision = 14) {
+        const precisionFactor = Math.pow(10, precision);
+
+        return Math.floor(val * precisionFactor) / precisionFactor;
+      },
+
       convertXToPerc(x) {
-        return (x * 100) / self.parent.stageWidth;
+        return self.toPrecision((x * 100) / self.parent.stageWidth);
       },
 
       convertYToPerc(y) {
-        return (y * 100) / self.parent.stageHeight;
+        return self.toPrecision((y * 100) / self.parent.stageHeight);
       },
 
       convertHDimensionToPerc(hd) {
-        return (hd * (self.scaleX || 1) * 100) / self.parent.stageWidth;
+        return self.toPrecision((hd * (self.scaleX || 1) * 100) / self.parent.stageWidth);
       },
 
       convertVDimensionToPerc(vd) {
-        return (vd * (self.scaleY || 1) * 100) / self.parent.stageHeight;
+        return self.toPrecision((vd * (self.scaleY || 1) * 100) / self.parent.stageHeight);
       },
 
       // update region appearence based on it's current states, for
