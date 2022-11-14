@@ -32,10 +32,6 @@ import ControlBase from "./Base";
  * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
  * @param {boolean} [showInline=true]        - Show labels in the same visual line
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const Validation = types.model({
   controlledTags: Types.unionTag(["HyperText"]),
@@ -74,7 +70,6 @@ const Composition = types.compose(
   ControlBase,
   LabelsModel,
   ModelAttrs,
-  TagAttrs,
   Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),

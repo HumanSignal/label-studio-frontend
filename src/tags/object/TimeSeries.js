@@ -71,7 +71,6 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  * @param {boolean} [fixedScale=false] Whether to scale y-axis to the maximum to fit all the values. If false, current view scales to fit only the displayed values.
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   value: types.string,
   valuetype: types.optional(types.enumeration(["url", "json"]), "url"),
   timecolumn: "",
@@ -809,7 +808,7 @@ const HtxTimeSeriesViewRTS = ({ item }) => {
   return (
     <div ref={ref} className="htx-timeseries">
       <ObjectTag item={item}>
-        {Tree.renderChildren(item)}
+        {Tree.renderChildren(item, item.annotation)}
         <Overview data={item.dataObj} series={item.dataHash} item={item} range={item.brushRange} />
       </ObjectTag>
     </div>

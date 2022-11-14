@@ -37,7 +37,6 @@ import ControlBase from "./Base";
  * @params {string} [rightClass=left] - Class name of the right object
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
   selectionstyle: types.maybeNull(types.string),
   leftclass: types.maybeNull(types.string),
