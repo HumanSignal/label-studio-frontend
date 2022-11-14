@@ -98,13 +98,14 @@ const SelectionMap = types.model(
       self.afterUnselect(region);
     },
     clear() {
-      const regionEntries = self.selected;
+      // clear() in the middle empties selected regions, so store them in separate array
+      const regionEntries = [...self.selected.values()];
 
-      for (const [, region] of regionEntries) {
+      for (const region of regionEntries) {
         self.beforeUnselect(region);
       }
       self.selected.clear();
-      for (const [, region] of regionEntries) {
+      for (const region of regionEntries) {
         self.afterUnselect(region);
       }
     },
