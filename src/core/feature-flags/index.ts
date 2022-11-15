@@ -1,4 +1,6 @@
 if (process.env.NODE_ENV !== 'production' && !window.APP_SETTINGS) {
+  const APP_SETTINGS = window.APP_SETTINGS as Record<string, any> | undefined;
+
   const flags = (() => {
     try {
       return require("./flags.json");
@@ -9,7 +11,10 @@ if (process.env.NODE_ENV !== 'production' && !window.APP_SETTINGS) {
 
   Object.assign(window, {
     APP_SETTINGS: {
-      feature_flags: flags,
+      feature_flags: {
+        ...(APP_SETTINGS?.feature_flags ?? {}),
+        ...flags,
+      },
     },
   });
 }
