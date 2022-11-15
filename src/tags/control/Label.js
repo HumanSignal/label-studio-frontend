@@ -245,7 +245,7 @@ const Model = types.model({
   },
 
   onLabelInteract() {
-    if(self.annotation.isDrawing) {
+    if (self.annotation.isDrawing) {
       return false;
     } 
     return self.toggleSelected();
