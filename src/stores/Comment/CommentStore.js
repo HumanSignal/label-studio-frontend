@@ -1,9 +1,9 @@
 import { flow, getEnv, getParent, getRoot, getSnapshot, types } from "mobx-state-tree";
+import { when } from "mobx";
 import uniqBy from "lodash/uniqBy";
 import Utils from "../../utils";
 import { Comment } from "./Comment";
 import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
-import { delay } from "../../utils/utilities";
 
 export const CommentStore = types
   .model("CommentStore", {
@@ -111,6 +111,7 @@ export const CommentStore = types
     }
 
     function removeCommentById(id)  {
+
       const comments = self.comments;
 
       const index = comments.findIndex(comment => comment.id === id);
@@ -153,6 +154,10 @@ export const CommentStore = types
     }
 
     const addComment = flow(function* (text) {
+      if (self.loading === "addComment") return;
+
+      self.setLoading("addComment");
+
       const now = Date.now() * -1;
 
       const comment =  {
@@ -167,9 +172,13 @@ export const CommentStore = types
       const { annotation } = self;
 
       if (isFF(FF_DEV_3034) && !self.annotationId && !self.draftId) {
-        // rare case: draft is already saving, so just wait for it
-        if (annotation.versions.draft) {
-          yield delay(annotation.autosaveDelay);
+        // rare case: draft is already saving, commit the outstanding draft before adding a comment
+        if (annotation.history.hasChanges && !annotation.draftSaved) {
+          // commit the pending draft
+          annotation.saveDraftImmediately();
+
+          // wait for the draft to be saved entirely before adding the comment
+          yield when(() => annotation.draftSaved);
         } else {
           // replicate actions from autosave()
           // if versions.draft is empty, the current state (prediction actually) is in result
@@ -193,8 +202,6 @@ export const CommentStore = types
       self.setAddedCommentThisSession(true);
       if (self.canPersist) {
         try {
-          self.setLoading("addComment");
-
           const [newComment] = yield self.sdk.invoke("comments:create", comment);
 
           if (newComment) {
@@ -208,6 +215,8 @@ export const CommentStore = types
         } finally{ 
           self.setLoading(null);
         }
+      } else {
+        self.setLoading(null);
       }
     });
 
