@@ -11,9 +11,9 @@ import { KeyPointModel } from "./KeyPoint";
 import ControlBase from "./Base";
 
 /**
- * The KeyPointLabels tag creates labeled keypoints. Use to apply labels to identified key points, such as identifying facial features for a facial recognition labeling project.
+ * The `KeyPointLabels` tag creates labeled keypoints. Use to apply labels to identified key points, such as identifying facial features for a facial recognition labeling project.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic keypoint image labeling configuration for multiple regions-->
  * <View>
@@ -37,10 +37,6 @@ import ControlBase from "./Base";
  * @param {number=} [strokeWidth=1]      - Width of the stroke
  * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color in hexadecimal
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const Validation = types.model({
   controlledTags: Types.unionTag(["Image"]),
@@ -63,7 +59,6 @@ const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   KeyPointModel,
-  TagAttrs,
   Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),

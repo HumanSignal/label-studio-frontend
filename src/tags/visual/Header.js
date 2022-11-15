@@ -6,10 +6,11 @@ import { Typography } from "antd";
 import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
 import Registry from "../../core/Registry";
 import Tree from "../../core/Tree";
+import { guidGenerator } from "../../utils/unique";
 import { clamp } from "../../utils/utilities";
 
 /**
- * Use the Header tag to show a header on the labeling interface.
+ * The `Header` tag is used to show a header on the labeling interface.
  * @example
  * <!-- Display a header on the labeling interface based on a field in the data -->
  * <View>
@@ -29,6 +30,7 @@ import { clamp } from "../../utils/utilities";
  * @param {boolean} [underline=false] - Whether to underline the header
  */
 const Model = types.model({
+  id: types.optional(types.identifier, guidGenerator),
   type: "header",
   size: types.optional(types.string, "4"),
   style: types.maybeNull(types.string),

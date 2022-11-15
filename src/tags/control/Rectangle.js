@@ -9,9 +9,9 @@ import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 import { FF_DEV_2132, isFF } from "../../utils/feature-flags";
 
 /**
- * Use the Rectangle tag to add a rectangle (Bounding Box) to an image without selecting a label. This can be useful when you have only one label to assign to a rectangle.
+ * The `Rectangle` tag is used to add a rectangle (Bounding Box) to an image without selecting a label. This can be useful when you have only one label to assign to a rectangle.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic labeling configuration for adding rectangular bounding box regions to an image -->
  * <View>
@@ -32,7 +32,6 @@ import { FF_DEV_2132, isFF } from "../../utils/feature-flags";
  * @param {boolean} [smartOnly]           - Only show smart tool for interactive pre-annotations
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   opacity: types.optional(customTypes.range(), "0.2"),

@@ -12,9 +12,9 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * The RectangleLabels tag creates labeled rectangles. Use to apply labels to bounding box semantic segmentation tasks.
+ * The `RectangleLabels` tag creates labeled rectangles. Use to apply labels to bounding box semantic segmentation tasks.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic labeling configuration for applying labels to rectangular bounding boxes on an image -->
  * <View>
@@ -39,10 +39,6 @@ import ControlBase from "./Base";
  * @param {number} [strokeWidth=1]   - Width of stroke
  * @param {boolean} [canRotate=true] - Show or hide rotation control
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const Validation = types.model({
   controlledTags: Types.unionTag(["Image"]),
@@ -58,7 +54,6 @@ const Composition = types.compose(
   LabelsModel,
   ModelAttrs,
   RectangleModel,
-  TagAttrs,
   Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: "LabelModel" }),

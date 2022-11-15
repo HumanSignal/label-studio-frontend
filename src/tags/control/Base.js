@@ -1,7 +1,15 @@
 import { types } from "mobx-state-tree";
+import { FF_DEV_3391, isFF } from "../../utils/feature-flags";
 import { BaseTag } from "../TagBase";
 
 const ControlBase = types.model({
+  ...(isFF(FF_DEV_3391)
+    ? {
+      id: types.identifier,
+      name: types.string,
+    } : {
+      name: types.identifier,
+    }),
   smart: true,
   smartonly: false,
   isControlTag: true,

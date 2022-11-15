@@ -145,20 +145,20 @@ export class HtxTextBox extends React.Component {
   }
 
   renderView() {
-    const { onChange, onDelete, text, ...props } = this.props;
+    const { onChange, onDelete, isEditable, isDeleteable, text, ...props } = this.props;
 
     return (
       <>
         <Paragraph {...props}>
           <span ref={this.textRef}>{text}</span>
-          {onChange && <EditOutlined onClick={this.startEditing} className="ant-typography-edit" />}
+          {isEditable && onChange && <EditOutlined onClick={this.startEditing} className="ant-typography-edit" />}
         </Paragraph>
-        {onDelete && <DeleteOutlined className={styles.delete} onClick={onDelete} />}
+        {isDeleteable && onDelete && <DeleteOutlined className={styles.delete} onClick={onDelete} />}
       </>
     );
   }
 
   render() {
-    return this.state.editing || this.props.onlyEdit ? this.renderEdit() : this.renderView();
+    return (this.state.editing || this.props.onlyEdit) && this.props.isEditable ? this.renderEdit() : this.renderView();
   }
 }
