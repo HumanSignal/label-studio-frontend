@@ -271,8 +271,7 @@ export const CommentStore = types
     }
 
     const listComments = flow((function* ({ mounted = { current: true } } = {}) {
-      self.setComments([]);
-
+      if (!mounted.current) self.setComments([]);
       if (!self.draftId && !self.annotationId) return;
 
       try {

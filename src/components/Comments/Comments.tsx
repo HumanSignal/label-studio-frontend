@@ -46,7 +46,7 @@ export const Comments: FC<{ commentStore: any, cacheKey?: string }>= observer(({
   return (
     <Block name="comments">
       <CommentForm commentStore={commentStore} inline />
-      <CommentsList commentStore={commentStore} />
+      <CommentsList commentStore={commentStore} loadComments={loadComments} />
     </Block>
   );
 });

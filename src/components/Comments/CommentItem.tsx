@@ -15,7 +15,6 @@ import { Button } from "../../common/Button/Button";
 
 interface Comment {
   comment: {
-    editedAt: string,
     isEditMode: boolean,
     isConfirmDelete: boolean,
     createdAt: string,
@@ -25,18 +24,20 @@ interface Comment {
     createdBy: any,
     text: string,
     isResolved: boolean,
+    loadComments: () => void,
     updateComment: (comment: string) => void,
     deleteComment: () => void,
     setConfirmMode: (confirmMode: boolean) => void,
     setEditMode: (isGoingIntoEditMode: boolean) => void,
     toggleResolve: () => void,
   };
+  listComments: () => void;
 }
 
 export const CommentItem: FC<any> = observer(
   ({
     comment: {
-      editedAt,
+      updatedAt,
       isEditMode,
       isConfirmDelete,
       createdAt,
@@ -50,7 +51,8 @@ export const CommentItem: FC<any> = observer(
       setConfirmMode,
       setEditMode,
       toggleResolve,
-    },
+    }, listComments,
+    
   }: Comment) => {
     const currentUser = window.APP_SETTINGS?.user;
     const [currentComment, setCurrentComment] = useState(initialComment);
@@ -58,16 +60,20 @@ export const CommentItem: FC<any> = observer(
     if (isDeleted) return null;
 
     const TimeTracker = () => {
-      const edited = new Date(editedAt).setMilliseconds(0) > new Date(createdAt).setMilliseconds(0);
-      const time = edited ? editedAt : createdAt;
+      const editedTimeAchondritic = new Date(updatedAt);
+      const createdTimeAchondritic = new Date(createdAt);
 
-      console.log(edited);
-    
+      editedTimeAchondritic.setMilliseconds(0);
+      createdTimeAchondritic.setMilliseconds(0);
+      
+      const isEdited = editedTimeAchondritic > createdTimeAchondritic;
+      const time = isEdited ? updatedAt : createdAt;
+
       if (isPersisted && time)
         return (
           <Elem name="date">
             <Tooltip placement="topRight" title={new Date(time).toLocaleString()}>
-              {`${edited ? "updated" : ""} ${humanDateDiff(time)}`}
+              {`${isEdited ? "updated" : ""} ${humanDateDiff(time)}`}
             </Tooltip>
           </Elem>
         );
@@ -101,6 +107,7 @@ export const CommentItem: FC<any> = observer(
                 onSubmit={async value => {
                   await updateComment(value);
                   setCurrentComment(value);
+                  await listComments();
                 }}
               />
             ) : isConfirmDelete ? (
