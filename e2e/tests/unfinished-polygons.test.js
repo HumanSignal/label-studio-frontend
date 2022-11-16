@@ -595,8 +595,13 @@ Data(selectedPolygonAfterCreatingVariants).Scenario("Select polygon after creati
     AtSidebar.dontSeeSelectedRegion();
   }
 
+  I.say("unselect regions");
+  I.pressKey("u");
+  AtSidebar.dontSeeSelectedRegion();
+
   I.say("go back through the history");
   I.pressKey(['CommandOrControl', 'Z']);
+  AtSidebar.dontSeeSelectedRegion();
 
   I.say("repeat creation and checking");
   AtImageView.drawByClick(canvasSize.width * .10, canvasSize.height * .10);
