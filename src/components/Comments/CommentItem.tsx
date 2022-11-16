@@ -30,7 +30,7 @@ interface Comment {
     setEditMode: (isGoingIntoEditMode: boolean) => void,
     toggleResolve: () => void,
   };
-  listComments: ({ suppressClearComments }: {suppressClearComments: boolean}) => void;
+  listComments: ({ suppressClearComments }: { suppressClearComments: boolean }) => void;
 }
 
 export const CommentItem: FC<any> = observer(
@@ -50,8 +50,8 @@ export const CommentItem: FC<any> = observer(
       setConfirmMode,
       setEditMode,
       toggleResolve,
-    }, listComments,
-    
+    },
+    listComments,
   }: Comment) => {
     const currentUser = window.APP_SETTINGS?.user;
     const [currentComment, setCurrentComment] = useState(initialComment);
@@ -64,7 +64,7 @@ export const CommentItem: FC<any> = observer(
 
       editedTimeAchondritic.setMilliseconds(0);
       createdTimeAchondritic.setMilliseconds(0);
-      
+
       const isEdited = editedTimeAchondritic > createdTimeAchondritic;
       const time = isEdited ? updatedAt : createdAt;
 
