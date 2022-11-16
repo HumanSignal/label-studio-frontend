@@ -136,8 +136,6 @@ const Model = types.model({
       return region.editable;
     });
 
-    console.log('heartex', self.annotation.selectedRegions, self.annotation.selectedDrawingRegions);
-
     // one more check if that label can be selected
     if (!self.annotation.editable) return;
 
