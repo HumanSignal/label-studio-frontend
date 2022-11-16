@@ -111,7 +111,6 @@ export const CommentStore = types
     }
 
     function removeCommentById(id)  {
-
       const comments = self.comments;
 
       const index = comments.findIndex(comment => comment.id === id);
