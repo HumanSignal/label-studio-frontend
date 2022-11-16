@@ -24,14 +24,13 @@ interface Comment {
     createdBy: any,
     text: string,
     isResolved: boolean,
-    loadComments: () => void,
     updateComment: (comment: string) => void,
     deleteComment: () => void,
     setConfirmMode: (confirmMode: boolean) => void,
     setEditMode: (isGoingIntoEditMode: boolean) => void,
     toggleResolve: () => void,
   };
-  listComments: () => void;
+  listComments: ({ suppressClearComments }: {suppressClearComments: boolean}) => void;
 }
 
 export const CommentItem: FC<any> = observer(
@@ -107,7 +106,7 @@ export const CommentItem: FC<any> = observer(
                 onSubmit={async value => {
                   await updateComment(value);
                   setCurrentComment(value);
-                  await listComments();
+                  await listComments({ suppressClearComments: true });
                 }}
               />
             ) : isConfirmDelete ? (
