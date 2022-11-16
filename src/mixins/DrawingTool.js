@@ -112,7 +112,7 @@ const DrawingTool = types
         self.annotation.regionStore.selection._updateResultsFromRegions([self.currentArea]);
         self.mode = "drawing";
         self.annotation.setIsDrawing(true);
-        self.annotation.selectArea(self.currentArea);
+        self.annotation.regionStore.selection.drawingSelect(self.currentArea);
         self.listenForClose?.();
       },
       commitDrawingRegion() {
@@ -327,6 +327,9 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
       },
       finishDrawing() {
         if (!self.isDrawing) return;
+
+        self.annotation.regionStore.selection.drawingUnselect();
+
         pointsCount = 0;
         self.closeCurrent();
         setTimeout(()=>{
