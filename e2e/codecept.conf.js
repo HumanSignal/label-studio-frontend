@@ -40,6 +40,7 @@ module.exports.config = {
     LabelStudio: "./fragments/LabelStudio.js",
     AtImageView: "./fragments/AtImageView.js",
     AtAudioView: "./fragments/AtAudioView.js",
+    AtTimeSeries: "./fragments/AtTimeSeries.js",
     AtRichText: "./fragments/AtRichText.js",
     AtSidebar: "./fragments/AtSidebar.js",
     AtLabels: "./fragments/AtLabels.js",
