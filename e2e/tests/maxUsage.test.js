@@ -1,6 +1,6 @@
 /* global Feature, Scenario, DataTable, Data */
 
-Feature("Max usage").tag("@this");
+Feature("Max usage");
 
 const IMAGE = "https://user.fm/files/v2-901310d5cb3fa90e0616ca10590bacb3/spacexmoon-800x501.jpg";
 
@@ -255,6 +255,7 @@ Data(maxUsageDataTable).Scenario("Max usages of labels in RichText on region cre
     },
   });
 
+  LabelStudio.waitForObjectsReady();
   AtSidebar.seeRegions(0);
 
   for (let k = 0; k < maxUsage; k++) {
@@ -287,6 +288,7 @@ Data(maxUsageDataTable).Scenario("Max usages of labels in Paragraphs on region c
     data: require("../examples/text-paragraphs").data,
   });
 
+  LabelStudio.waitForObjectsReady();
   AtSidebar.seeRegions(0);
 
   for (let k = 0; k < maxUsage; k++) {
@@ -322,6 +324,7 @@ Data(maxUsageDataTable).Scenario("Max usages of labels in Timeseries on region c
     data: require("../examples/data/sample-sin.json"),
   });
 
+  LabelStudio.waitForObjectsReady();
   AtSidebar.seeRegions(0);
   await AtTimeSeries.lookForStage();
 
