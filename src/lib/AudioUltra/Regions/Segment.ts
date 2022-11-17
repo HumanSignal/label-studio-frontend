@@ -238,16 +238,20 @@ export class Segment extends Events<SegmentEvents> {
       this.isDragging = true;
       const { isRightEdge: freezeStart, isLeftEdge: freezeEnd } = this.isGrabbingEdge; 
       const { grabPosition, start, end } = this.draggingStartPosition;
+      const isResizing = freezeStart || freezeEnd;
       const { container, zoomedWidth } = this.visualizer;
       const { duration } = this.waveform;
       const scrollLeft = this.visualizer.getScrollLeft();
-      const currentPosition = getCursorPositionX(e, container) + scrollLeft;
-      const newPosition = currentPosition - grabPosition;
-      const seconds = pixelsToTime(newPosition, zoomedWidth, duration);
-      const timeDiff = end - start;
-      const newStart = freezeEnd ? start + seconds : clamp(start + seconds, 0, this.duration - timeDiff);
+      let currentPosition = getCursorPositionX(e, container) + scrollLeft;
+      
+      if (currentPosition < 0) currentPosition = 0;
+
+      const newPosition = currentPosition - grabPosition; //relative to the grabPosition
+      const seconds = pixelsToTime(newPosition, zoomedWidth, duration); //seconds adjusted relative to grabPosition
+      const timeDiff = end - start; //segment duration
+      const newStart = freezeEnd ? start + seconds : clamp(start + seconds, 0, this.duration - timeDiff);  
       const startTime = freezeStart ? start : newStart;
-      const endTime = freezeEnd ? end : newStart + timeDiff;
+      const endTime = freezeEnd ? end : clamp(end + seconds, newStart + (isResizing ? 0 : timeDiff), this.duration);
 
       if (freezeStart || freezeEnd) this.switchCursor(CursorSymbol.colResize);
       else  this.switchCursor(CursorSymbol.grabbing);
