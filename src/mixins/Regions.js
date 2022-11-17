@@ -283,7 +283,6 @@ const RegionsMixin = types
         } else {
           const wasNotSelected = !self.selected;
 
-
           if (wasNotSelected) {
             annotation.selectArea(self);
           } else {
