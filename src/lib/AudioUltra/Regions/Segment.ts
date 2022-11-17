@@ -230,6 +230,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private handleDrag = (e: MouseEvent) => {
+    if (!this.updateable) return;
     if (this.draggingStartPosition) {
       e.preventDefault();
       e.stopPropagation();
