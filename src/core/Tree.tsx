@@ -84,24 +84,41 @@ function tagIntoObject(
 
   if (type === "repeater") {
     const repeaterArray = parseValue(props.on, taskData) || [];
-    const views = [];
+    const views = Array.from({ length: repeaterArray.length }) as Array<ConfigNode>; 
 
-    for (let i = 0; i < repeaterArray.length; i++) {
+    const repeaterArrayLen = repeaterArray.length;
+
+    for (let i = 0; i < repeaterArrayLen; i++) {
       const newReplaces: Record<string, string> = { ...replaces, [indexFlag]: i };
+
       const view = {
         id: guidGenerator(),
         tagName: "View",
         type: "view",
-        children: [...node.children].map(child => {
-          const clonedNode = child.cloneNode(true) as Element;
+        __children: null,
+      } as ConfigNode & { __children: ConfigNode[]|null };
 
-          deepReplaceAttributes(clonedNode, i, indexFlag);
+      views[i] = new Proxy(view, {
+        get(target: any, prop: string) {
+          if (prop === "children") {
+            if (target.__children) return target.__children;
 
-          return tagIntoObject(clonedNode, taskData, newReplaces);
-        }),
-      };
+            const children = Array.from(node.children).map(child =>{
+              const clonedNode = child.cloneNode(true) as Element;
 
-      views.push(view);
+              deepReplaceAttributes(clonedNode, i, indexFlag);
+
+              return tagIntoObject(clonedNode, taskData, newReplaces);
+            });
+
+            target.__children = children;
+
+            return children;
+          }
+
+          return target[prop] as any;
+        },
+      });
     }
 
     data.tagName = "View";
