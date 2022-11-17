@@ -17,15 +17,15 @@ configure({
   isolateGlobalState: true,
 });
 
-export class LabelStudio {
-  static instances = new Set();
+const instances = new WeakMap();
 
-  static destroyAll() {
-    this.instances.forEach(inst => inst.destroy());
-    this.instances.clear();
-  }
+export class LabelStudio {
+  static destroyAll() { /* leaving this for backward compatibility */ }
 
   constructor(root, userOptions = {}) {
+    if (instances.has(root)) {
+      return instances.get(root);
+    }
     const options = Object.assign({}, defaultOptions, userOptions ?? {});
 
     if (options.keymap) {
@@ -40,7 +40,7 @@ export class LabelStudio {
     this.supportLgacyEvents(options);
     this.createApp();
 
-    this.constructor.instances.add(this);
+    instances.set(root, this);
   }
 
   on(...args) {
@@ -59,20 +59,25 @@ export class LabelStudio {
     const { store, getRoot } = await configureStore(this.options, this.events);
     const rootElement = getRoot(this.root);
 
-    this.store = store;
-    window.Htx = this.store;
+    window.Htx = store;
 
     render((
       <App
-        store={this.store}
+        store={store}
         panels={registerPanels(this.options.panels) ?? []}
       />
     ), rootElement);
 
     const destructor = () => {
       unmountComponentAtNode(rootElement);
-      destroySharedStore();
-      destroy(this.store);
+      requestIdleCallback(() => {
+        instances.delete(this.root);
+        destroySharedStore();
+        destroy(window.Htx);
+        window.Htx = null;
+        this.root = null;
+        this.destroy = null;
+      });
     };
 
     this.destroy = destructor;
