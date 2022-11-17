@@ -278,9 +278,9 @@ export const CommentStore = types
       self.fromCache(key, { merge: true, queueRestored: true });
     }
 
-    const listComments = flow((function* ({ mounted = { current: true } } = {}) {
-      self.setComments([]);
+    const listComments = flow((function* ({ mounted = { current: true }, suppressClearComments } = {}) {
 
+      if (!suppressClearComments) self.setComments([]);
       if (!self.draftId && !self.annotationId) return;
 
       try {
