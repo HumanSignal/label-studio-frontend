@@ -14,6 +14,8 @@ export const FramesControl: FC<TimelineSideControlProps> = ({
     return length - 1;
   }, [length]);
 
+  console.log({ duration, length });
+
   return (
     <Block name="frames-control" onClick={() => setInputMode(true)}>
       {inputMode ? (
@@ -21,14 +23,14 @@ export const FramesControl: FC<TimelineSideControlProps> = ({
           length={duration}
           position={position}
           onChange={(value) => {
-            onPositionChange?.(value > 0 ? value + 1 : value);
+            onPositionChange?.(clamp(value, 0, length));
           }}
           onFinishEditing={() => {
             setInputMode(false);
           }}
         />
       ) : (
-        <>{Math.round(position)} <span>of {Math.round(duration)}</span></>
+        <>{Math.round(position + 1)} <span>of {Math.round(duration)}</span></>
       )}
     </Block>
   );
@@ -61,7 +63,7 @@ const FrameInput: FC<FrameInputProps> = ({ length, position, onChange, onFinishE
     <input
       type="text"
       ref={input}
-      defaultValue={position}
+      defaultValue={position + 1}
       autoFocus
       onFocus={() => input.current?.select()}
       onKeyDown={(e) => {
