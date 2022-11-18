@@ -3,7 +3,6 @@ import { observer } from "mobx-react";
 import { getRoot, types } from "mobx-state-tree";
 
 import * as d3 from "d3";
-import ObjectBase from "../Base";
 import Registry from "../../../core/Registry";
 import Types from "../../../core/Types";
 import { cloneNode, guidGenerator } from "../../../core/Helpers";
@@ -11,6 +10,7 @@ import { checkD3EventLoop, fixMobxObserve, getOptimalWidth, getRegionColor, spar
 import { markerSymbol } from "./symbols";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { TagParentMixin } from "../../../mixins/TagParentMixin";
+import { FF_DEV_3391, isFF } from "../../../utils/feature-flags";
 
 /**
  * Channel tag can be used to label time series data
@@ -85,7 +85,7 @@ const TagAttrs = types.model({
 
 const Model = types
   .model("ChannelModel", {
-    id: types.optional(types.identifier, guidGenerator),
+    ...(isFF(FF_DEV_3391) ? { id: types.identifier } : {}),
     type: "channel",
     children: Types.unionArray(["channel", "view"]),
     parentTypes: Types.tagsTypes(["TimeSeries"]),
@@ -102,7 +102,7 @@ const Model = types
     },
   }));
 
-const ChannelModel = types.compose("ChannelModel", TagParentMixin, Model, TagAttrs, ObjectBase);
+const ChannelModel = types.compose("ChannelModel", TagParentMixin, Model, TagAttrs);
 
 class ChannelD3 extends React.Component {
   ref = React.createRef();

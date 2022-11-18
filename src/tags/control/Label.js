@@ -20,7 +20,7 @@ import { parseValue } from "../../utils/data";
 import { FF_DEV_2128, isFF } from "../../utils/feature-flags";
 
 /**
- * Label tag represents a single label. Use with the Labels tag, including BrushLabels, EllipseLabels, HyperTextLabels, KeyPointLabels, and other Labels tags to specify the value of a specific label.
+ * The `Label` tag represents a single label. Use with the `Labels` tag, including `BrushLabels`, `EllipseLabels`, `HyperTextLabels`, `KeyPointLabels`, and other `Labels` tags to specify the value of a specific label.
  *
  * @example
  * <!--Basic named entity recognition labeling configuration for text-->
@@ -236,12 +236,19 @@ const Model = types.model({
   },
 
   onHotKey() {
-    if(self.annotation.isDrawing) {
+    return self.onLabelInteract();
+  },
+
+  onClick() {
+    self.onLabelInteract();
+    return false;
+  },
+
+  onLabelInteract() {
+    if (self.annotation.isDrawing) {
       return false;
-    } else {
-      self.annotation.unselectAreas();
-      return self.toggleSelected();
-    }
+    } 
+    return self.toggleSelected();
   },
 
   _updateBackgroundColor(val) {
@@ -265,8 +272,7 @@ const HtxLabelView = inject("store")(
 
     const label = (
       <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={() => {
-        item.toggleSelected();
-        return false;
+        return item.onClick();
       }}>
         {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
         {item.showalias === true && item.alias && (

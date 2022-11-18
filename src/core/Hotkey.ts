@@ -365,8 +365,6 @@ Hotkey.Hint = inject("store")(observer(({ store, name }: any) => {
   return null;
 }));
 
-Object.assign(window, { HtxHotkeys: Hotkey });
-
 export default {
   DEFAULT_SCOPE,
   INPUT_SCOPE,

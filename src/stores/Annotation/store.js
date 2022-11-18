@@ -8,7 +8,7 @@ import { guidGenerator } from "../../core/Helpers";
 import { DataValidator, ValidationError, VALIDATORS } from "../../core/DataValidator";
 import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
 import { ViewModel } from "../../tags/visual";
-import { FF_DEV_1621, FF_DEV_3034, FF_DEV_3617, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1621, FF_DEV_3034, FF_DEV_3391, FF_DEV_3617, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
 import { HistoryItem } from "./HistoryItem";
 import { StoreExtender } from "../../mixins/SharedChoiceStore/extender";
@@ -193,6 +193,21 @@ const AnnotationStoreModel = types
       } catch (e) {
         console.error(e);
         return showError(e);
+      }
+
+      if (isFF(FF_DEV_3391)) {
+        // initialize toName bindings [DOCS] name & toName are used to
+        // connect different components to each other
+        const { names, toNames } = Tree.extractNames(self.root);
+
+        names.forEach(tag => self.names.put(tag));
+        toNames.forEach((tags, name) => self.toNames.set(name, tags));
+
+        Tree.traverseTree(self.root, node => {
+          if (self.store.task && node.updateValue) node.updateValue(self.store);
+        });
+
+        return self.root;
       }
 
       // initialize toName bindings [DOCS] name & toName are used to
