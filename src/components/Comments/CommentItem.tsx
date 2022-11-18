@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { Tooltip } from "antd";
 import { IconCheck, IconEllipsis } from "../../assets/icons";
 import { Space } from "../../common/Space/Space";
