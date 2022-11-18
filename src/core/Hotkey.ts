@@ -47,8 +47,9 @@ keymaster.filter = function(event: any) {
   if (keymaster.getScope() === "__none__") return false;
 
   const tag = (event.target || event.srcElement)?.tagName;
+  const inNumberPadCodeRange = event.keyCode >= 96 && event.keyCode <= 105;
 
-  if (event.keyCode >= 96 && event.keyCode <= 105) translateNumpad(event);
+  if (inNumberPadCodeRange) translateNumpad(event);
   if (tag) {
     keymaster.setScope(/^(INPUT|TEXTAREA|SELECT)$/.test(tag) ? INPUT_SCOPE : DEFAULT_SCOPE);
   }
