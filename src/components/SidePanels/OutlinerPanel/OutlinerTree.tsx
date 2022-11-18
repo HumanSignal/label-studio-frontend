@@ -376,7 +376,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   const { regions: regionStore } = useContext(OutlinerContext);
 
   const hidden = useMemo(() => {
-    if (type?.includes('region')) {
+    if (type?.includes('region') || type?.includes('range')) {
       return entity.hidden;
     } else if ((!type || type.includes('label')) && regions) {
       return Object.values(regions).every(({ hidden }) => hidden);
@@ -385,7 +385,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   }, [entity, type, regions]);
 
   const onToggleHidden = useCallback(() => {
-    if (type?.includes('region')) {
+    if (type?.includes('region') || type?.includes('range')) {
       entity.toggleHidden();
     } else if(!type || type.includes('label')) {
       regionStore.setHiddenByLabel(!hidden, entity);

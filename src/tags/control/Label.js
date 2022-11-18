@@ -236,12 +236,19 @@ const Model = types.model({
   },
 
   onHotKey() {
-    if(self.annotation.isDrawing) {
+    return self.onLabelInteract();
+  },
+
+  onClick() {
+    self.onLabelInteract();
+    return false;
+  },
+
+  onLabelInteract() {
+    if (self.annotation.isDrawing) {
       return false;
-    } else {
-      self.annotation.unselectAreas();
-      return self.toggleSelected();
-    }
+    } 
+    return self.toggleSelected();
   },
 
   _updateBackgroundColor(val) {
@@ -265,8 +272,7 @@ const HtxLabelView = inject("store")(
 
     const label = (
       <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={() => {
-        item.toggleSelected();
-        return false;
+        return item.onClick();
       }}>
         {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
         {item.showalias === true && item.alias && (

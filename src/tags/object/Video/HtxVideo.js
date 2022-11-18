@@ -12,16 +12,18 @@ import { Block, Elem } from "../../../utils/bem";
 import { clamp, isDefined } from "../../../utils/utilities";
 
 import { IconZoomIn } from "../../../assets/icons";
+import { MAX_ZOOM_WHEEL, MIN_ZOOM_WHEEL, ZOOM_STEP, ZOOM_STEP_WHEEL } from "../../../components/VideoCanvas/VideoConstants";
 import { useFullscreen } from "../../../hooks/useFullscreen";
+import { FF_DEV_3350, isFF } from "../../../utils/feature-flags";
 import ResizeObserver from "../../../utils/resize-observer";
-import { VideoRegions } from "./VideoRegions";
 import "./Video.styl";
-import { ZOOM_STEP, ZOOM_STEP_WHEEL } from "../../../components/VideoCanvas/VideoConstants";
+import { VideoRegions } from "./VideoRegions";
 
 const HtxVideoView = ({ item, store }) => {
   if (!item._value) return null;
 
   const videoBlockRef = useRef();
+  const stageRef = useRef();
   const videoContainerRef = useRef();
   const mainContentRef = useRef();
   const [loaded, setLoaded] = useState(false);
@@ -39,6 +41,7 @@ const HtxVideoView = ({ item, store }) => {
     onEnterFullscreen() { enterFullscreen(); },
     onExitFullscreen() { exitFullscren(); },
   });
+  const limitCanvasDrawingBoundaries = !store.settings.videoDrawOutside;
 
   const setPosition = useCallback((value) => {
     if (value !== position) {
@@ -134,14 +137,23 @@ const HtxVideoView = ({ item, store }) => {
   }, [isFullScreen]);
 
   const onZoomChange = useCallback((e) => {
-    if (!e.shiftKey) return;
+    if (!e.shiftKey || !stageRef.current) return;
 
-    const delta = e.deltaY * ZOOM_STEP_WHEEL;
+    // because its possible the shiftKey is the modifier, we need to check the appropriate delta
+    const wheelDelta = Math.abs(e.deltaY) === 0 ? e.deltaX : e.deltaY; 
+    const polarity = wheelDelta > 0 ? 1 : -1;
+    const stepDelta = Math.abs(wheelDelta * ZOOM_STEP_WHEEL);
+    const delta = polarity * clamp(stepDelta, MIN_ZOOM_WHEEL, MAX_ZOOM_WHEEL);
 
     requestAnimationFrame(() => {
-      setZoom(zoom => zoom + delta);
+      setZoom(prev => prev + delta);
+      setPan(prev => ({
+        x: prev.x + (prev.x / zoom) * polarity,
+        y: prev.y + (prev.y / zoom) * polarity,
+      }));
     });
-  }, []);
+
+  }, [zoom]);
 
   const handlePan = useCallback((e) => {
     if (!panMode) return;
@@ -150,10 +162,10 @@ const HtxVideoView = ({ item, store }) => {
     const startY = e.pageY;
 
     const onMouseMove = (e) => {
-      const position = {
-        x: pan.x + (e.pageX - startX),
-        y: pan.y + (e.pageY - startY),
-      };
+      const position = item.ref.current.adjustPan(
+        pan.x + (e.pageX - startX),
+        pan.y + (e.pageY - startY),
+      );
 
       requestAnimationFrame(() => {
         setPan(position);
@@ -171,10 +183,18 @@ const HtxVideoView = ({ item, store }) => {
 
   const zoomIn = useCallback(() => {
     setZoom(zoom + ZOOM_STEP);
+    setPan(prev => ({
+      x: prev.x + prev.x / zoom,
+      y: prev.y + prev.y / zoom,
+    }));
   }, [zoom]);
 
   const zoomOut = useCallback(() => {
     setZoom(zoom - ZOOM_STEP);
+    setPan(prev => ({
+      x: prev.x - prev.x / zoom,
+      y: prev.y - prev.y / zoom,
+    }));
   }, [zoom]);
 
   const zoomToFit = useCallback(() => {
@@ -308,8 +328,8 @@ const HtxVideoView = ({ item, store }) => {
             name="main"
             ref={videoContainerRef}
             style={{ height: Number(item.height) }}
-            onWheel={onZoomChange}
             onMouseDown={handlePan}
+            onWheel={onZoomChange}
           >
             {videoSize && (
               <>
@@ -323,6 +343,8 @@ const HtxVideoView = ({ item, store }) => {
                     width={videoSize[0]}
                     height={videoSize[1]}
                     workingArea={videoDimensions}
+                    allowRegionsOutsideWorkingArea={!limitCanvasDrawingBoundaries}
+                    stageRef={stageRef}
                   />
                 )}
                 <VideoCanvas
@@ -336,6 +358,7 @@ const HtxVideoView = ({ item, store }) => {
                   speed={item.speed}
                   framerate={item.framerate}
                   allowInteractions={false}
+                  allowPanOffscreen={!limitCanvasDrawingBoundaries}
                   onFrameChange={handleFrameChange}
                   onLoad={handleVideoLoad}
                   onResize={handleVideoResize}
