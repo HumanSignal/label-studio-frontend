@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import { isAlive, types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
 import Types from "../../core/Types";
@@ -13,6 +13,7 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 const Model = types.model({
   id: types.identifier,
   type: "pagedview",
+  hydrated: false,
   children: Types.unionArray([
     "view",
     "header",
@@ -64,8 +65,13 @@ const Model = types.model({
   ]),
 })
   .actions(self => ({
+    setHydrated(hydrated) {
+      self.hydrated = hydrated;
+    },
     addChild(child) {
-      self.children.push(child);
+      if (isAlive(self)) {
+        self.children.push(child);
+      }
     },
   }));
 const PagedViewModel = types.compose("PagedViewModel", Model, AnnotationMixin);
@@ -73,27 +79,67 @@ const hotkeys = Hotkey("Repeater");
 const DEFAULT_PAGE_SIZE = 1;
 const PAGE_SIZE_OPTIONS = [1, 5, 10, 25, 50, 100];
 
+const getStoredPageSize = (name, defaultValue) => {
+  const value = localStorage.getItem(`pages:${name}`);
+
+  if (value) {
+    return parseInt(value);
+  }
+
+  return defaultValue ?? undefined;
+};
+
+const setStoredPageSize = (name, pageSize) => {
+  localStorage.setItem(`pages:${name}`, pageSize.toString());
+};
+
+const getQueryPage = () => {
+  const params = new URLSearchParams(window.location.search);
+  const page = params.get("page");
+
+  if (page) {
+    return parseInt(page);
+  }
+
+  return 1;
+};
+
+const updateQueryPage = page => {
+  const params = new URLSearchParams(window.location.search);
+
+  params.set("page", page.toString());
+  window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+};
+
 const HtxPagedView = observer(({ item }) => {
-  const [page, setPage] = useState(1);
+  const [page, _setPage] = useState(getQueryPage);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  const totalPages = Math.ceil(item.children.length / pageSize);
+  const setPage = useCallback((_page) => {
+    _setPage(_page);
+    updateQueryPage(_page);
+  },[]);
+
+  const totalPages = useMemo(() => item.hydrated ?  Math.ceil(item.children.length / pageSize) : 1, [item.hydrated, pageSize]);
 
   useEffect(() => {
     setPageSize(getStoredPageSize('repeater', DEFAULT_PAGE_SIZE));
   }, []);
 
   useEffect(() => {
-    item.annotation.regions.map((obj) => {
-      if (obj.selected) {
-        const _pageNumber = parseFloat(obj.object.name.split('_')[1]) + 1;
+    if (!item.hydrated) return;
 
-        setPage(Math.ceil(_pageNumber / pageSize));
-      }
-    });
-  }, [JSON.stringify(item)]);
+    const last = item.annotation.lastSelectedRegion;
+
+    if (last) {
+      const _pageNumber = parseFloat(last.object.name.split('_')[1]) + 1;
+
+      setPage(Math.ceil(_pageNumber / pageSize));
+    }
+  }, [item.hydrated, item.annotation.lastSelectedRegion]);
 
   useEffect(() => {
+    if (!item.hydrated) return;
     if (isFF(FF_DEV_1170)) {
       document.querySelector('.lsf-sidepanels__content')?.scrollTo(0, 0);
     } else {
@@ -118,9 +164,9 @@ const HtxPagedView = observer(({ item }) => {
       hotkeys.removeNamed("repeater:next-page");
       hotkeys.removeNamed("repeater:previous-page");
     };
-  }, [page]);
+  }, [item.hydrated, page]);
 
-  const renderPage = () => {
+  const renderPage = useCallback(() => {
     const pageView = [];
 
     for (let i = 0; i < pageSize; i++) {
@@ -128,10 +174,10 @@ const HtxPagedView = observer(({ item }) => {
     }
 
     return pageView;
-  };
+  }, [item.hydrated, page, pageSize]);
 
   return (
-    <div>
+    <div className={!item.hydrated ? "lsf-pagedview__loading" : ""}>
       {renderPage()}
       <Pagination
         currentPage={page}
@@ -152,20 +198,6 @@ const HtxPagedView = observer(({ item }) => {
     </div>
   );
 });
-
-const getStoredPageSize = (name, defaultValue) => {
-  const value = localStorage.getItem(`pages:${name}`);
-
-  if (value) {
-    return parseInt(value);
-  }
-
-  return defaultValue ?? undefined;
-};
-
-const setStoredPageSize = (name, pageSize) => {
-  localStorage.setItem(`pages:${name}`, pageSize.toString());
-};
 
 Registry.addTag("pagedview", PagedViewModel, HtxPagedView);
 

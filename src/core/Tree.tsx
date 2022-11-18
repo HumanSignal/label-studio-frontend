@@ -1,5 +1,5 @@
 import React from "react";
-import { getParentOfType, getType } from "mobx-state-tree";
+import { getParentOfType, getType, isAlive } from "mobx-state-tree";
 import { IAnyComplexType, IAnyStateTreeNode } from "mobx-state-tree/dist/internal";
 
 import Registry from "./Registry";
@@ -7,7 +7,7 @@ import { parseValue } from "../utils/data";
 import { FF_DEV_3391, isFF } from "../utils/feature-flags";
 import { guidGenerator } from "../utils/unique";
 
-const VIEW_CHUNK_SIZE = 5;
+const VIEW_CHUNK_SIZE = 20;
 
 const viewHydrationCache = new Map<string, any>();
 
@@ -17,6 +17,8 @@ export const hydrateLazyViews = (node: IAnyStateTreeNode, fn: (n: any) => void) 
   if (processor) {
     processor(node, fn);
     viewHydrationCache.delete(node.id);
+  } else {
+    fn(node);
   }
 };
 
@@ -97,10 +99,10 @@ function tagIntoObject(
 
   if (type === "repeater") {
     const repeaterArray = parseValue(props.on, taskData) || [];
-    let views = Array.from({ length: 1 }) as Array<ConfigNode>; 
-    const lazyViews = Array.from({ length: repeaterArray.length }) as Array<ConfigNode>; 
-
     const repeaterArrayLen = repeaterArray.length;
+    const viewChunkSize = props.mode === "pagination" ? VIEW_CHUNK_SIZE : repeaterArrayLen;
+    let views = Array.from({ length: viewChunkSize }) as Array<ConfigNode>; 
+    const lazyViews = Array.from({ length: repeaterArray.length }) as Array<ConfigNode>; 
 
     for (let i = 0; i < repeaterArrayLen; i++) {
       const newReplaces: Record<string, string> = { ...replaces, [indexFlag]: i };
@@ -112,7 +114,7 @@ function tagIntoObject(
         __children: null,
       } as ConfigNode & { __children: ConfigNode[]|null };
 
-      if (i === 0) {
+      if (i >= 0 && i < viewChunkSize) {
         view.children = Array.from(node.children).map(child =>{
           const clonedNode = child.cloneNode(true) as Element;
 
@@ -121,7 +123,7 @@ function tagIntoObject(
           return tagIntoObject(clonedNode, taskData, newReplaces);
         });
 
-        views[0] = view;
+        views[i] = view;
       } else {
         lazyViews[i] = new Proxy(view, {
           get(target: any, prop: string) {
@@ -146,16 +148,16 @@ function tagIntoObject(
     }
 
     const lazyProcess = function* (_node: any, fn: (n: any) => void) {
-      let i = 0;
+      let i = viewChunkSize;
 
       while(true) {
-        if (i === 0) {
+        if (i < viewChunkSize) {
           // first view always exists
           i++;
           continue;
         }
 
-        // Chunking processing by 10 views to prevent UI freeze
+        // Chunking processing by a portion of views to prevent UI freeze
         if (i % VIEW_CHUNK_SIZE === 0) {
           // console.time('Lazy processing: paused');
           yield;
@@ -166,17 +168,28 @@ function tagIntoObject(
 
         if (!view) break;
 
+        try {
         // Add to mobx state tree
-        _node.addChild(view);
+          if (isAlive(_node)) {
+            _node.addChild(view);
 
-        fn(_node.children[i] as any);
+            const childNode = _node.children[i] as any;
+
+            traverseTree(childNode, n => {
+              if (isAlive(n)) fn(n);
+            });
+          }
+        } catch {
+          // This is just a precaution, if the node is not alive, it means that
+          // it was already removed from the tree, so we don't need to add it
+          // to the tree. This can happen if DM + LSF are switcing between tasks quickly
+        }
 
         i++;
       }
     };
 
     let iterator: Iterator<any> | null = null;
-
     let processCompleted = false;
 
     const processor = function(_node: any, fn: (n: any) => void) {
@@ -187,11 +200,15 @@ function tagIntoObject(
 
       const next = () => {
         requestIdleCallback(() => {
-          iterator?.next();
+          const { done } = iterator?.next?.() ?? { done: true };
 
-          if (iterator?.next().done) {
-            // console.timeEnd('Lazy processing');
+          if (done) {
             processCompleted = true;
+            iterator = null;
+            // console.timeEnd('Lazy processing');
+            //
+            console.log('Lazy processing: completed');
+            _node.setHydrated(true);
             // console.log("Processed views ... ", lazyViews.length);
           } else {
             next();
@@ -209,10 +226,12 @@ function tagIntoObject(
       // Lazily evaluate other child views with a time-sliced processor only in pagination mode
       viewHydrationCache.set(data.id, processor);
       data.type = "pagedview";
+      // lazyViews[0] = views[0];
+      // views = lazyViews;
     } else {
       data.type = "view";
       // Set all lazy views as children, so that they can be processed eagerly in basic repeater mode
-      lazyViews[0] = views[0];
+      views.forEach((v, i) => lazyViews[i] = v);
       views = lazyViews;
     }
 

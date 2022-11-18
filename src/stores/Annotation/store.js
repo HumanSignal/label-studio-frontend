@@ -165,6 +165,24 @@ const AnnotationStoreModel = types
       return (self.root = ViewModel.create({ id: "error" }));
     }
 
+    function upsertToName(node) {
+      const val = self.toNames.get(node.toname);
+
+      if (val) {
+        val.push(node.name);
+      } else {
+        self.addToName(node);
+      }
+    }
+
+    function addToName(node) {
+      self.toNames.set(node.toname, [node.name]);
+    }
+
+    function addName(node) {
+      self.names.put(node);
+    }
+
     function initRoot(config) {
       if (self.root) return;
 
@@ -218,7 +236,7 @@ const AnnotationStoreModel = types
         // Avoid repeater nodes from adding all their children at once
 
           if (node?.name) {
-            self.names.put(node);
+            self.addName(node);
             if (objectTypes.includes(node.type)) objects.push(node.name);
           }
 
@@ -230,19 +248,12 @@ const AnnotationStoreModel = types
           }
 
           if (node && node.toname) {
-            const val = self.toNames.get(node.toname);
-
-            if (val) {
-              val.push(node.name);
-            } else {
-              self.toNames.set(node.toname, [node.name]);
-            }
+            self.upsertToName(node);
           }
 
           if (self.store.task && node.updateValue) node.updateValue(self.store);
         };
 
-        handleData(_node);
         hydrateLazyViews(_node, handleData);
       });
 
@@ -489,6 +500,9 @@ const AnnotationStoreModel = types
       toggleViewingAllPredictions,
 
       initRoot,
+      addToName,
+      addName,
+      upsertToName,
 
       addPrediction,
       addAnnotation,

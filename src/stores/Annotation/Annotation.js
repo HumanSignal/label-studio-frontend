@@ -159,6 +159,10 @@ export const Annotation = types
       return Array.from(self.areas.values());
     },
 
+    get lastSelectedRegion() {
+      return self.selectedRegions[self.selectedRegions.length - 1];
+    },
+
     get results() {
       const results = [];
 
