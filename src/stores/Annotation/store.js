@@ -1,7 +1,7 @@
 import { destroy, getEnv, getParent, getRoot, types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
-import Tree from "../../core/Tree";
+import Tree, { hydrateLazyViews } from "../../core/Tree";
 import Types from "../../core/Types";
 import Utils from "../../utils";
 import { guidGenerator } from "../../core/Helpers";
@@ -212,30 +212,38 @@ const AnnotationStoreModel = types
 
       // initialize toName bindings [DOCS] name & toName are used to
       // connect different components to each other
-      Tree.traverseTree(self.root, node => {
-        if (node?.name) {
-          self.names.put(node);
-          if (objectTypes.includes(node.type)) objects.push(node.name);
-        }
+      Tree.traverseTree(self.root, _node => {
 
-        const isControlTag = node.name && !objectTypes.includes(node.type);
-        // auto-infer missed toName if there is only one object tag in the config
+        const handleData = (node) => {
+        // Avoid repeater nodes from adding all their children at once
 
-        if (isControlTag && !node.toname && objects.length === 1) {
-          node.toname = objects[0];
-        }
-
-        if (node && node.toname) {
-          const val = self.toNames.get(node.toname);
-
-          if (val) {
-            val.push(node.name);
-          } else {
-            self.toNames.set(node.toname, [node.name]);
+          if (node?.name) {
+            self.names.put(node);
+            if (objectTypes.includes(node.type)) objects.push(node.name);
           }
-        }
 
-        if (self.store.task && node.updateValue) node.updateValue(self.store);
+          const isControlTag = node.name && !objectTypes.includes(node.type);
+          // auto-infer missed toName if there is only one object tag in the config
+
+          if (isControlTag && !node.toname && objects.length === 1) {
+            node.toname = objects[0];
+          }
+
+          if (node && node.toname) {
+            const val = self.toNames.get(node.toname);
+
+            if (val) {
+              val.push(node.name);
+            } else {
+              self.toNames.set(node.toname, [node.name]);
+            }
+          }
+
+          if (self.store.task && node.updateValue) node.updateValue(self.store);
+        };
+
+        handleData(_node);
+        hydrateLazyViews(_node, handleData);
       });
 
       return self.root;

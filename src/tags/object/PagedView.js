@@ -11,6 +11,7 @@ import { FF_DEV_1170, isFF } from "../../utils/feature-flags";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 const Model = types.model({
+  id: types.identifier,
   type: "pagedview",
   children: Types.unionArray([
     "view",
@@ -61,7 +62,12 @@ const Model = types.model({
     "video",
     "videorectangle",
   ]),
-});
+})
+  .actions(self => ({
+    addChild(child) {
+      self.children.push(child);
+    },
+  }));
 const PagedViewModel = types.compose("PagedViewModel", Model, AnnotationMixin);
 const hotkeys = Hotkey("Repeater");
 const DEFAULT_PAGE_SIZE = 1;

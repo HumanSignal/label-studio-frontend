@@ -138,16 +138,7 @@ const getTypeDescription = (type, withNullType = true) => {
 const flattenTree = (tree, parent = null, parentParentTypes = ["view"], result) => {
   if (!tree.children) return [];
 
-  let children = tree.children;
-
-  // If this is a repeater view, just take the first child
-  // @todo this is a hack, we should have a better way to handle this,
-  // but as long as this is used strictly for validation, it should be fine
-  if (tree.type === "pagedview") {
-    children = [tree.children[0]];
-  }
-
-  for (const child of children) {
+  for (const child of tree.children) {
     /* Create a child without children and
     assign id of the parent for quick mathcing */
     const parentTypes = [...parentParentTypes, ...(parent?.type ? [parent?.type] : [])];
@@ -157,6 +148,9 @@ const flattenTree = (tree, parent = null, parentParentTypes = ["view"], result) 
 
     result.push(flatChild);
 
+    if (child === undefined) {
+      console.log("ERR", tree);
+    }
     /* Recursively add children if exist */
     if (child.children instanceof Array) {
       flattenTree(child, child, parentTypes, result);

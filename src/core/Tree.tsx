@@ -7,6 +7,18 @@ import { parseValue } from "../utils/data";
 import { FF_DEV_3391, isFF } from "../utils/feature-flags";
 import { guidGenerator } from "../utils/unique";
 
+const VIEW_CHUNK_SIZE = 5;
+
+const viewHydrationCache = new Map<string, any>();
+
+export const hydrateLazyViews = (node: IAnyStateTreeNode, fn: (n: any) => void) => {
+  const processor = viewHydrationCache.get(node.id);
+
+  if (processor) {
+    processor(node, fn);
+  }
+};
+
 interface ConfigNodeBaseProps {
   id: string;
   type: string;
@@ -84,7 +96,8 @@ function tagIntoObject(
 
   if (type === "repeater") {
     const repeaterArray = parseValue(props.on, taskData) || [];
-    const views = Array.from({ length: repeaterArray.length }) as Array<ConfigNode>; 
+    const views = Array.from({ length: 1 }) as Array<ConfigNode>; 
+    const lazyViews = Array.from({ length: repeaterArray.length }) as Array<ConfigNode>; 
 
     const repeaterArrayLen = repeaterArray.length;
 
@@ -98,28 +111,97 @@ function tagIntoObject(
         __children: null,
       } as ConfigNode & { __children: ConfigNode[]|null };
 
-      views[i] = new Proxy(view, {
-        get(target: any, prop: string) {
-          if (prop === "children") {
-            if (target.__children) return target.__children;
+      if (i === 0) {
+        view.children = Array.from(node.children).map(child =>{
+          const clonedNode = child.cloneNode(true) as Element;
 
-            const children = Array.from(node.children).map(child =>{
-              const clonedNode = child.cloneNode(true) as Element;
+          deepReplaceAttributes(clonedNode, i, indexFlag);
 
-              deepReplaceAttributes(clonedNode, i, indexFlag);
+          return tagIntoObject(clonedNode, taskData, newReplaces);
+        });
 
-              return tagIntoObject(clonedNode, taskData, newReplaces);
-            });
+        views[0] = view;
+      } else {
+        lazyViews[i] = new Proxy(view, {
+          get(target: any, prop: string) {
+            if (prop === "children") {
+              if (target.__children) return target.__children;
 
-            target.__children = children;
+              target.__children = Array.from(node.children).map(child =>{
+                const clonedNode = child.cloneNode(true) as Element;
 
-            return children;
-          }
+                deepReplaceAttributes(clonedNode, i, indexFlag);
 
-          return target[prop] as any;
-        },
-      });
+                return tagIntoObject(clonedNode, taskData, newReplaces);
+              });
+
+              return target.__children;
+            }
+
+            return target[prop] as any;
+          },
+        });
+      }
     }
+
+    const lazyProcess = function* (_node: any, fn: (n: any) => void) {
+      let i = 0;
+
+      while(true) {
+        if (i === 0) {
+          // first view always exists
+          i++;
+          continue;
+        }
+
+        // Chunking processing by 10 views to prevent UI freeze
+        if (i % VIEW_CHUNK_SIZE === 0) {
+          console.time('Lazy processing: paused');
+          yield;
+          console.timeEnd('Lazy processing: paused');
+        }
+
+        const view = lazyViews[i];
+
+        if (!view) break;
+
+        // Add to mobx state tree
+        _node.addChild(view);
+
+        fn(_node.children[i] as any);
+
+        i++;
+      }
+    };
+
+    let iterator: Iterator<any> | null = null;
+
+    let processCompleted = false;
+
+    const processor = function(_node: any, fn: (n: any) => void) {
+      if (iterator || processCompleted) { return; }
+      console.time('Lazy processing');
+
+      iterator = lazyProcess(_node, fn);
+
+      const next = () => {
+        requestIdleCallback(() => {
+          iterator?.next();
+
+          if (iterator?.next().done) {
+            console.timeEnd('Lazy processing');
+            processCompleted = true;
+            console.log("Processed views ... ", lazyViews.length);
+          } else {
+            next();
+          }
+        });
+      };
+
+      return next();
+    };
+
+    viewHydrationCache.set(data.id, processor);
 
     data.tagName = "View";
 
@@ -130,7 +212,8 @@ function tagIntoObject(
     }
 
     data.children = views;
-  } else
+
+  } else 
   // contains only text nodes; HyperText can contain any structure
   if (node.childNodes.length && (!node.children.length || type === "hypertext")) {
     data.value = node.innerHTML?.trim() || data.value || "";
@@ -265,6 +348,7 @@ function renderItem(ref: IAnyStateTreeNode, annotation: IAnnotation, includeKey 
   const type = getType(el);
   const identifierAttribute = type.identifierAttribute;
   const typeName = type.name;
+
   const View = Registry.getViewByModel(typeName);
 
   if (!View) {
