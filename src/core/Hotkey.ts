@@ -40,11 +40,15 @@ const _hotkeys_desc: { [key: string]: string } = {};
 const _namespaces: {[key: string]: HotkeyNamespace} = {};
 const _destructors: (() => void)[] = [];
 
-keymaster.filter = function(event) {
+const translateNumpad = (event:any) => 
+  document.dispatchEvent(new KeyboardEvent('keydown', { keyCode:  event.keyCode - 48 }));
+
+keymaster.filter = function(event: any) {
   if (keymaster.getScope() === "__none__") return false;
 
   const tag = (event.target || event.srcElement)?.tagName;
 
+  if (event.keyCode >= 96 && event.keyCode <= 105) translateNumpad(event);
   if (tag) {
     keymaster.setScope(/^(INPUT|TEXTAREA|SELECT)$/.test(tag) ? INPUT_SCOPE : DEFAULT_SCOPE);
   }
