@@ -40,8 +40,12 @@ const _hotkeys_desc: { [key: string]: string } = {};
 const _namespaces: {[key: string]: HotkeyNamespace} = {};
 const _destructors: (() => void)[] = [];
 
-const translateNumpad = (event:any) => 
-  document.dispatchEvent(new KeyboardEvent('keydown', { keyCode:  event.keyCode - 48 }));
+const translateNumpad = (event: any) => {
+  const numPadKeyCode = event.keyCode;
+  const translatedToDigit = numPadKeyCode - 48;
+
+  document.dispatchEvent(new KeyboardEvent('keydown', { keyCode: translatedToDigit }));
+};
 
 keymaster.filter = function(event: any) {
   if (keymaster.getScope() === "__none__") return false;
