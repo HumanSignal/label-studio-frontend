@@ -16,6 +16,7 @@ export const hydrateLazyViews = (node: IAnyStateTreeNode, fn: (n: any) => void) 
 
   if (processor) {
     processor(node, fn);
+    viewHydrationCache.delete(node.id);
   }
 };
 
@@ -96,7 +97,7 @@ function tagIntoObject(
 
   if (type === "repeater") {
     const repeaterArray = parseValue(props.on, taskData) || [];
-    const views = Array.from({ length: 1 }) as Array<ConfigNode>; 
+    let views = Array.from({ length: 1 }) as Array<ConfigNode>; 
     const lazyViews = Array.from({ length: repeaterArray.length }) as Array<ConfigNode>; 
 
     const repeaterArrayLen = repeaterArray.length;
@@ -156,9 +157,9 @@ function tagIntoObject(
 
         // Chunking processing by 10 views to prevent UI freeze
         if (i % VIEW_CHUNK_SIZE === 0) {
-          console.time('Lazy processing: paused');
+          // console.time('Lazy processing: paused');
           yield;
-          console.timeEnd('Lazy processing: paused');
+          // console.timeEnd('Lazy processing: paused');
         }
 
         const view = lazyViews[i];
@@ -180,7 +181,7 @@ function tagIntoObject(
 
     const processor = function(_node: any, fn: (n: any) => void) {
       if (iterator || processCompleted) { return; }
-      console.time('Lazy processing');
+      // console.time('Lazy processing');
 
       iterator = lazyProcess(_node, fn);
 
@@ -189,9 +190,9 @@ function tagIntoObject(
           iterator?.next();
 
           if (iterator?.next().done) {
-            console.timeEnd('Lazy processing');
+            // console.timeEnd('Lazy processing');
             processCompleted = true;
-            console.log("Processed views ... ", lazyViews.length);
+            // console.log("Processed views ... ", lazyViews.length);
           } else {
             next();
           }
@@ -201,18 +202,21 @@ function tagIntoObject(
       return next();
     };
 
-    viewHydrationCache.set(data.id, processor);
 
     data.tagName = "View";
 
     if (props.mode === 'pagination') {
+      // Lazily evaluate other child views with a time-sliced processor only in pagination mode
+      viewHydrationCache.set(data.id, processor);
       data.type = "pagedview";
     } else {
       data.type = "view";
+      // Set all lazy views as children, so that they can be processed eagerly in basic repeater mode
+      lazyViews[0] = views[0];
+      views = lazyViews;
     }
 
     data.children = views;
-
   } else 
   // contains only text nodes; HyperText can contain any structure
   if (node.childNodes.length && (!node.children.length || type === "hypertext")) {
