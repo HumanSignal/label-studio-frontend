@@ -14,8 +14,6 @@ export const FramesControl: FC<TimelineSideControlProps> = ({
     return length - 1;
   }, [length]);
 
-  console.log({ duration, length });
-
   return (
     <Block name="frames-control" onClick={() => setInputMode(true)}>
       {inputMode ? (
