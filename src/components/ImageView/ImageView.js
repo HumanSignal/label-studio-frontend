@@ -454,7 +454,7 @@ export default observer(
     imageRef = createRef();
     crosshairRef = createRef();
     handleDeferredMouseDown = null;
-    deferredClickTimeout = null;
+    deferredClickTimeout = [];
     skipMouseUp = false;
 
     constructor(props) {
@@ -481,24 +481,25 @@ export default observer(
     };
 
     resetDeferredClickTimeout = () => {
-      if (this.deferredClickTimeout) {
-        clearTimeout(this.deferredClickTimeout);
+      if (this.deferredClickTimeout.length > 0) {
+        this.deferredClickTimeout = this.deferredClickTimeout.filter((timeout) => {
+          clearTimeout(timeout);
+          return false;
+        });
       }
     }
 
-    handleDeferredClick = (handleDeferredMouseDown, handleDeselection, eligibleToDeselect = false) => {
-      this.handleDeferredMouseDown = (skipDeselect = false) => {
-        if (eligibleToDeselect && !skipDeselect) {
+    handleDeferredClick = (handleDeferredMouseDownCallback, handleDeselection, eligibleToDeselect = false) => {
+      this.handleDeferredMouseDown = () => {
+        if (eligibleToDeselect) {
           handleDeselection();
-        }  else {
-          handleDeferredMouseDown();
         }
+        handleDeferredMouseDownCallback();
       };
-      this.deferredClickTimeout = setTimeout(() => {
-        this.handleDeferredMouseDown = handleDeferredMouseDown;
+      this.resetDeferredClickTimeout();
+      this.deferredClickTimeout.push(setTimeout(() => {
         this.handleDeferredMouseDown?.();
-        this.handleDeferredMouseDown = null;
-      }, 100);
+      }, this.props.item.annotation.isDrawing ? 0 : 100));
     }
 
     handleMouseDown = e => {
@@ -624,8 +625,7 @@ export default observer(
 
       if (isFF(FF_DEV_1442) && isDragging) {
         this.resetDeferredClickTimeout();
-        this.handleDeferredMouseDown?.(true);
-        this.handleDeferredMouseDown = null;
+        this.handleDeferredMouseDown?.();
       }
 
       if ((isMouseWheelClick || isShiftDrag) && item.zoomScale > 1) {
