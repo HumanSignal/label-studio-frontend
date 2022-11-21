@@ -397,7 +397,7 @@ export default types
 
         if (c && c.relationMode) {
           c.stopRelationMode();
-        } else {
+        } else if (!c.isDrawing) {
           c.unselectAll();
         }
       });
