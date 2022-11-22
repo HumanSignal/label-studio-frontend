@@ -3,9 +3,9 @@ import { MediaLoader } from "./Media/MediaLoader";
 import { Player } from "./Controls/Player";
 import { Tooltip, TooltipOptions } from "./Tooltip/Tooltip";
 import { Cursor, CursorOptions, CursorSymbol } from "./Cursor/Cursor";
-import { RegionGlobalEvents, RegionOptions } from "./Regions/Region";
+import { RegionGlobalEvents } from "./Regions/Region";
 import { Visualizer } from "./Visual/Visualizer";
-import { Regions, RegionsGlobalEvents, RegionsOptions } from "./Regions/Regions";
+import { Regions, RegionsOptions } from "./Regions/Regions";
 import { Timeline, TimelineOptions } from "./Timeline/Timeline";
 import { Padding } from "./Common/Style";
 import { getCursorTime } from "./Common/Utils";
@@ -141,7 +141,7 @@ export interface WaveformOptions {
     denoize: boolean,
   };
 }
-interface WaveformEventTypes extends RegionsGlobalEvents, RegionGlobalEvents {
+interface WaveformEventTypes extends RegionGlobalEvents {
   "load": () => void;
   "resize": (wf: Waveform, width: number, height: number) => void;
   "pause": () => void;
@@ -169,6 +169,7 @@ export class Waveform extends Events<WaveformEventTypes> {
   params: WaveformOptions;
   regions!: Regions;
   loaded = false;
+  autoPlayNewSegments = false;
 
   constructor(params: WaveformOptions) {
     super();
@@ -208,6 +209,8 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.regions = new Regions({
       ...this.params?.regions,
     }, this, this.visualizer);
+
+    this.autoPlayNewSegments = this.params.autoPlayNewSegments ?? this.autoPlayNewSegments;
 
     this.player = new Player(this);
 
@@ -291,7 +294,7 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   addRegion(options: RegionOptions) {
-    return this.regions.addRegion(options);
+    this.regions.addRegion(options);
   }
 
   removeRegion(regionId: string) {

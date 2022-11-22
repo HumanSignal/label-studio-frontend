@@ -142,7 +142,6 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   setZoom(value: number) {
     this.zoom = clamp(value, 1, this.maxZoom);
-
     if (this.zoomToCursor) {
       this.centerToCurrentTime();
     } else {
@@ -692,7 +691,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   private getSamplesPerPx() {
-    const newValue = Math.ceil(this.dataLength / this.fullWidth);
+    const newValue = (this.dataLength / this.fullWidth);
 
     if (newValue !== this.samplesPerPx) {
       this.samplesPerPx = newValue;
