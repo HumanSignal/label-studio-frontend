@@ -22,7 +22,7 @@ const instances = new WeakMap();
 export class LabelStudio {
   static destroyAll() {
     this.instances.forEach(inst => inst.destroy());
-    this.instances.clear();	
+    this.instances.clear();
   }
 
   constructor(root, userOptions = {}) {

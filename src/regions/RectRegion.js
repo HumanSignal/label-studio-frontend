@@ -1,4 +1,4 @@
-import { getRoot, onPatch, types } from "mobx-state-tree";
+import { getRoot, types } from "mobx-state-tree";
 import React, { useContext } from "react";
 import { Rect } from "react-konva";
 import { ImageViewContext } from "../components/ImageView/ImageViewContext";
