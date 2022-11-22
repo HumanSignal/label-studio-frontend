@@ -1,5 +1,4 @@
 import { Component } from "react";
-import { destroy } from "mobx-state-tree";
 import App from "./components/App/App";
 import { configureStore } from "./configureStore";
 import { registerPanels } from "./registerPanels";
@@ -23,14 +22,6 @@ export class LabelStudio extends Component {
       this.store.assignTask(this.props.task);
       this.store.initializeStore(this.props.task);
     }
-  }
-
-  componentWillUnmount() {
-    window.requestIdleCallback(() => {
-      this.store = null;
-      destroy(window.Htx);
-      window.Htx = null;
-    });
   }
 
   render() {

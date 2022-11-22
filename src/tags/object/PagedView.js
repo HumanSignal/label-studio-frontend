@@ -13,7 +13,6 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 const Model = types.model({
   id: types.identifier,
   type: "pagedview",
-  hydrated: false,
   children: Types.unionArray([
     "view",
     "header",
@@ -63,18 +62,10 @@ const Model = types.model({
     "video",
     "videorectangle",
   ]),
-})
-  .actions(self => ({
-    setHydrated(hydrated) {
-      self.hydrated = hydrated;
-    },
-    addChild(child) {
-      if (isAlive(self)) {
-        self.children.push(child);
-      }
-    },
-  }));
+});
+
 const PagedViewModel = types.compose("PagedViewModel", Model, AnnotationMixin);
+const PAGE_QUERY_PARAM = "view_page";
 const hotkeys = Hotkey("Repeater");
 const DEFAULT_PAGE_SIZE = 1;
 const PAGE_SIZE_OPTIONS = [1, 5, 10, 25, 50, 100];
@@ -95,7 +86,7 @@ const setStoredPageSize = (name, pageSize) => {
 
 const getQueryPage = () => {
   const params = new URLSearchParams(window.location.search);
-  const page = params.get("page");
+  const page = params.get(PAGE_QUERY_PARAM);
 
   if (page) {
     return parseInt(page);
@@ -107,7 +98,7 @@ const getQueryPage = () => {
 const updateQueryPage = page => {
   const params = new URLSearchParams(window.location.search);
 
-  params.set("page", page.toString());
+  params.set(PAGE_QUERY_PARAM, page.toString());
   window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
 };
 
@@ -120,15 +111,13 @@ const HtxPagedView = observer(({ item }) => {
     updateQueryPage(_page);
   },[]);
 
-  const totalPages = useMemo(() => item.hydrated ?  Math.ceil(item.children.length / pageSize) : 1, [item.hydrated, pageSize]);
+  const totalPages = Math.ceil(item.children.length / pageSize);
 
   useEffect(() => {
     setPageSize(getStoredPageSize('repeater', DEFAULT_PAGE_SIZE));
   }, []);
 
   useEffect(() => {
-    if (!item.hydrated) return;
-
     const last = item.annotation.lastSelectedRegion;
 
     if (last) {
@@ -136,10 +125,9 @@ const HtxPagedView = observer(({ item }) => {
 
       setPage(Math.ceil(_pageNumber / pageSize));
     }
-  }, [item.hydrated, item.annotation.lastSelectedRegion]);
+  }, [item.annotation.lastSelectedRegion]);
 
   useEffect(() => {
-    if (!item.hydrated) return;
     if (isFF(FF_DEV_1170)) {
       document.querySelector('.lsf-sidepanels__content')?.scrollTo(0, 0);
     } else {
@@ -164,7 +152,13 @@ const HtxPagedView = observer(({ item }) => {
       hotkeys.removeNamed("repeater:next-page");
       hotkeys.removeNamed("repeater:previous-page");
     };
-  }, [item.hydrated, page]);
+  }, [page]);
+
+  useEffect(() => {
+    requestIdleCallback(() => {
+      updateQueryPage(getQueryPage());
+    });
+  }, []);
 
   const renderPage = useCallback(() => {
     const pageView = [];
@@ -174,10 +168,10 @@ const HtxPagedView = observer(({ item }) => {
     }
 
     return pageView;
-  }, [item.hydrated, page, pageSize]);
+  }, [page, pageSize]);
 
   return (
-    <div className={!item.hydrated ? "lsf-pagedview__loading" : ""}>
+    <div>
       {renderPage()}
       <Pagination
         currentPage={page}

@@ -1,7 +1,7 @@
 import { destroy, getEnv, getParent, getRoot, types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
-import Tree, { hydrateLazyViews } from "../../core/Tree";
+import Tree from "../../core/Tree";
 import Types from "../../core/Types";
 import Utils from "../../utils";
 import { guidGenerator } from "../../core/Helpers";
@@ -33,6 +33,9 @@ const AnnotationStoreModel = types
 
     validation: types.maybeNull(types.array(ValidationError)),
   })
+  .volatile(() => ({
+    initialized: false,
+  }))
   .views(self => ({
     get store() {
       return getRoot(self);
@@ -225,37 +228,34 @@ const AnnotationStoreModel = types
           if (self.store.task && node.updateValue) node.updateValue(self.store);
         });
 
+        self.initialized = true;
+
         return self.root;
       }
 
       // initialize toName bindings [DOCS] name & toName are used to
       // connect different components to each other
-      Tree.traverseTree(self.root, _node => {
+      Tree.traverseTree(self.root, node => {
+        if (node?.name) {
+          self.addName(node);
+          if (objectTypes.includes(node.type)) objects.push(node.name);
+        }
 
-        const handleData = (node) => {
-        // Avoid repeater nodes from adding all their children at once
+        const isControlTag = node.name && !objectTypes.includes(node.type);
+        // auto-infer missed toName if there is only one object tag in the config
 
-          if (node?.name) {
-            self.addName(node);
-            if (objectTypes.includes(node.type)) objects.push(node.name);
-          }
+        if (isControlTag && !node.toname && objects.length === 1) {
+          node.toname = objects[0];
+        }
 
-          const isControlTag = node.name && !objectTypes.includes(node.type);
-          // auto-infer missed toName if there is only one object tag in the config
+        if (node && node.toname) {
+          self.upsertToName(node);
+        }
 
-          if (isControlTag && !node.toname && objects.length === 1) {
-            node.toname = objects[0];
-          }
-
-          if (node && node.toname) {
-            self.upsertToName(node);
-          }
-
-          if (self.store.task && node.updateValue) node.updateValue(self.store);
-        };
-
-        hydrateLazyViews(_node, handleData);
+        if (self.store.task && node.updateValue) node.updateValue(self.store);
       });
+
+      self.initialized = true;
 
       return self.root;
     }
@@ -492,6 +492,14 @@ const AnnotationStoreModel = types
       return self._validator.validate(validatorName, data);
     };
 
+    const resetAnnotations = () => {
+      self.selected = null;
+      self.selectedHistory = null;
+      self.annotations = [];
+      self.predictions = [];
+      self.history = [];
+    };
+
     return {
       afterCreate,
       beforeDestroy,
@@ -522,6 +530,7 @@ const AnnotationStoreModel = types
       _unselectAll,
 
       deleteAnnotation,
+      resetAnnotations,
     };
   });
 
