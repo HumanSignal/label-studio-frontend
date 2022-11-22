@@ -20,7 +20,10 @@ configure({
 const instances = new WeakMap();
 
 export class LabelStudio {
-  static destroyAll() { /* leaving this for backward compatibility */ }
+  static destroyAll() {
+    this.instances.forEach(inst => inst.destroy());
+    this.instances.clear();	
+  }
 
   constructor(root, userOptions = {}) {
     if (instances.has(root)) {
@@ -40,7 +43,7 @@ export class LabelStudio {
     this.supportLgacyEvents(options);
     this.createApp();
 
-    instances.set(root, this);
+    this.constructor.instances.add(this);
   }
 
   on(...args) {
@@ -59,25 +62,20 @@ export class LabelStudio {
     const { store, getRoot } = await configureStore(this.options, this.events);
     const rootElement = getRoot(this.root);
 
+    this.store = store;
     window.Htx = store;
 
     render((
       <App
-        store={store}
+        store={this.store}
         panels={registerPanels(this.options.panels) ?? []}
       />
     ), rootElement);
 
     const destructor = () => {
       unmountComponentAtNode(rootElement);
-      requestIdleCallback(() => {
-        instances.delete(this.root);
-        destroySharedStore();
-        destroy(window.Htx);
-        window.Htx = null;
-        this.root = null;
-        this.destroy = null;
-      });
+      destroySharedStore();
+      destroy(this.store);
     };
 
     this.destroy = destructor;
