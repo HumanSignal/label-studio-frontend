@@ -18,6 +18,8 @@ configure({
 });
 
 export class LabelStudio {
+  static instances = new Set();
+
   static destroyAll() {
     this.instances.forEach(inst => inst.destroy());
     this.instances.clear();
