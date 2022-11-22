@@ -17,8 +17,6 @@ configure({
   isolateGlobalState: true,
 });
 
-const instances = new WeakMap();
-
 export class LabelStudio {
   static destroyAll() {
     this.instances.forEach(inst => inst.destroy());
@@ -26,9 +24,6 @@ export class LabelStudio {
   }
 
   constructor(root, userOptions = {}) {
-    if (instances.has(root)) {
-      return instances.get(root);
-    }
     const options = Object.assign({}, defaultOptions, userOptions ?? {});
 
     if (options.keymap) {
@@ -63,7 +58,7 @@ export class LabelStudio {
     const rootElement = getRoot(this.root);
 
     this.store = store;
-    window.Htx = store;
+    window.Htx = this.store;
 
     render((
       <App
