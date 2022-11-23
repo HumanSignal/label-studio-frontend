@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { observer } from "mobx-react";
-import { isAlive, types } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 
 import Registry from "../../core/Registry";
 import Types from "../../core/Types";
@@ -95,11 +95,22 @@ const getQueryPage = () => {
   return 1;
 };
 
+let lastTaskId = new URLSearchParams(window.location.search).get("task") ?? null;
+
 const updateQueryPage = page => {
   const params = new URLSearchParams(window.location.search);
 
-  params.set(PAGE_QUERY_PARAM, page.toString());
-  window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+  const currentTaskId = params.get("task") ?? null;
+
+  const taskIdChanged = currentTaskId !== lastTaskId;
+
+  lastTaskId = currentTaskId;
+
+  if (taskIdChanged && page === 1 || page > 1) {
+    params.set(PAGE_QUERY_PARAM, page.toString());
+
+    window.history.replaceState(undefined, undefined, `${window.location.pathname}?${params}`);
+  }
 };
 
 const HtxPagedView = observer(({ item }) => {
@@ -158,6 +169,9 @@ const HtxPagedView = observer(({ item }) => {
     requestIdleCallback(() => {
       updateQueryPage(getQueryPage());
     });
+    return () => {
+      updateQueryPage(1);
+    };
   }, []);
 
   const renderPage = useCallback(() => {
