@@ -162,22 +162,31 @@ export const AudioModel = types.compose(
         },
 
         handleSyncPlay() {
+          console.log("handleSyncPlay before", self._ws?.playing, self.isCurrentlyPlaying, self.timeSync);
           if (!self._ws) return;
-          if (self._ws.playing) return;
+          if (self._ws.playing && self.isCurrentlyPlaying) return;
 
+          self.isCurrentlyPlaying = true;
           self._ws?.play();
+          console.log("handleSyncPlay after", self._ws?.playing, self.isCurrentlyPlaying);
         },
 
         handleSyncPause() {
+          console.log("handleSyncPause before", self._ws?.playing, self.isCurrentlyPlaying);
           if (!self._ws) return;
-          if (!self._ws.playing) return;
+          if (!self._ws.playing && !self.isCurrentlyPlaying) return;
 
+          self.isCurrentlyPlaying = true;
           self._ws?.pause();
+          console.log("handleSyncPause after", self._ws?.playing, self.isCurrentlyPlaying);
         },
 
-        handleSyncSpeed() {},
+        handleSyncSpeed() {
+          console.log("handleSyncSpeed", self._ws?.rate);
+        },
 
         handleSyncSeek(time) {
+          console.log("handleSyncSeek before", self._ws?.currentTime, time, self.currentTime);
           try {
             if (self._ws && time !== self._ws.currentTime) {
               self._ws.currentTime = time;
@@ -185,6 +194,7 @@ export const AudioModel = types.compose(
           } catch (err) {
             console.log(err);
           }
+          console.log("handleSyncSeek after", self._ws?.currentTime, time, self.currentTime);
         },
 
         handleNewRegions() {
@@ -346,12 +356,12 @@ export const AudioModel = types.compose(
         },
 
         /**
-     * Play and stop
-     */
+         * Play and stop
+         */
         handlePlay() {
           if (self._ws) {
-            self.playing = !self.playing;
-            self._ws.playing ? self.triggerSyncPlay() : self.triggerSyncPause();
+            self.playing = self.isCurrentlyPlaying;
+            self.isCurrentlyPlaying ? self.triggerSyncPlay() : self.triggerSyncPause();
           }
         },
 
@@ -386,6 +396,13 @@ export const AudioModel = types.compose(
 
         onLoad(ws) {
           self._ws = ws;
+
+          if (ws) {
+            ws.on("load", () => {
+              // console.log("audio onLoad", self._ws);
+              self.setSyncedDuration(self._ws.duration);
+            });
+          }
 
           setTimeout(() => {
             self.needsUpdate();

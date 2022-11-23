@@ -445,6 +445,8 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         const video = videoRef.current;
 
         loadTimeout = setTimeout(() => {
+
+          console.log("video loaded", video, props, ref);
           const length = Math.ceil(video.duration * framerate);
           const [width, height] = [video.videoWidth, video.videoHeight];
 

@@ -131,7 +131,7 @@ export class Player extends Destructable {
       const end = to !== undefined ? (to - start) : undefined;
 
       this.playRange(start, end);
-    } else this.stop();
+    } else this.pause();
   }
 
   handleEnded = () => {

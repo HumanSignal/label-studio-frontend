@@ -1,10 +1,12 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { Waveform, WaveformOptions } from "../Waveform";
 import { Layer } from "../Visual/Layer";
+import { AudioModel } from "../../../tags/object";
 
 export const useWaveform = (
   containter: MutableRefObject<HTMLElement | null | undefined>,
   options: Omit<WaveformOptions, "container"> & { onLoad?: (wf: Waveform) => void },
+  item: AudioModel,
 ) => {
   const waveform = useRef<Waveform>();
 
@@ -31,14 +33,33 @@ export const useWaveform = (
     wf.load();
 
     wf.on("load", () => {
-      setDuration(wf.duration);
+      console.log("wf loaded", wf, item);
+      setDuration(item?.syncedDuration ?? wf.duration);
       options?.onLoad?.(wf);
     });
 
-    wf.on("play", () => setPlaying(true));
-    wf.on("pause", () => setPlaying(false));
-    wf.on("playing", setCurrentTime);
-    wf.on("seek", setCurrentTime);
+    wf.on("play", () => {
+      // item?.triggerSyncPlay();
+      if (playing !== item.isCurrentlyPlaying) {
+        console.log("play", playing, item.isCurrentlyPlaying);
+        setPlaying(item.isCurrentlyPlaying);
+      }
+    });
+    wf.on("pause", () => {
+      // item?.triggerSyncPause();
+      if (playing !== item.isCurrentlyPlaying) {
+        console.log("pause", playing, item.isCurrentlyPlaying);
+        setPlaying(item.isCurrentlyPlaying);
+      }
+    });
+    wf.on("playing", (time: number) => {
+      item?.triggerSyncSeek(time);
+      // setCurrentTime(time);
+    });
+    wf.on("seek", (time: number) => {
+      item?.triggerSyncSeek(time);
+      // setCurrentTime(time);
+    });
     wf.on("zoom", setZoom);
     wf.on("muted", setMuted);
     wf.on("volumeChange", setVolume);
@@ -93,9 +114,12 @@ export const useWaveform = (
   }, [amp]);
 
   useEffect(() => {
+    console.log("playing", item, playing);
     if (playing) {
+      // item?.triggerSyncPlay();
       waveform.current?.play();
     } else {
+      // item?.triggerSyncPause();
       waveform.current?.pause();
     }
   }, [playing]);

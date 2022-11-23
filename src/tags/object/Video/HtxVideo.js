@@ -222,6 +222,7 @@ const HtxVideoView = ({ item, store }) => {
     item.setOnlyFrame(1);
     item.setLength(length);
     item.setReady(true);
+    item.setSyncedDuration(item.ref.current?.duration);
   }, [item, setVideoLength]);
 
   const handleVideoResize = useCallback((videoDimensions) => {
@@ -236,23 +237,23 @@ const HtxVideoView = ({ item, store }) => {
   // TIMELINE EVENT HANDLERS
   const handlePlay = useCallback(() => {
     setPlaying((playing) => {
-      if (playing === false) {
-        item.ref.current.play();
+      if (item.isCurrentlyPlaying === false) {
+        // item.ref.current.play();
         item.triggerSyncPlay();
         return true;
       }
-      return playing;
+      return item.isCurrentlyPlaying;
     });
   }, []);
 
   const handlePause = useCallback(() => {
     setPlaying((playing) => {
-      if (playing === true) {
-        item.ref.current.pause();
+      if (item.isCurrentlyPlaying === true) {
+        // item.ref.current.pause();
         item.triggerSyncPause();
         return false;
       }
-      return playing;
+      return item.isCurrentlyPlaying;
     });
   }, []);
 

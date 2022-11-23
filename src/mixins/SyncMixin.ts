@@ -12,6 +12,8 @@ interface SyncMixinProps {
   currentEvent: Set<string>;
   currentTime: number;
   timeSync: TimeSyncSubscriber | null;
+  syncedDuration: number;
+  currentSpeed: number;
 }
 
 const sync = TimeSync.getInstance();
@@ -28,6 +30,8 @@ const SyncMixin = types
   currentEvent: new Set(),
   currentTime: 0,
   timeSync: null,
+  syncedDuration: 0,
+  currentSpeed: 1,
 }))
   .actions((self) => ({
     // *** abstract ***
@@ -39,27 +43,36 @@ const SyncMixin = types
     attachObject() {
       self.syncedObject = (self as any).annotation?.names?.get(self.sync);
     },
+    setCurrentlyPlaying(isPlaying: boolean) { console.error("setCurrentlyPlaying should be implemented"); },
   }))
   .actions(self => ({
     triggerSyncPlay() {
+      self.setCurrentlyPlaying(true);
       self.timeSync?.play();
     },
 
     triggerSyncPause() {
+      self.setCurrentlyPlaying(false);
       self.timeSync?.pause();
     },
 
     triggerSyncSeek(time: number) {
+      console.log("time", time);
+      self.currentTime = time;
       self.timeSync?.seek(time);
     },
 
     triggerSyncSpeed(speed: number) {
+      console.log("time", speed);
+      self.currentSpeed = speed;
       self.timeSync?.speed(speed);
     },
 
     afterAttach() {
       if (self.sync && self.sync !== (self as any).name) {
+        console.log("afterAttach", self, (self as any)?.type, (self as any)?.name, (self as any)?.ref);
         const syncObject = sync.register((self as any).name);
+
 
         syncObject.subscribe(self.sync, {
           play: self.handleSyncPlay,
@@ -69,6 +82,7 @@ const SyncMixin = types
         });
 
         self.timeSync = syncObject;
+        // self.syncedDuration = Math.min(...Array.from(sync.members).map(member => member[1]?.duration ?? 0));
       }
 
       const dispose = observe(self as any, 'annotation', () => {
@@ -84,6 +98,23 @@ const SyncMixin = types
       if (self.timeSync && self.sync) {
         self.timeSync.unsubscribe(self.sync);
         sync.unregister((self as any).name);
+      }
+    },
+    
+    setSyncedDuration(duration: number) {
+      if(self.syncedDuration === 0 || duration < self.syncedDuration) {
+        console.log("setSyncedDuration", duration, self.syncedDuration, (self as any).name);
+        self.syncedDuration = duration;
+        if (self.syncedObject) {
+          self.syncedObject.setSyncedDuration(duration);
+        }
+      }
+
+    },
+    setCurrentlyPlaying(isPlaying: boolean) {
+      self.isCurrentlyPlaying = isPlaying;
+      if (self.syncedObject) {
+        isPlaying ? self.syncedObject.triggerSyncPlay() : self.syncedObject.triggerSyncPause();
       }
     },
   }));

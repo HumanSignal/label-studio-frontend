@@ -6,7 +6,6 @@ import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import ObjectBase from "../Base";
 import { SyncMixin } from "../../../mixins/SyncMixin";
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
-import Types from "../../../core/Types";
 
 /**
  * Video tag plays a simple video file. Use for video annotation tasks such as classification and transcription.
@@ -112,24 +111,37 @@ const Model = types
     },
 
     handleSyncSeek(time) {
+      console.log("handleSyncSeek", self.ref?.current?.currentTime, time);
       if (self.ref.current) {
         self.ref.current.currentTime = time;
       }
     },
 
     handleSyncPlay() {
-      self.ref.current?.play();
+      console.log("handleSyncPlay before", self.isCurrentlyPlaying);
+      if (!self.isCurrentlyPlaying) {
+        self.isCurrentlyPlaying = true;
+        self.ref.current?.play();
+      }
+      console.log("handleSyncPlay after", self.isCurrentlyPlaying);
     },
 
     handleSyncPause() {
-      self.ref.current?.pause();
+      console.log("handleSyncPause before", self.isCurrentlyPlaying);
+      if (self.isCurrentlyPlaying) {
+        self.isCurrentlyPlaying = false;
+        self.ref.current?.pause();
+      }
+      console.log("handleSyncPause after", self.isCurrentlyPlaying);
     },
 
     handleSyncSpeed(speed) {
+      console.log("handleSyncSpeed");
       self.speed = speed;
     },
 
     handleSeek() {
+      console.log("handleSeek");
       if (self.ref.current) {
         self.triggerSyncSeek(self.ref.current.currentTime);
       }

@@ -13,29 +13,31 @@ interface AudioUltraProps {
 const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   const rootRef = useRef<HTMLElement | null>();
 
-  const { waveform, ...controls } = useWaveform(rootRef, {
-    src: item._value,
-    waveColor: "#BEB9C5",
-    gridColor: "#BEB9C5",
-    gridWidth: 1,
-    backgroundColor: "#fafafa",
-    autoCenter: true,
-    zoomToCursor: true,
-    enabledChannels: [0],
-    height: 94,
-    zoom: 1,
-    rate: 1,
-    muted: false,
-    onLoad: item.onLoad,
-    regions: {
-      createable: !item.readonly,
-      updateable: !item.readonly,
-      deleteable: !item.readonly,
+  const { waveform, ...controls } = useWaveform(rootRef, 
+    {
+      src: item._value,
+      waveColor: "#BEB9C5",
+      gridColor: "#BEB9C5",
+      gridWidth: 1,
+      backgroundColor: "#fafafa",
+      autoCenter: true,
+      zoomToCursor: true,
+      enabledChannels: [0],
+      height: 94,
+      zoom: 1,
+      rate: 1,
+      muted: false,
+      onLoad: item.onLoad,
+      regions: {
+        createable: !item.readonly,
+        updateable: !item.readonly,
+        deleteable: !item.readonly,
+      },
+      timeline: {
+        backgroundColor: "#ffffff",
+      },
     },
-    timeline: {
-      backgroundColor: "#ffffff",
-    },
-  });
+    item);
 
   useEffect(() => {
     const updateBeforeRegionDraw = (regions: Regions) => {
