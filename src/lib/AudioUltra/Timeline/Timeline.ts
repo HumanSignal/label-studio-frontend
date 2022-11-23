@@ -7,7 +7,7 @@ import { Waveform } from "../Waveform";
 
 type TimelinePlacement = "top" | "bottom";
 export interface TimelineOptions {
-  selectedColor: RgbaColorArray;
+  selectedColor?: RgbaColorArray;
   placement?: TimelinePlacement;
   padding?: Padding;
   height?: number;

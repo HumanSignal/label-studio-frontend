@@ -35,6 +35,10 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     timeline: {
       backgroundColor: "#ffffff",
     },
+    experimental: {
+      backgroundCompute: true,
+      denoize: true,
+    },
   });
 
   useEffect(() => {

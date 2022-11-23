@@ -333,7 +333,7 @@ export class Visualizer extends Events<VisualizerEvents> {
       const index = l - i;
       const chunk = chunks.slice(index, index + this.samplesPerPx);
 
-      if (x >= 0) {
+      if (x >= 0 && chunk.length > 0) {
         this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
       }
 
@@ -403,11 +403,11 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   get scrollWidth() {
-    return (this.width * this.zoom) - this.width;
+    return this.zoomedWidth - this.width;
   }
 
   get fullWidth() {
-    return this.scrollWidth + this.width;
+    return this.zoomedWidth;
   }
 
   get zoomedWidth() {
@@ -691,7 +691,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   private getSamplesPerPx() {
-    const newValue = (this.dataLength / this.fullWidth);
+    const newValue = this.dataLength / this.fullWidth;
 
     if (newValue !== this.samplesPerPx) {
       this.samplesPerPx = newValue;
