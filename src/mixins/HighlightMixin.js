@@ -324,20 +324,25 @@ const createSpanStylesheet = (document, identifier, color) => {
    */
   const setColor = color => {
     const newActiveColor = toActiveColor(color);
-    const { style } = stylesheet.rules[2];
+    // sheet could change during iframe transfers, so look up in the tag
+    const stylesheet = styleTag.sheet ?? styleTag.styleSheet;
+    // they are on different positions for old/new regions
+    const rule = [...stylesheet.rules].find(rule => rule.selectorText.includes('__active'));
+    const { style } = rule;
 
-    document.documentElement.style.setProperty(variables.color, color);
+    // document in a closure may be a working iframe, so go up from the tag
+    styleTag.ownerDocument.documentElement.style.setProperty(variables.color, color);
 
-    style.backgroundColor = newActiveColor;
+    style.setProperty(variables.color, newActiveColor);
     style.color = Utils.Colors.contrastColor(newActiveColor);
   };
 
   /**
-   * Ser cursor style
-   * @param {import("prettier").CursorOptions} cursor
+   * Set cursor style
+   * @param {string} cursor
    */
   const setCursor = cursor => {
-    document.documentElement.style.setProperty(variables.cursor, cursor);
+    styleTag.ownerDocument.documentElement.style.setProperty(variables.cursor, cursor);
   };
 
   /**
