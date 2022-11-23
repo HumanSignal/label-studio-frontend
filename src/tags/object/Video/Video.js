@@ -111,7 +111,6 @@ const Model = types
     },
 
     handleSyncSeek(time) {
-      console.log("handleSyncSeek", self.ref?.current?.currentTime, time);
       if (self.ref.current) {
         self.ref.current.currentTime = time;
       }
@@ -136,12 +135,10 @@ const Model = types
     },
 
     handleSyncSpeed(speed) {
-      console.log("handleSyncSpeed");
       self.speed = speed;
     },
 
     handleSeek() {
-      console.log("handleSeek");
       if (self.ref.current) {
         self.triggerSyncSeek(self.ref.current.currentTime);
       }

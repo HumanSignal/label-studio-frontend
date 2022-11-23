@@ -40,15 +40,15 @@ export const useWaveform = (
 
     wf.on("play", () => {
       // item?.triggerSyncPlay();
-      if (playing !== item.isCurrentlyPlaying) {
-        console.log("play", playing, item.isCurrentlyPlaying);
+      if (!playing) {
+        // console.log("play", playing, item.isCurrentlyPlaying);
         setPlaying(item.isCurrentlyPlaying);
       }
     });
     wf.on("pause", () => {
       // item?.triggerSyncPause();
-      if (playing !== item.isCurrentlyPlaying) {
-        console.log("pause", playing, item.isCurrentlyPlaying);
+      if (playing) {
+        // console.log("pause", playing, item.isCurrentlyPlaying);
         setPlaying(item.isCurrentlyPlaying);
       }
     });
@@ -114,13 +114,13 @@ export const useWaveform = (
   }, [amp]);
 
   useEffect(() => {
-    console.log("playing", item, playing);
+    console.log("playing", item.name, playing);
     if (playing) {
-      // item?.triggerSyncPlay();
-      waveform.current?.play();
+      item?.triggerSyncPlay();
+      // waveform.current?.play();
     } else {
-      // item?.triggerSyncPause();
-      waveform.current?.pause();
+      item?.triggerSyncPause();
+      // waveform.current?.pause();
     }
   }, [playing]);
 

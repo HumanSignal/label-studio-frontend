@@ -47,23 +47,25 @@ const SyncMixin = types
   }))
   .actions(self => ({
     triggerSyncPlay() {
-      self.setCurrentlyPlaying(true);
+      // if (!self.isCurrentlyPlaying) {
+      // self.setCurrentlyPlaying(true);
       self.timeSync?.play();
+      // }
     },
 
     triggerSyncPause() {
-      self.setCurrentlyPlaying(false);
+      // if (self.isCurrentlyPlaying) {
+      // self.setCurrentlyPlaying(false);
       self.timeSync?.pause();
+      // }
     },
 
     triggerSyncSeek(time: number) {
-      console.log("time", time);
       self.currentTime = time;
       self.timeSync?.seek(time);
     },
 
     triggerSyncSpeed(speed: number) {
-      console.log("time", speed);
       self.currentSpeed = speed;
       self.timeSync?.speed(speed);
     },
@@ -112,6 +114,7 @@ const SyncMixin = types
 
     },
     setCurrentlyPlaying(isPlaying: boolean) {
+      console.log("setCurrentlyPlaying", self, self.syncedObject, isPlaying, self.isCurrentlyPlaying);
       self.isCurrentlyPlaying = isPlaying;
       if (self.syncedObject) {
         isPlaying ? self.syncedObject.triggerSyncPlay() : self.syncedObject.triggerSyncPause();

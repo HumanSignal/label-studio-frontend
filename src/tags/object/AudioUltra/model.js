@@ -162,23 +162,23 @@ export const AudioModel = types.compose(
         },
 
         handleSyncPlay() {
-          console.log("handleSyncPlay before", self._ws?.playing, self.isCurrentlyPlaying, self.timeSync);
           if (!self._ws) return;
           if (self._ws.playing && self.isCurrentlyPlaying) return;
 
+          console.log("handleSyncPlay before", self.name, self._ws?.playing, self.isCurrentlyPlaying, self.timeSync);
           self.isCurrentlyPlaying = true;
           self._ws?.play();
-          console.log("handleSyncPlay after", self._ws?.playing, self.isCurrentlyPlaying);
+          console.log("handleSyncPlay after", self.name, self._ws?.playing, self.isCurrentlyPlaying);
         },
 
         handleSyncPause() {
-          console.log("handleSyncPause before", self._ws?.playing, self.isCurrentlyPlaying);
+          console.log("handleSyncPause before", self.name, self._ws?.playing, self.isCurrentlyPlaying);
           if (!self._ws) return;
           if (!self._ws.playing && !self.isCurrentlyPlaying) return;
 
           self.isCurrentlyPlaying = true;
           self._ws?.pause();
-          console.log("handleSyncPause after", self._ws?.playing, self.isCurrentlyPlaying);
+          console.log("handleSyncPause after", self.name, self._ws?.playing, self.isCurrentlyPlaying);
         },
 
         handleSyncSpeed() {
@@ -186,7 +186,6 @@ export const AudioModel = types.compose(
         },
 
         handleSyncSeek(time) {
-          console.log("handleSyncSeek before", self._ws?.currentTime, time, self.currentTime);
           try {
             if (self._ws && time !== self._ws.currentTime) {
               self._ws.currentTime = time;
@@ -194,7 +193,6 @@ export const AudioModel = types.compose(
           } catch (err) {
             console.log(err);
           }
-          console.log("handleSyncSeek after", self._ws?.currentTime, time, self.currentTime);
         },
 
         handleNewRegions() {
@@ -399,7 +397,6 @@ export const AudioModel = types.compose(
 
           if (ws) {
             ws.on("load", () => {
-              // console.log("audio onLoad", self._ws);
               self.setSyncedDuration(self._ws.duration);
             });
           }
