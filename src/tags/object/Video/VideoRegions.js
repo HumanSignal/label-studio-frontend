@@ -10,7 +10,7 @@ import { fixMobxObserve } from "../TimeSeries/helpers";
 import { Rectangle } from "./Rectangle";
 import { createBoundingBoxGetter, createOnDragMoveHandler } from "./TransformTools";
 
-const MIN_SIZE = 5;
+export const MIN_SIZE = 5;
 
 const SelectionRect = (props) => {
   return (

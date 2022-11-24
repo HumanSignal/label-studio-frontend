@@ -639,6 +639,10 @@ export const Annotation = types
       onSnapshot(self.areas, self.autosave);
     }),
 
+    saveDraftImmediately() {
+      if (self.autosave) self.autosave.flush();
+    },
+
     pauseAutosave() {
       if (!self.autosave) return;
       self.autosave.paused = true;
