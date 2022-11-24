@@ -60,33 +60,18 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       item.addRegion(region);
     };
 
-    const selectRegion = (region: Region|Segment) => {
-      if (!region.selected) item.annotation.regionStore.unselectAll();
-
-      item.annotation.regions.forEach((item: any) => {
-        if (item.id === region.id) {
-          item.annotation.regionStore.toggleSelection(item, region.selected);
-        } else {
-          item.annotation.regionStore.toggleSelection(item, false);
-        }
-      });
-
-    };
-
     const updateRegion = (region: Region|Segment) => {
       item.updateRegion(region);
     };
 
     waveform.current?.on("beforeRegionsDraw", updateBeforeRegionDraw);
     waveform.current?.on("afterRegionsDraw", updateAfterRegionDraw);
-    waveform.current?.on("regionSelected", selectRegion);
     waveform.current?.on("regionCreated", createRegion);
     waveform.current?.on("regionUpdatedEnd", updateRegion);
 
     return () => {
       waveform.current?.off("beforeRegionsDraw", updateBeforeRegionDraw);
       waveform.current?.off("afterRegionsDraw", updateAfterRegionDraw);
-      waveform.current?.off("regionSelected", selectRegion);
       waveform.current?.off("regionCreated", createRegion);
       waveform.current?.off("regionUpdatedEnd", updateRegion);
     };

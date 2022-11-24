@@ -7,7 +7,6 @@ import { Segment, SegmentGlobalEvents, SegmentOptions } from "./Segment";
 export interface RegionGlobalEvents extends SegmentGlobalEvents {
   regionCreated: (region: Region|Segment) => void;
   regionUpdated: (region: Region|Segment) => void;
-  regionSelected: (region: Region|Segment) => void;
   regionUpdatedEnd: (region: Region|Segment) => void;
   regionRemoved: (region: Region|Segment) => void;
 }
