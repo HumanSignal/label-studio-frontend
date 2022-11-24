@@ -7,6 +7,7 @@ import { Waveform } from "../Waveform";
 
 type TimelinePlacement = "top" | "bottom";
 export interface TimelineOptions {
+  selectedColor?: RgbaColorArray;
   placement?: TimelinePlacement;
   padding?: Padding;
   height?: number;
@@ -35,6 +36,7 @@ export class Timeline {
   private gridWidth = 1;
   private fontFamily = "Arial";
   private fontColor = rgba("#413C4A");
+  private selectionColor = rgba("rgba(65, 60, 74, 0.08)");
   private gridColor = rgba("rgba(137,128,152,0.16)");
   private backgroundColor = rgba("#fff");
   private _labeMaxWidth: LabelMaxWidth = {
@@ -52,6 +54,7 @@ export class Timeline {
     this.height = options?.height || defaults.timelinePlacement ? defaults.timelineHeight : this.height;
     this.gridWidth = options?.gridWidth ?? this.gridWidth;
     this.fontColor = options?.fontColor ? rgba(options?.fontColor) : this.fontColor;
+    this.selectionColor = options?.selectedColor ?? this.selectionColor;
     this.gridColor = options?.gridColor ? rgba(options?.gridColor) : this.gridColor;
     this.backgroundColor = options?.backgroundColor ? rgba(options?.backgroundColor) : this.backgroundColor;
 
@@ -85,11 +88,33 @@ export class Timeline {
     layer.beginPath();
     layer.fillRect(0, yOffset, width + xOffset, height);
     this.renderIntervals();
+    this.renderSelections();
     layer.fillStyle = strokeStyle;
     layer.fillRect(0, yOffset + height, width + xOffset, lineWidth);
     layer.stroke();
   }
   
+  private renderSelections() {
+
+    const selectedRegions = this.waveform?.regions.selected;
+
+    if (selectedRegions.length) {
+      const { selectionColor, height } = this;
+      const { duration } = this.waveform;
+      const { zoomedWidth } = this.visualizer;
+      const scrollOffset = this.visualizer.getScrollLeftPx();
+      const start = selectedRegions.sort((a, b) => a.start - b.start )[0].start ;
+      const end = selectedRegions.sort((a, b) => b.end - a.end )[0].end;
+      const xStart = (start * zoomedWidth / duration) - scrollOffset;
+      const xEnd = (end - start)  * zoomedWidth / duration;
+      const top = 0;
+      const layer = this.layer;
+
+      layer.fillStyle = selectionColor.toString();
+      layer.fillRect(xStart, top, xEnd, height);
+    }
+  }
+
   private renderInterval(mark: TimelineMark) {
     const { pixelRatio, height: containerHeight } = this.visualizer;
     const fontSize = this.fontSize;
@@ -130,7 +155,6 @@ export class Timeline {
     return layer.measureText(text).width / pixelRatio;
   }
 
-
   private renderIntervals() {
     const { width } = this.visualizer;
     const scrollLeft = this.visualizer.getScrollLeftPx();
@@ -155,7 +179,6 @@ export class Timeline {
 
       this.renderInterval({ x: this.mapToPx(i - exactStart), time, type: intervalType, includeMs });
     }
-
   }
 
   private getLabelPadding() {

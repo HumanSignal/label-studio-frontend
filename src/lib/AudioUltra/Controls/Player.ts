@@ -120,8 +120,8 @@ export class Player extends Destructable {
       const selected = this.wf.regions.selected;
 
       if (selected.length > 0) {
-        const regionsStart = selected[0].start;
-        const regionsEnd = selected[selected.length - 1].end - regionsStart;
+        const regionsStart = Math.min(...selected.map(r => r.start));
+        const regionsEnd = Math.max(...selected.map(r => r.end)) - regionsStart;
 
         this.looping = true;
         return this.playRange(regionsStart, regionsEnd);

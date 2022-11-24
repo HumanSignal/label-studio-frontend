@@ -242,6 +242,7 @@ export class Segment extends Events<SegmentEvents> {
       const { container, zoomedWidth } = this.visualizer;
       const { duration } = this.waveform;
       const scrollLeft = this.visualizer.getScrollLeft();
+
       let currentPosition = getCursorPositionX(e, container) + scrollLeft;
       
       if (currentPosition < 0) currentPosition = 0;
@@ -255,6 +256,7 @@ export class Segment extends Events<SegmentEvents> {
 
       if (freezeStart || freezeEnd) this.switchCursor(CursorSymbol.colResize);
       else  this.switchCursor(CursorSymbol.grabbing);
+
       this.updatePosition(startTime, endTime);
     }
   };
