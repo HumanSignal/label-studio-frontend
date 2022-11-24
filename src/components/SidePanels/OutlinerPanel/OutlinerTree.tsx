@@ -2,7 +2,7 @@ import chroma from "chroma-js";
 import { observer } from "mobx-react";
 import Tree from 'rc-tree';
 import { createContext, FC, MouseEvent, useCallback, useContext, useMemo, useState } from "react";
-import { IconLockLocked, IconLockUnlocked, LsSparks } from "../../../assets/icons";
+import { IconLockLocked, IconLockUnlocked, IconWarning, LsSparks } from "../../../assets/icons";
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from "../../../assets/icons/timeline";
 import { IconArrow } from "../../../assets/icons/tree";
 import { Button, ButtonProps } from "../../../common/Button/Button";
@@ -12,6 +12,7 @@ import { Block, cn, Elem } from "../../../utils/bem";
 import { flatten, isDefined, isMacOS } from "../../../utils/utilities";
 import { NodeIcon } from "../../Node/Node";
 import { FF_DEV_2755, isFF } from "../../../utils/feature-flags";
+import { Tooltip } from "../../../common/Tooltip/Tooltip";
 import "./TreeView.styl";
 
 const { localStorage } = window;
@@ -123,10 +124,10 @@ const useDataTree = ({
   selectedKeys,
 }: any) => {
   const processor = useCallback((item: any, idx, _false, _null, _onClick, groupId) => {
-    const { id, type, hidden } = item ?? {};
+    const { id, type, hidden, isDrawing } = item ?? {};
     const style = item?.background ?? item?.getOneColor?.();
     const color = chroma(style ?? "#666").alpha(1);
-    const mods: Record<string, any> = { hidden, type };
+    const mods: Record<string, any> = { hidden, type, isDrawing };
     const label = (() => {
       if (!type) {
         return "No Label";
@@ -315,7 +316,16 @@ const RootTitle: FC<any> = observer(({
     <Block name="outliner-item">
       <Elem name="content">
         {!props.isGroup && <Elem name="index">{props.idx + 1}</Elem>}
-        <Elem name="title">{label}</Elem>
+        <Elem name="title">
+          {label}
+          {item?.isDrawing && (
+            <Elem tag="span" name="incomplete">
+              <Tooltip title="Incomplete polygon">
+                <IconWarning />
+              </Tooltip>
+            </Elem>
+          )}
+        </Elem>
         <RegionControls
           hovered={hovered}
           item={item}
