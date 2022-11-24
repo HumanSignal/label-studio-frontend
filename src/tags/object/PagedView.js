@@ -95,18 +95,21 @@ const getQueryPage = () => {
   return 1;
 };
 
-let lastTaskId = new URLSearchParams(window.location.search).get("task") ?? null;
+let lastTaskId = null;
 
-const updateQueryPage = page => {
+const updateQueryPage = (page, currentTaskId = null) => {
   const params = new URLSearchParams(window.location.search);
 
-  const currentTaskId = params.get("task") ?? null;
-
   const taskIdChanged = currentTaskId !== lastTaskId;
+  const resetPage = lastTaskId && taskIdChanged;
 
   lastTaskId = currentTaskId;
 
-  if (taskIdChanged && page === 1 || page > 1) {
+  if (resetPage) {
+    params.set(PAGE_QUERY_PARAM, "1");
+
+    window.history.replaceState(undefined, undefined, `${window.location.pathname}?${params}`);
+  } else if (page !== 1) {
     params.set(PAGE_QUERY_PARAM, page.toString());
 
     window.history.replaceState(undefined, undefined, `${window.location.pathname}?${params}`);
@@ -119,7 +122,7 @@ const HtxPagedView = observer(({ item }) => {
 
   const setPage = useCallback((_page) => {
     _setPage(_page);
-    updateQueryPage(_page);
+    updateQueryPage(_page, item.annotationStore.store.task.id);
   },[]);
 
   const totalPages = Math.ceil(item.children.length / pageSize);
@@ -166,11 +169,9 @@ const HtxPagedView = observer(({ item }) => {
   }, [page]);
 
   useEffect(() => {
-    requestIdleCallback(() => {
-      updateQueryPage(getQueryPage());
-    });
+    updateQueryPage(getQueryPage(), item.annotationStore.store.task.id);
     return () => {
-      updateQueryPage(1);
+      updateQueryPage(1, item.annotationStore.store.task.id);
     };
   }, []);
 
