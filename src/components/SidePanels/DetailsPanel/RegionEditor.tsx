@@ -1,9 +1,7 @@
 import { observe } from "mobx";
 import { observer } from "mobx-react";
 import { getType, IAnyType, isLiteralType, isOptionalType, isPrimitiveType, isUnionType, types } from "mobx-state-tree";
-import { number } from "mobx-state-tree/dist/internal";
 import { ChangeEvent, FC, HTMLInputTypeAttribute, InputHTMLAttributes, KeyboardEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { safeTruncate } from "strman";
 import { IconPropertyAngle } from "../../../assets/icons";
 import { Block, Elem, useBEM } from "../../../utils/bem";
 import "./RegionEditor.styl";
@@ -206,7 +204,7 @@ const RegionInput: FC<RegionInputProps> = ({
     }
 
     updateValue(value, safeValue);
-  }, [updateValue, type, step, currentValue]);
+  }, [updateValue, type]);
 
   const onKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
     if (type !== 'number') return;
