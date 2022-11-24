@@ -216,7 +216,7 @@ export class Regions {
 
     const addRegion = () => {
       const { container, zoomedWidth } = this.visualizer;
-      const { duration } = this.waveform;
+      const { autoPlayNewSegments, duration } = this.waveform;
       const scrollLeft = this.visualizer.getScrollLeftPx();
 
       startX = getCursorPositionX(e, container) + scrollLeft;
@@ -228,10 +228,11 @@ export class Regions {
         end,
         color: this.drawingColor.toString(),
         selected: false,
-        // @todo - handle autoPlayNewSegments option
-        // - handle autoSelectNewSegments option
-        //
       });
+
+      if (autoPlayNewSegments && !region.isRegion) {
+        this.list.forEach(r => r.handleSelected(r.id === region.id));
+      }
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -250,6 +251,8 @@ export class Regions {
     };
 
     const handleMouseUp = () => {
+      const { player, autoPlayNewSegments } = this.waveform;
+
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
 
@@ -257,6 +260,12 @@ export class Regions {
         region.remove();
       } else if(region) {
         this.waveform.invoke("regionCreated", [region]);
+        if (autoPlayNewSegments){
+          if(player.playing) {
+            player.pause();
+          }
+          player.play();
+        }
       }
 
       this.waveform.invoke("afterRegionsDraw", [this]);

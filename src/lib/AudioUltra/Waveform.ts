@@ -169,6 +169,7 @@ export class Waveform extends Events<WaveformEventTypes> {
   params: WaveformOptions;
   regions!: Regions;
   loaded = false;
+  autoPlayNewSegments = false;
 
   constructor(params: WaveformOptions) {
     super();
@@ -208,6 +209,8 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.regions = new Regions({
       ...this.params?.regions,
     }, this, this.visualizer);
+
+    this.autoPlayNewSegments = this.params.autoPlayNewSegments ?? this.autoPlayNewSegments;
 
     this.player = new Player(this);
 
@@ -290,8 +293,8 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.tooltip.destroy();
   }
 
-  addRegion(options: RegionOptions) {
-    return this.regions.addRegion(options);
+  addRegion(options: RegionOptions, render = true) {
+    return this.regions.addRegion(options, render);
   }
 
   removeRegion(regionId: string) {
