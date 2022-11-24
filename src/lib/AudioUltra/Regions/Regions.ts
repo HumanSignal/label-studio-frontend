@@ -223,7 +223,6 @@ export class Regions {
       const start = pixelsToTime(startX, zoomedWidth, duration);
       const end = pixelsToTime(startX, zoomedWidth, duration);
 
-
       region = this.addRegion({
         start,
         end,
