@@ -15,6 +15,8 @@ import { Block, Elem } from "../../utils/bem";
 import "./Entity.styl";
 import { PER_REGION_MODES } from "../../mixins/PerRegion";
 import { Hotkey } from "../../core/Hotkey";
+import { IconWarning } from "../../assets/icons";
+
 
 const { Paragraph, Text } = Typography;
 
@@ -153,6 +155,13 @@ export default observer(({ store, annotation }) => {
 
         <Fragment>{node?.results.map(renderResult)}</Fragment>
       </div>
+
+      {node?.isDrawing && (
+        <Elem name="warning">
+          <IconWarning />
+          <Elem name="warning-text">Incomplete polygon</Elem>
+        </Elem>
+      )}
 
       <div className={styles.block + " ls-entity-buttons"}>
         <Space spread>
