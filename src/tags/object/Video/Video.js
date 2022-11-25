@@ -134,6 +134,13 @@ const Model = types
       self.speed = speed;
     },
 
+    handleSyncDuration(duration) {
+      if(self.ref.current) {
+        console.log("handleSyncDuration", self.ref.current, self.frameRate, duration);
+        self.setLength(duration * self.frameRate);
+      }
+    },
+
     handleSeek() {
       if (self.ref.current) {
         self.triggerSyncSeek(self.ref.current.currentTime);

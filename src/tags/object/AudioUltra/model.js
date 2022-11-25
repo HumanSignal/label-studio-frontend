@@ -185,6 +185,10 @@ export const AudioModel = types.compose(
           console.log("handleSyncSpeed", self._ws?.rate);
         },
 
+        handleSyncDuration(duration) {
+          console.log("handleSyncDuration", self._ws?.duration, duration);
+        },
+
         handleSyncSeek(time) {
           try {
             if (self._ws && time !== self._ws.currentTime) {

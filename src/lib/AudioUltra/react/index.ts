@@ -49,6 +49,7 @@ export const useWaveform = (
     });
     
     wf.on("playing", (time: number) => {
+      console.log("playing", playing, time);
       if(playing) {
         item?.triggerSyncSeek(time);
       }

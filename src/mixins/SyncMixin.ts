@@ -40,6 +40,7 @@ const SyncMixin = types
     handleSyncPause() { console.error("handleSyncPause should be implemented"); },
     handleSyncSeek(time: number) { console.error("handleSyncSeek should be implemented"); },
     handleSyncSpeed(speed: number) { console.error("handleSyncSpeed should be implemented"); },
+    handleSyncDuration(duration: number) { console.error("handleSyncDuration should be implemented"); },
     attachObject() {
       self.syncedObject = (self as any).annotation?.names?.get(self.sync);
     },
@@ -47,17 +48,11 @@ const SyncMixin = types
   }))
   .actions(self => ({
     triggerSyncPlay() {
-      // if (!self.isCurrentlyPlaying) {
-      // self.setCurrentlyPlaying(true);
       self.timeSync?.play();
-      // }
     },
 
     triggerSyncPause() {
-      // if (self.isCurrentlyPlaying) {
-      // self.setCurrentlyPlaying(false);
       self.timeSync?.pause();
-      // }
     },
 
     triggerSyncSeek(time: number) {
@@ -80,6 +75,7 @@ const SyncMixin = types
           pause: self.handleSyncPause,
           seek: self.handleSyncSeek,
           speed: self.handleSyncSpeed,
+          syncedDuration: self.handleSyncDuration,
         });
 
         self.timeSync = syncObject;
@@ -102,6 +98,7 @@ const SyncMixin = types
     },
     
     setSyncedDuration(duration: number) {
+      
       if(self.syncedDuration === 0 || duration < self.syncedDuration) {
         self.syncedDuration = duration;
         self.timeSync?.syncedDuration(duration);

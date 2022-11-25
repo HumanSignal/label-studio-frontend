@@ -61,9 +61,10 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   onSpeedChange,
   onToggleCollapsed,
   formatPosition,
+  mediaType,
   ...props
 }) => {
-  const { settings } = useContext(TimelineContext);
+  const { settings, data } = useContext(TimelineContext);
   const [altControlsMode, setAltControlsMode] = useState(false);
   const [configModal, setConfigModal] = useState(false);
   const [audioModal, setAudioModal] = useState(false);
@@ -144,6 +145,8 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   const onTimeUpdateChange = (value: number) => {
     onPositionChange(value);
   };
+
+  console.log("Timeline Controls", duration, position, mediaType);
 
   return (
     <Block name="timeline-controls" tag={Space} spread style={{ gridAutoColumns: 'auto' }}>
@@ -286,7 +289,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
       </Elem>
 
       <Elem name="group" tag={Space} size="small">
-        {isFF(FF_DEV_2715) ? (
+        {isFF(FF_DEV_2715) && mediaType === 'audio' ? (
           <>
             {customControls?.right}
             <TimeDurationControl
@@ -351,6 +354,8 @@ const TimeDisplay: FC<TimeDisplay> = ({
   const commonOptions = { position: pos, fps: framerate, length };
   const currentTimeFormatted = formatter({ time: currentTime, ...commonOptions });
   const totalTimeFormatted = formatter({ time: duration, ...commonOptions });
+
+  console.log("TimeDisplay", currentTimeFormatted, currentTime, totalTimeFormatted, duration, commonOptions);
 
   return (
     <Elem name="time">

@@ -117,6 +117,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         onZoom={zoom => controls.setZoom(zoom)}
         amp={controls.amp}
         onAmpChange={amp => controls.setAmp(amp)}
+        mediaType="audio"
       />
     </div>
   );
