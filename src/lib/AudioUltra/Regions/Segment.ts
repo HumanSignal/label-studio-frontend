@@ -22,6 +22,7 @@ export interface SegmentOptions {
 export interface SegmentGlobalEvents {
   regionCreated: (region: Segment) => void;
   regionUpdated: (region: Segment) => void;
+  regionSelected: (region: Segment) => void;
   regionUpdatedEnd: (region: Segment) => void;
   regionRemoved: (region: Segment) => void;
 }
@@ -220,6 +221,7 @@ export class Segment extends Events<SegmentEvents> {
       this.handleUpdateEnd();
     } else {
       this.handleSelected();
+      this.waveform.invoke("regionSelected", [this]);
     }
     
     this.isDragging = false;
@@ -304,6 +306,7 @@ export class Segment extends Events<SegmentEvents> {
     layer.fillRect(this.xStart, top, this.handleWidth, height);
     layer.fillRect(this.xEnd - this.handleWidth, top, this.handleWidth, height);
 
+    if (this.selected) this.color.darken(0.5);
     // Render label
     // if (this.label) {
     //   layer.font = "12px Arial";
@@ -338,7 +341,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   handleHighlighted = (highlighted?: boolean) => {
-    if (!this.updateable) return;
+    if (!this.updateable || this.selected) return;
     this.highlighted = highlighted ?? !this.highlighted;
     if (this.highlighted) this.color.darken(0.5);
     else this.color.reset();
