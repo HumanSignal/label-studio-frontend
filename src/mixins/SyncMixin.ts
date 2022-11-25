@@ -72,7 +72,6 @@ const SyncMixin = types
 
     afterAttach() {
       if (self.sync && self.sync !== (self as any).name) {
-        console.log("afterAttach", self, (self as any)?.type, (self as any)?.name, (self as any)?.ref);
         const syncObject = sync.register((self as any).name);
 
 
@@ -84,7 +83,6 @@ const SyncMixin = types
         });
 
         self.timeSync = syncObject;
-        // self.syncedDuration = Math.min(...Array.from(sync.members).map(member => member[1]?.duration ?? 0));
       }
 
       const dispose = observe(self as any, 'annotation', () => {
@@ -105,20 +103,14 @@ const SyncMixin = types
     
     setSyncedDuration(duration: number) {
       if(self.syncedDuration === 0 || duration < self.syncedDuration) {
-        console.log("setSyncedDuration", duration, self.syncedDuration, (self as any).name);
         self.syncedDuration = duration;
-        if (self.syncedObject) {
-          self.syncedObject.setSyncedDuration(duration);
-        }
+        self.timeSync?.syncedDuration(duration);
       }
 
     },
     setCurrentlyPlaying(isPlaying: boolean) {
-      console.log("setCurrentlyPlaying", self, self.syncedObject, isPlaying, self.isCurrentlyPlaying);
       self.isCurrentlyPlaying = isPlaying;
-      if (self.syncedObject) {
-        isPlaying ? self.syncedObject.triggerSyncPlay() : self.syncedObject.triggerSyncPause();
-      }
+      isPlaying ? self.timeSync?.play() : self.timeSync?.pause();
     },
   }));
 

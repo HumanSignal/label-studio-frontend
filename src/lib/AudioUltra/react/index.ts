@@ -33,32 +33,30 @@ export const useWaveform = (
     wf.load();
 
     wf.on("load", () => {
-      console.log("wf loaded", wf, item);
-      setDuration(item?.syncedDuration ?? wf.duration);
+      setDuration(item?.duration ?? wf.duration);
       options?.onLoad?.(wf);
     });
 
     wf.on("play", () => {
-      // item?.triggerSyncPlay();
       if (!playing) {
-        // console.log("play", playing, item.isCurrentlyPlaying);
-        setPlaying(item.isCurrentlyPlaying);
+        item?.triggerSyncPlay();
       }
     });
     wf.on("pause", () => {
-      // item?.triggerSyncPause();
       if (playing) {
-        // console.log("pause", playing, item.isCurrentlyPlaying);
-        setPlaying(item.isCurrentlyPlaying);
+        item?.triggerSyncPause();
       }
     });
+    
     wf.on("playing", (time: number) => {
-      item?.triggerSyncSeek(time);
-      // setCurrentTime(time);
+      if(playing) {
+        item?.triggerSyncSeek(time);
+      }
+      setCurrentTime(time);
     });
     wf.on("seek", (time: number) => {
       item?.triggerSyncSeek(time);
-      // setCurrentTime(time);
+      setCurrentTime(time);
     });
     wf.on("zoom", setZoom);
     wf.on("muted", setMuted);
@@ -114,13 +112,10 @@ export const useWaveform = (
   }, [amp]);
 
   useEffect(() => {
-    console.log("playing", item.name, playing);
     if (playing) {
       item?.triggerSyncPlay();
-      // waveform.current?.play();
     } else {
       item?.triggerSyncPause();
-      // waveform.current?.pause();
     }
   }, [playing]);
 

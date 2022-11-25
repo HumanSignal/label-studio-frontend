@@ -10,9 +10,10 @@ interface TimeSyncHandler {
   pause: () => void;
   seek: (time: number) => void;
   speed: (speed: number) => void;
+  syncedDuration: (duration: number) => void;
 }
 
-type TimeSyncEvent = "play" | "pause" | "seek" | "speed";
+type TimeSyncEvent = "play" | "pause" | "seek" | "speed" | "syncedDuration";
 
 export class TimeSyncSubscriber {
   private name: string;
@@ -24,7 +25,7 @@ export class TimeSyncSubscriber {
   playing = false;
   currentTime = 0;
   currentSpeed = 1;
-  syncedDuration = 0;
+  duration = 0;
 
   constructor(name: string, sync: TimeSync, object: any) {
     this.name = name;
@@ -53,13 +54,11 @@ export class TimeSyncSubscriber {
   subscribe(target: string, events: TimeSyncHandler, onReady?: () => void) {
     this.sync.subscribe(this.name, target, events, onReady);
 
-    console.log("subscribe", this, this.sync.members.get(target));
-
     // Initial sync
     this.currentTime = this.sync.members.get(target)?.currentTime ?? this.currentTime;
     this.currentSpeed = this.sync.members.get(target)?.currentSpeed ?? this.currentSpeed;
     this.playing = this.sync.members.get(target)?.playing ?? this.playing;
-    // this.syncedDuration = this.sync.members.get(target)?.duration ?? this.duration;
+    this.duration = this.sync.members.get(target)?.duration ?? this.duration;
   }
 
   unsubscribe(target: string) {
@@ -103,6 +102,15 @@ export class TimeSyncSubscriber {
     this.whenUnlocked("speed", () => {
       this.events.invoke("speed", speed);
       this.subscribers.forEach(sub => sub.speed(this.currentSpeed));
+    });
+  }
+  
+  syncedDuration(duration: number) {
+    this.duration = duration;
+
+    this.whenUnlocked("syncedDuration", () => {
+      this.events.invoke("syncedDuration", duration);
+      this.subscribers.forEach(sub => sub.syncedDuration(this.duration));
     });
   }
 
@@ -161,8 +169,6 @@ export class TimeSync {
 
       this.eventsCache.set(name, []);
     }
-
-    console.log("register", member);
 
     this.events.invoke(`ready:${name}`);
 

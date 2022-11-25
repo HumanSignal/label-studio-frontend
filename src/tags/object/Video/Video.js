@@ -117,21 +117,17 @@ const Model = types
     },
 
     handleSyncPlay() {
-      console.log("handleSyncPlay before", self.isCurrentlyPlaying);
       if (!self.isCurrentlyPlaying) {
         self.isCurrentlyPlaying = true;
         self.ref.current?.play();
       }
-      console.log("handleSyncPlay after", self.isCurrentlyPlaying);
     },
 
     handleSyncPause() {
-      console.log("handleSyncPause before", self.isCurrentlyPlaying);
       if (self.isCurrentlyPlaying) {
         self.isCurrentlyPlaying = false;
         self.ref.current?.pause();
       }
-      console.log("handleSyncPause after", self.isCurrentlyPlaying);
     },
 
     handleSyncSpeed(speed) {
@@ -163,7 +159,7 @@ const Model = types
     },
 
     setFrame(frame) {
-      if (self.frame !== frame) {
+      if (self.frame !== frame && self.framerate) {
         self.frame = frame;
         self.ref.current.currentTime = frame / self.framerate;
       }
