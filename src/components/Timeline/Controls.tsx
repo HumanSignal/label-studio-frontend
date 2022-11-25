@@ -150,7 +150,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
 
   return (
     <Block name="timeline-controls" tag={Space} spread style={{ gridAutoColumns: 'auto' }}>
-      {isFF(FF_DEV_2715) ? renderControls() : (
+      {isFF(FF_DEV_2715) && mediaType === 'audio' ? renderControls() : (
         <Elem name="group" tag={Space} size="small" style={{ gridAutoColumns: 'auto' }}>
           {props.controls && Object.entries(props.controls).map(([name, enabled]) => {
             if (enabled === false) return;

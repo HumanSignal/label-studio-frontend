@@ -48,6 +48,7 @@ export const useWaveform = (
       }
     });
     
+    /* between here and ... */
     wf.on("playing", (time: number) => {
       console.log("playing", playing, time);
       if(playing) {
@@ -59,6 +60,8 @@ export const useWaveform = (
       item?.triggerSyncSeek(time);
       setCurrentTime(time);
     });
+    /* here - this can cause issues issues when playing selected region in audio */
+
     wf.on("zoom", setZoom);
     wf.on("muted", setMuted);
     wf.on("volumeChange", setVolume);

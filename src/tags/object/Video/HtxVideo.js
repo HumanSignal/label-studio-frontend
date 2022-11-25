@@ -50,7 +50,6 @@ const HtxVideoView = ({ item, store }) => {
   }, [position, videoLength, playing]);
 
   const setVideoLength = useCallback((value) => {
-    console.log("setVideoLength", value, item.framerate);
     if (value !== videoLength) _setVideoLength(value);
   }, [videoLength]);
 

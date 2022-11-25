@@ -116,8 +116,6 @@ const TimelineComponent: FC<TimelineProps> = ({
     }
   }, [position, length]);
 
-  console.log("timeline length", length);
-
   const controls = (
     <Elem name="topbar">
       <Controls
@@ -203,8 +201,6 @@ const TimelineComponent: FC<TimelineProps> = ({
       />
     </Elem>
   );
-
-  console.log("contextValue", contextValue);
 
   return (
     <TimelineContextProvider value={contextValue}>
