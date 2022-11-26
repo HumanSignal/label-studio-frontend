@@ -75,6 +75,15 @@ export class Playhead extends Events<PlayheadEvents> {
     this.initialize();
   }
 
+  updatePositionFromTime(time: number, renderVisible = false, useClamp = true) {
+    const newX = ((time / this.wf.duration) - this.scroll) * this.fullWidth;
+    const x = useClamp ? clamp(newX, 0, this.fullWidth) : newX;
+
+    this.setX(x);
+
+    if( this.isVisible && renderVisible) this.render();
+  }
+
   private mouseDown = (e: MouseEvent) => {
     if(this.isVisible && this.isHovered) {
       e.preventDefault();
@@ -130,13 +139,7 @@ export class Playhead extends Events<PlayheadEvents> {
 
   private playing = (time: number, useClamp = true) => {
     if( !this.isDragging ) {
-      const newX = ((time / this.wf.duration) - this.scroll) * this.fullWidth;
-      const x = useClamp ? clamp(newX, 0, this.fullWidth) : newX;
-
-      this.setX(x);
-      if( this.isVisible ) {
-        this.render();
-      }
+      this.updatePositionFromTime(time, true, useClamp);
     }
   };
 

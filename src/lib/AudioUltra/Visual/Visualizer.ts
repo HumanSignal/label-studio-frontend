@@ -251,6 +251,13 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.scrollLeft = clamp(this.currentTime - offset, 0, 1);
   }
 
+  /**
+   * Update the visual render of the cursor in isolation
+   */
+  updateCursorToTime(time: number) {
+    this.playhead.updatePositionFromTime(time);
+  }
+
   private renderAvailableChannels() {
     if (!this.audio) return;
 

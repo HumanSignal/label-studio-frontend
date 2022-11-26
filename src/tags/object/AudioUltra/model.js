@@ -190,10 +190,11 @@ export const AudioModel = types.compose(
         },
 
         handleSyncSeek(time) {
+          if (!self._ws?.loaded) return;
+
           try {
-            if (self._ws && time !== self._ws.currentTime) {
-              self._ws.currentTime = time;
-            }
+            self._ws.currentTime = time;
+            self._ws.syncCursor(); // sync cursor with other tags
           } catch (err) {
             console.log(err);
           }

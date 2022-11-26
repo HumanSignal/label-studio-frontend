@@ -56,8 +56,14 @@ export class Player extends Destructable {
   }
 
   private set currentTime(value: number) {
+    this.setCurrentTime(value, true);
+  }
+
+  setCurrentTime(value: number, notify = false) {
     this.time = value;
-    this.wf.invoke("seek", [this.time]);
+    if (notify) {
+      this.wf.invoke("seek", [this.time]);
+    }
   }
 
   get muted() {
@@ -97,7 +103,6 @@ export class Player extends Destructable {
       this.currentTime = newTime;
     }
   }
-
 
   playRange(start: number, end: number | undefined) {
     this.currentTime = start;

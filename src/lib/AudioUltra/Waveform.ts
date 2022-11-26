@@ -235,6 +235,18 @@ export class Waveform extends Events<WaveformEventTypes> {
     }
   }
 
+  /**
+   * Sync the cursor with the current time of the audio.
+   * Useful when the audio is getting controlled externally.
+   */
+  syncCursor() {
+    const time = this.currentTime;
+
+    // @todo - find a less hacky way to consistently update just the cursor
+    this.visualizer.updateCursorToTime(time);
+    this.visualizer.draw(true);
+  }
+
   seek(value: number) {
     this.player.seek(value);
   }

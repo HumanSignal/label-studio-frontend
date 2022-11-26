@@ -59,6 +59,7 @@ export const useWaveform = (
     wf.on("seek", (time: number) => {
       item?.triggerSyncSeek(time);
       setCurrentTime(time);
+      console.log("seek", time);
     });
     /* here - this can cause issues issues when playing selected region in audio */
 
