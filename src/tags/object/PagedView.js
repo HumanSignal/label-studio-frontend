@@ -106,14 +106,14 @@ const updateQueryPage = (page, currentTaskId = null) => {
   lastTaskId = currentTaskId;
 
   if (resetPage) {
-    params.set(PAGE_QUERY_PARAM, "1");
-
-    window.history.replaceState(undefined, undefined, `${window.location.pathname}?${params}`);
+    params.delete(PAGE_QUERY_PARAM);
   } else if (page !== 1) {
     params.set(PAGE_QUERY_PARAM, page.toString());
-
-    window.history.replaceState(undefined, undefined, `${window.location.pathname}?${params}`);
+  } else {
+    params.delete(PAGE_QUERY_PARAM);
   }
+
+  window.history.replaceState(undefined, undefined, `${window.location.pathname}?${params}`);
 };
 
 const HtxPagedView = observer(({ item }) => {
@@ -122,7 +122,7 @@ const HtxPagedView = observer(({ item }) => {
 
   const setPage = useCallback((_page) => {
     _setPage(_page);
-    updateQueryPage(_page, item.annotationStore.store.task.id);
+    updateQueryPage(_page, item.annotationStore?.store?.task.id);
   },[]);
 
   const totalPages = Math.ceil(item.children.length / pageSize);
@@ -169,9 +169,9 @@ const HtxPagedView = observer(({ item }) => {
   }, [page]);
 
   useEffect(() => {
-    updateQueryPage(getQueryPage(), item.annotationStore.store.task.id);
+    updateQueryPage(getQueryPage(), item.annotationStore?.store?.task.id);
     return () => {
-      updateQueryPage(1, item.annotationStore.store.task.id);
+      updateQueryPage(1, item.annotationStore?.store?.task.id);
     };
   }, []);
 
