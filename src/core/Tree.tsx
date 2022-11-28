@@ -49,13 +49,7 @@ const deepReplaceAttributes = (
     for (const name of attrNames) {
       const value = node.getAttribute(name);
 
-      if (name === '$$') {
-        node.setAttribute(name, value?.map(c => recursiveClone(c)));
-      } else if (name === '$') {
-        node.setAttribute(name, recursiveClone(value));
-      } else if (typeof name === 'string') {
-        node.setAttribute(name, value?.replace?.(indexFlag, `${idx}`) ?? "");
-      }
+      node.setAttribute(name, value?.replace?.(indexFlag, `${idx}`) ?? "");
     }
 
     node.childNodes.forEach(node => recursiveClone(node as Element));
