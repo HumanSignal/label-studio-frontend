@@ -7,6 +7,7 @@ export const Comment = types.model("Comment", {
   id: types.identifierNumber,
   text: types.string,
   createdAt: types.optional(types.string, Utils.UDate.currentISODate()),
+  updatedAt: types.optional(types.string, Utils.UDate.currentISODate()),
   resolvedAt: types.optional(types.maybeNull(types.string), null),
   createdBy: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
   isResolved: false,

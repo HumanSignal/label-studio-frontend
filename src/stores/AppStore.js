@@ -432,8 +432,9 @@ export default types
     /**
      *
      * @param {*} taskObject
+     * @param {*[]} taskHistory
      */
-    function assignTask(taskObject) {
+    function assignTask(taskObject, taskHistory) {
       if (taskObject && !Utils.Checkers.isString(taskObject.data)) {
         taskObject = {
           ...taskObject,
@@ -441,7 +442,9 @@ export default types
         };
       }
       self.task = Task.create(taskObject);
-      if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) === -1) {
+      if (taskHistory) {
+        self.taskHistory = taskHistory;
+      } else if (!self.taskHistory.some((x) => x.taskId === self.task.id)) {
         self.taskHistory.push({
           taskId: self.task.id,
           annotationId: null,
@@ -480,6 +483,7 @@ export default types
     // to prevent from sending duplicating requests.
     // Better to return request's Promise from SDK to make this work perfect.
     function handleSubmittingFlag(fn, defaultMessage = "Error during submit") {
+      if (self.isSubmitting) return;
       self.setFlags({ isSubmitting: true });
       const res = fn();
       // Wait for request, max 5s to not make disabled forever broken button;
@@ -527,12 +531,14 @@ export default types
     }
 
     function skipTask(extraData) {
+      if (self.isSubmitting) return;
       handleSubmittingFlag(() => {
         getEnv(self).events.invoke('skipTask', self, extraData);
       }, "Error during skip, try again");
     }
 
     function unskipTask() {
+      if (self.isSubmitting) return;
       handleSubmittingFlag(() => {
         getEnv(self).events.invoke('unskipTask', self);
       }, "Error during cancel skipping task, try again");

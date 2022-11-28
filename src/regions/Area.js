@@ -1,5 +1,6 @@
 import { types } from "mobx-state-tree";
 import Registry from "../core/Registry";
+import Tree from "../core/Tree";
 import RegionsMixin from "../mixins/Regions";
 import { RectRegionModel } from "./RectRegion";
 import { KeyPointRegionModel } from "./KeyPointRegion";
@@ -41,7 +42,7 @@ const Area = types.union(
       )
         return ClassificationArea;
       // may be a tag itself or just its name
-      const objectName = sn.object.name || sn.object;
+      const objectName = Tree.cleanUpId(sn.object.name || sn.object);
       // we have to use current config to detect Object tag by name
       const tag = window.Htx.annotationStore.names.get(objectName);
       // provide value to detect Area by data

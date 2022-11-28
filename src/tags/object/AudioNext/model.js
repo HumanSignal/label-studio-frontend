@@ -47,7 +47,6 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
  * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   value: types.maybeNull(types.string),
   muted: types.optional(types.boolean, false),
   zoom: types.optional(types.boolean, true),

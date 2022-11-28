@@ -1,4 +1,4 @@
-import { getRoot, types } from "mobx-state-tree";
+import { getRoot, protect, types, unprotect } from "mobx-state-tree";
 import ProcessAttrsMixin from "./ProcessAttrs";
 import { parseValue } from "../utils/data";
 
@@ -12,11 +12,22 @@ const DynamicChildrenMixin = types.model({
     },
   }))
   .actions(self => {
-    const prepareDynamicChildrenData = (data) => data?.map?.(obj => ({
-      type: self.defaultChildType,
-      ...obj,
-      children: prepareDynamicChildrenData(obj.children),
-    }));
+    const prepareDynamicChildrenData = (data, store, parent) => {
+      if (data && data.length) {
+        for(const obj of data) {
+          parent.children.push({
+            type: self.defaultChildType,
+            ...obj,
+            children: [],
+          });
+
+          const child = parent.children[parent.children.length - 1];
+
+          child.updateValue?.(store);
+          prepareDynamicChildrenData(obj.children, store, child);
+        }
+      }
+    };
 
     const postprocessDynamicChildren = (children, store) => {
       children?.forEach(item => {
@@ -26,10 +37,14 @@ const DynamicChildrenMixin = types.model({
     };
 
     return {
-      updateWithDynamicChildren(data) {
-        const list = (self.children ?? []).concat(prepareDynamicChildrenData(data));
+      updateWithDynamicChildren(data, store) {
+        const root = getRoot(self);
 
-        self.children = list;
+        self.children = self.children ?? [];
+
+        unprotect(root);
+        prepareDynamicChildrenData(data, store, self);
+        protect(root);
       },
 
       updateValue(store) {
@@ -48,8 +63,7 @@ const DynamicChildrenMixin = types.model({
 
           if (!valueFromTask) return;
 
-          self.updateWithDynamicChildren(valueFromTask);
-          // self.generateDynamicChildren(valueFromTask, store);
+          self.updateWithDynamicChildren(valueFromTask, store);
           if (self.annotation) self.needsUpdate?.();
         }
       },

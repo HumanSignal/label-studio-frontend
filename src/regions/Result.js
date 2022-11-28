@@ -1,6 +1,7 @@
 import { getParent, getRoot, getSnapshot, types } from "mobx-state-tree";
 import { guidGenerator } from "../core/Helpers";
 import Registry from "../core/Registry";
+import Tree from "../core/Tree";
 import { AnnotationMixin } from "../mixins/AnnotationMixin";
 import { isDefined } from "../utils/utilities";
 import { FF_DEV_1170, FF_DEV_1372, isFF } from "../utils/feature-flags";
@@ -253,11 +254,13 @@ const Result = types
     updateAppearenceFromState() {},
 
     serialize(options) {
-      const { from_name, to_name, type, score, value } = getSnapshot(self);
+      const { type, score, value, ...sn } = getSnapshot(self);
       const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize(options) : {};
       // cut off annotation id
       const id = self.area?.cleanId;
+      const from_name = Tree.cleanUpId(sn.from_name);
+      const to_name = Tree.cleanUpId(sn.to_name);
 
       if (!data) return null;
       if (!self.isSubmitable) return null;

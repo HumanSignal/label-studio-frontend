@@ -3,23 +3,24 @@ import { observer } from "mobx-react";
 import { cast, types } from "mobx-state-tree";
 
 import InfoModal from "../../../components/Infomodal/Infomodal";
-import LabelMixin from "../../../mixins/LabelMixin";
+import { defaultStyle } from "../../../core/Constants";
+import { customTypes } from "../../../core/CustomTypes";
+import { guidGenerator } from "../../../core/Helpers";
 import Registry from "../../../core/Registry";
-import SelectedModelMixin from "../../../mixins/SelectedModel";
 import Tree from "../../../core/Tree";
 import Types from "../../../core/Types";
-import { guidGenerator } from "../../../core/Helpers";
-import ControlBase from "../Base";
-import "./Labels.styl";
-import { Block } from "../../../utils/bem";
-import { customTypes } from "../../../core/CustomTypes";
-import { defaultStyle } from "../../../core/Constants";
-import "../Label";
+import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import DynamicChildrenMixin from "../../../mixins/DynamicChildrenMixin";
+import LabelMixin from "../../../mixins/LabelMixin";
+import SelectedModelMixin from "../../../mixins/SelectedModel";
+import { Block } from "../../../utils/bem";
 import { FF_DEV_2007_DEV_2008, isFF } from "../../../utils/feature-flags";
+import ControlBase from "../Base";
+import "../Label";
+import "./Labels.styl";
 
 /**
- * The Labels tag provides a set of labels for labeling regions in tasks for machine learning and data science projects. Use the Labels tag to create a set of labels that can be assigned to identified region and specify the values of labels to assign to regions.
+ * The `Labels` tag provides a set of labels for labeling regions in tasks for machine learning and data science projects. Use the `Labels` tag to create a set of labels that can be assigned to identified region and specify the values of labels to assign to regions.
  *
  * All types of Labels can have dynamic value to load labels from task. This task data should contain a list of options to create underlying <Label>s. All the parameters from options will be transferred to corresponding tags.
  *
@@ -68,7 +69,6 @@ import { FF_DEV_2007_DEV_2008, isFF } from "../../../utils/feature-flags";
  * @param {string} [value]                   - Task data field containing a list of dynamically loaded labels (see example below)
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   choice: types.optional(types.enumeration(["single", "multiple"]), "single"),
@@ -151,6 +151,7 @@ const LabelsModel = types.compose(
   "LabelsModel",
   ModelAttrs,
   TagAttrs,
+  AnnotationMixin,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
@@ -160,7 +161,7 @@ const LabelsModel = types.compose(
 const HtxLabels = observer(({ item }) => {
   return (
     <Block name="labels" mod={{ hidden: !item.visible, inline: item.showinline }}>
-      {Tree.renderChildren(item)}
+      {Tree.renderChildren(item, item.annotation)}
     </Block>
   );
 });

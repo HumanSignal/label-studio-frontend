@@ -50,7 +50,7 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
-  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, false));
+  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, region.annotation, false));
 });
 
 const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
@@ -300,7 +300,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
 
   const handleKey = (e) => setShift(e.shiftKey);
 
-  useEffect(()=>{  
+  useEffect(()=>{
     window.addEventListener("keydown", handleKey);
     window.addEventListener("keyup", handleKey);
     window.addEventListener("mousedown", dragHandler);
@@ -329,7 +329,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
     supportsTransform &&
     (item.selectedRegions.length > 1 ||
       ((item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer));
-  
+
   return (
     <Layer scaleX={scale} scaleY={scale}>
       {selectionArea.isActive ? (
@@ -454,7 +454,7 @@ export default observer(
     imageRef = createRef();
     crosshairRef = createRef();
     handleDeferredMouseDown = null;
-    deferredClickTimeout = null;
+    deferredClickTimeout = [];
     skipMouseUp = false;
 
     constructor(props) {
@@ -466,7 +466,7 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
-    
+
       if (isFF(FF_DEV_1442)) {
         this.handleDeferredMouseDown?.();
       }
@@ -475,32 +475,31 @@ export default observer(
         return;
       }
 
-      if (!item.annotation.editable) return;
-
       const evt = e.evt || e;
 
       return item.event("click", evt, evt.offsetX, evt.offsetY);
     };
 
     resetDeferredClickTimeout = () => {
-      if (this.deferredClickTimeout) {
-        clearTimeout(this.deferredClickTimeout);
+      if (this.deferredClickTimeout.length > 0) {
+        this.deferredClickTimeout = this.deferredClickTimeout.filter((timeout) => {
+          clearTimeout(timeout);
+          return false;
+        });
       }
     }
 
-    handleDeferredClick = (handleDeferredMouseDown, handleDeselection, eligibleToDeselect = false) => {
-      this.handleDeferredMouseDown = (skipDeselect = false) => {
-        if (eligibleToDeselect && !skipDeselect) {
+    handleDeferredClick = (handleDeferredMouseDownCallback, handleDeselection, eligibleToDeselect = false) => {
+      this.handleDeferredMouseDown = () => {
+        if (eligibleToDeselect) {
           handleDeselection();
-        }  else {
-          handleDeferredMouseDown();
         }
+        handleDeferredMouseDownCallback();
       };
-      this.deferredClickTimeout = setTimeout(() => {
-        this.handleDeferredMouseDown = handleDeferredMouseDown;
+      this.resetDeferredClickTimeout();
+      this.deferredClickTimeout.push(setTimeout(() => {
         this.handleDeferredMouseDown?.();
-        this.handleDeferredMouseDown = null;
-      }, this.props.item.annotation.isDrawing ? 0 : 100);
+      }, this.props.item.annotation.isDrawing ? 0 : 100));
     }
 
     handleMouseDown = e => {
@@ -508,7 +507,6 @@ export default observer(
 
       item.updateSkipInteractions(e);
 
-      // item.freezeHistory();
       const p = e.target.getParent();
 
       if (!item.annotation.editable) return;
@@ -578,7 +576,7 @@ export default observer(
     handleGlobalMouseUp = e => {
       window.removeEventListener("mousemove", this.handleGlobalMouseMove);
       window.removeEventListener("mouseup", this.handleGlobalMouseUp);
-      
+
       if (e.target && e.target.tagName === "CANVAS") return;
 
       const { item } = this.props;
@@ -607,7 +605,7 @@ export default observer(
       if (isFF(FF_DEV_1442)) {
         this.resetDeferredClickTimeout();
       }
-  
+
       item.freezeHistory();
       item.setSkipInteractions(false);
 
@@ -616,7 +614,7 @@ export default observer(
 
     handleMouseMove = e => {
       const { item } = this.props;
-      
+
       item.freezeHistory();
 
       this.updateCrosshair(e);
@@ -627,8 +625,7 @@ export default observer(
 
       if (isFF(FF_DEV_1442) && isDragging) {
         this.resetDeferredClickTimeout();
-        this.handleDeferredMouseDown?.(true);
-        this.handleDeferredMouseDown = null;
+        this.handleDeferredMouseDown?.();
       }
 
       if ((isMouseWheelClick || isShiftDrag) && item.zoomScale > 1) {
@@ -832,7 +829,7 @@ export default observer(
       if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1){
         containerStyle["imageRendering"] = 'pixelated';
       }
-      
+
       const imagePositionClassnames =  [
         styles["image_position"],
         styles[`image_position__${item.verticalalignment === "center" ? "middle" : item.verticalalignment}`],
@@ -938,7 +935,7 @@ export default observer(
                   } else if (mouseposX >= stageWidth) {
                     e.offsetX = stageWidth;
                   }
-                  
+
                   if (mouseposY <= 0) {
                     e.offsetY = 0;
                   } else if (mouseposY >= stageHeight) {

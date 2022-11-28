@@ -11,9 +11,9 @@ import { guidGenerator } from "../../core/Helpers";
 import ControlBase from "./Base";
 
 /**
- * The ParagraphLabels tag creates labeled paragraphs. Use with the Paragraphs tag to label a paragraph of text.
+ * The `ParagraphLabels` tag creates labeled paragraphs. Use with the `Paragraphs` tag to label a paragraph of text.
  *
- * Use with the following data types: paragraphs
+ * Use with the following data types: paragraphs.
  * @example
  * <!--Basic labeling configuration to label paragraphs -->
  * <View>
@@ -32,10 +32,6 @@ import ControlBase from "./Base";
  * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
  * @param {boolean} [showInline=true]        - Show labels in the same visual line
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const ModelAttrs = types
   .model("ParagraphLabelsModel", {
@@ -65,7 +61,6 @@ const Composition = types.compose(
   ControlBase,
   LabelsModel,
   ModelAttrs,
-  TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: "LabelModel" }),
 );

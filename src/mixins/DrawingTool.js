@@ -313,8 +313,14 @@ const MultipleClicksDrawingTool = DrawingTool.named("MultipleClicksMixin")
     const MOUSE_UP_EVENT = 2;
     const CLICK_EVENT = 3;
     let lastClickTs = 0;
+    const Super = {
+      canStartDrawing: self.canStartDrawing,
+    };
 
     return {
+      canStartDrawing() {
+        return Super.canStartDrawing() && !self.annotation.regionStore.hasSelection;
+      },
       nextPoint(x, y) {
         self.getCurrentArea().addPoint(x, y);
         pointsCount++;

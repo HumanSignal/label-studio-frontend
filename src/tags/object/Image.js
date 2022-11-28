@@ -20,9 +20,9 @@ import { IsReadyWithDepsMixin } from "../../mixins/IsReadyMixin";
 import { FF_DEV_2394, FF_DEV_3377, isFF } from "../../utils/feature-flags";
 
 /**
- * The Image tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
+ * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
  *
- * Use with the following data types: images
+ * Use with the following data types: images.
  *
  * When you annotate image regions with this tag, the annotations are saved as percentages of the original size of the image, from 0-100.
  * @example
@@ -55,7 +55,6 @@ import { FF_DEV_2394, FF_DEV_3377, isFF } from "../../utils/feature-flags";
  * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   value: types.maybeNull(types.string),
   resize: types.maybeNull(types.number),
   width: types.optional(types.string, "100%"),
@@ -572,8 +571,10 @@ const Model = types.model({
     },
 
     createDrawingRegion(areaValue, resultValue, control, dynamic) {
+      const controlTag = self.annotation.names.get(control.name);
+
       const result = {
-        from_name: control.name,
+        from_name: controlTag,
         to_name: self,
         type: control.resultType,
         value: resultValue,

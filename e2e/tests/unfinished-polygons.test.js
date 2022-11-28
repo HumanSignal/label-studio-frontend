@@ -103,9 +103,9 @@ Scenario("Saving polygon drawing steps to history", async function({ I, LabelStu
   assert.strictEqual(result[0].value.closed, true);
 
   I.say(`try to undo closing and 2 last points`);
-  I.pressKey(['CommandOrControl', 'Z']);
-  I.pressKey(['CommandOrControl', 'Z']);
-  I.pressKey(['CommandOrControl', 'Z']);
+  I.click("button[aria-label=Undo]");
+  I.click("button[aria-label=Undo]");
+  I.click("button[aria-label=Undo]");
   I.say("check current history index and result");
   historyStepsCount = await I.executeScript(()=>window.Htx.annotationStore.selected.history.undoIdx);
   assert.strictEqual(historyStepsCount, 1);

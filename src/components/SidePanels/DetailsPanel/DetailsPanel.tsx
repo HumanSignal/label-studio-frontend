@@ -47,24 +47,23 @@ const GeneralPanel: FC<any> = inject("store")(observer(({ store, currentEntity }
 
   return (
     <>
-      <Elem name="section">
-        {!showDraftInHistory && (
-          <DraftPanel item={currentEntity} />
-        )}
-        {showAnnotationHistory && (
+      {!showDraftInHistory ? (
+        <DraftPanel item={currentEntity} />
+      ) : (
+        <Elem name="section">
           <Elem name="section-head">
-            Annotation History
+              Annotation History
             <span>#{currentEntity.pk ?? currentEntity.id}</span>
           </Elem>
-        )}
-        <Elem name="section-content">
-          <AnnotationHistory
-            inline
-            showDraft={showDraftInHistory}
-            enabled={showAnnotationHistory}
-          />
+          <Elem name="section-content">
+            <AnnotationHistory
+              inline
+              showDraft={showDraftInHistory}
+              enabled={showAnnotationHistory}
+            />
+          </Elem>
         </Elem>
-      </Elem>
+      )}
       <Elem name="section">
         <Elem name="section-head">
           Relations ({relationStore.size})
