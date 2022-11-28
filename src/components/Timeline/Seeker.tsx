@@ -69,7 +69,7 @@ export const Seeker: FC<SeekerProps> = ({
     document.addEventListener("mouseup", onMouseUp);
   }, [length]);
 
-  const onSeekerDrag = useCallback((e) => {
+  const onSeekerDrag = useCallback((e: globalThis.MouseEvent) => {
     const indicator = seekerRef.current!;
     const dimensions = rootRef.current!.getBoundingClientRect();
     const indicatorWidth = indicator.clientWidth;
@@ -78,15 +78,21 @@ export const Seeker: FC<SeekerProps> = ({
     const startOffset = startDrag - dimensions.left - (indicatorWidth / 2);
     const parentWidth = dimensions.width;
 
-    onSeek?.(clamp(Math.ceil(length * (startOffset / parentWidth)), 0, parentWidth));
-
-    const onMouseMove = (e: globalThis.MouseEvent) => {
+    const jump = (e: globalThis.MouseEvent) => {
       const limit = parentWidth - indicator.clientWidth;
       const newOffset = clamp(startOffset + (e.pageX - startDrag), 0, limit);
       const percent = newOffset / parentWidth;
+      const newPosition = Math.ceil(length * percent);
 
-      onSeek?.(Math.ceil(length * percent));
+      onSeek?.(newPosition);
     };
+
+    jump(e);
+
+    const onMouseMove = (e: globalThis.MouseEvent) => {
+      jump(e);
+    };
+
     const onMouseUp = () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
