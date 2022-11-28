@@ -8,7 +8,13 @@ const COLOR_MAP = '1q29ehhb 1n09sgk7 1kl1ekf_ _yl4zsno 16z9eiv3 1p29lhp8 _bd9zg0
     const key = colorToInt(next.substring(0, 3));
     const hex = colorToInt(next.substring(3)).toString(16);
 
-    acc[key] = hex.padStart(6);
+    let prefix = '';
+
+    for (let i = 0; i < 6 - hex.length; i++) {
+      prefix += '0';
+    }
+
+    acc[key] = `${prefix}${hex}`;
 
     return acc;
   }, {} as { [key: string]: string });
