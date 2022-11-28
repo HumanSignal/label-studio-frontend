@@ -51,6 +51,7 @@ module.exports = {
   ],
   "moduleNameMapper": {
     "^konva": "konva/konva",
+    "^keymaster": "identity-obj-proxy",
     "^react-konva-utils": "identity-obj-proxy",
     "\\.(s[ac]ss|css|styl|svg|png|jpe?g)$": "identity-obj-proxy",
   },
