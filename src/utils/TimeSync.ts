@@ -1,7 +1,8 @@
 import { EventInvoker } from "./events";
-import { FF_DEV_2461, isFF } from "./feature-flags";
+import { FF_DEV_2461, FF_DEV_2715, isFF } from "./feature-flags";
 
 const isFFDev2461 = isFF(FF_DEV_2461);
+const isFFDev2715 = isFF(FF_DEV_2715);
 
 let instance: TimeSync;
 
@@ -84,7 +85,7 @@ export class TimeSyncSubscriber {
   }
 
   seek(time: number) {
-    if (!isFFDev2461 && time === this.currentTime){
+    if ((!isFFDev2461 || !isFFDev2715) && time === this.currentTime){
       this.releaseEvent("seek");
       return;
     }
@@ -124,7 +125,7 @@ export class TimeSyncSubscriber {
 
   private whenUnlocked(event: TimeSyncEvent, fn: () => void) {
     if (this.lockedEvents.has(event)) {
-      if (!isFFDev2461) {
+      if (!isFFDev2461 || !isFFDev2715) {
         this.releaseEvent(event);
       }
       return;
@@ -132,7 +133,7 @@ export class TimeSyncSubscriber {
 
     this.lockEvent(event);
     fn();
-    if (isFFDev2461) {
+    if (isFFDev2461 || isFFDev2715) {
       this.releaseEvent(event);
     }
   }

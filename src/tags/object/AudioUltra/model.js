@@ -79,8 +79,6 @@ export const AudioModel = types.compose(
   types.model("AudioModel", {
     type: "audio",
     _value: types.optional(types.string, ""),
-
-    playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
   })
     .volatile(() => ({
@@ -121,6 +119,9 @@ export const AudioModel = types.compose(
         const state = self.activeState;
 
         return state?.selectedValues()?.[0];
+      },
+      get playing() {
+        return self.isCurrentObject;
       },
     }))
     .actions(self => {
@@ -165,20 +166,16 @@ export const AudioModel = types.compose(
           if (!self._ws) return;
           if (self._ws.playing && self.isCurrentlyPlaying) return;
 
-          console.log("handleSyncPlay before", self.name, self._ws?.playing, self.isCurrentlyPlaying, self.timeSync);
           self.isCurrentlyPlaying = true;
           self._ws?.play();
-          console.log("handleSyncPlay after", self.name, self._ws?.playing, self.isCurrentlyPlaying);
         },
 
         handleSyncPause() {
-          console.log("handleSyncPause before", self.name, self._ws?.playing, self.isCurrentlyPlaying);
           if (!self._ws) return;
           if (!self._ws.playing && !self.isCurrentlyPlaying) return;
 
-          self.isCurrentlyPlaying = true;
+          self.isCurrentlyPlaying = false;
           self._ws?.pause();
-          console.log("handleSyncPause after", self.name, self._ws?.playing, self.isCurrentlyPlaying);
         },
 
         handleSyncSpeed() {
@@ -363,7 +360,6 @@ export const AudioModel = types.compose(
          */
         handlePlay() {
           if (self._ws) {
-            self.playing = self.isCurrentlyPlaying;
             self.isCurrentlyPlaying ? self.triggerSyncPlay() : self.triggerSyncPause();
           }
         },

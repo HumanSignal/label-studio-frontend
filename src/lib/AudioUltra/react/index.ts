@@ -3,6 +3,10 @@ import { Waveform, WaveformOptions } from "../Waveform";
 import { Layer } from "../Visual/Layer";
 import { AudioModel } from "../../../tags/object";
 
+const sameTimeWithTolerance = (a: number, b: number, tolerance = 0.00001) => {
+  return Math.abs(a - b) < tolerance;
+};
+
 export const useWaveform = (
   containter: MutableRefObject<HTMLElement | null | undefined>,
   options: Omit<WaveformOptions, "container"> & { onLoad?: (wf: Waveform) => void },
@@ -38,28 +42,26 @@ export const useWaveform = (
     });
 
     wf.on("play", () => {
-      if (!playing) {
-        item?.triggerSyncPlay();
-      }
+      setPlaying(true);
     });
     wf.on("pause", () => {
-      if (playing) {
-        item?.triggerSyncPause();
-      }
+      setPlaying(false);
     });
     
     /* between here and ... */
     wf.on("playing", (time: number) => {
-      console.log("playing", playing, time);
-      if(playing) {
-        item?.triggerSyncSeek(time);
-      }
+      // if (playing && !sameTimeWithTolerance(time, currentTime)) {
+      //   item?.triggerSyncSeek(time);
+      // }
+
       setCurrentTime(time);
     });
+
     wf.on("seek", (time: number) => {
-      item?.triggerSyncSeek(time);
-      setCurrentTime(time);
-      console.log("seek", time);
+      if (!sameTimeWithTolerance(time, currentTime)) {
+        item?.triggerSyncSeek(time);
+        setCurrentTime(time);
+      }
     });
     /* here - this can cause issues issues when playing selected region in audio */
 

@@ -7,7 +7,7 @@ export class Player extends Destructable {
   private audio!: WaveformAudio;
   private wf: Waveform;
   private timer!: number;
-  private looping: boolean | undefined;
+  private loop:  {start: number, end: number}|null = false;
   private timestamp = 0;
   private time = 0;
 
@@ -95,55 +95,32 @@ export class Player extends Destructable {
   seek(time: number) {
     const newTime = clamp(time, 0, this.duration);
 
+    this.currentTime = newTime;
+
     if (this.playing) {
-      this.pause();
-      this.currentTime = newTime;
-      setTimeout(() => this.play());
-    } else {
-      this.currentTime = newTime;
+      this.playSelection();
+      this.playSource();
     }
-  }
-
-  playRange(start: number, end: number | undefined) {
-    this.currentTime = start;
-    this.stopWatch();
-    this.timestamp = performance.now();
-    this.playing = true;
-
-    this.audio.connect();
-    this.audio.source?.start(0, start, end);
-
-    this.audio.source?.addEventListener("ended", this.handleEnded);
-    this.wf.invoke("play");
-    this.watch();
   }
 
   play(from?: number, to?: number) {
     if (this.isDestroyed) return;
+    if (this.playing) {
+      this.pause();
+      return;
+    }
+    const { start, end } = this.playSelection(from, to);
 
-    if (!this.playing || this.looping) {
-      const selected = this.wf.regions.selected;
-
-      if (selected.length > 0) {
-        const regionsStart = Math.min(...selected.map(r => r.start));
-        const regionsEnd = Math.max(...selected.map(r => r.end)) - regionsStart;
-
-        this.looping = true;
-        return this.playRange(regionsStart, regionsEnd);
-      }
-      this.looping = false;
-      const start = from ?? this.currentTime;
-      const end = to !== undefined ? (to - start) : undefined;
-
-      this.playRange(start, end);
-    } else this.pause();
+    this.playRange(start, end);
   }
 
   handleEnded = () => {
-    this.audio.source?.removeEventListener("ended", this.handleEnded);
-    if (this.looping) return this.play();
-    this.pause();
     this.updateCurrentTime();
+    if (this.loop) {
+      return;
+    }
+    this.audio.source?.removeEventListener("ended", this.handleEnded);
+    this.pause();
     this.wf.invoke("playend");
   };
 
@@ -151,12 +128,11 @@ export class Player extends Destructable {
     if (this.isDestroyed) return;
     if (this.playing) {
       this.stopWatch();
-      this.audio.source?.stop();
-      this.audio.disconnect();
+      this.disconnectSource();
       this.playing = false;
+      this.loop = null;
       this.wf.invoke("pause");
       this.wf.invoke("seek", [this.currentTime]);
-      this.looping = false;
     }
   }
 
@@ -164,7 +140,7 @@ export class Player extends Destructable {
     if (this.isDestroyed) return;
 
     this.stopWatch();
-    this.looping = false;
+    this.loop =null;
 
     this.audio.context.suspend().then(() => {
       this.audio.source?.stop(0);
@@ -177,20 +153,101 @@ export class Player extends Destructable {
     this.stop();
   }
 
+  private playRange(start?: number, end?: number) {
+    if (start) {
+      this.currentTime = start;
+    }
+    this.playSource(start, end);
+    this.wf.invoke("play");
+  }
+
+  private playSource(start?: number, duration?: number) {
+    this.stopWatch();
+    this.timestamp = performance.now();
+    this.recreateSource();
+    this.playing = true;
+
+    if (!this.audio.source) return;
+
+    if (this.loop) {
+      const loopStart = clamp(start ?? this.currentTime, 0, this.duration);
+
+      this.audio.source.loop = true;
+      this.audio.source.loopStart = loopStart;
+      this.audio.source.loopEnd = (duration ?? this.duration);
+      this.audio.source.start(0, loopStart);
+    } else {
+      this.audio.source.start(0, start ?? 0, duration ?? this.duration);
+    }
+
+    this.audio.source.addEventListener("ended", this.handleEnded);
+
+    this.watch();
+  }
+
+  private playSelection(from?: number, to?: number) {
+    const selected = this.wf.regions.selected;
+
+    const looping = selected.length > 0;
+
+    if (looping) {
+      const regionsStart = Math.min(...selected.map(r => r.start));
+      const regionsEnd = Math.max(...selected.map(r => r.end));
+
+      this.loop = { start: regionsStart, end: regionsEnd };
+
+      return this.loop;
+    } 
+    const start = from ?? this.currentTime;
+    const end = to !== undefined ? (to - start) : undefined;
+
+    return { start, end };
+  }
+
+  private recreateSource() {
+    if (this.playing) {
+      this.disconnectSource();
+    }
+    this.connectSource();
+  }
+
+  private connectSource() {
+    if (this.isDestroyed || !this.audio) return;
+    this.audio.connect();
+  }
+
+  private disconnectSource() {
+    if (this.isDestroyed || !this.audio) return;
+    this.audio.source?.removeEventListener("ended", this.handleEnded);
+    this.audio.source?.stop();
+    this.audio.disconnect();
+  }
+
   private watch = () => {
     if (!this.playing) return;
 
     this.updateCurrentTime();
+    this.updateLoop(this.time);
 
     this.timer = requestAnimationFrame(this.watch);
   };
 
+  private updateLoop(time: number) {
+    if (this.isDestroyed || !this.loop) return;
+    if (time >= this.loop.end) {
+      this.currentTime = this.loop.start;
+    }
+  }
+
   private updateCurrentTime() {
-    const tick = ((performance.now() - this.timestamp) / 1000) * this.rate;
+    const now = performance.now();
+    const tick = (( now - this.timestamp) / 1000) * this.rate;
 
-    this.timestamp = performance.now();
+    this.timestamp = now;
 
-    this.time = clamp(this.time + tick, 0, this.duration);
+    const newTime = clamp(this.time + tick, 0, this.duration); 
+
+    this.time = newTime;
     this.wf.invoke("playing", [this.time]);
   }
 

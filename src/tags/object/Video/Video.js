@@ -136,13 +136,14 @@ const Model = types
 
     handleSyncDuration(duration) {
       if(self.ref.current) {
-        console.log("handleSyncDuration", self.ref.current, self.frameRate, duration);
-        self.setLength(duration * self.frameRate);
+        console.log("handleSyncDuration", self.ref.current, self.framerate, duration);
+        self.setLength(duration * self.framerate);
       }
     },
 
     handleSeek() {
       if (self.ref.current) {
+        console.log("handleSeek:Video", self.ref.current.currentTime);
         self.triggerSyncSeek(self.ref.current.currentTime);
       }
     },
@@ -174,7 +175,6 @@ const Model = types
 
     addRegion(data) {
       const control = self.videoControl() ?? self.control();
-
 
       const sequence = [
         {

@@ -14,7 +14,6 @@ import { clamp, isDefined } from "../../../utils/utilities";
 import { IconZoomIn } from "../../../assets/icons";
 import { MAX_ZOOM_WHEEL, MIN_ZOOM_WHEEL, ZOOM_STEP, ZOOM_STEP_WHEEL } from "../../../components/VideoCanvas/VideoConstants";
 import { useFullscreen } from "../../../hooks/useFullscreen";
-import { FF_DEV_3350, isFF } from "../../../utils/feature-flags";
 import ResizeObserver from "../../../utils/resize-observer";
 import "./Video.styl";
 import { VideoRegions } from "./VideoRegions";
