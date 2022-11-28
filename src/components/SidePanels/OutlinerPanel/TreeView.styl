@@ -70,8 +70,11 @@
     padding-left 5px
 
   &__node
+    border 1px dashed transparent
     &_hidden
       opacity 0.4
+    &_isDrawing
+      border-color var(--incomplete-warning-color, #FA8C16)
 
 .outliner-item
   min-height 32px
@@ -97,8 +100,19 @@
     background-color var(--text-color, #000)
 
   &__title
+    align-items center
+    display inline-flex
     flex 1
     color var(--text-color, #000)
+
+  &__incomplete
+    display inline-flex
+    margin-left 5px
+    align-items center
+    svg
+      width 20px
+      height 17px
+      fill var(--incomplete-warning-color, #FA8C16)
 
   &__controls
     top 0

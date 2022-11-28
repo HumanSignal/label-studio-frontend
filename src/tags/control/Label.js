@@ -112,16 +112,30 @@ const Model = types.model({
    * Select label
    */
   toggleSelected() {
+    let sameObjectSelectedRegions = [];
+
     // here we check if you click on label from labels group
     // connected to the region on the same object tag that is
     // right now highlighted, and if that region is readonly
-    const sameObjectSelectedRegions = self.annotation.selectedRegions.filter(region => {
-      return region.parent?.name === self.parent?.toname;
-    });
+
+    if(self.annotation.selectedDrawingRegions.length > 0){
+      /*  here we are validating if we are drawing a new region or if region is already closed
+          the way that new drawing region and a finished regions work is similar, but new drawing region
+          doesn't visualy select the polygons when you are drawing.
+       */
+      sameObjectSelectedRegions = self.annotation.selectedDrawingRegions.filter(region => {
+        return region.parent?.name === self.parent?.toname;
+      });
+    } else if(self.annotation.selectedRegions.length > 0) {
+      sameObjectSelectedRegions = self.annotation.selectedRegions.filter(region => {
+        return region.parent?.name === self.parent?.toname;
+      });
+    }
+
+
     const affectedRegions = sameObjectSelectedRegions.filter(region => {
       return region.editable;
     });
-
 
     // one more check if that label can be selected
     if (!self.annotation.editable) return;
@@ -236,12 +250,16 @@ const Model = types.model({
   },
 
   onHotKey() {
-    if(self.annotation.isDrawing) {
-      return false;
-    } else {
-      self.annotation.unselectAreas();
-      return self.toggleSelected();
-    }
+    return self.onLabelInteract();
+  },
+
+  onClick() {
+    self.onLabelInteract();
+    return false;
+  },
+
+  onLabelInteract() {
+    return self.toggleSelected();
   },
 
   _updateBackgroundColor(val) {
@@ -265,8 +283,7 @@ const HtxLabelView = inject("store")(
 
     const label = (
       <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={() => {
-        item.toggleSelected();
-        return false;
+        return item.onClick();
       }}>
         {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
         {item.showalias === true && item.alias && (

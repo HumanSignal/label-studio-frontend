@@ -103,7 +103,7 @@ const AnnotationHistoryComponent: FC<any> = ({
   inline = false,
 }) => {
   const annotation = annotationStore.selected;
-  const lastItem = history[0];
+  const lastItem = history?.length ? history[0] : null;
   const hasChanges = annotation.history.hasChanges;
   // if user makes changes at the first time there are no draft yet
   const isDraftSelected = !annotationStore.selectedHistory && (annotation.draftSelected || (!annotation.versions.draft && hasChanges));

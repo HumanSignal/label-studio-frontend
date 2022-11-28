@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { types } from "mobx-state-tree";
 
@@ -11,6 +11,7 @@ import { FF_DEV_1170, isFF } from "../../utils/feature-flags";
 import { AnnotationMixin } from "../../mixins/AnnotationMixin";
 
 const Model = types.model({
+  id: types.identifier,
   type: "pagedview",
   children: Types.unionArray([
     "view",
@@ -62,14 +63,67 @@ const Model = types.model({
     "videorectangle",
   ]),
 });
+
 const PagedViewModel = types.compose("PagedViewModel", Model, AnnotationMixin);
+const PAGE_QUERY_PARAM = "view_page";
 const hotkeys = Hotkey("Repeater");
 const DEFAULT_PAGE_SIZE = 1;
 const PAGE_SIZE_OPTIONS = [1, 5, 10, 25, 50, 100];
 
+const getStoredPageSize = (name, defaultValue) => {
+  const value = localStorage.getItem(`pages:${name}`);
+
+  if (value) {
+    return parseInt(value);
+  }
+
+  return defaultValue ?? undefined;
+};
+
+const setStoredPageSize = (name, pageSize) => {
+  localStorage.setItem(`pages:${name}`, pageSize.toString());
+};
+
+const getQueryPage = () => {
+  const params = new URLSearchParams(window.location.search);
+  const page = params.get(PAGE_QUERY_PARAM);
+
+  if (page) {
+    return parseInt(page);
+  }
+
+  return 1;
+};
+
+let lastTaskId = null;
+
+const updateQueryPage = (page, currentTaskId = null) => {
+  const params = new URLSearchParams(window.location.search);
+
+  const taskIdChanged = currentTaskId !== lastTaskId;
+  const resetPage = lastTaskId && taskIdChanged;
+
+  lastTaskId = currentTaskId;
+
+  if (resetPage) {
+    params.delete(PAGE_QUERY_PARAM);
+  } else if (page !== 1) {
+    params.set(PAGE_QUERY_PARAM, page.toString());
+  } else {
+    params.delete(PAGE_QUERY_PARAM);
+  }
+
+  window.history.replaceState(undefined, undefined, `${window.location.pathname}?${params}`);
+};
+
 const HtxPagedView = observer(({ item }) => {
-  const [page, setPage] = useState(1);
+  const [page, _setPage] = useState(getQueryPage);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  const setPage = useCallback((_page) => {
+    _setPage(_page);
+    updateQueryPage(_page, item.annotationStore?.store?.task.id);
+  },[]);
 
   const totalPages = Math.ceil(item.children.length / pageSize);
 
@@ -78,14 +132,14 @@ const HtxPagedView = observer(({ item }) => {
   }, []);
 
   useEffect(() => {
-    item.annotation.regions.map((obj) => {
-      if (obj.selected) {
-        const _pageNumber = parseFloat(obj.object.name.split('_')[1]) + 1;
+    const last = item.annotation.lastSelectedRegion;
 
-        setPage(Math.ceil(_pageNumber / pageSize));
-      }
-    });
-  }, [JSON.stringify(item)]);
+    if (last) {
+      const _pageNumber = parseFloat(last.object.name.split('_')[1]) + 1;
+
+      setPage(Math.ceil(_pageNumber / pageSize));
+    }
+  }, [item.annotation.lastSelectedRegion]);
 
   useEffect(() => {
     if (isFF(FF_DEV_1170)) {
@@ -114,7 +168,14 @@ const HtxPagedView = observer(({ item }) => {
     };
   }, [page]);
 
-  const renderPage = () => {
+  useEffect(() => {
+    updateQueryPage(getQueryPage(), item.annotationStore?.store?.task.id);
+    return () => {
+      updateQueryPage(1, item.annotationStore?.store?.task.id);
+    };
+  }, []);
+
+  const renderPage = useCallback(() => {
     const pageView = [];
 
     for (let i = 0; i < pageSize; i++) {
@@ -122,7 +183,7 @@ const HtxPagedView = observer(({ item }) => {
     }
 
     return pageView;
-  };
+  }, [page, pageSize]);
 
   return (
     <div>
@@ -146,20 +207,6 @@ const HtxPagedView = observer(({ item }) => {
     </div>
   );
 });
-
-const getStoredPageSize = (name, defaultValue) => {
-  const value = localStorage.getItem(`pages:${name}`);
-
-  if (value) {
-    return parseInt(value);
-  }
-
-  return defaultValue ?? undefined;
-};
-
-const setStoredPageSize = (name, pageSize) => {
-  localStorage.setItem(`pages:${name}`, pageSize.toString());
-};
 
 Registry.addTag("pagedview", PagedViewModel, HtxPagedView);
 

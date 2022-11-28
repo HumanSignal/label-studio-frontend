@@ -10,8 +10,9 @@ import {
 
 import "./Node.styl";
 import { Block, Elem } from "../../utils/bem";
-import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconCircleToolSmart, IconKeypointsTool, IconKeypointsToolSmart, IconPolygonTool, IconPolygonToolSmart, IconRectangle3PointTool, IconRectangle3PointToolSmart, IconRectangleTool, IconRectangleToolSmart, IconText } from "../../assets/icons";
+import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconCircleToolSmart, IconKeypointsTool, IconKeypointsToolSmart, IconPolygonTool, IconPolygonToolSmart, IconRectangle3PointTool, IconRectangle3PointToolSmart, IconRectangleTool, IconRectangleToolSmart, IconText, IconWarning } from "../../assets/icons";
 import { NodeView } from "./NodeView";
+import { Tooltip } from "../../common/Tooltip/Tooltip";
 
 const NodeViews = {
   RichTextRegionModel: {
@@ -137,6 +138,13 @@ const Node: FC<any> = observer(({ className, node }) => {
   return (
     <Block name="node" tag="span" className={className}>
       {labelName}
+      {node?.isDrawing && (
+        <Elem tag="span" name="incomplete">
+          <Tooltip title="Incomplete polygon">
+            <IconWarning />
+          </Tooltip>
+        </Elem>
+      )}
       {" "}
       {getContent(node)}
     </Block>

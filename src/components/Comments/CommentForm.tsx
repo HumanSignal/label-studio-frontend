@@ -30,7 +30,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
   const onSubmit = useCallback(async (e?: any) => {
     e?.preventDefault?.();
 
-    if (!formRef.current) return;
+    if (!formRef.current || commentStore.loading === "addComment") return;
     
     const comment = new FormData(formRef.current).get("comment") as string;
 

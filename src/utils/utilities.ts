@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
+import { destroy, detach } from "mobx-state-tree";
 import { toCamelCase } from "strman";
 
 /**
@@ -226,4 +227,11 @@ export const humanDateDiff = (date: string | number): string => {
 
   if (fnsDate === "less than a minute ago") return "just now";
   return fnsDate;
+};
+
+export const destroyMSTObject = (object: any) => {
+  if (object) {
+    detach(object);
+    destroy(object);
+  }
 };
