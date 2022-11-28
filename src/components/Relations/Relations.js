@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, List, Select } from "antd";
-import { getRoot, isValidReference } from "mobx-state-tree";
+import { getEnv, getRoot, isValidReference } from "mobx-state-tree";
 import { observer } from "mobx-react";
 import { ArrowLeftOutlined, ArrowRightOutlined, DeleteOutlined, MoreOutlined, SwapOutlined } from "@ant-design/icons";
 
@@ -18,6 +18,7 @@ const { Option } = Select;
 const RelationMeta = observer(({ rl }) => {
   const r = rl.relations;
   const selected = r.getSelected().map(v => v.value);
+  const events = getEnv(rl).events;
 
   return (
     <div style={{ marginTop: "10px" }}>
@@ -32,6 +33,7 @@ const RelationMeta = observer(({ rl }) => {
 
           r.unselectAll();
           values.forEach(v => r.findRelation(v).setSelected(true));
+          events.invoke('selectRelationLabels', rl);
         }}
       >
         {r.children.map(c => (
