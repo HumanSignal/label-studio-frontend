@@ -291,9 +291,15 @@ export class Regions {
         region.invoke("mouseLeave", [region, e]);
       });
       this.hoveredRegions.clear();
-      this.waveform.cursor.set(CursorSymbol.crosshair);
+      if (!this.cursorLockedByPlayhead) {
+        this.waveform.cursor.set(CursorSymbol.crosshair);
+      }
     }
   };
+
+  private get cursorLockedByPlayhead() {
+    return this.waveform.cursor.hasFocus() && this.waveform.cursor.isFocused("playhead");
+  }
 
   private handleMouseDown = (e: MouseEvent) => {
     if (!this.updateable) return;

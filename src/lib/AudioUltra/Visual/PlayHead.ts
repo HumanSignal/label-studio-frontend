@@ -89,6 +89,7 @@ export class Playhead extends Events<PlayheadEvents> {
       e.preventDefault();
       e.stopPropagation();
       this.isDragging = true;
+      this.wf.cursor.set(CursorSymbol.grabbing, "playhead");
 
       const handleMouseMove = (e: MouseEvent) => {
         if(this.isDragging) {
@@ -114,6 +115,7 @@ export class Playhead extends Events<PlayheadEvents> {
           document.removeEventListener("mousemove", handleMouseMove);
           document.removeEventListener("mouseup", handleMouseUp);
           this.render();
+          this.wf.cursor.set(CursorSymbol.default);
         }
       };
 
@@ -125,6 +127,9 @@ export class Playhead extends Events<PlayheadEvents> {
 
   private mouseEnter = () => {
     if( this.isVisible && !this.isDragging ) {
+      if (!this.wf.cursor.hasFocus()) {
+        this.wf.cursor.set(CursorSymbol.grab, "playhead");
+      }
       this.isHovered = true;
       this.render();
     }
@@ -134,6 +139,9 @@ export class Playhead extends Events<PlayheadEvents> {
     if( this.isVisible && !this.isDragging ) {
       this.isHovered = false;
       this.render();
+      if (this.wf.cursor.isFocused("playhead")) {
+        this.wf.cursor.set(CursorSymbol.default);
+      }
     }
   };
 
@@ -206,15 +214,10 @@ export class Playhead extends Events<PlayheadEvents> {
    * Render the playhead on the canvas
    */
   render() {
-    const { color, fillColor, layer, _x, isHovered, width, isDragging, hoveredStrokeMultiplier } = this;
+    const { color, fillColor, layer, _x, isHovered, width, hoveredStrokeMultiplier } = this;
     const { reservedSpace } = this.visualizer;
 
     if(layer?.isVisible) {
-      if (isHovered) {
-        this.wf.cursor.set(isDragging ? CursorSymbol.grabbing : CursorSymbol.grab, "playhead");
-      } else {
-        this.wf.cursor.set(CursorSymbol.default);
-      }
       layer.clear();
       layer.save();
       layer.fillStyle = fillColor.toString();
