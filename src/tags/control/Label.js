@@ -117,6 +117,8 @@ const Model = types.model({
     // here we check if you click on label from labels group
     // connected to the region on the same object tag that is
     // right now highlighted, and if that region is readonly
+
+    console.log('heartex toggleSelected');
     if(self.annotation.selectedDrawingRegions.length > 0){
       /*  here we are validating if we are drawing a new region or if region is already closed
           the way that new drawing region and a finished regions work is similar, but new drawing region
@@ -258,9 +260,6 @@ const Model = types.model({
   },
 
   onLabelInteract() {
-    if (self.annotation.isDrawing) {
-      return false;
-    } 
     return self.toggleSelected();
   },
 
