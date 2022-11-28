@@ -367,7 +367,7 @@ export default types
       hotkeys.addNamed("region:unselect", function() {
         const c = self.annotationStore.selected;
 
-        if (c && !c.relationMode) {
+        if (c && !c.relationMode && !c.isDrawing) {
           c.unselectAll();
         }
       });
@@ -397,7 +397,7 @@ export default types
 
         if (c && c.relationMode) {
           c.stopRelationMode();
-        } else {
+        } else if (!c.isDrawing) {
           c.unselectAll();
         }
       });

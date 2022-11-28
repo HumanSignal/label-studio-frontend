@@ -209,6 +209,10 @@ export const Annotation = types
       return Array.from(self.regionStore.selection.selected.values());
     },
 
+    get selectedDrawingRegions() {
+      return Array.from(self.regionStore.selection.drawingSelected.values());
+    },
+
     // existing annotation which can be updated
     get exists() {
       const dataExists = (self.userGenerate && self.sentUserGenerate) || isDefined(self.versions.result);
