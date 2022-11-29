@@ -1,5 +1,5 @@
-import { wrapArray } from "../../utils/utilities";
-import { Geometry } from "./Geometry";
+import { wrapArray } from '../../utils/utilities';
+import { Geometry } from './Geometry';
 
 /**
  * @type {import("./Geometry").BBox}
@@ -89,16 +89,16 @@ const stageRelatedBBox = (region, bbox) => {
 
 const _detect = region => {
   switch (region.type) {
-    case "textrange":
-    case "richtextregion":
-    case "textarearegion":
-    case "audioregion":
-    case "paragraphs":
-    case "timeseriesregion": {
+    case 'textrange':
+    case 'richtextregion':
+    case 'textarearegion':
+    case 'audioregion':
+    case 'paragraphs':
+    case 'timeseriesregion': {
       const regionBbox = Geometry.getDOMBBox(region.getRegionElement());
       const container = region.parent?.visibleNodeRef?.current;
 
-      if (container?.tagName === "IFRAME") {
+      if (container?.tagName === 'IFRAME') {
         const iframeBbox = Geometry.getDOMBBox(container, true);
 
         return regionBbox?.map(bbox => ({
@@ -110,22 +110,22 @@ const _detect = region => {
 
       return regionBbox;
     }
-    case "rectangleregion": {
+    case 'rectangleregion': {
       return stageRelatedBBox(
         region,
         Geometry.getRectBBox(region.x, region.y, region.width, region.height, region.rotation),
       );
     }
-    case "ellipseregion": {
+    case 'ellipseregion': {
       return stageRelatedBBox(
         region,
         Geometry.getEllipseBBox(region.x, region.y, region.radiusX, region.radiusY, region.rotation),
       );
     }
-    case "polygonregion": {
+    case 'polygonregion': {
       return stageRelatedBBox(region, Geometry.getPolygonBBox(region.points));
     }
-    case "keypointregion": {
+    case 'keypointregion': {
       const imageBbox = Geometry.getDOMBBox(region.parent.imageRef, true);
       const scale = region.parent.zoomScale;
 
@@ -136,7 +136,7 @@ const _detect = region => {
         height: region.width,
       };
     }
-    case "brushregion": {
+    case 'brushregion': {
       // If there is no imageData we just wait for the next render
       const bbox = region.imageData && Geometry.getImageDataBBox(region.imageData.data, region.imageData.width, region.imageData.height);
 

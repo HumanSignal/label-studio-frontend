@@ -1,13 +1,13 @@
-import { observer } from "mobx-react";
-import { FC, useCallback, useMemo, useState } from "react";
-import { IconInfo, IconLink, IconMenu, IconRelationBi, IconRelationLeft, IconRelationRight, IconTrash } from "../../../assets/icons";
-import { IconExpand, IconEyeClosed, IconEyeOpened } from "../../../assets/icons/timeline";
-import { Button } from "../../../common/Button/Button";
-import { Block, Elem } from "../../../utils/bem";
-import { wrapArray } from "../../../utils/utilities";
-import { RegionItem } from "./RegionItem";
-import { Select } from "antd";
-import "./Relations.styl";
+import { observer } from 'mobx-react';
+import { FC, useCallback, useMemo, useState } from 'react';
+import { IconMenu, IconRelationBi, IconRelationLeft, IconRelationRight, IconTrash } from '../../../assets/icons';
+import { IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
+import { Button } from '../../../common/Button/Button';
+import { Block, Elem } from '../../../utils/bem';
+import { wrapArray } from '../../../utils/utilities';
+import { RegionItem } from './RegionItem';
+import { Select } from 'antd';
+import './Relations.styl';
 
 const RealtionsComponent: FC<any> = ({ relationStore }) => {
   return (
@@ -56,9 +56,9 @@ const RelationItem: FC<{relation: any}> = observer(({ relation }) => {
     const { direction } = relation;
 
     switch (direction) {
-      case "left": return <IconRelationLeft/>;
-      case "right": return <IconRelationRight/>;
-      case "bi": return <IconRelationBi/>;
+      case 'left': return <IconRelationLeft/>;
+      case 'right': return <IconRelationRight/>;
+      case 'bi': return <IconRelationBi/>;
       default: return null;
     }
   }, [relation.direction]);
@@ -92,7 +92,7 @@ const RelationItem: FC<{relation: any}> = observer(({ relation }) => {
             {(hovered || relation.showMeta) && relation.hasRelations  && (
               <Button
                 primary={relation.showMeta}
-                type={relation.showMeta ? undefined : "text"}
+                type={relation.showMeta ? undefined : 'text'}
                 onClick={relation.toggleMeta}
                 style={{ padding: 0 }}
               >
@@ -133,7 +133,7 @@ const RelationMeta: FC<any> = ({ relation }) => {
   const selected = relations.getSelected().map((v: any) => v.value);
 
   const selectionMode = useMemo(() => {
-    return choice === "multiple" ? "multiple" : undefined;
+    return choice === 'multiple' ? 'multiple' : undefined;
   }, [choice]);
 
   const onChange = useCallback((val: any) => {
@@ -147,7 +147,7 @@ const RelationMeta: FC<any> = ({ relation }) => {
     <Block name="relation-meta">
       <Select
         mode={selectionMode}
-        style={{ width: "100%" }}
+        style={{ width: '100%' }}
         placeholder="Select labels"
         defaultValue={selected}
         onChange={onChange}

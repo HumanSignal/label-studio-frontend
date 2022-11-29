@@ -1,10 +1,10 @@
-import { FC, RefObject, useCallback, useEffect, useRef, useState } from "react";
-import { Block, Elem } from "../../utils/bem";
-import { ReactComponent as IconSend } from "../../assets/icons/send.svg";
+import { FC, RefObject, useCallback, useRef } from 'react';
+import { Block, Elem } from '../../utils/bem';
+import { ReactComponent as IconSend } from '../../assets/icons/send.svg';
 
-import "./CommentForm.styl";
-import { TextArea } from "../../common/TextArea/TextArea";
-import { observer } from "mobx-react";
+import './CommentForm.styl';
+import { TextArea } from '../../common/TextArea/TextArea';
+import { observer } from 'mobx-react';
 
 
 export type CommentFormProps = {
@@ -18,7 +18,7 @@ export type CommentFormProps = {
 }
 
 export const CommentFormBase: FC<CommentFormProps> = observer(({
-  value = "", 
+  value = '',
   inline = true,
   onChange,
   onSubmit,
@@ -33,9 +33,9 @@ export const CommentFormBase: FC<CommentFormProps> = observer(({
     e?.preventDefault?.();
 
     if (!formRef.current) return;
-    
-    const comment = (new FormData(formRef.current).get("comment") as string)?.trim();
-    
+
+    const comment = (new FormData(formRef.current).get('comment') as string)?.trim();
+
     if (!comment) return;
 
     onSubmit?.(comment);
@@ -44,9 +44,9 @@ export const CommentFormBase: FC<CommentFormProps> = observer(({
   const onInput = useCallback((comment: string) => {
     onChange?.(comment || '');
   }, [onChange]);
-  
+
   return (
-    <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={submitHandler}> 
+    <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={submitHandler}>
       <TextArea
         actionRef={actionRef}
         name="comment"
@@ -56,7 +56,7 @@ export const CommentFormBase: FC<CommentFormProps> = observer(({
         maxRows={maxRows}
         onChange={onChange}
         onInput={onInput}
-        onSubmit={(newValue) => { 
+        onSubmit={(newValue) => {
           if (!inline) return;
 
           newValue = newValue.trim();

@@ -1,13 +1,13 @@
-import { decode, encode } from "@thi.ng/rle-pack";
-import chroma from "chroma-js";
-import Constants from "../core/Constants";
+import { decode, encode } from '@thi.ng/rle-pack';
+import chroma from 'chroma-js';
+import Constants from '../core/Constants';
 
-import * as Colors from "./colors";
+import * as Colors from './colors';
 
 // given the imageData object returns the DOM Image with loaded data
 function imageData2Image(imagedata) {
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
 
   canvas.width = imagedata.width;
   canvas.height = imagedata.height;
@@ -24,8 +24,8 @@ function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
 
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
 
   canvas.width = nw;
   canvas.height = nh;
@@ -71,7 +71,7 @@ function Region2RLE(region, image) {
   }
   !isVisible && layer.show();
   // hide labels on regions and show them later
-  layer.findOne(".highlight").hide();
+  layer.findOne('.highlight').hide();
 
   const width = stage.getWidth(),
     height = stage.getHeight(),
@@ -96,7 +96,7 @@ function Region2RLE(region, image) {
   stage.drawScene();
   // resize to original size
   const canvas = layer.toCanvas({ pixelRatio: nw / image.stageWidth });
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
 
   // get the resulting raw data and encode into RLE format
   const data = ctx.getImageData(0, 0, nw, nh);
@@ -104,7 +104,7 @@ function Region2RLE(region, image) {
   for (let i = data.data.length / 4; i--; ) {
     data.data[i * 4] = data.data[i * 4 + 1] = data.data[i * 4 + 2] = data.data[i * 4 + 3];
   }
-  layer.findOne(".highlight").show();
+  layer.findOne('.highlight').show();
   stage
     .setWidth(width)
     .setHeight(height)
@@ -124,8 +124,8 @@ function Region2RLE(region, image) {
 }
 
 function brushSizeCircle(size) {
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
 
   canvas.width = size * 4 + 8;
   canvas.height = size * 4 + 8;
@@ -134,29 +134,29 @@ function brushSizeCircle(size) {
   ctx.arc(size / 2 + 4, size / 2 + 4, size / 2, 0, 2 * Math.PI, false);
 
   ctx.lineWidth = 2;
-  ctx.strokeStyle = "white";
+  ctx.strokeStyle = 'white';
   ctx.stroke();
 
   return canvas.toDataURL();
 }
 
 function encodeSVG(data) {
-  const externalQuotesValue = "single";
+  const externalQuotesValue = 'single';
 
   function getQuotes() {
-    const double = `"`;
-    const single = `'`;
+    const double = '"';
+    const single = '\'';
 
     return {
-      level1: externalQuotesValue === "double" ? double : single,
-      level2: externalQuotesValue === "double" ? single : double,
+      level1: externalQuotesValue === 'double' ? double : single,
+      level2: externalQuotesValue === 'double' ? single : double,
     };
   }
 
   const quotes = getQuotes();
 
   function addNameSpace(data) {
-    if (data.indexOf("http://www.w3.org/2000/svg") < 0) {
+    if (data.indexOf('http://www.w3.org/2000/svg') < 0) {
       data = data.replace(/<svg/g, `<svg xmlns=${quotes.level2}http://www.w3.org/2000/svg${quotes.level2}`);
     }
 
@@ -167,14 +167,14 @@ function encodeSVG(data) {
   const symbols = /[\r\n%#()<>?[\\\]^`{|}]/g;
 
   // Use single quotes instead of double to avoid encoding.
-  if (externalQuotesValue === "double") {
-    data = data.replace(/"/g, "'");
+  if (externalQuotesValue === 'double') {
+    data = data.replace(/"/g, '\'');
   } else {
     data = data.replace(/'/g, '"');
   }
 
-  data = data.replace(/>\s{1,}</g, "><");
-  data = data.replace(/\s{2,}/g, " ");
+  data = data.replace(/>\s{1,}</g, '><');
+  data = data.replace(/\s{2,}/g, ' ');
 
   // var resultCss = `background-image: url();`;
 
@@ -187,10 +187,10 @@ const labelToSVG = (function() {
   const SVG_CACHE = {};
 
   function calculateTextWidth(text) {
-    const svg = document.createElement("svg");
-    const svgText = document.createElement("text");
+    const svg = document.createElement('svg');
+    const svgText = document.createElement('text');
 
-    svgText.style = "font-size: 9.5px; font-weight: bold; color: red; fill: red; font-family: Monaco";
+    svgText.style = 'font-size: 9.5px; font-weight: bold; color: red; fill: red; font-family: Monaco';
     svgText.innerHTML = text;
 
     svg.appendChild(svgText);
@@ -228,7 +228,7 @@ const labelToSVG = (function() {
       width = width + calculateTextWidth(label) + 2;
     }
 
-    const res = `<svg height="16" width="${width}">${items.join("")}</svg>`;
+    const res = `<svg height="16" width="${width}">${items.join('')}</svg>`;
     const enc = encodeSVG(res);
 
     SVG_CACHE[cacheKey] = enc;

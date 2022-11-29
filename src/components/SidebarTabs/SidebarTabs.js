@@ -1,8 +1,8 @@
-import { observer } from "mobx-react";
-import React, { createContext, useState } from "react";
-import { Children } from "react";
-import { Block, Elem } from "../../utils/bem";
-import "./SidebarTabs.styl";
+import { observer } from 'mobx-react';
+import React, { createContext, useState } from 'react';
+import { Children } from 'react';
+import { Block, Elem } from '../../utils/bem';
+import './SidebarTabs.styl';
 
 const SidebarContext = createContext();
 

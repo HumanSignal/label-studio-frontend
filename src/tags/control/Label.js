@@ -1,23 +1,23 @@
-import { inject, observer } from "mobx-react";
-import { getType, types } from "mobx-state-tree";
-import ColorScheme from "pleasejs";
-import React from "react";
+import { inject, observer } from 'mobx-react';
+import { getType, types } from 'mobx-state-tree';
+import ColorScheme from 'pleasejs';
+import React from 'react';
 
-import { Tooltip } from "../../common/Tooltip/Tooltip";
-import InfoModal from "../../components/Infomodal/Infomodal";
-import { Label } from "../../components/Label/Label";
-import Constants from "../../core/Constants";
-import { customTypes } from "../../core/CustomTypes";
-import { guidGenerator } from "../../core/Helpers";
-import Registry from "../../core/Registry";
-import Types from "../../core/Types";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
-import { TagParentMixin } from "../../mixins/TagParentMixin";
-import ToolsManager from "../../tools/Manager";
-import Utils from "../../utils";
-import { parseValue } from "../../utils/data";
-import { FF_DEV_2128, isFF } from "../../utils/feature-flags";
+import { Tooltip } from '../../common/Tooltip/Tooltip';
+import InfoModal from '../../components/Infomodal/Infomodal';
+import { Label } from '../../components/Label/Label';
+import Constants from '../../core/Constants';
+import { customTypes } from '../../core/CustomTypes';
+import { guidGenerator } from '../../core/Helpers';
+import Registry from '../../core/Registry';
+import Types from '../../core/Types';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import ProcessAttrsMixin from '../../mixins/ProcessAttrs';
+import { TagParentMixin } from '../../mixins/TagParentMixin';
+import ToolsManager from '../../tools/Manager';
+import Utils from '../../utils';
+import { parseValue } from '../../utils/data';
+import { FF_DEV_2128, isFF } from '../../utils/feature-flags';
 
 /**
  * The `Label` tag represents a single label. Use with the `Labels` tag, including `BrushLabels`, `EllipseLabels`, `HyperTextLabels`, `KeyPointLabels`, and other `Labels` tags to specify the value of a specific label.
@@ -56,11 +56,11 @@ const TagAttrs = types.model({
   hint: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   showalias: types.optional(types.boolean, false),
-  aliasstyle: types.optional(types.string, "opacity: 0.6"),
-  size: types.optional(types.string, "medium"),
+  aliasstyle: types.optional(types.string, 'opacity: 0.6'),
+  size: types.optional(types.string, 'medium'),
   background: types.optional(customTypes.color, Constants.LABEL_BACKGROUND),
-  selectedcolor: types.optional(customTypes.color, "#ffffff"),
-  granularity: types.maybeNull(types.enumeration(["symbol", "word", "sentence", "paragraph"])),
+  selectedcolor: types.optional(customTypes.color, '#ffffff'),
+  granularity: types.maybeNull(types.enumeration(['symbol', 'word', 'sentence', 'paragraph'])),
   groupcancontain: types.maybeNull(types.string),
   // childrencheck: types.optional(types.enumeration(["any", "all"]), "any")
   ...(isFF(FF_DEV_2128) ? { html: types.maybeNull(types.string) } : {} ),
@@ -68,19 +68,19 @@ const TagAttrs = types.model({
 
 const Model = types.model({
   id: types.optional(types.identifier, guidGenerator),
-  type: "label",
+  type: 'label',
   visible: types.optional(types.boolean, true),
-  _value: types.optional(types.string, ""),
+  _value: types.optional(types.string, ''),
   parentTypes: Types.tagsTypes([
-    "Labels",
-    "EllipseLabels",
-    "RectangleLabels",
-    "PolygonLabels",
-    "KeyPointLabels",
-    "BrushLabels",
-    "HyperTextLabels",
-    "TimeSeriesLabels",
-    "ParagraphLabels",
+    'Labels',
+    'EllipseLabels',
+    'RectangleLabels',
+    'PolygonLabels',
+    'KeyPointLabels',
+    'BrushLabels',
+    'HyperTextLabels',
+    'TimeSeriesLabels',
+    'ParagraphLabels',
   ]),
 }).volatile(self => {
   return {
@@ -161,7 +161,7 @@ const Model = types.model({
         (!self.parent?.allowempty || self.isEmpty)
       )
         return false;
-      if (self.parent?.type !== "labels" && !self.parent?.type.includes(region.results[0].type)) return false;
+      if (self.parent?.type !== 'labels' && !self.parent?.type.includes(region.results[0].type)) return false;
       return true;
     });
 
@@ -171,7 +171,7 @@ const Model = types.model({
     if (!labels.selectedLabels.length && !self.selected) {
       // unselect labels from other groups of labels connected to this obj
       self.annotation.toNames.get(labels.toname).
-        filter(tag => tag.type && tag.type.endsWith("labels") && tag.name !== labels.name).
+        filter(tag => tag.type && tag.type.endsWith('labels') && tag.name !== labels.name).
         forEach(tag => tag.unselectAll && tag.unselectAll());
 
       // unselect other tools if they exist and selected
@@ -275,9 +275,9 @@ const Model = types.model({
   },
 }));
 
-const LabelModel = types.compose("LabelModel", TagParentMixin, TagAttrs, ProcessAttrsMixin, Model, AnnotationMixin);
+const LabelModel = types.compose('LabelModel', TagParentMixin, TagAttrs, ProcessAttrsMixin, Model, AnnotationMixin);
 
-const HtxLabelView = inject("store")(
+const HtxLabelView = inject('store')(
   observer(({ item, store }) => {
     const hotkey = (store.settings.enableTooltips || store.settings.enableLabelTooltips) && store.settings.enableHotkeys && item.hotkey;
 
@@ -298,6 +298,6 @@ const HtxLabelView = inject("store")(
   }),
 );
 
-Registry.addTag("label", LabelModel, HtxLabelView);
+Registry.addTag('label', LabelModel, HtxLabelView);
 
 export { HtxLabelView, LabelModel };

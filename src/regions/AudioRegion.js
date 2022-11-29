@@ -1,24 +1,24 @@
-import { getRoot, types } from "mobx-state-tree";
+import { getRoot, types } from 'mobx-state-tree';
 
-import WithStatesMixin from "../mixins/WithStates";
-import Constants from "../core/Constants";
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
-import Utils from "../utils";
-import { AudioModel } from "../tags/object/AudioNext";
-import { AreaMixin } from "../mixins/AreaMixin";
-import Registry from "../core/Registry";
+import WithStatesMixin from '../mixins/WithStates';
+import Constants from '../core/Constants';
+import NormalizationMixin from '../mixins/Normalization';
+import RegionsMixin from '../mixins/Regions';
+import Utils from '../utils';
+import { AudioModel } from '../tags/object/AudioNext';
+import { AreaMixin } from '../mixins/AreaMixin';
+import Registry from '../core/Registry';
 
 const Model = types
-  .model("AudioRegionModel", {
-    type: "audioregion",
+  .model('AudioRegionModel', {
+    type: 'audioregion',
     object: types.late(() => types.reference(AudioModel)),
 
     start: types.number,
     end: types.number,
     channel: types.optional(types.number, 0),
 
-    selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
+    selectedregionbg: types.optional(types.string, 'rgba(0, 0, 0, 0.5)'),
   })
   .volatile(() => ({
     hideable: true,
@@ -43,7 +43,7 @@ const Model = types
         start: self.start,
         end: self.end,
         channel: self.channel,
-        color: "orange",
+        color: 'orange',
       };
 
       if (self.readonly) {
@@ -127,10 +127,10 @@ const Model = types
         }
       }
 
-      const classes = [...new Set([...lastClassList, "htx-highlight", "htx-highlight-last"])];
+      const classes = [...new Set([...lastClassList, 'htx-highlight', 'htx-highlight-last'])];
 
       if (!self.parent.showlabels && !settings.showLabels) {
-        classes.push("htx-no-label");
+        classes.push('htx-no-label');
       } else {
         const cssCls = Utils.HTML.labelWithCSS(el, {
           labels: self.labeling?.mainValue,
@@ -140,11 +140,11 @@ const Model = types
         classes.push(cssCls);
       }
 
-      el.className = classes.filter(Boolean).join(" ");
+      el.className = classes.filter(Boolean).join(' ');
 
       // Annotation must visually be drawn across both channels
-      el.style.top = "0px";
-      el.style.height = "100%";
+      el.style.top = '0px';
+      el.style.height = '100%';
     },
 
     /**
@@ -183,7 +183,7 @@ const Model = types
         self._ws_region.element.style.border = Constants.HIGHLIGHTED_CSS_BORDER;
       } else {
         self.updateColor(0.3);
-        self._ws_region.element.style.border = "none";
+        self._ws_region.element.style.border = 'none';
       }
     },
 
@@ -223,13 +223,13 @@ const Model = types
 
     toggleHidden(e) {
       self.hidden = !self.hidden;
-      self._ws_region.element.style.display = self.hidden ?  "none" : "block";
+      self._ws_region.element.style.display = self.hidden ?  'none' : 'block';
       e?.stopPropagation();
     },
   }));
 
 const AudioRegionModel = types.compose(
-  "AudioRegionModel",
+  'AudioRegionModel',
   WithStatesMixin,
   RegionsMixin,
   AreaMixin,
@@ -237,7 +237,7 @@ const AudioRegionModel = types.compose(
   Model,
 );
 
-Registry.addRegionType(AudioRegionModel, "audioplus");
-Registry.addRegionType(AudioRegionModel, "audio");
+Registry.addRegionType(AudioRegionModel, 'audioplus');
+Registry.addRegionType(AudioRegionModel, 'audio');
 
 export { AudioRegionModel };

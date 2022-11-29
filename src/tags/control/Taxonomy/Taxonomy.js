@@ -1,22 +1,22 @@
-import React from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import Infomodal from "../../../components/Infomodal/Infomodal";
-import { Taxonomy } from "../../../components/Taxonomy/Taxonomy";
-import { guidGenerator } from "../../../core/Helpers";
-import Registry from "../../../core/Registry";
-import Types from "../../../core/Types";
-import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
-import PerRegionMixin from "../../../mixins/PerRegion";
-import RequiredMixin from "../../../mixins/Required";
-import VisibilityMixin from "../../../mixins/Visibility";
-import ControlBase from "../Base";
-import DynamicChildrenMixin from "../../../mixins/DynamicChildrenMixin";
-import { FF_DEV_2007_DEV_2008, FF_DEV_3617, isFF } from "../../../utils/feature-flags";
-import { SharedStoreMixin } from "../../../mixins/SharedChoiceStore/mixin";
-import { Spin } from "antd";
-import "./Taxonomy.styl";
+import Infomodal from '../../../components/Infomodal/Infomodal';
+import { Taxonomy } from '../../../components/Taxonomy/Taxonomy';
+import { guidGenerator } from '../../../core/Helpers';
+import Registry from '../../../core/Registry';
+import Types from '../../../core/Types';
+import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
+import PerRegionMixin from '../../../mixins/PerRegion';
+import RequiredMixin from '../../../mixins/Required';
+import VisibilityMixin from '../../../mixins/Visibility';
+import ControlBase from '../Base';
+import DynamicChildrenMixin from '../../../mixins/DynamicChildrenMixin';
+import { FF_DEV_2007_DEV_2008, FF_DEV_3617, isFF } from '../../../utils/feature-flags';
+import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
+import { Spin } from 'antd';
+import './Taxonomy.styl';
 
 /**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
@@ -57,12 +57,12 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
   leafsonly: types.optional(types.boolean, false),
   showfullpath: types.optional(types.boolean, false),
-  pathseparator: types.optional(types.string, " / "),
-  placeholder: "",
+  pathseparator: types.optional(types.string, ' / '),
+  placeholder: '',
   minwidth: types.maybeNull(types.string),
   maxwidth: types.maybeNull(types.string),
   maxusages: types.maybeNull(types.string),
-  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, "") } : {}),
+  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, '') } : {}),
 });
 
 function traverse(root) {
@@ -105,8 +105,8 @@ const Model = types
 
     readonly: types.optional(types.boolean, false),
 
-    type: "taxonomy",
-    [isFF(FF_DEV_3617) ? "_children" : "children"]: Types.unionArray(["choice"]),
+    type: 'taxonomy',
+    [isFF(FF_DEV_3617) ? '_children' : 'children']: Types.unionArray(['choice']),
   })
   .volatile(() => ({
     maxUsagesReached: false,
@@ -131,7 +131,7 @@ const Model = types
     },
 
     get valueType() {
-      return "taxonomy";
+      return 'taxonomy';
     },
 
     get result() {
@@ -169,7 +169,7 @@ const Model = types
     },
 
     get defaultChildType() {
-      return "choice";
+      return 'choice';
     },
   }))
   .actions(self => ({
@@ -256,7 +256,7 @@ const Model = types
     return sn;
   });
 
-const TaxonomyModel = types.compose("TaxonomyModel",
+const TaxonomyModel = types.compose('TaxonomyModel',
   ControlBase,
   TagAttrs,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
@@ -269,8 +269,8 @@ const TaxonomyModel = types.compose("TaxonomyModel",
 );
 
 const HtxTaxonomy = observer(({ item }) => {
-  const style = { marginTop: "1em", marginBottom: "1em" };
-  const visibleStyle = item.perRegionVisible() && item.isVisible ? {} : { display: "none" };
+  const style = { marginTop: '1em', marginBottom: '1em' };
+  const visibleStyle = item.perRegionVisible() && item.isVisible ? {} : { display: 'none' };
   const options = {
     showFullPath: item.showfullpath,
     leafsOnly: item.leafsonly,
@@ -302,6 +302,6 @@ const HtxTaxonomy = observer(({ item }) => {
   );
 });
 
-Registry.addTag("taxonomy", TaxonomyModel, HtxTaxonomy);
+Registry.addTag('taxonomy', TaxonomyModel, HtxTaxonomy);
 
 export { HtxTaxonomy, TaxonomyModel, TagAttrs };

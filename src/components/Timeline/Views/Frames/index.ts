@@ -1,9 +1,9 @@
-import { TimelineRegion, TimelineView } from "../../Types";
+import { TimelineRegion, TimelineView } from '../../Types';
 
-import { Frames } from "./Frames";
-import { Minimap } from "./Minimap";
-import { Controls } from "./Controls";
-import { findClosestKeypoint } from "./Utils";
+import { Frames } from './Frames';
+import { Minimap } from './Minimap';
+import { Controls } from './Controls';
+import { findClosestKeypoint } from './Utils';
 
 const getKeyframePosition = (position: number, regions: TimelineRegion[], direction: -1 | 1) => {
   const selectedRegion = regions.find(r => r.selected);
@@ -33,16 +33,16 @@ const View: TimelineView<typeof Controls> = {
     fastTravelSize() {
       return 10;
     },
-    playpauseHotkey: "media:playpause",
+    playpauseHotkey: 'media:playpause',
     stepBackHotkey: 'media:step-backward',
     stepForwardHotkey: 'media:step-forward',
-    stepAltBack: "video:keyframe-backward",
-    stepAltForward: "video:keyframe-forward",
+    stepAltBack: 'video:keyframe-backward',
+    stepAltForward: 'video:keyframe-forward',
     leftOffset: 150,
-    skipToBeginning: "video:rewind",
-    skipToEnd: "video:fastforward",
-    hopBackward: "video:hop-backward",
-    hopForward: "video:hop-forward",
+    skipToBeginning: 'video:rewind',
+    skipToEnd: 'video:fastforward',
+    hopBackward: 'video:hop-backward',
+    hopForward: 'video:hop-forward',
   },
 };
 

@@ -1,17 +1,17 @@
-import React from "react";
-import arrayMove from "array-move";
-import { List } from "antd";
-import { SortableContainer, SortableElement, sortableHandle } from "react-sortable-hoc";
-import { inject, observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import arrayMove from 'array-move';
+import { List } from 'antd';
+import { SortableContainer, SortableElement, sortableHandle } from 'react-sortable-hoc';
+import { inject, observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import Registry from "../../core/Registry";
-import { guidGenerator } from "../../core/Helpers";
-import { variableNotation } from "../../core/Template";
+import Registry from '../../core/Registry';
+import { guidGenerator } from '../../core/Helpers';
+import { variableNotation } from '../../core/Template';
 
 const ListItemModel = types
   .model({
-    backgroundColor: types.optional(types.string, "transparent"),
+    backgroundColor: types.optional(types.string, 'transparent'),
     value: types.maybeNull(types.string),
     _value: types.maybeNull(types.string),
     selected: types.optional(types.boolean, false),
@@ -54,11 +54,11 @@ const ListItemModel = types
  * @param {x|y} lockAxis                       - Whether to lock the axis
  */
 const TagAttrs = types.model({
-  axis: types.optional(types.enumeration(["x", "y"]), "y"),
-  lockaxis: types.maybeNull(types.enumeration(["x", "y"])),
+  axis: types.optional(types.enumeration(['x', 'y']), 'y'),
+  lockaxis: types.maybeNull(types.enumeration(['x', 'y'])),
 
   elementvalue: types.maybeNull(types.string),
-  elementtag: types.optional(types.enumeration(["Text", "Image", "Audio"]), "Text"),
+  elementtag: types.optional(types.enumeration(['Text', 'Image', 'Audio']), 'Text'),
   // ranked: types.optional(types.string, "true"),
   // sortable: types.optional(types.string, "true"),
 
@@ -71,7 +71,7 @@ const TagAttrs = types.model({
 const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
-    type: "list",
+    type: 'list',
     update: types.optional(types.number, 1),
 
     regions: types.array(ListItemModel),
@@ -103,7 +103,7 @@ const Model = types
       val.forEach((v, idx) => self.addRegion(val, idx));
 
       val.forEach((v, idx) => {
-        v["_orig_idx"] = idx;
+        v['_orig_idx'] = idx;
       });
 
       self._value = val;
@@ -188,13 +188,13 @@ const Model = types
     },
   }));
 
-const ListModel = types.compose("ListModel", TagAttrs, Model);
+const ListModel = types.compose('ListModel', TagAttrs, Model);
 
 const DragHandle = sortableHandle(() => <div className="drag-handle"></div>);
 
 function isMobileDevice() {
   try {
-    return typeof window.orientation !== "undefined" || navigator.userAgent.indexOf("IEMobile") !== -1;
+    return typeof window.orientation !== 'undefined' || navigator.userAgent.indexOf('IEMobile') !== -1;
   } catch (e) {
     return false;
   }
@@ -204,7 +204,7 @@ const SortableText = SortableElement(({ item, value }) => {
   let classNames;
 
   if (isMobileDevice) {
-    classNames = "noselect";
+    classNames = 'noselect';
   }
 
   const map = {
@@ -216,11 +216,11 @@ const SortableText = SortableElement(({ item, value }) => {
   return (
     <div
       style={{
-        padding: "1em",
-        userSelect: "none",
-        display: "flex",
-        alignItems: "center",
-        background: value.selected ? item.sortedhighlightcolor : "transparent",
+        padding: '1em',
+        userSelect: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        background: value.selected ? item.sortedhighlightcolor : 'transparent',
       }}
       className={classNames}
       onClick={ev => {
@@ -262,9 +262,9 @@ const HtxListView = ({ item }) => {
   const props = {};
 
   if (isMobileDevice()) {
-    props["pressDelay"] = 100;
+    props['pressDelay'] = 100;
   } else {
-    props["distance"] = 7;
+    props['distance'] = 7;
   }
 
   return (
@@ -274,8 +274,8 @@ const HtxListView = ({ item }) => {
   );
 };
 
-const HtxList = inject("store")(observer(HtxListView));
+const HtxList = inject('store')(observer(HtxListView));
 
-Registry.addTag("list", ListModel, HtxList);
+Registry.addTag('list', ListModel, HtxList);
 
 export { ListModel, HtxList };

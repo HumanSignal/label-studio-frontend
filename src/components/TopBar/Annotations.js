@@ -1,14 +1,14 @@
-import { observer } from "mobx-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from "../../assets/icons";
-import { Space } from "../../common/Space/Space";
-import { Userpic } from "../../common/Userpic/Userpic";
-import { Block, Elem } from "../../utils/bem";
-import { isDefined, userDisplayName } from "../../utils/utilities";
-import { GroundTruth } from "../CurrentEntity/GroundTruth";
-import "./Annotations.styl";
-import { TimeAgo }  from "../../common/TimeAgo/TimeAgo";
-import { reaction } from "mobx";
+import { observer } from 'mobx-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from '../../assets/icons';
+import { Space } from '../../common/Space/Space';
+import { Userpic } from '../../common/Userpic/Userpic';
+import { Block, Elem } from '../../utils/bem';
+import { isDefined, userDisplayName } from '../../utils/utilities';
+import { GroundTruth } from '../CurrentEntity/GroundTruth';
+import './Annotations.styl';
+import { TimeAgo }  from '../../common/TimeAgo/TimeAgo';
+import { reaction } from 'mobx';
 
 export const Annotations = observer(({ store, annotationStore, commentStore }) => {
   const dropdownRef = useRef();

@@ -168,16 +168,11 @@ const RegionInput: FC<RegionInputProps> = ({
   step,
   ...props
 }) => {
-  const normalizeValue = (value: any, type: HTMLInputTypeAttribute) =>{
-    // if (type === "number") return Number(Number(value ?? 0).toFixed(2));
-    return value;
-  };
-
   const block = useBEM();
-  const [currentValue, setValue] = useState(normalizeValue(value, type));
+  const [currentValue, setValue] = useState(value);
 
   const updateValue = useCallback((value, safeValue = true) => {
-    const newValue = safeValue ? normalizeValue(value, type) : value;
+    const newValue = value;
 
     setValue(newValue);
     if (safeValue) onChangeValue?.(newValue);
@@ -192,7 +187,7 @@ const RegionInput: FC<RegionInputProps> = ({
       if (!value.match(/^([0-9,.]*)$/ig)) {
         safeValue = false;
       }
-  
+
       if (value.match(/(,|\.)$/)){
         value = value.replace(/,/, '.');
         safeValue = false;
@@ -221,7 +216,7 @@ const RegionInput: FC<RegionInputProps> = ({
         newValue -= step;
       }
 
-      updateValue(normalizeValue(newValue, type));
+      updateValue(newValue);
     }
   }, [currentValue, type, step]);
 
