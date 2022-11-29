@@ -19,6 +19,7 @@ const localStorageKeys = {
 const SelectionMap = types.model(
   {
     selected: types.optional(types.map(types.safeReference(AllRegionsType)), {}),
+    drawingSelected: types.optional(types.map(types.safeReference(AllRegionsType)), {}),
   }).views(self => {
   return {
     get keys() {
@@ -51,6 +52,14 @@ const SelectionMap = types.model(
     },
     afterUnselect(region) {
       region.afterUnselectRegion?.();
+    },
+    drawingSelect(region){
+      self.drawingSelected.put(region);
+    },
+    drawingUnselect(){
+      Array.from(self.drawingSelected.values()).forEach(region => {
+        self.drawingSelected.delete(region.id);
+      });
     },
     select(region) {
       self.selected.put(region);

@@ -85,7 +85,7 @@ const TagAttrs = types.model({
 
 const Model = types
   .model("ChannelModel", {
-    ...(isFF(FF_DEV_3391) ? { id: types.identifier } : {}),
+    ...(isFF(FF_DEV_3391) ? { id: types.identifier } : { id: types.optional(types.identifier, guidGenerator) }),
     type: "channel",
     children: Types.unionArray(["channel", "view"]),
     parentTypes: Types.tagsTypes(["TimeSeries"]),

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { isDefined } from "../../utils/utilities";
 import NodesConnector from "./NodesConnector";
 import AutoSizer from "react-virtualized-auto-sizer";
+import { isAlive } from "mobx-state-tree";
 
 const ArrowMarker = ({ id, color }) => {
   return (
@@ -264,6 +265,8 @@ let readinessTimer = null;
 const checkTagsAreReady = (tags, callback) => {
   clearTimeout(readinessTimer);
 
+  if (!isAlive(tags)) return;
+
   const ready = Array.from(tags.values()).reduce((res, tag) => {
     return res && (tag?.isReady ?? true);
   }, true);
@@ -285,6 +288,8 @@ const EnsureTagsReady = observer(
       checkTagsAreReady(tags, (readyState) => {
         setReady(readyState);
       });
+
+      return () => clearTimeout(readinessTimer);
     }, [taskData, tags]);
 
     return ready && (
