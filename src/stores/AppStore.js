@@ -599,6 +599,15 @@ export default types
       self.initialized = false;
     }
 
+    function resetAnnotationStore() {
+      const oldAnnotationStore = self.annotationStore;
+
+      if (oldAnnotationStore) {
+        oldAnnotationStore.beforeReset?.();
+        oldAnnotationStore.resetAnnotations?.();
+      }
+    }
+
     /**
      * Function to initilaze annotation store
      * Given annotations and predictions
@@ -732,6 +741,7 @@ export default types
       assignTask,
       assignConfig,
       resetState,
+      resetAnnotationStore,
       initializeStore,
       setHistory,
       attachHotkeys,
