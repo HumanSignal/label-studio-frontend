@@ -66,7 +66,6 @@ jobs:
         cp -r public/images build/ &&
         cp -r public/styles build/ &&
         npx serve -l tcp://localhost:3000 build &
-      if: github.event_name == 'push'
 
     - id: wait_for_npx_server
       name: "Wait for server"
