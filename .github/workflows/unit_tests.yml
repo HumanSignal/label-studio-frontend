@@ -1,8 +1,14 @@
-name: Unit Test
+name: Unit/Component Tests
 
 on:
-  push:
-    branches: [master, "**"]
+  workflow_call:
+    inputs:
+      sha:
+        required: true
+        type: string
+      branch_name:
+        required: true
+        type: string
 
 env:
   # increment it in case if you need to reset cache
@@ -12,9 +18,10 @@ env:
 jobs:
   build:
     name: "Run unit tests"
+    runs-on: ubuntu-latest
+
     # ci can be skipped with `[skip ci]` prefix in message
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    runs-on: ubuntu-latest
 
     steps:
     - name: "Checlout codebase"
