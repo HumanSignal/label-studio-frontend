@@ -103,6 +103,10 @@ export const AudioUltraRegionModel = types
         // }
       },
 
+      deleteRegion() {
+        self.annotation.deleteRegion(self);
+      },
+
       /**
        * Unselect audio region
        */
