@@ -334,13 +334,8 @@ export class Segment extends Events<SegmentEvents> {
     if (!this.updateable) return;
     if (this.waveform.playing) this.waveform.player.pause();
     this.selected = selected ?? !this.selected;
-    if (this.selected){
-      this.color.darken(0.5);
-
-      this.waveform.scrollToRegion(this.start);
-    } else {
-      this.color.reset();
-    }
+    if (this.selected) this.color.darken(0.5);
+    else this.color.reset();
 
     this.invoke("update", [this]);
     this.waveform.invoke("regionUpdated", [this]);
@@ -384,6 +379,10 @@ export class Segment extends Events<SegmentEvents> {
     this.end = newEnd;
     this.invoke("update", [this]);
     this.waveform.invoke("regionUpdated", [this]);
+  }
+
+  scrollToRegion() {
+    this.waveform.scrollToRegion(this.start);
   }
 
   remove() {

@@ -89,6 +89,7 @@ export const AudioUltraRegionModel = types
       selectRegion() {
         if (!self._ws_region) return;
         self._ws_region.handleSelected(true);
+        self._ws_region.scrollToRegion();
       },
 
       /**
