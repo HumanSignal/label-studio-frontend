@@ -53,9 +53,6 @@ jobs:
     - name: Install dependencies
       run: yarn install --frozen-lockfile
 
-    - name: Unit tests
-      run: yarn test && yarn test:coverage
-
     - name: Build distribution package
       timeout-minutes: 10
       run: yarn run build:module
