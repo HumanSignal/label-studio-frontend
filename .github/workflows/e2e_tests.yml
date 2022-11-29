@@ -51,9 +51,10 @@ jobs:
     - name: Print Yarn cache size
       run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
-    - uses: actions/download-artifact@v3
+    - name: "Download bundle"
+      uses: actions/download-artifact@v3
       with:
-        name: build ${{ github.event.pull_request.head.sha || github.sha }}
+        name: LSF-${{ github.event.pull_request.head.sha || github.sha }}
         path: build/
 
     # run http-server with build in background (will be killed after job ends)

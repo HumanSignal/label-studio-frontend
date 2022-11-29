@@ -64,7 +64,8 @@ jobs:
         NODE_ENV: 'production'
 
     # upload this build as artifact to current Action
-    - uses: actions/upload-artifact@v3
+    - name: Upload bundle
+      uses: actions/upload-artifact@v3
       with:
-        name: build ${{ github.event.pull_request.head.sha || github.sha }}
+        name: LSF-${{ github.event.pull_request.head.sha || github.sha }}
         path: build/
