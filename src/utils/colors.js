@@ -224,7 +224,7 @@ export function hexToRGBA(hex, opacity) {
  * @param {*} value
  */
 export function colorToRGBA(value, alpha) {
-  if (typeof value === 'string' && colorNames[value.toLowerCase()]) {
+  if (typeof value === 'string') {
     const hexColor = colorNames[value.toLowerCase()];
 
     return hexToRGBA(hexColor, alpha);
@@ -336,7 +336,7 @@ export function colorToRGBAArray(value) {
       colorRGBArray.push(1);
       return colorRGBArray.map(x => +x);
     }
-    if (typeof value === 'string' && colorNames[value.toLowerCase()]) {
+    if (typeof value === 'string') {
       const hexColor = colorNames[value.toLowerCase()];
       const colorRGBArray = hexToRGBArray(hexColor);
 
