@@ -103,7 +103,6 @@ const TimeTraveller = types
         changesDuringFreeze = false;
       },
 
-
       reinit(force = true) {
         self.history = [getSnapshot(targetStore)];
         self.undoIdx = 0;
