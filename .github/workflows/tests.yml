@@ -47,8 +47,8 @@ jobs:
       uses: codecov/codecov-action@v3.1.1
       with:
         fail_ci_if_error: true
-        files: ./label-studio-frontend/coverage/coverage.xml
-        verbose: true
+        # files: ./label-studio-frontend/coverage/coverage.xml
+        # verbose: true
         # name: codecov-lsf-${{ matrix.python-version }}
         # token: ${{ secrets.CODECOV_TOKEN }}
         # For testing purposes
