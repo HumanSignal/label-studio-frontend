@@ -94,6 +94,7 @@ const TimeTraveller = types
 
           return;
         }
+        if (Object.keys(recorder).length < 1) return;
 
         // mutate history to trigger history-related UI items
         self.history = self.history.slice(0, self.undoIdx + !replaceNextUndoState).concat(recorder);
@@ -101,6 +102,7 @@ const TimeTraveller = types
         replaceNextUndoState = false;
         changesDuringFreeze = false;
       },
+
 
       reinit(force = true) {
         self.history = [getSnapshot(targetStore)];
