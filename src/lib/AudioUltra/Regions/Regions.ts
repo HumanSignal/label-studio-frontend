@@ -131,7 +131,7 @@ export class Regions {
     this.visualizer.draw(true);
   }
 
-  removeRegion(regionId: string) {
+  removeRegion(regionId: string, render = true) {
     const region = this.findRegion(regionId);
 
     if (this.deleteable && region?.deleteable) {
@@ -139,7 +139,9 @@ export class Regions {
       this.regions = this.regions.filter(r => r !== region);
     }
 
-    this.redraw();
+    if (render) {
+      this.redraw();
+    }
   }
 
   destroy() {

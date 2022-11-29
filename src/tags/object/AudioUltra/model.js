@@ -102,7 +102,7 @@ export const AudioModel = types.compose(
       },
 
       states() {
-        return self.annotation.toNames.get(self.name);
+        return self.annotation?.toNames.get(self.name) || [];
       },
 
       activeStates() {
@@ -125,6 +125,7 @@ export const AudioModel = types.compose(
     }))
     .actions(self => {
       let dispose;
+      let updateRegionTimeout;
 
       return {
         afterCreate() {
@@ -151,10 +152,13 @@ export const AudioModel = types.compose(
 
         requestWSUpdate() {
           if (!self._ws) return;
+          if (updateRegionTimeout) {
+            clearTimeout(updateRegionTimeout);
+          }
 
-          setTimeout(() => {
+          updateRegionTimeout = setTimeout(() => {
             self._ws.regions.redraw();
-          });
+          }, 10);
         },
 
         onReady() {
@@ -366,7 +370,6 @@ export const AudioModel = types.compose(
         },
 
         createWsRegion(region) {
-
           const options = region.wsRegionOptions();
 
           options.labels = region.labels?.length ? region.labels : undefined;
@@ -398,6 +401,9 @@ export const AudioModel = types.compose(
 
         beforeDestroy() {
           try {
+            if (updateRegionTimeout) {
+              clearTimeout(updateRegionTimeout);
+            }
             if (dispose) dispose();
             if (isDefined(self._ws)) {
               self._ws.destroy();
