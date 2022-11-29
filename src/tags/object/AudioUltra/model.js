@@ -127,6 +127,11 @@ export const AudioModel = types.compose(
     .actions(self => {
       let dispose;
 
+      const Super = {
+        triggerSyncPlay: self.triggerSyncPlay,
+        triggerSyncPause: self.triggerSyncPause,
+      };
+
       return {
         afterCreate() {
           dispose = observe(self, 'activeLabel', () => {
@@ -160,6 +165,22 @@ export const AudioModel = types.compose(
 
         onReady() {
           self.setReady(true);
+        },
+
+        triggerSyncPlay() {
+          if (self.syncedObject) {
+            Super.triggerSyncPlay();
+          } else {
+            self.handleSyncPlay();
+          }
+        },
+
+        triggerSyncPause() {
+          if (self.syncedObject) {
+            Super.triggerSyncPause();
+          } else {
+            self.handleSyncPause();
+          }
         },
 
         handleSyncPlay() {

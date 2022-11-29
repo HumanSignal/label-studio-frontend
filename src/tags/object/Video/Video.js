@@ -102,112 +102,133 @@ const Model = types
       return states && states.length > 0;
     },
   }))
-  .actions(self => ({
-    afterCreate() {
-      const { framerate } = self;
+  .actions(self => {
+    const Super = {
+      triggerSyncPlay: self.triggerSyncPlay,
+      triggerSyncPause: self.triggerSyncPause,
+    };
 
-      if (!framerate) self.framerate = 24;
-      else if (framerate < 1) self.framerate = 1 / framerate;
-    },
+    return {
+      afterCreate() {
+        const { framerate } = self;
 
-    handleSyncSeek(time) {
-      if (self.ref.current) {
-        self.ref.current.currentTime = time;
-      }
-    },
+        if (!framerate) self.framerate = 24;
+        else if (framerate < 1) self.framerate = 1 / framerate;
+      },
 
-    handleSyncPlay() {
-      if (!self.isCurrentlyPlaying) {
-        self.isCurrentlyPlaying = true;
-        self.ref.current?.play();
-      }
-    },
-
-    handleSyncPause() {
-      if (self.isCurrentlyPlaying) {
-        self.isCurrentlyPlaying = false;
-        self.ref.current?.pause();
-      }
-    },
-
-    handleSyncSpeed(speed) {
-      self.speed = speed;
-    },
-
-    handleSyncDuration(duration) {
-      if(self.ref.current) {
-        console.log("handleSyncDuration", self.ref.current, self.framerate, duration);
-        self.setLength(duration * self.framerate);
-      }
-    },
-
-    handleSeek() {
-      if (self.ref.current) {
-        console.log("handleSeek:Video", self.ref.current.currentTime);
-        self.triggerSyncSeek(self.ref.current.currentTime);
-      }
-    },
-
-    needsUpdate() {
-      if (self.sync) {
-        if (self.syncedObject?.type?.startsWith("audio")) {
-          self.muted = true;
+      triggerSyncPlay() {
+        if (self.syncedObject) {
+          Super.triggerSyncPlay();
+        } else {
+          self.handleSyncPlay();
         }
-      }
-    },
+      },
 
-    setLength(length) {
-      self.length = length;
-    },
+      triggerSyncPause() {
+        if (self.syncedObject) {
+          Super.triggerSyncPause();
+        } else {
+          self.handleSyncPause();
+        }
+      },
 
-    setOnlyFrame(frame) {
-      if (self.frame !== frame) {
-        self.frame = frame;
-      }
-    },
+      handleSyncSeek(time) {
+        if (self.ref.current) {
+          self.ref.current.currentTime = time;
+        }
+      },
 
-    setFrame(frame) {
-      if (self.frame !== frame && self.framerate) {
-        self.frame = frame;
-        self.ref.current.currentTime = frame / self.framerate;
-      }
-    },
+      handleSyncPlay() {
+        if (!self.isCurrentlyPlaying) {
+          self.isCurrentlyPlaying = true;
+          self.ref.current?.play();
+        }
+      },
 
-    addRegion(data) {
-      const control = self.videoControl() ?? self.control();
+      handleSyncPause() {
+        if (self.isCurrentlyPlaying) {
+          self.isCurrentlyPlaying = false;
+          self.ref.current?.pause();
+        }
+      },
 
-      const sequence = [
-        {
-          frame: self.frame,
-          enabled: true,
-          rotation: 0,
-          ...data,
-        },
-      ];
+      handleSyncSpeed(speed) {
+        self.speed = speed;
+      },
 
-      if (!control) {
-        console.error("NO CONTROL");
-        return;
-      }
+      handleSyncDuration(duration) {
+        if(self.ref.current) {
+          self.setLength(duration * self.framerate);
+        }
+      },
 
-      const area = self.annotation.createResult({ sequence }, {}, control, self);
+      handleSeek() {
+        if (self.ref.current) {
+          self.triggerSyncSeek(self.ref.current.currentTime);
+        }
+      },
 
-      // add labels
-      self.activeStates().forEach(state => {
-        area.setValue(state);
-      });
+      needsUpdate() {
+        if (self.sync) {
+          if (self.syncedObject?.type?.startsWith("audio")) {
+            self.muted = true;
+          }
+        }
+      },
 
-      return area;
-    },
+      setLength(length) {
+        self.length = length;
+      },
 
-    deleteRegion(id) {
-      self.findRegion(id)?.deleteRegion();
-    },
+      setOnlyFrame(frame) {
+        if (self.frame !== frame) {
+          self.frame = frame;
+        }
+      },
 
-    findRegion(id) {
-      return self.regs.find(reg => reg.cleanId === id);
-    },
-  }));
+      setFrame(frame) {
+        if (self.frame !== frame && self.framerate) {
+          self.frame = frame;
+          self.ref.current.currentTime = frame / self.framerate;
+        }
+      },
+
+      addRegion(data) {
+        const control = self.videoControl() ?? self.control();
+
+        const sequence = [
+          {
+            frame: self.frame,
+            enabled: true,
+            rotation: 0,
+            ...data,
+          },
+        ];
+
+        if (!control) {
+          console.error("NO CONTROL");
+          return;
+        }
+
+        const area = self.annotation.createResult({ sequence }, {}, control, self);
+
+        // add labels
+        self.activeStates().forEach(state => {
+          area.setValue(state);
+        });
+
+        return area;
+      },
+
+      deleteRegion(id) {
+        self.findRegion(id)?.deleteRegion();
+      },
+
+      findRegion(id) {
+        return self.regs.find(reg => reg.cleanId === id);
+      },
+    };
+  });
 
 export const VideoModel = types.compose("VideoModel",
   SyncMixin,

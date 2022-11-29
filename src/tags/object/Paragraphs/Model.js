@@ -13,11 +13,12 @@ import styles from "./Paragraphs.module.scss";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import { isValidObjectURL } from "../../../utils/utilities";
-import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, isFF } from "../../../utils/feature-flags";
+import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2715, FF_DEV_2918, isFF } from "../../../utils/feature-flags";
 import { SyncMixin } from "../../../mixins/SyncMixin";
 
 
 const isFFDev2461 = isFF(FF_DEV_2461);
+const isFFDev2715 = isFF(FF_DEV_2715);
 
 /**
  * The `Paragraphs` tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
@@ -85,9 +86,9 @@ const Model = types
       return getRoot(self);
     },
 
-    get syncedAudio() {
-      if (!isFFDev2461) return false;
-      return self.syncedObject?.type?.startsWith("audio");
+    get syncedAudioVideo() {
+      if (!isFFDev2461 || !isFFDev2715) return false;
+      return self.syncedObject?.type?.startsWith("audio") || self.syncedObject?.type?.startsWith("video");
     },
 
     get audio() {
@@ -239,7 +240,7 @@ const Model = types
       },
 
       handlePause() {
-        if (self.syncedAudio) {
+        if (self.syncedAudioVideo) {
           self.triggerSyncPause();
         } else {
           self.handleSyncPause();
@@ -247,7 +248,7 @@ const Model = types
       },
 
       handlePlay() {
-        if (self.syncedAudio) {
+        if (self.syncedAudioVideo) {
           self.triggerSyncPlay();
         } else {
           self.handleSyncPlay();
@@ -255,7 +256,7 @@ const Model = types
       },
 
       handleSeek(time) {
-        if (self.syncedAudio) {
+        if (self.syncedAudioVideo) {
           self.triggerSyncSeek(time);
         } else {
           self.handleSyncSeek(time);
@@ -263,7 +264,7 @@ const Model = types
       },
 
       muteSelfWhenSynced() {
-        if (self.syncedAudio && audioRef.current) {
+        if (self.syncedAudioVideo && audioRef.current) {
           audioRef.current.muted = true;
         }
       },

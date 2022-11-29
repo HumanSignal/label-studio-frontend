@@ -342,7 +342,6 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     set currentTime(time: number) {
       const video = videoRef.current;
 
-      console.log('set currentTime', time);
       if (video && time !== this.currentTime) {
         video.currentTime = time;
       }

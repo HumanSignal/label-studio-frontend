@@ -235,9 +235,8 @@ const HtxVideoView = ({ item, store }) => {
 
   // TIMELINE EVENT HANDLERS
   const handlePlay = useCallback(() => {
-    setPlaying((playing) => {
+    setPlaying(() => {
       if (item.isCurrentlyPlaying === false) {
-        // item.ref.current.play();
         item.triggerSyncPlay();
         return true;
       }
@@ -246,9 +245,8 @@ const HtxVideoView = ({ item, store }) => {
   }, []);
 
   const handlePause = useCallback(() => {
-    setPlaying((playing) => {
+    setPlaying(() => {
       if (item.isCurrentlyPlaying === true) {
-        // item.ref.current.pause();
         item.triggerSyncPause();
         return false;
       }
