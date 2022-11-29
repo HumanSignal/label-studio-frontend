@@ -1,8 +1,8 @@
-import { observe } from "mobx";
-import { types } from "mobx-state-tree";
+import { observe } from 'mobx';
+import { types } from 'mobx-state-tree';
 
-import { EventInvoker } from "../utils/events";
-import { TimeSync, TimeSyncSubscriber } from "../utils/TimeSync";
+import { EventInvoker } from '../utils/events';
+import { TimeSync, TimeSyncSubscriber } from '../utils/TimeSync';
 
 interface SyncMixinProps {
   events: EventInvoker;
@@ -32,10 +32,10 @@ const SyncMixin = types
   .actions((self) => ({
     // *** abstract ***
     needsUpdate() {},
-    handleSyncPlay() { console.error("handleSyncPlay should be implemented"); },
-    handleSyncPause() { console.error("handleSyncPause should be implemented"); },
-    handleSyncSeek(time: number) { console.error("handleSyncSeek should be implemented"); },
-    handleSyncSpeed(speed: number) { console.error("handleSyncSpeed should be implemented"); },
+    handleSyncPlay() { console.error('handleSyncPlay should be implemented'); },
+    handleSyncPause() { console.error('handleSyncPause should be implemented'); },
+    handleSyncSeek() { console.error('handleSyncSeek should be implemented'); },
+    handleSyncSpeed() { console.error('handleSyncSpeed should be implemented'); },
     attachObject() {
       self.syncedObject = (self as any).annotation?.names?.get(self.sync);
     },

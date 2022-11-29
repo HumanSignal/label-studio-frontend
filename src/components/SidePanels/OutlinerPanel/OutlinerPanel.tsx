@@ -1,10 +1,10 @@
-import { observer } from "mobx-react";
-import { FC, useCallback } from "react";
-import { Elem } from "../../../utils/bem";
-import { PanelBase, PanelProps } from "../PanelBase";
-import { OutlinerTree } from "./OutlinerTree";
-import { ViewControls } from "./ViewControls";
-import "./OutlinerPanel.styl";
+import { observer } from 'mobx-react';
+import { FC, useCallback } from 'react';
+import { Elem } from '../../../utils/bem';
+import { PanelBase, PanelProps } from '../PanelBase';
+import { OutlinerTree } from './OutlinerTree';
+import { ViewControls } from './ViewControls';
+import './OutlinerPanel.styl';
 
 interface OutlinerPanelProps extends PanelProps {
   regions: any;

@@ -1,28 +1,28 @@
-import React, { useCallback, useContext, useMemo, useRef, useState } from "react";
-import { Group, Image, Layer, Shape } from "react-konva";
-import { observer } from "mobx-react";
-import { getParent, getRoot, hasParent, types } from "mobx-state-tree";
+import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { Group, Image, Layer, Shape } from 'react-konva';
+import { observer } from 'mobx-react';
+import { getParent, getRoot, hasParent, types } from 'mobx-state-tree';
 
-import Canvas from "../utils/canvas";
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
-import Registry from "../core/Registry";
-import WithStatesMixin from "../mixins/WithStates";
-import { ImageModel } from "../tags/object/Image";
-import { LabelOnMask } from "../components/ImageView/LabelOnRegion";
-import { guidGenerator } from "../core/Helpers";
-import { AreaMixin } from "../mixins/AreaMixin";
-import { colorToRGBAArray, rgbArrayToHex } from "../utils/colors";
-import { defaultStyle } from "../core/Constants";
-import { AliveRegion } from "./AliveRegion";
-import { KonvaRegionMixin } from "../mixins/KonvaRegion";
-import { RegionWrapper } from "./RegionWrapper";
-import { Geometry } from "../components/RelationsOverlay/Geometry";
-import { ImageViewContext } from "../components/ImageView/ImageViewContext";
-import IsReadyMixin from "../mixins/IsReadyMixin";
+import Canvas from '../utils/canvas';
+import NormalizationMixin from '../mixins/Normalization';
+import RegionsMixin from '../mixins/Regions';
+import Registry from '../core/Registry';
+import WithStatesMixin from '../mixins/WithStates';
+import { ImageModel } from '../tags/object/Image';
+import { LabelOnMask } from '../components/ImageView/LabelOnRegion';
+import { guidGenerator } from '../core/Helpers';
+import { AreaMixin } from '../mixins/AreaMixin';
+import { colorToRGBAArray, rgbArrayToHex } from '../utils/colors';
+import { defaultStyle } from '../core/Constants';
+import { AliveRegion } from './AliveRegion';
+import { KonvaRegionMixin } from '../mixins/KonvaRegion';
+import { RegionWrapper } from './RegionWrapper';
+import { Geometry } from '../components/RelationsOverlay/Geometry';
+import { ImageViewContext } from '../components/ImageView/ImageViewContext';
+import IsReadyMixin from '../mixins/IsReadyMixin';
 
 const highlightOptions = {
-  shadowColor: "red",
+  shadowColor: 'red',
   shadowBlur: 1,
   shadowOffsetY: 2,
   shadowOffsetX: 2,
@@ -30,9 +30,9 @@ const highlightOptions = {
 };
 
 const Points = types
-  .model("Points", {
+  .model('Points', {
     id: types.optional(types.identifier, guidGenerator),
-    type: types.optional(types.enumeration(["add", "eraser"]), "add"),
+    type: types.optional(types.enumeration(['add', 'eraser']), 'add'),
     points: types.array(types.number),
     relativePoints: types.array(types.number),
 
@@ -58,7 +58,7 @@ const Points = types
       return self.parent?.parent;
     },
     get compositeOperation() {
-      return self.type === "add" ? "source-over" : "destination-out";
+      return self.type === 'add' ? 'source-over' : 'destination-out';
     },
   }))
   .actions(self => {
@@ -115,10 +115,10 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
 
-    type: "brushregion",
+    type: 'brushregion',
     object: types.late(() => types.reference(ImageModel)),
 
-    coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
+    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
 
     rle: types.frozen(),
 
@@ -145,7 +145,7 @@ const Model = types
     // points: types.array(types.array(types.number)),
     // eraserpoints: types.array(types.array(types.number)),
 
-    mode: "brush",
+    mode: 'brush',
 
     needsUpdate: 1,
     hideable: true,
@@ -235,7 +235,7 @@ const Model = types
           self.imageData = null;
         } else {
           const canvas = self.layerRef.toCanvas();
-          const ctx = canvas.getContext("2d");
+          const ctx = canvas.getContext('2d');
 
           self.imageData = ctx.getImageData(0, 0, self.layerRef.canvas.width, self.layerRef.canvas.height);
         }
@@ -263,8 +263,8 @@ const Model = types
           }
         }
         ctx.lineTo(...self.prepareCoords([x, y]));
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.lineWidth = pathPoints.strokeWidth * self.scaleX * self.parent.stageScale;
         ctx.strokeStyle = self.strokeColor;
         ctx.globalCompositeOperation = pathPoints.compositeOperation;
@@ -371,7 +371,7 @@ const Model = types
        */
       serialize(options) {
         const object = self.object;
-        const value = { format: "rle" };
+        const value = { format: 'rle' };
 
         if (options?.fast) {
           value.rle = self.rle;
@@ -399,7 +399,7 @@ const Model = types
   });
 
 const BrushRegionModel = types.compose(
-  "BrushRegionModel",
+  'BrushRegionModel',
   WithStatesMixin,
   RegionsMixin,
   NormalizationMixin,
@@ -417,8 +417,8 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
     for (let i = 0; i < points.length / 2; i++) {
       ctx.lineTo(points[2 * i], points[2 * i + 1]);
     }
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.lineWidth = strokeWidth;
     ctx.strokeStyle = strokeColor;
     ctx.globalCompositeOperation = compositeOperation;
@@ -446,8 +446,8 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
         drawLine(context, {
           points: points.points,
           strokeWidth: points.strokeWidth,
-          strokeColor: points.type === "eraser" ? "#ffffff" : shape.colorKey,
-          compositeOperation: "source-over",
+          strokeColor: points.type === 'eraser' ? '#ffffff' : shape.colorKey,
+          compositeOperation: 'source-over',
         });
       });
     },
@@ -524,7 +524,7 @@ const HtxBrushView = ({ item }) => {
       let highlightEl;
 
       if (highlighted) {
-        highlightEl = layer.findOne(".highlight");
+        highlightEl = layer.findOne('.highlight');
         highlightEl.hide();
       }
       layer.draw();
@@ -586,10 +586,10 @@ const HtxBrushView = ({ item }) => {
           onMouseOver={() => {
             if (store.annotationStore.selected.relationMode) {
               item.setHighlight(true);
-              stage.container().style.cursor = "crosshair";
+              stage.container().style.cursor = 'crosshair';
             } else {
               // no tool selected
-              if (!item.parent.getToolsManager().findSelectedTool()) stage.container().style.cursor = "pointer";
+              if (!item.parent.getToolsManager().findSelectedTool()) stage.container().style.cursor = 'pointer';
             }
           }}
           onMouseOut={() => {
@@ -598,7 +598,7 @@ const HtxBrushView = ({ item }) => {
             }
 
             if (!item.parent?.getToolsManager().findSelectedTool()) {
-              stage.container().style.cursor = "default";
+              stage.container().style.cursor = 'default';
             }
           }}
           onClick={e => {
@@ -611,7 +611,7 @@ const HtxBrushView = ({ item }) => {
             if (item.parent.getToolsManager().findSelectedTool()) return;
 
             if (store.annotationStore.selected.relationMode) {
-              stage.container().style.cursor = "default";
+              stage.container().style.cursor = 'default';
             }
 
             item.setHighlight(false);
@@ -650,7 +650,7 @@ const HtxBrushView = ({ item }) => {
         </Group>
       </Layer>
       <Layer
-        id={item.cleanId+"_labels"}
+        id={item.cleanId+'_labels'}
         ref={ref => {
           if (ref) {
             ref.canvas._canvas.style.opacity = item.opacity;
@@ -668,7 +668,7 @@ const HtxBrushView = ({ item }) => {
 
 const HtxBrush = AliveRegion(HtxBrushView, { renderHidden: true });
 
-Registry.addTag("brushregion", BrushRegionModel, HtxBrush);
-Registry.addRegionType(BrushRegionModel, "image", value => value.rle || value.touches);
+Registry.addTag('brushregion', BrushRegionModel, HtxBrush);
+Registry.addRegionType(BrushRegionModel, 'image', value => value.rle || value.touches);
 
 export { BrushRegionModel, HtxBrush };

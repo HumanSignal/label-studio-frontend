@@ -1,4 +1,4 @@
-name: "Component/Unit Tests"
+name: "ESLint"
 
 on:
   workflow_call:
@@ -17,7 +17,7 @@ env:
 
 jobs:
   run:
-    name: "Unit Tests"
+    name: Run ESLint
     runs-on: ubuntu-latest
 
     # ci can be skipped with `[skip ci]` prefix in message
@@ -47,15 +47,6 @@ jobs:
         restore-keys: |
           yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
-    - name: Run unit tests
-      run: yarn install --frozen-lockfile && yarn test:coverage
+    - run: yarn install --frozen-lockfile && yarn lint
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3.1.1
-      with:
-        fail_ci_if_error: true
-        # files: ./label-studio-frontend/coverage/coverage.xml
-        # verbose: true
-        # name: codecov-lsf-${{ matrix.python-version }}
-        token: ${{ secrets.CODECOV_TOKEN }}
 

@@ -1,8 +1,8 @@
-import { destroy, types } from "mobx-state-tree";
-import { guidGenerator } from "../core/Helpers";
-import Result from "../regions/Result";
-import { defaultStyle } from "../core/Constants";
-import { PER_REGION_MODES } from "./PerRegion";
+import { destroy, types } from 'mobx-state-tree';
+import { guidGenerator } from '../core/Helpers';
+import Result from '../regions/Result';
+import { defaultStyle } from '../core/Constants';
+import { PER_REGION_MODES } from './PerRegion';
 
 let ouid = 1;
 
@@ -16,11 +16,11 @@ export const AreaMixin = types
   .views(self => ({
     // self id without annotation id added to uniquiness across all the tree
     get cleanId() {
-      return self.id.replace(/#.*/, "");
+      return self.id.replace(/#.*/, '');
     },
 
     get labeling() {
-      return self.results.find(r => r.type.endsWith("labels") && r.hasValue);
+      return self.results.find(r => r.type.endsWith('labels') && r.hasValue);
     },
 
     get emptyLabel() {
@@ -28,7 +28,7 @@ export const AreaMixin = types
     },
 
     get texting() {
-      return self.results.find(r => r.type === "textarea" && r.hasValue);
+      return self.results.find(r => r.type === 'textarea' && r.hasValue);
     },
 
     get tag() {
@@ -41,8 +41,8 @@ export const AreaMixin = types
       if (!labels) return false;
       // label can contain comma, so check for full match first
       if (labels.includes(value)) return true;
-      if (value.includes(",")) {
-        return value.split(",").some(v => labels.includes(v));
+      if (value.includes(',')) {
+        return value.split(',').some(v => labels.includes(v));
       }
       return false;
     },
@@ -69,13 +69,13 @@ export const AreaMixin = types
 
     getLabelText(joinstr) {
       const label = self.labeling;
-      const text = self.texting?.mainValue?.[0]?.replace(/\n\r|\n/, " ");
+      const text = self.texting?.mainValue?.[0]?.replace(/\n\r|\n/, ' ');
       const labelNames = label?.getSelectedString(joinstr);
       const labelText = [];
 
       if (labelNames) labelText.push(labelNames);
       if (text) labelText.push(text);
-      return labelText.join(": ");
+      return labelText.join(': ');
     },
 
     get parent() {

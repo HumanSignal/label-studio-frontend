@@ -1,10 +1,10 @@
-import { Component, createRef } from "react";
-import { createPortal } from "react-dom";
-import { LsRemove } from "../../assets/icons";
-import { BemWithSpecifiContext, cn } from "../../utils/bem";
-import { aroundTransition } from "../../utils/transition";
-import { Button } from "../Button/Button";
-import "./Modal.styl";
+import { Component, createRef } from 'react';
+import { createPortal } from 'react-dom';
+import { LsRemove } from '../../assets/icons';
+import { BemWithSpecifiContext, cn } from '../../utils/bem';
+import { aroundTransition } from '../../utils/transition';
+import { Button } from '../Button/Button';
+import './Modal.styl';
 
 const { Block, Elem } = BemWithSpecifiContext();
 
@@ -19,7 +19,7 @@ export class Modal extends Component {
       body: props.body,
       footer: props.footer,
       visible: props.animateAppearance ? false : props.visible ?? false,
-      transition: props.visible ? "visible" : null,
+      transition: props.visible ? 'visible' : null,
     };
   }
 
@@ -38,14 +38,14 @@ export class Modal extends Component {
       this.setState({ visible: true }, async () => {
         onShow?.();
         this.props.onShow?.();
-        await this.transition("appear", resolve);
+        await this.transition('appear', resolve);
       });
     });
   }
 
   async hide(onHidden) {
     return new Promise(resolve => {
-      this.transition("disappear", () => {
+      this.transition('disappear', () => {
         this.setState({ visible: false }, () => {
           this.props.onHide?.();
           resolve();
@@ -76,7 +76,7 @@ export class Modal extends Component {
               <Modal.Header>
                 <Elem name="title">{this.state.title}</Elem>
                 {this.props.allowClose !== false && (
-                  <Elem tag={Button} name="close" type="text" style={{ color: "0099FF" }} icon={<LsRemove />} />
+                  <Elem tag={Button} name="close" type="text" style={{ color: '0099FF' }} icon={<LsRemove />} />
                 )}
               </Modal.Header>
             )}
@@ -95,11 +95,11 @@ export class Modal extends Component {
   onClickOutside = e => {
     const { closeOnClickOutside } = this.props;
     const isInModal = this.modalRef.current.contains(e.target);
-    const content = cn("modal")
-      .elem("content")
+    const content = cn('modal')
+      .elem('content')
       .closest(e.target);
-    const close = cn("modal")
-      .elem("close")
+    const close = cn('modal')
+      .elem('close')
       .closest(e.target);
 
     if ((isInModal && close) || (content === null && closeOnClickOutside !== false)) {
@@ -123,7 +123,7 @@ export class Modal extends Component {
         }),
       afterTransition: async () =>
         new Promise(resolve => {
-          this.setState({ transition: type === "appear" ? "visible" : null }, () => {
+          this.setState({ transition: type === 'appear' ? 'visible' : null }, () => {
             onFinish?.();
             resolve();
           });
@@ -133,16 +133,16 @@ export class Modal extends Component {
 
   get transitionClass() {
     switch (this.state.transition) {
-      case "before-appear":
-        return "before-appear";
-      case "appear":
-        return "appear before-appear";
-      case "before-disappear":
-        return "before-disappear";
-      case "disappear":
-        return "disappear before-disappear";
-      case "visible":
-        return "visible";
+      case 'before-appear':
+        return 'before-appear';
+      case 'appear':
+        return 'appear before-appear';
+      case 'before-disappear':
+        return 'before-disappear';
+      case 'disappear':
+        return 'disappear before-disappear';
+      case 'visible':
+        return 'visible';
     }
     return null;
   }

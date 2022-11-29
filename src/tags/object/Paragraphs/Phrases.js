@@ -1,8 +1,8 @@
-import { observer } from "mobx-react";
-import { getRoot } from "mobx-state-tree";
-import { Button } from "antd";
-import { PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
-import styles from "./Paragraphs.module.scss";
+import { observer } from 'mobx-react';
+import { getRoot } from 'mobx-state-tree';
+import { Button } from 'antd';
+import { PauseCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import styles from './Paragraphs.module.scss';
 
 export const Phrases = observer(({ item }) => {
   const cls = item.layoutClasses;
@@ -20,7 +20,7 @@ export const Phrases = observer(({ item }) => {
     if (getRoot(item).settings.showLineNumbers) classNames.push(styles.numbered);
 
     return (
-      <div key={`${item.name}-${idx}`} className={classNames.join(" ")} style={style.phrase}>
+      <div key={`${item.name}-${idx}`} className={classNames.join(' ')} style={style.phrase}>
         {isContentVisible && withAudio && !isNaN(v.start) && (
           <Button
             type="text"
