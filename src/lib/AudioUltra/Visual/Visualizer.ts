@@ -186,7 +186,12 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   draw(dry = false) {
     if (this.isDestroyed) return;
-    if (this.drawing) return console.warn("Concurrent render detected");
+    if (this.drawing) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn("Concurrent render detected");
+      }
+      return;
+    }
 
     this.drawing = true;
 
