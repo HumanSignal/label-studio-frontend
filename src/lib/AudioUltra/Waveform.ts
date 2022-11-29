@@ -308,8 +308,12 @@ export class Waveform extends Events<WaveformEventTypes> {
     return this.regions.addRegion(options, render);
   }
 
-  removeRegion(regionId: string) {
-    this.regions.removeRegion(regionId);
+  updateRegion(options: RegionOptions, render = true) {
+    return this.regions.updateRegion(options, render);
+  }
+
+  removeRegion(regionId: string, render = true) {
+    this.regions.removeRegion(regionId, render);
   }
 
   getLayers() {
