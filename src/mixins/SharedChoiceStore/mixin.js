@@ -1,6 +1,6 @@
-import { types } from "mobx-state-tree";
-import Types from "../../core/Types";
-import { SharedStoreModel } from "./model";
+import { types } from 'mobx-state-tree';
+import Types from '../../core/Types';
+import { SharedStoreModel } from './model';
 
 /**
  * StoreIds and Stores act as a cache.
@@ -44,7 +44,7 @@ const Store = types.optional(types.maybeNull(types.late(() => types.reference(Sh
  * Shared Stores live on the AnnotationStore level meaning that even if the user switches between annotations or
  * create new ones, they will all use the same shared store decreasing the memory footprint and computation time.
  */
-export const SharedStoreMixin = types.model("SharedStoreMixin", {
+export const SharedStoreMixin = types.model('SharedStoreMixin', {
   sharedstore: SharedStoreID,
   store: Store,
 })
@@ -74,7 +74,7 @@ export const SharedStoreMixin = types.model("SharedStoreMixin", {
     afterCreate() {
       if (!self.store) {
         const store = Stores.get(self.storeId);
-        const annotationStore = Types.getParentOfTypeString(self, "AnnotationStore");
+        const annotationStore = Types.getParentOfTypeString(self, 'AnnotationStore');
 
         annotationStore.addSharedStore(store);
         StoreIds.add(self.storeId);
@@ -98,7 +98,7 @@ export const SharedStoreMixin = types.model("SharedStoreMixin", {
   });
 
 export const destroy = () => {
-  console.log("destroying");
+  console.log('destroying');
   Stores.clear();
   StoreIds.clear();
 };

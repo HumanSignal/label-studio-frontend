@@ -1,15 +1,15 @@
-import React from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import BaseTool from "./Base";
-import ToolMixin from "../mixins/Tool";
-import Canvas from "../utils/canvas";
-import { clamp, findClosestParent } from "../utils/utilities";
-import { DrawingTool } from "../mixins/DrawingTool";
-import { Tool } from "../components/Toolbar/Tool";
-import { Range } from "../common/Range/Range";
-import { NodeViews } from "../components/Node/Node";
+import BaseTool from './Base';
+import ToolMixin from '../mixins/Tool';
+import Canvas from '../utils/canvas';
+import { clamp, findClosestParent } from '../utils/utilities';
+import { DrawingTool } from '../mixins/DrawingTool';
+import { Tool } from '../components/Toolbar/Tool';
+import { Range } from '../common/Range/Range';
+import { NodeViews } from '../components/Node/Node';
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 50;
@@ -47,10 +47,10 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model("BrushTool", {
+  .model('BrushTool', {
     strokeWidth: types.optional(types.number, 15),
-    group: "segmentation",
-    shortcut: "B",
+    group: 'segmentation',
+    shortcut: 'B',
     smart: true,
     isDrawingTool: true,
   })
@@ -65,8 +65,8 @@ const _Tool = types
     },
     get tagTypes() {
       return {
-        stateTypes: "brushlabels",
-        controlTagTypes: ["brushlabels", "brush"],
+        stateTypes: 'brushlabels',
+        controlTagTypes: ['brushlabels', 'brush'],
       };
     },
     get controls() {
@@ -88,10 +88,10 @@ const _Tool = types
     },
     get extraShortcuts() {
       return {
-        "[": ["Decrease size", () => {
+        '[': ['Decrease size', () => {
           self.setStroke(clamp(self.strokeWidth - 5, MIN_SIZE, MAX_SIZE));
         }],
-        "]": ["Increase size", () => {
+        ']': ['Increase size', () => {
           self.setStroke(clamp(self.strokeWidth + 5, MIN_SIZE, MAX_SIZE));
         }],
       };
@@ -105,12 +105,12 @@ const _Tool = types
         const region = self.createFromJSON(json, controlTag);
 
         if (json.value.points) {
-          const p = region.addPoints({ type: "add" });
+          const p = region.addPoints({ type: 'add' });
 
           p.addPoints(json.value.points);
         }
 
-        if (json.value.format === "rle") {
+        if (json.value.format === 'rle') {
           region._rle = json.value.rle;
         }
 
@@ -121,7 +121,7 @@ const _Tool = types
         const { currentArea, control, obj } = self;
         const source = currentArea.toJSON();
 
-        const value = { coordstype: "px", touches: source.touches, dynamic: source.dynamic };
+        const value = { coordstype: 'px', touches: source.touches, dynamic: source.dynamic };
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
 
         currentArea.setDrawing(false);
@@ -136,9 +136,9 @@ const _Tool = types
         const val = self.strokeWidth;
         const stage = self.obj.stageRef;
         const base64 = Canvas.brushSizeCircle(val);
-        const cursor = ["url('", base64, "')", " ", Math.floor(val / 2) + 4, " ", Math.floor(val / 2) + 4, ", auto"];
+        const cursor = ['url(\'', base64, '\')', ' ', Math.floor(val / 2) + 4, ' ', Math.floor(val / 2) + 4, ', auto'];
 
-        stage.container().style.cursor = cursor.join("");
+        stage.container().style.cursor = cursor.join('');
       },
 
       setStroke(val) {
@@ -154,9 +154,9 @@ const _Tool = types
       },
 
       mouseupEv(ev, [x, y]) {
-        if (self.mode !== "drawing") return;
+        if (self.mode !== 'drawing') return;
         self.addPoint(x, y);
-        self.mode = "viewing";
+        self.mode = 'viewing';
         brush.setDrawing(false);
         brush.endPath();
         if (isFirstBrushStroke) {
@@ -174,7 +174,7 @@ const _Tool = types
       },
 
       mousemoveEv(ev, [x, y]) {
-        if (self.mode !== "drawing") return;
+        if (self.mode !== 'drawing') return;
         if (
           !findClosestParent(
             ev.target,
@@ -200,14 +200,14 @@ const _Tool = types
 
         // Reset the timer if a user started drawing again
         brush = self.getSelectedShape;
-        if (brush && brush.type === "brushregion") {
+        if (brush && brush.type === 'brushregion') {
           self.annotation.history.freeze();
-          self.mode = "drawing";
+          self.mode = 'drawing';
           brush.setDrawing(true);
           self.obj.annotation.setIsDrawing(true);
           isFirstBrushStroke = false;
           brush.beginPath({
-            type: "add",
+            type: 'add',
             strokeWidth: self.strokeWidth || c.strokeWidth,
           });
 
@@ -215,16 +215,16 @@ const _Tool = types
         } else {
           if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
           self.annotation.history.freeze();
-          self.mode = "drawing";
+          self.mode = 'drawing';
           isFirstBrushStroke = true;
           self.obj.annotation.setIsDrawing(true);
           brush = self.createDrawingRegion({
             touches: [],
-            coordstype: "px",
+            coordstype: 'px',
           });
 
           brush.beginPath({
-            type: "add",
+            type: 'add',
             strokeWidth: self.strokeWidth || c.strokeWidth,
           });
 

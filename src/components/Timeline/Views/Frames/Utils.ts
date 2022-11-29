@@ -1,4 +1,4 @@
-import { TimelineRegionKeyframe } from "../../Types";
+import { TimelineRegionKeyframe } from '../../Types';
 
 export interface Lifespan {
   offset: number;

@@ -1,10 +1,10 @@
-import React from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import BaseTool from "./Base";
-import BasicTool from "../components/Tools/Basic";
-import ToolMixin from "../mixins/Tool";
+import BaseTool from './Base';
+import BasicTool from '../components/Tools/Basic';
+import ToolMixin from '../mixins/Tool';
 
 const ToolView = observer(({ item }) => {
   return (
@@ -14,13 +14,13 @@ const ToolView = observer(({ item }) => {
         item.manager.unselectAll();
         item.setSelected(true);
       }}
-      icon={"scissor"}
+      icon={'scissor'}
     />
   );
 });
 
 const _Tool = types
-  .model("LiveWireTool", {
+  .model('LiveWireTool', {
     isDrawingTool: true,
   })
   .views(self => ({
@@ -30,15 +30,15 @@ const _Tool = types
   }))
   .actions(self => ({
     mouseupEv() {
-      self.mode = "viewing";
+      self.mode = 'viewing';
     },
 
     mousemoveEv() {
-      if (self.mode !== "drawing") return;
+      if (self.mode !== 'drawing') return;
     },
 
     mousedownEv() {
-      self.mode = "drawing";
+      self.mode = 'drawing';
     },
   }));
 

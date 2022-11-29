@@ -1,20 +1,20 @@
-import { createRef } from "react";
-import { getRoot, types } from "mobx-state-tree";
-import ColorScheme from "pleasejs";
+import { createRef } from 'react';
+import { getRoot, types } from 'mobx-state-tree';
+import ColorScheme from 'pleasejs';
 
-import ObjectBase from "../Base";
-import RegionsMixin from "../../../mixins/Regions";
-import Utils from "../../../utils";
-import { ParagraphsRegionModel } from "../../../regions/ParagraphsRegion";
-import { restoreNewsnapshot } from "../../../core/Helpers";
-import { parseValue } from "../../../utils/data";
-import messages from "../../../utils/messages";
-import styles from "./Paragraphs.module.scss";
-import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
-import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
-import { isValidObjectURL } from "../../../utils/utilities";
-import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, isFF } from "../../../utils/feature-flags";
-import { SyncMixin } from "../../../mixins/SyncMixin";
+import ObjectBase from '../Base';
+import RegionsMixin from '../../../mixins/Regions';
+import Utils from '../../../utils';
+import { ParagraphsRegionModel } from '../../../regions/ParagraphsRegion';
+import { restoreNewsnapshot } from '../../../core/Helpers';
+import { parseValue } from '../../../utils/data';
+import messages from '../../../utils/messages';
+import styles from './Paragraphs.module.scss';
+import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
+import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
+import { isValidObjectURL } from '../../../utils/utilities';
+import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, isFF } from '../../../utils/feature-flags';
+import { SyncMixin } from '../../../mixins/SyncMixin';
 
 
 const isFFDev2461 = isFF(FF_DEV_2461);
@@ -49,29 +49,29 @@ const isFFDev2461 = isFF(FF_DEV_2461);
  * @param {string} [nameKey=author]      - The key field to use for name
  * @param {string} [textKey=text]        - The key field to use for the text
  */
-const TagAttrs = types.model("ParagraphsModel", {
+const TagAttrs = types.model('ParagraphsModel', {
   value: types.maybeNull(types.string),
-  valuetype: types.optional(types.enumeration(["json", "url"]), () => (window.LS_SECURE_MODE ? "url" : "json")),
+  valuetype: types.optional(types.enumeration(['json', 'url']), () => (window.LS_SECURE_MODE ? 'url' : 'json')),
   audiourl: types.maybeNull(types.string),
   showplayer: false,
 
   highlightcolor: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
 
-  layout: types.optional(types.enumeration(["none", "dialogue"]), "none"),
+  layout: types.optional(types.enumeration(['none', 'dialogue']), 'none'),
 
   // @todo add `valueType=url` to Paragraphs and make autodetection of `savetextresult`
-  savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
-    window.LS_SECURE_MODE ? "no" : "yes",
+  savetextresult: types.optional(types.enumeration(['none', 'no', 'yes']), () =>
+    window.LS_SECURE_MODE ? 'no' : 'yes',
   ),
 
-  namekey: types.optional(types.string, "author"),
-  textkey: types.optional(types.string, "text"),
+  namekey: types.optional(types.string, 'author'),
+  textkey: types.optional(types.string, 'text'),
 });
 
 const Model = types
-  .model("ParagraphsModel", {
-    type: "paragraphs",
+  .model('ParagraphsModel', {
+    type: 'paragraphs',
     _update: types.optional(types.number, 1),
   })
   .views(self => ({
@@ -87,12 +87,12 @@ const Model = types
 
     get syncedAudio() {
       if (!isFFDev2461) return false;
-      return self.syncedObject?.type?.startsWith("audio");
+      return self.syncedObject?.type?.startsWith('audio');
     },
 
     get audio() {
       if (!self.audiourl) return null;
-      if (self.audiourl[0] === "$") {
+      if (self.audiourl[0] === '$') {
         const store = getRoot(self);
         const val = self.audiourl.substr(1);
 
@@ -106,7 +106,7 @@ const Model = types
     },
 
     layoutStyles(data) {
-      if (self.layout === "dialogue") {
+      if (self.layout === 'dialogue') {
         const seed = data[self.namekey];
 
         return {
@@ -118,7 +118,7 @@ const Model = types
     },
 
     get layoutClasses() {
-      if (self.layout === "dialogue") {
+      if (self.layout === 'dialogue') {
         return {
           phrase: styles.phrase,
           name: styles.dialoguename,
@@ -140,7 +140,7 @@ const Model = types
     activeStates() {
       const states = self.states();
 
-      return states && states.filter(s => s.isSelected && s._type === "paragraphlabels");
+      return states && states.filter(s => s.isSelected && s._type === 'paragraphlabels');
     },
 
     isVisibleForAuthorFilter(data) {
@@ -150,9 +150,9 @@ const Model = types
     },
   }))
   .volatile(() => ({
-    _value: "",
+    _value: '',
     filterByAuthor: [],
-    searchAuthor: "",
+    searchAuthor: '',
     playingId: -1,
   }))
   .actions(self => {
@@ -327,7 +327,7 @@ const Model = types
     updateValue(store) {
       const value = parseValue(self.value, store.task.dataObj);
 
-      if (self.valuetype === "url") {
+      if (self.valuetype === 'url') {
         const url = value;
 
         if (!isValidObjectURL(url, true)) {
@@ -335,13 +335,13 @@ const Model = types
 
           if (url) {
             message.push(`URL (${url}) is not valid.`);
-            message.push(`You should not put data directly into your task if you use valuetype="url".`);
+            message.push('You should not put data directly into your task if you use valuetype="url".');
           } else {
             message.push(`URL is empty, check ${value} in data JSON.`);
           }
-          if (window.LS_SECURE_MODE) message.unshift(`In SECURE MODE valuetype set to "url" by default.`);
-          store.annotationStore.addErrors([errorBuilder.generalError(message.join("\n"))]);
-          self.setRemoteValue("");
+          if (window.LS_SECURE_MODE) message.unshift('In SECURE MODE valuetype set to "url" by default.');
+          store.annotationStore.addErrors([errorBuilder.generalError(message.join('\n'))]);
+          self.setRemoteValue('');
           return;
         }
         fetch(url)
@@ -354,7 +354,7 @@ const Model = types
             const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(e), url });
 
             store.annotationStore.addErrors([errorBuilder.generalError(message)]);
-            self.setRemoteValue("");
+            self.setRemoteValue('');
           });
       } else {
         self.setRemoteValue(value);
@@ -365,7 +365,7 @@ const Model = types
       const errors = [];
 
       if (!Array.isArray(val)) {
-        errors.push(`Provided data is not an array`);
+        errors.push('Provided data is not an array');
       } else {
         if (!(self.namekey in val[0])) {
           errors.push(`"${self.namekey}" field not found in task data; check your <b>nameKey</b> parameter`);
@@ -377,13 +377,13 @@ const Model = types
       if (errors.length) {
         const general = [
           `Task data (provided as <b>${self.value}</b>) has wrong format.<br/>`,
-          `It should be an array of objects with fields,`,
-          `defined by <b>nameKey</b> ("author" by default)`,
-          `and <b>textKey</b> ("text" by default)`,
-        ].join(" ");
+          'It should be an array of objects with fields,',
+          'defined by <b>nameKey</b> ("author" by default)',
+          'and <b>textKey</b> ("text" by default)',
+        ].join(' ');
 
         self.store.annotationStore.addErrors([
-          errorBuilder.generalError(`${general}<ul>${errors.map(error => `<li>${error}</li>`).join("")}</ul>`),
+          errorBuilder.generalError(`${general}<ul>${errors.map(error => `<li>${error}</li>`).join('')}</ul>`),
         ]);
         return;
       }
@@ -464,7 +464,7 @@ const Model = types
     fromStateJSON(obj, fromModel) {
       const { start, startOffset, end, endOffset, text } = obj.value;
 
-      if (fromModel.type === "textarea" || fromModel.type === "choices") {
+      if (fromModel.type === 'textarea' || fromModel.type === 'choices') {
         self.annotation.names.get(obj.from_name).fromStateJSON(obj);
         return;
       }
@@ -473,7 +473,7 @@ const Model = types
 
       const tree = {
         pid: obj.id,
-        parentID: obj.parent_id === null ? "" : obj.parent_id,
+        parentID: obj.parent_id === null ? '' : obj.parent_id,
 
         startOffset,
         endOffset,
@@ -506,6 +506,6 @@ const paragraphModelMixins = [
   AnnotationMixin,
 ].filter(Boolean);
 
-export const ParagraphsModel = types.compose("ParagraphsModel",
+export const ParagraphsModel = types.compose('ParagraphsModel',
   ...paragraphModelMixins,
 );

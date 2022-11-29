@@ -1,14 +1,14 @@
-import { observer } from "mobx-react";
-import { useCallback, useMemo } from "react";
-import { Select } from "../../../common/Select/Select";
-import ColorScheme from "pleasejs";
-import Utils from "../../../utils";
-import styles from "./Paragraphs.module.scss";
+import { observer } from 'mobx-react';
+import { useCallback, useMemo } from 'react';
+import { Select } from '../../../common/Select/Select';
+import ColorScheme from 'pleasejs';
+import Utils from '../../../utils';
+import styles from './Paragraphs.module.scss';
 
 const AuthorTag = ({ name, selected }) => {
   const itemStyle = { border: `2px solid ${Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed: name })[0])}` };
 
-  return <span className={[styles.authorFilter__select__item, selected && styles.authorFilter__select__item_selected].join(" ")} style={itemStyle}>{name}</span>;
+  return <span className={[styles.authorFilter__select__item, selected && styles.authorFilter__select__item_selected].join(' ')} style={itemStyle}>{name}</span>;
 };
 
 const renderMultipleSelected = (selected) => {

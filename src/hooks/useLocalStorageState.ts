@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 type ValueFromString<T> = (value: string) => T;
 
@@ -11,7 +11,7 @@ type Options<T> = {
 
 type StateResult<T> = [T, (value: T) => void];
 
-export const useLocalStorageState = <T extends any>(
+export const useLocalStorageState = <T>(
   keyName: string,
   defaultValue: T,
   options: Options<T> = {},

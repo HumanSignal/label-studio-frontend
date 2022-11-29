@@ -1,13 +1,13 @@
-import { flow, getEnv, getParent, getRoot, getSnapshot, types } from "mobx-state-tree";
-import { when } from "mobx";
-import uniqBy from "lodash/uniqBy";
-import Utils from "../../utils";
-import { Comment } from "./Comment";
-import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
+import { flow, getEnv, getParent, getRoot, getSnapshot, types } from 'mobx-state-tree';
+import { when } from 'mobx';
+import uniqBy from 'lodash/uniqBy';
+import Utils from '../../utils';
+import { Comment } from './Comment';
+import { FF_DEV_3034, isFF } from '../../utils/feature-flags';
 
 export const CommentStore = types
-  .model("CommentStore", {
-    loading: types.optional(types.maybeNull(types.string), "list"),
+  .model('CommentStore', {
+    loading: types.optional(types.maybeNull(types.string), 'list'),
     comments: types.optional(types.array(Comment), []),
   })
   .volatile(() => ({
@@ -15,7 +15,7 @@ export const CommentStore = types
     commentFormSubmit: () => {},
     currentComment: '',
     inputRef: {},
-    tooltipMessage: "",
+    tooltipMessage: '',
   }))
   .views(self => ({
     get store() {
@@ -41,7 +41,7 @@ export const CommentStore = types
       return getEnv(self).events;
     },
     get isListLoading() {
-      return self.loading === "list";
+      return self.loading === 'list';
     },
     get taskId() {
       return self.task?.id;
@@ -53,7 +53,7 @@ export const CommentStore = types
       return self.annotationId !== null && self.annotationId !== undefined;
     },
     get isCommentable() {
-      return !self.annotation || ["annotation"].includes(self.annotation.type);
+      return !self.annotation || ['annotation'].includes(self.annotation.type);
     },
     get queuedComments() {
       const queued = self.comments.filter(comment => !comment.isPersisted);
@@ -130,7 +130,7 @@ export const CommentStore = types
       }
 
       try {
-        self.setLoading("persistQueuedComments");
+        self.setLoading('persistQueuedComments');
         for (const comment of toPersist) {
           if (self.annotationId) {
             comment.annotation = self.annotationId;
@@ -139,7 +139,7 @@ export const CommentStore = types
           } else {
             comment.task = self.taskId;
           }
-          const [persistedComment] = await self.sdk.invoke("comments:create", comment);
+          const [persistedComment] = await self.sdk.invoke('comments:create', comment);
 
           if (persistedComment) {
             self.replaceId(comment.id, persistedComment);
@@ -153,9 +153,9 @@ export const CommentStore = types
     }
 
     const addComment = flow(function* (text) {
-      if (self.loading === "addComment") return;
+      if (self.loading === 'addComment') return;
 
-      self.setLoading("addComment");
+      self.setLoading('addComment');
 
       const now = Date.now() * -1;
 
@@ -201,7 +201,7 @@ export const CommentStore = types
       self.setAddedCommentThisSession(true);
       if (self.canPersist) {
         try {
-          const [newComment] = yield self.sdk.invoke("comments:create", comment);
+          const [newComment] = yield self.sdk.invoke('comments:create', comment);
 
           if (newComment) {
             self.replaceId(now, newComment);
@@ -285,11 +285,11 @@ export const CommentStore = types
 
       try {
         if (mounted.current) {
-          self.setLoading("list");
+          self.setLoading('list');
         }
 
         const annotation = self.annotationId;
-        const [comments] = yield self.sdk.invoke("comments:list", {
+        const [comments] = yield self.sdk.invoke('comments:list', {
           annotation,
           draft: self.draftId,
         });

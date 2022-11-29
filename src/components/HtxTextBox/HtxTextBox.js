@@ -1,9 +1,9 @@
-import React from "react";
-import { Tooltip, Typography } from "antd";
-import { DeleteOutlined, EditOutlined, EnterOutlined } from "@ant-design/icons";
-import styles from "./HtxTextBox.module.scss";
-import throttle from "lodash.throttle";
-import { FF_DEV_1566, isFF } from "../../utils/feature-flags";
+import React from 'react';
+import { Tooltip, Typography } from 'antd';
+import { DeleteOutlined, EditOutlined, EnterOutlined } from '@ant-design/icons';
+import styles from './HtxTextBox.module.scss';
+import throttle from 'lodash.throttle';
+import { FF_DEV_1566, isFF } from '../../utils/feature-flags';
 
 const { Paragraph } = Typography;
 
@@ -29,13 +29,13 @@ export class HtxTextBox extends React.Component {
 
   componentDidMount() {
     if (isFF(FF_DEV_1566)) {
-      window.addEventListener("click", this.handleGlobalClick, { capture: true });
+      window.addEventListener('click', this.handleGlobalClick, { capture: true });
     }
   }
 
   componentWillUnmount() {
     if (isFF(FF_DEV_1566)) {
-      window.removeEventListener("click", this.handleGlobalClick, { capture: true });
+      window.removeEventListener('click', this.handleGlobalClick, { capture: true });
     }
   }
 
@@ -47,7 +47,7 @@ export class HtxTextBox extends React.Component {
     if (!shouldSkip) {
       this.setEditing(false);
     }
-  }
+  };
 
   startEditing = () => {
     const height = this.textRef.current?.parentNode.offsetHeight || 0;
@@ -94,12 +94,12 @@ export class HtxTextBox extends React.Component {
   }, 100);
 
   renderEdit() {
-    const { className = "", rows = 1, onlyEdit, name, onFocus, onChange, ...props } = this.props;
+    const { className = '', rows = 1, onlyEdit, name, onFocus, onChange, ...props } = this.props;
     const { height, value } = this.state;
 
     const inputProps = {
       name,
-      className: "ant-input " + styles.input,
+      className: 'ant-input ' + styles.input,
       style: height ? { height } : null,
       autoFocus: true,
       ref: this.inputRef,
@@ -115,16 +115,16 @@ export class HtxTextBox extends React.Component {
       onKeyDown: e => {
         const { key, shiftKey } = e;
 
-        if (key === "Enter") {
+        if (key === 'Enter') {
           // for multiline textarea save only by shift+enter
           if (+rows === 1 || shiftKey) {
             e.preventDefault();
             e.stopPropagation();
             this.save();
           }
-        } else if (key === "Escape") {
+        } else if (key === 'Escape') {
           this.cancel();
-        } else if (isFF(FF_DEV_1566) && key === "Tab") {
+        } else if (isFF(FF_DEV_1566) && key === 'Tab') {
           this.setEditing(false);
         }
       },
@@ -133,11 +133,11 @@ export class HtxTextBox extends React.Component {
     this.updateHeight();
 
     return (
-      <Paragraph {...props} className={className + " ant-typography-edit-content " + styles.editing}>
+      <Paragraph {...props} className={className + ' ant-typography-edit-content ' + styles.editing}>
         {rows > 1 ? <textarea {...inputProps} /> : <input {...inputProps} />}
         {!onlyEdit && (
           <Tooltip title="Save: [shift+enter]">
-            <EnterOutlined className={"ant-typography-edit-content-confirm " + styles.enter} onClick={this.save} />
+            <EnterOutlined className={'ant-typography-edit-content-confirm ' + styles.enter} onClick={this.save} />
           </Tooltip>
         )}
       </Paragraph>

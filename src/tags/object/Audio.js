@@ -1,16 +1,16 @@
-import React from "react";
-import { inject, observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { inject, observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import AudioControls from "./Audio/Controls";
-import ObjectBase from "./Base";
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
-import ObjectTag from "../../components/Tags/Object";
-import Registry from "../../core/Registry";
-import Waveform from "../../components/Waveform/Waveform";
-import { ErrorMessage } from "../../components/ErrorMessage/ErrorMessage";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
-import { customTypes } from "../../core/CustomTypes";
+import AudioControls from './Audio/Controls';
+import ObjectBase from './Base';
+import ProcessAttrsMixin from '../../mixins/ProcessAttrs';
+import ObjectTag from '../../components/Tags/Object';
+import Registry from '../../core/Registry';
+import Waveform from '../../components/Waveform/Waveform';
+import { ErrorMessage } from '../../components/ErrorMessage/ErrorMessage';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import { customTypes } from '../../core/CustomTypes';
 
 /**
  * The `Audio` tag plays a simple audio file. Use this tag for basic audio annotation tasks such as classification or transcription.
@@ -53,16 +53,16 @@ const TagAttrs = types.model({
   volume: types.optional(types.boolean, false),
   speed: types.optional(types.boolean, false),
   hotkey: types.maybeNull(types.string),
-  cursorwidth: types.optional(types.string, "1"),
-  cursorcolor: types.optional(customTypes.color, "#333"),
+  cursorwidth: types.optional(types.string, '1'),
+  cursorcolor: types.optional(customTypes.color, '#333'),
 });
 
 const Model = types
   .model({
-    type: "audio",
-    _value: types.optional(types.string, ""),
+    type: 'audio',
+    _value: types.optional(types.string, ''),
     playing: types.optional(types.boolean, false),
-    height: types.optional(types.string, "20"),
+    height: types.optional(types.string, '20'),
   })
   .volatile(() => ({
     errors: [],
@@ -105,7 +105,7 @@ const Model = types
     },
   }));
 
-const AudioModel = types.compose("AudioModel", Model, TagAttrs, ProcessAttrsMixin, ObjectBase, AnnotationMixin);
+const AudioModel = types.compose('AudioModel', Model, TagAttrs, ProcessAttrsMixin, ObjectBase, AnnotationMixin);
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
@@ -135,9 +135,9 @@ const HtxAudioView = ({ store, item }) => {
   );
 };
 
-const HtxAudio = inject("store")(observer(HtxAudioView));
+const HtxAudio = inject('store')(observer(HtxAudioView));
 
-Registry.addTag("audio", AudioModel, HtxAudio);
+Registry.addTag('audio', AudioModel, HtxAudio);
 Registry.addObjectType(AudioModel);
 
 export { AudioModel, HtxAudio };

@@ -1,4 +1,4 @@
-import { minMax } from "./utilities";
+import { minMax } from './utilities';
 
 export function rotateBboxCoords(bboxCoords, rotation, pivot = { x: bboxCoords.left, y: bboxCoords.top }) {
   if (!bboxCoords) return bboxCoords;
