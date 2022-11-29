@@ -42,3 +42,15 @@ jobs:
 
     - name: Run unit tests
       run: yarn install --frozen-lockfile && yarn test:coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3.1.1
+      with:
+        fail_ci_if_error: true
+        files: ./coverage/coverage.xml
+        verbose: true
+        # name: codecov-lsf-${{ matrix.python-version }}
+        # token: ${{ secrets.CODECOV_TOKEN }}
+        # For testing purposes
+        token: baf63492-a3ed-4eb6-93d8-fe4660d55fb6
+
