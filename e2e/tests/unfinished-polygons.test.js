@@ -103,9 +103,9 @@ Scenario("Saving polygon drawing steps to history", async function({ I, LabelStu
   assert.strictEqual(result[0].value.closed, true);
 
   I.say(`try to undo closing and 2 last points`);
-  I.pressKey(['CommandOrControl', 'Z']);
-  I.pressKey(['CommandOrControl', 'Z']);
-  I.pressKey(['CommandOrControl', 'Z']);
+  I.click("button[aria-label=Undo]");
+  I.click("button[aria-label=Undo]");
+  I.click("button[aria-label=Undo]");
   I.say("check current history index and result");
   historyStepsCount = await I.executeScript(()=>window.Htx.annotationStore.selected.history.undoIdx);
   assert.strictEqual(historyStepsCount, 1);
@@ -409,6 +409,37 @@ Scenario("Continue annotating after closing region from draft", async function({
   assert.strictEqual(result[1].value.closed, true);
 
 });
+
+Scenario("Change label on unfinished polygons", async function({ I, LabelStudio, AtLabels, AtImageView }) {
+  I.amOnPage("/");
+  LabelStudio.init({
+    config: CONFIG,
+    data: {
+      image: IMAGE,
+    },
+    params: {
+      onSubmitDraft: saveDraftLocally,
+    },
+  });
+  LabelStudio.setFeatureFlags(FLAGS);
+
+  AtImageView.waitForImage();
+
+  await AtImageView.lookForStage();
+
+  I.say("start drawing polygon without finishing it");
+  AtLabels.clickLabel("Hello");
+  AtImageView.drawByClickingPoints([[50,50], [100, 50], [100, 80]]);
+  AtLabels.clickLabel("World");
+
+  I.say("wait until autosave");
+  I.waitForFunction(()=>!!window.LSDraft, .5);
+  I.say("check result");
+  const draft = await I.executeScript(getLocallySavedDraft);
+
+  assert.strictEqual(draft[0].value.polygonlabels[0], 'World');
+});
+
 
 const selectedLabelsVariants = new DataTable(["labels"]);
 

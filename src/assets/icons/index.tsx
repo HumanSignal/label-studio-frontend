@@ -22,6 +22,7 @@ export { ReactComponent as IconPlusCircle } from "./plus_circle.svg";
 export { ReactComponent as IconSlow } from "./slow.svg";
 export { ReactComponent as IconFast } from "./fast.svg";
 export { ReactComponent as IconEllipsis } from "./ellipsis.svg";
+export { ReactComponent as IconWarning } from "./warning.svg";
 
 export { ReactComponent as IconCheck } from "./check.svg";
 export { ReactComponent as IconCross } from "./cross.svg";

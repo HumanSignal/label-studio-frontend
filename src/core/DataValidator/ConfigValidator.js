@@ -138,7 +138,10 @@ const getTypeDescription = (type, withNullType = true) => {
 const flattenTree = (tree, parent = null, parentParentTypes = ["view"], result) => {
   if (!tree.children) return [];
 
-  for (const child of tree.children) {
+  const children = tree.type === "pagedview" ? tree.children.slice(0, 1) : tree.children;
+
+
+  for (const child of children) {
     /* Create a child without children and
     assign id of the parent for quick mathcing */
     const parentTypes = [...parentParentTypes, ...(parent?.type ? [parent?.type] : [])];
@@ -148,7 +151,6 @@ const flattenTree = (tree, parent = null, parentParentTypes = ["view"], result) 
 
     result.push(flatChild);
 
-    /* Recursively add children if exist */
     if (child.children instanceof Array) {
       flattenTree(child, child, parentTypes, result);
     }

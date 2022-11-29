@@ -33,6 +33,9 @@ const AnnotationStoreModel = types
 
     validation: types.maybeNull(types.array(ValidationError)),
   })
+  .volatile(() => ({
+    initialized: false,
+  }))
   .views(self => ({
     get store() {
       return getRoot(self);
@@ -165,6 +168,24 @@ const AnnotationStoreModel = types
       return (self.root = ViewModel.create({ id: "error" }));
     }
 
+    function upsertToName(node) {
+      const val = self.toNames.get(node.toname);
+
+      if (val) {
+        val.push(node.name);
+      } else {
+        self.addToName(node);
+      }
+    }
+
+    function addToName(node) {
+      self.toNames.set(node.toname, [node.name]);
+    }
+
+    function addName(node) {
+      self.names.put(node);
+    }
+
     function initRoot(config) {
       if (self.root) return;
 
@@ -207,6 +228,8 @@ const AnnotationStoreModel = types
           if (self.store.task && node.updateValue) node.updateValue(self.store);
         });
 
+        self.initialized = true;
+
         return self.root;
       }
 
@@ -214,7 +237,7 @@ const AnnotationStoreModel = types
       // connect different components to each other
       Tree.traverseTree(self.root, node => {
         if (node?.name) {
-          self.names.put(node);
+          self.addName(node);
           if (objectTypes.includes(node.type)) objects.push(node.name);
         }
 
@@ -226,17 +249,13 @@ const AnnotationStoreModel = types
         }
 
         if (node && node.toname) {
-          const val = self.toNames.get(node.toname);
-
-          if (val) {
-            val.push(node.name);
-          } else {
-            self.toNames.set(node.toname, [node.name]);
-          }
+          self.upsertToName(node);
         }
 
         if (self.store.task && node.updateValue) node.updateValue(self.store);
       });
+
+      self.initialized = true;
 
       return self.root;
     }
@@ -473,6 +492,14 @@ const AnnotationStoreModel = types
       return self._validator.validate(validatorName, data);
     };
 
+    const resetAnnotations = () => {
+      self.selected = null;
+      self.selectedHistory = null;
+      self.annotations = [];
+      self.predictions = [];
+      self.history = [];
+    };
+
     return {
       afterCreate,
       beforeDestroy,
@@ -481,6 +508,9 @@ const AnnotationStoreModel = types
       toggleViewingAllPredictions,
 
       initRoot,
+      addToName,
+      addName,
+      upsertToName,
 
       addPrediction,
       addAnnotation,
@@ -500,6 +530,7 @@ const AnnotationStoreModel = types
       _unselectAll,
 
       deleteAnnotation,
+      resetAnnotations,
     };
   });
 

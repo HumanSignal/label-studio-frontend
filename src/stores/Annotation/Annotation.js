@@ -159,6 +159,10 @@ export const Annotation = types
       return Array.from(self.areas.values());
     },
 
+    get lastSelectedRegion() {
+      return self.selectedRegions[self.selectedRegions.length - 1];
+    },
+
     get results() {
       const results = [];
 
@@ -207,6 +211,10 @@ export const Annotation = types
 
     get selectedRegions() {
       return Array.from(self.regionStore.selection.selected.values());
+    },
+
+    get selectedDrawingRegions() {
+      return Array.from(self.regionStore.selection.drawingSelected.values());
     },
 
     // existing annotation which can be updated
