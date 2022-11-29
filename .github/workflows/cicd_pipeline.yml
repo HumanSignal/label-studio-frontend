@@ -8,7 +8,7 @@ jobs:
   build_bundle:
     name: "Build JS Bundle"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
-    uses: heartexlabs/label-studio-frontend/.github/workflows/build_bundle.yml
+    uses: heartexlabs/label-studio-frontend/.github/workflows/build_bundle.yml@fb-dev-3855/testing-framework
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
       branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
@@ -17,7 +17,7 @@ jobs:
   run_e2e:
     name: "Run E2E tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
-    uses: heartexlabs/label-studio-frontend/.github/workflows/e2e_tests.yml
+    uses: heartexlabs/label-studio-frontend/.github/workflows/e2e_tests.yml@fb-dev-3855/testing-framework
     needs:
       - build_bundle
     with:
@@ -28,7 +28,7 @@ jobs:
   run_unit:
     name: "Run Unit tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
-    uses: heartexlabs/label-studio-frontend/.github/workflows/unit_tests.yml
+    uses: heartexlabs/label-studio-frontend/.github/workflows/unit_tests.yml@fb-dev-3855/testing-framework
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
       branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
