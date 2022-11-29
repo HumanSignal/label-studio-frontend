@@ -17,7 +17,7 @@ env:
 
 jobs:
   run:
-    name: "Run Component/Unit Tests"
+    name: "Unit Tests"
     runs-on: ubuntu-latest
 
     # ci can be skipped with `[skip ci]` prefix in message
