@@ -2,7 +2,18 @@ name: "CI/CD Pipleline"
 
 on:
   push:
-    branches: [master, "**"]
+    branches:
+      - master
+      - 'lse-release/**'
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+    branches:
+      - master
+      - 'lse-release/**'
 
 jobs:
   build_bundle:
