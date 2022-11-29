@@ -10,11 +10,13 @@ import Hint from "./Hint";
 
 describe("Hint", () => {
   it("Should render correctly", () => {
-    const output = shallow(
+    const component = (
       <Hint copy="test" style={{ background: "red" }} className="test">
         Test
-      </Hint>,
+      </Hint>
     );
+
+    const output = shallow(component);
 
     expect(shallowToJson(output)).toMatchSnapshot();
   });

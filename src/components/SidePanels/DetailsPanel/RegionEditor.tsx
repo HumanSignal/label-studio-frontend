@@ -1,7 +1,6 @@
 import { observe } from "mobx";
 import { observer } from "mobx-react";
 import { getType, IAnyType, isLiteralType, isOptionalType, isPrimitiveType, isUnionType, types } from "mobx-state-tree";
-import { number } from "mobx-state-tree/dist/internal";
 import { ChangeEvent, FC, HTMLInputTypeAttribute, InputHTMLAttributes, KeyboardEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { IconPropertyAngle } from "../../../assets/icons";
 import { Block, Elem, useBEM } from "../../../utils/bem";
@@ -185,16 +184,23 @@ const RegionInput: FC<RegionInputProps> = ({
   }, [onChangeValue, type]);
 
   const onChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
+    let value: number | string = e.target.value;
     let safeValue = true;
 
-    if (type === "number" && !value.match(/^([0-9,.]*)$/ig)) {
-      safeValue = false;
-    }
 
-    if (type === "number" && value.match(/(,|\.)$/)){
-      value = value.replace(/,/, '.');
-      safeValue = false;
+    if (type === "number") {
+      if (!value.match(/^([0-9,.]*)$/ig)) {
+        safeValue = false;
+      }
+  
+      if (value.match(/(,|\.)$/)){
+        value = value.replace(/,/, '.');
+        safeValue = false;
+      }
+
+      if (safeValue){
+        value = parseFloat(value);
+      }
     }
 
     updateValue(value, safeValue);
