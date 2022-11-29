@@ -85,8 +85,6 @@ export class RgbaColorArray  {
   }
 
   darken(amount: number): RgbaColorArray {
-    if (this.rgba !== this.base) return this;
-
     const next = [
       clamp(Math.round(this.r - this.r * amount), 0, 255),
       clamp(Math.round(this.g - this.g * amount), 0, 255),
@@ -100,8 +98,6 @@ export class RgbaColorArray  {
   }
 
   lighten(amount: number): RgbaColorArray {
-    if (this.rgba !== this.base) return this;
-
     const next = [
       clamp(Math.round(this.r + this.r * amount), 0, 255),
       clamp(Math.round(this.g + this.g * amount), 0, 255),
