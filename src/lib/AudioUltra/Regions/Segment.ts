@@ -336,7 +336,6 @@ export class Segment extends Events<SegmentEvents> {
     this.selected = selected ?? !this.selected;
     if (this.selected) this.color.darken(0.5);
     else this.color.reset();
-
     this.invoke("update", [this]);
     this.waveform.invoke("regionUpdated", [this]);
   };
