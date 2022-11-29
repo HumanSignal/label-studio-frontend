@@ -1,16 +1,16 @@
-import React from "react";
-import arrayMove from "array-move";
-import { List } from "antd";
-import { SortableContainer, SortableElement, sortableHandle } from "react-sortable-hoc";
-import { inject, observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import arrayMove from 'array-move';
+import { List } from 'antd';
+import { SortableContainer, SortableElement, sortableHandle } from 'react-sortable-hoc';
+import { inject, observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import Registry from "../../core/Registry";
-import { guidGenerator } from "../../core/Helpers";
+import Registry from '../../core/Registry';
+import { guidGenerator } from '../../core/Helpers';
 
 const RankerItemModel = types
   .model({
-    backgroundColor: types.optional(types.string, "transparent"),
+    backgroundColor: types.optional(types.string, 'transparent'),
     value: types.maybeNull(types.string),
     _value: types.maybeNull(types.string),
     selected: types.optional(types.boolean, false),
@@ -77,11 +77,11 @@ const RankerItemModel = types
  * @param {string} sortedHighlightColor - Sorted color in HTML color name
  */
 const TagAttrs = types.model({
-  axis: types.optional(types.enumeration(["x", "y"]), "y"),
-  lockaxis: types.maybeNull(types.enumeration(["x", "y"])),
+  axis: types.optional(types.enumeration(['x', 'y']), 'y'),
+  lockaxis: types.maybeNull(types.enumeration(['x', 'y'])),
 
   // elementvalue: types.maybeNull(types.string),
-  elementtag: types.optional(types.string, "Text"),
+  elementtag: types.optional(types.string, 'Text'),
   ranked: types.optional(types.boolean, true),
   sortable: types.optional(types.boolean, true),
 
@@ -94,7 +94,7 @@ const TagAttrs = types.model({
 const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
-    type: "ranker",
+    type: 'ranker',
     update: types.optional(types.number, 1),
 
     regions: types.array(RankerItemModel),
@@ -151,13 +151,13 @@ const Model = types
     },
   }));
 
-const RankerModel = types.compose("RankerModel", TagAttrs, Model);
+const RankerModel = types.compose('RankerModel', TagAttrs, Model);
 
 const DragHandle = sortableHandle(() => <div className="drag-handle"></div>);
 
 function isMobileDevice() {
   try {
-    return typeof window.orientation !== "undefined" || navigator.userAgent.indexOf("IEMobile") !== -1;
+    return typeof window.orientation !== 'undefined' || navigator.userAgent.indexOf('IEMobile') !== -1;
   } catch (e) {
     return false;
   }
@@ -167,7 +167,7 @@ const SortableText = SortableElement(({ item, value }) => {
   let classNames;
 
   if (isMobileDevice) {
-    classNames = "noselect";
+    classNames = 'noselect';
   }
 
   const map = {
@@ -179,11 +179,11 @@ const SortableText = SortableElement(({ item, value }) => {
   return (
     <div
       style={{
-        padding: "1em",
-        userSelect: "none",
-        display: "flex",
-        alignItems: "center",
-        background: value.selected ? item.sortedhighlightcolor : "transparent",
+        padding: '1em',
+        userSelect: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        background: value.selected ? item.sortedhighlightcolor : 'transparent',
       }}
       className={classNames}
       onClick={ev => {
@@ -225,9 +225,9 @@ const HtxRankerView = ({ item }) => {
   const props = {};
 
   if (isMobileDevice()) {
-    props["pressDelay"] = 100;
+    props['pressDelay'] = 100;
   } else {
-    props["distance"] = 7;
+    props['distance'] = 7;
   }
 
   return (
@@ -237,8 +237,8 @@ const HtxRankerView = ({ item }) => {
   );
 };
 
-const HtxRanker = inject("store")(observer(HtxRankerView));
+const HtxRanker = inject('store')(observer(HtxRankerView));
 
-Registry.addTag("ranker", RankerModel, HtxRanker);
+Registry.addTag('ranker', RankerModel, HtxRanker);
 
 export { RankerModel, HtxRanker };

@@ -1,12 +1,11 @@
-import chroma from "chroma-js";
-import { CSSProperties, FC, memo, MouseEvent, useCallback, useContext, useMemo } from "react";
-import { Block, Elem } from "../../../../utils/bem";
-import { guidGenerator } from "../../../../utils/unique";
-import { clamp } from "../../../../utils/utilities";
-import { TimelineContext } from "../../Context";
-import { TimelineRegion } from "../../Types";
-import "./Keypoints.styl";
-import { Lifespan, visualizeLifespans } from "./Utils";
+import chroma from 'chroma-js';
+import { CSSProperties, FC, memo, MouseEvent, useCallback, useContext, useMemo } from 'react';
+import { Block, Elem } from '../../../../utils/bem';
+import { clamp } from '../../../../utils/utilities';
+import { TimelineContext } from '../../Context';
+import { TimelineRegion } from '../../Types';
+import './Keypoints.styl';
+import { Lifespan, visualizeLifespans } from './Utils';
 
 export interface KeypointsProps {
   idx: number;

@@ -1,17 +1,17 @@
-import { observer } from "mobx-react";
-import { CSSProperties, FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Block, Elem } from "../../utils/bem";
-import { DetailsPanel } from "./DetailsPanel/DetailsPanel";
-import { OutlinerPanel } from "./OutlinerPanel/OutlinerPanel";
+import { observer } from 'mobx-react';
+import { CSSProperties, FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Block, Elem } from '../../utils/bem';
+import { DetailsPanel } from './DetailsPanel/DetailsPanel';
+import { OutlinerPanel } from './OutlinerPanel/OutlinerPanel';
 
-import { IconDetails, IconHamburger } from "../../assets/icons";
-import { useMedia } from "../../hooks/useMedia";
-import ResizeObserver from "../../utils/resize-observer";
-import { clamp } from "../../utils/utilities";
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
-import { PanelProps } from "./PanelBase";
-import "./SidePanels.styl";
-import { SidePanelsContext } from "./SidePanelsContext";
+import { IconDetails, IconHamburger } from '../../assets/icons';
+import { useMedia } from '../../hooks/useMedia';
+import ResizeObserver from '../../utils/resize-observer';
+import { clamp } from '../../utils/utilities';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT, PANEL_HEADER_HEIGHT_PADDED } from './constants';
+import { PanelProps } from './PanelBase';
+import './SidePanels.styl';
+import { SidePanelsContext } from './SidePanelsContext';
 
 const maxWindowWidth = 980;
 
@@ -34,7 +34,7 @@ interface PanelBBox {
   zIndex: number;
   visible: boolean;
   detached: boolean;
-  alignment: "left" | "right";
+  alignment: 'left' | 'right';
 }
 
 interface PanelView<T extends PanelProps = PanelProps> {
@@ -43,7 +43,7 @@ interface PanelView<T extends PanelProps = PanelProps> {
   icon: FC;
 }
 
-export type PanelType = "outliner" | "details";
+export type PanelType = 'outliner' | 'details';
 
 type PanelSize = Record<PanelType, PanelBBox>;
 
@@ -62,12 +62,12 @@ const savePanel = (name: PanelType, panelData: PanelBBox) => {
 
 const panelView: Record<PanelType, PanelView> = {
   outliner: {
-    title: "Outliner",
+    title: 'Outliner',
     component: OutlinerPanel as FC<PanelProps>,
     icon: IconHamburger,
   },
   details: {
-    title: "Details",
+    title: 'Details',
     component: DetailsPanel as FC<PanelProps>,
     icon: IconDetails,
   },
@@ -88,10 +88,10 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   const [positioning, setPositioning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const rootRef = useRef<HTMLDivElement>();
-  const [snap, setSnap] = useState<"left" | "right" | undefined>();
+  const [snap, setSnap] = useState<'left' | 'right' | undefined>();
   const localSnap = useRef(snap);
   const [panelData, setPanelData] = useState<PanelSize>({
-    outliner: restorePanel("outliner", {
+    outliner: restorePanel('outliner', {
       top: 0,
       left: 0,
       relativeLeft: 0,
@@ -101,10 +101,10 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       height: DEFAULT_PANEL_HEIGHT,
       visible: true,
       detached: false,
-      alignment: "left",
+      alignment: 'left',
       maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
     }),
-    details: restorePanel("details", {
+    details: restorePanel('details', {
       top: 0,
       left: 0,
       relativeLeft: 0,
@@ -114,7 +114,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       height: DEFAULT_PANEL_HEIGHT,
       visible: true,
       detached: false,
-      alignment: "right",
+      alignment: 'right',
       maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
     }),
   });
@@ -150,7 +150,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     });
   }, [updatePanel]);
 
-  const spaceFree = useCallback((alignment: "left" | "right") => {
+  const spaceFree = useCallback((alignment: 'left' | 'right') => {
     return Object.values(panelData).find(p => p.alignment === alignment && !p.detached) === undefined;
   }, [panelData]);
 
@@ -159,9 +159,9 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     const rightLimit = parentWidth - snapTreshold;
 
     if (left >= 0 && left <= snapTreshold && spaceFree('left')) {
-      setSnap("left");
+      setSnap('left');
     } else if (right <= parentWidth && right >= rightLimit  && spaceFree('right')) {
-      setSnap("right");
+      setSnap('right');
     } else {
       setSnap(undefined);
     }
@@ -339,7 +339,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         maxWidth: panelMaxWidth,
         zIndex: panelData.zIndex,
         expanded: sidepanelsCollapsed,
-        alignment: sidepanelsCollapsed ? "left" : panelData.alignment,
+        alignment: sidepanelsCollapsed ? 'left' : panelData.alignment,
         locked: sidepanelsCollapsed,
       };
       const panel = {

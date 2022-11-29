@@ -1,14 +1,14 @@
-import React, { forwardRef, useMemo } from "react";
-import { cn } from "../../utils/bem";
-import Label from "../Label/Label";
-import "./Input.styl";
+import React, { forwardRef, useMemo } from 'react';
+import { cn } from '../../utils/bem';
+import Label from '../Label/Label';
+import './Input.styl';
 
 const Input = forwardRef(({ label, className, required, labelProps, ghost, waiting, ...props }, ref) => {
   const rootClass = cn('input');
   const classList = [
     rootClass.mod({ ghost }),
     className,
-  ].join(" ").trim();
+  ].join(' ').trim();
 
   const input = useMemo(() => {
     return waiting ? (
@@ -27,6 +27,6 @@ const Input = forwardRef(({ label, className, required, labelProps, ghost, waiti
   ) : input;
 });
 
-Input.displayName = "Input";
+Input.displayName = 'Input';
 
 export default Input;
