@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build bundle
 
 on:
   workflow_call:
@@ -17,7 +17,6 @@ env:
 
 jobs:
   build:
-    name: "Build bundle and run E2E"
     runs-on: ubuntu-latest
 
     # ci can be skipped with `[skip ci]` prefix in message

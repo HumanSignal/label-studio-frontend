@@ -16,8 +16,7 @@ env:
   NODE: '14'
 
 jobs:
-  build:
-    name: "Run unit tests"
+  run_tests:
     runs-on: ubuntu-latest
 
     # ci can be skipped with `[skip ci]` prefix in message

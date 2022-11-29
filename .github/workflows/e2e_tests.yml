@@ -1,4 +1,4 @@
-name: Build and Test
+name: "Run E2E"
 
 on:
   workflow_call:
@@ -16,8 +16,7 @@ env:
   NODE: '14'
 
 jobs:
-  run_e2e:
-    name: "Run E2E"
+  run_tests:
     runs-on: ubuntu-latest
 
     # ci can be skipped with `[skip ci]` prefix in message
