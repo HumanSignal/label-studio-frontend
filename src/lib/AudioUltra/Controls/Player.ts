@@ -7,9 +7,10 @@ export class Player extends Destructable {
   private audio!: WaveformAudio;
   private wf: Waveform;
   private timer!: number;
-  private loop:  {start: number, end: number}|null = false;
+  private loop:  {start: number, end: number}|null = null;
   private timestamp = 0;
   private time = 0;
+  private connected = false;
 
   playing = false;
 
@@ -112,9 +113,6 @@ export class Player extends Destructable {
 
   handleEnded = () => {
     this.updateCurrentTime();
-    if (this.loop) {
-      return;
-    }
     this.audio.source?.removeEventListener("ended", this.handleEnded);
     this.pause();
     this.wf.invoke("playend");
@@ -201,19 +199,21 @@ export class Player extends Destructable {
   }
 
   private recreateSource() {
-    if (this.playing) {
+    if (this.connected) {
       this.disconnectSource();
     }
     this.connectSource();
   }
 
   private connectSource() {
-    if (this.isDestroyed || !this.audio) return;
+    if (this.isDestroyed || !this.audio || this.connected) return;
+    this.connected = true;
     this.audio.connect();
   }
 
   private disconnectSource() {
     if (this.isDestroyed || !this.audio) return;
+    this.connected = false;
     this.audio.source?.removeEventListener("ended", this.handleEnded);
     this.audio.source?.stop();
     this.audio.disconnect();
@@ -241,7 +241,9 @@ export class Player extends Destructable {
 
     this.timestamp = now;
 
-    const newTime = clamp(this.time + tick, 0, this.duration); 
+    const end = this.loop?.end ?? this.duration;
+
+    const newTime = clamp(this.time + tick, 0, end); 
 
     this.time = newTime;
     this.wf.invoke("playing", [this.time]);
