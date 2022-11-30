@@ -9,10 +9,9 @@ import { SyncMixin } from "../../../mixins/SyncMixin";
 import { AudioRegionModel } from "../../../regions/AudioRegion";
 import Utils from "../../../utils";
 import { FF_DEV_2461, isFF } from "../../../utils/feature-flags";
-import { isDefined } from "../../../utils/utilities";
+import { isDefined, isTimeSimilar } from "../../../utils/utilities";
 import ObjectBase from "../Base";
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
-
 
 /**
  * The Audio tag plays audio and shows its waveform. Use for audio annotation tasks where you want to label regions of audio, see the waveform, and manipulate audio during annotation.
@@ -212,7 +211,7 @@ export const AudioModel = types.compose(
         },
 
         handleSyncSeek(time) {
-          if (!self._ws?.loaded) return;
+          if (!self._ws?.loaded || isTimeSimilar(time, self._ws.currentTime)) return;
 
           try {
             self._ws.currentTime = time;

@@ -6,6 +6,7 @@ import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import ObjectBase from "../Base";
 import { SyncMixin } from "../../../mixins/SyncMixin";
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
+import { isTimeSimilar } from "../../../utils/utilities";
 
 /**
  * Video tag plays a simple video file. Use for video annotation tasks such as classification and transcription.
@@ -133,7 +134,9 @@ const Model = types
       },
 
       handleSyncSeek(time) {
-        if (self.ref.current) {
+        if (self.syncedDuration && time >= self.syncedDuration) {
+          self.ref.current.currentTime = self.ref.current.duration;
+        } else if (self.ref.current && !isTimeSimilar(self.ref.current.currentTime, time)) {
           self.ref.current.currentTime = time;
         }
       },
@@ -141,14 +144,24 @@ const Model = types
       handleSyncPlay() {
         if (!self.isCurrentlyPlaying) {
           self.isCurrentlyPlaying = true;
-          self.ref.current?.play();
+          try {
+            self.ref.current.play();
+          } catch {
+            // do nothing, just ignore the DomException
+            // just in case the video was in the midst of syncing
+          }
         }
       },
 
       handleSyncPause() {
         if (self.isCurrentlyPlaying) {
           self.isCurrentlyPlaying = false;
-          self.ref.current?.pause();
+          try {
+            self.ref.current?.pause();
+          } catch {
+            // do nothing, just ignore the DomException
+            // just in case the video was in the midst of syncing
+          }
         }
       },
 

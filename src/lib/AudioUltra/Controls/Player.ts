@@ -11,6 +11,7 @@ export class Player extends Destructable {
   private timestamp = 0;
   private time = 0;
   private connected = false;
+  private ended = false;
 
   playing = false;
 
@@ -101,17 +102,19 @@ export class Player extends Destructable {
 
   play(from?: number, to?: number) {
     if (this.isDestroyed || this.playing) return;
+    if (this.ended) {
+      this.ended = false;
+      this.currentTime = from ?? 0;
+    }
     const { start, end } = this.playSelection(from, to);
 
     this.playRange(start, end);
   }
 
   handleEnded = () => {
+    this.ended = true;
     this.updateCurrentTime(true);
-    this.stop();
-    this.currentTime = 0;
-    this.wf.invoke("pause");
-    this.wf.invoke("seek", [this.currentTime]);
+    this.pause();
     this.wf.invoke("playend");
   };
 

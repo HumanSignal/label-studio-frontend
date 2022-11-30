@@ -235,3 +235,5 @@ export const destroyMSTObject = (object: any) => {
     destroy(object);
   }
 };
+
+export const isTimeSimilar = (a: number, b: number) => Math.abs(a - b) < 0.0001;
