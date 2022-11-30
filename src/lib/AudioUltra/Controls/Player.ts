@@ -104,11 +104,7 @@ export class Player extends Destructable {
   }
 
   play(from?: number, to?: number) {
-    if (this.isDestroyed) return;
-    if (this.playing) {
-      this.pause();
-      return;
-    }
+    if (this.isDestroyed || this.playing) return;
     const { start, end } = this.playSelection(from, to);
 
     this.playRange(start, end);
