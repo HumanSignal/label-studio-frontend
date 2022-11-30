@@ -100,7 +100,7 @@ export const AudioModel = types.compose(
       },
 
       states() {
-        return self.annotation.toNames.get(self.name);
+        return self.annotation?.toNames.get(self.name) || [];
       },
 
       activeStates() {
@@ -126,6 +126,7 @@ export const AudioModel = types.compose(
     }))
     .actions(self => {
       let dispose;
+      let updateTimeout = null;
 
       const Super = {
         triggerSyncPlay: self.triggerSyncPlay,
@@ -157,10 +158,13 @@ export const AudioModel = types.compose(
 
         requestWSUpdate() {
           if (!self._ws) return;
+          if (updateTimeout) {
+            clearTimeout(updateTimeout);
+          }
 
-          setTimeout(() => {
+          updateTimeout = setTimeout(() => {
             self._ws.regions.redraw();
-          });
+          }, 33);
         },
 
         onReady() {
@@ -219,8 +223,8 @@ export const AudioModel = types.compose(
         },
 
         handleNewRegions() {
-          if (!self._ws?.loaded) return;
-        
+          if (!self._ws) return;
+
           self.regs.map(reg => {
             if (reg._ws_region) {
               self.updateWsRegion(reg);
@@ -396,6 +400,7 @@ export const AudioModel = types.compose(
         },
 
         createWsRegion(region) {
+          if (!self._ws) return;
 
           const options = region.wsRegionOptions();
 
@@ -407,6 +412,8 @@ export const AudioModel = types.compose(
         },
 
         updateWsRegion(region) {
+          if (!self._ws) return;
+
           const options = region.wsRegionOptions();
 
           options.labels = region.labels?.length ? region.labels : undefined;
@@ -414,18 +421,18 @@ export const AudioModel = types.compose(
           self._ws.updateRegion(options, false);
         },
 
+        clearRegionMappings() {
+          self.regs.forEach(r => {
+            r._ws_region = null;
+          });
+        },
+
         onLoad(ws) {
+          self.clearRegionMappings();
           self._ws = ws;
 
-          if (ws) {
-            ws.on("load", () => {
-              self.setSyncedDuration(self._ws.duration);
-            });
-          }
-
-          setTimeout(() => {
-            self.needsUpdate();
-          });
+          self.setSyncedDuration(self._ws.duration);
+          self.needsUpdate();
         },
 
         onError(error) {
@@ -434,6 +441,7 @@ export const AudioModel = types.compose(
 
         beforeDestroy() {
           try {
+            if (updateTimeout) clearTimeout(updateTimeout);
             if (dispose) dispose();
             if (isDefined(self._ws)) {
               self._ws.destroy();

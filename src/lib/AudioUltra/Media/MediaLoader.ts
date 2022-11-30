@@ -11,11 +11,18 @@ export class MediaLoader extends Destructable {
   private audio!: WaveformAudio | null;
   private loaded = false;
   private options: Options;
+  private cancel: () => void;
 
   constructor(wf: Waveform, options: Options) {
     super();
     this.wf = wf;
     this.options = options;
+    this.cancel = () => {};
+  }
+
+  reset() {
+    this.cancel();
+    this.loaded = false;
   }
 
   async load(options: WaveformAudioOptions): Promise<WaveformAudio| null> {
@@ -52,6 +59,7 @@ export class MediaLoader extends Destructable {
 
   destroy() {
     super.destroy();
+    this.reset();
 
     if (this.audio) {
       this.audio.buffer = null;
@@ -61,8 +69,13 @@ export class MediaLoader extends Destructable {
     }
   }
 
-  private performRequest(url: string) {
+  private async performRequest(url: string): Promise<XMLHttpRequest> {
     const xhr = new XMLHttpRequest();
+
+    this.cancel = () => {
+      xhr?.abort();
+      this.cancel = () => {};
+    };
 
     return new Promise<XMLHttpRequest>((resolve, reject) => {
       xhr.responseType = "arraybuffer";

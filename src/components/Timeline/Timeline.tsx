@@ -64,12 +64,16 @@ const TimelineComponent: FC<TimelineProps> = ({
   });
 
   const setInternalPosition = (newPosition: number) => {
-    const clampedValue = clamp(newPosition, 1, length);
+    setCurrentPosition((currentPosition) => {
+      const clampedValue = clamp(newPosition, 1, length);
 
-    if (clampedValue !== currentPosition) {
-      setCurrentPosition(clampedValue);
-      handlers.onPositionChange?.(clampedValue);
-    }
+      if (clampedValue !== currentPosition) {
+        handlers.onPositionChange?.(clampedValue);
+        return clampedValue;
+      }
+
+      return currentPosition;
+    });
   };
 
   const increasePosition: TimelineControlsStepHandler = (_, stepSize) => {

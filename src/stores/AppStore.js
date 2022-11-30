@@ -367,7 +367,7 @@ export default types
       hotkeys.addNamed("region:unselect", function() {
         const c = self.annotationStore.selected;
 
-        if (c && !c.relationMode) {
+        if (c && !c.relationMode && !c.isDrawing) {
           c.unselectAll();
         }
       });
@@ -397,7 +397,7 @@ export default types
 
         if (c && c.relationMode) {
           c.stopRelationMode();
-        } else {
+        } else if (!c.isDrawing) {
           c.unselectAll();
         }
       });
@@ -599,6 +599,15 @@ export default types
       self.initialized = false;
     }
 
+    function resetAnnotationStore() {
+      const oldAnnotationStore = self.annotationStore;
+
+      if (oldAnnotationStore) {
+        oldAnnotationStore.beforeReset?.();
+        oldAnnotationStore.resetAnnotations?.();
+      }
+    }
+
     /**
      * Function to initilaze annotation store
      * Given annotations and predictions
@@ -608,7 +617,9 @@ export default types
       const as = self.annotationStore;
 
       as.afterReset?.();
-      as.initRoot(self.config);
+      if (!as.initialized) {
+        as.initRoot(self.config);
+      }
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
       /* eslint-disable no-unused-expressions */
@@ -732,6 +743,7 @@ export default types
       assignTask,
       assignConfig,
       resetState,
+      resetAnnotationStore,
       initializeStore,
       setHistory,
       attachHotkeys,

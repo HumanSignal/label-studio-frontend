@@ -25,14 +25,11 @@ export const useWaveform = (
   const [layers, setLayers] = useState<Layer[]>([]);
   const [layerVisibility, setLayerVisibility] = useState(new Map());
 
-
   useEffect(() => {
     const wf = new Waveform({
       ...(options ?? {}),
       container: containter.current!,
     });
-
-    waveform.current = wf;
 
     wf.load();
 
@@ -80,6 +77,8 @@ export const useWaveform = (
       setLayers(layersArray);
       setLayerVisibility(layerVis);
     });
+
+    waveform.current = wf;
 
     return () => {
       wf.destroy();

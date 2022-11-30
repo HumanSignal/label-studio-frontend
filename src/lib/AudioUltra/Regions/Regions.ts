@@ -127,11 +127,10 @@ export class Regions {
   }
 
   redraw() {
-    this.renderAll();
     this.visualizer.draw(true);
   }
 
-  removeRegion(regionId: string) {
+  removeRegion(regionId: string, render = true) {
     const region = this.findRegion(regionId);
 
     if (this.deleteable && region?.deleteable) {
@@ -139,7 +138,9 @@ export class Regions {
       this.regions = this.regions.filter(r => r !== region);
     }
 
-    this.redraw();
+    if (render) {
+      this.redraw();
+    }
   }
 
   destroy() {
@@ -176,16 +177,18 @@ export class Regions {
   }
 
   private handleInit = () => {
-    this.regions = this.initialRegions.map(region => {
-      return new Region(
-        region,
-        this.waveform,
-        this.visualizer,
-        this,
-      );
-    });
+    if (this.initialRegions.length) {
+      this.regions = this.initialRegions.map(region => {
+        return new Region(
+          region,
+          this.waveform,
+          this.visualizer,
+          this,
+        );
+      });
 
-    this.initialRegions = [];
+      this.initialRegions = [];
+    }
 
     // Handle rendering when the visualizer is being drawn
     this.visualizer.on("draw", this.handleDraw);
@@ -382,7 +385,7 @@ export class Regions {
     return this.locked;
   }
 
-  hover(region: Region, e?: MouseEvent) {
+  hover(region: Region|Segment, e?: MouseEvent) {
     if (e) {
       region.invoke("mouseEnter", [region, e]);
     }
@@ -390,7 +393,7 @@ export class Regions {
     this.hoveredRegions.add(region);
   }
 
-  unhover(region: Region, e?: MouseEvent) {
+  unhover(region: Region|Segment, e?: MouseEvent) {
     if (e) {
       region.invoke("mouseLeave", [region, e]);
     }
