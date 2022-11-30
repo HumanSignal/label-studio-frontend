@@ -127,7 +127,6 @@ export class Regions {
   }
 
   redraw() {
-    this.renderAll();
     this.visualizer.draw(true);
   }
 
@@ -178,16 +177,18 @@ export class Regions {
   }
 
   private handleInit = () => {
-    this.regions = this.initialRegions.map(region => {
-      return new Region(
-        region,
-        this.waveform,
-        this.visualizer,
-        this,
-      );
-    });
+    if (this.initialRegions.length) {
+      this.regions = this.initialRegions.map(region => {
+        return new Region(
+          region,
+          this.waveform,
+          this.visualizer,
+          this,
+        );
+      });
 
-    this.initialRegions = [];
+      this.initialRegions = [];
+    }
 
     // Handle rendering when the visualizer is being drawn
     this.visualizer.on("draw", this.handleDraw);
@@ -378,7 +379,7 @@ export class Regions {
     return this.locked;
   }
 
-  hover(region: Region, e?: MouseEvent) {
+  hover(region: Region|Segment, e?: MouseEvent) {
     if (e) {
       region.invoke("mouseEnter", [region, e]);
     }
@@ -386,7 +387,7 @@ export class Regions {
     this.hoveredRegions.add(region);
   }
 
-  unhover(region: Region, e?: MouseEvent) {
+  unhover(region: Region|Segment, e?: MouseEvent) {
     if (e) {
       region.invoke("mouseLeave", [region, e]);
     }
