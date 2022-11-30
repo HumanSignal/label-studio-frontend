@@ -380,6 +380,10 @@ export class Segment extends Events<SegmentEvents> {
     this.waveform.invoke("regionUpdated", [this]);
   }
 
+  scrollToRegion() {
+    this.waveform.scrollToRegion(this.start);
+  }
+
   remove() {
     if (!this.deleteable) return;
     this.waveform.invoke("regionRemoved", [this]);
