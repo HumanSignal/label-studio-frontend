@@ -234,7 +234,7 @@ export class Regions {
       });
 
       if (autoPlayNewSegments && !region.isRegion) {
-        this.list.forEach(r => r.handleSelected(r.id === region.id));
+        this.regions.forEach(r => r.handleSelected(r.id === region.id));
       }
     };
 

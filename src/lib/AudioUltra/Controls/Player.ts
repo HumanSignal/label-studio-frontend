@@ -87,10 +87,6 @@ export class Player extends Destructable {
 
   init(audio: WaveformAudio) {
     this.audio = audio;
-
-    // this.audio.context.addEventListener("statechange", (e) => {
-    //   console.log(e);
-    // });
   }
 
   seek(time: number) {
@@ -99,8 +95,7 @@ export class Player extends Destructable {
     this.currentTime = newTime;
 
     if (this.playing) {
-      this.playSelection();
-      this.playSource();
+      this.updatePlayback();
     }
   }
 
@@ -134,7 +129,7 @@ export class Player extends Destructable {
     if (this.isDestroyed) return;
 
     this.stopWatch();
-    this.loop =null;
+    this.loop = null;
 
     this.audio.context.suspend().then(() => {
       this.audio.source?.stop(0);
@@ -144,7 +139,14 @@ export class Player extends Destructable {
   }
 
   destroy() {
+    super.destroy();
     this.stop();
+  }
+
+  private updatePlayback() {
+    const { start, end } = this.playSelection();
+
+    this.playSource(start, end);
   }
 
   private playRange(start?: number, end?: number) {
@@ -164,12 +166,16 @@ export class Player extends Destructable {
     if (!this.audio.source) return;
 
     if (this.loop) {
-      const loopStart = clamp(start ?? this.currentTime, 0, this.duration);
+      if (this.currentTime < this.loop.start || this.currentTime > this.loop.end) {
+        this.currentTime = this.loop.start;
+      }
+
+      const loopEnd = clamp(this.loop.end, 0, this.duration);
 
       this.audio.source.loop = true;
-      this.audio.source.loopStart = loopStart;
-      this.audio.source.loopEnd = (duration ?? this.duration);
-      this.audio.source.start(0, loopStart);
+      this.audio.source.loopStart = this.loop.start;
+      this.audio.source.loopEnd = loopEnd;
+      this.audio.source.start(0, this.currentTime);
     } else {
       this.audio.source.start(0, start ?? 0, duration ?? this.duration);
     }
@@ -215,7 +221,7 @@ export class Player extends Destructable {
     if (this.isDestroyed || !this.audio) return;
     this.connected = false;
     this.audio.source?.removeEventListener("ended", this.handleEnded);
-    this.audio.source?.stop();
+    this.audio.source?.stop(0);
     this.audio.disconnect();
   }
 
