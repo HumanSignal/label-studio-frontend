@@ -107,9 +107,11 @@ export class Player extends Destructable {
   }
 
   handleEnded = () => {
-    this.updateCurrentTime();
-    this.audio.source?.removeEventListener("ended", this.handleEnded);
-    this.pause();
+    this.updateCurrentTime(true);
+    this.stop();
+    this.currentTime = 0;
+    this.wf.invoke("pause");
+    this.wf.invoke("seek", [this.currentTime]);
     this.wf.invoke("playend");
   };
 
@@ -127,15 +129,10 @@ export class Player extends Destructable {
 
   stop() {
     if (this.isDestroyed) return;
-
     this.stopWatch();
+    this.disconnectSource();
+    this.playing = false;
     this.loop = null;
-
-    this.audio.context.suspend().then(() => {
-      this.audio.source?.stop(0);
-      this.audio.disconnect();
-      this.playing = false;
-    });
   }
 
   destroy() {
@@ -218,7 +215,7 @@ export class Player extends Destructable {
   }
 
   private disconnectSource() {
-    if (this.isDestroyed || !this.audio) return;
+    if (this.isDestroyed || !this.audio || !this.connected) return;
     this.connected = false;
     this.audio.source?.removeEventListener("ended", this.handleEnded);
     this.audio.source?.stop(0);
@@ -241,7 +238,7 @@ export class Player extends Destructable {
     }
   }
 
-  private updateCurrentTime() {
+  private updateCurrentTime(forceTimeToEnd?: boolean) {
     const now = performance.now();
     const tick = (( now - this.timestamp) / 1000) * this.rate;
 
@@ -249,7 +246,7 @@ export class Player extends Destructable {
 
     const end = this.loop?.end ?? this.duration;
 
-    const newTime = clamp(this.time + tick, 0, end); 
+    const newTime = forceTimeToEnd ? this.duration : clamp(this.time + tick, 0, end); 
 
     this.time = newTime;
     this.wf.invoke("playing", [this.time]);
