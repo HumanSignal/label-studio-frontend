@@ -58,6 +58,7 @@ export class Player extends Destructable {
   }
 
   private set currentTime(value: number) {
+    this.ended = false;
     this.setCurrentTime(value, true);
   }
 
@@ -103,7 +104,6 @@ export class Player extends Destructable {
   play(from?: number, to?: number) {
     if (this.isDestroyed || this.playing) return;
     if (this.ended) {
-      this.ended = false;
       this.currentTime = from ?? 0;
     }
     const { start, end } = this.playSelection(from, to);
