@@ -173,8 +173,6 @@ const Model = types
 
       const currentTime = audio.currentTime;
 
-      console.log({ currentTime, endDuration });
-
       if (currentTime < endDuration) {
         stopIn(endDuration - currentTime);
         return;
