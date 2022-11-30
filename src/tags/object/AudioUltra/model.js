@@ -9,7 +9,8 @@ import { SyncMixin } from "../../../mixins/SyncMixin";
 import { AudioRegionModel } from "../../../regions/AudioRegion";
 import Utils from "../../../utils";
 import { FF_DEV_2461, isFF } from "../../../utils/feature-flags";
-import { isDefined, isTimeSimilar } from "../../../utils/utilities";
+import { isDefined } from "../../../utils/utilities";
+import { isTimeSimilar } from "../../../lib/AudioUltra";
 import ObjectBase from "../Base";
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
 

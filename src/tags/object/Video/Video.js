@@ -6,7 +6,7 @@ import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import ObjectBase from "../Base";
 import { SyncMixin } from "../../../mixins/SyncMixin";
 import IsReadyMixin from "../../../mixins/IsReadyMixin";
-import { isTimeSimilar } from "../../../utils/utilities";
+import { isTimeSimilar } from "../../../lib/AudioUltra";
 import { FF_DEV_2715, isFF } from "../../../utils/feature-flags";
 
 const isFFDev2715 = isFF(FF_DEV_2715);

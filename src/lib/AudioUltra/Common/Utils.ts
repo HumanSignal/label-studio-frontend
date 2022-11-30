@@ -2,6 +2,8 @@ import { Visualizer } from '../Visual/Visualizer';
 
 export const __DEV__ = process.env.NODE_ENV === "development";
 
+const TIME_TOLERANCE = 0.0001;
+
 export enum defaults {
   timelineHeight = 32,
   timelinePlacement = 'top'
@@ -203,3 +205,5 @@ export const getCursorTime = (e: MouseEvent, visualizer: Visualizer, duration: n
 
   return time;
 };
+
+export const isTimeSimilar = (a: number, b: number) => Math.abs(a - b) < TIME_TOLERANCE;

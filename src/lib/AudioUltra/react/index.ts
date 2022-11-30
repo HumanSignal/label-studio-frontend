@@ -1,7 +1,7 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { Waveform, WaveformOptions } from "../Waveform";
 import { Layer } from "../Visual/Layer";
-import { isTimeSimilar } from "../../../utils/utilities";
+import { isTimeSimilar } from "../Common/Utils";
 
 export const useWaveform = (
   containter: MutableRefObject<HTMLElement | null | undefined>,

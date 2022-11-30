@@ -235,7 +235,3 @@ export const destroyMSTObject = (object: any) => {
     destroy(object);
   }
 };
-
-const TIME_TOLERANCE = 0.0001;
-
-export const isTimeSimilar = (a: number, b: number) => Math.abs(a - b) < TIME_TOLERANCE;
