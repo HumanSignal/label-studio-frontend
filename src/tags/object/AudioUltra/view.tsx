@@ -40,6 +40,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         backgroundCompute: true,
         denoize: true,
       },
+      autoPlayNewSegments: true,
     },
     item);
 
