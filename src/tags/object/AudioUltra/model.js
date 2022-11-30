@@ -119,9 +119,6 @@ export const AudioModel = types.compose(
 
         return state?.selectedValues()?.[0];
       },
-      get playing() {
-        return self.isCurrentObject;
-      },
     }))
     .actions(self => {
       let dispose;

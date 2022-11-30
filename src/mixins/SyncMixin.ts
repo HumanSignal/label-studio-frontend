@@ -2,7 +2,10 @@ import { observe } from "mobx";
 import { types } from "mobx-state-tree";
 
 import { EventInvoker } from "../utils/events";
+import { FF_DEV_2715, isFF } from "../utils/feature-flags";
 import { TimeSync, TimeSyncSubscriber } from "../utils/TimeSync";
+
+const isFFDev2715 = isFF(FF_DEV_2715);
 
 interface SyncMixinProps {
   events: EventInvoker;
@@ -33,18 +36,34 @@ const SyncMixin = types
   syncedDuration: 0,
   currentSpeed: 1,
 }))
-  .actions((self) => ({
+  .actions(self => ({
     // *** abstract ***
     needsUpdate() {},
-    handleSyncPlay() { console.error("handleSyncPlay should be implemented"); },
-    handleSyncPause() { console.error("handleSyncPause should be implemented"); },
-    handleSyncSeek(time: number) { console.error("handleSyncSeek should be implemented"); },
-    handleSyncSpeed(speed: number) { console.error("handleSyncSpeed should be implemented"); },
-    handleSyncDuration(duration: number) { console.error("handleSyncDuration should be implemented"); },
+    handleSyncPlay() {
+      console.error("handleSyncPlay should be implemented");
+    },
+    handleSyncPause() {
+      console.error("handleSyncPause should be implemented");
+    },
+    handleSyncSeek(time: number) {
+      console.error("handleSyncSeek should be implemented");
+    },
+    handleSyncSpeed(speed: number) {
+      console.error("handleSyncSpeed should be implemented");
+    },
+    handleSyncDuration(duration: number) {
+      if (isFFDev2715) {
+        console.error("handleSyncDuration should be implemented");
+      }
+    },
     attachObject() {
       self.syncedObject = (self as any).annotation?.names?.get(self.sync);
     },
-    setCurrentlyPlaying(isPlaying: boolean) { console.error("setCurrentlyPlaying should be implemented"); },
+    setCurrentlyPlaying(isPlaying: boolean) {
+      if (isFFDev2715) {
+        console.error("setCurrentlyPlaying should be implemented");
+      }
+    },
   }))
   .actions(self => ({
     triggerSyncPlay() {
@@ -69,7 +88,6 @@ const SyncMixin = types
       if (self.sync && self.sync !== (self as any).name) {
         const syncObject = sync.register((self as any).name);
 
-
         syncObject.subscribe(self.sync, {
           play: self.handleSyncPlay,
           pause: self.handleSyncPause,
@@ -81,30 +99,34 @@ const SyncMixin = types
         self.timeSync = syncObject;
       }
 
-      const dispose = observe(self as any, 'annotation', () => {
-        if ((self as any).annotation) {
-          self.attachObject();
-          self.needsUpdate?.();
-          dispose();
-        }
-      }, true);
+      const dispose = observe(
+        self as any,
+        "annotation",
+        () => {
+          if ((self as any).annotation) {
+            self.attachObject();
+            self.needsUpdate?.();
+            dispose();
+          }
+        },
+        true,
+      );
     },
 
-    beforeDestroy(){
+    beforeDestroy() {
       if (self.timeSync && self.sync) {
         self.timeSync.unsubscribe(self.sync);
         sync.unregister((self as any).name);
       }
     },
-    
+
     setSyncedDuration(duration: number) {
-      
-      if(self.syncedDuration === 0 || duration < self.syncedDuration) {
+      if (self.syncedDuration === 0 || duration < self.syncedDuration) {
         self.syncedDuration = duration;
         self.timeSync?.syncedDuration(duration);
       }
-
     },
+
     setCurrentlyPlaying(isPlaying: boolean) {
       self.isCurrentlyPlaying = isPlaying;
       isPlaying ? self.timeSync?.play() : self.timeSync?.pause();

@@ -35,8 +35,7 @@ export class TimeSyncSubscriber {
   }
 
   get subscribers(): TimeSyncSubscriber[] {
-    const result = Array
-      .from(this.sync.subscriptions.entries())
+    const result = Array.from(this.sync.subscriptions.entries())
       .filter(([_, subs]) => subs.has(this.name))
       .map(([name]) => this.sync.members.get(name))
       .filter(member => member !== undefined);
@@ -85,7 +84,7 @@ export class TimeSyncSubscriber {
   }
 
   seek(time: number) {
-    if ((!isFFDev2461 || !isFFDev2715) && time === this.currentTime){
+    if ((!isFFDev2461 || !isFFDev2715) && time === this.currentTime) {
       this.releaseEvent("seek");
       return;
     }
@@ -105,7 +104,7 @@ export class TimeSyncSubscriber {
       this.subscribers.forEach(sub => sub.speed(this.currentSpeed));
     });
   }
-  
+
   syncedDuration(duration: number) {
     this.duration = duration;
 
@@ -145,11 +144,11 @@ export class TimeSync {
       return instance;
     }
 
-    return instance = new TimeSync();
+    return (instance = new TimeSync());
   }
 
-  members = new Map<string, TimeSyncSubscriber>()
-  subscriptions = new Map<string, Set<string>>()
+  members = new Map<string, TimeSyncSubscriber>();
+  subscriptions = new Map<string, Set<string>>();
 
   private events = new EventInvoker();
   private eventsCache = new Map<string, TimeSyncHandler[]>();
@@ -162,7 +161,7 @@ export class TimeSync {
     const evts = this.eventsCache.get(name) ?? [];
 
     if (evts.length > 0) {
-      evts.forEach((evt) => {
+      evts.forEach(evt => {
         Object.entries(evt).forEach(([event, cb]) => {
           member.on(event, cb);
         });
