@@ -1,16 +1,15 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { Waveform, WaveformOptions } from "../Waveform";
 import { Layer } from "../Visual/Layer";
-import { AudioModel } from "../../../tags/object";
-
-const sameTimeWithTolerance = (a: number, b: number, tolerance = 0.00001) => {
-  return Math.abs(a - b) < tolerance;
-};
+import { isTimeSimilar } from "../../../utils/utilities";
 
 export const useWaveform = (
   containter: MutableRefObject<HTMLElement | null | undefined>,
-  options: Omit<WaveformOptions, "container"> & { onLoad?: (wf: Waveform) => void },
-  item: AudioModel,
+  options: Omit<WaveformOptions, "container"> & {
+    onLoad?: (wf: Waveform) => void,
+    onSeek?: (time: number) => void,
+    onPlaying?: (playing: boolean) => void,
+  },
 ) => {
   const waveform = useRef<Waveform>();
 
@@ -34,7 +33,7 @@ export const useWaveform = (
     wf.load();
 
     wf.on("load", () => {
-      setDuration(item?.duration ?? wf.duration);
+      setDuration(wf.duration);
       options?.onLoad?.(wf);
     });
 
@@ -44,24 +43,18 @@ export const useWaveform = (
     wf.on("pause", () => {
       setPlaying(false);
     });
-    
-    /* between here and ... */
     wf.on("playing", (time: number) => {
-      // if (playing && !sameTimeWithTolerance(time, currentTime)) {
-      //   item?.triggerSyncSeek(time);
-      // }
-
+      if (playing && !isTimeSimilar(time, currentTime)) {
+        options?.onSeek?.(time);
+      }
       setCurrentTime(time);
     });
-
     wf.on("seek", (time: number) => {
-      if (!sameTimeWithTolerance(time, currentTime)) {
-        item?.triggerSyncSeek(time);
+      if (!isTimeSimilar(time, currentTime)) {
+        options?.onSeek?.(time);
         setCurrentTime(time);
       }
     });
-    /* here - this can cause issues issues when playing selected region in audio */
-
     wf.on("zoom", setZoom);
     wf.on("muted", setMuted);
     wf.on("volumeChange", setVolume);
@@ -118,11 +111,7 @@ export const useWaveform = (
   }, [amp]);
 
   useEffect(() => {
-    if (playing) {
-      item?.triggerSyncPlay();
-    } else {
-      item?.triggerSyncPause();
-    }
+    options?.onPlaying?.(playing);
   }, [playing]);
 
   useEffect(() => {

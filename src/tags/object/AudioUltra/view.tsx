@@ -28,6 +28,8 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       rate: 1,
       muted: false,
       onLoad: item.onLoad,
+      onPlaying: item.onPlaying,
+      onSeek: item.onSeek,
       regions: {
         createable: !item.readonly,
         updateable: !item.readonly,
@@ -42,7 +44,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       },
       autoPlayNewSegments: true,
     },
-    item);
+  );
 
   useEffect(() => {
     const updateBeforeRegionDraw = (regions: Regions) => {

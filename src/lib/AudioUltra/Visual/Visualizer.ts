@@ -1,6 +1,6 @@
 import { ChannelData } from "../Media/ChannelData";
 import { WaveformAudio } from "../Media/WaveformAudio";
-import { averageMinMax, clamp, debounce, defaults, filterData, measure, roundToStep } from "../Common/Utils";
+import { averageMinMax, clamp, debounce, defaults, filterData, measure, roundToStep, warn } from "../Common/Utils";
 import { Waveform, WaveformOptions } from "../Waveform";
 import { CanvasCompositeOperation, Layer, RenderingContext } from "./Layer";
 import { Events } from "../Common/Events";
@@ -105,7 +105,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   init(audio: WaveformAudio) {
-    this.init = () => console.warn("Visualizer is already initialized");
+    this.init = () => warn("Visualizer is already initialized");
     this.audio = audio;
     this.channels.length = this.audio.channelCount;
 
@@ -187,9 +187,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   draw(dry = false) {
     if (this.isDestroyed) return;
     if (this.drawing) {
-      if (process.env.NODE_ENV === "development") {
-        console.warn("Concurrent render detected");
-      }
+      warn("Concurrent render detected");
       return;
     }
 

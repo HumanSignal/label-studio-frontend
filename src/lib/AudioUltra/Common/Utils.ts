@@ -1,9 +1,25 @@
 import { Visualizer } from '../Visual/Visualizer';
 
+export const __DEV__ = process.env.NODE_ENV === "development";
+
 export enum defaults {
   timelineHeight = 32,
   timelinePlacement = 'top'
 }
+
+type LogLevel = "log" | "warn" | "error" | "info";
+
+export const logger = (level: LogLevel = "log") => (...args: any[]) => {
+  if (__DEV__) {
+    // eslint-disable-next-line no-console
+    console[level](...args);
+  }
+};
+
+export const log = logger("log");
+export const warn = logger("warn");
+export const error = logger("error");
+export const info = logger("info");
 
 export const clamp = (value: number, min: number, max: number) => {
   return Math.max(min, Math.min(max, value));
@@ -117,11 +133,17 @@ export const average = (array: ArrayLike<number>) => {
 };
 
 export const measure = (message: string, callback: () => void) => {
-  const start = performance.now();
+  let start = 0;
+
+  if (__DEV__) {
+    start = performance.now();
+  }
 
   callback();
-  // eslint-disable-next-line no-console
-  console.info(`[MEASURE]: ${message} took ${performance.now() - start}ms`);
+
+  if (__DEV__) {
+    info(`[MEASURE]: ${message} took ${performance.now() - start}ms`);
+  }
 };
 
 export const chunk6 = <T>(array: ArrayLike<T>, size: number) => {

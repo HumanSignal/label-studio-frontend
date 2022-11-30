@@ -434,6 +434,18 @@ export const AudioModel = types.compose(
           self.needsUpdate();
         },
 
+        onSeek(time) {
+          self.triggerSyncSeek(time);
+        },
+
+        onPlaying(playing) {
+          if (playing) {
+            self.triggerSyncPlay();
+          } else {
+            self.triggerSyncPause();
+          }
+        },
+
         onError(error) {
           self.errors = [error];
         },
