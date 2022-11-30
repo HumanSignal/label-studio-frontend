@@ -89,18 +89,11 @@ export const AudioUltraRegionModel = types
       selectRegion() {
         if (!self._ws_region) return;
         self._ws_region.handleSelected(true);
+        self._ws_region.scrollToRegion();
+      },
 
-        // @todo: figure out a way to scroll to the region
-      
-        // if (el) {
-        //   // scroll object tag but don't scroll the document
-        //   const container = window.document.scrollingElement;
-        //   const top = container.scrollTop;
-        //   const left = container.scrollLeft;
-
-        //   el.scrollIntoViewIfNeeded ? el.scrollIntoViewIfNeeded() : el.scrollIntoView();
-        //   window.document.scrollingElement.scrollTo(left, top);
-        // }
+      deleteRegion() {
+        self.annotation.deleteRegion(self);
       },
 
       /**

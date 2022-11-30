@@ -160,11 +160,11 @@ export class Visualizer extends Events<VisualizerEvents> {
     return this.zoom;
   }
 
-  setScrollLeft(value: number, redraw = true) {
+  setScrollLeft(value: number, redraw = true, forceDraw = false) {
     this.scrollLeft = value;
 
     if (redraw) {
-      this.draw();
+      this.draw(false, forceDraw);
     }
   }
 
@@ -184,12 +184,9 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.seekLocked = false;
   }
 
-  draw(dry = false) {
+  draw(dry = false, forceDraw = false) {
     if (this.isDestroyed) return;
-    if (this.drawing) {
-      warn("Concurrent render detected");
-      return;
-    }
+    if (this.drawing && !forceDraw) return warn("Concurrent render detected");
 
     this.drawing = true;
 

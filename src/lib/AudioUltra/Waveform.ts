@@ -8,7 +8,7 @@ import { Visualizer } from "./Visual/Visualizer";
 import { Regions, RegionsGlobalEvents, RegionsOptions } from "./Regions/Regions";
 import { Timeline, TimelineOptions } from "./Timeline/Timeline";
 import { Padding } from "./Common/Style";
-import { getCursorTime } from "./Common/Utils";
+import { clamp, getCursorTime } from "./Common/Utils";
 import { PlayheadOptions } from "./Visual/PlayHead";
 import { Layer } from "./Visual/Layer";
 
@@ -258,6 +258,17 @@ export class Waveform extends Events<WaveformEventTypes> {
 
   seekBackward(value?: number) {
     this.seek(this.currentTime - (value ?? this.params.seekStep ?? 1));
+  }
+
+  scrollToRegion(time: number) {
+    if(this.zoom === 1) return;
+
+    const offset = (this.visualizer.width / 2) / this.visualizer.zoomedWidth;
+
+    const scrollLeft = clamp((time / this.duration) - offset, 0, 1);
+
+    this.visualizer.setScrollLeft(scrollLeft, true, true);
+    this.invoke("scroll", [scrollLeft]);
   }
 
   /**

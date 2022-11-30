@@ -310,7 +310,9 @@ export class Segment extends Events<SegmentEvents> {
     layer.fillRect(this.xStart, top, this.handleWidth, height);
     layer.fillRect(this.xEnd - this.handleWidth, top, this.handleWidth, height);
 
-    if (this.selected) this.color.darken(0.5);
+    // this is here because when the selected region is from a different label from before, it was deselecting everything
+    if (this.selected) this.setColorDarken(0.5);
+
     // Render label
     // if (this.label) {
     //   layer.font = "12px Arial";
@@ -338,7 +340,7 @@ export class Segment extends Events<SegmentEvents> {
     if (!this.updateable) return;
     if (this.waveform.playing) this.waveform.player.pause();
     this.selected = selected ?? !this.selected;
-    if (this.selected) this.color.darken(0.5);
+    if (selected) this.setColorDarken(0.5);
     else this.color.reset();
     this.invoke("update", [this]);
     this.waveform.invoke("regionUpdated", [this]);
@@ -347,7 +349,7 @@ export class Segment extends Events<SegmentEvents> {
   handleHighlighted = (highlighted?: boolean) => {
     if (!this.updateable || this.selected) return;
     this.highlighted = highlighted ?? !this.highlighted;
-    if (this.highlighted) this.color.darken(0.5);
+    if (this.highlighted) this.setColorDarken(0.5);
     else this.color.reset();
     this.invoke("update", [this]);
     this.waveform.invoke("regionUpdated", [this]);
@@ -360,6 +362,12 @@ export class Segment extends Events<SegmentEvents> {
   setColor(color: string|RgbaColorArray) {
     this.color.update(color);
     this.handleColor.update(color).darken(0.6);
+  }
+
+  setColorDarken(value: number) {
+    if (this.color.rgba === this.color.base) {
+      this.color.darken(value);
+    }
   }
 
   updateColor(color: string|RgbaColorArray) {
@@ -382,6 +390,10 @@ export class Segment extends Events<SegmentEvents> {
     this.end = newEnd;
     this.invoke("update", [this]);
     this.waveform.invoke("regionUpdated", [this]);
+  }
+
+  scrollToRegion() {
+    this.waveform.scrollToRegion(this.start);
   }
 
   remove() {
