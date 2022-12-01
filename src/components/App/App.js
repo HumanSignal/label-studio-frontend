@@ -19,6 +19,7 @@ import Debug from "../Debug";
 import Segment from "../Segment/Segment";
 import Settings from "../Settings/Settings";
 import { RelationsOverlay } from "../RelationsOverlay/RelationsOverlay";
+import { BottomBar } from "../BottomBar/BottomBar";
 
 /**
  * Tags
@@ -41,7 +42,7 @@ import './App.styl';
 import { Space } from "../../common/Space/Space";
 import { DynamicPreannotationsControl } from "../AnnotationTab/DynamicPreannotationsControl";
 import { isDefined } from "../../utils/utilities";
-import { FF_DEV_1170, isFF } from "../../utils/feature-flags";
+import { FF_DEV_1170, FF_DEV_3873, isFF } from "../../utils/feature-flags";
 import { Annotation } from "./Annotation";
 import { Button } from "../../common/Button/Button";
 
@@ -99,7 +100,7 @@ class App extends Component {
         <Elem name="annotation">
           <TreeValidation errors={this.props.store.annotationStore.validation} />
         </Elem>
-        {store.hasInterface('infobar') && (
+        {!isFF(FF_DEV_3873) && store.hasInterface('infobar') && (
           <Elem name="infobar">
             Task #{store.task.id}
           </Elem>
@@ -139,7 +140,7 @@ class App extends Component {
               {<Annotation root={root} annotation={as.selected} />}
               {this.renderRelations(as.selected)}
             </Elem>
-            {getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
+            {(!isFF(FF_DEV_3873)) && getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
             {as.selected.onlyTextObjects === false && (
               <DynamicPreannotationsControl />
             )}
@@ -235,6 +236,8 @@ class App extends Component {
                 regions={as.selected.regionStore}
               >
                 {mainContent}
+
+                {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store}/>}
               </SidePanels>
             ) : (
               <>
@@ -257,9 +260,11 @@ class App extends Component {
                     )}
                   </Block>
                 )}
+
+
+                {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store}/>}
               </>
             )}
-
           </Block>
         </Provider>
         {store.hasInterface("debug") && <Debug store={store} />}

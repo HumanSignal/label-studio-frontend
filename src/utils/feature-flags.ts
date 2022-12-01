@@ -124,6 +124,12 @@ export const FF_DEV_3617 = "fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix";
  */
 export const FF_DEV_1284 = "fflag_fix_front_dev_1284_auto_detect_undo_281022_short";
 
+/**
+ * Fixing "Auto Detect" tool undo functionality and bugs with skipNextUndoState.
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_1284_auto_detect_undo_281022_short
+ */
+export const FF_DEV_3873 = "fflag_feat_front_dev_3873_labeling_ui_improvements_short";
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
