@@ -168,6 +168,10 @@ export const AudioModel = types.compose(
           self.setReady(true);
         },
 
+        onRateChange(rate) {
+          self.triggerSyncSpeed(rate);
+        },
+
         triggerSyncPlay() {
           if (self.syncedObject) {
             Super.triggerSyncPlay();
@@ -200,13 +204,8 @@ export const AudioModel = types.compose(
           self._ws?.pause();
         },
 
-        handleSyncSpeed() {
-          console.log("handleSyncSpeed", self._ws?.rate);
-        },
-
-        handleSyncDuration(duration) {
-          console.log("handleSyncDuration", self._ws?.duration, duration);
-        },
+        handleSyncSpeed() {},
+        handleSyncDuration() {},
 
         handleSyncSeek(time) {
           if (!self._ws?.loaded || isTimeSimilar(time, self._ws.currentTime)) return;
@@ -390,10 +389,6 @@ export const AudioModel = types.compose(
           if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === "paragraphs")) return;
 
           self.triggerSyncSeek(self._ws.currentTime);
-        },
-
-        handleSpeed(speed) {
-          self.triggerSyncSpeed(speed);
         },
 
         createWsRegion(region) {

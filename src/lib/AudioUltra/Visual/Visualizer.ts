@@ -28,6 +28,7 @@ export type VisualizerOptions = Pick<WaveformOptions,
 | "enabledChannels"
 | "cursorWidth"
 | "zoom"
+| "amp"
 | "padding"
 | "playhead"
 | "timeline"
@@ -92,6 +93,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.gridWidth = options.gridWidth ?? this.gridWidth;
     this.backgroundColor = options.backgroundColor ? rgba(options.backgroundColor) : this.backgroundColor;
     this.zoom = options.zoom ?? this.zoom;
+    this.amp = options.amp ?? this.amp;
     this.playhead = new Playhead({ 
       ...options.playhead,
       x: 0, 

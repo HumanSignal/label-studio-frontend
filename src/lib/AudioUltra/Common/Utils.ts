@@ -207,3 +207,6 @@ export const getCursorTime = (e: MouseEvent, visualizer: Visualizer, duration: n
 };
 
 export const isTimeSimilar = (a: number, b: number) => Math.abs(a - b) < TIME_TOLERANCE;
+export const isTimeRelativelySimilar = (a: number, b: number, observedDuration: number) =>
+  isTimeSimilar(a/observedDuration, b/observedDuration);
+

@@ -233,9 +233,7 @@ const Model = types
         audioRef.current.playbackRate = speed;
       },
 
-      handleSyncDuration(duration) {
-        console.log("handleSyncDuration", self, duration);
-      },
+      handleSyncDuration() {},
 
       handlePause() {
         if (self.syncedAudioVideo) {

@@ -6,7 +6,7 @@ import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
 import ObjectBase from "../Base";
 import { SyncMixin } from "../../../mixins/SyncMixin";
 import IsReadyMixin from "../../../mixins/IsReadyMixin";
-import { isTimeSimilar } from "../../../lib/AudioUltra";
+import { isTimeRelativelySimilar } from "../../../lib/AudioUltra";
 import { FF_DEV_2715, isFF } from "../../../utils/feature-flags";
 
 const isFFDev2715 = isFF(FF_DEV_2715);
@@ -155,7 +155,7 @@ const Model = types
         if (isFFDev2715) {
           if (self.syncedDuration && time >= self.syncedDuration) {
             self.ref.current.currentTime = self.ref.current.duration;
-          } else if (self.ref.current && !isTimeSimilar(self.ref.current.currentTime/self.ref.current.duration, time/self.ref.current.duration)) {
+          } else if (self.ref.current && !isTimeRelativelySimilar(self.ref.current.currentTime, time, self.ref.current.duration)) {
             self.ref.current.currentTime = time;
           }
         }
