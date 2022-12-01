@@ -1,7 +1,7 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { Waveform, WaveformOptions } from "../Waveform";
 import { Layer } from "../Visual/Layer";
-import { isTimeSimilar } from "../Common/Utils";
+import { isTimeRelativelySimilar } from "../Common/Utils";
 
 export const useWaveform = (
   containter: MutableRefObject<HTMLElement | null | undefined>,
@@ -9,18 +9,19 @@ export const useWaveform = (
     onLoad?: (wf: Waveform) => void,
     onSeek?: (time: number) => void,
     onPlaying?: (playing: boolean) => void,
+    onRateChange?: (rate: number) => void,
   },
 ) => {
   const waveform = useRef<Waveform>();
 
   const [zoom, setZoom] = useState(1);
-  const [volume, setVolume] = useState(1);
+  const [volume, setVolume] = useState(options?.volume ?? 1);
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [amp, setAmp] = useState(1);
-  const [rate, setRate] = useState(1);
-  const [muted, setMuted] = useState(false);
+  const [amp, setAmp] = useState(options?.amp ?? 1);
+  const [rate, setRate] = useState(options?.rate ?? 1);
+  const [muted, setMuted] = useState(options?.muted ?? false);
   const [layers, setLayers] = useState<Layer[]>([]);
   const [layerVisibility, setLayerVisibility] = useState(new Map());
 
@@ -36,7 +37,6 @@ export const useWaveform = (
       setDuration(wf.duration);
       options?.onLoad?.(wf);
     });
-
     wf.on("play", () => {
       setPlaying(true);
     });
@@ -44,13 +44,13 @@ export const useWaveform = (
       setPlaying(false);
     });
     wf.on("playing", (time: number) => {
-      if (playing && !isTimeSimilar(time/duration, currentTime/duration)) {
+      if (playing && !isTimeRelativelySimilar(time, currentTime, duration)) {
         options?.onSeek?.(time);
       }
       setCurrentTime(time);
     });
     wf.on("seek", (time: number) => {
-      if (!isTimeSimilar(time/duration, currentTime/duration)) {
+      if (!isTimeRelativelySimilar(time, currentTime, duration)) {
         options?.onSeek?.(time);
         setCurrentTime(time);
       }
@@ -58,7 +58,12 @@ export const useWaveform = (
     wf.on("zoom", setZoom);
     wf.on("muted", setMuted);
     wf.on("volumeChange", setVolume);
-    wf.on("rateChanged", setRate);
+    wf.on("rateChanged", (newRate) => {
+      if (newRate !== rate) {
+        options?.onRateChange?.(newRate);
+        setRate(newRate);
+      }
+    });
     wf.on("layersUpdated", (layers) => {
       const layersArray = [];
       const layerVis = new Map();

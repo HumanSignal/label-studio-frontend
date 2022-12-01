@@ -32,6 +32,12 @@ export interface WaveformOptions {
   zoom?: number;
 
   /**
+   * Amplitude factor. 1 – no zoom
+   * @default 1
+   * */
+  amp?: number;
+
+  /**
    * Volume 0..1, 0 – muted
    * @default 1
    * */

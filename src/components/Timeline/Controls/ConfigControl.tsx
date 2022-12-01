@@ -6,7 +6,7 @@ import { IconConfig } from "../../../assets/icons/timeline";
 import { ControlButton } from "../Controls";
 import { Slider } from './Slider';
 
-const MAX_SPEED = 250;
+const MAX_SPEED = 2.5;
 const MAX_ZOOM = 150;
 
 export interface ConfigControlProps {
@@ -27,49 +27,34 @@ export const ConfigControl: FC<ConfigControlProps> = ({
   onAmpChange,
   ...props
 }) => {
-  const [playbackSpeed, setplaybackSpeed] = useState(100);
+  const [playbackSpeed, setplaybackSpeed] = useState(speed ?? 1);
   const [isTimeline, setTimeline] = useState(true);
   const [isAudioWave, setAudioWave] = useState(true);
   const [isAudioTrack, setAudioTrack] = useState(true);
 
   const handleSetTimeline = () => {
     setTimeline(!isTimeline);
-
-    console.log('hide/show timeline');
   };
 
   const handleSetAudioWave = () => {
     setAudioWave(!isAudioWave);
-
-    console.log('hide/show audiowave');
   };
 
   const handleSetAudioTrack = () => {
     setAudioTrack(!isAudioTrack);
-
-    console.log('hide/show audiotrack');
   };
 
   const handleChangePlaybackSpeed = (e: React.FormEvent<HTMLInputElement>) => {
     const _playbackSpeed = parseFloat(e.currentTarget.value);
 
-    if (!_playbackSpeed) {
-      setplaybackSpeed(0);
-    } else {
-      setplaybackSpeed(_playbackSpeed);
-    }
-
-    if (!_playbackSpeed || _playbackSpeed <= 20) {
-      onSpeedChange(0.6);
-    } else {
-      onSpeedChange(_playbackSpeed / (MAX_SPEED / 2));
-    }
+    setplaybackSpeed(_playbackSpeed);
+    onSpeedChange(_playbackSpeed);
   };
 
   const handleChangeAmp = (e: React.FormEvent<HTMLInputElement>) => {
     const _amp = parseFloat(e.currentTarget.value);
 
-    onAmpChange(_amp * 10);
+    onAmpChange(_amp);
   };
 
   const renderMuteButton = () => {
@@ -101,17 +86,19 @@ export const ConfigControl: FC<ConfigControlProps> = ({
     return (
       <Elem name="modal">
         <Slider
-          min={50}
+          min={0.5}
           max={MAX_SPEED}
+          step={0.1}
           value={playbackSpeed}
           description={"Playback speed"}
           info={"Increase or decrease the playback speed"}
           onChange={handleChangePlaybackSpeed}
         />
         <Slider
-          min={0}
+          min={1}
           max={MAX_ZOOM}
-          value={amp / 10}
+          step={0.1}
+          value={amp}
           description={"Audio zoom y-axis"}
           info={"Increase or decrease the appearance of amplitude"}
           onChange={handleChangeAmp}

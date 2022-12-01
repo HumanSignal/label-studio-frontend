@@ -12,6 +12,7 @@ export class Player extends Destructable {
   private time = 0;
   private connected = false;
   private ended = false;
+  private _rate = 1;
 
   playing = false;
 
@@ -19,22 +20,36 @@ export class Player extends Destructable {
     super();
 
     this.wf = wf;
+    this._rate = wf.params.rate ?? this._rate;
   }
 
   /**
    * Get current playback speed
    */
   get rate() {
-    return this.audio.source?.playbackRate.value ?? 0;
+    if (this.audio.source?.playbackRate.value) {
+      if (this.audio.source.playbackRate.value !== this._rate) {
+        this.audio.source.playbackRate.value = this._rate; // restore the correct rate
+      }
+    }
+
+    return this._rate;
   }
 
   /**
    * Set playback speed
    */
   set rate(value: number) {
+    const rateChanged = this._rate !== value;
+
+    this._rate = value;
+
     if (this.audio.source) {
       this.audio.source.playbackRate.value = value;
-      this.wf.invoke("rateChanged", [value]);
+
+      if (rateChanged) {
+        this.wf.invoke("rateChanged", [value]);
+      }
     }
   }
 
@@ -48,8 +63,14 @@ export class Player extends Destructable {
 
   set volume(value: number) {
     if (this.audio) {
+
+      const volumeChanged = this.volume !== value;
+
       this.audio.volume = value;
-      this.wf.invoke("volumeChange", [value]);
+
+      if (volumeChanged) {
+        this.wf.invoke("volumeChange", [value]);
+      }
     }
   }
 
