@@ -17,6 +17,7 @@ import { FF_DEV_2007_DEV_2008, FF_DEV_3617, isFF } from '../../../utils/feature-
 import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
 import { Spin } from 'antd';
 import './Taxonomy.styl';
+import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
 
 /**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
@@ -264,6 +265,7 @@ const TaxonomyModel = types.compose('TaxonomyModel',
   ...(isFF(FF_DEV_3617) ? [SharedStoreMixin] : []),
   RequiredMixin,
   PerRegionMixin,
+  ReadOnlyControlMixin,
   VisibilityMixin,
   AnnotationMixin,
 );
@@ -295,7 +297,7 @@ const HtxTaxonomy = observer(({ item }) => {
           onAddLabel={item.userLabels && item.onAddLabel}
           onDeleteLabel={item.userLabels && item.onDeleteLabel}
           options={options}
-          isEditable={item.annotation.editable}
+          isEditable={!item.isReadOnly()}
         />
       )}
     </div>

@@ -505,7 +505,7 @@ export default observer(
 
       const p = e.target.getParent();
 
-      if (!item.annotation.editable) return;
+      if (item.annotation.isReadOnly()) return;
       if (p && p.className === 'Transformer') return;
 
       const handleMouseDown = () => {

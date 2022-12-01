@@ -16,7 +16,8 @@ export const KonvaRegionMixin = types.model({})
       },
 
       get supportsTransform() {
-        return this._supportsTransform && this.editable && !this.hidden;
+        if (self.isReadOnly()) return false;
+        return this._supportsTransform && !this.hidden;
       },
     };
   })
@@ -38,7 +39,7 @@ export const KonvaRegionMixin = types.model({})
 
         if (e) e.cancelBubble = true;
 
-        if (annotation.editable && annotation.relationMode) {
+        if (!annotation.isReadOnly() && annotation.relationMode) {
           annotation.addRelation(self);
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();

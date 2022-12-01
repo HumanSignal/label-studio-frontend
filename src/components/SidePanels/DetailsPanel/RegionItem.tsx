@@ -29,7 +29,7 @@ export const RegionItem: FC<RegionItemProps> = observer(({
   const [editMode, setEditMode] = useState(false);
 
   const hasEditableRegions = useMemo(() => {
-    return !!nodes.find((node: any) => node.editable && !node.classification);
+    return !!nodes.find((node: any) => !node.isReadOnly() && !node.classification);
   }, [nodes]);
 
   const title = useMemo(() => {
@@ -118,12 +118,12 @@ const RegionAction: FC<any> = observer(({
   return (
     <Block name="region-actions">
       <Elem name="group" mod={{ align: 'left' }}>
-        {!(region.readonly || region.locked || !region.editable) && entityButtons}
+        {!region.isReadOnly() && entityButtons}
       </Elem>
       <Elem name="group" mod={{ align: 'right' }}>
         <RegionActionButton
-          icon={region.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
-          disabled={region.readonly}
+          icon={region.isReadOnly() ? <IconLockUnlocked/> : <IconLockLocked/>}
+          disabled={region.isReadOnly()}
           onClick={() => region.setLocked(!region.locked)}
           hotkey="region:lock"
         />
@@ -134,7 +134,7 @@ const RegionAction: FC<any> = observer(({
         />
         <RegionActionButton
           danger
-          disabled={region.readonly || region.locked || !region.editable}
+          disabled={region.isReadOnly()}
           icon={<IconTrash/>}
           onClick={() => annotation.deleteRegion(region)}
         />

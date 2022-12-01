@@ -151,6 +151,10 @@ const Model = types
       return 'choice';
     },
 
+    isReadOnly() {
+      return self.result?.isReadOnly() || self.annotation.isReadOnly();
+    },
+
     // perChoiceVisible() {
     //     if (! self.whenchoicevalue) return true;
 
@@ -202,15 +206,22 @@ const Model = types
     },
 
     setResult(values) {
-      self.tiedChildren.forEach(choice => choice.setSelected(
-        !choice.isSkipped && values?.some?.((value) => {
-          if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
-            return value.length === choice.resultValue.length && value.every?.((val, idx) => val === choice.resultValue?.[idx]);
-          } else {
-            return value === choice.resultValue;
-          }
-        }),
-      ));
+      self.tiedChildren.forEach(choice => {
+        let isSelected = false;
+
+        if (!choice.isSkipped) {
+          isSelected = values?.some?.((value) => {
+            if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
+              if (value.length !== choice.resultValue.length) return false;
+              return value.every?.((val, idx) => val === choice.resultValue?.[idx]);
+            } else {
+              return value === choice.resultValue;
+            }
+          });
+        }
+
+        choice.setSelected(isSelected);
+      });
     },
 
     // update result in the store with current selected choices
@@ -248,13 +259,12 @@ const Model = types
     },
 
     fromStateJSON(obj) {
+      console.log('from state json');
       self.unselectAll();
 
       if (!obj.value.choices) throw new Error('No labels param');
 
       if (obj.id) self.pid = obj.id;
-
-      self.readonly = obj.readonly;
 
       obj.value.choices.forEach(l => {
         const choice = self.findLabel(l);
@@ -285,6 +295,7 @@ const ChoicesSelectLayout = observer(({ item }) => {
       style={{ width: '100%' }}
       value={item.selectedLabels.map(l => l._value)}
       mode={item.choice === 'multiple' ? 'multiple' : ''}
+      disabled={item.isReadOnly()}
       onChange={function(val) {
         if (Array.isArray(val)) {
           item.resetSelected();

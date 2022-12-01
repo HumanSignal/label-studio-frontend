@@ -1,6 +1,7 @@
 import { getEnv, getParent, getRoot, getType, types } from 'mobx-state-tree';
 import { guidGenerator } from '../core/Helpers';
 import { AnnotationMixin } from './AnnotationMixin';
+import { ReadOnlyRegionMixin } from './ReadOnlyMixin';
 
 const RegionsMixin = types
   .model({
@@ -51,9 +52,7 @@ const RegionsMixin = types
     },
 
     get editable() {
-      if (self.locked === true) return false;
-
-      return self.readonly === false && self.annotation.editable === true;
+      throw new Error('Not implemented');
     },
 
     get isCompleted() {
@@ -263,9 +262,9 @@ const RegionsMixin = types
       onClickRegion(ev) {
         const annotation = self.annotation;
 
-        if (self.editable && (self.isDrawing || annotation.isDrawing)) return;
+        if (!self.isReadOnly() && (self.isDrawing || annotation.isDrawing)) return;
 
-        if (self.editable && annotation.relationMode) {
+        if (!self.isReadOnly() && annotation.relationMode) {
           annotation.addRelation(self);
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
@@ -334,4 +333,4 @@ const RegionsMixin = types
     };
   });
 
-export default types.compose(RegionsMixin, AnnotationMixin);
+export default types.compose(RegionsMixin, ReadOnlyRegionMixin, AnnotationMixin);

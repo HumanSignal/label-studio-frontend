@@ -136,6 +136,9 @@ export const Annotation = types
       get toNames() {
         return self.list.toNames;
       },
+      isReadOnly() {
+        return self.readonly;
+      },
     })
   .views(self => ({
     get store() {
@@ -259,6 +262,7 @@ export const Annotation = types
     },
 
     setReadonly(val) {
+      console.log('setting readonly');
       self.readonly = val;
     },
 
@@ -475,6 +479,8 @@ export const Annotation = types
      * @param {*} region
      */
     deleteRegion(region) {
+      if (region.isReadOnly()) return;
+
       const { regions } = self.regionStore;
       // move all children into the parent region of the given one
       const children = regions.filter(r => r.parentID === region.id);
@@ -612,7 +618,7 @@ export const Annotation = types
     startAutosave: flow(function *() {
       if (!getEnv(self).events.hasEvent('submitDraft')) return;
       // view all must never trigger autosave
-      if (!self.editable) return;
+      if (self.isReadOnly()) return;
 
       // some async tasks should be performed after deserialization
       // so start autosave on next tick
@@ -699,19 +705,6 @@ export const Annotation = types
         // on other elements in the tree.
         if (node.annotationAttached) node.annotationAttached();
 
-        // copy tools from control tags into object tools manager
-        // [DOCS] each object tag may have an assigned tools
-        // manager. This assignment may happen because user asked
-        // for it through the config, or because the attached
-        // control tags are complex and require additional UI
-        // interfaces. Each control tag defines a set of tools it
-        // supports
-        if (node && node.getToolsManager) {
-          const tools = node.getToolsManager();
-          const states = self.toNames.get(node.name);
-
-          states && states.forEach(s => tools.addToolsFromControl(s));
-        }
 
         // @todo special place to init such predefined values; `afterAttach` of the tag?
         // preselected choices
@@ -1048,12 +1041,6 @@ export const Annotation = types
         self._initialAnnotationObj = objAnnotation;
 
         objAnnotation.forEach(obj => {
-          const { readonly } = obj;
-
-          if(readonly) {
-            self.setReadonly(true);
-          }
-
           self.deserializeSingleResult(obj,
             (id) => areas.get(id),
             (snapshot) => areas.put(snapshot),

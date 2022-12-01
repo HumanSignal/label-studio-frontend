@@ -113,6 +113,10 @@ const Model = types
         return self._resultValue;
       }
     },
+
+    isReadOnly() {
+      return self.readonly || self.parent?.isReadOnly();
+    },
   }))
   .volatile(() => ({
     // `selected` is a predefined parameter, we cannot use it for state, so use `sel`
@@ -120,7 +124,7 @@ const Model = types
   }))
   .actions(self => ({
     toggleSelected() {
-      if (self.parent?.readonly || !self.annotation?.editable) return;
+      if (self.parent?.readonly || self.annotation?.isReadOnly()) return;
       const choices = self.parent;
       const selected = self.sel;
 
@@ -158,6 +162,7 @@ const ChoiceModel = types.compose('ChoiceModel', TagParentMixin, TagAttrs, Model
 class HtxChoiceView extends Component {
   render() {
     const { item, store } = this.props;
+
     let style = {};
 
     if (item.style) style = Tree.cssConverter(item.style);
@@ -173,9 +178,9 @@ class HtxChoiceView extends Component {
 
     const props = {
       checked: item.sel,
-      disabled: item.parent?.readonly,
+      disabled: item.parent?.isReadOnly(),
       onChange: ev => {
-        if (!item.annotation.editable) return;
+        if (item.isReadOnly()) return;
         item.toggleSelected();
         ev.nativeEvent.target.blur();
       },
@@ -186,7 +191,7 @@ class HtxChoiceView extends Component {
 
       return (
         <Form.Item style={cStyle}>
-          <Checkbox name={item._value} {...props}>
+          <Checkbox name={item._value} {...props} disabled={item.isReadOnly()}>
             {item._value}
             {showHotkey && <Hint>[{item.hotkey}]</Hint>}
           </Checkbox>
@@ -221,7 +226,7 @@ const HtxNewChoiceView = ({ item, store }) => {
     item.hotkey;
 
   const changeHandler = useCallback((ev) => {
-    if (!item.annotation.editable) return;
+    if (item.isReadOnly()) return;
     item.toggleSelected();
     ev.nativeEvent.target.blur();
   }, []);
@@ -239,7 +244,7 @@ const HtxNewChoiceView = ({ item, store }) => {
           mod={{ notLeaf: !item.isLeaf }}
           checked={item.sel}
           indeterminate={!item.sel && item.indeterminate}
-          disabled={item.parent?.readonly}
+          disabled={item.isReadOnly()}
           onChange={changeHandler}
         >
           {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }

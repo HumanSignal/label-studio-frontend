@@ -40,7 +40,7 @@ const RegionEditorComponent: FC<RegionEditorProps> = ({
   const fields: any[] = region.editableFields ?? [];
 
   return (
-    <Block name="region-editor" mod={{ disabled: !region.editable }}>
+    <Block name="region-editor" mod={{ disabled: region.isReadOnly() }}>
       <Elem name="wrapper">
         {region.editorEnabled && fields.map((field: any, i) => {
           return (

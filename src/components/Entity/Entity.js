@@ -63,8 +63,8 @@ export default observer(({ store, annotation }) => {
   const [editMode, setEditMode] = React.useState(false);
 
   const entityButtons = [];
-  const hasEditableNodes = !!nodes.find(node => node.editable);
-  const hasEditableRegions = !!nodes.find(node => node.editable && !node.classification);
+  const hasEditableNodes = !!nodes.find(node => !node.isReadOnly());
+  const hasEditableRegions = !!nodes.find(node => !node.isReadOnly() && !node.classification);
 
   const Node = window.HTX_DEBUG ? NodeDebug : NodeMinimal;
 

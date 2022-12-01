@@ -36,11 +36,15 @@ const RegionMixin = types
     },
 
     get editable() {
-      return self.readonly === false && self.annotation.editable === true;
+      throw new Error('Not implemented');
     },
 
     get labelsState() {
       return self.states.find(s => s.type.indexOf('labels') !== -1);
+    },
+
+    isReadOnly() {
+      return self.locked || self.readonly || self.annotation.readOnly();
     },
 
     hasLabelState(labelValue) {
@@ -248,7 +252,7 @@ const RegionMixin = types
      * Remove region
      */
     deleteRegion() {
-      if (!self.annotation.editable) return;
+      if (self.annotation.isReadOnly()) return;
 
       self.unselectRegion();
 

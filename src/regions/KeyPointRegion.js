@@ -255,7 +255,7 @@ const HtxKeyPointView = ({ item }) => {
           item.onClickRegion(e);
         }}
         {...props}
-        draggable={item.editable}
+        draggable={!item.isReadOnly()}
         listening={!suggestion}
       />
       <LabelOnKP item={item} color={regionStyles.strokeColor}/>

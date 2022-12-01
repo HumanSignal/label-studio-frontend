@@ -145,7 +145,16 @@ export class HtxTextBox extends React.Component {
   }
 
   renderView() {
-    const { onChange, onDelete, isEditable, isDeleteable, text, ...props } = this.props;
+    const {
+      onChange,
+      onDelete,
+      isEditable,
+      isDeleteable,
+      text,
+      ignoreShortcuts: _,
+      onlyEdit: __,
+      ...props
+    } = this.props;
 
     return (
       <>

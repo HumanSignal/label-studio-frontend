@@ -134,11 +134,11 @@ const Model = types.model({
 
 
     const affectedRegions = sameObjectSelectedRegions.filter(region => {
-      return region.editable;
+      return !region.isReadOnly();
     });
 
     // one more check if that label can be selected
-    if (!self.annotation.editable) return;
+    if (self.annotation.isReadOnly()) return;
 
     if (sameObjectSelectedRegions.length > 0 && affectedRegions.length === 0) return;
 

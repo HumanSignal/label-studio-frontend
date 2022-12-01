@@ -3,10 +3,11 @@ import { guidGenerator } from '../core/Helpers';
 import Result from '../regions/Result';
 import { defaultStyle } from '../core/Constants';
 import { PER_REGION_MODES } from './PerRegion';
+import { ReadOnlyAreaMixin } from './ReadOnlyMixin';
 
 let ouid = 1;
 
-export const AreaMixin = types
+export const AreaMixinBase = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     ouid: types.optional(types.number, () => ouid++),
@@ -132,7 +133,7 @@ export const AreaMixin = types
      * Remove region
      */
     deleteRegion() {
-      if (!self.annotation.editable) return;
+      if (self.annotation.isReadOnly()) return;
       if (self.selected) self.annotation.unselectAll(true);
       if (self.destroyRegion) self.destroyRegion();
       self.annotation.deleteRegion(self);
@@ -172,3 +173,5 @@ export const AreaMixin = types
       self.updateAppearenceFromState && self.updateAppearenceFromState();
     },
   }));
+
+export const AreaMixin = types.compose('AreaMixin', AreaMixinBase, ReadOnlyAreaMixin);

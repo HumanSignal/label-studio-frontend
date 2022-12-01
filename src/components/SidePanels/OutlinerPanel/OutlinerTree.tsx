@@ -414,10 +414,9 @@ const RegionControls: FC<RegionControlsProps> = observer(({
         )}
       </Elem>
       <Elem name="control" mod={{ type: 'lock' }}>
-        {/* TODO: implement manual region locking */}
-        {item && (hovered || !item.editable) && (
-          <RegionControlButton disabled={item.readonly} onClick={onToggleLocked}>
-            {item.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
+        {item && (hovered || item.isReadOnly()) && (
+          <RegionControlButton disabled={item.isReadOnly()} onClick={onToggleLocked}>
+            {item.isReadOnly() ? <IconLockLocked/> : <IconLockUnlocked/>}
           </RegionControlButton>
         )}
       </Elem>

@@ -46,10 +46,11 @@ const Model = types
         color: 'orange',
       };
 
-      if (self.readonly) {
+      if (self.isReadOnly()) {
         reg.drag = false;
         reg.resize = false;
       }
+
       return reg;
     },
   }))
