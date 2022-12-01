@@ -8,6 +8,8 @@ import { Slider } from './Slider';
 
 const MAX_SPEED = 2.5;
 const MAX_ZOOM = 150;
+const MIN_SPEED = 0.5;
+const MIN_ZOOM = 1;
 
 export interface ConfigControlProps {
   configModal: boolean;
@@ -86,7 +88,7 @@ export const ConfigControl: FC<ConfigControlProps> = ({
     return (
       <Elem name="modal">
         <Slider
-          min={0.5}
+          min={MIN_SPEED}
           max={MAX_SPEED}
           step={0.1}
           value={playbackSpeed}
@@ -95,7 +97,7 @@ export const ConfigControl: FC<ConfigControlProps> = ({
           onChange={handleChangePlaybackSpeed}
         />
         <Slider
-          min={1}
+          min={MIN_ZOOM}
           max={MAX_ZOOM}
           step={0.1}
           value={amp}
