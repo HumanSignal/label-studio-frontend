@@ -87,8 +87,11 @@ const Model = types
     },
 
     get syncedAudioVideo() {
-      if (!isFFDev2461 || !isFFDev2715) return false;
-      return self.syncedObject?.type?.startsWith("audio") || self.syncedObject?.type?.startsWith("video");
+      if (!isFFDev2461 && !isFFDev2715) return false;
+      if (isFFDev2715) {
+        return self.syncedObject?.type?.startsWith("audio") || self.syncedObject?.type?.startsWith("video");
+      }
+      return self.syncedObject?.type?.startsWith("audio");
     },
 
     get audio() {
@@ -282,14 +285,14 @@ const Model = types
 
         const isPlaying = isFFDev2461 ? self.isCurrentlyPlaying : !audio.paused;
 
-        if (isPlaying) {
+        if (isPlaying && currentId === idx) {
           if (isFFDev2461) {
             self.handlePause();
           } else {
             audio.pause();
             self.playingId = -1;
           }
-          if (idx === currentId) return;
+          return;
         }
 
         if (idx !== currentId) {
