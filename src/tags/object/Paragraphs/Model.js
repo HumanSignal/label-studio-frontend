@@ -13,12 +13,11 @@ import styles from "./Paragraphs.module.scss";
 import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
 import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
 import { isValidObjectURL } from "../../../utils/utilities";
-import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2715, FF_DEV_2918, isFF } from "../../../utils/feature-flags";
+import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, isFF } from "../../../utils/feature-flags";
 import { SyncMixin } from "../../../mixins/SyncMixin";
 
 
 const isFFDev2461 = isFF(FF_DEV_2461);
-const isFFDev2715 = isFF(FF_DEV_2715);
 
 /**
  * The `Paragraphs` tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
@@ -87,7 +86,8 @@ const Model = types
     },
 
     get syncedAudioVideo() {
-      if (!isFFDev2461 || !isFFDev2715) return false;
+      if (!isFFDev2461) return false;
+
       return self.syncedObject?.type?.startsWith("audio") || self.syncedObject?.type?.startsWith("video");
     },
 
@@ -282,14 +282,14 @@ const Model = types
 
         const isPlaying = isFFDev2461 ? self.isCurrentlyPlaying : !audio.paused;
 
-        if (isPlaying) {
+        if (isPlaying && currentId === idx) {
           if (isFFDev2461) {
             self.handlePause();
           } else {
             audio.pause();
             self.playingId = -1;
           }
-          if (idx === currentId) return;
+          return;
         }
 
         if (idx !== currentId) {
