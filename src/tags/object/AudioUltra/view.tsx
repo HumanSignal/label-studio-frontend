@@ -10,6 +10,8 @@ interface AudioUltraProps {
   item: any;
 }
 
+const NORMALIZED_STEP = 0.1;
+
 const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   const rootRef = useRef<HTMLElement | null>();
 
@@ -114,10 +116,14 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         onPause={() => controls.setPlaying(false)}
         allowFullscreen={false}
         onVolumeChange={vol => controls.setVolume(vol)}
-        onStepBackward={() => {}}
-        onStepForward={() => {}}
-        onRewind={(steps) => {}}
-        onForward={(steps) => {}}
+        onStepBackward={() => {
+          waveform.current?.seekBackward(NORMALIZED_STEP);
+          waveform.current?.syncCursor();
+        }}
+        onStepForward={() => {
+          waveform.current?.seekForward(NORMALIZED_STEP);
+          waveform.current?.syncCursor();
+        }}
         onPositionChange={pos => controls.setCurrentTime(pos)}
         onSpeedChange={speed => controls.setRate(speed)}
         onZoom={zoom => controls.setZoom(zoom)}

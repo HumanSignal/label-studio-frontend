@@ -64,7 +64,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   mediaType,
   ...props
 }) => {
-  const { settings, data } = useContext(TimelineContext);
+  const { settings } = useContext(TimelineContext);
   const [altControlsMode, setAltControlsMode] = useState(false);
   const [configModal, setConfigModal] = useState(false);
   const [audioModal, setAudioModal] = useState(false);
