@@ -368,6 +368,10 @@ export default types
         const c = self.annotationStore.selected;
 
         if (c && !c.relationMode && !c.isDrawing) {
+          self.annotationStore.history.forEach(obj => {
+            obj.unselectAll();
+          });
+
           c.unselectAll();
         }
       });
