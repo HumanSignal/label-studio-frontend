@@ -44,13 +44,13 @@ export const useWaveform = (
       setPlaying(false);
     });
     wf.on("playing", (time: number) => {
-      if (playing && !isTimeSimilar(time, currentTime)) {
+      if (playing && !isTimeSimilar(time/duration, currentTime/duration)) {
         options?.onSeek?.(time);
       }
       setCurrentTime(time);
     });
     wf.on("seek", (time: number) => {
-      if (!isTimeSimilar(time, currentTime)) {
+      if (!isTimeSimilar(time/duration, currentTime/duration)) {
         options?.onSeek?.(time);
         setCurrentTime(time);
       }

@@ -2,7 +2,7 @@ import { Visualizer } from '../Visual/Visualizer';
 
 export const __DEV__ = process.env.NODE_ENV === "development";
 
-const TIME_TOLERANCE = 0.0001;
+const TIME_TOLERANCE = 0.000001;
 
 export enum defaults {
   timelineHeight = 32,

@@ -155,7 +155,7 @@ const Model = types
         if (isFFDev2715) {
           if (self.syncedDuration && time >= self.syncedDuration) {
             self.ref.current.currentTime = self.ref.current.duration;
-          } else if (self.ref.current && !isTimeSimilar(self.ref.current.currentTime, time)) {
+          } else if (self.ref.current && !isTimeSimilar(self.ref.current.currentTime/self.ref.current.duration, time/self.ref.current.duration)) {
             self.ref.current.currentTime = time;
           }
         }
