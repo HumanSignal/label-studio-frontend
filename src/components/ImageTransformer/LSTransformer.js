@@ -1,8 +1,8 @@
-import Konva from "konva";
+import Konva from 'konva';
 
 import IconRotate from '../../assets/icons/rotate.svg';
 
-const EVENTS_NAME = "tr-konva";
+const EVENTS_NAME = 'tr-konva';
 
 // Copies of local methods from Konva's original implementation
 function getCenter(shape) {
@@ -99,7 +99,7 @@ class LSTransformer extends Konva.Transformer {
         this.isMouseOver = false;
 
         if (!this.isMouseDown) {
-          this.getStage().content.style.cursor = ``;
+          this.getStage().content.style.cursor = '';
         }
       });
 
@@ -148,14 +148,14 @@ class LSTransformer extends Konva.Transformer {
     this._nodes.forEach((target) => {
       target._fire('transformstart', { evt: e, target });
     });
-  }
+  };
 
   handleMouseUp = (e) => {
     this.isMouseDown = false;
     this.origin = undefined;
 
     if (!this.isMouseOver) {
-      this.getStage().content.style.cursor = ``;
+      this.getStage().content.style.cursor = '';
     }
 
     if (window) {
@@ -174,7 +174,7 @@ class LSTransformer extends Konva.Transformer {
       });
     }
     this._movingAnchorName = '';
-  }
+  };
 
   handleMouseMove = (e) => {
     const stage = this.getStage();
@@ -202,23 +202,23 @@ class LSTransformer extends Konva.Transformer {
     const rotated = rotateAroundCenter(shape, diff);
 
     this._fitNodesInto(rotated, e);
-  }
+  };
 
   refreshRotationList() {
     return {
-      "top-left": {
+      'top-left': {
         x: 0,
         y: 0,
       },
-      "top-right": {
+      'top-right': {
         x: this.getWidth(),
         y: 0,
       },
-      "bottom-left": {
+      'bottom-left': {
         x: 0,
         y: this.getHeight(),
       },
-      "bottom-right": {
+      'bottom-right': {
         x: this.getWidth(),
         y: this.getHeight(),
       },
@@ -241,7 +241,7 @@ class LSTransformer extends Konva.Transformer {
   }
 
   detach() {
-    this._outerBack?.off("." + EVENTS_NAME);
+    this._outerBack?.off('.' + EVENTS_NAME);
 
     super.detach();
   }
@@ -276,8 +276,8 @@ class LSTransformer extends Konva.Transformer {
       };
 
       outerBack.setAttrs({
-        x: (x - this.getStage().getAttr("x")) * scale.x,
-        y: (y - this.getStage().getAttr("y")) * scale.y,
+        x: (x - this.getStage().getAttr('x')) * scale.x,
+        y: (y - this.getStage().getAttr('y')) * scale.y,
         width: width * scale.x,
         height: height * scale.y,
         rotation,
@@ -286,6 +286,6 @@ class LSTransformer extends Konva.Transformer {
   }
 }
 
-Konva["LSTransformer"] = LSTransformer;
+Konva['LSTransformer'] = LSTransformer;
 
-export default "LSTransformer";
+export default 'LSTransformer';

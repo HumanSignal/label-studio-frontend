@@ -1,21 +1,21 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
-import SpanTextMixin from "../mixins/SpanText";
-import Utils from "../utils";
-import WithStatesMixin from "../mixins/WithStates";
-import { ParagraphLabelsModel } from "../tags/control/ParagraphLabels";
-import { TextAreaModel } from "../tags/control/TextArea/TextArea";
-import { ChoicesModel } from "../tags/control/Choices";
-import { RatingModel } from "../tags/control/Rating";
-import { ParagraphsModel } from "../tags/object/Paragraphs";
-import { AreaMixin } from "../mixins/AreaMixin";
-import Registry from "../core/Registry";
+import NormalizationMixin from '../mixins/Normalization';
+import RegionsMixin from '../mixins/Regions';
+import SpanTextMixin from '../mixins/SpanText';
+import Utils from '../utils';
+import WithStatesMixin from '../mixins/WithStates';
+import { ParagraphLabelsModel } from '../tags/control/ParagraphLabels';
+import { TextAreaModel } from '../tags/control/TextArea/TextArea';
+import { ChoicesModel } from '../tags/control/Choices';
+import { RatingModel } from '../tags/control/Rating';
+import { ParagraphsModel } from '../tags/object/Paragraphs';
+import { AreaMixin } from '../mixins/AreaMixin';
+import Registry from '../core/Registry';
 
 const Model = types
-  .model("ParagraphsRegionModel", {
-    type: "textrange",
+  .model('ParagraphsRegionModel', {
+    type: 'textrange',
     object: types.late(() => types.reference(ParagraphsModel)),
 
     startOffset: types.integer,
@@ -26,7 +26,7 @@ const Model = types
     states: types.maybeNull(types.array(types.union(ParagraphLabelsModel, TextAreaModel, ChoicesModel, RatingModel))),
   })
   .volatile(() => ({
-    text: "",
+    text: '',
     hideable: true,
   }))
   .views(self => ({
@@ -86,8 +86,8 @@ const Model = types
         },
       };
 
-      if (self.object.savetextresult === "yes") {
-        res.value["text"] = self.text;
+      if (self.object.savetextresult === 'yes') {
+        res.value['text'] = self.text;
       }
 
       return res;
@@ -95,7 +95,7 @@ const Model = types
   }));
 
 const ParagraphsRegionModel = types.compose(
-  "ParagraphsRegionModel",
+  'ParagraphsRegionModel',
   WithStatesMixin,
   RegionsMixin,
   AreaMixin,
@@ -104,6 +104,6 @@ const ParagraphsRegionModel = types.compose(
   SpanTextMixin,
 );
 
-Registry.addRegionType(ParagraphsRegionModel, "paragraphs");
+Registry.addRegionType(ParagraphsRegionModel, 'paragraphs');
 
 export { ParagraphsRegionModel };

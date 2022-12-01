@@ -1,4 +1,4 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 import { PER_REGION_MODES } from './PerRegionModes';
 
 
@@ -38,4 +38,4 @@ const PerRegionMixin = types
   .actions(() => ({}));
 
 export default PerRegionMixin;
-export { PER_REGION_MODES } from "./PerRegionModes";
+export { PER_REGION_MODES } from './PerRegionModes';

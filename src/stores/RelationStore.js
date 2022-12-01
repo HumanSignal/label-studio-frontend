@@ -1,21 +1,21 @@
-import { destroy, getParentOfType, getRoot, isValidReference, types } from "mobx-state-tree";
+import { destroy, getParentOfType, getRoot, isValidReference, types } from 'mobx-state-tree';
 
-import { cloneNode, guidGenerator } from "../core/Helpers";
-import { RelationsModel } from "../tags/control/Relations";
-import { TRAVERSE_SKIP } from "../core/Tree";
-import Area from "../regions/Area";
+import { cloneNode, guidGenerator } from '../core/Helpers';
+import { RelationsModel } from '../tags/control/Relations';
+import { TRAVERSE_SKIP } from '../core/Tree';
+import Area from '../regions/Area';
 
 /**
  * Relation between two different nodes
  */
 const Relation = types
-  .model("Relation", {
+  .model('Relation', {
     id: types.optional(types.identifier, guidGenerator),
 
     node1: types.reference(Area),
     node2: types.reference(Area),
 
-    direction: types.optional(types.enumeration(["left", "right", "bi"]), "right"),
+    direction: types.optional(types.enumeration(['left', 'right', 'bi']), 'right'),
 
     // labels
     relations: types.maybeNull(RelationsModel),
@@ -44,7 +44,7 @@ const Relation = types
       let relations = null;
 
       c.traverseTree(function(node) {
-        if (node.type === "relations") {
+        if (node.type === 'relations') {
           relations = node;
           return TRAVERSE_SKIP;
         }
@@ -56,7 +56,7 @@ const Relation = types
     },
 
     rotateDirection() {
-      const d = ["left", "right", "bi"];
+      const d = ['left', 'right', 'bi'];
       let idx = d.findIndex(item => item === self.direction);
 
       idx = idx + 1;
@@ -92,7 +92,7 @@ const Relation = types
   }));
 
 const RelationStore = types
-  .model("RelationStore", {
+  .model('RelationStore', {
     _relations: types.array(Relation),
     showConnections: types.optional(types.boolean, true),
     highlighted: types.maybeNull(types.safeReference(Relation)),
@@ -158,11 +158,11 @@ const RelationStore = types
         const s = {
           from_id: r.node1.cleanId,
           to_id: r.node2.cleanId,
-          type: "relation",
+          type: 'relation',
           direction: r.direction,
         };
 
-        if (r.relations) s["labels"] = r.relations.selectedValues();
+        if (r.relations) s['labels'] = r.relations.selectedValues();
 
         return s;
       });

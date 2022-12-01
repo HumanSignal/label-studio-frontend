@@ -2,11 +2,11 @@ import {
   ChangeEvent,
   FC,
   forwardRef,
-  KeyboardEvent, useEffect,
+  KeyboardEvent,
   useState
-} from "react";
-import { Block, Elem } from "../../utils/bem";
-import "./Pagination.styl";
+} from 'react';
+import { Block, Elem } from '../../utils/bem';
+import './Pagination.styl';
 
 interface PaginationProps {
   currentPage: number;
@@ -14,7 +14,7 @@ interface PaginationProps {
   totalPages: number;
   pageSizeOptions?: [];
   pageSizeSelectable: boolean;
-  size?: "small" | "medium" | "large";
+  size?: 'small' | 'medium' | 'large';
   onChange?: (pageNumber: number, maxPerPage?: number | string) => void;
 }
 
@@ -27,15 +27,14 @@ const isSystemEvent = (e: KeyboardEvent<HTMLInputElement>): boolean => {
 };
 
 export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(({
-  size = "medium",
+  size = 'medium',
   pageSizeOptions = [1, 25, 50, 100],
   currentPage,
   pageSize,
   totalPages,
   pageSizeSelectable = true,
   onChange,
-  ...props
-}, ref) => {
+}) => {
   const [inputMode, setInputMode] = useState(false);
 
   const handleChangeSelect = (e:ChangeEvent<HTMLSelectElement>) => {
@@ -105,7 +104,7 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
                 setInputMode(true);
               }}
             >
-              {currentPage}{" "}<span>of {totalPages}</span>
+              {currentPage}{' '}<span>of {totalPages}</span>
               <div onClick={() => { /*  */ }}></div>
             </Elem>
           )}

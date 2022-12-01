@@ -26,7 +26,7 @@ jobs:
     secrets: inherit
 
   run_e2e:
-    name: "Run Tests"
+    name: "Tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/e2e_tests.yml@master
     needs:
@@ -37,9 +37,18 @@ jobs:
     secrets: inherit
 
   run_unit:
-    name: "Run Tests"
+    name: "Tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/unit_tests.yml@master
+    with:
+      sha: ${{ github.event.pull_request.head.sha || github.event.after }}
+      branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
+    secrets: inherit
+
+  run_lint:
+    name: "Lint"
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    uses: heartexlabs/label-studio-frontend/.github/workflows/eslint.yml@master
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
       branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
