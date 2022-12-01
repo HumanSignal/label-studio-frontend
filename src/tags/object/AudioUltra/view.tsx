@@ -61,13 +61,25 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     };
 
     const selectRegion = (region: Region|Segment) => {
-      if (!region.selected) item.annotation.regionStore.unselectAll();
+      if (!region.selected || !region.isRegion) item.annotation.regionStore.unselectAll();
 
-      item.annotation.regions.forEach((item: any) => {
-        if (item.id === region.id) {
-          item.annotation.regionStore.toggleSelection(item, region.selected);
+      // to select or unselect region
+      item.annotation.regions.forEach((obj: any) => {
+        if (obj.id === region.id) {
+          obj.annotation.regionStore.toggleSelection(obj, region.selected);
         } else {
-          item.annotation.regionStore.toggleSelection(item, false);
+          obj.annotation.regionStore.toggleSelection(obj, false);
+        }
+      });
+
+      // to select or unselect unlabeled segments
+      item._ws.regions.regions.forEach((obj: any) => {
+        if (!obj.isRegion) {
+          if (obj.id === region.id) {
+            obj.handleSelected(region.selected);
+          } else {
+            obj.handleSelected(false);
+          }
         }
       });
 
