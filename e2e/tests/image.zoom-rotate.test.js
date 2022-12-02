@@ -1,5 +1,3 @@
-/* global Feature, DataTable, Data, locate */
-
 const { serialize } = require('./helpers');
 
 const assert = require('assert');

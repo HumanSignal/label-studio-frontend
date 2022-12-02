@@ -25,6 +25,14 @@ class MouseActions extends Helper {
 
     return page.mouse.move(x, y, { steps });
   }
+  async dragAndDropMouse(from, to, button = 'left', steps = 1) {
+    const page = getPage(this.helpers);
+
+    await page.mouse.move(from.x, from.y, { steps });
+    await page.mouse.down({ button });
+    await page.mouse.move(to.x, to.y, { steps });
+    await page.mouse.up({ button });
+  }
 }
 
 module.exports = MouseActions;

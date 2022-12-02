@@ -1,5 +1,3 @@
-/* global Feature, DataTable, Data */
-
 const assert = require('assert');
 const Asserts = require('../utils/asserts');
 const Helpers = require('./helpers');

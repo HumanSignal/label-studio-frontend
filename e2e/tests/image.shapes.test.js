@@ -1,5 +1,3 @@
-/* global Feature */
-
 const {
   initLabelStudio,
   waitForImage,

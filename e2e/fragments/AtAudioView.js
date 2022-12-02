@@ -1,4 +1,3 @@
-/* global inject */
 const { I } = inject();
 
 const Helpers = require('../tests/helpers');

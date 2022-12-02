@@ -1,4 +1,3 @@
-/* global Feature, Scenario, locate */
 const { initLabelStudio } = require('./helpers');
 // const Utils = require("../examples/utils");
 

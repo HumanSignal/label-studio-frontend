@@ -1,5 +1,3 @@
-/* global Htx, Feature, DataTable, Data, locate */
-
 const { initLabelStudio } = require('../helpers');
 
 Feature('Select region by click on it');

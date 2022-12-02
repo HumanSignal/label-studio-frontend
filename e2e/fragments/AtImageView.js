@@ -1,4 +1,3 @@
-/* global inject */
 const { I } = inject();
 
 const Helpers = require('../tests/helpers');
@@ -120,6 +119,33 @@ module.exports = {
     const isRotaterExist = await I.executeScript(Helpers.isRotaterExist);
 
     return isRotaterExist;
+  },
+
+  /**
+   * Returns the bounding box of the first found shape
+   * The coordinates are relative to the window
+   * @returns {{x: number, y: number, width: number, height: number}}
+   */
+  async getRegionAbsoultePosition(regionId) {
+    const shapeId = await I.executeScript((regionId) => {
+      const annotation = Htx.annotationStore.selected;
+      const region = annotation.regions.find((r) => r.cleanId === regionId);
+
+      return region.shapeRef._id;
+    }, regionId);
+
+    const position = await I.executeScript(Helpers.getRegionAbsoultePosition, shapeId);
+
+    return position;
+  },
+
+  async getRegionCenterPosition(shape) {
+    const position = await this.getRegionAbsoultePosition(shape);
+
+    return {
+      x: position.x + position.width / 2,
+      y: position.y + position.height / 2,
+    };
   },
 
   /**

@@ -1,5 +1,3 @@
-/* global Feature, DataTable, Data, locate, locate */
-
 Feature('Shortcuts functional');
 
 const createConfig = ({ rows = '1' }) => {

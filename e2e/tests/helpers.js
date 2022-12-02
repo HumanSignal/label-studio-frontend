@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 /**
  * Load custom example
  * @param {object} params
@@ -112,7 +110,7 @@ function linkFunctions(value) {
    return fns[value];
  }
  return value;
-}  
+}
 function ${createMethodInjectionIntoScript('initLabelStudio', initLabelStudio)}
 const fns = {${fns.join(',')}};
 const params = ${JSON.stringify(preparedParams)};
@@ -493,16 +491,33 @@ const countKonvaShapes = async () => {
 
 const isTransformerExist = async () => {
   const stage = window.Konva.stages[0];
-  const achors = stage.find('._anchor').filter(shape => shape.getAttr('visible') !== false);
+  const anchors = stage.find('._anchor').filter(shape => shape.getAttr('visible') !== false);
 
-  return !!achors.length;
+  return !!anchors.length;
 };
 
 const isRotaterExist = async () => {
   const stage = window.Konva.stages[0];
-  const achors = stage.find('.rotater').filter(shape => shape.getAttr('visible') !== false);
+  const rotaters = stage.find('.rotater').filter(shape => shape.getAttr('visible') !== false);
 
-  return !!achors.length;
+  return !!rotaters.length;
+};
+
+const getRegionAbsoultePosition = async (shapeId) => {
+  const stage = window.Konva.stages[0];
+  const region = stage.findOne(shape => String(shape._id) === String(shapeId));
+
+  if (!region) return null;
+
+  const stageBBox = stage.content.getBoundingClientRect();
+  const regionPosition = region.getAbsolutePosition();
+
+  return {
+    x: regionPosition.x + stageBBox.left,
+    y: regionPosition.y + stageBBox.top,
+    width: region.width(),
+    height: region.height(),
+  };
 };
 
 const switchRegionTreeView = (viewName) => {
@@ -660,6 +675,7 @@ module.exports = {
   getCanvasSize,
   getImageSize,
   getImageFrameSize,
+  getRegionAbsoultePosition,
   setZoom,
   whereIsPixel,
   countKonvaShapes,
