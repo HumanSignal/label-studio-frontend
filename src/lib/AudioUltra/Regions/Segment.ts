@@ -218,8 +218,6 @@ export class Segment extends Events<SegmentEvents> {
   private handleMouseUp = () => {
     if (!this.updateable || this.cursorLockedByOther) return;
 
-    this.controller.unlock();
-
     if (this.isDragging) {
       this.switchCursor(CursorSymbol.grab);
       this.handleUpdateEnd();
@@ -240,7 +238,6 @@ export class Segment extends Events<SegmentEvents> {
     if (this.draggingStartPosition) {
       e.preventDefault();
       e.stopPropagation();
-      this.controller.lock();
       this.isDragging = true;
       const { isRightEdge: freezeStart, isLeftEdge: freezeEnd } = this.isGrabbingEdge; 
       const { grabPosition, start, end } = this.draggingStartPosition;
