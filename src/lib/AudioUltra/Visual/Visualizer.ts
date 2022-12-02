@@ -1,6 +1,6 @@
 import { ChannelData } from "../Media/ChannelData";
 import { WaveformAudio } from "../Media/WaveformAudio";
-import { averageMinMax, clamp, debounce, defaults, filterData, measure, roundToStep } from "../Common/Utils";
+import { averageMinMax, clamp, debounce, defaults, filterData, measure, roundToStep, warn } from "../Common/Utils";
 import { Waveform, WaveformOptions } from "../Waveform";
 import { CanvasCompositeOperation, Layer, RenderingContext } from "./Layer";
 import { Events } from "../Common/Events";
@@ -28,6 +28,7 @@ export type VisualizerOptions = Pick<WaveformOptions,
 | "enabledChannels"
 | "cursorWidth"
 | "zoom"
+| "amp"
 | "padding"
 | "playhead"
 | "timeline"
@@ -92,6 +93,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.gridWidth = options.gridWidth ?? this.gridWidth;
     this.backgroundColor = options.backgroundColor ? rgba(options.backgroundColor) : this.backgroundColor;
     this.zoom = options.zoom ?? this.zoom;
+    this.amp = options.amp ?? this.amp;
     this.playhead = new Playhead({ 
       ...options.playhead,
       x: 0, 
@@ -105,7 +107,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   init(audio: WaveformAudio) {
-    this.init = () => console.warn("Visualizer is already initialized");
+    this.init = () => warn("Visualizer is already initialized");
     this.audio = audio;
     this.channels.length = this.audio.channelCount;
 
@@ -186,7 +188,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   draw(dry = false, forceDraw = false) {
     if (this.isDestroyed) return;
-    if (this.drawing && !forceDraw) return console.warn("Concurrent render detected");
+    if (this.drawing && !forceDraw) return warn("Concurrent render detected");
 
     this.drawing = true;
 
@@ -249,6 +251,13 @@ export class Visualizer extends Events<VisualizerEvents> {
     const offset = (this.width / 2) / this.zoomedWidth;
 
     this.scrollLeft = clamp(this.currentTime - offset, 0, 1);
+  }
+
+  /**
+   * Update the visual render of the cursor in isolation
+   */
+  updateCursorToTime(time: number) {
+    this.playhead.updatePositionFromTime(time);
   }
 
   private renderAvailableChannels() {

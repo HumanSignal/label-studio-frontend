@@ -161,6 +161,7 @@ export interface TimelineControlsProps {
   controls?: TimelineProps['controls'];
   altHopSize?: TimelineProps['altHopSize'];
   customControls?: TimelineCustomControls[];
+  mediaType: string;
   onRewind: (steps?: number) => void;
   onForward: (steps?: number) => void;
   onPositionChange: (position: number) => void;

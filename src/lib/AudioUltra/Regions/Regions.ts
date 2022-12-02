@@ -7,7 +7,7 @@ import { Waveform } from "../Waveform";
 import { Region, RegionOptions } from "./Region";
 import { Segment } from "./Segment";
 
-export interface RegionsGlobalEvents { 
+export interface RegionsGlobalEvents {
   beforeRegionsDraw: (regions: Regions) => void;
   afterRegionsDraw: (regions: Regions) => void;
 }
@@ -17,16 +17,16 @@ export interface RegionsOptions {
   updateable?: boolean;
   createable?: boolean;
   deleteable?: boolean;
-  defaultColor?: string|RgbaColorArray;
+  defaultColor?: string | RgbaColorArray;
 }
 
 export class Regions {
-  private regions: (Region|Segment)[] = [];
+  private regions: (Region | Segment)[] = [];
   private waveform: Waveform;
   private visualizer: Visualizer;
   private initialRegions: RegionOptions[];
   private locked = false;
-  private hoveredRegions = new Set<Region|Segment>();
+  private hoveredRegions = new Set<Region | Segment>();
   private defaultColor = rgba("#787878");
   private drawingColor = rgba("#787878");
   private createable = true;
@@ -89,7 +89,7 @@ export class Regions {
   }
 
   addRegion(options: RegionOptions, render = true) {
-    let region: Region|Segment;
+    let region: Region | Segment;
 
     if (options.labels?.length || this.drawableTarget === Region) {
       region = new Region(options, this.waveform, this.visualizer, this);
@@ -160,7 +160,7 @@ export class Regions {
     this.regions = [];
   }
 
-  setDrawingColor(color: string|RgbaColorArray) {
+  setDrawingColor(color: string | RgbaColorArray) {
     this.drawingColor = rgba(color);
   }
 
@@ -179,12 +179,7 @@ export class Regions {
   private handleInit = () => {
     if (this.initialRegions.length) {
       this.regions = this.initialRegions.map(region => {
-        return new Region(
-          region,
-          this.waveform,
-          this.visualizer,
-          this,
-        );
+        return new Region(region, this.waveform, this.visualizer, this);
       });
 
       this.initialRegions = [];
@@ -211,9 +206,8 @@ export class Regions {
 
     this.lock();
 
-    let region: Region|Segment;
+    let region: Region | Segment;
     let startX: number;
-
 
     this.waveform.invoke("beforeRegionsDraw", [this]);
 
@@ -234,7 +228,7 @@ export class Regions {
       });
 
       if (autoPlayNewSegments && !region.isRegion) {
-        this.list.forEach(r => r.handleSelected(r.id === region.id));
+        this.regions.forEach(r => r.handleSelected(r.id === region.id));
       }
     };
 
@@ -261,18 +255,21 @@ export class Regions {
 
       if (region && region.start === region.end) {
         region.remove();
-      } else if(region) {
+        this.unlock();
+      } else if (region) {
         this.waveform.invoke("regionCreated", [region]);
-        if (autoPlayNewSegments){
-          if(player.playing) {
+        if (autoPlayNewSegments && !region.isRegion) {
+          if (player.playing) {
             player.pause();
           }
           player.play();
         }
+        setTimeout(() => this.unlock(), 0);
+      } else {
+        this.unlock();
       }
 
       this.waveform.invoke("afterRegionsDraw", [this]);
-      this.unlock();
     };
 
     document.addEventListener("mousemove", handleMouseMove);
@@ -294,9 +291,15 @@ export class Regions {
         region.invoke("mouseLeave", [region, e]);
       });
       this.hoveredRegions.clear();
-      this.waveform.cursor.set(CursorSymbol.crosshair);
+      if (!this.cursorLockedByPlayhead) {
+        this.waveform.cursor.set(CursorSymbol.crosshair);
+      }
     }
   };
+
+  private get cursorLockedByPlayhead() {
+    return this.waveform.cursor.hasFocus() && this.waveform.cursor.isFocused("playhead");
+  }
 
   private handleMouseDown = (e: MouseEvent) => {
     if (!this.updateable) return;
@@ -349,46 +352,41 @@ export class Regions {
     const x = getCursorPositionX(e, container);
     const y = getCursorPositionY(e, container);
 
-    const xIsInRange = isInRange(
-      x,
-      xStart,
-      (xStart + width),
-    );
+    const xIsInRange = isInRange(x, xStart, xStart + width);
 
     if (!xIsInRange) return false;
 
-
-    const yIsInRange = isInRange(
-      y,
-      yStart,
-      (yStart + height - timelineHeight),
-    );
+    const yIsInRange = isInRange(y, yStart, yStart + height - timelineHeight);
 
     return yIsInRange;
   }
 
   lock() {
     this.locked = true;
+    this.visualizer.lockSeek();
   }
 
   unlock() {
     this.locked = false;
+    this.visualizer.unlockSeek();
   }
 
   get isLocked() {
     return this.locked;
   }
 
-  hover(region: Region|Segment, e?: MouseEvent) {
+  hover(region: Region | Segment, e?: MouseEvent) {
     if (e) {
+      this.visualizer.lockSeek();
       region.invoke("mouseEnter", [region, e]);
     }
 
     this.hoveredRegions.add(region);
   }
 
-  unhover(region: Region|Segment, e?: MouseEvent) {
+  unhover(region: Region | Segment, e?: MouseEvent) {
     if (e) {
+      this.visualizer.unlockSeek();
       region.invoke("mouseLeave", [region, e]);
     }
 
@@ -399,7 +397,7 @@ export class Regions {
     const { zoomedWidth } = this.visualizer;
     const { duration } = this.waveform;
 
-    return pixels / zoomedWidth * duration;
+    return (pixels / zoomedWidth) * duration;
   }
 
   toJSON() {

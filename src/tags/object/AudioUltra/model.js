@@ -10,9 +10,9 @@ import { AudioRegionModel } from "../../../regions/AudioRegion";
 import Utils from "../../../utils";
 import { FF_DEV_2461, isFF } from "../../../utils/feature-flags";
 import { isDefined } from "../../../utils/utilities";
+import { isTimeSimilar } from "../../../lib/AudioUltra";
 import ObjectBase from "../Base";
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
-
 
 /**
  * The Audio tag plays audio and shows its waveform. Use for audio annotation tasks where you want to label regions of audio, see the waveform, and manipulate audio during annotation.
@@ -79,8 +79,6 @@ export const AudioModel = types.compose(
   types.model("AudioModel", {
     type: "audio",
     _value: types.optional(types.string, ""),
-
-    playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
   })
     .volatile(() => ({
@@ -127,6 +125,11 @@ export const AudioModel = types.compose(
       let dispose;
       let updateTimeout = null;
 
+      const Super = {
+        triggerSyncPlay: self.triggerSyncPlay,
+        triggerSyncPause: self.triggerSyncPause,
+      };
+
       return {
         afterCreate() {
           dispose = observe(self, 'activeLabel', () => {
@@ -172,27 +175,51 @@ export const AudioModel = types.compose(
           self.setReady(true);
         },
 
+        onRateChange(rate) {
+          self.triggerSyncSpeed(rate);
+        },
+
+        triggerSyncPlay() {
+          if (self.syncedObject) {
+            Super.triggerSyncPlay();
+          } else {
+            self.handleSyncPlay();
+          }
+        },
+
+        triggerSyncPause() {
+          if (self.syncedObject) {
+            Super.triggerSyncPause();
+          } else {
+            self.handleSyncPause();
+          }
+        },
+
         handleSyncPlay() {
           if (!self._ws) return;
-          if (self._ws.playing) return;
+          if (self._ws.playing && self.isCurrentlyPlaying) return;
 
+          self.isCurrentlyPlaying = true;
           self._ws?.play();
         },
 
         handleSyncPause() {
           if (!self._ws) return;
-          if (!self._ws.playing) return;
+          if (!self._ws.playing && !self.isCurrentlyPlaying) return;
 
+          self.isCurrentlyPlaying = false;
           self._ws?.pause();
         },
 
         handleSyncSpeed() {},
+        handleSyncDuration() {},
 
         handleSyncSeek(time) {
+          if (!self._ws?.loaded || isTimeSimilar(time, self._ws.currentTime)) return;
+
           try {
-            if (self._ws && time !== self._ws.currentTime) {
-              self._ws.currentTime = time;
-            }
+            self._ws.currentTime = time;
+            self._ws.syncCursor(); // sync cursor with other tags
           } catch (err) {
             console.log(err);
           }
@@ -357,12 +384,11 @@ export const AudioModel = types.compose(
         },
 
         /**
-     * Play and stop
-     */
+         * Play and stop
+         */
         handlePlay() {
           if (self._ws) {
-            self.playing = !self.playing;
-            self._ws.playing ? self.triggerSyncPlay() : self.triggerSyncPause();
+            self.isCurrentlyPlaying ? self.triggerSyncPlay() : self.triggerSyncPause();
           }
         },
 
@@ -370,10 +396,6 @@ export const AudioModel = types.compose(
           if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === "paragraphs")) return;
 
           self.triggerSyncSeek(self._ws.currentTime);
-        },
-
-        handleSpeed(speed) {
-          self.triggerSyncSpeed(speed);
         },
 
         createWsRegion(region) {
@@ -407,7 +429,21 @@ export const AudioModel = types.compose(
         onLoad(ws) {
           self.clearRegionMappings();
           self._ws = ws;
+
+          self.setSyncedDuration(self._ws.duration);
           self.needsUpdate();
+        },
+
+        onSeek(time) {
+          self.triggerSyncSeek(time);
+        },
+
+        onPlaying(playing) {
+          if (playing) {
+            self.triggerSyncPlay();
+          } else {
+            self.triggerSyncPause();
+          }
         },
 
         onError(error) {

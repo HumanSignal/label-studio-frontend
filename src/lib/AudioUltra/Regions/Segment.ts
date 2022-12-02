@@ -186,6 +186,10 @@ export class Segment extends Events<SegmentEvents> {
     return ![CursorSymbol.crosshair].includes(symbol);
   }
 
+  private get cursorLockedByOther() {
+    return this.waveform.cursor.hasFocus() && !this.waveform.cursor.isFocused(this.layerName);
+  }
+
   switchCursor = (symbol: CursorSymbol, shouldGrabFocus = true) => {
     this.waveform.cursor.set(symbol, shouldGrabFocus && this.requiresCursorFocus(symbol) ? this.layerName : "");
   };
@@ -203,7 +207,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private mouseOver = (_: Segment, e: MouseEvent) => {
-    if (!this.updateable || !this.controller.layerGroup.isVisible) return;
+    if (!this.updateable || !this.controller.layerGroup.isVisible || this.cursorLockedByOther) return;
     const isEdgeGrab = this.edgeGrabCheck(e);
 
     if (this.isDragging) return;
@@ -212,9 +216,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private handleMouseUp = () => {
-    if (!this.updateable) return;
-
-    this.controller.unlock();
+    if (!this.updateable || this.cursorLockedByOther) return;
 
     if (this.isDragging) {
       this.switchCursor(CursorSymbol.grab);
@@ -232,11 +234,10 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private handleDrag = (e: MouseEvent) => {
-    if (!this.updateable) return;
+    if (!this.updateable || this.cursorLockedByOther) return;
     if (this.draggingStartPosition) {
       e.preventDefault();
       e.stopPropagation();
-      this.controller.lock();
       this.isDragging = true;
       const { isRightEdge: freezeStart, isLeftEdge: freezeEnd } = this.isGrabbingEdge; 
       const { grabPosition, start, end } = this.draggingStartPosition;

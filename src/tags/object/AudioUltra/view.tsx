@@ -10,36 +10,46 @@ interface AudioUltraProps {
   item: any;
 }
 
+const NORMALIZED_STEP = 0.1;
+
 const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   const rootRef = useRef<HTMLElement | null>();
 
-  const { waveform, ...controls } = useWaveform(rootRef, {
-    src: item._value,
-    waveColor: "#BEB9C5",
-    gridColor: "#BEB9C5",
-    gridWidth: 1,
-    backgroundColor: "#fafafa",
-    autoCenter: true,
-    zoomToCursor: true,
-    enabledChannels: [0],
-    height: 94,
-    zoom: 1,
-    rate: 1,
-    muted: false,
-    onLoad: item.onLoad,
-    regions: {
-      createable: !item.readonly,
-      updateable: !item.readonly,
-      deleteable: !item.readonly,
+  const { waveform, ...controls } = useWaveform(rootRef, 
+    {
+      src: item._value,
+      waveColor: "#BEB9C5",
+      gridColor: "#BEB9C5",
+      gridWidth: 1,
+      backgroundColor: "#fafafa",
+      autoCenter: true,
+      zoomToCursor: true,
+      enabledChannels: [0],
+      height: 94,
+      volume: item.defaultvolume ? Number(item.defaultvolume) : 1,
+      amp: item.defaultscale ? Number(item.defaultscale) : 1,
+      zoom: item.defaultzoom ? Number(item.defaultzoom) : 1,
+      rate: item.defaultspeed ? Number(item.defaultspeed) : 1,
+      muted: item.muted === "true",
+      onLoad: item.onLoad,
+      onPlaying: item.onPlaying,
+      onSeek: item.onSeek,
+      onRateChange: item.onRateChange,
+      regions: {
+        createable: !item.readonly,
+        updateable: !item.readonly,
+        deleteable: !item.readonly,
+      },
+      timeline: {
+        backgroundColor: "#ffffff",
+      },
+      experimental: {
+        backgroundCompute: true,
+        denoize: true,
+      },
+      autoPlayNewSegments: true,
     },
-    timeline: {
-      backgroundColor: "#ffffff",
-    },
-    experimental: {
-      backgroundCompute: true,
-      denoize: true,
-    },
-  });
+  );
 
   useEffect(() => {
     const updateBeforeRegionDraw = (regions: Regions) => {
@@ -118,15 +128,20 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         onPause={() => controls.setPlaying(false)}
         allowFullscreen={false}
         onVolumeChange={vol => controls.setVolume(vol)}
-        onStepBackward={() => {}}
-        onStepForward={() => {}}
-        onRewind={(steps) => {}}
-        onForward={(steps) => {}}
+        onStepBackward={() => {
+          waveform.current?.seekBackward(NORMALIZED_STEP);
+          waveform.current?.syncCursor();
+        }}
+        onStepForward={() => {
+          waveform.current?.seekForward(NORMALIZED_STEP);
+          waveform.current?.syncCursor();
+        }}
         onPositionChange={pos => controls.setCurrentTime(pos)}
         onSpeedChange={speed => controls.setRate(speed)}
         onZoom={zoom => controls.setZoom(zoom)}
         amp={controls.amp}
         onAmpChange={amp => controls.setAmp(amp)}
+        mediaType="audio"
       />
     </div>
   );

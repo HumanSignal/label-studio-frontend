@@ -20,7 +20,7 @@ export const Slider: FC<SliderProps> = ({
   max,
   min,
   value,
-  step,
+  step = 1,
   onChange,
   ...props
 }) => {
@@ -60,7 +60,7 @@ export const Slider: FC<SliderProps> = ({
           mod={(inputVolumeError > max || inputVolumeError < min) && { error:'volume' }}
           min={min}
           max={max}
-          value={(inputVolumeError === min ) ? Math.round(value) : inputVolumeError}
+          value={(inputVolumeError === min) ? value : inputVolumeError}
           onChange={handleChangeInputValue}
         />
       </Elem>
@@ -76,7 +76,7 @@ export const Slider: FC<SliderProps> = ({
         type="range"
         min={min}
         max={max}
-        step={step || 1}
+        step={step}
         value={value}
         onChange={handleChangeInputValue}
       />

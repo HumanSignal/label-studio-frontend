@@ -32,6 +32,12 @@ export interface WaveformOptions {
   zoom?: number;
 
   /**
+   * Amplitude factor. 1 – no zoom
+   * @default 1
+   * */
+  amp?: number;
+
+  /**
    * Volume 0..1, 0 – muted
    * @default 1
    * */
@@ -162,6 +168,7 @@ export class Waveform extends Events<WaveformEventTypes> {
   private media!: MediaLoader;
   private visualizer!: Visualizer;
   private timeline!: Timeline;
+  private focusTimeout: any = null;
 
   tooltip!: Tooltip;
   cursor!: Cursor;
@@ -233,6 +240,18 @@ export class Waveform extends Events<WaveformEventTypes> {
 
       this.invoke("load");
     }
+  }
+
+  /**
+   * Sync the cursor with the current time of the audio.
+   * Useful when the audio is getting controlled externally.
+   */
+  syncCursor() {
+    const time = this.currentTime;
+
+    // @todo - find a less hacky way to consistently update just the cursor
+    this.visualizer.updateCursorToTime(time);
+    this.visualizer.draw(true);
   }
 
   seek(value: number) {
@@ -442,18 +461,19 @@ export class Waveform extends Events<WaveformEventTypes> {
    */
   private handleCursorMove = (e: MouseEvent) => {
     if (this.loaded && this.cursor.inView) {
-      setTimeout(() => {
+      if (this.focusTimeout) clearTimeout(this.focusTimeout);
+
+      this.focusTimeout = setTimeout(() => {
         if (!this.cursor.hasFocus()) {
           this.cursor.set(CursorSymbol.crosshair);
         }
-      });
+      }, 1);
 
       const cursorTime = getCursorTime(e, this.visualizer, this.duration);
       const timeDate = new Date(cursorTime * 1000);
       const onlyTime = timeDate.toISOString().match(/T(.*?)Z/)?.[1];
-      const { clientX, clientY } = e;
 
-      this.tooltip.show(clientX, clientY - 20, onlyTime);
+      this.tooltip.show(e.pageX + 14, e.pageY - 20, onlyTime);
     } else {
       this.cursor.set(CursorSymbol.default);
       this.tooltip.hide();
