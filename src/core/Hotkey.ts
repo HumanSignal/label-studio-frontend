@@ -40,11 +40,20 @@ const _hotkeys_desc: { [key: string]: string } = {};
 const _namespaces: {[key: string]: HotkeyNamespace} = {};
 const _destructors: (() => void)[] = [];
 
+const translateNumpad = (event: any) => {
+  const numPadKeyCode = event.keyCode;
+  const translatedToDigit = numPadKeyCode - 48;
+
+  document.dispatchEvent(new KeyboardEvent('keydown', { keyCode: translatedToDigit }));
+};
+
 keymaster.filter = function(event) {
   if (keymaster.getScope() === '__none__') return false;
 
   const tag = (event.target || event.srcElement)?.tagName;
+  const inNumberPadCodeRange = event.keyCode >= 96 && event.keyCode <= 105;
 
+  if (inNumberPadCodeRange) translateNumpad(event);
   if (tag) {
     keymaster.setScope(/^(INPUT|TEXTAREA|SELECT)$/.test(tag) ? INPUT_SCOPE : DEFAULT_SCOPE);
   }
