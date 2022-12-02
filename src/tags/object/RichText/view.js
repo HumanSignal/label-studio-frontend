@@ -175,7 +175,7 @@ class RichTextPieceView extends Component {
       this._moveElements(rootBody, workingBody, true);
     }
     item.setWorkingMode(true);
-  }
+  };
 
   _returnElementsFromWorkingNode = () => {
     const { item } = this.props;
@@ -197,7 +197,7 @@ class RichTextPieceView extends Component {
       this._moveElements(workingBody, rootBody);
     }
     item.setWorkingMode(false);
-  }
+  };
 
   /**
    * Handle initial rendering and all subsequent updates
@@ -287,7 +287,7 @@ class RichTextPieceView extends Component {
     } else {
       loadingEl.removeAttribute("style");
     }
-  }
+  };
 
   _passHotkeys = e => {
     const props = "key code keyCode location ctrlKey shiftKey altKey metaKey".split(" ");
@@ -298,7 +298,7 @@ class RichTextPieceView extends Component {
     const internal = new KeyboardEvent(e.type, init);
 
     document.dispatchEvent(internal);
-  }
+  };
 
   onIFrameLoad = () => {
     const { item } = this.props;
@@ -342,7 +342,7 @@ class RichTextPieceView extends Component {
     }
 
     this.markObjectAsLoaded();
-  }
+  };
 
   render() {
     const { item } = this.props;

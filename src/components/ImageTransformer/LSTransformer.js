@@ -148,7 +148,7 @@ class LSTransformer extends Konva.Transformer {
     this._nodes.forEach((target) => {
       target._fire('transformstart', { evt: e, target });
     });
-  }
+  };
 
   handleMouseUp = (e) => {
     this.isMouseDown = false;
@@ -174,7 +174,7 @@ class LSTransformer extends Konva.Transformer {
       });
     }
     this._movingAnchorName = '';
-  }
+  };
 
   handleMouseMove = (e) => {
     const stage = this.getStage();
@@ -202,7 +202,7 @@ class LSTransformer extends Konva.Transformer {
     const rotated = rotateAroundCenter(shape, diff);
 
     this._fitNodesInto(rotated, e);
-  }
+  };
 
   refreshRotationList() {
     return {

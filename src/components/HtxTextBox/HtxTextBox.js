@@ -47,7 +47,7 @@ export class HtxTextBox extends React.Component {
     if (!shouldSkip) {
       this.setEditing(false);
     }
-  }
+  };
 
   startEditing = () => {
     const height = this.textRef.current?.parentNode.offsetHeight || 0;

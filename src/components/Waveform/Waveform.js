@@ -184,7 +184,7 @@ export default class Waveform extends React.Component {
   updateZoomY = throttle(() => {
     this.wavesurfer.params.barHeight = this.state.zoomY;
     this.wavesurfer.drawBuffer();
-  }, 100)
+  }, 100);
 
   onChangeVolume = value => {
     this.setState({

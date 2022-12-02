@@ -487,7 +487,7 @@ export default observer(
           return false;
         });
       }
-    }
+    };
 
     handleDeferredClick = (handleDeferredMouseDownCallback, handleDeselection, eligibleToDeselect = false) => {
       this.handleDeferredMouseDown = () => {
@@ -500,7 +500,7 @@ export default observer(
       this.deferredClickTimeout.push(setTimeout(() => {
         this.handleDeferredMouseDown?.();
       }, this.props.item.annotation.isDrawing ? 0 : 100));
-    }
+    };
 
     handleMouseDown = e => {
       const { item } = this.props;

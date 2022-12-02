@@ -6,7 +6,7 @@ import { registerPanels } from "./registerPanels";
 export class LabelStudio extends Component {
   state = {
     initialized: false,
-  }
+  };
 
   componentDidMount() {
     configureStore(this.props).then(({ store }) => {
