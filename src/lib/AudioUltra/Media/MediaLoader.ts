@@ -1,6 +1,6 @@
-import { Destructable } from "../Common/Destructable";
-import { Waveform } from "../Waveform";
-import { WaveformAudio, WaveformAudioOptions } from "./WaveformAudio";
+import { Destructable } from '../Common/Destructable';
+import { Waveform } from '../Waveform';
+import { WaveformAudio, WaveformAudioOptions } from './WaveformAudio';
 
 export type Options = {
   src: string,
@@ -78,21 +78,21 @@ export class MediaLoader extends Destructable {
     };
 
     return new Promise<XMLHttpRequest>((resolve, reject) => {
-      xhr.responseType = "arraybuffer";
+      xhr.responseType = 'arraybuffer';
 
       // xhr.addEventListener("progress", (e) => {
       //   console.log(Math.round(e.loaded / e.total * 100));
       // });
 
-      xhr.addEventListener("load", async () => {
+      xhr.addEventListener('load', async () => {
         resolve(xhr);
       });
 
-      xhr.addEventListener("error", () => {
+      xhr.addEventListener('error', () => {
         reject(xhr);
       });
 
-      xhr.open("GET", url);
+      xhr.open('GET', url);
       xhr.send();
     });
   }

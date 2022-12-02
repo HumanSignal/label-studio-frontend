@@ -1,7 +1,7 @@
-import { Destructable } from "../Common/Destructable";
-import { WaveformAudio } from "../Media/WaveformAudio";
-import { clamp } from "../Common/Utils";
-import { Waveform } from "../Waveform";
+import { Destructable } from '../Common/Destructable';
+import { WaveformAudio } from '../Media/WaveformAudio';
+import { clamp } from '../Common/Utils';
+import { Waveform } from '../Waveform';
 
 export class Player extends Destructable {
   private audio!: WaveformAudio;
@@ -48,7 +48,7 @@ export class Player extends Destructable {
       this.audio.source.playbackRate.value = value;
 
       if (rateChanged) {
-        this.wf.invoke("rateChanged", [value]);
+        this.wf.invoke('rateChanged', [value]);
       }
     }
   }
@@ -69,7 +69,7 @@ export class Player extends Destructable {
       this.audio.volume = value;
 
       if (volumeChanged) {
-        this.wf.invoke("volumeChange", [value]);
+        this.wf.invoke('volumeChange', [value]);
       }
     }
   }
@@ -86,7 +86,7 @@ export class Player extends Destructable {
   setCurrentTime(value: number, notify = false) {
     this.time = value;
     if (notify) {
-      this.wf.invoke("seek", [this.time]);
+      this.wf.invoke('seek', [this.time]);
     }
   }
 
@@ -105,7 +105,7 @@ export class Player extends Destructable {
       this.audio.unmute();
     }
 
-    this.wf.invoke("muted", [this.audio.muted]);
+    this.wf.invoke('muted', [this.audio.muted]);
   }
 
   init(audio: WaveformAudio) {
@@ -136,7 +136,7 @@ export class Player extends Destructable {
     this.ended = true;
     this.updateCurrentTime(true);
     this.pause();
-    this.wf.invoke("playend");
+    this.wf.invoke('playend');
   };
 
   pause() {
@@ -146,8 +146,8 @@ export class Player extends Destructable {
       this.disconnectSource();
       this.playing = false;
       this.loop = null;
-      this.wf.invoke("pause");
-      this.wf.invoke("seek", [this.currentTime]);
+      this.wf.invoke('pause');
+      this.wf.invoke('seek', [this.currentTime]);
     }
   }
 
@@ -175,7 +175,7 @@ export class Player extends Destructable {
       this.currentTime = start;
     }
     this.playSource(start, end);
-    this.wf.invoke("play");
+    this.wf.invoke('play');
   }
 
   private playSource(start?: number, duration?: number) {
@@ -201,7 +201,7 @@ export class Player extends Destructable {
       this.audio.source.start(0, start ?? 0, duration ?? this.duration);
     }
 
-    this.audio.source.addEventListener("ended", this.handleEnded);
+    this.audio.source.addEventListener('ended', this.handleEnded);
 
     this.watch();
   }
@@ -241,7 +241,7 @@ export class Player extends Destructable {
   private disconnectSource() {
     if (this.isDestroyed || !this.audio || !this.connected) return;
     this.connected = false;
-    this.audio.source?.removeEventListener("ended", this.handleEnded);
+    this.audio.source?.removeEventListener('ended', this.handleEnded);
     this.audio.source?.stop(0);
     this.audio.disconnect();
   }
@@ -273,7 +273,7 @@ export class Player extends Destructable {
     const newTime = forceTimeToEnd ? this.duration : clamp(this.time + tick, 0, end); 
 
     this.time = newTime;
-    this.wf.invoke("playing", [this.time]);
+    this.wf.invoke('playing', [this.time]);
   }
 
   private stopWatch() {

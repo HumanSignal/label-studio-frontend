@@ -1,11 +1,11 @@
-import { rgba, RgbaColorArray } from "../Common/Color";
-import { Padding } from "../Common/Style";
-import { defaults, toPrecision } from "../Common/Utils";
-import { Layer } from "../Visual/Layer";
-import { Visualizer } from "../Visual/Visualizer";
-import { Waveform } from "../Waveform";
+import { rgba, RgbaColorArray } from '../Common/Color';
+import { Padding } from '../Common/Style';
+import { defaults, toPrecision } from '../Common/Utils';
+import { Layer } from '../Visual/Layer';
+import { Visualizer } from '../Visual/Visualizer';
+import { Waveform } from '../Waveform';
 
-type TimelinePlacement = "top" | "bottom";
+type TimelinePlacement = 'top' | 'bottom';
 export interface TimelineOptions {
   selectedColor?: RgbaColorArray;
   placement?: TimelinePlacement;
@@ -23,7 +23,7 @@ type LabelMaxWidth = {
   [includeMs: string]: number, // true | false
 }
 
-export type TimelineMark = { x: number, time: number, type: "mark" | "label", includeMs: boolean };
+export type TimelineMark = { x: number, time: number, type: 'mark' | 'label', includeMs: boolean };
 
 export class Timeline {
   private waveform: Waveform;
@@ -34,11 +34,11 @@ export class Timeline {
   private height = defaults.timelineHeight as number;
   private fontSize = 12;
   private gridWidth = 1;
-  private fontFamily = "Arial";
-  private fontColor = rgba("#413C4A");
-  private selectionColor = rgba("rgba(65, 60, 74, 0.08)");
-  private gridColor = rgba("rgba(137,128,152,0.16)");
-  private backgroundColor = rgba("#fff");
+  private fontFamily = 'Arial';
+  private fontColor = rgba('#413C4A');
+  private selectionColor = rgba('rgba(65, 60, 74, 0.08)');
+  private gridColor = rgba('rgba(137,128,152,0.16)');
+  private backgroundColor = rgba('#fff');
   private _labeMaxWidth: LabelMaxWidth = {
     true: 0, // includeMs
     false: 0,
@@ -61,10 +61,10 @@ export class Timeline {
     this.visualizer.reserveSpace({ height: this.height });
 
     this.layer = this.visualizer.createLayer({ name: 'timeline', offscreen: true, zIndex: 103 });
-    this.visualizer.on("initialized", () => {
-      this.visualizer.on("draw", () => this.render());
+    this.visualizer.on('initialized', () => {
+      this.visualizer.on('draw', () => this.render());
     });
-    this.layer.on("layerUpdated", () => {
+    this.layer.on('layerUpdated', () => {
       this.layer.isVisible ? this.render() : this.layer.clear();
     });
   }
@@ -78,8 +78,8 @@ export class Timeline {
     const strokeStyle = this.gridColor.toString();
     const fillStyle = this.backgroundColor.toString();
     const placement = this.placement;
-    const yOffset = placement === "top" ? 0 : offset;
-    const xOffset = placement === "top" ? (this.padding?.left || 0) : 0;
+    const yOffset = placement === 'top' ? 0 : offset;
+    const xOffset = placement === 'top' ? (this.padding?.left || 0) : 0;
 
     layer.clear();
     layer.lineWidth = lineWidth;
@@ -122,10 +122,10 @@ export class Timeline {
     const offset = containerHeight - height;
     const placement = this.placement;
     const layer = this.layer;
-    const yOffset = placement === "top" ? 0 : offset;
-    const xOffset = placement === "top" ? (this.padding?.left || 0) : 0;
-    const markYOffset = placement === "top" ? (mark.type === "label" ? height * 0.75 : height * 0.875 ) : yOffset;
-    const markHeight = placement === "top" ? 
+    const yOffset = placement === 'top' ? 0 : offset;
+    const xOffset = placement === 'top' ? (this.padding?.left || 0) : 0;
+    const markYOffset = placement === 'top' ? (mark.type === 'label' ? height * 0.75 : height * 0.875 ) : yOffset;
+    const markHeight = placement === 'top' ? 
       (mark.type === 'label'
         ? height * 0.25 : height * 0.125)
       : mark.type === 'label' ? height / 2 : height / 3;
@@ -135,7 +135,7 @@ export class Timeline {
 
     if (mark.type === 'label') {
       const ts = this.formatTime(mark.time * 1000, mark.includeMs);
-      const markXOffset = placement === "top" ?
+      const markXOffset = placement === 'top' ?
         (mark.x - (this.getDownscaledTextWidth(layer, ts) / 2)) :
         (mark.x + (this.padding?.left || 6));
 
@@ -144,7 +144,7 @@ export class Timeline {
       layer.fillText(
         ts,
         markXOffset,
-        placement === "top" ? yOffset + ((height * 0.75) / 2) + (fontSize / 2) - this.gridWidth: yOffset + height - 8,
+        placement === 'top' ? yOffset + ((height * 0.75) / 2) + (fontSize / 2) - this.gridWidth: yOffset + height - 8,
       );
     }
   }
@@ -175,7 +175,7 @@ export class Timeline {
 
       const isLabelInterval = Math.round(time * factor) % Math.round(labelInterval * factor);
 
-      const intervalType: TimelineMark["type"] = isLabelInterval === 0  ? 'label' : 'mark';
+      const intervalType: TimelineMark['type'] = isLabelInterval === 0  ? 'label' : 'mark';
 
       this.renderInterval({ x: this.mapToPx(i - exactStart), time, type: intervalType, includeMs });
     }

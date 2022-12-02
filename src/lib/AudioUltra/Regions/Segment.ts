@@ -1,12 +1,12 @@
-import { nanoid } from "nanoid";
-import { rgba, RgbaColorArray } from "../Common/Color";
-import { Events } from "../Common/Events";
-import { clamp, defaults, getCursorPositionX, getCursorTime, pixelsToTime } from "../Common/Utils";
-import { CursorSymbol } from "../Cursor/Cursor";
-import { Layer } from "../Visual/Layer";
-import { Visualizer } from "../Visual/Visualizer";
-import { Waveform } from "../Waveform";
-import type { Regions } from "./Regions";
+import { nanoid } from 'nanoid';
+import { rgba, RgbaColorArray } from '../Common/Color';
+import { Events } from '../Common/Events';
+import { clamp, defaults, getCursorPositionX, getCursorTime, pixelsToTime } from '../Common/Utils';
+import { CursorSymbol } from '../Cursor/Cursor';
+import { Layer } from '../Visual/Layer';
+import { Visualizer } from '../Visual/Visualizer';
+import { Waveform } from '../Waveform';
+import type { Regions } from './Regions';
 
 export interface SegmentOptions {
   id?: string;
@@ -42,7 +42,7 @@ export class Segment extends Events<SegmentEvents> {
   id: string;
   start = 0;
   end = 0;
-  color: RgbaColorArray = rgba("#ccc");
+  color: RgbaColorArray = rgba('#ccc');
   handleColor: RgbaColorArray;
   selected = false;
   highlighted = false;
@@ -66,8 +66,8 @@ export class Segment extends Events<SegmentEvents> {
   ) {
     super();
 
-    if (options.start < 0) throw new Error("Segment start must be greater than 0");
-    if (options.end < 0) throw new Error("Segment end must be greater than 0");
+    if (options.start < 0) throw new Error('Segment start must be greater than 0');
+    if (options.end < 0) throw new Error('Segment end must be greater than 0');
 
     this.id = options.id ?? nanoid(5);
     this.start = options.start;
@@ -121,8 +121,8 @@ export class Segment extends Events<SegmentEvents> {
     if (visible === this.visible) return;
     this.visible = visible;
 
-    this.invoke("update", [this]);
-    this.waveform.invoke("regionUpdated", [this]);
+    this.invoke('update', [this]);
+    this.waveform.invoke('regionUpdated', [this]);
   }
 
   protected get layerName() {
@@ -191,7 +191,7 @@ export class Segment extends Events<SegmentEvents> {
   }
 
   switchCursor = (symbol: CursorSymbol, shouldGrabFocus = true) => {
-    this.waveform.cursor.set(symbol, shouldGrabFocus && this.requiresCursorFocus(symbol) ? this.layerName : "");
+    this.waveform.cursor.set(symbol, shouldGrabFocus && this.requiresCursorFocus(symbol) ? this.layerName : '');
   };
 
   private edgeGrabCheck = (e: MouseEvent) => {
@@ -223,14 +223,14 @@ export class Segment extends Events<SegmentEvents> {
       this.handleUpdateEnd();
     } else {
       this.handleSelected();
-      this.waveform.invoke("regionSelected", [this]);
+      this.waveform.invoke('regionSelected', [this]);
     }
     
     this.isDragging = false;
     this.draggingStartPosition = null;
     this.isGrabbingEdge = { isRightEdge: false, isLeftEdge: false };
     document.removeEventListener('mousemove', this.handleDrag);
-    document.removeEventListener("mouseup", this.handleMouseUp);
+    document.removeEventListener('mouseup', this.handleMouseUp);
   };
 
   private handleDrag = (e: MouseEvent) => {
@@ -274,15 +274,15 @@ export class Segment extends Events<SegmentEvents> {
 
     this.draggingStartPosition = { grabPosition: x, start, end };
     this.isGrabbingEdge = this.edgeGrabCheck(e);
-    document.addEventListener("mouseup", this.handleMouseUp);
+    document.addEventListener('mouseup', this.handleMouseUp);
     document.addEventListener('mousemove', this.handleDrag);
   };
 
   private initialize() {
-    this.layer = this.visualizer.createLayer({ groupName: "regions", name: this.layerName });
+    this.layer = this.visualizer.createLayer({ groupName: 'regions', name: this.layerName });
     // Handle region resizing
-    this.on("mouseOver", this.mouseOver);
-    this.on("mouseDown", this.mouseDown);
+    this.on('mouseOver', this.mouseOver);
+    this.on('mouseDown', this.mouseDown);
   }
 
   /**
@@ -329,8 +329,8 @@ export class Segment extends Events<SegmentEvents> {
   }
 
   handleUpdateEnd() {
-    this.invoke("updateEnd", [this]);
-    this.waveform.invoke("regionUpdatedEnd", [this]);
+    this.invoke('updateEnd', [this]);
+    this.waveform.invoke('regionUpdatedEnd', [this]);
   }
 
   handleSelected = (selected?: boolean) => {
@@ -339,8 +339,8 @@ export class Segment extends Events<SegmentEvents> {
     this.selected = selected ?? !this.selected;
     if (selected) this.setColorDarken(0.5);
     else this.color.reset();
-    this.invoke("update", [this]);
-    this.waveform.invoke("regionUpdated", [this]);
+    this.invoke('update', [this]);
+    this.waveform.invoke('regionUpdated', [this]);
   };
 
   handleHighlighted = (highlighted?: boolean) => {
@@ -348,8 +348,8 @@ export class Segment extends Events<SegmentEvents> {
     this.highlighted = highlighted ?? !this.highlighted;
     if (this.highlighted) this.setColorDarken(0.5);
     else this.color.reset();
-    this.invoke("update", [this]);
-    this.waveform.invoke("regionUpdated", [this]);
+    this.invoke('update', [this]);
+    this.waveform.invoke('regionUpdated', [this]);
   };
   
   /**
@@ -370,8 +370,8 @@ export class Segment extends Events<SegmentEvents> {
   updateColor(color: string|RgbaColorArray) {
     if (!this.updateable) return;
     this.setColor(color);
-    this.invoke("update", [this]);
-    this.waveform.invoke("regionUpdated", [this]);
+    this.invoke('update', [this]);
+    this.waveform.invoke('regionUpdated', [this]);
   }
 
   updatePosition(start?: number, end?: number) {
@@ -385,8 +385,8 @@ export class Segment extends Events<SegmentEvents> {
 
     this.start = newStart;
     this.end = newEnd;
-    this.invoke("update", [this]);
-    this.waveform.invoke("regionUpdated", [this]);
+    this.invoke('update', [this]);
+    this.waveform.invoke('regionUpdated', [this]);
   }
 
   scrollToRegion() {
@@ -395,7 +395,7 @@ export class Segment extends Events<SegmentEvents> {
 
   remove() {
     if (!this.deleteable) return;
-    this.waveform.invoke("regionRemoved", [this]);
+    this.waveform.invoke('regionRemoved', [this]);
   }
 
   /**

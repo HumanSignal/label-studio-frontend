@@ -1,48 +1,48 @@
-import { rgba, RgbaColorArray } from "../Common/Color";
-import { Events } from "../Common/Events";
-import { getCursorPositionX, getCursorPositionY } from "../Common/Utils";
-import { RenderingContext } from "../Visual/Layer";
-import { Visualizer } from "../Visual/Visualizer";
+import { rgba, RgbaColorArray } from '../Common/Color';
+import { Events } from '../Common/Events';
+import { getCursorPositionX, getCursorPositionY } from '../Common/Utils';
+import { RenderingContext } from '../Visual/Layer';
+import { Visualizer } from '../Visual/Visualizer';
 
 interface CursorEvents {
   mouseMove: (event: MouseEvent, cursor: Cursor) => void;
 }
 
 export enum CursorSymbol {
-  auto = "auto",
-  crosshair = "crosshair",
-  default = "default",
-  pointer = "pointer",
-  move = "move",
-  text = "text",
-  wait = "wait",
-  help = "help",
-  progress = "progress",
-  notAllowed = "not-allowed",
-  contextMenu = "context-menu",
-  cell = "cell",
-  verticalText = "vertical-text",
-  alias = "alias",
-  copy = "copy",
-  noDrop = "no-drop",
-  allScroll = "all-scroll",
-  colResize = "col-resize",
-  rowResize = "row-resize",
-  grab = "grab",
-  grabbing = "grabbing",
-  nResize = "n-resize",
-  neResize = "ne-resize",
-  nwResize = "nw-resize",
-  nsResize = "ns-resize",
-  neswResize = "nesw-resize",
-  nwseResize = "nwse-resize",
-  sResize = "s-resize",
-  seResize = "se-resize",
-  swResize = "sw-resize",
-  wResize = "w-resize",
-  ewResize = "ew-resize",
-  zoomIn = "zoom-in",
-  zoomOut = "zoom-out",
+  auto = 'auto',
+  crosshair = 'crosshair',
+  default = 'default',
+  pointer = 'pointer',
+  move = 'move',
+  text = 'text',
+  wait = 'wait',
+  help = 'help',
+  progress = 'progress',
+  notAllowed = 'not-allowed',
+  contextMenu = 'context-menu',
+  cell = 'cell',
+  verticalText = 'vertical-text',
+  alias = 'alias',
+  copy = 'copy',
+  noDrop = 'no-drop',
+  allScroll = 'all-scroll',
+  colResize = 'col-resize',
+  rowResize = 'row-resize',
+  grab = 'grab',
+  grabbing = 'grabbing',
+  nResize = 'n-resize',
+  neResize = 'ne-resize',
+  nwResize = 'nw-resize',
+  nsResize = 'ns-resize',
+  neswResize = 'nesw-resize',
+  nwseResize = 'nwse-resize',
+  sResize = 's-resize',
+  seResize = 'se-resize',
+  swResize = 'sw-resize',
+  wResize = 'w-resize',
+  ewResize = 'ew-resize',
+  zoomIn = 'zoom-in',
+  zoomOut = 'zoom-out',
 } 
 
 export interface CursorOptions {
@@ -55,9 +55,9 @@ export interface CursorOptions {
 export class Cursor extends Events<CursorEvents> {
   private visualizer: Visualizer;
   private symbol = CursorSymbol.default;
-  private focusId = "";
+  private focusId = '';
 
-  color = rgba("#000000");
+  color = rgba('#000000');
   x: number;
   y: number;
   width = 1;
@@ -77,11 +77,11 @@ export class Cursor extends Events<CursorEvents> {
 
   initialize() {
     this.set(this.symbol);
-    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener('mousemove', this.handleMouseMove);
   }
 
   destroy() {
-    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener('mousemove', this.handleMouseMove);
     super.destroy();
   }
 
@@ -97,15 +97,15 @@ export class Cursor extends Events<CursorEvents> {
   }
 
   hasFocus() {
-    return this.focusId !== "";
+    return this.focusId !== '';
   }
 
   get(): CursorSymbol {
     return this.symbol;
   }
 
-  set(cursor: CursorSymbol, id = "") {
-    this.focusId = id || "";
+  set(cursor: CursorSymbol, id = '') {
+    this.focusId = id || '';
     if (cursor === this.symbol) {
       return;
     }
@@ -120,7 +120,7 @@ export class Cursor extends Events<CursorEvents> {
   }
 
   render(ctx: RenderingContext) {
-    if (this.symbol !== "crosshair") {
+    if (this.symbol !== 'crosshair') {
       return;
     }
     ctx.fillStyle = this.color.toString();
@@ -138,7 +138,7 @@ export class Cursor extends Events<CursorEvents> {
 
     this.x = getCursorPositionX(e, container);
     this.y = getCursorPositionY(e, container);
-    this.invoke("mouseMove", [e, this]);
-    this.visualizer.invoke("mouseMove", [e, this]);
+    this.invoke('mouseMove', [e, this]);
+    this.visualizer.invoke('mouseMove', [e, this]);
   };
 }

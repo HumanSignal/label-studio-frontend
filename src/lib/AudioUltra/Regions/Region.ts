@@ -1,8 +1,8 @@
-import { Waveform } from "..";
-import { rgba } from "../Common/Color";
-import { Visualizer } from "../Visual/Visualizer";
-import { Regions } from "./Regions";
-import { Segment, SegmentGlobalEvents, SegmentOptions } from "./Segment";
+import { Waveform } from '..';
+import { rgba } from '../Common/Color';
+import { Visualizer } from '../Visual/Visualizer';
+import { Regions } from './Regions';
+import { Segment, SegmentGlobalEvents, SegmentOptions } from './Segment';
 
 export interface RegionGlobalEvents extends SegmentGlobalEvents {
   regionCreated: (region: Region|Segment) => void;

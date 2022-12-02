@@ -1,10 +1,10 @@
-import { observer } from "mobx-react";
-import { FC, useEffect, useRef } from "react";
-import { useWaveform } from "../../../lib/AudioUltra/react";
-import { Controls } from "../../../components/Timeline/Controls";
-import { Region } from "../../../lib/AudioUltra/Regions/Region";
-import { Segment } from "../../../lib/AudioUltra/Regions/Segment";
-import { Regions } from "../../../lib/AudioUltra/Regions/Regions";
+import { observer } from 'mobx-react';
+import { FC, useEffect, useRef } from 'react';
+import { useWaveform } from '../../../lib/AudioUltra/react';
+import { Controls } from '../../../components/Timeline/Controls';
+import { Region } from '../../../lib/AudioUltra/Regions/Region';
+import { Segment } from '../../../lib/AudioUltra/Regions/Segment';
+import { Regions } from '../../../lib/AudioUltra/Regions/Regions';
 
 interface AudioUltraProps {
   item: any;
@@ -18,10 +18,10 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   const { waveform, ...controls } = useWaveform(rootRef, 
     {
       src: item._value,
-      waveColor: "#BEB9C5",
-      gridColor: "#BEB9C5",
+      waveColor: '#BEB9C5',
+      gridColor: '#BEB9C5',
       gridWidth: 1,
-      backgroundColor: "#fafafa",
+      backgroundColor: '#fafafa',
       autoCenter: true,
       zoomToCursor: true,
       enabledChannels: [0],
@@ -30,7 +30,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       amp: item.defaultscale ? Number(item.defaultscale) : 1,
       zoom: item.defaultzoom ? Number(item.defaultzoom) : 1,
       rate: item.defaultspeed ? Number(item.defaultspeed) : 1,
-      muted: item.muted === "true",
+      muted: item.muted === 'true',
       onLoad: item.onLoad,
       onPlaying: item.onPlaying,
       onSeek: item.onSeek,
@@ -41,7 +41,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         deleteable: !item.readonly,
       },
       timeline: {
-        backgroundColor: "#ffffff",
+        backgroundColor: '#ffffff',
       },
       experimental: {
         backgroundCompute: true,
@@ -99,18 +99,18 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       item.updateRegion(region);
     };
 
-    waveform.current?.on("beforeRegionsDraw", updateBeforeRegionDraw);
-    waveform.current?.on("afterRegionsDraw", updateAfterRegionDraw);
-    waveform.current?.on("regionSelected", selectRegion);
-    waveform.current?.on("regionCreated", createRegion);
-    waveform.current?.on("regionUpdatedEnd", updateRegion);
+    waveform.current?.on('beforeRegionsDraw', updateBeforeRegionDraw);
+    waveform.current?.on('afterRegionsDraw', updateAfterRegionDraw);
+    waveform.current?.on('regionSelected', selectRegion);
+    waveform.current?.on('regionCreated', createRegion);
+    waveform.current?.on('regionUpdatedEnd', updateRegion);
 
     return () => {
-      waveform.current?.off("beforeRegionsDraw", updateBeforeRegionDraw);
-      waveform.current?.off("afterRegionsDraw", updateAfterRegionDraw);
-      waveform.current?.off("regionSelected", selectRegion);
-      waveform.current?.off("regionCreated", createRegion);
-      waveform.current?.off("regionUpdatedEnd", updateRegion);
+      waveform.current?.off('beforeRegionsDraw', updateBeforeRegionDraw);
+      waveform.current?.off('afterRegionsDraw', updateAfterRegionDraw);
+      waveform.current?.off('regionSelected', selectRegion);
+      waveform.current?.off('regionCreated', createRegion);
+      waveform.current?.off('regionUpdatedEnd', updateRegion);
     };
   }, []);
 

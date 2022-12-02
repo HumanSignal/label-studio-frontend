@@ -1,7 +1,7 @@
-import { ComputeWorker } from "../Common/Worker";
-import { Visualizer } from "../Visual/Visualizer";
-import { Waveform } from "../Waveform";
-import { reduceNoise } from "./ChannelDataWorker";
+import { ComputeWorker } from '../Common/Worker';
+import { Visualizer } from '../Visual/Visualizer';
+import { Waveform } from '../Waveform';
+import { reduceNoise } from './ChannelDataWorker';
 
 interface ChannelDataOptions {
   data: Float32Array;
@@ -12,7 +12,7 @@ interface ChannelDataOptions {
 
 type ChunkComputerOutput = Float32Array[][];
 
-const worker = new Worker(new URL("./ChannelDataWorker.ts", import.meta.url));
+const worker = new Worker(new URL('./ChannelDataWorker.ts', import.meta.url));
 const chunkComputer = new ComputeWorker(worker);
 
 export class ChannelData {

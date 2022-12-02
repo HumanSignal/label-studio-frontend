@@ -1,8 +1,8 @@
-import React, { FC, useEffect, useRef, useState } from "react";
-import { Block, Elem } from "../../../utils/bem";
+import React, { FC, useEffect, useRef, useState } from 'react';
+import { Block, Elem } from '../../../utils/bem';
 
-import "./Slider.styl";
-import { Info } from "./Info";
+import './Slider.styl';
+import { Info } from './Info';
 
 export interface SliderProps {
   description?: string;
@@ -22,7 +22,6 @@ export const Slider: FC<SliderProps> = ({
   value,
   step = 1,
   onChange,
-  ...props
 }) => {
   const sliderRef = useRef<HTMLDivElement>();
   const [inputVolumeError, setInputVolumeError] = useState(min);
@@ -48,7 +47,7 @@ export const Slider: FC<SliderProps> = ({
 
   const renderInput = () => {
     return (
-      <Elem name={"volume"}>
+      <Elem name={'volume'}>
         <Elem name="info">
           {description}
           {info && <Info text={info} />}

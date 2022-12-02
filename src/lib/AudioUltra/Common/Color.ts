@@ -1,4 +1,4 @@
-import { clamp, repeat, toPrecision } from "./Utils";
+import { clamp, repeat, toPrecision } from './Utils';
 
 export const colorToInt = (x: string) => parseInt(x.replace(/_/g, ''), 36);
 

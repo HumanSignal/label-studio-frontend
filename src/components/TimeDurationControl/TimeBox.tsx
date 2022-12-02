@@ -1,7 +1,7 @@
-import React, { FC, useCallback, useEffect, useRef, useState } from "react";
-import { Block, Elem } from "../../utils/bem";
+import React, { FC, useCallback, useEffect, useState } from 'react';
+import { Block, Elem } from '../../utils/bem';
 
-import "./TimeBox.styl";
+import './TimeBox.styl';
 
 export interface TimerProps {
   value: number | undefined;
@@ -15,7 +15,6 @@ export const TimeBox: FC<TimerProps> = ({
   inverted = false,
   readonly = false,
   onChange,
-  ...props
 }) => {
   const inputRef = React.createRef<HTMLInputElement>();
   const [inputIsVisible, setInputVisible] = useState(false);
@@ -86,7 +85,7 @@ export const TimeBox: FC<TimerProps> = ({
   const handleChangeInput = (e: React.FormEvent<HTMLInputElement>) => {
     let input = e.currentTarget.value;
 
-    input = input.replace(/[^0-9]+/g, "");
+    input = input.replace(/[^0-9]+/g, '');
 
     input = `${input.substr(0, 2)}:${input.substr(2, 2)}:${input.substr(4, input.length)}`;
 

@@ -1,9 +1,9 @@
-import React, { FC, useEffect, useState } from "react";
-import { Block, Elem } from "../../../utils/bem";
+import React, { FC, useEffect, useState } from 'react';
+import { Block, Elem } from '../../../utils/bem';
 
-import "./AudioControl.styl";
-import { IconSoundConfig, IconSoundMutedConfig } from "../../../assets/icons/timeline";
-import { ControlButton } from "../Controls";
+import './AudioControl.styl';
+import { IconSoundConfig, IconSoundMutedConfig } from '../../../assets/icons/timeline';
+import { ControlButton } from '../Controls';
 import { Slider } from './Slider';
 
 const MAX_VOL = 200;
@@ -20,7 +20,6 @@ export const AudioControl: FC<AudioControlProps> = ({
   onVolumeChange,
   onSetModal,
   audioModal,
-  ...props
 }) => {
   const [isMuted, setMute] = useState(false);
 
@@ -63,8 +62,8 @@ export const AudioControl: FC<AudioControlProps> = ({
           max={MAX_VOL}
           value={volume * (MAX_VOL / 2)}
           onChange={handleSetVolume}
-          description={"Volume"}
-          info={"Increase or decrease the appearance of amplitude"}
+          description={'Volume'}
+          info={'Increase or decrease the appearance of amplitude'}
         />
         {renderMuteButton()}
       </Elem>
@@ -73,7 +72,7 @@ export const AudioControl: FC<AudioControlProps> = ({
 
   const renderMuteButton = () => {
     return (
-      <Elem name={"mute"}>
+      <Elem name={'mute'}>
         <Elem
           name="mute-button"
           onClick={handleSetMute}

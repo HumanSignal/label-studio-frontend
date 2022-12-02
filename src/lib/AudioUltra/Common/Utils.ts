@@ -1,6 +1,6 @@
 import { Visualizer } from '../Visual/Visualizer';
 
-export const __DEV__ = process.env.NODE_ENV === "development";
+export const __DEV__ = process.env.NODE_ENV === 'development';
 
 const TIME_TOLERANCE = 0.000001;
 
@@ -9,19 +9,19 @@ export enum defaults {
   timelinePlacement = 'top'
 }
 
-type LogLevel = "log" | "warn" | "error" | "info";
+type LogLevel = 'log' | 'warn' | 'error' | 'info';
 
-export const logger = (level: LogLevel = "log") => (...args: any[]) => {
+export const logger = (level: LogLevel = 'log') => (...args: any[]) => {
   if (__DEV__) {
     // eslint-disable-next-line no-console
     console[level](...args);
   }
 };
 
-export const log = logger("log");
-export const warn = logger("warn");
-export const error = logger("error");
-export const info = logger("info");
+export const log = logger('log');
+export const warn = logger('warn');
+export const error = logger('error');
+export const info = logger('info');
 
 export const clamp = (value: number, min: number, max: number) => {
   return Math.max(min, Math.min(max, value));
@@ -76,12 +76,12 @@ export const repeat = (str: string, times: number) =>
 export const roundToStep = (
   value: number,
   step: number,
-  roundFunction: "floor" | "ceil" | "round" = "round",
+  roundFunction: 'floor' | 'ceil' | 'round' = 'round',
 ) => {
   switch(roundFunction) {
-    case "floor": return Math.floor(value / step) * step;
-    case "ceil": return Math.ceil(value / step) * step;
-    case "round": return Math.round(value / step) * step;
+    case 'floor': return Math.floor(value / step) * step;
+    case 'ceil': return Math.ceil(value / step) * step;
+    case 'round': return Math.round(value / step) * step;
   }
 };
 

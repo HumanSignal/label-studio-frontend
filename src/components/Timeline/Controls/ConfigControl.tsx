@@ -1,9 +1,9 @@
-import React, { FC, useState } from "react";
-import { Block, Elem } from "../../../utils/bem";
+import React, { FC, useState } from 'react';
+import { Block, Elem } from '../../../utils/bem';
 
-import "./ConfigControl.styl";
-import { IconConfig } from "../../../assets/icons/timeline";
-import { ControlButton } from "../Controls";
+import './ConfigControl.styl';
+import { IconConfig } from '../../../assets/icons/timeline';
+import { ControlButton } from '../Controls';
 import { Slider } from './Slider';
 
 const MAX_SPEED = 2.5;
@@ -27,7 +27,6 @@ export const ConfigControl: FC<ConfigControlProps> = ({
   onSpeedChange,
   onSetModal,
   onAmpChange,
-  ...props
 }) => {
   const [playbackSpeed, setplaybackSpeed] = useState(speed ?? 1);
   const [isTimeline, setTimeline] = useState(true);
@@ -61,7 +60,7 @@ export const ConfigControl: FC<ConfigControlProps> = ({
 
   const renderMuteButton = () => {
     return (
-      <Elem name={"buttons"}>
+      <Elem name={'buttons'}>
         <Elem
           name="menu-button"
           onClick={handleSetTimeline}
@@ -92,8 +91,8 @@ export const ConfigControl: FC<ConfigControlProps> = ({
           max={MAX_SPEED}
           step={0.1}
           value={playbackSpeed}
-          description={"Playback speed"}
-          info={"Increase or decrease the playback speed"}
+          description={'Playback speed'}
+          info={'Increase or decrease the playback speed'}
           onChange={handleChangePlaybackSpeed}
         />
         <Slider
@@ -101,8 +100,8 @@ export const ConfigControl: FC<ConfigControlProps> = ({
           max={MAX_ZOOM}
           step={0.1}
           value={amp}
-          description={"Audio zoom y-axis"}
-          info={"Increase or decrease the appearance of amplitude"}
+          description={'Audio zoom y-axis'}
+          info={'Increase or decrease the appearance of amplitude'}
           onChange={handleChangeAmp}
         />
         {renderMuteButton()}

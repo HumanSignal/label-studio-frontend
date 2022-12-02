@@ -1,17 +1,17 @@
-import { types } from "mobx-state-tree";
-import { AudioModel } from "../../tags/object/AudioNext";
-import Utils from "../../utils";
-import Constants from "../../core/Constants";
+import { types } from 'mobx-state-tree';
+import { AudioModel } from '../../tags/object/AudioNext';
+import Utils from '../../utils';
+import Constants from '../../core/Constants';
 
 export const AudioUltraRegionModel = types
-  .model("AudioUltraRegionModel", {
-    type: "audioregion",
+  .model('AudioUltraRegionModel', {
+    type: 'audioregion',
     object: types.late(() => types.reference(AudioModel)),
 
     start: types.number,
     end: types.number,
 
-    selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
+    selectedregionbg: types.optional(types.string, 'rgba(0, 0, 0, 0.5)'),
   })
   .volatile(() => ({
     hideable: true,

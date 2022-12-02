@@ -1,11 +1,11 @@
-import { nanoid } from "nanoid";
-import { rgba, RgbaColorArray } from "../Common/Color";
-import { Events } from "../Common/Events";
-import { clamp, getCursorTime } from "../Common/Utils";
-import { CursorSymbol } from "../Cursor/Cursor";
-import { Layer } from "../Visual/Layer";
-import { Visualizer } from "../Visual/Visualizer";
-import { Waveform } from "../Waveform";
+import { nanoid } from 'nanoid';
+import { rgba, RgbaColorArray } from '../Common/Color';
+import { Events } from '../Common/Events';
+import { clamp, getCursorTime } from '../Common/Utils';
+import { CursorSymbol } from '../Cursor/Cursor';
+import { Layer } from '../Visual/Layer';
+import { Visualizer } from '../Visual/Visualizer';
+import { Waveform } from '../Waveform';
 
 export interface PlayheadOptions {
   x?: number;
@@ -35,8 +35,8 @@ interface PlayheadEvents {
 
 export class Playhead extends Events<PlayheadEvents> {
   private id: string;
-  private color: RgbaColorArray = rgba("#ccc");
-  private fillColor: RgbaColorArray = rgba("#eee");
+  private color: RgbaColorArray = rgba('#ccc');
+  private fillColor: RgbaColorArray = rgba('#eee');
   private visualizer: Visualizer;
   private layer!: Layer;
   private layerName: string;
@@ -57,7 +57,7 @@ export class Playhead extends Events<PlayheadEvents> {
     wf: Waveform,
   ) {
     super();
-    if ((options?.x ?? 0) < 0) throw new Error("Playhead start must be greater than 0");
+    if ((options?.x ?? 0) < 0) throw new Error('Playhead start must be greater than 0');
 
     this.id = nanoid(5);
     this._x = options.x ?? 0;
@@ -65,7 +65,7 @@ export class Playhead extends Events<PlayheadEvents> {
     this.fillColor = options.fillColor ? options.fillColor : this.fillColor;
     this.width = options.width ?? 1;
     this.visualizer = visualizer;
-    this.layerName = "playhead";
+    this.layerName = 'playhead';
     this.wf = wf;
     this.capWidth = options.capWidth ?? 8;
     this.capHeight = options.capHeight ?? 5;
@@ -89,7 +89,7 @@ export class Playhead extends Events<PlayheadEvents> {
       e.preventDefault();
       e.stopPropagation();
       this.isDragging = true;
-      this.wf.cursor.set(CursorSymbol.grabbing, "playhead");
+      this.wf.cursor.set(CursorSymbol.grabbing, 'playhead');
 
       const handleMouseMove = (e: MouseEvent) => {
         if(this.isDragging) {
@@ -112,15 +112,15 @@ export class Playhead extends Events<PlayheadEvents> {
           e.preventDefault();
           e.stopPropagation();
           this.isDragging = false;
-          document.removeEventListener("mousemove", handleMouseMove);
-          document.removeEventListener("mouseup", handleMouseUp);
+          document.removeEventListener('mousemove', handleMouseMove);
+          document.removeEventListener('mouseup', handleMouseUp);
           this.render();
           this.wf.cursor.set(CursorSymbol.default);
         }
       };
 
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
       this.render();
     }
   };
@@ -128,7 +128,7 @@ export class Playhead extends Events<PlayheadEvents> {
   private mouseEnter = () => {
     if( this.isVisible && !this.isDragging ) {
       if (!this.wf.cursor.hasFocus()) {
-        this.wf.cursor.set(CursorSymbol.grab, "playhead");
+        this.wf.cursor.set(CursorSymbol.grab, 'playhead');
       }
       this.isHovered = true;
       this.render();
@@ -139,7 +139,7 @@ export class Playhead extends Events<PlayheadEvents> {
     if( this.isVisible && !this.isDragging ) {
       this.isHovered = false;
       this.render();
-      if (this.wf.cursor.isFocused("playhead")) {
+      if (this.wf.cursor.isFocused('playhead')) {
         this.wf.cursor.set(CursorSymbol.default);
       }
     }
@@ -164,22 +164,22 @@ export class Playhead extends Events<PlayheadEvents> {
   };
 
   private initialize() {
-    this.on("mouseDown", this.mouseDown);
-    this.on("mouseEnter", this.mouseEnter);
-    this.on("mouseLeave", this.mouseLeave);
-    this.wf.on("playing", this.playing);
-    this.wf.on("zoom", this.onZoom);
-    this.wf.on("scroll", this.onScroll);
+    this.on('mouseDown', this.mouseDown);
+    this.on('mouseEnter', this.mouseEnter);
+    this.on('mouseLeave', this.mouseLeave);
+    this.wf.on('playing', this.playing);
+    this.wf.on('zoom', this.onZoom);
+    this.wf.on('scroll', this.onScroll);
   }
 
   private removeEvents() {
-    this.off("mouseDown", this.mouseDown);
-    this.off("mouseEnter", this.mouseEnter);
-    this.off("mouseLeave", this.mouseLeave);
-    this.wf.off("playing", this.playing);
-    this.wf.off("zoom", this.onZoom);
-    this.wf.off("scroll", this.onScroll);
-    this.layer.off("layerUpdated", this.toggleVisibility);
+    this.off('mouseDown', this.mouseDown);
+    this.off('mouseEnter', this.mouseEnter);
+    this.off('mouseLeave', this.mouseLeave);
+    this.wf.off('playing', this.playing);
+    this.wf.off('zoom', this.onZoom);
+    this.wf.off('scroll', this.onScroll);
+    this.layer.off('layerUpdated', this.toggleVisibility);
   }
 
   private get scroll() {
@@ -253,10 +253,10 @@ export class Playhead extends Events<PlayheadEvents> {
 
   setLayer(layer: Layer) {
     if(this.layer) {
-      this.layer.off("layerUpdated", this.toggleVisibility);
+      this.layer.off('layerUpdated', this.toggleVisibility);
     }
     this.layer = layer;
-    this.layer.on("layerUpdated", this.toggleVisibility);
+    this.layer.on('layerUpdated', this.toggleVisibility);
   }
 
   toJSON() {

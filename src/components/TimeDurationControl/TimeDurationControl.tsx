@@ -1,8 +1,8 @@
-import React, { FC, useCallback, useEffect, useRef, useState } from "react";
-import { Block, Elem } from "../../utils/bem";
+import React, { FC } from 'react';
+import { Block } from '../../utils/bem';
 
-import "./TimeDurationControl.styl";
-import { TimeBox } from "./TimeBox";
+import './TimeDurationControl.styl';
+import { TimeBox } from './TimeBox';
 
 export interface TimerProps {
   startTime: number;
@@ -26,7 +26,6 @@ export const TimeDurationControl: FC<TimerProps> = ({
   endTimeReadonly = true,
   onChangeStartTime,
   onChangeEndTime,
-  ...props
 }) => {
   const _currentTime = !currentTime ? startTime : currentTime;
 

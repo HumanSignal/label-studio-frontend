@@ -1,5 +1,5 @@
-import { average, bufferAllocator } from "../Common/Utils";
-import { ComputeWorker } from "../Common/Worker";
+import { average, bufferAllocator } from '../Common/Utils';
+import { ComputeWorker } from '../Common/Worker';
 
 const allocator = bufferAllocator();
 

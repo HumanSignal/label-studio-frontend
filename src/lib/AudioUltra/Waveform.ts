@@ -1,16 +1,16 @@
-import { Events } from "./Common/Events";
-import { MediaLoader } from "./Media/MediaLoader";
-import { Player } from "./Controls/Player";
-import { Tooltip, TooltipOptions } from "./Tooltip/Tooltip";
-import { Cursor, CursorOptions, CursorSymbol } from "./Cursor/Cursor";
-import { RegionGlobalEvents, RegionOptions } from "./Regions/Region";
-import { Visualizer } from "./Visual/Visualizer";
-import { Regions, RegionsGlobalEvents, RegionsOptions } from "./Regions/Regions";
-import { Timeline, TimelineOptions } from "./Timeline/Timeline";
-import { Padding } from "./Common/Style";
-import { clamp, getCursorTime } from "./Common/Utils";
-import { PlayheadOptions } from "./Visual/PlayHead";
-import { Layer } from "./Visual/Layer";
+import { Events } from './Common/Events';
+import { MediaLoader } from './Media/MediaLoader';
+import { Player } from './Controls/Player';
+import { Tooltip, TooltipOptions } from './Tooltip/Tooltip';
+import { Cursor, CursorOptions, CursorSymbol } from './Cursor/Cursor';
+import { RegionGlobalEvents, RegionOptions } from './Regions/Region';
+import { Visualizer } from './Visual/Visualizer';
+import { Regions, RegionsGlobalEvents, RegionsOptions } from './Regions/Regions';
+import { Timeline, TimelineOptions } from './Timeline/Timeline';
+import { Padding } from './Common/Style';
+import { clamp, getCursorTime } from './Common/Utils';
+import { PlayheadOptions } from './Visual/PlayHead';
+import { Layer } from './Visual/Layer';
 
 export interface WaveformOptions {
   /** URL of an audio or video */
@@ -112,7 +112,7 @@ export interface WaveformOptions {
    * - center - center the view to the cursor
    * - paged - move the view to the cursor
    */
-  followCursor?: "center" | "paged" | false;
+  followCursor?: 'center' | 'paged' | false;
 
   // Spectro styles
   // @todo: implement the sepctrogram
@@ -148,19 +148,19 @@ export interface WaveformOptions {
   };
 }
 interface WaveformEventTypes extends RegionsGlobalEvents, RegionGlobalEvents {
-  "load": () => void;
-  "resize": (wf: Waveform, width: number, height: number) => void;
-  "pause": () => void;
-  "play": () => void;
-  "playing": (currentTime: number) => void;
-  "seek": (currentTime: number) => void;
-  "playend": () => void;
-  "zoom": (zoom: number) => void;
-  "muted": (muted: boolean) => void;
-  "volumeChange": (value: number) => void;
-  "rateChanged": (value: number) => void;
-  "scroll": (scroll: number) => void;
-  "layersUpdated": (layers: Map<string, Layer>) => void;
+  'load': () => void;
+  'resize': (wf: Waveform, width: number, height: number) => void;
+  'pause': () => void;
+  'play': () => void;
+  'playing': (currentTime: number) => void;
+  'seek': (currentTime: number) => void;
+  'playend': () => void;
+  'zoom': (zoom: number) => void;
+  'muted': (muted: boolean) => void;
+  'volumeChange': (value: number) => void;
+  'rateChanged': (value: number) => void;
+  'scroll': (scroll: number) => void;
+  'layersUpdated': (layers: Map<string, Layer>) => void;
 }
 
 export class Waveform extends Events<WaveformEventTypes> {
@@ -182,7 +182,7 @@ export class Waveform extends Events<WaveformEventTypes> {
     super();
 
     if (!params?.timeline) {
-      params.timeline = { placement: "top" };
+      params.timeline = { placement: 'top' };
     }
 
     this.src = params.src;
@@ -238,7 +238,7 @@ export class Waveform extends Events<WaveformEventTypes> {
       this.regions.renderAll();
       this.timeline.render();
 
-      this.invoke("load");
+      this.invoke('load');
     }
   }
 
@@ -274,7 +274,7 @@ export class Waveform extends Events<WaveformEventTypes> {
     const scrollLeft = clamp((time / this.duration) - offset, 0, 1);
 
     this.visualizer.setScrollLeft(scrollLeft, true, true);
-    this.invoke("scroll", [scrollLeft]);
+    this.invoke('scroll', [scrollLeft]);
   }
 
   /**
@@ -397,7 +397,7 @@ export class Waveform extends Events<WaveformEventTypes> {
     const scrollLeft = time / this.duration * this.zoom;
     
     this.visualizer.setScrollLeft(scrollLeft);
-    this.invoke("scroll", [scrollLeft]);
+    this.invoke('scroll', [scrollLeft]);
   }
 
   /**
@@ -452,8 +452,8 @@ export class Waveform extends Events<WaveformEventTypes> {
    * Initialize events
    */
   private initEvents() {
-    this.cursor.on("mouseMove", this.handleCursorMove);
-    this.visualizer.on("layersUpdated", () => this.invoke("layersUpdated", [this.getLayers()]));
+    this.cursor.on('mouseMove', this.handleCursorMove);
+    this.visualizer.on('layersUpdated', () => this.invoke('layersUpdated', [this.getLayers()]));
   }
 
   /**
