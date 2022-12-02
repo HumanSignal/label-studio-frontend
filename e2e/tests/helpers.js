@@ -527,8 +527,17 @@ const switchRegionTreeView = (viewName) => {
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
 const selectText = async ({ selector, rangeStart, rangeEnd }) => {
+  let [doc, win] = [document, window];
+
+  const elem = document.querySelector(selector);
+
+  if (elem.matches('iframe')) {
+    doc = elem.contentDocument;
+    win = elem.contentWindow;
+  }
+
   const findOnPosition = (root, position, borderSide = 'left') => {
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
+    const walker = doc.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
     let lastPosition = 0;
     let currentNode = walker.nextNode();
@@ -556,23 +565,88 @@ const selectText = async ({ selector, rangeStart, rangeEnd }) => {
     }
   };
 
-  const elem = document.querySelector(selector);
-
   const start = findOnPosition(elem, rangeStart, 'right');
   const end = findOnPosition(elem, rangeEnd, 'left');
 
-  const range = new Range();
+  const range = new win.Range();
+  const selection = win.getSelection();
 
   range.setStart(start.node, start.position);
   range.setEnd(end.node, end.position);
 
-  window.getSelection().removeAllRanges();
-  window.getSelection().addRange(range);
+  selection.removeAllRanges();
+  selection.addRange(range);
 
   const evt = new MouseEvent('mouseup');
 
   evt.initMouseEvent('mouseup', true, true);
   elem.dispatchEvent(evt);
+};
+
+const getSelectionCoordinates = ({ selector, rangeStart, rangeEnd }) => {
+  let [doc, win] = [document, window];
+  let isIFrame = false;
+  let elem = document.querySelector(selector);
+
+  if (elem.matches('iframe')) {
+    doc = elem.contentDocument;
+    win = elem.contentWindow;
+    elem = doc.body;
+    isIFrame = true;
+  }
+
+  const findOnPosition = (root, position, borderSide = 'left') => {
+    const walker = doc.createTreeWalker(root, NodeFilter.SHOW_ALL);
+
+    let lastPosition = 0;
+    let currentNode = walker.nextNode();
+    let nextNode = walker.nextNode();
+
+    while (currentNode) {
+      const isText = currentNode.nodeType === Node.TEXT_NODE;
+      const isBR = currentNode.nodeName === 'BR';
+
+      if (isText || isBR) {
+        const length = currentNode.length ? currentNode.length : 1;
+
+        if (length + lastPosition >= position || !nextNode) {
+          if (borderSide === 'right' && length + lastPosition === position && nextNode) {
+            return { node: nextNode, position: 0 };
+          }
+          return { node: currentNode, position: isBR ? 0 : Math.min(Math.max(position - lastPosition, 0), length) };
+        } else {
+          lastPosition += length;
+        }
+      }
+
+      currentNode = nextNode;
+      nextNode = walker.nextNode();
+    }
+  };
+
+  const start = findOnPosition(elem, rangeStart, 'right');
+  const end = findOnPosition(elem, rangeEnd, 'left');
+
+
+  const range = new win.Range();
+  const selection = win.getSelection();
+
+  range.setStart(start.node, start.position);
+  range.setEnd(end.node, end.position);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+
+  const rangeRects = Array.from(range.getClientRects());
+  const bboxes = [rangeRects.at(0), rangeRects.at(-1)];
+  const iframeOffset = isIFrame ? elem.getBoundingClientRect() : { left: 0, top: 0 };
+
+  return bboxes.map(bbox => ({
+    x: bbox.left + iframeOffset.left,
+    y: bbox.top + iframeOffset.top,
+    width: bbox.width,
+    height: bbox.height,
+  }));
 };
 
 // Only for debugging
@@ -687,6 +761,7 @@ module.exports = {
 
   serialize,
   selectText,
+  getSelectionCoordinates,
 
   saveDraftLocally,
   getLocallySavedDraft,

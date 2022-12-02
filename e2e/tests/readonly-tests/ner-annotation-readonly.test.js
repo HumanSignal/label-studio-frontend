@@ -1,0 +1,47 @@
+Feature('Readonly');
+
+const imageExamples = new DataTable(['example', 'regionName']);
+
+imageExamples.add([require('../../examples/text-html'), 'Date']);
+
+Data(imageExamples).Scenario('Readonly NER Annotations', async ({
+  I,
+  current,
+  LabelStudio,
+  AtSidebar,
+  AtRichText,
+}) => {
+  I.amOnPage('/');
+  const { config, result, data } = current.example;
+  const regions = result.filter(r => {
+    return r.type.match('labels');
+  });
+
+  const params = {
+    annotations: [{
+      id: 'test',
+      readonly: true,
+      result,
+    }],
+    config,
+    data,
+  };
+
+  LabelStudio.init(params);
+
+  I.see('Update', { css: 'button[disabled]' });
+
+  I.say('Check region is selectable');
+  AtSidebar.seeRegions(regions.length);
+  AtSidebar.clickRegion(current.regionName);
+
+  I.pressKey('Delete');
+  I.say('Results are equal after deletion attempt');
+  await LabelStudio.resultsNotChanged(result);
+
+  I.say('Can\'t draw new shape');
+  I.pressKey('1');
+
+  await AtRichText.selectTextByGlobalOffset(0, 4);
+  AtSidebar.seeRegions(regions.length);
+});

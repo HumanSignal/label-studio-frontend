@@ -1,5 +1,6 @@
 const { I } = inject();
 const Helpers = require('../tests/helpers');
+const Asserts = require('../utils/asserts');
 
 module.exports = {
   init({ events = {}, ...params }) {
@@ -31,5 +32,12 @@ module.exports = {
 
   waitForObjectsReady() {
     I.executeScript(Helpers.waitForObjectsReady);
+  },
+
+  async resultsNotChanged(result) {
+    const serialized = (await this.serialize());
+
+    Asserts.deepEqualWithTolerance(result, serialized, 1);
+
   },
 };

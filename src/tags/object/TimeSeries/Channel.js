@@ -185,8 +185,11 @@ class ChannelD3 extends React.Component {
       ranges,
       item: { parent },
     } = this.props;
+
     const activeStates = parent?.activeStates();
     const statesSelected = activeStates && activeStates.length;
+    const readonly = parent?.annotation?.isReadOnly();
+
     // skip if event fired by .move() - prevent recursion and bugs
 
     if (checkD3EventLoop('end')) return;
@@ -234,7 +237,7 @@ class ChannelD3 extends React.Component {
     this.brushCreator.move(this.gCreator, null);
     const additionalSelection = d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.metaKey;
 
-    if (additionalSelection || !statesSelected) {
+    if (additionalSelection || !statesSelected || readonly) {
       const regions = ranges.filter(r => r.start >= region.start && r.end <= region.end);
 
       if (additionalSelection) {
@@ -244,6 +247,7 @@ class ChannelD3 extends React.Component {
       }
       return;
     }
+
     parent?.addRegion(region.start, region.end);
   };
 

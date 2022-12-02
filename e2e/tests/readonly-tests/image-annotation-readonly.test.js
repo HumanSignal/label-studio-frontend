@@ -1,14 +1,13 @@
 const assert = require('assert');
-const Asserts = require('../../utils/asserts');
 
 Feature('Readonly');
 
-const imageExamples = new DataTable(['requreUrl', 'regionName']);
+const imageExamples = new DataTable(['example', 'regionName']);
 
-imageExamples.add(['../../examples/image-bboxes', 'Hello']);
-imageExamples.add(['../../examples/image-ellipses', 'Hello']);
-imageExamples.add(['../../examples/image-keypoints', 'Hello']);
-imageExamples.add(['../../examples/image-polygons', 'Hello']);
+imageExamples.add([require('../../examples/image-bboxes'), 'Hello']);
+imageExamples.add([require('../../examples/image-ellipses'), 'Hello']);
+imageExamples.add([require('../../examples/image-keypoints'), 'Hello']);
+imageExamples.add([require('../../examples/image-polygons'), 'Hello']);
 
 Data(imageExamples).Scenario('Readonly Annotations', async ({
   I,
@@ -18,7 +17,7 @@ Data(imageExamples).Scenario('Readonly Annotations', async ({
   AtImageView,
 }) => {
   I.amOnPage('/');
-  const { config, result, data } = require(current.requreUrl);
+  const { config, result, data } = current.example;
   const regions = result.filter(r => {
     return r.type.match('labels');
   });
@@ -58,11 +57,12 @@ Data(imageExamples).Scenario('Readonly Annotations', async ({
     x: regionCenter.x + 100,
     y: regionCenter.y + 100,
   });
+  I.say('Results are equal after modification attempt');
+  await LabelStudio.resultsNotChanged(result);
 
-  I.say('Results are equal');
-  const serialized = (await LabelStudio.serialize())[0];
-
-  Asserts.deepEqualWithTolerance(result[0], serialized, 1);
+  I.pressKey('Delete');
+  I.say('Results are equal after deletion attempt');
+  await LabelStudio.resultsNotChanged(result);
 
   I.say('Can\'t draw new shape');
   I.pressKey('1');
