@@ -10,6 +10,7 @@ export const useWaveform = (
     onSeek?: (time: number) => void,
     onPlaying?: (playing: boolean) => void,
     onRateChange?: (rate: number) => void,
+    autoLoad?: boolean,
   },
 ) => {
   const waveform = useRef<Waveform>();
@@ -31,7 +32,9 @@ export const useWaveform = (
       container: containter.current!,
     });
 
-    wf.load();
+    if (options?.autoLoad === undefined || options?.autoLoad) {
+      wf.load();
+    }
 
     wf.on('load', () => {
       setDuration(wf.duration);

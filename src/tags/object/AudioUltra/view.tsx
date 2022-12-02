@@ -18,6 +18,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   const { waveform, ...controls } = useWaveform(rootRef, 
     {
       src: item._value,
+      autoLoad: false,
       waveColor: '#BEB9C5',
       gridColor: '#BEB9C5',
       gridWidth: 1,
@@ -52,67 +53,71 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   );
 
   useEffect(() => {
-    const updateBeforeRegionDraw = (regions: Regions) => {
-      const regionColor = item.getRegionColor();
+    if (item.annotationStore.store.hydrated) {
+      waveform.current?.load();
 
-      if (regionColor) {
-        regions.regionDrawableTarget();
-        regions.setDrawingColor(regionColor);
-      }
-    };
+      const updateBeforeRegionDraw = (regions: Regions) => {
+        const regionColor = item.getRegionColor();
 
-    const updateAfterRegionDraw = (regions: Regions) => {
-      regions.resetDrawableTarget();
-      regions.resetDrawingColor();
-    };
-
-    const createRegion = (region: Region|Segment) => {
-      item.addRegion(region);
-    };
-
-    const selectRegion = (region: Region|Segment) => {
-      if (!region.selected || !region.isRegion) item.annotation.regionStore.unselectAll();
-
-      // to select or unselect region
-      item.annotation.regions.forEach((obj: any) => {
-        if (obj.id === region.id) {
-          obj.annotation.regionStore.toggleSelection(obj, region.selected);
-        } else {
-          obj.annotation.regionStore.toggleSelection(obj, false);
+        if (regionColor) {
+          regions.regionDrawableTarget();
+          regions.setDrawingColor(regionColor);
         }
-      });
+      };
 
-      // to select or unselect unlabeled segments
-      item._ws.regions.regions.forEach((obj: any) => {
-        if (!obj.isRegion) {
+      const updateAfterRegionDraw = (regions: Regions) => {
+        regions.resetDrawableTarget();
+        regions.resetDrawingColor();
+      };
+
+      const createRegion = (region: Region|Segment) => {
+        item.addRegion(region);
+      };
+
+      const selectRegion = (region: Region|Segment) => {
+        if (!region.selected || !region.isRegion) item.annotation.regionStore.unselectAll();
+
+        // to select or unselect region
+        item.annotation.regions.forEach((obj: any) => {
           if (obj.id === region.id) {
-            obj.handleSelected(region.selected);
+            obj.annotation.regionStore.toggleSelection(obj, region.selected);
           } else {
-            obj.handleSelected(false);
+            obj.annotation.regionStore.toggleSelection(obj, false);
           }
-        }
-      });
+        });
 
-    };
+        // to select or unselect unlabeled segments
+        item._ws.regions.regions.forEach((obj: any) => {
+          if (!obj.isRegion) {
+            if (obj.id === region.id) {
+              obj.handleSelected(region.selected);
+            } else {
+              obj.handleSelected(false);
+            }
+          }
+        });
 
-    const updateRegion = (region: Region|Segment) => {
-      item.updateRegion(region);
-    };
+      };
 
-    waveform.current?.on('beforeRegionsDraw', updateBeforeRegionDraw);
-    waveform.current?.on('afterRegionsDraw', updateAfterRegionDraw);
-    waveform.current?.on('regionSelected', selectRegion);
-    waveform.current?.on('regionCreated', createRegion);
-    waveform.current?.on('regionUpdatedEnd', updateRegion);
+      const updateRegion = (region: Region|Segment) => {
+        item.updateRegion(region);
+      };
 
-    return () => {
-      waveform.current?.off('beforeRegionsDraw', updateBeforeRegionDraw);
-      waveform.current?.off('afterRegionsDraw', updateAfterRegionDraw);
-      waveform.current?.off('regionSelected', selectRegion);
-      waveform.current?.off('regionCreated', createRegion);
-      waveform.current?.off('regionUpdatedEnd', updateRegion);
-    };
-  }, []);
+      waveform.current?.on('beforeRegionsDraw', updateBeforeRegionDraw);
+      waveform.current?.on('afterRegionsDraw', updateAfterRegionDraw);
+      waveform.current?.on('regionSelected', selectRegion);
+      waveform.current?.on('regionCreated', createRegion);
+      waveform.current?.on('regionUpdatedEnd', updateRegion);
+
+      return () => {
+        waveform.current?.off('beforeRegionsDraw', updateBeforeRegionDraw);
+        waveform.current?.off('afterRegionsDraw', updateAfterRegionDraw);
+        waveform.current?.off('regionSelected', selectRegion);
+        waveform.current?.off('regionCreated', createRegion);
+        waveform.current?.off('regionUpdatedEnd', updateRegion);
+      };
+    }
+  }, [item.annotationStore.store.hydrated]);
 
   return (
     <div>
