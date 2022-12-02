@@ -1,10 +1,10 @@
-import { CSSProperties, FC, MouseEvent as RMouseEvent, useCallback } from "react";
-import { Block, Elem } from "../../utils/bem";
-import { clamp, isDefined } from "../../utils/utilities";
-import { useValueTracker } from "../Utils/useValueTracker";
-import "./Range.styl";
+import { CSSProperties, FC, MouseEvent as RMouseEvent, useCallback } from 'react';
+import { Block, Elem } from '../../utils/bem';
+import { clamp, isDefined } from '../../utils/utilities';
+import { useValueTracker } from '../Utils/useValueTracker';
+import './Range.styl';
 
-type RangeAlignment = "horizontal" | "vertical";
+type RangeAlignment = 'horizontal' | 'vertical';
 
 type RangeValueType = number | number[] | string
 
@@ -41,7 +41,7 @@ export const Range: FC<RangeProps> = ({
   max=100,
   step=1,
   size=120,
-  align="horizontal",
+  align='horizontal',
   resetValue,
   minIcon,
   maxIcon,

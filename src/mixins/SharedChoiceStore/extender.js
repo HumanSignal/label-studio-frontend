@@ -1,6 +1,6 @@
-import { destroy, detach, types } from "mobx-state-tree";
-import { SharedStoreModel } from "./model";
-import { Stores } from "./mixin";
+import { destroy, detach, types } from 'mobx-state-tree';
+import { SharedStoreModel } from './model';
+import { Stores } from './mixin';
 
 /**
  * StoreExtender injects into the AnnotationStore and holds every created SharedStore.
@@ -8,7 +8,7 @@ import { Stores } from "./mixin";
  * Underlying tags that use SharedStoreMixin have access to methods of this mixin to add
  * their SharedStore instances.
  */
-export const StoreExtender = types.model("StoreExtender", {
+export const StoreExtender = types.model('StoreExtender', {
   sharedStores: types.optional(types.map(SharedStoreModel), {}),
 }).actions((self) => ({
   addSharedStore(store) {

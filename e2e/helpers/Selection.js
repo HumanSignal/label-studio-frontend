@@ -6,10 +6,10 @@ const getPage = (h) => {
 };
 
 class Selection extends Helper {
-  async dblClickOnWord(text, parent = "*") {
+  async dblClickOnWord(text, parent = '*') {
     const page = getPage(this.helpers);
     const { mouse } = page;
-    const xpath = [locate(parent).toXPath(),`//text()[contains(., '${text}')]`,"[last()]"].join("");
+    const xpath = [locate(parent).toXPath(),`//text()[contains(., '${text}')]`,'[last()]'].join('');
     const point = await page.evaluate(({ xpath, text })=>{
       const textEl = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null).iterateNext();
       const pos = textEl.wholeText.search(text);
@@ -25,7 +25,7 @@ class Selection extends Helper {
       };
     },{ xpath, text });
 
-    return mouse.click(point.x, point.y, { button: "left", clickCount: 2, delay: 50 });
+    return mouse.click(point.x, point.y, { button: 'left', clickCount: 2, delay: 50 });
   }
   async dblClickOnElement(elementLocator) {
     const page = getPage(this.helpers);
@@ -41,7 +41,7 @@ class Selection extends Helper {
       };
     },elsXpath);
 
-    return mouse.click(point.x, point.y, { button: "left", clickCount: 2, delay: 50 });
+    return mouse.click(point.x, point.y, { button: 'left', clickCount: 2, delay: 50 });
   }
   async setSelection(startLocator, startOffset, endLocator, endOffset) {
     const page = getPage(this.helpers);
@@ -60,9 +60,9 @@ class Selection extends Helper {
 
       selection.removeAllRanges();
       selection.addRange(range);
-      const evt = new MouseEvent("mouseup");
+      const evt = new MouseEvent('mouseup');
 
-      evt.initMouseEvent("mouseup", true, true);
+      evt.initMouseEvent('mouseup', true, true);
       endContainer.dispatchEvent(evt);
     },{ startContainerXPath, startOffset, endContainerXPath, endOffset });
   }

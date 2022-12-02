@@ -1,17 +1,17 @@
-import { observer } from "mobx-react";
-import { FC, useState } from "react";
-import { Tooltip } from "antd";
-import { IconCheck, IconEllipsis } from "../../assets/icons";
-import { Space } from "../../common/Space/Space";
-import { Userpic } from "../../common/Userpic/Userpic";
-import { Dropdown } from "../../common/Dropdown/Dropdown";
-import { Menu } from "../../common/Menu/Menu";
-import { Block, Elem } from "../../utils/bem";
-import { humanDateDiff, userDisplayName } from "../../utils/utilities";
-import { CommentFormBase } from "./CommentFormBase";
+import { observer } from 'mobx-react';
+import { FC, useState } from 'react';
+import { Tooltip } from 'antd';
+import { IconCheck, IconEllipsis } from '../../assets/icons';
+import { Space } from '../../common/Space/Space';
+import { Userpic } from '../../common/Userpic/Userpic';
+import { Dropdown } from '../../common/Dropdown/Dropdown';
+import { Menu } from '../../common/Menu/Menu';
+import { Block, Elem } from '../../utils/bem';
+import { humanDateDiff, userDisplayName } from '../../utils/utilities';
+import { CommentFormBase } from './CommentFormBase';
 
-import "./CommentItem.styl";
-import { Button } from "../../common/Button/Button";
+import './CommentItem.styl';
+import { Button } from '../../common/Button/Button';
 
 interface Comment {
   comment: {
@@ -72,7 +72,7 @@ export const CommentItem: FC<any> = observer(
         return (
           <Elem name="date">
             <Tooltip placement="topRight" title={new Date(time).toLocaleString()}>
-              {`${isEdited ? "updated" : ""} ${humanDateDiff(time)}`}
+              {`${isEdited ? 'updated' : ''} ${humanDateDiff(time)}`}
             </Tooltip>
           </Elem>
         );
@@ -137,7 +137,7 @@ export const CommentItem: FC<any> = observer(
               <Dropdown.Trigger
                 content={(
                   <Menu size="auto">
-                    <Menu.Item onClick={toggleResolve}>{resolved ? "Unresolve" : "Resolve"}</Menu.Item>
+                    <Menu.Item onClick={toggleResolve}>{resolved ? 'Unresolve' : 'Resolve'}</Menu.Item>
                     {currentUser?.id === createdBy.id && (
                       <>
                         <Menu.Item
@@ -150,7 +150,7 @@ export const CommentItem: FC<any> = observer(
                             }
                           }}
                         >
-                          {isEditMode ? `Cancel edit` : `Edit`}
+                          {isEditMode ? 'Cancel edit' : 'Edit'}
                         </Menu.Item>
                         {!isConfirmDelete && (
                           <Menu.Item

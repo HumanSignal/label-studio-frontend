@@ -1,13 +1,13 @@
-import { applySnapshot, getEnv, getSnapshot, onSnapshot, resolvePath, types } from "mobx-state-tree";
-import { FF_DEV_1284, isFF } from "../utils/feature-flags";
+import { applySnapshot, getEnv, getSnapshot, onSnapshot, resolvePath, types } from 'mobx-state-tree';
+import { FF_DEV_1284, isFF } from '../utils/feature-flags';
 
 /**
  * Time Traveller
  */
 const TimeTraveller = types
-  .model("TimeTraveller", {
+  .model('TimeTraveller', {
     undoIdx: 0,
-    targetPath: "",
+    targetPath: '',
     skipNextUndoState: types.optional(types.boolean, false),
 
     createdIdx: 0,
@@ -94,6 +94,7 @@ const TimeTraveller = types
 
           return;
         }
+        if (Object.keys(recorder).length < 1) return;
 
         // mutate history to trigger history-related UI items
         self.history = self.history.slice(0, self.undoIdx + !replaceNextUndoState).concat(recorder);
@@ -114,7 +115,7 @@ const TimeTraveller = types
 
         if (!targetStore)
           throw new Error(
-            "Failed to find target store for TimeTraveller. Please provide `targetPath`  property, or a `targetStore` in the environment",
+            'Failed to find target store for TimeTraveller. Please provide `targetPath`  property, or a `targetStore` in the environment',
           );
         // start listening to changes
         snapshotDisposer = onSnapshot(targetStore, snapshot => this.addUndoState(snapshot));

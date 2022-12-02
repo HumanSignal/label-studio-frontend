@@ -1,23 +1,23 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "../../../common/Button/Button";
-import { Dropdown } from "../../../common/Dropdown/Dropdown";
-import { Menu } from "../../../common/Menu/Menu";
-import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
-import ObjectTag from "../../../components/Tags/Object";
-import { Timeline } from "../../../components/Timeline/Timeline";
-import { clampZoom, VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
-import { defaultStyle } from "../../../core/Constants";
-import { useToggle } from "../../../hooks/useToggle";
-import { Block, Elem } from "../../../utils/bem";
-import { clamp, isDefined } from "../../../utils/utilities";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from '../../../common/Button/Button';
+import { Dropdown } from '../../../common/Dropdown/Dropdown';
+import { Menu } from '../../../common/Menu/Menu';
+import { ErrorMessage } from '../../../components/ErrorMessage/ErrorMessage';
+import ObjectTag from '../../../components/Tags/Object';
+import { Timeline } from '../../../components/Timeline/Timeline';
+import { clampZoom, VideoCanvas } from '../../../components/VideoCanvas/VideoCanvas';
+import { defaultStyle } from '../../../core/Constants';
+import { useToggle } from '../../../hooks/useToggle';
+import { Block, Elem } from '../../../utils/bem';
+import { clamp, isDefined } from '../../../utils/utilities';
 
-import { IconZoomIn } from "../../../assets/icons";
-import { MAX_ZOOM_WHEEL, MIN_ZOOM_WHEEL, ZOOM_STEP, ZOOM_STEP_WHEEL } from "../../../components/VideoCanvas/VideoConstants";
-import { useFullscreen } from "../../../hooks/useFullscreen";
-import ResizeObserver from "../../../utils/resize-observer";
-import "./Video.styl";
-import { VideoRegions } from "./VideoRegions";
-import { FF_DEV_2715, isFF } from "../../../utils/feature-flags";
+import { IconZoomIn } from '../../../assets/icons';
+import { MAX_ZOOM_WHEEL, MIN_ZOOM_WHEEL, ZOOM_STEP, ZOOM_STEP_WHEEL } from '../../../components/VideoCanvas/VideoConstants';
+import { useFullscreen } from '../../../hooks/useFullscreen';
+import ResizeObserver from '../../../utils/resize-observer';
+import './Video.styl';
+import { VideoRegions } from './VideoRegions';
+import { FF_DEV_2715, isFF } from '../../../utils/feature-flags';
 
 const isFFDev2715 = isFF(FF_DEV_2715);
 
@@ -142,7 +142,7 @@ const HtxVideoView = ({ item, store }) => {
     if (!e.shiftKey || !stageRef.current) return;
 
     // because its possible the shiftKey is the modifier, we need to check the appropriate delta
-    const wheelDelta = Math.abs(e.deltaY) === 0 ? e.deltaX : e.deltaY; 
+    const wheelDelta = Math.abs(e.deltaY) === 0 ? e.deltaX : e.deltaY;
     const polarity = wheelDelta > 0 ? 1 : -1;
     const stepDelta = Math.abs(wheelDelta * ZOOM_STEP_WHEEL);
     const delta = polarity * clamp(stepDelta, MIN_ZOOM_WHEEL, MAX_ZOOM_WHEEL);
@@ -298,14 +298,14 @@ const HtxVideoView = ({ item, store }) => {
 
     regions.forEach(region => {
       switch(action) {
-        case "lifespan_add":
-        case "lifespan_remove":
+        case 'lifespan_add':
+        case 'lifespan_remove':
           region.toggleLifespan(data.frame);
           break;
-        case "keypoint_add":
+        case 'keypoint_add':
           region.addKeypoint(data.frame);
           break;
-        case "keypoint_remove":
+        case 'keypoint_remove':
           region.removeKeypoint(data.frame);
           break;
         default:
@@ -327,7 +327,7 @@ const HtxVideoView = ({ item, store }) => {
 
   const regions = item.regs.map(reg => {
     const color = reg.style?.fillcolor ?? reg.tag?.fillcolor ?? defaultStyle.fillcolor;
-    const label = reg.labels.join(", ") || "Empty";
+    const label = reg.labels.join(', ') || 'Empty';
     const sequence = reg.sequence.map(s => ({
       frame: s.frame,
       enabled: s.enabled,
@@ -417,7 +417,7 @@ const HtxVideoView = ({ item, store }) => {
             controls={{ FramesControl: true }}
             customControls={[
               {
-                position: "left",
+                position: 'left',
                 component: () => {
                   return (
                     <Dropdown.Trigger

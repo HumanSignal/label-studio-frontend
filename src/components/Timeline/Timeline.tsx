@@ -1,20 +1,20 @@
-import { observer } from "mobx-react";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
-import { useLocalStorageState } from "../../hooks/useLocalStorageState";
-import { useMemoizedHandlers } from "../../hooks/useMemoizedHandlers";
-import { Block, Elem } from "../../utils/bem";
-import { clamp, isDefined } from "../../utils/utilities";
-import { TimelineContextProvider } from "./Context";
-import { Controls } from "./Controls";
-import { Seeker } from "./Seeker";
-import "./Timeline.styl";
-import { TimelineContextValue, TimelineControlsStepHandler, TimelineProps } from "./Types";
-import { default as Views } from "./Views";
+import { observer } from 'mobx-react';
+import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocalStorageState } from '../../hooks/useLocalStorageState';
+import { useMemoizedHandlers } from '../../hooks/useMemoizedHandlers';
+import { Block, Elem } from '../../utils/bem';
+import { clamp, isDefined } from '../../utils/utilities';
+import { TimelineContextProvider } from './Context';
+import { Controls } from './Controls';
+import { Seeker } from './Seeker';
+import './Timeline.styl';
+import { TimelineContextValue, TimelineControlsStepHandler, TimelineProps } from './Types';
+import { default as Views } from './Views';
 
 const TimelineComponent: FC<TimelineProps> = ({
   regions,
   zoom = 1,
-  mode = "frames",
+  mode = 'frames',
   length = 1024,
   position = 1,
   framerate = 24,
@@ -38,8 +38,8 @@ const TimelineComponent: FC<TimelineProps> = ({
   const [currentPosition, setCurrentPosition] = useState(clamp(position, 1, Infinity));
   const [seekOffset, setSeekOffset] = useState(0);
   const [seekVisibleWidth, setSeekVisibleWidth] = useState(0);
-  const [viewCollapsed, setViewCollapsed] = useLocalStorageState("video-timeline", false, {
-    fromString(value) { return value === "true" ? true : false; },
+  const [viewCollapsed, setViewCollapsed] = useLocalStorageState('video-timeline', false, {
+    fromString(value) { return value === 'true' ? true : false; },
     toString(value) { return String(value); },
   });
   const getCurrentPosition = useRef(() => {

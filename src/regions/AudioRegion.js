@@ -1,17 +1,17 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import WithStatesMixin from "../mixins/WithStates";
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
-import { AreaMixin } from "../mixins/AreaMixin";
-import Registry from "../core/Registry";
-import { FF_DEV_2715, isFF } from "../utils/feature-flags";
+import WithStatesMixin from '../mixins/WithStates';
+import NormalizationMixin from '../mixins/Normalization';
+import RegionsMixin from '../mixins/Regions';
+import { AreaMixin } from '../mixins/AreaMixin';
+import Registry from '../core/Registry';
+import { FF_DEV_2715, isFF } from '../utils/feature-flags';
 
 import { AudioUltraRegionModel as _audioUltraRegionModel } from './AudioRegion/AudioUltraRegionModel';
 import { AudioRegionModel as _audioRegionModel } from './AudioRegion/AudioRegionModel';
 
 const AudioRegionModel = types.compose(
-  "AudioRegionModel",
+  'AudioRegionModel',
   WithStatesMixin,
   RegionsMixin,
   AreaMixin,
@@ -20,7 +20,7 @@ const AudioRegionModel = types.compose(
 );
 
 const AudioUltraRegionModel = types.compose(
-  "AudioRegionModel",
+  'AudioRegionModel',
   WithStatesMixin,
   RegionsMixin,
   AreaMixin,
@@ -34,7 +34,7 @@ if (isFF(FF_DEV_2715)) {
   _exportAudioRegion = AudioUltraRegionModel;
 }
 
-Registry.addRegionType(_exportAudioRegion, "audioplus");
-Registry.addRegionType(_exportAudioRegion, "audio");
+Registry.addRegionType(_exportAudioRegion, 'audioplus');
+Registry.addRegionType(_exportAudioRegion, 'audio');
 
 export { _exportAudioRegion as AudioRegionModel };

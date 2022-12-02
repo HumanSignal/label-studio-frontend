@@ -1,8 +1,8 @@
-import { FC, MutableRefObject, useMemo, useRef, useState } from "react";
-import { Block } from "../../../utils/bem";
-import { clamp } from "../../../utils/utilities";
-import { TimelineSideControlProps } from "../Types";
-import "./FramesControl.styl";
+import { FC, MutableRefObject, useMemo, useRef, useState } from 'react';
+import { Block } from '../../../utils/bem';
+import { clamp } from '../../../utils/utilities';
+import { TimelineSideControlProps } from '../Types';
+import './FramesControl.styl';
 
 export const FramesControl: FC<TimelineSideControlProps> = ({
   position = 0,

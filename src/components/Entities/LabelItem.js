@@ -1,13 +1,13 @@
-import { List } from "antd";
-import { observer } from "mobx-react";
-import { Button } from "../../common/Button/Button";
-import { Block, Elem } from "../../utils/bem";
-import { Space } from "../../common/Space/Space";
-import { LsInvisible, LsVisible } from "../../assets/icons";
-import { Label } from "../Label/Label";
-import React from "react";
-import { asVars } from "../../utils/styles";
-import "./LabelItem.styl";
+import { List } from 'antd';
+import { observer } from 'mobx-react';
+import { Button } from '../../common/Button/Button';
+import { Block, Elem } from '../../utils/bem';
+import { Space } from '../../common/Space/Space';
+import { LsInvisible, LsVisible } from '../../assets/icons';
+import { Label } from '../Label/Label';
+import React from 'react';
+import { asVars } from '../../utils/styles';
+import './LabelItem.styl';
 
 export const LabelItem = observer(({ item, regions, regionStore }) => {
   const color = item.background;
@@ -26,7 +26,7 @@ export const LabelItem = observer(({ item, regions, regionStore }) => {
             </Label>
           ) : <>Not labeled</>}
           <Elem name="counter">
-            {`${count} Region${(count === 0 || count > 1) ? "s" : ""}`}
+            {`${count} Region${(count === 0 || count > 1) ? 's' : ''}`}
           </Elem>
         </Elem>
         <Elem

@@ -1,23 +1,23 @@
-import * as d3 from "d3";
-import { getRoot, types } from "mobx-state-tree";
+import * as d3 from 'd3';
+import { getRoot, types } from 'mobx-state-tree';
 
-import { Hotkey } from "../core/Hotkey";
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
-import { TimeSeriesModel } from "../tags/object/TimeSeries";
-import { guidGenerator } from "../core/Helpers";
-import WithStatesMixin from "../mixins/WithStates";
-import Registry from "../core/Registry";
-import { AreaMixin } from "../mixins/AreaMixin";
-import { AnnotationMixin } from "../mixins/AnnotationMixin";
+import { Hotkey } from '../core/Hotkey';
+import NormalizationMixin from '../mixins/Normalization';
+import RegionsMixin from '../mixins/Regions';
+import { TimeSeriesModel } from '../tags/object/TimeSeries';
+import { guidGenerator } from '../core/Helpers';
+import WithStatesMixin from '../mixins/WithStates';
+import Registry from '../core/Registry';
+import { AreaMixin } from '../mixins/AreaMixin';
+import { AnnotationMixin } from '../mixins/AnnotationMixin';
 
-const hotkeys = Hotkey("TimeSeries", "Time Series Segmentation");
+const hotkeys = Hotkey('TimeSeries', 'Time Series Segmentation');
 
 const Model = types
-  .model("TimeSeriesRegionModel", {
+  .model('TimeSeriesRegionModel', {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-    type: "timeseriesregion",
+    type: 'timeseriesregion',
     object: types.late(() => types.reference(TimeSeriesModel)),
 
     start: types.union(types.number, types.string),
@@ -65,15 +65,15 @@ const Model = types
       const one = 1000;
       const lots = one * 10;
 
-      hotkeys.addNamed("ts:grow-left", () => self.growLeft(one));
-      hotkeys.addNamed("ts:grow-right", () => self.growRight(one));
-      hotkeys.addNamed("ts:shrink-left", () => self.shrinkLeft(one));
-      hotkeys.addNamed("ts:shrink-right", () => self.shrinkRight(one));
+      hotkeys.addNamed('ts:grow-left', () => self.growLeft(one));
+      hotkeys.addNamed('ts:grow-right', () => self.growRight(one));
+      hotkeys.addNamed('ts:shrink-left', () => self.shrinkLeft(one));
+      hotkeys.addNamed('ts:shrink-right', () => self.shrinkRight(one));
 
-      hotkeys.addNamed("ts:grow-left-largre", () => self.growLeft(lots));
-      hotkeys.addNamed("ts:grow-right-largre", () => self.growRight(lots));
-      hotkeys.addNamed("ts:shrink-left-largre", () => self.shrinkLeft(lots));
-      hotkeys.addNamed("ts:shrink-right-largre", () => self.shrinkRight(lots));
+      hotkeys.addNamed('ts:grow-left-largre', () => self.growLeft(lots));
+      hotkeys.addNamed('ts:grow-right-largre', () => self.growRight(lots));
+      hotkeys.addNamed('ts:shrink-left-largre', () => self.shrinkLeft(lots));
+      hotkeys.addNamed('ts:shrink-right-largre', () => self.shrinkRight(lots));
 
       self.parent.scrollToRegion(self);
     },
@@ -100,7 +100,7 @@ const Model = types
     },
 
     afterCreate() {
-      if (typeof self.start === "string") {
+      if (typeof self.start === 'string') {
         // deal only with timestamps/indices
         self.start = self.parent.parseTime(self.start);
         self.end = self.parent.parseTime(self.end);
@@ -123,7 +123,7 @@ const Model = types
   }));
 
 const TimeSeriesRegionModel = types.compose(
-  "TimeSeriesRegionModel",
+  'TimeSeriesRegionModel',
   WithStatesMixin,
   RegionsMixin,
   AreaMixin,
@@ -132,7 +132,7 @@ const TimeSeriesRegionModel = types.compose(
   Model,
 );
 
-Registry.addTag("timeseriesregion", TimeSeriesRegionModel, () => {});
-Registry.addRegionType(TimeSeriesRegionModel, "timeseries");
+Registry.addTag('timeseriesregion', TimeSeriesRegionModel, () => {});
+Registry.addRegionType(TimeSeriesRegionModel, 'timeseries');
 
 export { TimeSeriesRegionModel };

@@ -1,9 +1,9 @@
-import { observe } from "mobx";
-import { types } from "mobx-state-tree";
+import { observe } from 'mobx';
+import { types } from 'mobx-state-tree';
 
-import { EventInvoker } from "../utils/events";
-import { FF_DEV_2715, isFF } from "../utils/feature-flags";
-import { TimeSync, TimeSyncSubscriber } from "../utils/TimeSync";
+import { EventInvoker } from '../utils/events';
+import { FF_DEV_2715, isFF } from '../utils/feature-flags';
+import { TimeSync, TimeSyncSubscriber } from '../utils/TimeSync';
 
 const isFFDev2715 = isFF(FF_DEV_2715);
 
@@ -40,28 +40,28 @@ const SyncMixin = types
     // *** abstract ***
     needsUpdate() {},
     handleSyncPlay() {
-      console.error("handleSyncPlay should be implemented");
+      console.error('handleSyncPlay should be implemented');
     },
     handleSyncPause() {
-      console.error("handleSyncPause should be implemented");
+      console.error('handleSyncPause should be implemented');
     },
-    handleSyncSeek(time: number) {
-      console.error("handleSyncSeek should be implemented");
+    handleSyncSeek(_time: number) {
+      console.error('handleSyncSeek should be implemented');
     },
-    handleSyncSpeed(speed: number) {
-      console.error("handleSyncSpeed should be implemented");
+    handleSyncSpeed(_speed: number) {
+      console.error('handleSyncSpeed should be implemented');
     },
-    handleSyncDuration(duration: number) {
+    handleSyncDuration(_duration: number) {
       if (isFFDev2715) {
-        console.error("handleSyncDuration should be implemented");
+        console.error('handleSyncDuration should be implemented');
       }
     },
     attachObject() {
       self.syncedObject = (self as any).annotation?.names?.get(self.sync);
     },
-    setCurrentlyPlaying(isPlaying: boolean) {
+    setCurrentlyPlaying(_isPlaying: boolean) {
       if (isFFDev2715) {
-        console.error("setCurrentlyPlaying should be implemented");
+        console.error('setCurrentlyPlaying should be implemented');
       }
     },
   }))
@@ -101,7 +101,7 @@ const SyncMixin = types
 
       const dispose = observe(
         self as any,
-        "annotation",
+        'annotation',
         () => {
           if ((self as any).annotation) {
             self.attachObject();

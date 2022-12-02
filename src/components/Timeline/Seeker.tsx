@@ -1,9 +1,9 @@
-import { clamp } from "lodash";
-import { FC, ReactElement, useCallback, useRef } from "react";
-import { Block, Elem } from "../../utils/bem";
-import { TimelineMinimapProps } from "./Types";
+import { clamp } from 'lodash';
+import { FC, ReactElement, useCallback, useRef } from 'react';
+import { Block, Elem } from '../../utils/bem';
+import { TimelineMinimapProps } from './Types';
 
-import "./Seeker.styl";
+import './Seeker.styl';
 
 export interface SeekerProps {
   position: number;
@@ -61,12 +61,12 @@ export const Seeker: FC<SeekerProps> = ({
     };
 
     const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
   }, [length]);
 
   const onSeekerDrag = useCallback((e: globalThis.MouseEvent) => {
@@ -94,12 +94,12 @@ export const Seeker: FC<SeekerProps> = ({
     };
 
     const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
   }, [length]);
 
   const onDrag = useCallback((e: MouseEvent) => {

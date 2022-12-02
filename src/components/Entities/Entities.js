@@ -1,27 +1,27 @@
-import React from "react";
-import { Dropdown } from "antd";
-import { observer } from "mobx-react";
+import React from 'react';
+import { Dropdown } from 'antd';
+import { observer } from 'mobx-react';
 
-import "./Entities.scss";
-import { RegionTree } from "./RegionTree";
-import { LabelList } from "./LabelList";
-import { SortMenu, SortMenuIcon } from "./SortMenu";
-import { Oneof } from "../../common/Oneof/Oneof";
-import { Space } from "../../common/Space/Space";
-import { Block, Elem } from "../../utils/bem";
-import { RadioGroup } from "../../common/RadioGroup/RadioGroup";
-import "./Entities.styl";
-import { Button } from "../../common/Button/Button";
-import { LsInvisible, LsTrash, LsVisible } from "../../assets/icons";
-import { confirm } from "../../common/Modal/Modal";
-import { Tooltip } from "../../common/Tooltip/Tooltip";
+import './Entities.scss';
+import { RegionTree } from './RegionTree';
+import { LabelList } from './LabelList';
+import { SortMenu, SortMenuIcon } from './SortMenu';
+import { Oneof } from '../../common/Oneof/Oneof';
+import { Space } from '../../common/Space/Space';
+import { Block, Elem } from '../../utils/bem';
+import { RadioGroup } from '../../common/RadioGroup/RadioGroup';
+import './Entities.styl';
+import { Button } from '../../common/Button/Button';
+import { LsInvisible, LsTrash, LsVisible } from '../../assets/icons';
+import { confirm } from '../../common/Modal/Modal';
+import { Tooltip } from '../../common/Tooltip/Tooltip';
 
 export default observer(({
   regionStore,
   annotation,
 }) => {
   const { classifications, regions, view } = regionStore;
-  const count = regions.length + (view === "regions" ? classifications.length : 0);
+  const count = regions.length + (view === 'regions' ? classifications.length : 0);
   const toggleVisibility = e => {
     e.preventDefault();
     e.stopPropagation();
@@ -58,9 +58,9 @@ export default observer(({
                 }}
                 onClick={() => {
                   confirm({
-                    title: "Removing all regions",
-                    body: "Do you want to delete all annotated regions?",
-                    buttonLook: "destructive",
+                    title: 'Removing all regions',
+                    body: 'Do you want to delete all annotated regions?',
+                    buttonLook: 'destructive',
                     onOk: () => annotation.deleteAllRegions(),
                   });
                 }} />
@@ -71,8 +71,8 @@ export default observer(({
 
       {count ? (
         <Elem name="header">
-          <Space spread align={view === "regions" ? null : "end"}>
-            {view === "regions" && (
+          <Space spread align={view === 'regions' ? null : 'end'}>
+            {view === 'regions' && (
               <Dropdown overlay={<SortMenu regionStore={regionStore} />} placement="bottomLeft">
                 <Elem name="sort" onClick={e => e.preventDefault()}>
                   <Elem name="sort-icon"><SortMenuIcon sortKey={regionStore.sort} /></Elem> {`Sorted by ${regionStore.sort[0].toUpperCase()}${regionStore.sort.slice(1)}`}

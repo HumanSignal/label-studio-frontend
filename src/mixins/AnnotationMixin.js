@@ -1,8 +1,8 @@
-import { getRoot, types } from "mobx-state-tree";
-import Types from "../core/Types";
-import { FF_DEV_3391, isFF } from "../utils/feature-flags";
+import { getRoot, types } from 'mobx-state-tree';
+import Types from '../core/Types';
+import { FF_DEV_3391, isFF } from '../utils/feature-flags';
 
-export const AnnotationMixin = types.model("AnnotationMixin", {
+export const AnnotationMixin = types.model('AnnotationMixin', {
 
 }).views((self) => ({
   get annotation() {
@@ -25,7 +25,7 @@ export const AnnotationMixin = types.model("AnnotationMixin", {
       }
 
       // return connected annotation, not the globally selected one
-      return Types.getParentOfTypeString(self, "Annotation");
+      return Types.getParentOfTypeString(self, 'Annotation');
     }
 
     const as = self.annotationStore;

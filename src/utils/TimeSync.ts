@@ -1,5 +1,5 @@
-import { EventInvoker } from "./events";
-import { FF_DEV_2461, FF_DEV_2715, isFF } from "./feature-flags";
+import { EventInvoker } from './events';
+import { FF_DEV_2461, FF_DEV_2715, isFF } from './feature-flags';
 
 const isFFDev2461 = isFF(FF_DEV_2461);
 const isFFDev2715 = isFF(FF_DEV_2715);
@@ -14,7 +14,7 @@ interface TimeSyncHandler {
   syncedDuration: (duration: number) => void;
 }
 
-type TimeSyncEvent = "play" | "pause" | "seek" | "speed" | "syncedDuration";
+type TimeSyncEvent = 'play' | 'pause' | 'seek' | 'speed' | 'syncedDuration';
 
 export class TimeSyncSubscriber {
   private name: string;
@@ -68,8 +68,8 @@ export class TimeSyncSubscriber {
   play() {
     this.playing = true;
 
-    this.whenUnlocked("play", () => {
-      this.events.invoke("play");
+    this.whenUnlocked('play', () => {
+      this.events.invoke('play');
       this.subscribers.forEach(sub => sub.play());
     });
   }
@@ -77,21 +77,21 @@ export class TimeSyncSubscriber {
   pause() {
     this.playing = false;
 
-    this.whenUnlocked("pause", () => {
-      this.events.invoke("pause");
+    this.whenUnlocked('pause', () => {
+      this.events.invoke('pause');
       this.subscribers.forEach(sub => sub.pause());
     });
   }
 
   seek(time: number) {
     if ((!isFFDev2461 || !isFFDev2715) && time === this.currentTime) {
-      this.releaseEvent("seek");
+      this.releaseEvent('seek');
       return;
     }
     this.currentTime = time;
 
-    this.whenUnlocked("seek", () => {
-      this.events.invoke("seek", time);
+    this.whenUnlocked('seek', () => {
+      this.events.invoke('seek', time);
       this.subscribers.forEach(sub => sub.seek(this.currentTime));
     });
   }
@@ -99,8 +99,8 @@ export class TimeSyncSubscriber {
   speed(speed: number) {
     this.currentSpeed = speed;
 
-    this.whenUnlocked("speed", () => {
-      this.events.invoke("speed", speed);
+    this.whenUnlocked('speed', () => {
+      this.events.invoke('speed', speed);
       this.subscribers.forEach(sub => sub.speed(this.currentSpeed));
     });
   }
@@ -108,8 +108,8 @@ export class TimeSyncSubscriber {
   syncedDuration(duration: number) {
     this.duration = duration;
 
-    this.whenUnlocked("syncedDuration", () => {
-      this.events.invoke("syncedDuration", duration);
+    this.whenUnlocked('syncedDuration', () => {
+      this.events.invoke('syncedDuration', duration);
       this.subscribers.forEach(sub => sub.syncedDuration(this.duration));
     });
   }

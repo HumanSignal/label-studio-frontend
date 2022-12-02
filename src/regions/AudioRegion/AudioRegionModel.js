@@ -1,18 +1,17 @@
-import { getRoot, types } from "mobx-state-tree";
-import { AudioModel } from "../../tags/object/AudioNext";
-import Utils from "../../utils";
-import Constants from "../../core/Constants";
+import { getRoot, types } from 'mobx-state-tree';
+import { AudioModel } from '../../tags/object/AudioNext';
+import Utils from '../../utils';
+import Constants from '../../core/Constants';
 
 export const AudioRegionModel = types
-  .model("AudioRegionModel", {
-    type: "audioregion",
+  .model('AudioRegionModel', {
+    type: 'audioregion',
     object: types.late(() => types.reference(AudioModel)),
 
     start: types.number,
     end: types.number,
-    channel: types.optional(types.number, 0),
 
-    selectedregionbg: types.optional(types.string, "rgba(0, 0, 0, 0.5)"),
+    selectedregionbg: types.optional(types.string, 'rgba(0, 0, 0, 0.5)'),
   })
   .volatile(() => ({
     hideable: true,
@@ -36,8 +35,7 @@ export const AudioRegionModel = types
         id: self.id,
         start: self.start,
         end: self.end,
-        channel: self.channel,
-        color: "orange",
+        color: 'orange',
       };
 
       if (self.readonly) {
@@ -55,7 +53,6 @@ export const AudioRegionModel = types
      *   "value": {
      *     "start": 3.1,
      *     "end": 8.2,
-     *     "channel": 0,
      *     "labels": ["Voice"]
      *   }
      * }
@@ -64,7 +61,6 @@ export const AudioRegionModel = types
      * @property {Object} value
      * @property {number} value.start start time of the fragment (seconds)
      * @property {number} value.end end time of the fragment (seconds)
-     * @property {number} value.channel channel identifier which was targeted
      */
 
     /**
@@ -76,7 +72,6 @@ export const AudioRegionModel = types
         value: {
           start: self.start,
           end: self.end,
-          channel: self.channel,
         },
       };
 
@@ -121,10 +116,10 @@ export const AudioRegionModel = types
         }
       }
 
-      const classes = [...new Set([...lastClassList, "htx-highlight", "htx-highlight-last"])];
+      const classes = [...new Set([...lastClassList, 'htx-highlight', 'htx-highlight-last'])];
 
       if (!self.parent.showlabels && !settings.showLabels) {
-        classes.push("htx-no-label");
+        classes.push('htx-no-label');
       } else {
         const cssCls = Utils.HTML.labelWithCSS(el, {
           labels: self.labeling?.mainValue,
@@ -134,11 +129,7 @@ export const AudioRegionModel = types
         classes.push(cssCls);
       }
 
-      el.className = classes.filter(Boolean).join(" ");
-
-      // Annotation must visually be drawn across both channels
-      el.style.top = "0px";
-      el.style.height = "100%";
+      el.className = classes.filter(Boolean).join(' ');
     },
 
     /**
@@ -177,7 +168,7 @@ export const AudioRegionModel = types
         self._ws_region.element.style.border = Constants.HIGHLIGHTED_CSS_BORDER;
       } else {
         self.updateColor(0.3);
-        self._ws_region.element.style.border = "none";
+        self._ws_region.element.style.border = 'none';
       }
     },
 
@@ -186,7 +177,13 @@ export const AudioRegionModel = types
     },
 
     onClick(wavesurfer, ev) {
+      // if (! self.editable) return;
+
       if (!self.annotation.relationMode) {
+        // Object.values(wavesurfer.regions.list).forEach(r => {
+        //   // r.update({ color: self.selectedregionbg });
+        // });
+
         self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
       }
 
@@ -210,14 +207,13 @@ export const AudioRegionModel = types
     onUpdateEnd() {
       self.start = self._ws_region.start;
       self.end = self._ws_region.end;
-      self.channel = self._ws_region.channelIdx ?? 0;
       self.updateColor(self.selected ? 0.8 : 0.3);
       self.notifyDrawingFinished();
     },
 
     toggleHidden(e) {
       self.hidden = !self.hidden;
-      self._ws_region.element.style.display = self.hidden ?  "none" : "block";
+      self._ws_region.element.style.display = self.hidden ?  'none' : 'block';
       e?.stopPropagation();
     },
   }));

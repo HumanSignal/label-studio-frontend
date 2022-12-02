@@ -1,13 +1,13 @@
-import { getRoot, types } from "mobx-state-tree";
-import React from "react";
+import { getRoot, types } from 'mobx-state-tree';
+import React from 'react';
 
-import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
-import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
-import ObjectBase from "../Base";
-import { SyncMixin } from "../../../mixins/SyncMixin";
-import IsReadyMixin from "../../../mixins/IsReadyMixin";
-import { isTimeRelativelySimilar } from "../../../lib/AudioUltra";
-import { FF_DEV_2715, isFF } from "../../../utils/feature-flags";
+import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
+import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
+import ObjectBase from '../Base';
+import { SyncMixin } from '../../../mixins/SyncMixin';
+import IsReadyMixin from '../../../mixins/IsReadyMixin';
+import { isTimeRelativelySimilar } from '../../../lib/AudioUltra';
+import { FF_DEV_2715, isFF } from '../../../utils/feature-flags';
 
 const isFFDev2715 = isFF(FF_DEV_2715);
 
@@ -49,15 +49,15 @@ const isFFDev2715 = isFF(FF_DEV_2715);
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
-  framerate: types.optional(types.string, "24"),
-  height: types.optional(types.string, "600"),
+  framerate: types.optional(types.string, '24'),
+  height: types.optional(types.string, '600'),
   muted: false,
 });
 
 const Model = types
   .model({
-    type: "video",
-    _value: types.optional(types.string, ""),
+    type: 'video',
+    _value: types.optional(types.string, ''),
     // special flag to store labels inside result, but under original type
     // @todo make it able to be disabled
     mergeLabelsAndResults: true,
@@ -83,15 +83,15 @@ const Model = types
     },
 
     control() {
-      return self.annotation.toNames.get(self.name)?.find(s => !s.type.endsWith("labels"));
+      return self.annotation.toNames.get(self.name)?.find(s => !s.type.endsWith('labels'));
     },
 
     videoControl() {
-      return self.annotation.toNames.get(self.name)?.find(s => s.type.includes("video"));
+      return self.annotation.toNames.get(self.name)?.find(s => s.type.includes('video'));
     },
 
     states() {
-      return self.annotation.toNames.get(self.name)?.filter(s => s.type.endsWith("labels"));
+      return self.annotation.toNames.get(self.name)?.filter(s => s.type.endsWith('labels'));
     },
 
     activeStates() {
@@ -224,7 +224,7 @@ const Model = types
 
       needsUpdate() {
         if (self.sync) {
-          if (self.syncedObject?.type?.startsWith("audio")) {
+          if (self.syncedObject?.type?.startsWith('audio')) {
             self.muted = true;
           }
         }
@@ -260,7 +260,7 @@ const Model = types
         ];
 
         if (!control) {
-          console.error("NO CONTROL");
+          console.error('NO CONTROL');
           return;
         }
 
@@ -284,8 +284,7 @@ const Model = types
     };
   });
 
-export const VideoModel = types.compose(
-  "VideoModel",
+export const VideoModel = types.compose('VideoModel',
   SyncMixin,
   TagAttrs,
   ProcessAttrsMixin,
