@@ -9,6 +9,16 @@ import { FF_DEV_2715, isFF } from '../utils/feature-flags';
 
 import { AudioUltraRegionModel as _audioUltraRegionModel } from './AudioRegion/AudioUltraRegionModel';
 import { AudioRegionModel as _audioRegionModel } from './AudioRegion/AudioRegionModel';
+import { EditableRegion } from './EditableRegion';
+
+const EditableAudioModel = types
+  .model('EditableAudioModel', {})
+  .volatile(() => ({
+    editableFields: [
+      { property: 'start', label: 'Start' },
+      { property: 'end', label: 'End' },
+    ],
+  }));
 
 const AudioRegionModel = types.compose(
   'AudioRegionModel',
@@ -16,6 +26,8 @@ const AudioRegionModel = types.compose(
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
+  EditableRegion,
+  EditableAudioModel,
   _audioRegionModel,
 );
 
@@ -25,6 +37,8 @@ const AudioUltraRegionModel = types.compose(
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
+  EditableRegion,
+  EditableAudioModel,
   _audioUltraRegionModel,
 );
 
