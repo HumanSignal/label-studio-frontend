@@ -255,6 +255,7 @@ export class Regions {
 
       if (region && region.start === region.end) {
         region.remove();
+        this.unlock();
       } else if (region) {
         this.waveform.invoke("regionCreated", [region]);
         if (autoPlayNewSegments && !region.isRegion) {
@@ -263,10 +264,12 @@ export class Regions {
           }
           player.play();
         }
+        setTimeout(() => this.unlock(), 0);
+      } else {
+        this.unlock();
       }
 
       this.waveform.invoke("afterRegionsDraw", [this]);
-      this.unlock();
     };
 
     document.addEventListener("mousemove", handleMouseMove);
