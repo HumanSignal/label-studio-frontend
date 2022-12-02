@@ -64,7 +64,16 @@ export class Regions {
     container.addEventListener('mousedown', this.handleMouseDown);
     container.addEventListener('mouseup', this.handleMouseUp);
     container.addEventListener('click', this.handleClick);
+    document.addEventListener('keydown', this.handleKeys);
   }
+
+  handleKeys = (e: KeyboardEvent) => {
+    if (this.isLocked) return;
+
+    if (e.key === 'Backspace' || e.key === 'Delete') {
+      this.clearSelectedSegments();
+    }
+  };
 
   handleDraw = () => {
     if (!this.waveform.loaded) return;
@@ -86,6 +95,16 @@ export class Regions {
 
   resetDrawableTarget() {
     this.segmentDrawableTarget();
+  }
+
+  clearSelectedSegments() {
+    this.regions = this.regions.filter(region => {
+      if (!region.isRegion && region.selected) {
+        region.destroy();
+        return false;
+      }
+      return true;
+    });
   }
 
   addRegion(options: RegionOptions, render = true) {
@@ -151,6 +170,7 @@ export class Regions {
     this.waveform.off('regionRemoved', this.handleRegionRemoved);
     this.waveform.off('regionUpdated', this.handleRegionUpdated);
 
+    document.removeEventListener('keydown', this.handleKeys);
     container.removeEventListener('mousemove', this.handleMouseMove);
     container.removeEventListener('mousedown', this.handleMouseDown);
     container.removeEventListener('mouseup', this.handleMouseUp);
