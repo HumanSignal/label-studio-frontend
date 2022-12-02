@@ -283,6 +283,7 @@ const HtxEllipseView = ({ item }) => {
       <Ellipse
         x={item.x}
         y={item.y}
+        ref={el => item.setShapeRef(el)}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
         fill={regionStyles.fillColor}

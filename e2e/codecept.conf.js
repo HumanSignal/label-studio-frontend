@@ -80,6 +80,7 @@ module.exports.config = {
     screenshotOnFail: {
       enabled: true,
     },
+    pauseOnFail: {},
   },
   require: ['ts-node/register'],
 };

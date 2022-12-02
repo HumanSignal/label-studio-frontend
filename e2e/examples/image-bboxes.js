@@ -2,8 +2,8 @@ const config = `
 <View>
   <Image name="img" value="$image"></Image>
   <RectangleLabels name="tag" toName="img" fillOpacity="0.5" strokeWidth="5">
-    <Label value="Planet"></Label>
-    <Label value="Moonwalker" background="blue"></Label>
+    <Label value="Hello"></Label>
+    <Label value="World" background="blue"></Label>
   </RectangleLabels>
 </View>
 `;
@@ -25,7 +25,7 @@ const result = [
     origin: 'manual',
     value: {
       height: 10.458911419423693,
-      rectanglelabels: ['Moonwalker'],
+      rectanglelabels: ['Hello'],
       rotation: 0,
       width: 12.4,
       x: 50.8,

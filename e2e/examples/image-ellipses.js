@@ -2,8 +2,8 @@ const config = `
 <View>
   <Image name="img" value="$image"></Image>
   <EllipseLabels name="tag" toName="img" fillOpacity="0.5" strokeWidth="3">
-    <Label value="Planet" background="yellow"></Label>
-    <Label value="Moonwalker" background="red"></Label>
+    <Label value="Hello" background="yellow"></Label>
+    <Label value="World" background="red"></Label>
   </EllipseLabels>
   <Choices name="choice" toName="img">
     <Choice value="Space" />
@@ -30,7 +30,7 @@ const result = [
     value: {
       x: 50.4,
       y: 50.76307363927427,
-      ellipselabels: ['Planet'],
+      ellipselabels: ['Hello'],
       rotation: 0,
       radiusY: 10.672358591248665,
       radiusX: 13.333333333333334,

@@ -545,6 +545,7 @@ const HtxPolygonView = ({ item }) => {
     <Group
       key={item.id ? item.id : guidGenerator(5)}
       name={item.id}
+      ref={el => item.setShapeRef(el)}
       onMouseOver={() => {
         if (store.annotationStore.selected.relationMode) {
           item.setHighlight(true);
