@@ -4,10 +4,10 @@ Feature('Readonly');
 
 const imageExamples = new DataTable(['example', 'regionName']);
 
-imageExamples.add([require('../../examples/image-bboxes'), 'Hello']);
-imageExamples.add([require('../../examples/image-ellipses'), 'Hello']);
-imageExamples.add([require('../../examples/image-keypoints'), 'Hello']);
-imageExamples.add([require('../../examples/image-polygons'), 'Hello']);
+imageExamples.add([require('../../../examples/image-bboxes'), 'Hello']);
+imageExamples.add([require('../../../examples/image-ellipses'), 'Hello']);
+imageExamples.add([require('../../../examples/image-keypoints'), 'Hello']);
+imageExamples.add([require('../../../examples/image-polygons'), 'Hello']);
 
 Data(imageExamples).Scenario('Readonly Annotations', async ({
   I,

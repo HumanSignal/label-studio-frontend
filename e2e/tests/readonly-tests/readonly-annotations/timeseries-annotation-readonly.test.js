@@ -2,7 +2,7 @@ Feature('Readonly');
 
 const imageExamples = new DataTable(['example', 'regionName']);
 
-imageExamples.add([require('../../examples/timeseries-url-indexed'), 'Walk']);
+imageExamples.add([require('../../../examples/timeseries-url-indexed'), 'Walk']);
 
 Data(imageExamples).Scenario('Readonly Timeseries Annotations', async ({
   I,
