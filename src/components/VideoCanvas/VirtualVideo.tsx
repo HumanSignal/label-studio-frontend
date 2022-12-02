@@ -1,4 +1,4 @@
-import { DetailedHTMLProps, forwardRef, useCallback, useEffect, useRef, VideoHTMLAttributes } from "react";
+import { DetailedHTMLProps, forwardRef, useCallback, useEffect, useRef, VideoHTMLAttributes } from 'react';
 
 type VirtualVideoProps = DetailedHTMLProps<VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement> & {
   canPlayType?: (supported: boolean) => void,
@@ -7,15 +7,15 @@ type VirtualVideoProps = DetailedHTMLProps<VideoHTMLAttributes<HTMLVideoElement>
 const DEBUG_MODE = false;
 
 const canPlayUrl = async (url: string) => {
-  const video = document.createElement("video");
+  const video = document.createElement('video');
 
   const fileMeta = await fetch(url, {
-    method: "HEAD",
+    method: 'HEAD',
   });
 
-  const fileType = fileMeta.headers.get("content-type");
+  const fileType = fileMeta.headers.get('content-type');
 
-  return !!fileType && video.canPlayType(fileType) !== "";
+  return !!fileType && video.canPlayType(fileType) !== '';
 };
 
 export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((props, ref) => {
@@ -41,7 +41,7 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
 
     videoEl.muted = !!props.muted;
     videoEl.controls = false;
-    videoEl.preload = "auto";
+    videoEl.preload = 'auto';
 
     Object.assign(videoEl.style, {
       top: '-9999px',
@@ -117,7 +117,7 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
 
     const sourceEl = document.createElement('source');
 
-    sourceEl.setAttribute('src', props.src ?? "");
+    sourceEl.setAttribute('src', props.src ?? '');
     video.current?.appendChild(sourceEl);
 
     source.current = sourceEl;
@@ -132,7 +132,7 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
   useEffect(() => {
     createVideoElement();
     attachEventListeners();
-    canPlayType(props.src ?? "");
+    canPlayType(props.src ?? '');
     attachSource();
     attachRef(video.current);
 

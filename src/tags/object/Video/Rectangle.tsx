@@ -1,11 +1,11 @@
-import { KonvaEventObject } from "konva/lib/Node";
-import { observer } from "mobx-react";
-import { FC, useMemo } from "react";
-import { Group, Rect } from "react-konva";
-import { useRegionStyles } from "../../../hooks/useRegionColor";
-import { getNodeAbsoluteDimensions, normalizeNodeDimentions } from "./tools";
-import { WorkingArea } from "./types";
-import { LabelOnVideoBbox } from "../../../components/ImageView/LabelOnRegion";
+import { KonvaEventObject } from 'konva/lib/Node';
+import { observer } from 'mobx-react';
+import { FC, useMemo } from 'react';
+import { Group, Rect } from 'react-konva';
+import { useRegionStyles } from '../../../hooks/useRegionColor';
+import { getNodeAbsoluteDimensions, normalizeNodeDimentions } from './tools';
+import { WorkingArea } from './types';
+import { LabelOnVideoBbox } from '../../../components/ImageView/LabelOnRegion';
 
 type RectPropsExtend = typeof Rect;
 
@@ -52,7 +52,7 @@ const RectanglePure: FC<RectProps> = ({
   };
 
   const onTransform = (e: KonvaEventObject<Event>) => {
-    normalizeNodeDimentions(e.target, "rect");
+    normalizeNodeDimentions(e.target, 'rect');
   };
 
   return (
@@ -67,7 +67,7 @@ const RectanglePure: FC<RectProps> = ({
       />
       <Rect
         {...newBox}
-        fill={style.fillColor ?? "#fff"}
+        fill={style.fillColor ?? '#fff'}
         stroke={style.strokeColor}
         strokeScaleEnabled={false}
         selected={selected}

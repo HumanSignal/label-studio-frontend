@@ -1,7 +1,7 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import Tree from "../core/Tree";
-import { isDefined } from "../utils/utilities";
+import Tree from '../core/Tree';
+import { isDefined } from '../utils/utilities';
 
 const SelectedModelMixin = types
   .model()
@@ -57,7 +57,7 @@ const SelectedModelMixin = types
       return self.selectedLabels.filter(c => c.alias).map(c => c.alias);
     },
 
-    getSelectedString(joinstr = " ") {
+    getSelectedString(joinstr = ' ') {
       return self.selectedValues().join(joinstr);
     },
 

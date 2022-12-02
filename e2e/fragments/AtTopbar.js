@@ -2,13 +2,13 @@
 const { I } = inject();
 
 module.exports = {
-  _topbarLocator: locate({ css: ".lsf-topbar" }),
+  _topbarLocator: locate({ css: '.lsf-topbar' }),
   _topbarAnnotationsToggle: locate({ css: '.lsf-annotations-list__selected' }),
   _annotationsList: locate({ css: '.lsf-annotations-list__list' }),
   seeAnnotationAt(index = 0) {
     this.openAnnotaions();
 
-    I.seeElement(this._annotationsList.find({ css: `.lsf-annotations-list__entity` }).at(index));
+    I.seeElement(this._annotationsList.find({ css: '.lsf-annotations-list__entity' }).at(index));
 
     this.closeAnnotations();
   },

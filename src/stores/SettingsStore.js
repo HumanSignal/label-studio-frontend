@@ -1,17 +1,17 @@
-import { getEnv, getRoot, onSnapshot, types } from "mobx-state-tree";
+import { getEnv, getRoot, onSnapshot, types } from 'mobx-state-tree';
 
-import { Hotkey } from "../core/Hotkey";
-import EditorSettings from "../core/settings/editorsettings";
-import Utils from "../utils";
+import { Hotkey } from '../core/Hotkey';
+import EditorSettings from '../core/settings/editorsettings';
+import Utils from '../utils';
 
-const SIDEPANEL_MODE_REGIONS = "SIDEPANEL_MODE_REGIONS";
-const SIDEPANEL_MODE_LABELS = "SIDEPANEL_MODE_LABELS";
+const SIDEPANEL_MODE_REGIONS = 'SIDEPANEL_MODE_REGIONS';
+const SIDEPANEL_MODE_LABELS = 'SIDEPANEL_MODE_LABELS';
 
 /**
  * Setting store of Label Studio
  */
 const SettingsModel = types
-  .model("SettingsModel", {
+  .model('SettingsModel', {
     /**
      * Hotkey
      */
@@ -82,7 +82,7 @@ const SettingsModel = types
         return;
       }
 
-      const lsKey = "labelStudio:settings";
+      const lsKey = 'labelStudio:settings';
 
       // load settings from the browser store
       const lss = localStorage.getItem(lsKey);
@@ -90,7 +90,7 @@ const SettingsModel = types
       if (lss) {
         const lsp = JSON.parse(lss);
 
-        typeof lsp === "object" &&
+        typeof lsp === 'object' &&
           lsp !== null &&
           Object.keys(lsp).forEach(k => {
             if (k in self) self[k] = lsp[k];
@@ -98,7 +98,7 @@ const SettingsModel = types
       } else {
         const env = getEnv(self);
 
-        Object.keys(EditorSettings).map((obj, index) => {
+        Object.keys(EditorSettings).map((obj) => {
           if( typeof env.settings[obj] === 'boolean'){
             self[obj] = env.settings[obj];
           }else{
@@ -145,7 +145,7 @@ const SettingsModel = types
       self.sidePanelMode =
         self.sidePanelMode === SIDEPANEL_MODE_LABELS ? SIDEPANEL_MODE_REGIONS : SIDEPANEL_MODE_LABELS;
       // apply immediately
-      self.annotation.regionStore.setView(self.displayLabelsByDefault ? "labels" : "regions");
+      self.annotation.regionStore.setView(self.displayLabelsByDefault ? 'labels' : 'regions');
     },
 
     toggleAutoSave() {
@@ -161,7 +161,7 @@ const SettingsModel = types
       if (self.enableHotkeys) {
         Hotkey.setScope(Hotkey.DEFAULT_SCOPE);
       } else {
-        Hotkey.setScope("__none__");
+        Hotkey.setScope('__none__');
       }
     },
 

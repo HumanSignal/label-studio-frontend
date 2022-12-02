@@ -1,11 +1,11 @@
-import { inject, observer } from "mobx-react";
-import React, { useEffect } from "react";
-import { Space } from "../../common/Space/Space";
-import { Block, Elem } from "../../utils/bem";
-import { FF_DEV_2290, isFF } from "../../utils/feature-flags";
-import { DraftPanel } from "../DraftPanel/DraftPanel";
-import { AnnotationHistory } from "./AnnotationHistory.tsx";
-import "./CurrentEntity.styl";
+import { inject, observer } from 'mobx-react';
+import React, { useEffect } from 'react';
+import { Space } from '../../common/Space/Space';
+import { Block, Elem } from '../../utils/bem';
+import { FF_DEV_2290, isFF } from '../../utils/feature-flags';
+import { DraftPanel } from '../DraftPanel/DraftPanel';
+import { AnnotationHistory } from './AnnotationHistory.tsx';
+import './CurrentEntity.styl';
 
 const injector = inject('store');
 
@@ -62,13 +62,13 @@ export const CurrentEntity = injector(observer(({
       entity.deleteSelectedRegions();
     };
 
-    window.addEventListener("copy", copyHandler);
-    window.addEventListener("paste", pasteHandler);
-    window.addEventListener("cut", cutHandler);
+    window.addEventListener('copy', copyHandler);
+    window.addEventListener('paste', pasteHandler);
+    window.addEventListener('cut', cutHandler);
     return () => {
-      window.removeEventListener("copy", copyHandler);
-      window.removeEventListener("paste", pasteHandler);
-      window.removeEventListener("cut", cutHandler);
+      window.removeEventListener('copy', copyHandler);
+      window.removeEventListener('paste', pasteHandler);
+      window.removeEventListener('cut', cutHandler);
     };
   }, [entity.pk ?? entity.id]);
 
