@@ -176,6 +176,7 @@ export class Waveform extends Events<WaveformEventTypes> {
   params: WaveformOptions;
   regions!: Regions;
   loaded = false;
+  renderedChannels = false;
   autoPlayNewSegments = false;
 
   constructor(params: WaveformOptions) {
@@ -222,6 +223,14 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.player = new Player(this);
 
     this.initEvents();
+
+    this.loadingState();
+  }
+
+  loadingState() {
+    this.visualizer.setLoading(true);
+    this.timeline.render();
+    this.visualizer.draw(true);
   }
 
   async load() {
@@ -235,8 +244,6 @@ export class Waveform extends Events<WaveformEventTypes> {
       this.player.init(audio);
       this.visualizer.init(audio);
       this.loaded = true;
-      this.regions.renderAll();
-      this.timeline.render();
 
       this.invoke('load');
     }
@@ -438,7 +445,7 @@ export class Waveform extends Events<WaveformEventTypes> {
    * Track duration in seconds
    */
   get duration() {
-    return this.player.duration;
+    return this.media.duration;
   }
 
   /**
