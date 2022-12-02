@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
-import { Circle, Group, Image, Layer, Rect } from "react-konva";
-import IconCross from "../../assets/icons/png/cross.png";
-import IconCheck from "../../assets/icons/png/check.png";
-import Konva from "konva";
-import chroma from "chroma-js";
-import { observer } from "mobx-react";
-import { isDefined } from "../../utils/utilities";
+import { useCallback, useEffect, useState } from 'react';
+import { Circle, Group, Image, Layer, Rect } from 'react-konva';
+import IconCross from '../../assets/icons/png/cross.png';
+import IconCheck from '../../assets/icons/png/check.png';
+import Konva from 'konva';
+import chroma from 'chroma-js';
+import { observer } from 'mobx-react';
+import { isDefined } from '../../utils/utilities';
 
 const getItemPosition = (item) => {
   const { shapeRef: shape, bboxCoords: bbox } = item;
@@ -111,7 +111,7 @@ const ControlButton = ({ x = 0, fill, iconColor, onClick, icon }) => {
   const [img, setImg] = useState(new window.Image);
   const imageSize = 16;
   const imageOffset = (32 / 2) - (imageSize / 2);
-  const color = chroma(iconColor ?? "#fff");
+  const color = chroma(iconColor ?? '#fff');
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
@@ -156,7 +156,7 @@ const ControlButton = ({ x = 0, fill, iconColor, onClick, icon }) => {
         y={16}
         radius={14}
         opacity={hovered ? 1 : 0.2}
-        fill={hovered ? fill : "#fff"}
+        fill={hovered ? fill : '#fff'}
       />
       <Image
         ref={node => applyFilter(node)}

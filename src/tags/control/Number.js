@@ -1,15 +1,15 @@
-import React from "react";
-import { inject, observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { inject, observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import InfoModal from "../../components/Infomodal/Infomodal";
-import { guidGenerator } from "../../core/Helpers";
-import Registry from "../../core/Registry";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
-import PerRegionMixin from "../../mixins/PerRegion";
-import RequiredMixin from "../../mixins/Required";
-import { isDefined } from "../../utils/utilities";
-import ControlBase from "./Base";
+import InfoModal from '../../components/Infomodal/Infomodal';
+import { guidGenerator } from '../../core/Helpers';
+import Registry from '../../core/Registry';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import PerRegionMixin from '../../mixins/PerRegion';
+import RequiredMixin from '../../mixins/Required';
+import { isDefined } from '../../utils/utilities';
+import ControlBase from './Base';
 
 /**
  * The Number tag supports numeric classification. Use to classify tasks using numbers.
@@ -53,7 +53,7 @@ const TagAttrs = types.model({
 const Model = types
   .model({
     pid: types.optional(types.string, guidGenerator),
-    type: "number",
+    type: 'number',
     number: types.maybeNull(types.number),
   })
   .views(self => ({
@@ -78,7 +78,7 @@ const Model = types
   }))
   .actions(self => ({
     getSelectedString() {
-      return self.number + " star";
+      return self.number + ' star';
     },
 
     copyState(obj) {
@@ -167,11 +167,11 @@ const Model = types
     },
   }));
 
-const NumberModel = types.compose("NumberModel", ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, AnnotationMixin);
+const NumberModel = types.compose('NumberModel', ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, AnnotationMixin);
 
-const HtxNumber = inject("store")(
+const HtxNumber = inject('store')(
   observer(({ item, store }) => {
-    const visibleStyle = item.perRegionVisible() ? { display: "flex", alignItems: "center" } : { display: "none" };
+    const visibleStyle = item.perRegionVisible() ? { display: 'flex', alignItems: 'center' } : { display: 'none' };
     const sliderStyle = item.slider ? { padding: '9px 0px', border: 0 } : {};
     const disabled = !item.annotation.editable;
       
@@ -180,23 +180,23 @@ const HtxNumber = inject("store")(
         <input
           readOnly={disabled}
           style={sliderStyle}
-          type={item.slider ? "range" : "number"}
+          type={item.slider ? 'range' : 'number'}
           name={item.name}
-          value={item.number ?? item.defaultvalue ?? ""}
+          value={item.number ?? item.defaultvalue ?? ''}
           step={item.step ?? 1}
           min={isDefined(item.min) ? Number(item.min) : undefined}
           max={isDefined(item.max) ? Number(item.max) : undefined}
           onChange={disabled ? undefined : item.onChange}
         />
-        {item.slider && <output style={{ marginLeft: "5px" }}>{item.number ?? item.defaultvalue ?? ""}</output>}
+        {item.slider && <output style={{ marginLeft: '5px' }}>{item.number ?? item.defaultvalue ?? ''}</output>}
         {store.settings.enableTooltips && store.settings.enableHotkeys && item.hotkey && (
-          <sup style={{ fontSize: "9px" }}>[{item.hotkey}]</sup>
+          <sup style={{ fontSize: '9px' }}>[{item.hotkey}]</sup>
         )}
       </div>
     );
   }),
 );
 
-Registry.addTag("number", NumberModel, HtxNumber);
+Registry.addTag('number', NumberModel, HtxNumber);
 
 export { HtxNumber, NumberModel };

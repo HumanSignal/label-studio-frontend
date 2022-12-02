@@ -1,8 +1,14 @@
-name: Build and Test
+name: "Run E2E"
 
 on:
-  push:
-    branches: [master, "**"]
+  workflow_call:
+    inputs:
+      sha:
+        required: true
+        type: string
+      branch_name:
+        required: true
+        type: string
 
 env:
   # increment it in case if you need to reset cache
@@ -10,10 +16,12 @@ env:
   NODE: '14'
 
 jobs:
-  build:
+  run:
+    name: "E2E Tests"
+    runs-on: ubuntu-latest
+
     # ci can be skipped with `[skip ci]` prefix in message
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -43,18 +51,11 @@ jobs:
     - name: Print Yarn cache size
       run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
-    - name: Install dependencies
-      run: yarn install --frozen-lockfile
-
-    - name: Unit tests
-      run: yarn test && yarn test:coverage
-
-    - name: Build distribution package
-      timeout-minutes: 10
-      run: yarn run build:module
-      env:
-        CI: false # on true webpack breaks on warnings, and we have them a lot
-        NODE_ENV: 'production'
+    - name: "Download bundle"
+      uses: actions/download-artifact@v3
+      with:
+        name: LSF-${{ github.event.pull_request.head.sha || github.sha }}
+        path: build/
 
     # run http-server with build in background (will be killed after job ends)
     # do this only for master branch (so only for push event)
@@ -65,7 +66,6 @@ jobs:
         cp -r public/images build/ &&
         cp -r public/styles build/ &&
         npx serve -l tcp://localhost:3000 build &
-      if: github.event_name == 'push'
 
     - id: wait_for_npx_server
       name: "Wait for server"
@@ -91,30 +91,8 @@ jobs:
         cd e2e
         yarn run test:ci ${{ steps.cpu-info.outputs.cores-count }}
 
-    # - name: "Convert coverage report to Istanbul"
-    #   if: github.event_name == 'push'
-    #   run: |
-    #     set -euo pipefail
-    #     cd e2e
-    #     yarn run coverage:istanbul
-    #     yarn run coverage:report
-
-    # - name: "Upload e2e coverage to Codecov"
-    #   uses: codecov/codecov-action@v3.1.0
-    #   with:
-    #     name: codecov-general
-    #     directory: ./e2e/output/coverage
-    #     token: ${{ secrets.CODECOV_TOKEN }}
-    #     fail_ci_if_error: true
-
     - uses: actions/upload-artifact@v3
       if: ${{ failure() }}
       with:
         name: e2e output
         path: e2e/output/
-
-    # upload this build as artifact to current Action
-    - uses: actions/upload-artifact@v3
-      with:
-        name: build ${{ github.event.pull_request.head.sha || github.sha }}
-        path: build/

@@ -1,14 +1,14 @@
-import React from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import BaseTool from "./Base";
-import Constants from "../core/Constants";
-import ToolMixin from "../mixins/Tool";
+import BaseTool from './Base';
+import Constants from '../core/Constants';
+import ToolMixin from '../mixins/Tool';
 
-import { Tool } from "../components/Toolbar/Tool";
-import { Range } from "../common/Range/Range";
-import { IconContrastTool } from "../assets/icons";
+import { Tool } from '../components/Toolbar/Tool';
+import { Range } from '../common/Range/Range';
+import { IconContrastTool } from '../assets/icons';
 
 const ToolView = observer(({ item }) => {
   return (
@@ -38,7 +38,7 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model("ContrastTool", {
+  .model('ContrastTool', {
     contrast: types.optional(types.number, Constants.CONTRAST_VALUE),
   })
   .views(self => ({

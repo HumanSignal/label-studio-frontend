@@ -1,6 +1,6 @@
-import React, { CSSProperties, FC } from "react";
-import { BemWithSpecifiContext } from "../../utils/bem";
-import "./Space.styl";
+import React, { CSSProperties, FC } from 'react';
+import { BemWithSpecifiContext } from '../../utils/bem';
+import './Space.styl';
 
 const { Block } = BemWithSpecifiContext();
 
@@ -17,7 +17,7 @@ export interface SpaceProps {
 }
 
 export const Space: FC<SpaceProps> = ({
-  direction = "horizontal",
+  direction = 'horizontal',
   size,
   className,
   style,

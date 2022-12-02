@@ -1,10 +1,10 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
 export const KonvaRegionMixin = types.model({})
   .views((self) => {
     return {
       get bboxCoords() {
-        console.warn("KonvaRegionMixin needs to implement bboxCoords getter in regions");
+        console.warn('KonvaRegionMixin needs to implement bboxCoords getter in regions');
         return null;
       },
       get control() {

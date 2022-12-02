@@ -1,11 +1,11 @@
-import { forwardRef, memo, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Block, Elem } from "../../utils/bem";
-import { clamp, isDefined } from "../../utils/utilities";
-import "./VideoCanvas.styl";
-import { MAX_ZOOM, MIN_ZOOM } from "./VideoConstants";
-import { VirtualCanvas } from "./VirtualCanvas";
-import { VirtualVideo } from "./VirtualVideo";
-import InfoModal from "../../components/Infomodal/Infomodal";
+import { forwardRef, memo, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Block, Elem } from '../../utils/bem';
+import { clamp, isDefined } from '../../utils/utilities';
+import './VideoCanvas.styl';
+import { MAX_ZOOM, MIN_ZOOM } from './VideoConstants';
+import { VirtualCanvas } from './VirtualCanvas';
+import { VirtualVideo } from './VirtualVideo';
+import InfoModal from '../../components/Infomodal/Infomodal';
 
 type VideoProps = {
   src: string,
@@ -119,7 +119,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     if (brightness !== 1) result.push(`brightness(${brightness})`);
     if (saturation !== 1) result.push(`saturate(${saturation})`);
 
-    return result.join(" ");
+    return result.join(' ');
   }, [brightness, contrast, saturation]);
 
   const processPan = useCallback((pan: PanOptions) => {
@@ -281,7 +281,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
   useEffect(() => {
     if (!props.allowInteractions) return;
-    rootRef.current?.addEventListener("wheel", (e) => {
+    rootRef.current?.addEventListener('wheel', (e) => {
       e.preventDefault();
     });
   }, []);

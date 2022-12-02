@@ -1,6 +1,6 @@
-import { KonvaEventObject } from "konva/lib/Node";
-import { Box, Transformer } from "konva/lib/shapes/Transformer";
-import { WorkingArea } from "./types";
+import { KonvaEventObject } from 'konva/lib/Node';
+import { Box, Transformer } from 'konva/lib/shapes/Transformer';
+import { WorkingArea } from './types';
 
 // define several math function
 export const getCorner = (pivotX: number, pivotY: number, diffX: number, diffY: number, angle: number) => {

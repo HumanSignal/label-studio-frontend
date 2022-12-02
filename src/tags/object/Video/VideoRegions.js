@@ -1,14 +1,14 @@
-import chroma from "chroma-js";
-import { clamp } from "lodash";
-import { observer } from "mobx-react";
-import { getParentOfType } from "mobx-state-tree";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Layer, Rect, Stage, Transformer } from "react-konva";
-import Constants from "../../../core/Constants";
-import { Annotation } from "../../../stores/Annotation/Annotation";
-import { fixMobxObserve } from "../TimeSeries/helpers";
-import { Rectangle } from "./Rectangle";
-import { createBoundingBoxGetter, createOnDragMoveHandler } from "./TransformTools";
+import chroma from 'chroma-js';
+import { clamp } from 'lodash';
+import { observer } from 'mobx-react';
+import { getParentOfType } from 'mobx-state-tree';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Layer, Rect, Stage, Transformer } from 'react-konva';
+import Constants from '../../../core/Constants';
+import { Annotation } from '../../../stores/Annotation/Annotation';
+import { fixMobxObserve } from '../TimeSeries/helpers';
+import { Rectangle } from './Rectangle';
+import { createBoundingBoxGetter, createOnDragMoveHandler } from './TransformTools';
 
 export const MIN_SIZE = 5;
 
@@ -22,7 +22,7 @@ const SelectionRect = (props) => {
       />
       <Rect
         {...props}
-        fill={chroma("#0099FF").alpha(0.1).css()}
+        fill={chroma('#0099FF').alpha(0.1).css()}
         strokeWidth={2}
         stroke="#0099FF"
         dash={[2, 2]}
@@ -177,7 +177,7 @@ const VideoRegionsPure = ({
     const stage = tr.getStage();
     // @todo not an obvious way to not render transformer for hidden regions
     // @todo could it be rewritten to usual react way?
-    const shapes = selected.map(shape => stage.findOne("#" + shape.id)).filter(Boolean);
+    const shapes = selected.map(shape => stage.findOne('#' + shape.id)).filter(Boolean);
 
     tr.nodes(shapes);
     tr.getLayer().batchDraw();
@@ -194,7 +194,7 @@ const VideoRegionsPure = ({
       ref={stageRef}
       width={width}
       height={height}
-      style={{ position: "absolute", zIndex: 1 }}
+      style={{ position: 'absolute', zIndex: 1 }}
       listening={listenToEvents}
       {...eventHandlers}
     >

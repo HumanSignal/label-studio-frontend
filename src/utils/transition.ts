@@ -26,13 +26,13 @@ export const aroundTransition = (element: HTMLElement, {
     const onTransitionEnded = async () => {
       await afterTransition?.(element);
 
-      element.removeEventListener("transitionstart", onTransitionStarted);
-      element.removeEventListener("transitionend", onTransitionEnded);
+      element.removeEventListener('transitionstart', onTransitionStarted);
+      element.removeEventListener('transitionend', onTransitionEnded);
       resolve(true);
     };
 
-    element.addEventListener("transitionstart", onTransitionStarted);
-    element.addEventListener("transitionend", onTransitionEnded);
+    element.addEventListener('transitionstart', onTransitionStarted);
+    element.addEventListener('transitionend', onTransitionEnded);
 
     await beforeTransition?.(element);
 

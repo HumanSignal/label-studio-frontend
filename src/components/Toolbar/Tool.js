@@ -1,18 +1,18 @@
-import { Block, Elem } from "../../utils/bem";
-import { isDefined } from "../../utils/utilities";
-import { useContext, useEffect, useMemo, useState } from "react";
-import { Fragment } from "react";
-import { Hotkey } from "../../core/Hotkey";
-import { ToolbarContext } from "./ToolbarContext";
+import { Block, Elem } from '../../utils/bem';
+import { isDefined } from '../../utils/utilities';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { Fragment } from 'react';
+import { Hotkey } from '../../core/Hotkey';
+import { ToolbarContext } from './ToolbarContext';
 
 const hotkeys = Hotkey(
-  "SegmentationToolbar",
-  "Segmentation Tools",
+  'SegmentationToolbar',
+  'Segmentation Tools',
 );
 
 const keysDictionary = {
-  plus: "+",
-  minus: "-",
+  plus: '+',
+  minus: '-',
 };
 
 export const Tool = ({
@@ -38,12 +38,12 @@ export const Tool = ({
   const shortcutView = useMemo(() => {
     if (!isDefined(shortcut)) return null;
 
-    const combos = shortcut.split(",").map(s => s.trim());
+    const combos = shortcut.split(',').map(s => s.trim());
 
     return (
       <Elem name="shortcut">
         {combos.map((combo, index) => {
-          const keys = combo.split("+");
+          const keys = combo.split('+');
 
           return (
             <Fragment key={`${keys.join('-')}-${index}`}>
