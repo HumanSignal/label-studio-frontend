@@ -184,7 +184,7 @@ const RegionInput: FC<RegionInputProps> = ({
 
 
     if (type === 'number') {
-      if (!value.match(/^([0-9,.]*)$/ig)) {
+      if (!value.match(/^([0-9,.]+)$/ig)) {
         safeValue = false;
       }
 
