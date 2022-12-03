@@ -22,7 +22,7 @@ export interface SegmentOptions {
 export interface SegmentGlobalEvents {
   regionCreated: (region: Segment) => void;
   regionUpdated: (region: Segment) => void;
-  regionSelected: (region: Segment) => void;
+  regionSelected: (region: Segment, event: MouseEvent) => void;
   regionUpdatedEnd: (region: Segment) => void;
   regionRemoved: (region: Segment) => void;
 }
@@ -215,7 +215,7 @@ export class Segment extends Events<SegmentEvents> {
     else this.switchCursor(CursorSymbol.grab);
   };
 
-  private handleMouseUp = () => {
+  private handleMouseUp = (e: MouseEvent) => {
     if (!this.updateable || this.cursorLockedByOther) return;
 
     if (this.isDragging) {
@@ -223,7 +223,7 @@ export class Segment extends Events<SegmentEvents> {
       this.handleUpdateEnd();
     } else {
       this.handleSelected();
-      this.waveform.invoke('regionSelected', [this]);
+      this.waveform.invoke('regionSelected', [this, e]);
     }
     
     this.isDragging = false;
@@ -292,6 +292,9 @@ export class Segment extends Events<SegmentEvents> {
     if (!this.visible || !this.inViewport) {
       return;
     }
+    // this is here because when the selected region is from a different label from before, it was deselecting everything
+    if (this.selected) this.setColorDarken(0.5);
+
     const { color, handleColor, timelinePlacement, timelineHeight } = this;
     const { height } = this.visualizer;
     const timelineTop = timelinePlacement === defaults.timelinePlacement;
@@ -306,9 +309,6 @@ export class Segment extends Events<SegmentEvents> {
     layer.fillStyle = handleColor.toString();
     layer.fillRect(this.xStart, top, this.handleWidth, height);
     layer.fillRect(this.xEnd - this.handleWidth, top, this.handleWidth, height);
-
-    // this is here because when the selected region is from a different label from before, it was deselecting everything
-    if (this.selected) this.setColorDarken(0.5);
 
     // Render label
     // if (this.label) {

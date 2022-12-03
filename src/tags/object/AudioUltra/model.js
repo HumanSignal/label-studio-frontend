@@ -139,7 +139,7 @@ export const AudioModel = types.compose(
             const selectedRegions = self._ws.regions.selected;
 
             selectedRegions.forEach(r => {
-              r.update({ color: selectedColor ?? '#787878', labels: labels ?? [] });
+              r.update({ color: selectedColor, labels: labels ?? [] });
 
               if (r.isRegion) {
                 self.updateRegion(r);
