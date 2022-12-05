@@ -315,7 +315,7 @@ export class Waveform extends Events<WaveformEventTypes> {
    * Detach all the event handlers, cleanup the cache, remove Waveform from the dom
    */
   destroy() {
-    this.removeAllListeners();
+    super.destroy(); // Events -> Destructable
     this.regions.destroy();
     this.visualizer.destroy();
     this.media.destroy();

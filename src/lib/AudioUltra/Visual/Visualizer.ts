@@ -217,6 +217,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   destroy() {
     this.invoke('destroy', [this]);
     this.clear();
+    this.playhead.destroy();
     super.destroy();
     this.audio = null;
     this.removeEvents();
@@ -725,7 +726,8 @@ export class Visualizer extends Events<VisualizerEvents> {
 
       this.updateChannels(() => {
         this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
-        this.draw();
+        this.getSamplesPerPx();
+        this.draw(false, this.zoom === 1);
       });
     });
   };
