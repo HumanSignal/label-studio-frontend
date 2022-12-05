@@ -88,6 +88,22 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
             obj.annotation.regionStore.toggleSelection(obj, false);
           }
         });
+
+        // to select or unselect unlabeled segments
+        const targetInWave = item._ws.regions.findRegion(region.id);
+
+        if (targetInWave) {
+          targetInWave.handleSelected(region.selected);
+        }
+
+        // deselect all other segments if not changing multiselection
+        if (!growSelection) {
+          item._ws.regions.regions.forEach((obj: any) => {
+            if (obj.id !== region.id) {
+              obj.handleSelected(false);
+            }
+          });
+        }
       };
 
       const updateRegion = (region: Region|Segment) => {
