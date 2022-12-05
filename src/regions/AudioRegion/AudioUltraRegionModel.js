@@ -52,6 +52,10 @@ export const AudioUltraRegionModel = types
     /**
      * @returns {AudioRegionResult}
      */
+    const Super = {
+      setProperty: self.setProperty,
+    };
+
     return {
       serialize() {
         const res = {
@@ -73,6 +77,10 @@ export const AudioUltraRegionModel = types
         const color = self.getColor(alpha);
 
         self._ws_region?.updateColor(color);
+      },
+
+      updatePosition(start, end) {
+        self._ws_region?.updatePosition(start ?? self.start, end ?? self.end);
       },
 
       // updateAppearenceFromState() {
@@ -163,8 +171,15 @@ export const AudioUltraRegionModel = types
         e?.stopPropagation();
         self.hidden = !self.hidden;
 
-        if(!self._ws_region) return;
+        if (!self._ws_region) return;
         self._ws_region.setVisibility(!self.hidden);
+      },
+
+      setProperty(propName, value) {
+        Super.setProperty(propName, value);
+        if ( ['start', 'end'].includes(propName) ) {
+          self.updatePosition();
+        }
       },
     };
   });
