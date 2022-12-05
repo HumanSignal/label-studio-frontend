@@ -36,8 +36,6 @@ Data(imageExamples).Scenario('Readonly Annotations', async ({
 
   await AtImageView.waitForImage();
 
-  I.see('Update', { css: 'button[disabled]' });
-
   I.say('Check region is selectable');
   AtSidebar.seeRegions(regions.length);
   AtSidebar.clickRegion(current.regionName);

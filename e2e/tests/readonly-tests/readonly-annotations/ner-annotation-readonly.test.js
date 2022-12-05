@@ -29,8 +29,6 @@ Data(imageExamples).Scenario('Readonly NER Annotations', async ({
 
   LabelStudio.init(params);
 
-  I.see('Update', { css: 'button[disabled]' });
-
   I.say('Check region is selectable');
   AtSidebar.seeRegions(regions.length);
   AtSidebar.clickRegion(current.regionName);

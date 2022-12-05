@@ -308,6 +308,8 @@ const HtxTextArea = observer(({ item }) => {
     className: 'is-search',
     label: item.label,
     placeholder: item.placeholder,
+    disabled: item.isReadOnly(),
+    readOnly: item.isReadOnly(),
     onChange: ev => {
       if (item.annotation.isReadOnly()) return;
       const { value } = ev.target;
@@ -335,8 +337,6 @@ const HtxTextArea = observer(({ item }) => {
     };
   }
 
-  if (item.isReadOnly()) props['disabled'] = true;
-
   const visibleStyle = item.perRegionVisible() ? {} : { display: 'none' };
 
   const showAddButton = (!item.isReadOnly() && rows !== 1) || item.showSubmitButton === true;
@@ -347,7 +347,7 @@ const HtxTextArea = observer(({ item }) => {
   visibleStyle['marginTop'] = '4px';
 
   return (item.displaymode === PER_REGION_MODES.TAG ? (
-    <div style={visibleStyle}>
+    <div className='lsf-text-area' style={visibleStyle}>
       {Tree.renderChildren(item, item.annotation)}
 
       {item.showSubmit && (
@@ -362,7 +362,9 @@ const HtxTextArea = observer(({ item }) => {
           }}
         >
           <Form.Item style={itemStyle}>
-            {rows === 1 ? <Input {...props} /> : <TextArea {...props} />}
+            {rows === 1
+              ? <Input {...props} aria-label="TextArea Input"/>
+              : <TextArea {...props} aria-label="TextArea Input"/>}
             {showAddButton && (
               <Form.Item>
                 <Button style={{ marginTop: '10px' }} type="primary" htmlType="submit">

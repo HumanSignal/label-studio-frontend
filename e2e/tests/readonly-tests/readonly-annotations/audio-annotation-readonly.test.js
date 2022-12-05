@@ -31,8 +31,6 @@ Data(imageExamples).Scenario('Readonly Audio Annotations', async ({
 
   await AtAudioView.waitForAudio();
 
-  I.see('Update', { css: 'button[disabled]' });
-
   I.say('Check region is selectable');
   AtSidebar.seeRegions(regions.length);
   AtSidebar.clickRegion(current.regionName);

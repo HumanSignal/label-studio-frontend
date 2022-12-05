@@ -32,7 +32,6 @@ Data(imageExamples).Scenario('Readonly Timeseries Annotations', async ({
 
   I.waitForElement('.htx-timeseries-channel', 60);
 
-  I.see('Update', { css: 'button[disabled]' });
   I.say('TimeSeries loaded');
 
   I.say('Check region is selectable');

@@ -185,9 +185,9 @@ const HtxNumber = inject('store')(
     const disabled = item.isReadOnly();
 
     return (
-      <div style={visibleStyle}>
+      <div className='lsf-number' style={visibleStyle}>
         <input
-          readOnly={disabled}
+          disabled={disabled}
           style={sliderStyle}
           type={item.slider ? 'range' : 'number'}
           name={item.name}
