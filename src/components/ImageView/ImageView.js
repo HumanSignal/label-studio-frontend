@@ -506,7 +506,7 @@ export default observer(
 
       const p = e.target.getParent();
 
-      if (!item.annotation.editable && !(isPanTool && item.annotation.type === 'history')) return;
+      if (!item.annotation.editable && !isPanTool) return;
       if (p && p.className === 'Transformer') return;
 
       const handleMouseDown = () => {
