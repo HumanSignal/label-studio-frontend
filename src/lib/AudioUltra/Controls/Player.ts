@@ -27,7 +27,7 @@ export class Player extends Destructable {
    * Get current playback speed
    */
   get rate() {
-    if (this.audio.source?.playbackRate.value) {
+    if (this.audio?.source?.playbackRate.value) {
       if (this.audio.source.playbackRate.value !== this._rate) {
         this.audio.source.playbackRate.value = this._rate; // restore the correct rate
       }
@@ -44,7 +44,7 @@ export class Player extends Destructable {
 
     this._rate = value;
 
-    if (this.audio.source) {
+    if (this.audio?.source) {
       this.audio.source.playbackRate.value = value;
 
       if (rateChanged) {
@@ -54,11 +54,11 @@ export class Player extends Destructable {
   }
 
   get duration() {
-    return this.audio.buffer?.duration ?? 0;
+    return this.audio?.buffer?.duration ?? 0;
   }
 
   get volume() {
-    return this.audio.gain?.gain.value ?? 1;
+    return this.audio?.gain?.gain.value ?? 1;
   }
 
   set volume(value: number) {
@@ -91,7 +91,7 @@ export class Player extends Destructable {
   }
 
   get muted() {
-    return this.audio.volume === 0;
+    return this.audio?.volume === 0;
   }
 
   set muted(muted: boolean) {
@@ -123,7 +123,7 @@ export class Player extends Destructable {
   }
 
   play(from?: number, to?: number) {
-    if (this.isDestroyed || this.playing) return;
+    if (this.isDestroyed || this.playing || !this.audio) return;
     if (this.ended) {
       this.currentTime = from ?? 0;
     }
@@ -140,15 +140,13 @@ export class Player extends Destructable {
   };
 
   pause() {
-    if (this.isDestroyed) return;
-    if (this.playing) {
-      this.stopWatch();
-      this.disconnectSource();
-      this.playing = false;
-      this.loop = null;
-      this.wf.invoke('pause');
-      this.wf.invoke('seek', [this.currentTime]);
-    }
+    if (this.isDestroyed || !this.playing || !this.audio) return;
+    this.stopWatch();
+    this.disconnectSource();
+    this.playing = false;
+    this.loop = null;
+    this.wf.invoke('pause');
+    this.wf.invoke('seek', [this.currentTime]);
   }
 
   stop() {
@@ -182,9 +180,10 @@ export class Player extends Destructable {
     this.stopWatch();
     this.timestamp = performance.now();
     this.recreateSource();
-    this.playing = true;
 
-    if (!this.audio.source) return;
+    if (!this.audio?.source) return;
+
+    this.playing = true;
 
     if (this.loop) {
       if (this.currentTime < this.loop.start || this.currentTime > this.loop.end) {
