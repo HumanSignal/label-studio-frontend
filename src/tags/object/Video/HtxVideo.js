@@ -137,21 +137,24 @@ const HtxVideoView = ({ item, store }) => {
 
   const onZoomChange = useCallback((e) => {
     if (!e.shiftKey || !stageRef.current) return;
-
+    const { width: containerWidth, height: containerHeight } = stageRef.current.content.getBoundingClientRect();
     // because its possible the shiftKey is the modifier, we need to check the appropriate delta
     const wheelDelta = Math.abs(e.deltaY) === 0 ? e.deltaX : e.deltaY;
     const polarity = wheelDelta > 0 ? 1 : -1;
+    const padding = 50;
     const stepDelta = Math.abs(wheelDelta * ZOOM_STEP_WHEEL);
     const delta = polarity * clamp(stepDelta, MIN_ZOOM_WHEEL, MAX_ZOOM_WHEEL);
+    const zoomCenteredY = containerHeight + padding > videoDimensions.height * zoom;
+    const zoomCenteredX = containerWidth + padding > videoDimensions.width * zoom;
+    const panValues = item.ref.current.adjustPan(
+      zoomCenteredX ? 0 : pan.x,
+      zoomCenteredY ? 0 : pan.y,
+    );
 
     requestAnimationFrame(() => {
       setZoom(prev => prev + delta);
-      setPan(prev => ({
-        x: prev.x + (prev.x / zoom) * polarity,
-        y: prev.y + (prev.y / zoom) * polarity,
-      }));
+      if (zoomCenteredY || zoomCenteredX) setPan(panValues);
     });
-
   }, [zoom]);
 
   const handlePan = useCallback((e) => {
