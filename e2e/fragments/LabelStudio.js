@@ -34,10 +34,9 @@ module.exports = {
     I.executeScript(Helpers.waitForObjectsReady);
   },
 
-  async resultsNotChanged(result) {
+  async resultsNotChanged(result, fractionDigits = 2) {
     const serialized = (await this.serialize());
 
-    Asserts.deepEqualWithTolerance(result, serialized, 1);
-
+    Asserts.deepEqualWithTolerance(result, serialized, fractionDigits);
   },
 };

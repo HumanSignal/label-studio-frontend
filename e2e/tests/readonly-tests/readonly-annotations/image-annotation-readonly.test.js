@@ -9,7 +9,7 @@ imageExamples.add([require('../../../examples/image-ellipses'), 'Hello']);
 imageExamples.add([require('../../../examples/image-keypoints'), 'Hello']);
 imageExamples.add([require('../../../examples/image-polygons'), 'Hello']);
 
-Data(imageExamples).Scenario('Readonly Annotations', async ({
+Data(imageExamples).Scenario('Readonly Image Annotations', async ({
   I,
   current,
   LabelStudio,
@@ -25,7 +25,7 @@ Data(imageExamples).Scenario('Readonly Annotations', async ({
   const params = {
     annotations: [{
       id: 'test',
-      readonly: true,
+      readonly: true, // Mark annotation readonly
       result,
     }],
     config,
@@ -35,7 +35,7 @@ Data(imageExamples).Scenario('Readonly Annotations', async ({
   LabelStudio.init(params);
 
   await AtImageView.waitForImage();
-
+  I.say(`Running against ${current.example.title}`);
   I.say('Check region is selectable');
   AtSidebar.seeRegions(regions.length);
   AtSidebar.clickRegion(current.regionName);
@@ -52,30 +52,39 @@ Data(imageExamples).Scenario('Readonly Annotations', async ({
 
   I.say('Checking region is not changed by dragging');
   await I.dragAndDropMouse(regionCenter, {
-    x: regionCenter.x + 100,
-    y: regionCenter.y + 100,
+    x: regionCenter.x + 50,
+    y: regionCenter.y + 50,
   });
   I.say('Results are equal after modification attempt');
-  await LabelStudio.resultsNotChanged(result);
+  console.log({
+    regions,
+    lsf: await LabelStudio.serialize(),
+  });
+  AtSidebar.seeRegions(regions.length);
+  await LabelStudio.resultsNotChanged(result, 1);
 
   I.pressKey('Delete');
   I.say('Results are equal after deletion attempt');
-  await LabelStudio.resultsNotChanged(result);
+  await LabelStudio.resultsNotChanged(result, 1);
 
   I.say('Can\'t draw new shape');
   I.pressKey('1');
 
-  if (current.requreUrl.match('keypoints')) {
-    AtImageView.clickAt(100, 100);
-  } else if (current.requreUrl.match('polygons')) {
-    AtImageView.drawThroughPoints([
-      [100, 100],
-      [150, 150],
-      [150, 200],
-      [100, 100],
-    ]);
-  } else {
-    AtImageView.drawByDrag(100, 100, 150, 150);
+  switch(current.example.title) {
+    case 'Keypoints on Image':
+      AtImageView.clickAt(100, 100);
+      break;
+    case 'Polygons on Image':
+      AtImageView.drawThroughPoints([
+        [100, 100],
+        [150, 150],
+        [150, 200],
+        [100, 100],
+      ]);
+      break;
+    default:
+      AtImageView.drawByDrag(100, 100, 150, 150);
+      break;
   }
 
   AtSidebar.seeRegions(regions.length);

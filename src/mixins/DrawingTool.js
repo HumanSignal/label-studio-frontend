@@ -45,7 +45,7 @@ const DrawingTool = types
         return self.currentArea;
       },
       canStart() {
-        return !self.isDrawing;
+        return !self.isDrawing && !self.annotation.isReadOnly();
       },
       get defaultDimensions() {
         console.warn('Drawing tool model needs to implement defaultDimentions getter in views');

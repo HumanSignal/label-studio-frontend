@@ -4,10 +4,7 @@ const headless = process.env.HEADLESS;
 
 module.exports.config = {
   timeout: 60 * 30, // Time out after 30 minutes
-  tests: [
-    './tests/**/*.test.js',
-    './tests/**/*.test.ts',
-  ],
+  tests: './tests/**/*.test.js',
   output: './output',
   helpers: {
     // Puppeteer: {
