@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { Block, Elem } from '../../../utils/bem';
 
 import './ConfigControl.styl';
@@ -18,6 +18,8 @@ export interface ConfigControlProps {
   onSetModal?: () => void;
   onSpeedChange: (speed: number) => void;
   onAmpChange: (amp: number) => void;
+  toggleVisibility?: (layerName: string, isVisible: boolean) => void;
+  layerVisibility?: Map<string, boolean>;
 }
 
 export const ConfigControl: FC<ConfigControlProps> = ({
@@ -27,22 +29,38 @@ export const ConfigControl: FC<ConfigControlProps> = ({
   onSpeedChange,
   onSetModal,
   onAmpChange,
+  toggleVisibility,
+  layerVisibility,
 }) => {
   const [playbackSpeed, setplaybackSpeed] = useState(speed ?? 1);
   const [isTimeline, setTimeline] = useState(true);
   const [isAudioWave, setAudioWave] = useState(true);
   const [isAudioTrack, setAudioTrack] = useState(true);
 
+  useEffect(() => {
+    if (layerVisibility) {
+      const defaultDisplay = true;
+
+      setTimeline(layerVisibility?.get?.('timeline') ?? defaultDisplay);
+      setAudioWave(layerVisibility?.get?.('waveform') ?? defaultDisplay);
+      setAudioTrack(layerVisibility?.get?.('main') ?? defaultDisplay);
+    }
+  }, [layerVisibility]);
+  
+
   const handleSetTimeline = () => {
     setTimeline(!isTimeline);
+    toggleVisibility?.('timeline', !isTimeline);
   };
 
   const handleSetAudioWave = () => {
     setAudioWave(!isAudioWave);
+    toggleVisibility?.('waveform', !isAudioWave);
   };
 
   const handleSetAudioTrack = () => {
     setAudioTrack(!isAudioTrack);
+    toggleVisibility?.('main', !isAudioWave);
   };
 
   const handleChangePlaybackSpeed = (e: React.FormEvent<HTMLInputElement>) => {
@@ -58,26 +76,26 @@ export const ConfigControl: FC<ConfigControlProps> = ({
     onAmpChange(_amp);
   };
 
-  const renderMuteButton = () => {
+  const renderLayerToggles = () => {
     return (
       <Elem name={'buttons'}>
         <Elem
           name="menu-button"
           onClick={handleSetTimeline}
         >
-          { isTimeline ? 'Show' : 'Hide' } timeline
+          { isTimeline ? 'Hide' : 'Show' } timeline
         </Elem>
         <Elem
           name="menu-button"
           onClick={handleSetAudioWave}
         >
-          { isAudioWave ? 'Show' : 'Hide' } audio wave
+          { isAudioWave ? 'Hide' : 'Show' } audio wave
         </Elem>
         <Elem
           name="menu-button"
           onClick={handleSetAudioTrack}
         >
-          { isAudioTrack ? 'Show' : 'Hide' } audio track
+          { isAudioTrack ? 'Hide' : 'Show' } audio track
         </Elem>
       </Elem>
     );
@@ -104,7 +122,7 @@ export const ConfigControl: FC<ConfigControlProps> = ({
           info={'Increase or decrease the appearance of amplitude'}
           onChange={handleChangeAmp}
         />
-        {renderMuteButton()}
+        {renderLayerToggles()}
       </Elem>
     );
   };

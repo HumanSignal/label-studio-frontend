@@ -166,6 +166,14 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         amp={controls.amp}
         onAmpChange={amp => controls.setAmp(amp)}
         mediaType="audio"
+        toggleVisibility={(layerName: string, isVisible: boolean) => {
+          console.log('toggleVisibility', layerName, isVisible, waveform);
+          const layer = waveform.current.getLayer(layerName);
+
+          layer.isVisible = isVisible;
+          layer.invoke('layerUpdated');
+        }}
+        layerVisibility={controls.layerVisibility}
       />
     </div>
   );
