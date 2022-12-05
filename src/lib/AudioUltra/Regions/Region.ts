@@ -7,7 +7,7 @@ import { Segment, SegmentGlobalEvents, SegmentOptions } from './Segment';
 export interface RegionGlobalEvents extends SegmentGlobalEvents {
   regionCreated: (region: Region|Segment) => void;
   regionUpdated: (region: Region|Segment) => void;
-  regionSelected: (region: Region|Segment) => void;
+  regionSelected: (region: Region|Segment, event: MouseEvent) => void;
   regionUpdatedEnd: (region: Region|Segment) => void;
   regionRemoved: (region: Region|Segment) => void;
 }
@@ -19,7 +19,7 @@ export interface RegionOptions extends SegmentOptions {
 
 export class Region extends Segment {
 
-  private labels: string[] = [];
+  labels: string[] = [];
 
   constructor(options: RegionOptions, waveform: Waveform, visualizer: Visualizer, controller: Regions) {
     super(options, waveform, visualizer, controller);

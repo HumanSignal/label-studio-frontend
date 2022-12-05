@@ -77,29 +77,36 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         item.addRegion(region);
       };
 
-      const selectRegion = (region: Region|Segment) => {
-        if (!region.selected || !region.isRegion) item.annotation.regionStore.unselectAll();
+      const selectRegion = (region: Region|Segment, event: MouseEvent) => {
+        const growSelection = event.metaKey || event.ctrlKey;
+
+        if (!region.selected && !region.isRegion)
+          item.annotation.regionStore.unselectAll();
 
         // to select or unselect region
         item.annotation.regions.forEach((obj: any) => {
           if (obj.id === region.id) {
             obj.annotation.regionStore.toggleSelection(obj, region.selected);
-          } else {
+          } else if(!growSelection) {
             obj.annotation.regionStore.toggleSelection(obj, false);
           }
         });
 
         // to select or unselect unlabeled segments
-        item._ws.regions.regions.forEach((obj: any) => {
-          if (!obj.isRegion) {
-            if (obj.id === region.id) {
-              obj.handleSelected(region.selected);
-            } else {
+        const targetInWave = item._ws.regions.findRegion(region.id);
+
+        if (targetInWave) {
+          targetInWave.handleSelected(region.selected);
+        }
+
+        // deselect all other segments if not changing multiselection
+        if (!growSelection) {
+          item._ws.regions.regions.forEach((obj: any) => {
+            if (obj.id !== region.id) {
               obj.handleSelected(false);
             }
-          }
-        });
-
+          });
+        }
       };
 
       const updateRegion = (region: Region|Segment) => {
