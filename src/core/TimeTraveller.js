@@ -1,12 +1,13 @@
-import { applySnapshot, getEnv, getSnapshot, onSnapshot, resolvePath, types } from "mobx-state-tree";
+import { applySnapshot, getEnv, getSnapshot, onSnapshot, resolvePath, types } from 'mobx-state-tree';
+import { FF_DEV_1284, isFF } from '../utils/feature-flags';
 
 /**
  * Time Traveller
  */
 const TimeTraveller = types
-  .model("TimeTraveller", {
+  .model('TimeTraveller', {
     undoIdx: 0,
-    targetPath: "",
+    targetPath: '',
     skipNextUndoState: types.optional(types.boolean, false),
 
     createdIdx: 0,
@@ -35,8 +36,8 @@ const TimeTraveller = types
     let changesDuringFreeze = false;
     let replaceNextUndoState = false;
 
-    function triggerHandlers() {
-      updateHandlers.forEach(handler => handler());
+    function triggerHandlers(force = true) {
+      updateHandlers.forEach(handler => handler(force));
     }
 
     return {
@@ -93,6 +94,7 @@ const TimeTraveller = types
 
           return;
         }
+        if (Object.keys(recorder).length < 1) return;
 
         // mutate history to trigger history-related UI items
         self.history = self.history.slice(0, self.undoIdx + !replaceNextUndoState).concat(recorder);
@@ -101,11 +103,11 @@ const TimeTraveller = types
         changesDuringFreeze = false;
       },
 
-      reinit() {
+      reinit(force = true) {
         self.history = [getSnapshot(targetStore)];
         self.undoIdx = 0;
         self.createdIdx = 0;
-        triggerHandlers();
+        triggerHandlers(force);
       },
 
       afterCreate() {
@@ -113,7 +115,7 @@ const TimeTraveller = types
 
         if (!targetStore)
           throw new Error(
-            "Failed to find target store for TimeTraveller. Please provide `targetPath`  property, or a `targetStore` in the environment",
+            'Failed to find target store for TimeTraveller. Please provide `targetPath`  property, or a `targetStore` in the environment',
           );
         // start listening to changes
         snapshotDisposer = onSnapshot(targetStore, snapshot => this.addUndoState(snapshot));
@@ -142,6 +144,12 @@ const TimeTraveller = types
         self.skipNextUndoState = true;
         applySnapshot(targetStore, self.history[idx]);
         triggerHandlers();
+        if (isFF(FF_DEV_1284)) {
+          setTimeout(()=>{
+            // Prevent skiping next undo state if onSnapshot event was somehow missed after applying snapshot
+            self.setSkipNextUndoState(false);
+          });
+        }
       },
 
       reset() {

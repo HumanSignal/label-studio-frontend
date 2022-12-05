@@ -1,19 +1,20 @@
-import { useMemo, useState } from "react";
-import { Block, Elem } from "../../utils/bem";
+import { useMemo, useState } from 'react';
+import { Block, Elem } from '../../utils/bem';
 import './Toolbar.styl';
 import './Tool.styl';
-import { useWindowSize } from "../../common/Utils/useWindowSize";
-import { isDefined } from "../../utils/utilities";
-import { inject, observer } from "mobx-react";
-import { ToolbarProvider } from "./ToolbarContext";
-import { Tool } from "./Tool";
+import './FlyoutMenu.styl';
+import { useWindowSize } from '../../common/Utils/useWindowSize';
+import { isDefined } from '../../utils/utilities';
+import { inject, observer } from 'mobx-react';
+import { ToolbarProvider } from './ToolbarContext';
+import { Tool } from './Tool';
 
-export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => {
+export const Toolbar = inject('store')(observer(({ store, tools, expanded }) => {
   const [toolbar, setToolbar] = useState(null);
   const windowSize = useWindowSize();
 
   const alignment = useMemo(() => {
-    if (!isDefined(toolbar)) return "right";
+    if (!isDefined(toolbar)) return 'right';
 
     const bbox = toolbar.getBoundingClientRect();
 
@@ -23,7 +24,7 @@ export const Toolbar = inject("store")(observer(({ store, tools, expanded }) => 
       return 'left';
     }
 
-    return "right";
+    return 'right';
   }, [toolbar, windowSize]);
 
   const toolGroups = tools.filter(t => !t.dynamic).reduce((res,tool) => {

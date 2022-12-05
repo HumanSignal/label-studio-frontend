@@ -1,10 +1,10 @@
 
-import { inject, observer } from "mobx-react";
-import { Fragment } from "react";
-import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
-import ObjectTag from "../../../components/Tags/Object";
-import Waveform from "../../../components/Waveform/Waveform";
-import AudioControls from "../Audio/Controls";
+import { inject, observer } from 'mobx-react';
+import { Fragment } from 'react';
+import { ErrorMessage } from '../../../components/ErrorMessage/ErrorMessage';
+import ObjectTag from '../../../components/Tags/Object';
+import Waveform from '../../../components/Waveform/Waveform';
+import AudioControls from '../Audio/Controls';
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
@@ -30,6 +30,9 @@ const HtxAudioView = ({ store, item }) => {
           onError={item.onError}
           speed={item.speed}
           zoom={item.zoom}
+          defaultVolume={Number(item.defaultvolume)}
+          defaultSpeed={Number(item.defaultspeed)}
+          defaultZoom={Number(item.defaultzoom)}
           volume={item.volume}
           regions={true}
           height={item.height}
@@ -38,10 +41,10 @@ const HtxAudioView = ({ store, item }) => {
         />
 
         <AudioControls item={item} store={store} />
-        <div style={{ marginBottom: "4px" }}></div>
+        <div style={{ marginBottom: '4px' }}></div>
       </Fragment>
     </ObjectTag>
   );
 };
 
-export const HtxAudio = inject("store")(observer(HtxAudioView));
+export const HtxAudio = inject('store')(observer(HtxAudioView));

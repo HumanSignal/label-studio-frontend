@@ -1,29 +1,28 @@
-import { useMemo } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "../../../common/Button/Button";
-import { Dropdown } from "../../../common/Dropdown/Dropdown";
-import { Menu } from "../../../common/Menu/Menu";
-import { Space } from "../../../common/Space/Space";
-import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
-import ObjectTag from "../../../components/Tags/Object";
-import { Timeline } from "../../../components/Timeline/Timeline";
-import { VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
-import { defaultStyle } from "../../../core/Constants";
-// import { Hotkey } from "../../../core/Hotkey";
-import { Block, Elem } from "../../../utils/bem";
-import { clamp, isDefined } from "../../../utils/utilities";
-import { useToggle } from "../../../hooks/useToggle";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from '../../../common/Button/Button';
+import { Dropdown } from '../../../common/Dropdown/Dropdown';
+import { Menu } from '../../../common/Menu/Menu';
+import { ErrorMessage } from '../../../components/ErrorMessage/ErrorMessage';
+import ObjectTag from '../../../components/Tags/Object';
+import { Timeline } from '../../../components/Timeline/Timeline';
+import { clampZoom, VideoCanvas } from '../../../components/VideoCanvas/VideoCanvas';
+import { defaultStyle } from '../../../core/Constants';
+import { useToggle } from '../../../hooks/useToggle';
+import { Block, Elem } from '../../../utils/bem';
+import { clamp, isDefined } from '../../../utils/utilities';
 
-import "./Video.styl";
-import { VideoRegions } from "./VideoRegions";
-import ResizeObserver from "../../../utils/resize-observer";
-import { useFullscreen } from "../../../hooks/useFullscreen";
+import { IconZoomIn } from '../../../assets/icons';
+import { MAX_ZOOM_WHEEL, MIN_ZOOM_WHEEL, ZOOM_STEP, ZOOM_STEP_WHEEL } from '../../../components/VideoCanvas/VideoConstants';
+import { useFullscreen } from '../../../hooks/useFullscreen';
+import ResizeObserver from '../../../utils/resize-observer';
+import './Video.styl';
+import { VideoRegions } from './VideoRegions';
 
-// const hotkeys = Hotkey("Video", "Video Annotation");
-
-const HtxVideoView = ({ item }) => {
+const HtxVideoView = ({ item, store }) => {
   if (!item._value) return null;
+
   const videoBlockRef = useRef();
+  const stageRef = useRef();
   const videoContainerRef = useRef();
   const mainContentRef = useRef();
   const [loaded, setLoaded] = useState(false);
@@ -33,7 +32,7 @@ const HtxVideoView = ({ item }) => {
 
   const [videoSize, setVideoSize] = useState(null);
   const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0, ratio: 1 });
-  const [zoom, setZoom] = useState(1);
+  const [zoom, _setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [panMode, setPanMode] = useState(false);
   const [isFullScreen, enterFullscreen, exitFullscren, handleFullscreenToggle] = useToggle(false);
@@ -41,6 +40,7 @@ const HtxVideoView = ({ item }) => {
     onEnterFullscreen() { enterFullscreen(); },
     onExitFullscreen() { exitFullscren(); },
   });
+  const limitCanvasDrawingBoundaries = !store.settings.videoDrawOutside;
 
   const setPosition = useCallback((value) => {
     if (value !== position) {
@@ -53,21 +53,17 @@ const HtxVideoView = ({ item }) => {
   }, [videoLength]);
 
   const supportsRegions = useMemo(() => {
-    const controlType = item.control()?.type;
-
-    return controlType ? controlType.match("video") : false;
+    return isDefined(item?.videoControl());
   }, [item]);
 
-  useEffect(() => {
-    const block = videoContainerRef.current;
+  const setZoom = useCallback((value) => {
+    return _setZoom((currentZoom) => {
+      const newZoom = (value instanceof Function) ? value(currentZoom) : value;
 
-    if (block) {
-      setVideoSize([
-        block.clientWidth,
-        block.clientHeight,
-      ]);
-    }
+      return clampZoom(newZoom);
+    });
   }, []);
+
 
   useEffect(() => {
     const container = videoContainerRef.current;
@@ -139,15 +135,24 @@ const HtxVideoView = ({ item }) => {
     }
   }, [isFullScreen]);
 
-  const handleZoom = useCallback((e) => {
-    if (!e.shiftKey) return;
+  const onZoomChange = useCallback((e) => {
+    if (!e.shiftKey || !stageRef.current) return;
 
-    const delta = e.deltaY * 0.01;
+    // because its possible the shiftKey is the modifier, we need to check the appropriate delta
+    const wheelDelta = Math.abs(e.deltaY) === 0 ? e.deltaX : e.deltaY;
+    const polarity = wheelDelta > 0 ? 1 : -1;
+    const stepDelta = Math.abs(wheelDelta * ZOOM_STEP_WHEEL);
+    const delta = polarity * clamp(stepDelta, MIN_ZOOM_WHEEL, MAX_ZOOM_WHEEL);
 
     requestAnimationFrame(() => {
-      setZoom(zoom => clamp(zoom + delta, 0.25, 16));
+      setZoom(prev => prev + delta);
+      setPan(prev => ({
+        x: prev.x + (prev.x / zoom) * polarity,
+        y: prev.y + (prev.y / zoom) * polarity,
+      }));
     });
-  }, []);
+
+  }, [zoom]);
 
   const handlePan = useCallback((e) => {
     if (!panMode) return;
@@ -156,10 +161,10 @@ const HtxVideoView = ({ item }) => {
     const startY = e.pageY;
 
     const onMouseMove = (e) => {
-      const position = {
-        x: pan.x + (e.pageX - startX),
-        y: pan.y + (e.pageY - startY),
-      };
+      const position = item.ref.current.adjustPan(
+        pan.x + (e.pageX - startX),
+        pan.y + (e.pageY - startY),
+      );
 
       requestAnimationFrame(() => {
         setPan(position);
@@ -176,11 +181,19 @@ const HtxVideoView = ({ item }) => {
   }, [panMode, pan]);
 
   const zoomIn = useCallback(() => {
-    setZoom(clamp(zoom + 0.1, 0.25, 16));
+    setZoom(zoom + ZOOM_STEP);
+    setPan(prev => ({
+      x: prev.x + prev.x / zoom,
+      y: prev.y + prev.y / zoom,
+    }));
   }, [zoom]);
 
   const zoomOut = useCallback(() => {
-    setZoom(clamp(zoom - 0.1, 0.25, 16));
+    setZoom(zoom - ZOOM_STEP);
+    setPan(prev => ({
+      x: prev.x - prev.x / zoom,
+      y: prev.y - prev.y / zoom,
+    }));
   }, [zoom]);
 
   const zoomToFit = useCallback(() => {
@@ -257,14 +270,14 @@ const HtxVideoView = ({ item }) => {
 
     regions.forEach(region => {
       switch(action) {
-        case "lifespan_add":
-        case "lifespan_remove":
+        case 'lifespan_add':
+        case 'lifespan_remove':
           region.toggleLifespan(data.frame);
           break;
-        case "keypoint_add":
+        case 'keypoint_add':
           region.addKeypoint(data.frame);
           break;
-        case "keypoint_remove":
+        case 'keypoint_remove':
           region.removeKeypoint(data.frame);
           break;
         default:
@@ -286,7 +299,7 @@ const HtxVideoView = ({ item }) => {
 
   const regions = item.regs.map(reg => {
     const color = reg.style?.fillcolor ?? reg.tag?.fillcolor ?? defaultStyle.fillcolor;
-    const label = reg.labels.join(", ") || "Empty";
+    const label = reg.labels.join(', ') || 'Empty';
     const sequence = reg.sequence.map(s => ({
       frame: s.frame,
       enabled: s.enabled,
@@ -310,29 +323,12 @@ const HtxVideoView = ({ item }) => {
         ))}
 
         <Block name="video" mod={{ fullscreen: isFullScreen }} ref={videoBlockRef}>
-          <Elem tag={Space} name="controls" align="end" size="small">
-            <Dropdown.Trigger
-              inline={isFullScreen}
-              content={(
-                <Menu size="medium" style={{ width: 150 }} closeDropdownOnItemClick={false}>
-                  <Menu.Item onClick={zoomIn}>Zoom In</Menu.Item>
-                  <Menu.Item onClick={zoomOut}>Zoom Out</Menu.Item>
-                  <Menu.Item onClick={zoomToFit}>Zoom To Fit</Menu.Item>
-                  <Menu.Item onClick={zoomReset}>Zoom 100%</Menu.Item>
-                </Menu>
-              )}
-            >
-              <Button size="small">
-                Zoom {Math.round(zoom * 100)}%
-              </Button>
-            </Dropdown.Trigger>
-          </Elem>
           <Elem
             name="main"
             ref={videoContainerRef}
             style={{ height: Number(item.height) }}
-            onWheel={handleZoom}
             onMouseDown={handlePan}
+            onWheel={onZoomChange}
           >
             {videoSize && (
               <>
@@ -346,6 +342,8 @@ const HtxVideoView = ({ item }) => {
                     width={videoSize[0]}
                     height={videoSize[1]}
                     workingArea={videoDimensions}
+                    allowRegionsOutsideWorkingArea={!limitCanvasDrawingBoundaries}
+                    stageRef={stageRef}
                   />
                 )}
                 <VideoCanvas
@@ -359,6 +357,7 @@ const HtxVideoView = ({ item }) => {
                   speed={item.speed}
                   framerate={item.framerate}
                   allowInteractions={false}
+                  allowPanOffscreen={!limitCanvasDrawingBoundaries}
                   onFrameChange={handleFrameChange}
                   onLoad={handleVideoLoad}
                   onResize={handleVideoResize}
@@ -372,6 +371,7 @@ const HtxVideoView = ({ item }) => {
             )}
           </Elem>
         </Block>
+
         {loaded && (
           <Elem
             name="timeline"
@@ -380,11 +380,35 @@ const HtxVideoView = ({ item }) => {
             length={videoLength}
             position={position}
             regions={regions}
+            altHopSize={store.settings.videoHopSize}
+            allowFullscreen={false}
             fullscreen={isFullScreen}
             defaultStepSize={16}
             disableView={!supportsRegions}
             framerate={item.framerate}
             controls={{ FramesControl: true }}
+            customControls={[
+              {
+                position: 'left',
+                component: () => {
+                  return (
+                    <Dropdown.Trigger
+                      inline={isFullScreen}
+                      content={(
+                        <Menu size="auto" closeDropdownOnItemClick={false}>
+                          <Menu.Item onClick={zoomIn}>Zoom In</Menu.Item>
+                          <Menu.Item onClick={zoomOut}>Zoom Out</Menu.Item>
+                          <Menu.Item onClick={zoomToFit}>Zoom To Fit</Menu.Item>
+                          <Menu.Item onClick={zoomReset}>Zoom 100%</Menu.Item>
+                        </Menu>
+                      )}
+                    >
+                      <Button size="small" nopadding><IconZoomIn/></Button>
+                    </Dropdown.Trigger>
+                  );
+                },
+              },
+            ]}
             onPositionChange={handleTimelinePositionChange}
             onPlay={handlePlay}
             onPause={handlePause}

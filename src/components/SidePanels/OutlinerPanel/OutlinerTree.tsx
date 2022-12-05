@@ -1,17 +1,22 @@
-import chroma from "chroma-js";
-import { observer } from "mobx-react";
+import chroma from 'chroma-js';
+import { observer } from 'mobx-react';
 import Tree from 'rc-tree';
-import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
-import { IconLockLocked, IconLockUnlocked, LsSparks } from "../../../assets/icons";
-import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from "../../../assets/icons/timeline";
-import { IconArrow } from "../../../assets/icons/tree";
-import { Button, ButtonProps } from "../../../common/Button/Button";
-import Registry from "../../../core/Registry";
-import { PER_REGION_MODES } from "../../../mixins/PerRegionModes";
-import { Block, CN, cn, Elem } from "../../../utils/bem";
-import { flatten, isDefined, isMacOS } from "../../../utils/utilities";
-import { NodeIcon } from "../../Node/Node";
-import "./TreeView.styl";
+import { createContext, FC, MouseEvent, useCallback, useContext, useMemo, useState } from 'react';
+import { IconLockLocked, IconLockUnlocked, IconWarning, LsSparks } from '../../../assets/icons';
+import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
+import { IconArrow } from '../../../assets/icons/tree';
+import { Button, ButtonProps } from '../../../common/Button/Button';
+import Registry from '../../../core/Registry';
+import { PER_REGION_MODES } from '../../../mixins/PerRegionModes';
+import { Block, cn, Elem } from '../../../utils/bem';
+import { flatten, isDefined, isMacOS } from '../../../utils/utilities';
+import { NodeIcon } from '../../Node/Node';
+import { FF_DEV_2755, isFF } from '../../../utils/feature-flags';
+import { Tooltip } from '../../../common/Tooltip/Tooltip';
+import './TreeView.styl';
+
+const { localStorage } = window;
+const localStoreName = 'collapsed-label-pos';
 
 interface OutlinerContextProps {
   regions: any;
@@ -37,27 +42,79 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
   const eventHandlers = useEventHandlers({ regions, onHover });
   const regionsTree = useDataTree({ regions, hovered, rootClass, selectedKeys });
 
-  return (
-    <OutlinerContext.Provider value={{ regions }}>
-      <Block name="outliner-tree">
-        <Tree
-          draggable={regions.group === 'manual'}
-          multiple
-          defaultExpandAll
-          defaultExpandParent
-          autoExpandParent
-          checkable={false}
-          prefixCls="lsf-tree"
-          className={rootClass.toClassName()}
-          treeData={regionsTree}
-          selectedKeys={selectedKeys}
-          icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
-          switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
-          {...eventHandlers}
-        />
-      </Block>
-    </OutlinerContext.Provider>
-  );
+  if( isFF(FF_DEV_2755) ) {
+    const [collapsedPos, setCollapsedPos] = useState( localStorage.getItem( localStoreName )?.split?.(',')?.filter( pos => !!pos ) ?? [] );
+
+    const updateLocalStorage = ( collapsedPos: Array<string> ) => {
+      localStorage.setItem( localStoreName, collapsedPos.join(',') );
+    };
+
+    const collapse = ( pos: string ) => {
+      const newCollapsedPos = [...collapsedPos, pos];
+
+      setCollapsedPos( newCollapsedPos );
+      updateLocalStorage( newCollapsedPos );
+    };
+
+    const expand = ( pos: string ) => {
+      const newCollapsedPos = collapsedPos.filter( cPos => cPos !== pos );
+
+      setCollapsedPos( newCollapsedPos );
+      updateLocalStorage( newCollapsedPos );
+    };
+    const expandedKeys = regionsTree.filter( (item: any) => !collapsedPos.includes( item.pos ) ).map( (item: any) => item.key ) ?? [];
+
+    return (
+      <OutlinerContext.Provider value={{ regions }}>
+        <Block name="outliner-tree">
+          <Tree
+            draggable={regions.group === 'manual'}
+            multiple
+            defaultExpandAll={true}
+            defaultExpandParent={false}
+            autoExpandParent
+            checkable={false}
+            prefixCls="lsf-tree"
+            className={rootClass.toClassName()}
+            treeData={regionsTree}
+            selectedKeys={selectedKeys}
+            icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
+            switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
+            expandedKeys={expandedKeys}
+            onExpand={( internalExpandedKeys, { node } ) => {
+              const region = regionsTree.find((region: any) => region.key === node.key);
+              const pos = region.pos;
+
+              collapsedPos.includes(pos) ? expand(pos) : collapse(pos);
+            }}
+            {...eventHandlers}
+          />
+        </Block>
+      </OutlinerContext.Provider>
+    );
+  } else {
+    return (
+      <OutlinerContext.Provider value={{ regions }}>
+        <Block name="outliner-tree">
+          <Tree
+            draggable={regions.group === 'manual'}
+            multiple
+            defaultExpandAll
+            defaultExpandParent
+            autoExpandParent
+            checkable={false}
+            prefixCls="lsf-tree"
+            className={rootClass.toClassName()}
+            treeData={regionsTree}
+            selectedKeys={selectedKeys}
+            icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
+            switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
+            {...eventHandlers}
+          />
+        </Block>
+      </OutlinerContext.Provider>
+    );
+  }
 };
 
 const useDataTree = ({
@@ -66,17 +123,19 @@ const useDataTree = ({
   rootClass,
   selectedKeys,
 }: any) => {
-  const processor = useCallback((item: any, idx) => {
-    const { id, type, hidden } = item;
-    const style = item.background ?? item.getOneColor();
-    const color = chroma(style ?? "#666").alpha(1);
-    const mods: Record<string, any> = { hidden, type };
+  const processor = useCallback((item: any, idx, _false, _null, _onClick) => {
+    const { id, type, hidden, isDrawing } = item ?? {};
+    const style = item?.background ?? item?.getOneColor?.();
+    const color = chroma(style ?? '#666').alpha(1);
+    const mods: Record<string, any> = { hidden, type, isDrawing };
     const label = (() => {
-      if (type.match('label')) {
+      if (!type) {
+        return 'No Label';
+      } else if (type.includes('label')) {
         return item.value;
-      } else if(type.match("region")) {
-        return (item?.labels ?? []).join(", ") || "No label";
-      } else if(type.match('tool')) {
+      } else if (type.includes('region') || type.includes('range')) {
+        return (item?.labels ?? []).join(', ') || 'No label';
+      } else if (type.includes('tool')) {
         return item.value;
       }
     })();
@@ -99,7 +158,7 @@ const useDataTree = ({
       className: rootClass.elem('node').mod(mods).toClassName(),
       title: (data: any) => <RootTitle {...data}/>,
     };
-  }, [hovered]);
+  }, [hovered, selectedKeys]);
 
   return regions.getRegionsTree(processor);
 };
@@ -113,14 +172,26 @@ const useEventHandlers = ({
 }) => {
   const onSelect = useCallback((_, evt) => {
     const multi = evt.nativeEvent.ctrlKey || (isMacOS() && evt.nativeEvent.metaKey);
-    const { node, selected } = evt;
+    const { node } = evt;
 
-    if (!node.type.match('region')) return;
+    const self = node?.item;
 
-    if (!multi) regions.selection.clear();
+    if (!self?.annotation) return;
 
-    if (selected) regions.selection.select(node.item);
-    else regions.selection.unselect(node.item);
+    const annotation = self.annotation;
+
+    if (multi) {
+      annotation.toggleRegionSelection(self);
+      return;
+    }
+
+    const wasNotSelected = !self.selected;
+
+    if (wasNotSelected) {
+      annotation.selectArea(self);
+    } else {
+      annotation.unselectAll();
+    }
   }, []);
 
   const onMouseEnter = useCallback(({ node }: any) => {
@@ -154,7 +225,7 @@ const useEventHandlers = ({
     if (node.classification) return false;
     const dropKey = node.props.eventKey;
     const dragKey = dragNode.props.eventKey;
-    const dropPos = node.props.pos.split("-");
+    const dropPos = node.props.pos.split('-');
 
     dropPosition = dropPosition - parseInt(dropPos[dropPos.length - 1]);
     const treeDepth = dropPos.length;
@@ -165,7 +236,7 @@ const useEventHandlers = ({
     regions.unhighlightAll();
 
     if (treeDepth === 2 && dropToGap && dropPosition === -1) {
-      dragReg.setParentID("");
+      dragReg.setParentID('');
     } else if (dropPosition !== -1) {
       // check if the dragReg can be a child of dropReg
       const selDrop: any[] = dropReg.labeling?.selectedLabels || [];
@@ -174,7 +245,7 @@ const useEventHandlers = ({
       if (labelWithConstraint.length) {
         const selDrag: any[] = dragReg.labeling.selectedLabels;
 
-        const set1 = flatten(labelWithConstraint.map(l => l.groupcancontain.split(",")));
+        const set1 = flatten(labelWithConstraint.map(l => l.groupcancontain.split(',')));
         const set2 = flatten(selDrag.map(l => (l.alias ? [l.alias, l.value] : [l.value])));
 
         if (set1.filter(value => -1 !== set2.indexOf(value)).length === 0) return;
@@ -244,7 +315,17 @@ const RootTitle: FC<any> = observer(({
   return (
     <Block name="outliner-item">
       <Elem name="content">
-        <Elem name="title">{label}</Elem>
+        {!props.isGroup && <Elem name="index">{props.idx + 1}</Elem>}
+        <Elem name="title">
+          {label}
+          {item?.isDrawing && (
+            <Elem tag="span" name="incomplete">
+              <Tooltip title="Incomplete polygon">
+                <IconWarning />
+              </Tooltip>
+            </Elem>
+          )}
+        </Elem>
         <RegionControls
           hovered={hovered}
           item={item}
@@ -295,46 +376,52 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   const { regions: regionStore } = useContext(OutlinerContext);
 
   const hidden = useMemo(() => {
-    if (type.match('region')) {
+    if (type?.includes('region') || type?.includes('range')) {
       return entity.hidden;
-    } else if(type.match('label') && regions) {
-      return Object
-        .values(regions)
-        .reduce((acc, { hidden }) => acc && hidden, true);
+    } else if ((!type || type.includes('label')) && regions) {
+      return Object.values(regions).every(({ hidden }) => hidden);
     }
     return false;
   }, [entity, type, regions]);
 
   const onToggleHidden = useCallback(() => {
-    if (type.match('region')) {
+    if (type?.includes('region') || type?.includes('range')) {
       entity.toggleHidden();
-    } else if(type.match('label')) {
+    } else if(!type || type.includes('label')) {
       regionStore.setHiddenByLabel(!hidden, entity);
     }
   }, [item, item?.toggleHidden, hidden]);
 
+  const onToggleCollapsed = useCallback((e: MouseEvent) => {
+    toggleCollapsed(e);
+  }, [toggleCollapsed]);
+
+  const onToggleLocked = useCallback(() => {
+    item.setLocked((locked: boolean) => !locked);
+  }, []);
+
   return (
     <Elem name="controls" mod={{ withControls: hasControls }}>
-      <Elem name="control" mod={{ type: "score" }}>
+      <Elem name="control" mod={{ type: 'score' }}>
         {isDefined(item?.score) && item.score.toFixed(2)}
       </Elem>
-      <Elem name="control" mod={{ type: "dirty" }}>
+      <Elem name="control" mod={{ type: 'dirty' }}>
         {/* dirtyness is not implemented yet */}
       </Elem>
-      <Elem name="control" mod={{ type: "predict" }}>
+      <Elem name="control" mod={{ type: 'predict' }}>
         {item?.origin === 'prediction' && (
           <LsSparks style={{ width: 18, height: 18 }}/>
         )}
       </Elem>
-      <Elem name="control" mod={{ type: "lock" }}>
+      <Elem name="control" mod={{ type: 'lock' }}>
         {/* TODO: implement manual region locking */}
         {item && (hovered || !item.editable) && (
-          <RegionControlButton disabled={item.readonly} onClick={() => item.setLocked(!item.locked)}>
+          <RegionControlButton disabled={item.readonly} onClick={onToggleLocked}>
             {item.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
           </RegionControlButton>
         )}
       </Elem>
-      <Elem name="control" mod={{ type: "visibility" }}>
+      <Elem name="control" mod={{ type: 'visibility' }}>
         {(hovered || hidden) && (
           <RegionControlButton onClick={onToggleHidden}>
             {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
@@ -342,8 +429,8 @@ const RegionControls: FC<RegionControlsProps> = observer(({
         )}
       </Elem>
       {hasControls && (
-        <Elem name="control" mod={{ type: "visibility" }}>
-          <RegionControlButton onClick={toggleCollapsed}>
+        <Elem name="control" mod={{ type: 'visibility' }}>
+          <RegionControlButton onClick={onToggleCollapsed}>
             <IconChevronLeft
               style={{
                 transform: `rotate(${collapsed ? -90 : 90}deg)`,
@@ -406,6 +493,8 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
       <Elem name="controls">
         {controls.map((tag, idx) => {
           const View = Registry.getPerRegionView(tag.type, PER_REGION_MODES.REGION_LIST);
+          const color = item.getOneColor();
+          const css = color ? chroma(color).alpha(0.2).css() : undefined;
 
           return View ? (
             <View
@@ -414,7 +503,7 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
               area={item}
               collapsed={collapsed}
               setCollapsed={setCollapsed}
-              color={chroma(item.getOneColor()).alpha(0.2).css()}
+              color={css}
               outliner
             />
           ): null;

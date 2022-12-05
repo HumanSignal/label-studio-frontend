@@ -1,12 +1,12 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import Registry from "../../core/Registry";
-import Constants from "../../core/Constants";
-import { guidGenerator } from "../../core/Helpers";
-import { customTypes } from "../../core/CustomTypes";
+import Registry from '../../core/Registry';
+import Constants from '../../core/Constants';
+import { guidGenerator } from '../../core/Helpers';
+import { customTypes } from '../../core/CustomTypes';
 
 /**
- * The Relation tag represents a single relation label. Use with the Relations tag to specify the value of a label to apply to a relation between regions.
+ * The `Relation` tag represents a single relation label. Use with the `Relations` tag to specify the value of a label to apply to a relation between regions.
  *
  * @example
  * <!--Basic labeling configuration to apply the label "similar" to a relation identified between two labeled regions of text -->
@@ -36,7 +36,7 @@ const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     selected: types.optional(types.boolean, false),
-    type: "relation",
+    type: 'relation',
   })
   .actions(self => ({
     setSelected(value) {
@@ -44,12 +44,12 @@ const Model = types
     },
   }));
 
-const RelationModel = types.compose("RelationModel", TagAttrs, Model);
+const RelationModel = types.compose('RelationModel', TagAttrs, Model);
 
 const HtxRelationView = () => {
   return null;
 };
 
-Registry.addTag("relation", RelationModel, HtxRelationView);
+Registry.addTag('relation', RelationModel, HtxRelationView);
 
 export { HtxRelationView, RelationModel };

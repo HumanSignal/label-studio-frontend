@@ -5,17 +5,17 @@ const getPage = (h) => {
 };
 
 class MouseActions extends Helper {
-  clickAt(x, y, buttonName = "left") {
+  clickAt(x, y, buttonName = 'left') {
     const page = getPage(this.helpers);
 
     return page.mouse.click(x, y, { button: buttonName, delay: 80 });
   }
-  pressMouseDown(buttonName = "left") {
+  pressMouseDown(buttonName = 'left') {
     const page = getPage(this.helpers);
 
     return page.mouse.down({ button: buttonName });
   }
-  pressMouseUp(buttonName = "left") {
+  pressMouseUp(buttonName = 'left') {
     const page = getPage(this.helpers);
 
     return page.mouse.up({ button: buttonName });

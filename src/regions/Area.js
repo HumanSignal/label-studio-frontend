@@ -1,21 +1,22 @@
-import { types } from "mobx-state-tree";
-import Registry from "../core/Registry";
-import RegionsMixin from "../mixins/Regions";
-import { RectRegionModel } from "./RectRegion";
-import { KeyPointRegionModel } from "./KeyPointRegion";
-import { AreaMixin } from "../mixins/AreaMixin";
-import { AudioRegionModel } from "./AudioRegion";
-import { PolygonRegionModel } from "./PolygonRegion";
-import { EllipseRegionModel } from "./EllipseRegion";
-import { RichTextRegionModel } from "./RichTextRegion";
-import { BrushRegionModel } from "./BrushRegion";
-import { TimeSeriesRegionModel } from "./TimeSeriesRegion";
-import { ParagraphsRegionModel } from "./ParagraphsRegion";
-import { VideoRectangleRegionModel } from "./VideoRectangleRegion";
+import { types } from 'mobx-state-tree';
+import Registry from '../core/Registry';
+import Tree from '../core/Tree';
+import RegionsMixin from '../mixins/Regions';
+import { RectRegionModel } from './RectRegion';
+import { KeyPointRegionModel } from './KeyPointRegion';
+import { AreaMixin } from '../mixins/AreaMixin';
+import { AudioRegionModel } from './AudioRegion';
+import { PolygonRegionModel } from './PolygonRegion';
+import { EllipseRegionModel } from './EllipseRegion';
+import { RichTextRegionModel } from './RichTextRegion';
+import { BrushRegionModel } from './BrushRegion';
+import { TimeSeriesRegionModel } from './TimeSeriesRegion';
+import { ParagraphsRegionModel } from './ParagraphsRegion';
+import { VideoRectangleRegionModel } from './VideoRectangleRegion';
 
 // general Area type for classification Results which doesn't belong to any real Area
 const ClassificationArea = types.compose(
-  "ClassificationArea",
+  'ClassificationArea',
   RegionsMixin,
   AreaMixin,
   types
@@ -41,7 +42,7 @@ const Area = types.union(
       )
         return ClassificationArea;
       // may be a tag itself or just its name
-      const objectName = sn.object.name || sn.object;
+      const objectName = Tree.cleanUpId(sn.object.name || sn.object);
       // we have to use current config to detect Object tag by name
       const tag = window.Htx.annotationStore.names.get(objectName);
       // provide value to detect Area by data

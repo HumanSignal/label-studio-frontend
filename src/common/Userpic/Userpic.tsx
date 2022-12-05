@@ -1,13 +1,13 @@
 import chroma from 'chroma-js';
-import { CSSProperties, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Block, Elem } from "../../utils/bem";
-import { FF_DEV_1507, isFF } from "../../utils/feature-flags";
-import { isDefined, userDisplayName } from "../../utils/utilities";
-import { Tooltip } from "../Tooltip/Tooltip";
-import "./Userpic.styl";
+import { CSSProperties, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Block, Elem } from '../../utils/bem';
+import { FF_DEV_1507, isFF } from '../../utils/feature-flags';
+import { isDefined, userDisplayName } from '../../utils/utilities';
+import { Tooltip } from '../Tooltip/Tooltip';
+import './Userpic.styl';
 
 const FALLBACK_IMAGE =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
 interface UserpicProps {
   badge?: Record<string, any> | null;
@@ -62,7 +62,7 @@ export const Userpic = forwardRef<any, UserpicProps>(({
 
   const background = useMemo(() => {
     if (isDefined(user.id)) {
-      const color = localStorage.getItem(`userpic-color-${user.id}`) ?? chroma.average([chroma.random(), "#cfcfcf"]).css();
+      const color = localStorage.getItem(`userpic-color-${user.id}`) ?? chroma.average([chroma.random(), '#cfcfcf']).css();
 
       localStorage.setItem(`userpic-color-${user.id}`, color);
       return color;
@@ -73,9 +73,9 @@ export const Userpic = forwardRef<any, UserpicProps>(({
 
   const textColor = useMemo(() => {
     if (background) {
-      const contrast = chroma.contrast(background, "#fff");
+      const contrast = chroma.contrast(background, '#fff');
 
-      return contrast >= 4.5 ? "#fff" : "#000";
+      return contrast >= 4.5 ? '#fff' : '#000';
     }
 
     return null;
@@ -97,7 +97,7 @@ export const Userpic = forwardRef<any, UserpicProps>(({
             name="avatar"
             ref={imgRef}
             src={finalSrc}
-            alt={(displayName ?? "").toUpperCase()}
+            alt={(displayName ?? '').toUpperCase()}
             style={{ opacity: imgVisible ? (faded ? 0.3 : 1) : 0 }}
             onLoad={onImageLoaded}
             onError={() => setFinalSrc(FALLBACK_IMAGE) }
@@ -105,7 +105,7 @@ export const Userpic = forwardRef<any, UserpicProps>(({
           />
           {nameVisible && (
             <Elem tag="span" name="username">
-              {(displayName ?? "").slice(0, 2).toUpperCase()}
+              {(displayName ?? '').slice(0, 2).toUpperCase()}
             </Elem>
           )}
         </>

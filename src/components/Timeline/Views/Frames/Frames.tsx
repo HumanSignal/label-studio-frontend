@@ -1,11 +1,11 @@
-import { clamp } from "lodash";
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useMemoizedHandlers } from "../../../../hooks/useMemoizedHandlers";
-import { Block, Elem } from "../../../../utils/bem";
-import { isDefined } from "../../../../utils/utilities";
-import { TimelineViewProps } from "../../Types";
-import "./Frames.styl";
-import { Keypoints } from "./Keypoints";
+import { clamp } from 'lodash';
+import { FC, MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemoizedHandlers } from '../../../../hooks/useMemoizedHandlers';
+import { Block, Elem } from '../../../../utils/bem';
+import { isDefined } from '../../../../utils/utilities';
+import { TimelineViewProps } from '../../Types';
+import './Frames.styl';
+import { Keypoints } from './Keypoints';
 
 const toSteps = (num: number, step: number) => {
   return Math.floor(num / step);
@@ -38,6 +38,7 @@ export const Frames: FC<TimelineViewProps> = ({
   const [hoverOffset, setHoverOffset] = useState<number | null>(null);
   const [offsetX, setOffsetX] = useState(offset);
   const [offsetY, setOffsetY] = useState(0);
+  const [regionSelectionDisabled, setRegionSelectionDisabled] = useState(false);
   const viewWidth = useMemo(() => {
     return length * step;
   }, [length, step]);
@@ -49,10 +50,10 @@ export const Frames: FC<TimelineViewProps> = ({
   const background = useMemo(() => {
     const bg = [
       `repeating-linear-gradient(90deg, #fff 1px, #fff ${step-1}px, rgba(255,255,255,0) ${step-1}px, rgba(255,255,255,0) ${step+1}px)`,
-      `linear-gradient(0deg, #FAFAFA, rgba(255,255,255,0) 50%)`,
+      'linear-gradient(0deg, #FAFAFA, rgba(255,255,255,0) 50%)',
     ];
 
-    return bg.join(", ");
+    return bg.join(', ');
   }, [step]);
 
   const setScroll = useCallback(({ left, top }) => {
@@ -135,13 +136,13 @@ export const Frames: FC<TimelineViewProps> = ({
     };
 
     const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
       setHoverEnabled(true);
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
   }, [currentOffsetX, setIndicatorOffset, step]);
 
   const hoverHandler = useCallback((e) => {
@@ -169,6 +170,42 @@ export const Frames: FC<TimelineViewProps> = ({
 
     return value - currentOffsetX + timelineStartOffset;
   }, [position, currentOffsetX, step, length]);
+
+  const onFrameScrub = useCallback((e: MouseEvent) => {
+    const dimensions = scrollable.current!.getBoundingClientRect();
+    const offsetLeft = dimensions.left;
+    const rightLimit = dimensions.width - timelineStartOffset;
+
+    const getMouseToFrame = (e: MouseEvent | globalThis.MouseEvent) => {
+      const mouseOffset = e.pageX - offsetLeft - timelineStartOffset;
+
+      return mouseOffset + currentOffsetX;
+    };
+
+    const offset = getMouseToFrame(e);
+
+    setIndicatorOffset(offset);
+
+    const onMouseMove = (e: globalThis.MouseEvent) => {
+      const offset = getMouseToFrame(e);
+
+      if (offset >= 0 && offset <= rightLimit) {
+        setHoverEnabled(false);
+        setRegionSelectionDisabled(true);
+        setIndicatorOffset(offset);
+      }
+    };
+
+    const onMouseUp = () => {
+      setHoverEnabled(true);
+      setRegionSelectionDisabled(false);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, [currentOffsetX, setIndicatorOffset]);
 
   useEffect(() => {
     if (scrollable.current) {
@@ -217,9 +254,9 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [playing, position]);
 
   const styles = {
-    "--frame-size": `${step}px`,
-    "--view-size": `${viewWidth}px`,
-    "--offset": `${timelineStartOffset}px`,
+    '--frame-size': `${step}px`,
+    '--view-size': `${viewWidth}px`,
+    '--offset': `${timelineStartOffset}px`,
   };
 
   return (
@@ -235,7 +272,7 @@ export const Frames: FC<TimelineViewProps> = ({
           <Elem
             name="hover"
             style={{ left: roundToStep(hoverOffset, step), marginLeft: timelineStartOffset }}
-            data-frame={toSteps(currentOffsetX + hoverOffset, step)}
+            data-frame={toSteps(currentOffsetX + hoverOffset, step) + 1}
           />
         )}
       </Elem>
@@ -249,6 +286,7 @@ export const Frames: FC<TimelineViewProps> = ({
         onMouseMove={hoverHandler}
         onMouseLeave={() => setHoverOffset(null)}
         onClickCapture={scrollClickHandler}
+        onMouseDown={onFrameScrub}
       >
         <Elem name="filler">
           <KeypointsVirtual
@@ -256,6 +294,7 @@ export const Frames: FC<TimelineViewProps> = ({
             scrollTop={currentOffsetY}
             startOffset={timelineStartOffset}
             onSelectRegion={onSelectRegion}
+            disabled={regionSelectionDisabled}
           />
         </Elem>
       </Elem>
@@ -269,13 +308,15 @@ interface KeypointsVirtualProps {
   regions: any[];
   startOffset: number;
   scrollTop: number;
-  onSelectRegion: TimelineViewProps["onSelectRegion"];
+  disabled?: boolean;
+  onSelectRegion: TimelineViewProps['onSelectRegion'];
 }
 
 const KeypointsVirtual: FC<KeypointsVirtualProps> = ({
   regions,
   startOffset,
   scrollTop,
+  disabled,
   onSelectRegion,
 }) => {
   const extra = 5;
@@ -299,7 +340,7 @@ const KeypointsVirtual: FC<KeypointsVirtualProps> = ({
             idx={i + 1}
             region={region}
             startOffset={startOffset}
-            onSelectRegion={onSelectRegion}
+            onSelectRegion={disabled ? undefined : onSelectRegion}
             renderable={bounds[0] <= i && i <= bounds[1]}
           />
         ) : null;

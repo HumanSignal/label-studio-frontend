@@ -1,9 +1,11 @@
-import { forwardRef, memo, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Block, Elem } from "../../utils/bem";
-import { clamp, isDefined } from "../../utils/utilities";
-import "./VideoCanvas.styl";
-import { VirtualCanvas } from "./VirtualCanvas";
-import { VirtualVideo } from "./VirtualVideo";
+import { forwardRef, memo, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Block, Elem } from '../../utils/bem';
+import { clamp, isDefined } from '../../utils/utilities';
+import './VideoCanvas.styl';
+import { MAX_ZOOM, MIN_ZOOM } from './VideoConstants';
+import { VirtualCanvas } from './VirtualCanvas';
+import { VirtualVideo } from './VirtualVideo';
+import InfoModal from '../../components/Infomodal/Infomodal';
 
 type VideoProps = {
   src: string,
@@ -18,6 +20,8 @@ type VideoProps = {
   pan?: PanOptions,
   allowInteractions?: boolean,
   speed: number,
+
+  allowPanOffscreen?: boolean,
 
   contrast?: number,
   brightness?: number,
@@ -45,7 +49,7 @@ type VideoDimentions = {
   ratio: number,
 }
 
-const clampZoom = (value: number) => clamp(value, 0.25, 16);
+export const clampZoom = (value: number) => clamp(value, MIN_ZOOM, MAX_ZOOM);
 
 const zoomRatio = (
   canvasWidth: number,
@@ -79,6 +83,7 @@ export interface VideoRef {
   setSaturation: (value: number) => void;
   setZoom: (value: number) => void;
   setPan: (x: number, y: number) => void;
+  adjustPan: (x: number, y: number) => PanOptions;
 }
 
 export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) => {
@@ -87,6 +92,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   const canvasRef = useRef<HTMLCanvasElement>();
   const contextRef = useRef<CanvasRenderingContext2D | null>();
   const videoRef = useRef<HTMLVideoElement>();
+  const supportedFileTypeRef = useRef<boolean|null>(null);
 
   const canvasWidth = useMemo(() => props.width ?? 600, [props.width]);
   const canvasHeight = useMemo(() => props.height ?? 600, [props.height]);
@@ -113,8 +119,22 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     if (brightness !== 1) result.push(`brightness(${brightness})`);
     if (saturation !== 1) result.push(`saturate(${saturation})`);
 
-    return result.join(" ");
+    return result.join(' ');
   }, [brightness, contrast, saturation]);
+
+  const processPan = useCallback((pan: PanOptions) => {
+    const { width, height } = videoDimensions;
+    const resultWidth = width * zoom;
+    const resultHeight = height * zoom;
+
+    const xMinMax = clamp((resultWidth - canvasWidth) / 2, 0, Infinity);
+    const yMinMax = clamp((resultHeight - canvasHeight) / 2, 0, Infinity);
+
+    const panX = props.allowPanOffscreen ? pan.x : clamp(pan.x, -xMinMax, xMinMax);
+    const panY = props.allowPanOffscreen ? pan.y : clamp(pan.y, -yMinMax, yMinMax);
+
+    return { x: panX, y: panY };
+  }, [props.allowPanOffscreen, canvasWidth, canvasHeight, zoom]);
 
   const drawVideo = useCallback(() => {
     try {
@@ -261,7 +281,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
   useEffect(() => {
     if (!props.allowInteractions) return;
-    rootRef.current?.addEventListener("wheel", (e) => {
+    rootRef.current?.addEventListener('wheel', (e) => {
       e.preventDefault();
     });
   }, []);
@@ -274,9 +294,9 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
   useEffect(() => {
     if (isDefined(props.pan)) {
-      setPan(props.pan);
+      setPan(processPan(props.pan));
     }
-  }, [props.pan]);
+  }, [props.pan, processPan]);
 
   useEffect(() => {
     if (isDefined(props.brightness)){
@@ -342,11 +362,16 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         video.currentTime = value;
       }
     },
+    adjustPan(x, y) {
+      return processPan({ x, y });
+    },
     setZoom(value) {
       setZoom(clampZoom(value));
     },
     setPan(x, y) {
-      setPan({ x, y });
+      const pan = this.adjustPan(x, y);
+
+      setPan(pan);
     },
     setContrast(value) {
       setContrast(value);
@@ -398,15 +423,28 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
   useEffect(() => {
     let isLoaded = false;
+    let loadTimeout: NodeJS.Timeout | undefined = undefined;
+    let timeout: NodeJS.Timeout | undefined = undefined;
+    let errorModal: { destroy: () => void } | undefined = undefined;
 
     const checkVideoLoaded = () => {
       if (isLoaded) return;
+
+      if (supportedFileTypeRef.current === false) {
+        const modalExists = document.querySelector('.ant-modal');
+
+        if (!modalExists) {
+          errorModal = InfoModal.error('There has been an error rendering your video, please check the format is supported');
+        }
+        setLoading(false);
+        return;
+      }
 
       if (videoRef.current?.readyState === 4) {
         isLoaded = true;
         const video = videoRef.current;
 
-        setTimeout(() => {
+        loadTimeout = setTimeout(() => {
           const length = Math.ceil(video.duration * framerate);
           const [width, height] = [video.videoWidth, video.videoHeight];
 
@@ -430,10 +468,22 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         return;
       }
 
-      setTimeout(checkVideoLoaded, 10);
+      timeout = setTimeout(checkVideoLoaded, 10);
     };
 
     checkVideoLoaded();
+
+    return () => {
+      if (errorModal) {
+        errorModal.destroy();
+      }
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+      if (loadTimeout) {
+        clearTimeout(loadTimeout);
+      }
+    };
   }, []);
 
 
@@ -490,6 +540,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         preload="auto"
         src={props.src}
         muted={props.muted ?? false}
+        canPlayType={supported => (supportedFileTypeRef.current = supported)}
         onPlay={handleVideoPlay}
         onPause={handleVideoPause}
         onLoadedData={delayedUpdate}
@@ -515,4 +566,4 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   );
 }));
 
-
+VideoCanvas.displayName = 'VideoCanvas';

@@ -20,13 +20,18 @@
   margin: 0.3rem 0;
 }
 
-.wrapper {
-  max-width: 100%;
-  width: 100%;
+.wrapperComponent {
+  flex: 1;
   position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  align-self: stretch;
+}
+
+.wrapper {
+  max-width: 100%;
+  width: 100%;
 }
 
 .loading {
@@ -46,16 +51,48 @@
   font-size: 24px;
 }
 
+.image-element {
+  position: absolute;
+}
+
+.image_position {
+  position: absolute;
+  &__top {
+    top: 0;
+  }
+  &__middle {
+    top: 50%;
+    transform: translateY(-50%);
+    &.image_position__center {
+      transform: translate(-50%, -50%);
+    }
+  }
+  &__bottom {
+    bottom: 0;
+  }
+  &__left {
+    left: 0;
+  }
+  &__center {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  &__right {
+    right: 0;
+  }
+}
+
 .container {
   overflow: hidden;
+  position: relative;
   width: 100%;
+  height: 100%;
 
     // padding hack to fill the empty space with given aspect ratio
     // see ImageView.render()
   .frame {
     position: absolute;
     overflow: hidden;
-    top: 0;
     height: 0;
   }
   .frame_height {

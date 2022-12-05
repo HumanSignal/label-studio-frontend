@@ -10,7 +10,7 @@ function startErrorsCollector() {
 
   CEErrorsCollector.prototype.errorHandler = function(ev)  {
     // Ignore not meaningful error
-    if (ev.message === "ResizeObserver loop limit exceeded") return;
+    if (ev.message === 'ResizeObserver loop limit exceeded') return;
 
     this.errors.push(ev.message);
   };
@@ -19,10 +19,10 @@ function startErrorsCollector() {
     this._finish();
   };
   CEErrorsCollector.prototype._start = function()  {
-    window.addEventListener("error", this.errorHandler);
+    window.addEventListener('error', this.errorHandler);
   };
   CEErrorsCollector.prototype._finish = function()  {
-    window.removeEventListener("error", this.errorHandler);
+    window.removeEventListener('error', this.errorHandler);
   };
   window._ceErrorsCollector = new CEErrorsCollector();
 }

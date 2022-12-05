@@ -1,6 +1,6 @@
-import { getEnv, getRoot, types } from "mobx-state-tree";
-import { cloneNode, restoreNewsnapshot } from "../core/Helpers";
-import { AnnotationMixin } from "./AnnotationMixin";
+import { getEnv, getRoot, types } from 'mobx-state-tree';
+import { cloneNode, restoreNewsnapshot } from '../core/Helpers';
+import { AnnotationMixin } from './AnnotationMixin';
 
 const ToolMixin = types
   .model({
@@ -61,14 +61,11 @@ const ToolMixin = types
     },
 
     get shouldPreserveSelectedState() {
-      try {
-        const settings = getRoot(self.obj).settings;
+      if (!self.obj) return false;
 
-        return settings.preserveSelectedTool;
-      } catch (err) {
-        console.log('something is missing');
-        return false;
-      }
+      const settings = getRoot(self.obj).settings;
+
+      return settings.preserveSelectedTool;
     },
 
     get isPreserved() {
@@ -92,9 +89,9 @@ const ToolMixin = types
     afterUpdateSelected() {},
 
     event(name, ev, args) {
-      const fn = name + "Ev";
+      const fn = name + 'Ev';
 
-      if (typeof self[fn] !== "undefined") self[fn].call(self, ev, args);
+      if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, args);
     },
 
     createFromJSON(obj, fromModel) {
@@ -107,7 +104,7 @@ const ToolMixin = types
 
       // workaround to prevent perregion textarea from duplicating
       // during deserialisation
-      if (fm.perregion && fromModel.type === "textarea") return;
+      if (fm.perregion && fromModel.type === 'textarea') return;
 
       const { stateTypes, controlTagTypes } = self.tagTypes;
 
@@ -127,10 +124,10 @@ const ToolMixin = types
         const moreParams = self.moreRegionParams?.(obj) ?? obj;
         const data = {
           pid: obj.id,
-          parentID: obj.parent_id === null ? "" : obj.parent_id,
+          parentID: obj.parent_id === null ? '' : obj.parent_id,
           score: obj.score,
           readonly: obj.readonly,
-          coordstype: "perc",
+          coordstype: 'perc',
           states,
           ...params,
           ...obj.value,

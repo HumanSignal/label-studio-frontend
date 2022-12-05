@@ -1,11 +1,12 @@
-import React, { Fragment } from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React, { Fragment } from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import BaseTool from "./Base";
-import ToolMixin from "../mixins/Tool";
-import { Tool } from "../components/Toolbar/Tool";
-import { IconHandTool, IconZoomIn, IconZoomOut } from "../assets/icons";
+import BaseTool from './Base';
+import ToolMixin from '../mixins/Tool';
+import { Tool } from '../components/Toolbar/Tool';
+import { FlyoutMenu } from '../components/Toolbar/FlyoutMenu';
+import { IconExpand, IconHandTool, IconZoomIn, IconZoomOut } from '../assets/icons';
 
 const ToolView = observer(({ item }) => {
   return (
@@ -31,6 +32,25 @@ const ToolView = observer(({ item }) => {
           item.handleZoom(1);
         }}
       />
+      <FlyoutMenu
+        icon={<IconExpand />}
+        items={[
+          {
+            label: 'Zoom to fit',
+            shortcut: 'shift+1',
+            onClick: () => {
+              item.sizeToFit();
+            },
+          },
+          {
+            label: 'Zoom to actual size',
+            shortcut: 'shift+2',
+            onClick: () => {
+              item.sizeToOriginal();
+            },
+          },
+        ]}
+      />
       <Tool
         icon={<IconZoomOut />}
         ariaLabel="zoom-out"
@@ -45,9 +65,9 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model("ZoomPanTool", {
+  .model('ZoomPanTool', {
     // image: types.late(() => types.safeReference(Registry.getModelByTag("image")))
-    group: "control",
+    group: 'control',
   })
   .views(self => ({
     get viewClass() {
@@ -64,14 +84,14 @@ const _Tool = types
     },
 
     mouseupEv() {
-      self.mode = "viewing";
-      self.stageContainer.style.cursor = "grab";
+      self.mode = 'viewing';
+      self.stageContainer.style.cursor = 'grab';
     },
 
     updateCursor() {
       if (!self.selected || !self.obj.stageRef) return;
 
-      self.stageContainer.style.cursor = "grab";
+      self.stageContainer.style.cursor = 'grab';
     },
 
     afterUpdateSelected() {
@@ -90,9 +110,9 @@ const _Tool = types
       const zoomScale = self.obj.zoomScale;
 
       if (zoomScale <= 1) return;
-      if (self.mode === "moving") {
+      if (self.mode === 'moving') {
         self.handleDrag(ev);
-        self.stageContainer.style.cursor = "grabbing";
+        self.stageContainer.style.cursor = 'grabbing';
       }
     },
 
@@ -100,14 +120,32 @@ const _Tool = types
       // don't pan on right click
       if (ev.button === 2) return;
 
-      self.mode = "moving";
-      self.stageContainer.style.cursor = "grabbing";
+      self.mode = 'moving';
+      self.stageContainer.style.cursor = 'grabbing';
     },
 
     handleZoom(val) {
       const item = self.obj;
 
       item.handleZoom(val);
+    },
+
+    sizeToFit() {
+      const item = self.obj;
+
+      item.sizeToFit();
+    },
+
+    sizeToAuto() {
+      const item = self.obj;
+
+      item.sizeToAuto();
+    },
+
+    sizeToOriginal() {
+      const item = self.obj;
+
+      item.sizeToOriginal();
     },
   }));
 

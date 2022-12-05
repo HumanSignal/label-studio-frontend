@@ -33,10 +33,13 @@
     margin: 0 2px 4px 0;
     background: hsl(0, 0%, 95%);
     padding: 0; // all the right space should be a clickable button, so no padding
-    padding-left: 8px;
     border-radius: 4px;
     display: flex;
     align-items: center;
+
+    span {
+      padding-inline: 8px;
+    }
   }
 
   input[type="button"] {
@@ -50,6 +53,7 @@
     font-weight: 500;
     font-size: 20px;
     color: #09f;
+    margin-left: -8px; // to align with the right edge of the text
 
     &:hover {
       color: red;
@@ -67,9 +71,11 @@
   box-shadow: 0 4px 10px rgb(0 0 0 / 12%);
 
   input[type="checkbox"] {
-    margin:  7px 4px 0 0 ;
+    margin-right: 4px;
     font-size: 20px;
     line-height: 30px;
+    width: 0.7em;
+    height: 1.4em;
 
     &:disabled {
       opacity: 0.5;
@@ -102,6 +108,15 @@
   width: calc(100% - 100px);
 }
 
+.taxonomy__measure {
+  visibility: hidden;
+  position: absolute;
+  pointer-events: none;
+  display: flex;
+  padding-left: 43px;
+  padding-right: 60px;
+};
+
 .taxonomy__item {
   display: flex;
   &:focus-within {
@@ -125,12 +140,6 @@
   width: max-content;
   line-height: 2em;
   padding-right: 8px;
-}
-
-.taxonomy__item .width_check {
-  visibility: hidden;
-  position: absolute;
-  pointer-events: none;
 }
 
 .taxonomy__grouping {

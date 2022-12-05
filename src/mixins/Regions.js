@@ -1,6 +1,6 @@
-import { getEnv, getParent, getRoot, getType, types } from "mobx-state-tree";
-import { guidGenerator } from "../core/Helpers";
-import { AnnotationMixin } from "./AnnotationMixin";
+import { getEnv, getParent, getRoot, getType, types } from 'mobx-state-tree';
+import { guidGenerator } from '../core/Helpers';
+import { AnnotationMixin } from './AnnotationMixin';
 
 const RegionsMixin = types
   .model({
@@ -12,7 +12,7 @@ const RegionsMixin = types
 
     hidden: types.optional(types.boolean, false),
 
-    parentID: types.optional(types.string, ""),
+    parentID: types.optional(types.string, ''),
 
     fromSuggestion: false,
 
@@ -100,8 +100,12 @@ const RegionsMixin = types
         self.notifyDrawingFinished({ destroy: true });
       },
 
-      setLocked(locked){
-        self.locked = locked;
+      setLocked(locked) {
+        if (locked instanceof Function) {
+          self.locked = locked(self.locked);
+        } else {
+          self.locked = locked;
+        }
       },
 
       makeDynamic() {
@@ -172,7 +176,7 @@ const RegionsMixin = types
       updateAppearenceFromState() {},
 
       serialize() {
-        console.error("Region class needs to implement serialize");
+        console.error('Region class needs to implement serialize');
       },
 
       toStateJSON() {
@@ -184,10 +188,10 @@ const RegionsMixin = types
             to_name: parent.name,
             source: parent.value,
             type: control.type,
-            parent_id: self.parentID === "" ? null : self.parentID,
+            parent_id: self.parentID === '' ? null : self.parentID,
           };
 
-          if (self.normalization) tree["normalization"] = self.normalization;
+          if (self.normalization) tree['normalization'] = self.normalization;
 
           return tree;
         };
@@ -230,7 +234,7 @@ const RegionsMixin = types
      * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
      */
       unselectRegion(tryToKeepStates = false) {
-        console.log("UNSELECT REGION", "you should not be here");
+        console.log('UNSELECT REGION', 'you should not be here');
         // eslint-disable-next-line no-constant-condition
         if (1) return;
         const annotation = self.annotation;
@@ -259,9 +263,9 @@ const RegionsMixin = types
       onClickRegion(ev) {
         const annotation = self.annotation;
 
-        if (!annotation.editable || self.isDrawing || annotation.isDrawing) return;
+        if (self.editable && (self.isDrawing || annotation.isDrawing)) return;
 
-        if (annotation.relationMode) {
+        if (self.editable && annotation.relationMode) {
           annotation.addRelation(self);
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
@@ -276,8 +280,8 @@ const RegionsMixin = types
 
         if (additiveMode) {
           annotation.toggleRegionSelection(self);
-        } else {const wasNotSelected = !self.selected;
-
+        } else {
+          const wasNotSelected = !self.selected;
 
           if (wasNotSelected) {
             annotation.selectArea(self);
@@ -323,7 +327,7 @@ const RegionsMixin = types
           const env = getEnv(self);
 
           self.drawingTimeout = setTimeout(() => {
-            env.events.invoke("regionFinishedDrawing", self, self.getConnectedDynamicRegions(destroy));
+            env.events.invoke('regionFinishedDrawing', self, self.getConnectedDynamicRegions(destroy));
           }, timeout);
         }
       },

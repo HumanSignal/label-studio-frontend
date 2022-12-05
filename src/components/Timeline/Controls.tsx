@@ -1,13 +1,13 @@
-import React, { FC, memo, MouseEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { IconBackward, IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconFastForward, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from "../../assets/icons/timeline";
-import { Button, ButtonProps } from "../../common/Button/Button";
-import { Space } from "../../common/Space/Space";
-import { Block, Elem } from "../../utils/bem";
-import { isDefined } from "../../utils/utilities";
-import { TimelineContext } from "./Context";
-import "./Controls.styl";
-import * as SideControls from "./SideControls";
-import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineControlsStepHandler, TimelineProps, TimelineStepFunction } from "./Types";
+import React, { FC, memo, MouseEvent, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { IconBackward, IconChevronLeft, IconChevronRight, IconCollapse, IconExpand, IconFastForward, IconForward, IconFullscreen, IconFullscreenExit, IconNext, IconPause, IconPlay, IconPrev, IconRewind } from '../../assets/icons/timeline';
+import { Button, ButtonProps } from '../../common/Button/Button';
+import { Space } from '../../common/Space/Space';
+import { Block, Elem } from '../../utils/bem';
+import { isDefined } from '../../utils/utilities';
+import { TimelineContext } from './Context';
+import './Controls.styl';
+import * as SideControls from './SideControls';
+import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineControlsStepHandler, TimelineCustomControls, TimelineProps, TimelineStepFunction } from './Types';
 
 const positionFromTime = ({ time, fps }: TimelineControlsFormatterOptions) => {
   const roundedFps = Math.round(fps).toString();
@@ -26,6 +26,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   collapsed,
   extraControls,
   fullscreen,
+  altHopSize,
   disableFrames,
   allowFullscreen,
   allowViewCollapse,
@@ -53,6 +54,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
     return (position - 1) / frameRate;
   }, [position, frameRate]);
 
+  const customControls = useCustomControls(props.customControls);
   const stepHandlerWrapper = (handler: TimelineControlsStepHandler, stepSize?: TimelineStepFunction) => (e: MouseEvent<HTMLButtonElement>) => {
     handler(e, stepSize ?? undefined);
   };
@@ -64,9 +66,9 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   useEffect(() => {
     const keyboardHandler = (e: KeyboardEvent) => {
       if (!settings?.stepSize) return;
-      const altMode = e.key === "Shift";
+      const altMode = e.key === 'Shift';
 
-      if (e.type === 'keydown' && altMode) {
+      if (e.type === 'keydown' && altMode && !altControlsMode) {
         setAltControlsMode(true);
       } else if (e.type === 'keyup' && altMode && altControlsMode) {
         setAltControlsMode(false);
@@ -101,6 +103,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
             />
           );
         })}
+        {customControls?.left}
       </Elem>
 
       <Elem name="main-controls">
@@ -108,6 +111,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
           {extraControls}
         </Elem>
         <Elem name="group" tag={Space} collapsed>
+          {customControls?.leftCenter}
           <AltControls
             showAlterantive={altControlsMode && !disableFrames}
             main={(
@@ -140,7 +144,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
                   <IconRewind/>
                 </ControlButton>
                 <ControlButton
-                  onClick={() => onRewind?.(10)}
+                  onClick={() => onRewind?.(altHopSize)}
                   disabled={startReached}
                   hotkey={settings?.hopBackward}
                 >
@@ -177,7 +181,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
             alt={(
               <>
                 <ControlButton
-                  onClick={() => onForward?.(10)}
+                  onClick={() => onForward?.(altHopSize)}
                   disabled={endReached}
                   hotkey={settings?.hopForward}
                 >
@@ -193,6 +197,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
               </>
             )}
           />
+          {customControls?.rightCenter}
         </Elem>
         <Elem name="group" tag={Space} collapsed>
           {!disableFrames && allowViewCollapse && (
@@ -219,6 +224,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
       </Elem>
 
       <Elem name="group" tag={Space} size="small">
+        {customControls?.right}
         <TimeDisplay
           currentTime={currentTime}
           duration={duration}
@@ -250,7 +256,7 @@ interface TimeDisplay {
   duration: number;
   framerate: number;
   length: number;
-  formatPosition?: TimelineProps["formatPosition"];
+  formatPosition?: TimelineProps['formatPosition'];
 }
 
 const TimeDisplay: FC<TimeDisplay> = ({
@@ -304,3 +310,22 @@ const AltControls: FC<AltControlsProps> = (props) => {
   return props.showAlterantive ? props.alt : props.main;
 };
 
+type ControlGroups = Record<TimelineCustomControls['position'], JSX.Element[]>;
+
+const useCustomControls = (
+  customControls?: TimelineCustomControls[],
+): ControlGroups | null => {
+  if (!customControls) return null;
+
+  const groups = customControls?.reduce<ControlGroups>((groups, item) => {
+    const group = groups[item.position] ?? [];
+    const component = item.component instanceof Function ? item.component() : item.component;
+
+    group.push(component);
+    groups[item.position] = group;
+
+    return groups;
+  }, {} as ControlGroups);
+
+  return groups;
+};

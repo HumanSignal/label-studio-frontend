@@ -1,32 +1,30 @@
-import React, { useState } from "react";
-import { Circle, Rect } from "react-konva";
-import { observer } from "mobx-react";
-import { getParent, getRoot, hasParent, types } from "mobx-state-tree";
+import React, { useState } from 'react';
+import { Circle, Rect } from 'react-konva';
+import { observer } from 'mobx-react';
+import { getParent, getRoot, hasParent, types } from 'mobx-state-tree';
 
-import { guidGenerator } from "../core/Helpers";
-import { useRegionStyles } from "../hooks/useRegionColor";
-import { FF_DEV_2431, isFF } from "../utils/feature-flags";
+import { guidGenerator } from '../core/Helpers';
+import { useRegionStyles } from '../hooks/useRegionColor';
+import { FF_DEV_2431, isFF } from '../utils/feature-flags';
 
 const PolygonPoint = types
-  .model("PolygonPoint", {
+  .model('PolygonPoint', {
     id: types.optional(types.identifier, guidGenerator),
-
-    relativeX: types.optional(types.number, 0),
-    relativeY: types.optional(types.number, 0),
-
-    initX: types.optional(types.number, 0),
-    initY: types.optional(types.number, 0),
 
     x: types.number,
     y: types.number,
 
     index: types.number,
 
-    style: "circle",
-    size: "small",
+    style: 'circle',
+    size: 'small',
   })
   .volatile(() => ({
     selected: false,
+    relativeX: 0,
+    relativeY: 0,
+    initX: 0,
+    initY: 0,
   }))
   .views(self => ({
     get parent() {
@@ -50,7 +48,7 @@ const PolygonPoint = types
       self.initX = self.x;
       self.initY = self.y;
 
-      if (self.parent.coordstype === "perc") {
+      if (self.parent.coordstype === 'perc') {
         self.relativeX = self.x;
         self.relativeY = self.y;
       } else {
@@ -105,7 +103,7 @@ const PolygonPoint = types
       const stage = self.stage?.stageRef;
 
       if (!stage) return;
-      stage.container().style.cursor = "crosshair";
+      stage.container().style.cursor = 'crosshair';
 
       /**
        * Check if polygon > 2 points and closed point
@@ -114,7 +112,7 @@ const PolygonPoint = types
 
       const startPoint = ev.target;
 
-      if (self.style === "rectangle") {
+      if (self.style === 'rectangle') {
         startPoint.setX(startPoint.x() - startPoint.width() / 2);
         startPoint.setY(startPoint.y() - startPoint.height() / 2);
       }
@@ -141,9 +139,9 @@ const PolygonPoint = types
       const stage = self.stage?.stageRef;
 
       if (!stage) return;
-      stage.container().style.cursor = "default";
+      stage.container().style.cursor = 'default';
 
-      if (self.style === "rectangle") {
+      if (self.style === 'rectangle') {
         t.setX(t.x() + t.width() / 2);
         t.setY(t.y() + t.height() / 2);
       }
@@ -223,30 +221,30 @@ const PolygonPointView = observer(({ item, name }) => {
       const stage = item.stage?.stageRef;
 
       if (!stage) return;
-      stage.container().style.cursor = "crosshair";
+      stage.container().style.cursor = 'crosshair';
     },
 
     onMouseOut: () => {
       const stage = item.stage?.stageRef;
 
       if (!stage) return;
-      stage.container().style.cursor = "default";
+      stage.container().style.cursor = 'default';
     },
 
     onTransformEnd(e) {
       if (e.target !== e.currentTarget) return;
       const t = e.target;
 
-      t.setAttr("x", 0);
-      t.setAttr("y", 0);
-      t.setAttr("scaleX", 1);
-      t.setAttr("scaleY", 1);
+      t.setAttr('x', 0);
+      t.setAttr('y', 0);
+      t.setAttr('scaleX', 1);
+      t.setAttr('scaleY', 1);
     },
   };
 
-  const fill = item.selected ? "green" : "white";
+  const fill = item.selected ? 'green' : 'white';
 
-  if (item.style === "circle") {
+  if (item.style === 'circle') {
     return (
       <Circle
         key={name}
