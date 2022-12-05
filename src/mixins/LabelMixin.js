@@ -1,11 +1,11 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import InfoModal from "../components/Infomodal/Infomodal";
+import InfoModal from '../components/Infomodal/Infomodal';
 
 /**
  * Wrapper of Control item
  */
-const LabelMixin = types.model("LabelMixin").actions(self => ({
+const LabelMixin = types.model('LabelMixin').actions(self => ({
   /**
    * Usage check of selected controls before send annotation to server
    */

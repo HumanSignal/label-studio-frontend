@@ -1,5 +1,5 @@
-import { destroy } from "mobx-state-tree";
-import { guidGenerator } from "../utils/unique";
+import { destroy } from 'mobx-state-tree';
+import { guidGenerator } from '../utils/unique';
 
 /** @type {Map<any, ToolsManager>} */
 const INSTANCES = new Map();
@@ -77,13 +77,13 @@ class ToolsManager {
     // when one of the tool get selected you need to unselect all
     // other active tools
     Object.values(this.tools).forEach(t => {
-      if (typeof t.selected !== "undefined") t.setSelected(false);
+      if (typeof t.selected !== 'undefined') t.setSelected(false);
     });
 
     const stage = this.obj?.stageRef;
 
     if (stage) {
-      stage.container().style.cursor = "default";
+      stage.container().style.cursor = 'default';
     }
   }
 

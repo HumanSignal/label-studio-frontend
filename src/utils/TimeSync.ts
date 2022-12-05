@@ -1,5 +1,5 @@
-import { EventInvoker } from "./events";
-import { FF_DEV_2461, isFF } from "./feature-flags";
+import { EventInvoker } from './events';
+import { FF_DEV_2461, isFF } from './feature-flags';
 
 const isFFDev2461 = isFF(FF_DEV_2461);
 
@@ -12,7 +12,7 @@ interface TimeSyncHandler {
   speed: (speed: number) => void;
 }
 
-type TimeSyncEvent = "play" | "pause" | "seek" | "speed";
+type TimeSyncEvent = 'play' | 'pause' | 'seek' | 'speed';
 
 export class TimeSyncSubscriber {
   private name: string;
@@ -65,8 +65,8 @@ export class TimeSyncSubscriber {
   play() {
     this.playing = true;
 
-    this.whenUnlocked("play", () => {
-      this.events.invoke("play");
+    this.whenUnlocked('play', () => {
+      this.events.invoke('play');
       this.subscribers.forEach(sub => sub.play());
     });
   }
@@ -74,21 +74,21 @@ export class TimeSyncSubscriber {
   pause() {
     this.playing = false;
 
-    this.whenUnlocked("pause", () => {
-      this.events.invoke("pause");
+    this.whenUnlocked('pause', () => {
+      this.events.invoke('pause');
       this.subscribers.forEach(sub => sub.pause());
     });
   }
 
   seek(time: number) {
     if (!isFFDev2461 && time === this.currentTime){
-      this.releaseEvent("seek");
+      this.releaseEvent('seek');
       return;
     }
     this.currentTime = time;
 
-    this.whenUnlocked("seek", () => {
-      this.events.invoke("seek", time);
+    this.whenUnlocked('seek', () => {
+      this.events.invoke('seek', time);
       this.subscribers.forEach(sub => sub.seek(this.currentTime));
     });
   }
@@ -96,8 +96,8 @@ export class TimeSyncSubscriber {
   speed(speed: number) {
     this.currentSpeed = speed;
 
-    this.whenUnlocked("speed", () => {
-      this.events.invoke("speed", speed);
+    this.whenUnlocked('speed', () => {
+      this.events.invoke('speed', speed);
       this.subscribers.forEach(sub => sub.speed(this.currentSpeed));
     });
   }
@@ -135,8 +135,8 @@ export class TimeSync {
     return instance = new TimeSync();
   }
 
-  members = new Map<string, TimeSyncSubscriber>()
-  subscriptions = new Map<string, Set<string>>()
+  members = new Map<string, TimeSyncSubscriber>();
+  subscriptions = new Map<string, Set<string>>();
 
   private events = new EventInvoker();
   private eventsCache = new Map<string, TimeSyncHandler[]>();

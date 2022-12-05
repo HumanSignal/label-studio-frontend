@@ -1,9 +1,9 @@
-import { observer } from "mobx-react";
-import { FC, useCallback, useState } from "react";
-import { ObjectTag } from "../../../components/Tags/Object";
-import { Timeline } from "../../../components/Timeline/Timeline";
-import { Block } from "../../../utils/bem";
-import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
+import { observer } from 'mobx-react';
+import { FC, useCallback, useState } from 'react';
+import { ObjectTag } from '../../../components/Tags/Object';
+import { Timeline } from '../../../components/Timeline/Timeline';
+import { Block } from '../../../utils/bem';
+import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
 
 interface AudioNextProps {
   item: any;

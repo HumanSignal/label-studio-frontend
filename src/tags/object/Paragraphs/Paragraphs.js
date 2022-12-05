@@ -1,16 +1,16 @@
-import React, { Component } from "react";
-import { inject, observer } from "mobx-react";
+import React, { Component } from 'react';
+import { inject, observer } from 'mobx-react';
 
-import ObjectTag from "../../../components/Tags/Object";
-import { findNodeAt, matchesSelector, splitBoundaries } from "../../../utils/html";
-import { isSelectionContainsSpan } from "../../../utils/selection-tools";
-import styles from "./Paragraphs.module.scss";
-import { AuthorFilter } from "./AuthorFilter";
-import { Phrases } from "./Phrases";
-import { FF_DEV_2669, FF_DEV_2918, isFF } from "../../../utils/feature-flags";
+import ObjectTag from '../../../components/Tags/Object';
+import { findNodeAt, matchesSelector, splitBoundaries } from '../../../utils/html';
+import { isSelectionContainsSpan } from '../../../utils/selection-tools';
+import styles from './Paragraphs.module.scss';
+import { AuthorFilter } from './AuthorFilter';
+import { Phrases } from './Phrases';
+import { FF_DEV_2669, FF_DEV_2918, isFF } from '../../../utils/feature-flags';
 
 class HtxParagraphsView extends Component {
-  _regionSpanSelector = ".htx-highlight";
+  _regionSpanSelector = '.htx-highlight';
 
   constructor(props) {
     super(props);
@@ -47,7 +47,7 @@ class HtxParagraphsView extends Component {
     const names = [...this.myRef.current.getElementsByClassName(cls.name)];
 
     names.forEach(el => {
-      el.style.visibility = "hidden";
+      el.style.visibility = 'hidden';
     });
 
     let i;
@@ -57,7 +57,7 @@ class HtxParagraphsView extends Component {
 
     if (selection.isCollapsed) {
       names.forEach(el => {
-        el.style.visibility = "unset";
+        el.style.visibility = 'unset';
       });
       return [];
     }
@@ -65,7 +65,7 @@ class HtxParagraphsView extends Component {
     for (i = 0; i < selection.rangeCount; i++) {
       const r = selection.getRangeAt(i);
 
-      if (r.endContainer.nodeName === "DIV") {
+      if (r.endContainer.nodeName === 'DIV') {
         r.setEnd(r.startContainer, r.startContainer.length);
       }
 
@@ -168,12 +168,12 @@ class HtxParagraphsView extends Component {
           });
         }
       } catch (err) {
-        console.error("Can not get selection", err);
+        console.error('Can not get selection', err);
       }
     }
 
     names.forEach(el => {
-      el.style.visibility = "unset";
+      el.style.visibility = 'unset';
     });
 
     // BrowserRange#normalize() modifies the DOM structure and deselects the
@@ -194,7 +194,7 @@ class HtxParagraphsView extends Component {
     while (walker.nextNode()) {
       const node = walker.currentNode;
 
-      if (node.nodeName === "SPAN" && node.matches(this._regionSpanSelector) && isSelectionContainsSpan(node)) {
+      if (node.nodeName === 'SPAN' && node.matches(this._regionSpanSelector) && isSelectionContainsSpan(node)) {
         const region = this._determineRegion(node);
 
         regions.push(region);
@@ -212,7 +212,7 @@ class HtxParagraphsView extends Component {
 
   _determineRegion(element) {
     if (matchesSelector(element, this._regionSpanSelector)) {
-      const span = element.tagName === "SPAN" ? element : element.closest(this._regionSpanSelector);
+      const span = element.tagName === 'SPAN' ? element : element.closest(this._regionSpanSelector);
       const { item } = this.props;
 
       return item.regs.find(region => region.find(span));
@@ -273,8 +273,8 @@ class HtxParagraphsView extends Component {
         range.setStart(...findNodeAt(startNode, startOffset));
         range.setEnd(...findNodeAt(endNode, endOffset));
 
-        if (r.text && range.toString().replace(/\s+/g, "") !== r.text.replace(/\s+/g, "")) {
-          console.info("Restore broken position", i, range.toString(), "->", r.text, r);
+        if (r.text && range.toString().replace(/\s+/g, '') !== r.text.replace(/\s+/g, '')) {
+          console.info('Restore broken position', i, range.toString(), '->', r.text, r);
           if (
             // span breaks the mock-up by its end, so the start of next one is wrong
             item.regs.slice(0, i).some(other => r.start === other.end) &&
@@ -282,13 +282,13 @@ class HtxParagraphsView extends Component {
             r.start === r.end
           ) {
             // find region's text in the node (disregarding spaces)
-            const match = startNode.textContent.match(new RegExp(r.text.replace(/\s+/g, "\\s+")));
+            const match = startNode.textContent.match(new RegExp(r.text.replace(/\s+/g, '\\s+')));
 
-            if (!match) console.warn("Can't find the text", r);
+            if (!match) console.warn('Can\'t find the text', r);
             const { index = 0 } = match || {};
 
             if (r.endOffset - r.startOffset !== r.text.length)
-              console.warn("Text length differs from region length; possible regions overlap");
+              console.warn('Text length differs from region length; possible regions overlap');
             startOffset = index;
             endOffset = startOffset + r.text.length;
 
@@ -311,8 +311,8 @@ class HtxParagraphsView extends Component {
       }
     });
 
-    Array.from(this.myRef.current.getElementsByTagName("a")).forEach(a => {
-      a.addEventListener("click", function(ev) {
+    Array.from(this.myRef.current.getElementsByTagName('a')).forEach(a => {
+      a.addEventListener('click', function(ev) {
         ev.preventDefault();
         return false;
       });
@@ -335,7 +335,7 @@ class HtxParagraphsView extends Component {
     if (isFF(FF_DEV_2669) && !item._value) return null;
 
     return (
-      <ObjectTag item={item} className={"lsf-paragraphs"}>
+      <ObjectTag item={item} className={'lsf-paragraphs'}>
         {withAudio && (
           <audio
             controls={item.showplayer && !item.syncedAudio}
@@ -359,4 +359,4 @@ class HtxParagraphsView extends Component {
   }
 }
 
-export const HtxParagraphs = inject("store")(observer(HtxParagraphsView));
+export const HtxParagraphs = inject('store')(observer(HtxParagraphsView));

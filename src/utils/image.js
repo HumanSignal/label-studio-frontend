@@ -1,4 +1,4 @@
-import Konva from "konva";
+import Konva from 'konva';
 
 export function reverseCoordinates(r1, r2) {
   let r1X = r1.x,

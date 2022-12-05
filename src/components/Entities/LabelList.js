@@ -1,14 +1,14 @@
-import styles from "./Entities.module.scss";
-import { Tree } from "antd";
-import { LabelItem } from "./LabelItem";
-import { RegionItem } from "./RegionItem";
-import { observer } from "mobx-react";
-import { useState } from "react";
-import { LsChevron } from "../../assets/icons";
-import { FF_DEV_2755, isFF } from "../../utils/feature-flags";
+import styles from './Entities.module.scss';
+import { Tree } from 'antd';
+import { LabelItem } from './LabelItem';
+import { RegionItem } from './RegionItem';
+import { observer } from 'mobx-react';
+import { useState } from 'react';
+import { LsChevron } from '../../assets/icons';
+import { FF_DEV_2755, isFF } from '../../utils/feature-flags';
 
 const { localStorage } = window;
-const localStoreName = `collapsed-label-pos`;
+const localStoreName = 'collapsed-label-pos';
 
 export const LabelList = observer(({ regionStore }) => {
   const treeData = regionStore.asLabelsTree((item, idx, isLabel, children, onClick) => {
@@ -25,7 +25,7 @@ export const LabelList = observer(({ regionStore }) => {
   });
 
   if( isFF(FF_DEV_2755) ) {
-    const [collapsedPos, setCollapsedPos] = useState( localStorage.getItem( localStoreName )?.split?.(",")?.filter( pos => !!pos ) ?? [] );
+    const [collapsedPos, setCollapsedPos] = useState( localStorage.getItem( localStoreName )?.split?.(',')?.filter( pos => !!pos ) ?? [] );
   
     const updateLocalStorage = ( collapsedPos ) => {
       localStorage.setItem( localStoreName, collapsedPos );

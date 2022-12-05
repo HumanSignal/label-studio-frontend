@@ -1,49 +1,49 @@
 /**
 * Libraries
 */
-import React, { Component } from "react";
-import { Result, Spin } from "antd";
-import { getEnv, getRoot } from "mobx-state-tree";
-import { observer, Provider } from "mobx-react";
+import React, { Component } from 'react';
+import { Result, Spin } from 'antd';
+import { getEnv, getRoot } from 'mobx-state-tree';
+import { observer, Provider } from 'mobx-react';
 
 /**
  * Core
  */
-import Tree from "../../core/Tree";
+import Tree from '../../core/Tree';
 
 /**
  * Components
  */
-import { TopBar } from "../TopBar/TopBar";
-import Debug from "../Debug";
-import Segment from "../Segment/Segment";
-import Settings from "../Settings/Settings";
-import { RelationsOverlay } from "../RelationsOverlay/RelationsOverlay";
+import { TopBar } from '../TopBar/TopBar';
+import Debug from '../Debug';
+import Segment from '../Segment/Segment';
+import Settings from '../Settings/Settings';
+import { RelationsOverlay } from '../RelationsOverlay/RelationsOverlay';
 
 /**
  * Tags
  */
-import "../../tags/object";
-import "../../tags/control";
-import "../../tags/visual";
+import '../../tags/object';
+import '../../tags/control';
+import '../../tags/visual';
 
 /**
  * Styles
  */
-import { TreeValidation } from "../TreeValidation/TreeValidation";
-import { guidGenerator } from "../../utils/unique";
-import Grid from "./Grid";
-import { SidebarPage, SidebarTabs } from "../SidebarTabs/SidebarTabs";
-import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
-import { SidePanels } from "../SidePanels/SidePanels";
-import { Block, Elem } from "../../utils/bem";
+import { TreeValidation } from '../TreeValidation/TreeValidation';
+import { guidGenerator } from '../../utils/unique';
+import Grid from './Grid';
+import { SidebarPage, SidebarTabs } from '../SidebarTabs/SidebarTabs';
+import { AnnotationTab } from '../AnnotationTab/AnnotationTab';
+import { SidePanels } from '../SidePanels/SidePanels';
+import { Block, Elem } from '../../utils/bem';
 import './App.styl';
-import { Space } from "../../common/Space/Space";
-import { DynamicPreannotationsControl } from "../AnnotationTab/DynamicPreannotationsControl";
-import { isDefined } from "../../utils/utilities";
-import { FF_DEV_1170, isFF } from "../../utils/feature-flags";
-import { Annotation } from "./Annotation";
-import { Button } from "../../common/Button/Button";
+import { Space } from '../../common/Space/Space';
+import { DynamicPreannotationsControl } from '../AnnotationTab/DynamicPreannotationsControl';
+import { isDefined } from '../../utils/utilities';
+import { FF_DEV_1170, isFF } from '../../utils/feature-flags';
+import { Annotation } from './Annotation';
+import { Button } from '../../common/Button/Button';
 
 /**
  * App
@@ -69,11 +69,11 @@ class App extends Component {
     return (
       <Block
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          paddingBottom: "30vh",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          paddingBottom: '30vh',
         }}
       >
         <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />
@@ -240,7 +240,7 @@ class App extends Component {
 
                 {(viewingAll === false) && (
                   <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
-                    {store.hasInterface("side-column") && (
+                    {store.hasInterface('side-column') && (
                       <SidebarTabs active="annotation">
                         <SidebarPage name="annotation" title="Annotation">
                           <AnnotationTab store={store}/>
@@ -260,7 +260,7 @@ class App extends Component {
 
           </Block>
         </Provider>
-        {store.hasInterface("debug") && <Debug store={store} />}
+        {store.hasInterface('debug') && <Debug store={store} />}
       </Block>
     );
   }
