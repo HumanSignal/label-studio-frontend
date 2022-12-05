@@ -88,9 +88,9 @@ export class Regions {
     this.segmentDrawableTarget();
   }
 
-  clearSelectedSegments() {
+  clearSegments(selectedOnly = false) {
     this.regions = this.regions.filter(region => {
-      if (!region.isRegion && region.selected) {
+      if (!region.isRegion && (!selectedOnly || region.selected)) {
         region.destroy();
         return false;
       }
