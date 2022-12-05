@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react';
 import { FC, useEffect, useRef } from 'react';
+import { useHotkey } from '../../../hooks/useHotkey';
 import { useWaveform } from '../../../lib/AudioUltra/react';
 import { Controls } from '../../../components/Timeline/Controls';
 import { Region } from '../../../lib/AudioUltra/Regions/Region';
@@ -118,6 +119,14 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       };
     }
   }, [item.annotationStore.store.hydrated]);
+
+  useHotkey('region:delete', () => {
+    waveform.current?.regions.clearSelectedSegments();
+  });
+
+  useHotkey('region:delete-all', () => {
+    waveform.current?.regions.clearSelectedSegments();
+  });
 
   return (
     <div>
