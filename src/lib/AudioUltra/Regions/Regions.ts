@@ -66,14 +66,6 @@ export class Regions {
     container.addEventListener('click', this.handleClick);
   }
 
-  handleKeys = (e: KeyboardEvent) => {
-    if (this.isLocked) return;
-
-    if (e.key === 'Backspace' || e.key === 'Delete') {
-      this.clearSelectedSegments();
-    }
-  };
-
   handleDraw = () => {
     if (!this.waveform.loaded) return;
     this.renderAll();
