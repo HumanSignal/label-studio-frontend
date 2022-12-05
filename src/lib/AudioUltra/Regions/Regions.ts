@@ -88,6 +88,16 @@ export class Regions {
     this.segmentDrawableTarget();
   }
 
+  clearSegments(selectedOnly = false) {
+    this.regions = this.regions.filter(region => {
+      if (!region.isRegion && (!selectedOnly || region.selected)) {
+        region.destroy();
+        return false;
+      }
+      return true;
+    });
+  }
+
   addRegion(options: RegionOptions, render = true) {
     let region: Region | Segment;
 

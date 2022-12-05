@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react';
 import { FC, useEffect, useRef } from 'react';
+import { Hotkey } from '../../../core/Hotkey';
 import { useWaveform } from '../../../lib/AudioUltra/react';
 import { Controls } from '../../../components/Timeline/Controls';
 import { Region } from '../../../lib/AudioUltra/Regions/Region';
@@ -54,6 +55,8 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
 
   useEffect(() => {
     if (item.annotationStore.store.hydrated) {
+      const hotkeys = Hotkey('Audio', 'Audio Segmentation');
+
       waveform.current?.load();
 
       const updateBeforeRegionDraw = (regions: Regions) => {
@@ -109,7 +112,16 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       waveform.current?.on('regionCreated', createRegion);
       waveform.current?.on('regionUpdatedEnd', updateRegion);
 
+      hotkeys.addNamed('region:delete', () => {
+        waveform.current?.regions.clearSegments(false);
+      });
+
+      hotkeys.addNamed('region:delete-all', () => {
+        waveform.current?.regions.clearSegments();
+      });
+
       return () => {
+        hotkeys.unbindAll();
         waveform.current?.off('beforeRegionsDraw', updateBeforeRegionDraw);
         waveform.current?.off('afterRegionsDraw', updateAfterRegionDraw);
         waveform.current?.off('regionSelected', selectRegion);
