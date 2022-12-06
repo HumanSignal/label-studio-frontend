@@ -56,9 +56,16 @@ const VideoRegionsPure = ({
   const workinAreaCoordinates = useMemo(() => {
     const resultWidth = videoDimensions.width * zoom;
     const resultHeight = videoDimensions.height * zoom;
-
-    const offsetLeft = ((width - resultWidth) / 2) + pan.x;
-    const offsetTop = ((height - resultHeight) / 2) + pan.y;
+    const overshotX = Math.abs(pan.x) >= Math.abs((width - resultWidth) / 2);
+    const overshotY = Math.abs(pan.y) >= Math.abs((height - resultHeight) / 2);
+    const panXDirection = pan.x > 0 ? 1 : -1;
+    const panYDirection = pan.y > 0 ? 1 : -1;
+    const overshotXAmmount = (Math.abs(pan.x) - Math.abs((width - resultWidth) / 2)) * panXDirection;
+    const overshotYAmmount = (Math.abs(pan.y) - Math.abs((height - resultHeight) / 2)) * panYDirection;
+    const edgeZoomOffestX = overshotX ? overshotXAmmount : 0;
+    const edgeZoomOffestY = overshotY ? overshotYAmmount : 0;
+    const offsetLeft = ((width - resultWidth) / 2) + pan.x - edgeZoomOffestX;
+    const offsetTop = ((height - resultHeight) / 2) + pan.y - edgeZoomOffestY;
 
     return {
       width: resultWidth,
@@ -127,6 +134,7 @@ const VideoRegionsPure = ({
 
   const limitCoordinates = ({ x, y }) => {
     if (allowRegionsOutsideWorkingArea) return { x, y };
+
     return {
       x: clamp(x, 0, workinAreaCoordinates.realWidth),
       y: clamp(y, 0, workinAreaCoordinates.realHeight),
@@ -137,6 +145,7 @@ const VideoRegionsPure = ({
     if (e.target !== stageRef.current || !item.annotation?.editable) return;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
+
     const isInBounds = inBounds(x, y);
 
     if (isInBounds) {
