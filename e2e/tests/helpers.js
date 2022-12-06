@@ -509,12 +509,11 @@ const getRegionAbsoultePosition = async (shapeId) => {
 
   if (!region) return null;
 
-  const stageBBox = stage.content.getBoundingClientRect();
   const regionPosition = region.getAbsolutePosition();
 
   return {
-    x: regionPosition.x + stageBBox.left,
-    y: regionPosition.y + stageBBox.top,
+    x: regionPosition.x,
+    y: regionPosition.y,
     width: region.width(),
     height: region.height(),
   };

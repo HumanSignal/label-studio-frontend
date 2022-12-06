@@ -1,21 +1,22 @@
-Feature('Readonly Annotation');
+Feature('Readonly Results');
 
 const imageExamples = new DataTable(['example', 'regionName']);
 
 imageExamples.add([require('../../../examples/classification'), 'Walk']);
 
-Data(imageExamples).Scenario('Classification Readonly Annotations', async ({
+Data(imageExamples).Scenario('Classification Readonly Results', async ({
   I,
   current,
   LabelStudio,
 }) => {
   I.amOnPage('/');
-  const { config, result, data } = current.example;
+  const { config, result: r, data } = current.example;
+
+  const result = r.map(r => ({ ...r, readonly: true }));
 
   const params = {
     annotations: [{
       id: 'test',
-      readonly: true,
       result,
     }],
     config,

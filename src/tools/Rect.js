@@ -56,7 +56,7 @@ const _BaseNPointTool = types
         return !self.current() && Super.isIncorrectLabel();
       },
       canStart() {
-        return self.current() === null && !self.annotaion.isReadOnly();
+        return self.current() === null && !self.annotation.isReadOnly();
       },
 
       current() {

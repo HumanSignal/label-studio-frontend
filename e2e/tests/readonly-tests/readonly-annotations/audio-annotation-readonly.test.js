@@ -1,10 +1,10 @@
-Feature('Readonly');
+Feature('Readonly Annotation');
 
 const imageExamples = new DataTable(['example', 'regionName']);
 
 imageExamples.add([require('../../../examples/audio-regions'), 'Beat']);
 
-Data(imageExamples).Scenario('Readonly Audio Annotations', async ({
+Data(imageExamples).Scenario('Audio Readonly Annotations', async ({
   I,
   current,
   LabelStudio,

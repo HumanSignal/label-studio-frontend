@@ -1,10 +1,11 @@
 const { I } = inject();
 
+const assert = require('assert');
 const Helpers = require('../tests/helpers');
 
 module.exports = {
   _stageSelector: '.konvajs-content',
-  _stageBBox: { x: 0, y: 0, width: 0, height: 0 },
+  _stageBBox: null,
 
   async grabStageBBox() {
     const bbox = await I.grabElementBoundingRect(this._stageSelector);
@@ -13,10 +14,30 @@ module.exports = {
   },
 
   async lookForStage() {
-    I.scrollPageToTop();
-    const bbox = await I.grabElementBoundingRect(this._stageSelector);
+    await I.scrollPageToTop();
 
-    this._stageBBox = bbox;
+    this._stageBBox = await this.grabStageBBox();
+    console.log('Stage bbox:', this._stageBBox);
+  },
+
+  stageBBox() {
+    if (!this._stageBBox) console.trace('Stage bbox wasn\'t grabbed');
+    return this._stageBBox ?? {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+    };
+  },
+
+  stageX() {
+    if (!this._stageBBox) console.trace('Stage bbox wasn\'t grabbed');
+    return this._stageBBox?.x ?? 0;
+  },
+
+  stageY() {
+    if (!this._stageBBox) console.trace('Stage bbox wasn\'t grabbed');
+    return this._stageBBox?.y ?? 0;
   },
 
   waitForImage() {
@@ -124,28 +145,28 @@ module.exports = {
   /**
    * Returns the bounding box of the first found shape
    * The coordinates are relative to the window
-   * @returns {{x: number, y: number, width: number, height: number}}
+   * @returns {Promise<{x: number, y: number, width: number, height: number}>}
    */
-  async getRegionAbsoultePosition(regionId) {
-    const shapeId = await I.executeScript((regionId) => {
+  async getRegionAbsoultePosition(regionId, includeStage = true) {
+    const [shapeId, coords] = await I.executeScript((regionId) => {
       const annotation = Htx.annotationStore.selected;
       const region = annotation.regions.find((r) => r.cleanId === regionId);
 
-      return region.shapeRef._id;
+      return [region.shapeRef._id, region.bboxCoords];
     }, regionId);
 
-    const position = await I.executeScript(Helpers.getRegionAbsoultePosition, shapeId);
+    const position = coords ? {
+      x: coords.left + ((coords.right - coords.left) / 2),
+      y: coords.top + ((coords.bottom - coords.top) / 2),
+      width: coords.right - coords.left,
+      height: coords.bottom - coords.top,
+    } : await I.executeScript(Helpers.getRegionAbsoultePosition, shapeId);
 
-    return position;
-  },
-
-  async getRegionCenterPosition(shape) {
-    const position = await this.getRegionAbsoultePosition(shape);
-
-    return {
-      x: position.x + position.width / 2,
-      y: position.y + position.height / 2,
-    };
+    return includeStage ? {
+      ...position,
+      x: position.x + this.stageX(),
+      y: position.y + this.stageY(),
+    } : position;
   },
 
   /**
@@ -160,9 +181,9 @@ module.exports = {
    */
   drawByDrag(x, y, shiftX, shiftY) {
     I.scrollPageToTop();
-    I.moveMouse(this._stageBBox.x + x, this._stageBBox.y + y);
+    I.moveMouse(this.stageBBox().x + x, this.stageBBox().y + y);
     I.pressMouseDown();
-    I.moveMouse(this._stageBBox.x + x + shiftX, this._stageBBox.y + y + shiftY, 3);
+    I.moveMouse(this.stageBBox().x + x + shiftX, this.stageBBox().y + y + shiftY, 3);
     I.pressMouseUp();
   },
   /**
@@ -180,12 +201,12 @@ module.exports = {
 
     if (prevPoints.length) {
       for (const point of prevPoints) {
-        I.clickAt(this._stageBBox.x + point[0], this._stageBBox.y + point[1]);
+        I.clickAt(this.stageBBox().x + point[0], this.stageBBox().y + point[1]);
       }
       I.wait(0.5); // wait before last click to fix polygons creation
     }
 
-    I.clickAt(this._stageBBox.x + lastPoint[0], this._stageBBox.y + lastPoint[1]);
+    I.clickAt(this.stageBBox().x + lastPoint[0], this.stageBBox().y + lastPoint[1]);
   },
   /**
    * Mousedown - mousemove - mouseup drawing through the list of points on the ImageView. Works in couple of lookForStage.
@@ -204,28 +225,43 @@ module.exports = {
     }[mode];
     const startPoint = points[0];
 
-    I.moveMouse(this._stageBBox.x + startPoint[0], this._stageBBox.y + startPoint[1]);
+    I.moveMouse(this.stageBBox().x + startPoint[0], this.stageBBox().y + startPoint[1]);
     I.pressMouseDown();
     for (let i = 1; i < points.length; i++) {
       const prevPoint = points[i - 1];
       const curPoint = points[i];
 
-      I.moveMouse(this._stageBBox.x + curPoint[0], this._stageBBox.y + curPoint[1], calcSteps(prevPoint, curPoint));
+      I.moveMouse(this.stageBBox().x + curPoint[0], this.stageBBox().y + curPoint[1], calcSteps(prevPoint, curPoint));
     }
     I.pressMouseUp();
   },
   clickAt(x, y) {
     I.scrollPageToTop();
-    I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
+    I.clickAt(this.stageBBox().x + x, this.stageBBox().y + y);
     I.wait(1); // We gotta  wait here because clicks on the canvas are not processed immediately
   },
   dblClickAt(x, y) {
     I.scrollPageToTop();
-    I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
-    I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
+    I.clickAt(this.stageBBox().x + x, this.stageBBox().y + y);
+    I.clickAt(this.stageBBox().x + x, this.stageBBox().y + y);
   },
   drawByClick(x, y) {
     I.scrollPageToTop();
     this.clickAt(x, y);
+  },
+  async dragRegion(regions, findIndex, shiftX = 50, shiftY = 50) {
+    const region = regions.find(findIndex);
+
+    assert.notEqual(region, undefined, 'Region not found');
+
+    const position = await this.getRegionAbsoultePosition(region.id);
+
+    console.log(position);
+
+    I.say('Drag region by ' + shiftX + ' ' + shiftY);
+    await I.dragAndDropMouse(position, {
+      x: position.x + shiftX,
+      y: position.y + shiftY,
+    });
   },
 };

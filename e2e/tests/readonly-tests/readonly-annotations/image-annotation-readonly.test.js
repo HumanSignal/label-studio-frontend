@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-Feature('Readonly');
+Feature('Readonly Annotation');
 
 const imageExamples = new DataTable(['example', 'regionName']);
 
@@ -9,7 +9,7 @@ imageExamples.add([require('../../../examples/image-ellipses'), 'Hello']);
 imageExamples.add([require('../../../examples/image-keypoints'), 'Hello']);
 imageExamples.add([require('../../../examples/image-polygons'), 'Hello']);
 
-Data(imageExamples).Scenario('Readonly Image Annotations', async ({
+Data(imageExamples).Scenario('Image Readonly Annotations', async ({
   I,
   current,
   LabelStudio,
@@ -35,6 +35,8 @@ Data(imageExamples).Scenario('Readonly Image Annotations', async ({
   LabelStudio.init(params);
 
   await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
+
   I.say(`Running against ${current.example.title}`);
   I.say('Check region is selectable');
   AtSidebar.seeRegions(regions.length);
@@ -45,28 +47,18 @@ Data(imageExamples).Scenario('Readonly Image Annotations', async ({
 
   assert.equal(isTransformerExist, false);
 
-  const regionId = regions[0].id;
-
-  I.say(`Looking for a region #${regionId}`);
-  const regionCenter = await AtImageView.getRegionCenterPosition(regionId);
-
-  I.say('Checking region is not changed by dragging');
-  await I.dragAndDropMouse(regionCenter, {
-    x: regionCenter.x + 50,
-    y: regionCenter.y + 50,
-  });
-  I.say('Results are equal after modification attempt');
-  console.log({
-    regions,
-    lsf: await LabelStudio.serialize(),
-  });
-  AtSidebar.seeRegions(regions.length);
-  await LabelStudio.resultsNotChanged(result, 1);
-
   I.pressKey('Delete');
   I.say('Results are equal after deletion attempt');
   await LabelStudio.resultsNotChanged(result, 1);
 
+  I.say('Attempting to move a region');
+  AtImageView.dragRegion(regions, (r, i) => i === 0);
+
+  I.say('Results are equal after modification attempt');
+  AtSidebar.seeRegions(regions.length);
+  await LabelStudio.resultsNotChanged(result, 1);
+
+  I.press('u');
   I.say('Can\'t draw new shape');
   I.pressKey('1');
 
@@ -75,15 +67,16 @@ Data(imageExamples).Scenario('Readonly Image Annotations', async ({
       AtImageView.clickAt(100, 100);
       break;
     case 'Polygons on Image':
-      AtImageView.drawThroughPoints([
-        [100, 100],
-        [150, 150],
-        [150, 200],
-        [100, 100],
+      AtImageView.drawByClickingPoints([
+        [65, 135],
+        [150, 55],
+        [240, 90],
+        [125, 265],
+        [65, 135],
       ]);
       break;
     default:
-      AtImageView.drawByDrag(100, 100, 150, 150);
+      AtImageView.drawByDrag(100, 100, 200, 200);
       break;
   }
 

@@ -39,4 +39,10 @@ module.exports = {
 
     Asserts.deepEqualWithTolerance(result, serialized, fractionDigits);
   },
+
+  async resultsChanged(result, fractionDigits = 2) {
+    const serialized = (await this.serialize());
+
+    Asserts.notDeepEqualWithTolerance(result, serialized, fractionDigits);
+  },
 };

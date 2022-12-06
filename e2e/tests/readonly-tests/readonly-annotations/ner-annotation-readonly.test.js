@@ -1,10 +1,10 @@
-Feature('Readonly');
+Feature('Readonly Annotation');
 
 const imageExamples = new DataTable(['example', 'regionName']);
 
 imageExamples.add([require('../../../examples/text-html'), 'Date']);
 
-Data(imageExamples).Scenario('Readonly NER Annotations', async ({
+Data(imageExamples).Scenario('NER Readonly Annotations', async ({
   I,
   current,
   LabelStudio,

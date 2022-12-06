@@ -1,10 +1,10 @@
-Feature('Readonly');
+Feature('Readonly Annotation');
 
 const imageExamples = new DataTable(['example', 'regionName']);
 
 imageExamples.add([require('../../../examples/timeseries-url-indexed'), 'Walk']);
 
-Data(imageExamples).Scenario('Readonly Timeseries Annotations', async ({
+Data(imageExamples).Scenario('Timeseries Readonly Annotations', async ({
   I,
   current,
   LabelStudio,
