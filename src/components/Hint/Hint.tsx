@@ -1,7 +1,7 @@
-import { CSSProperties, FC } from "react";
-import { Block } from "../../utils/bem";
+import { CSSProperties, FC } from 'react';
+import { Block } from '../../utils/bem';
 
-import "./Hint.styl";
+import './Hint.styl';
 
 interface HintProps {
   copy?: string;

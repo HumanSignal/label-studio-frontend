@@ -1,14 +1,16 @@
-import React from "react";
-import { types } from "mobx-state-tree";
-import { observer } from "mobx-react";
-import { Typography } from "antd";
+import React from 'react';
+import { types } from 'mobx-state-tree';
+import { observer } from 'mobx-react';
+import { Typography } from 'antd';
 
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
-import Registry from "../../core/Registry";
-import Tree from "../../core/Tree";
+import ProcessAttrsMixin from '../../mixins/ProcessAttrs';
+import Registry from '../../core/Registry';
+import Tree from '../../core/Tree';
+import { guidGenerator } from '../../utils/unique';
+import { clamp } from '../../utils/utilities';
 
 /**
- * Use the Header tag to show a header on the labeling interface.
+ * The `Header` tag is used to show a header on the labeling interface.
  * @example
  * <!-- Display a header on the labeling interface based on a field in the data -->
  * <View>
@@ -28,22 +30,23 @@ import Tree from "../../core/Tree";
  * @param {boolean} [underline=false] - Whether to underline the header
  */
 const Model = types.model({
-  type: "header",
-  size: types.optional(types.string, "4"),
+  id: types.optional(types.identifier, guidGenerator),
+  type: 'header',
+  size: types.optional(types.string, '4'),
   style: types.maybeNull(types.string),
-  _value: types.optional(types.string, ""),
-  value: types.optional(types.string, ""),
+  _value: types.optional(types.string, ''),
+  value: types.optional(types.string, ''),
   underline: types.optional(types.boolean, false),
 });
 
-const HeaderModel = types.compose("HeaderModel", Model, ProcessAttrsMixin);
+const HeaderModel = types.compose('HeaderModel', Model, ProcessAttrsMixin);
 
 const HtxHeader = observer(({ item }) => {
-  const size = parseInt(item.size);
-  const style = item.style ? Tree.cssConverter(item.style) : { margin: "10px 0" };
+  const size = clamp(parseInt(item.size), 1, 5);
+  const style = item.style ? Tree.cssConverter(item.style) : { margin: '10px 0' };
 
   if (!style.fontSize && size > 4) {
-    style.fontSize = size === 5 ? "1.2em" : "1.1em";
+    style.fontSize = size === 5 ? '1.2em' : '1.1em';
   }
 
   return (
@@ -53,6 +56,6 @@ const HtxHeader = observer(({ item }) => {
   );
 });
 
-Registry.addTag("header", HeaderModel, HtxHeader);
+Registry.addTag('header', HeaderModel, HtxHeader);
 
 export { HtxHeader, HeaderModel };

@@ -1,5 +1,5 @@
-import React, { RefObject, useCallback, useEffect, useRef, useState } from "react";
-import { VariableSizeList } from "react-window";
+import React, { RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { VariableSizeList } from 'react-window';
 
 type ExtendedData = Readonly<{
   id: string,
@@ -56,7 +56,7 @@ const countChildNodes = (item: RowItem[]) => {
   return counter;
 };
 
-const blankItem = (path: string[], depth: number): RowItem => ({ label: "", depth, path, isOpen: true });
+const blankItem = (path: string[], depth: number): RowItem => ({ label: '', depth, path, isOpen: true });
 let heightAccumulator: { [key: string]: number } = {};
 
 const TreeStructure = ({
@@ -69,8 +69,10 @@ const TreeStructure = ({
   maxWidth,
   transformationCallback,
   defaultExpanded,
+  isEditable,
 }: {
   items: any[],
+  isEditable?: boolean,
   rowComponent: React.FC<any>,
   flatten: boolean,
   rowHeight: number,
@@ -90,7 +92,7 @@ const TreeStructure = ({
   const containerRef = useRef<RefObject<HTMLDivElement> | any>();
   const scrollableElement = containerRef.current?.firstChild;
   
-  if (scrollableElement) scrollableElement.style.overflowX = "hidden";
+  if (scrollableElement) scrollableElement.style.overflowX = 'hidden';
 
   const rowHeightCalc = (index: number): number => {
     return heightAccumulator[`${index}`] || rowHeight;
@@ -130,12 +132,13 @@ const TreeStructure = ({
   };
   
   const addInside = (id?: string) => {
+    if (!isEditable) return;
+
     if (id) {
       setData(recursiveTreeWalker({ items, addInsideId: id }));
     }
     else setData(recursiveTreeWalker({ items }));
     updateHeight();
-
   };
 
   const Row = ({
@@ -183,7 +186,7 @@ const TreeStructure = ({
     }, [width]);
 
     return (
-      <RowComponent {...{ item, style, dimensionCallback, maxWidth }} />
+      <RowComponent {...{ isEditable, item, style, dimensionCallback, maxWidth }} />
     );
   };
 

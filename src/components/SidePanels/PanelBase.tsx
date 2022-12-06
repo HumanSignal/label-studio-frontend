@@ -1,14 +1,14 @@
-import { FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Block, Elem } from "../../utils/bem";
+import { FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Block, Elem } from '../../utils/bem';
 import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand } from '../../assets/icons';
 
-import "./PanelBase.styl";
-import { PanelType } from "./SidePanels";
-import { useDrag } from "../../hooks/useDrag";
-import { clamp, isDefined } from "../../utils/utilities";
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from "./constants";
+import './PanelBase.styl';
+import { PanelType } from './SidePanels';
+import { useDrag } from '../../hooks/useDrag';
+import { clamp, isDefined } from '../../utils/utilities';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
 
-export type PanelBaseExclusiveProps = "name" | "title"
+export type PanelBaseExclusiveProps = 'name' | 'title'
 
 type ResizeHandler = (name: PanelType, width: number, height: number, top: number, left: number) => void;
 
@@ -19,14 +19,14 @@ type PositonChangeHandler = (name: PanelType, top: number, left: number, detache
 type VisibilityChangeHandler = (name: PanelType, visible: boolean) => void;
 
 const resizers = [
-  "top-left",
-  "top-right",
-  "bottom-left",
-  "bottom-right",
-  "top",
-  "bottom",
-  "right",
-  "left",
+  'top-left',
+  'top-right',
+  'bottom-left',
+  'bottom-right',
+  'top',
+  'bottom',
+  'right',
+  'left',
 ];
 
 interface PanelBaseProps {
@@ -42,7 +42,7 @@ interface PanelBaseProps {
   maxWidth: number;
   height: number;
   visible: boolean;
-  alignment: "left" | "right";
+  alignment: 'left' | 'right';
   currentEntity: any;
   detached: boolean;
   expanded: boolean;
@@ -113,9 +113,9 @@ export const PanelBase: FC<PanelBaseProps> = ({
   const style = useMemo(() => {
     const dynamicStyle = visible ? {
       height: detached ? height ?? '100%' : '100%',
-      width: expanded ? "100%" : width ?? DEFAULT_PANEL_WIDTH,
+      width: expanded ? '100%' : width ?? DEFAULT_PANEL_WIDTH,
     } : {
-      width: detached ? width ?? DEFAULT_PANEL_WIDTH : "100%",
+      width: detached ? width ?? DEFAULT_PANEL_WIDTH : '100%',
       height: detached ? PANEL_HEADER_HEIGHT_PADDED : undefined, // header height + 1px margin top and bottom,
     };
 
@@ -137,7 +137,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       detached: locked ? false : detached,
       resizing: isDefined(resizing),
       hidden: !visible,
-      alignment: detached ? "left" : alignment ?? "left",
+      alignment: detached ? 'left' : alignment ?? 'left',
       disabled: locked,
     };
   }, [alignment, visible, detached, resizing, locked]);
@@ -151,7 +151,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
   }, [detached, visible, alignment]);
 
   const tooltipText = useMemo(() => {
-    return `${visible ? "Collapse" : "Expand"} ${tooltip}`;
+    return `${visible ? 'Collapse' : 'Expand'} ${tooltip}`;
   }, [visible, tooltip]);
 
   useEffect(() => {
@@ -173,7 +173,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
 
     onMouseDown(e) {
       const el = e.target as HTMLElement;
-      const toggleClassName = "[class*=__toggle]";
+      const toggleClassName = '[class*=__toggle]';
 
       if (el.matches(toggleClassName) || el.closest(toggleClassName)) {
         return;
@@ -231,14 +231,14 @@ export const PanelBase: FC<PanelBaseProps> = ({
       const type = target.dataset.resize;
       const shift = (() => {
         switch(type) {
-          case "top-left":
-            return "top-left";
-          case "top":
-          case "top-right":
-            return "top";
-          case "left":
-          case "bottom-left":
-            return "left";
+          case 'top-left':
+            return 'top-left';
+          case 'top':
+          case 'top-right':
+            return 'top';
+          case 'left':
+          case 'bottom-left':
+            return 'left';
         }
       })();
 
@@ -282,8 +282,8 @@ export const PanelBase: FC<PanelBaseProps> = ({
         const wMod = resizeDirections.x ? e.pageX - sX : 0;
         const hMod = resizeDirections.y ? e.pageY - sY : 0;
 
-        const shiftLeft = isDefined(shift) && ["left", "top-left"].includes(shift);
-        const shiftTop = isDefined(shift) && ["top", "top-left"].includes(shift);
+        const shiftLeft = isDefined(shift) && ['left', 'top-left'].includes(shift);
+        const shiftTop = isDefined(shift) && ['top', 'top-left'].includes(shift);
 
         const width = clamp((shiftLeft ? w - wMod : w + wMod), DEFAULT_PANEL_WIDTH, maxWidth);
         const height = clamp((shiftTop ? h - hMod : h + hMod), DEFAULT_PANEL_HEIGHT, t + h);

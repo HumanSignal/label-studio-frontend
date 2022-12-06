@@ -1,14 +1,14 @@
-import { FC, MutableRefObject, RefObject, useCallback, useEffect, useRef } from "react";
-import { debounce } from "lodash";
-import { cn } from "../../utils/bem";
-import { isMacOS } from "../../utils/utilities";
+import { FC, MutableRefObject, RefObject, useCallback, useEffect, useRef } from 'react';
+import { debounce } from 'lodash';
+import { cn } from '../../utils/bem';
+import { isMacOS } from '../../utils/utilities';
 
-import "./TextArea.styl";
-import mergeRefs from "../Utils/mergeRefs";
+import './TextArea.styl';
+import mergeRefs from '../Utils/mergeRefs';
 
 export type TextAreaProps = {
   value?: string|null,
-  onSubmit?: () => void|Promise<void>,
+  onSubmit?: (value: string) => void|Promise<void>,
   onChange?: (value: string) => void,
   onInput?: (value: string) => void,
   onFocus?: (e: FocusEvent) => void,
@@ -44,7 +44,7 @@ export const TextArea: FC<TextAreaProps> = ({
   const classList = [
     rootClass.mod({ inline: inlineAction, autosize: autoSize }),
     className,
-  ].join(" ").trim();
+  ].join(' ').trim();
 
   const autoGrowRef = useRef({
     rows,
@@ -63,7 +63,7 @@ export const TextArea: FC<TextAreaProps> = ({
       textarea.style.height = 'auto';
       const currentValue = textAreaRef.current.value;
 
-      textAreaRef.current.value = "";
+      textAreaRef.current.value = '';
       autoGrowRef.current.lineHeight = (textAreaRef.current.scrollHeight / autoGrowRef.current.rows);
       autoGrowRef.current.maxHeight = (autoGrowRef.current.lineHeight * autoGrowRef.current.maxRows);
 
@@ -94,7 +94,7 @@ export const TextArea: FC<TextAreaProps> = ({
 
   if (actionRef) {
     actionRef.current = {
-      update: (text = "") => {
+      update: (text = '') => {
         if (!textAreaRef.current) return;
 
         textAreaRef.current.value = text;
@@ -128,7 +128,7 @@ export const TextArea: FC<TextAreaProps> = ({
 
   useEffect(() => {
     if (textAreaRef.current) {
-      textAreaRef.current.value = value || "";
+      textAreaRef.current.value = value || '';
       resizeTextArea();
     }
   }, [value]);
@@ -138,17 +138,18 @@ export const TextArea: FC<TextAreaProps> = ({
 
     const listener = (event: KeyboardEvent) => {
       if (!textAreaRef.current) return;
-      if (event.key === "Enter" && (event.ctrlKey || isMacOS() && event.metaKey)) {
-        onSubmit();
+      if (event.key === 'Enter' && (event.ctrlKey || isMacOS() && event.metaKey)) {
+        onSubmit(textAreaRef.current.value);
       }
     };
 
+
     if (textAreaRef.current) {
-      textAreaRef.current.addEventListener("keydown", listener);
+      textAreaRef.current.addEventListener('keydown', listener);
     }
     return () => {
       if (textAreaRef.current) {
-        textAreaRef.current.removeEventListener("keydown", listener);
+        textAreaRef.current.removeEventListener('keydown', listener);
       }
     };
   }, [onSubmit]);

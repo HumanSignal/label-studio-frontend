@@ -1,11 +1,11 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
-import { VideoModel } from "../tags/object/Video";
-import { guidGenerator } from "../core/Helpers";
-import WithStatesMixin from "../mixins/WithStates";
-import { AreaMixin } from "../mixins/AreaMixin";
+import NormalizationMixin from '../mixins/Normalization';
+import RegionsMixin from '../mixins/Regions';
+import { VideoModel } from '../tags/object/Video';
+import { guidGenerator } from '../core/Helpers';
+import WithStatesMixin from '../mixins/WithStates';
+import { AreaMixin } from '../mixins/AreaMixin';
 
 export const interpolateProp = (start, end, frame, prop) => {
   // @todo edge cases
@@ -22,7 +22,7 @@ export const onlyProps = (props, obj) => {
 };
 
 const Model = types
-  .model("VideoRegionModel", {
+  .model('VideoRegionModel', {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     object: types.late(() => types.reference(VideoModel)),
@@ -45,7 +45,7 @@ const Model = types
     },
 
     getShape() {
-      throw new Error("Method getShape be implemented on a shape level");
+      throw new Error('Method getShape be implemented on a shape level');
     },
 
     getVisibility() {
@@ -54,7 +54,7 @@ const Model = types
   }))
   .actions(self => ({
     updateShape() {
-      throw new Error("Method updateShape must be implemented on a shape level");
+      throw new Error('Method updateShape must be implemented on a shape level');
     },
 
     serialize() {
@@ -143,7 +143,7 @@ const Model = types
   }));
 
 const VideoRegion = types.compose(
-  "VideoRegionModel",
+  'VideoRegionModel',
   WithStatesMixin,
   RegionsMixin,
   AreaMixin,

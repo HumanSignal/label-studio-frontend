@@ -1,11 +1,12 @@
-import React from "react";
-import { types } from "mobx-state-tree";
-import { observer } from "mobx-react";
+import React from 'react';
+import { types } from 'mobx-state-tree';
+import { observer } from 'mobx-react';
 
-import Registry from "../../core/Registry";
+import Registry from '../../core/Registry';
+import { guidGenerator } from '../../utils/unique';
 
 /**
- * Use the Style tag in combination with the View tag to apply custom CSS properties to the labeling interface. See the [CSS Reference](https://www.w3schools.com/cssref/default.asp) on the W3Schools page for a full list of available properties that you can reference. You can also adjust default Label Studio CSS classes. Use the browser developer tools to inspect the element on the UI and locate the class name, then specify that class name in the Style tag.
+ * The `Style` tag is used in combination with the View tag to apply custom CSS properties to the labeling interface. See the [CSS Reference](https://www.w3schools.com/cssref/default.asp) on the W3Schools page for a full list of available properties that you can reference. You can also adjust default Label Studio CSS classes. Use the browser developer tools to inspect the element on the UI and locate the class name, then specify that class name in the `Style` tag.
  *  
  * @example
  * <!-- Use CSS styling to make a header appear with a red background on the labeling interface -->
@@ -61,15 +62,16 @@ import Registry from "../../core/Registry";
  * @param {string} [CSS property]  - CSS property and value to apply.
  */
 const Model = types.model({
-  type: "style",
-  value: types.optional(types.string, ""),
+  id: types.optional(types.identifier, guidGenerator),
+  type: 'style',
+  value: types.optional(types.string, ''),
 });
-const StyleModel = types.compose("StyleModel", Model);
+const StyleModel = types.compose('StyleModel', Model);
 
 const HtxStyle = observer(({ item }) => {
   return <style dangerouslySetInnerHTML={{ __html: item.value }}></style>;
 });
 
-Registry.addTag("style", StyleModel, HtxStyle);
+Registry.addTag('style', StyleModel, HtxStyle);
 
 export { HtxStyle, StyleModel };

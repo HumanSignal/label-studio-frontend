@@ -1,31 +1,31 @@
-import React, { Component, createRef, forwardRef, Fragment, memo, useEffect, useRef, useState } from "react";
-import { Group, Layer, Line, Rect, Stage } from "react-konva";
-import { observer } from "mobx-react";
-import { getRoot, isAlive } from "mobx-state-tree";
+import React, { Component, createRef, forwardRef, Fragment, memo, useEffect, useRef, useState } from 'react';
+import { Group, Layer, Line, Rect, Stage } from 'react-konva';
+import { observer } from 'mobx-react';
+import { getRoot, isAlive } from 'mobx-state-tree';
 
-import ImageGrid from "../ImageGrid/ImageGrid";
-import ImageTransformer from "../ImageTransformer/ImageTransformer";
-import ObjectTag from "../../components/Tags/Object";
-import Tree from "../../core/Tree";
-import styles from "./ImageView.module.scss";
-import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
-import messages from "../../utils/messages";
-import { chunks, findClosestParent } from "../../utils/utilities";
-import Konva from "konva";
-import { LoadingOutlined } from "@ant-design/icons";
-import { Toolbar } from "../Toolbar/Toolbar";
-import { ImageViewProvider } from "./ImageViewContext";
-import { Hotkey } from "../../core/Hotkey";
-import { useObserver } from "mobx-react";
-import ResizeObserver from "../../utils/resize-observer";
-import { debounce } from "../../utils/debounce";
-import Constants from "../../core/Constants";
-import { fixRectToFit } from "../../utils/image";
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, isFF } from "../../utils/feature-flags";
+import ImageGrid from '../ImageGrid/ImageGrid';
+import ImageTransformer from '../ImageTransformer/ImageTransformer';
+import ObjectTag from '../../components/Tags/Object';
+import Tree from '../../core/Tree';
+import styles from './ImageView.module.scss';
+import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
+import messages from '../../utils/messages';
+import { chunks, findClosestParent } from '../../utils/utilities';
+import Konva from 'konva';
+import { LoadingOutlined } from '@ant-design/icons';
+import { Toolbar } from '../Toolbar/Toolbar';
+import { ImageViewProvider } from './ImageViewContext';
+import { Hotkey } from '../../core/Hotkey';
+import { useObserver } from 'mobx-react';
+import ResizeObserver from '../../utils/resize-observer';
+import { debounce } from '../../utils/debounce';
+import Constants from '../../core/Constants';
+import { fixRectToFit } from '../../utils/image';
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, isFF } from '../../utils/feature-flags';
 
 Konva.showWarnings = false;
 
-const hotkeys = Hotkey("Image");
+const hotkeys = Hotkey('Image');
 
 const splitRegions = (regions) => {
   const brushRegions = [];
@@ -36,7 +36,7 @@ const splitRegions = (regions) => {
   for (i; i < l; i++) {
     const region = regions[i];
 
-    if (region.type === "brushregion") {
+    if (region.type === 'brushregion') {
       brushRegions.push(region);
     } else {
       shapeRegions.push(region);
@@ -50,7 +50,7 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
-  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, false));
+  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, region.annotation, false));
 });
 
 const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
@@ -85,25 +85,21 @@ const Regions = memo(({ regions, useLayers = true, chunkSize = 15, suggestion = 
 
 const DrawingRegion = observer(({ item }) => {
   const { drawingRegion } = item;
-  const Wrapper = drawingRegion && drawingRegion.type === "brushregion" ? Fragment : Layer;
+  const Wrapper = drawingRegion && drawingRegion.type === 'brushregion' ? Fragment : Layer;
 
   return (
     <Wrapper>
-      {drawingRegion ? <Region key={`drawing`} region={drawingRegion} /> : drawingRegion}
+      {drawingRegion ? <Region key={'drawing'} region={drawingRegion} /> : drawingRegion}
     </Wrapper>
   );
 });
 
-const SELECTION_COLOR = "#40A9FF";
-const SELECTION_SECOND_COLOR = "white";
+const SELECTION_COLOR = '#40A9FF';
+const SELECTION_SECOND_COLOR = 'white';
 const SELECTION_DASH = [3, 3];
 
 const SelectionBorders = observer(({ item, selectionArea }) => {
   const { selectionBorders: bbox } = selectionArea;
-  const offset = {
-    x: item.zoomingPositionX || 0,
-    y: item.zoomingPositionY || 0,
-  };
 
   bbox.left = bbox.left * item.stageScale;
   bbox.right = bbox.right * item.stageScale;
@@ -191,7 +187,7 @@ const SelectionRect = observer(({ item }) => {
   );
 });
 
-const TRANSFORMER_BACK_ID = "transformer_back";
+const TRANSFORMER_BACK_ID = 'transformer_back';
 
 const TransformerBack = observer(({ item }) => {
   const { selectedRegionsBBox } = item;
@@ -218,8 +214,8 @@ const TransformerBack = observer(({ item }) => {
           }}
           onDragStart={e=>{
             dragStartPointRef.current = {
-              x: e.target.getAttr("x"),
-              y: e.target.getAttr("y"),
+              x: e.target.getAttr('x'),
+              y: e.target.getAttr('y'),
             };
           }}
           dragBoundFunc={(pos) => {
@@ -300,16 +296,16 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
 
   const handleKey = (e) => setShift(e.shiftKey);
 
-  useEffect(()=>{  
-    window.addEventListener("keydown", handleKey);
-    window.addEventListener("keyup", handleKey);
-    window.addEventListener("mousedown", dragHandler);
-    window.addEventListener("mouseup", dragHandler);
+  useEffect(()=>{
+    window.addEventListener('keydown', handleKey);
+    window.addEventListener('keyup', handleKey);
+    window.addEventListener('mousedown', dragHandler);
+    window.addEventListener('mouseup', dragHandler);
     return () => {
-      window.removeEventListener("keydown", handleKey);
-      window.removeEventListener("keyup", handleKey);
-      window.removeEventListener("mousedown", dragHandler);
-      window.removeEventListener("mouseup", dragHandler);
+      window.removeEventListener('keydown', handleKey);
+      window.removeEventListener('keyup', handleKey);
+      window.removeEventListener('mousedown', dragHandler);
+      window.removeEventListener('mouseup', dragHandler);
     };
   },[]);
 
@@ -329,7 +325,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
     supportsTransform &&
     (item.selectedRegions.length > 1 ||
       ((item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer));
-  
+
   return (
     <Layer scaleX={scale} scaleY={scale}>
       {selectionArea.isActive ? (
@@ -454,7 +450,7 @@ export default observer(
     imageRef = createRef();
     crosshairRef = createRef();
     handleDeferredMouseDown = null;
-    deferredClickTimeout = null;
+    deferredClickTimeout = [];
     skipMouseUp = false;
 
     constructor(props) {
@@ -466,7 +462,7 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
-    
+
       if (isFF(FF_DEV_1442)) {
         this.handleDeferredMouseDown?.();
       }
@@ -475,44 +471,42 @@ export default observer(
         return;
       }
 
-      if (!item.annotation.editable) return;
-
       const evt = e.evt || e;
 
-      return item.event("click", evt, evt.offsetX, evt.offsetY);
+      return item.event('click', evt, evt.offsetX, evt.offsetY);
     };
 
     resetDeferredClickTimeout = () => {
-      if (this.deferredClickTimeout) {
-        clearTimeout(this.deferredClickTimeout);
+      if (this.deferredClickTimeout.length > 0) {
+        this.deferredClickTimeout = this.deferredClickTimeout.filter((timeout) => {
+          clearTimeout(timeout);
+          return false;
+        });
       }
-    }
+    };
 
-    handleDeferredClick = (handleDeferredMouseDown, handleDeselection, eligibleToDeselect = false) => {
-      this.handleDeferredMouseDown = (skipDeselect = false) => {
-        if (eligibleToDeselect && !skipDeselect) {
+    handleDeferredClick = (handleDeferredMouseDownCallback, handleDeselection, eligibleToDeselect = false) => {
+      this.handleDeferredMouseDown = () => {
+        if (eligibleToDeselect) {
           handleDeselection();
-        }  else {
-          handleDeferredMouseDown();
         }
+        handleDeferredMouseDownCallback();
       };
-      this.deferredClickTimeout = setTimeout(() => {
-        this.handleDeferredMouseDown = handleDeferredMouseDown;
+      this.resetDeferredClickTimeout();
+      this.deferredClickTimeout.push(setTimeout(() => {
         this.handleDeferredMouseDown?.();
-        this.handleDeferredMouseDown = null;
-      }, 100);
-    }
+      }, this.props.item.annotation.isDrawing ? 0 : 100));
+    };
 
     handleMouseDown = e => {
       const { item } = this.props;
-  
+
       item.updateSkipInteractions(e);
 
-      // item.freezeHistory();
       const p = e.target.getParent();
 
       if (!item.annotation.editable) return;
-      if (p && p.className === "Transformer") return;
+      if (p && p.className === 'Transformer') return;
 
       const handleMouseDown = () => {
         if (
@@ -521,18 +515,18 @@ export default observer(
           e.target === item.stageRef ||
           findClosestParent(
             e.target,
-            el => el.nodeType === "Group" && ["ruler", "segmentation"].indexOf(el?.attrs?.name) > -1,
+            el => el.nodeType === 'Group' && ['ruler', 'segmentation'].indexOf(el?.attrs?.name) > -1,
           )
         ) {
-          window.addEventListener("mousemove", this.handleGlobalMouseMove);
-          window.addEventListener("mouseup", this.handleGlobalMouseUp);
+          window.addEventListener('mousemove', this.handleGlobalMouseMove);
+          window.addEventListener('mouseup', this.handleGlobalMouseUp);
           const { offsetX: x, offsetY: y } = e.evt;
           // store the canvas coords for calculations in further events
           const { left, top } = item.containerRef.getBoundingClientRect();
 
           this.canvasX = left;
           this.canvasY = top;
-          item.event("mousedown", e, x, y);
+          item.event('mousedown', e, x, y);
 
           return true;
         }
@@ -541,14 +535,14 @@ export default observer(
       const selectedTool = item.getToolsManager().findSelectedTool();
       const eligibleToolForDeselect = [
         undefined,
-        "EllipseTool",
-        "EllipseTool-dynamic",
-        "RectangleTool",
-        "RectangleTool-dynamic",
-        "PolygonTool",
-        "PolygonTool-dynamic",
-        "Rectangle3PointTool",
-        "Rectangle3PointTool-dynamic",
+        'EllipseTool',
+        'EllipseTool-dynamic',
+        'RectangleTool',
+        'RectangleTool-dynamic',
+        'PolygonTool',
+        'PolygonTool-dynamic',
+        'Rectangle3PointTool',
+        'Rectangle3PointTool-dynamic',
       ].includes(selectedTool?.fullName);
 
       if (isFF(FF_DEV_1442) && eligibleToolForDeselect) {
@@ -576,26 +570,26 @@ export default observer(
      * Mouse up outside the canvas
      */
     handleGlobalMouseUp = e => {
-      window.removeEventListener("mousemove", this.handleGlobalMouseMove);
-      window.removeEventListener("mouseup", this.handleGlobalMouseUp);
-      
-      if (e.target && e.target.tagName === "CANVAS") return;
+      window.removeEventListener('mousemove', this.handleGlobalMouseMove);
+      window.removeEventListener('mouseup', this.handleGlobalMouseUp);
+
+      if (e.target && e.target.tagName === 'CANVAS') return;
 
       const { item } = this.props;
       const { clientX: x, clientY: y } = e;
 
       item.freezeHistory();
 
-      return item.event("mouseup", e, x - this.canvasX, y - this.canvasY);
+      return item.event('mouseup', e, x - this.canvasX, y - this.canvasY);
     };
 
     handleGlobalMouseMove = e => {
-      if (e.target && e.target.tagName === "CANVAS") return;
+      if (e.target && e.target.tagName === 'CANVAS') return;
 
       const { item } = this.props;
       const { clientX: x, clientY: y } = e;
 
-      return item.event("mousemove", e, x - this.canvasX, y - this.canvasY);
+      return item.event('mousemove', e, x - this.canvasX, y - this.canvasY);
     };
 
     /**
@@ -607,16 +601,16 @@ export default observer(
       if (isFF(FF_DEV_1442)) {
         this.resetDeferredClickTimeout();
       }
-  
+
       item.freezeHistory();
       item.setSkipInteractions(false);
 
-      return item.event("mouseup", e, e.evt.offsetX, e.evt.offsetY);
+      return item.event('mouseup', e, e.evt.offsetX, e.evt.offsetY);
     };
 
     handleMouseMove = e => {
       const { item } = this.props;
-      
+
       item.freezeHistory();
 
       this.updateCrosshair(e);
@@ -627,8 +621,7 @@ export default observer(
 
       if (isFF(FF_DEV_1442) && isDragging) {
         this.resetDeferredClickTimeout();
-        this.handleDeferredMouseDown?.(true);
-        this.handleDeferredMouseDown = null;
+        this.handleDeferredMouseDown?.();
       }
 
       if ((isMouseWheelClick || isShiftDrag) && item.zoomScale > 1) {
@@ -642,7 +635,7 @@ export default observer(
 
         item.setZoomPosition(newPos.x, newPos.y);
       } else {
-        item.event("mousemove", e, e.evt.offsetX, e.evt.offsetY);
+        item.event('mousemove', e, e.evt.offsetX, e.evt.offsetY);
       }
     };
 
@@ -661,7 +654,7 @@ export default observer(
     handleError = () => {
       const { item, store } = this.props;
       const cs = store.annotationStore;
-      const message = messages.ERR_LOADING_HTTP({ attr: item.value, error: "", url: item._value });
+      const message = messages.ERR_LOADING_HTTP({ attr: item.value, error: '', url: item._value });
 
       cs.addErrors([errorBuilder.generalError(message)]);
     };
@@ -700,7 +693,7 @@ export default observer(
     renderRulers() {
       const { item } = this.props;
       const width = 1;
-      const color = "white";
+      const color = 'white';
 
       return (
         <Group
@@ -746,14 +739,13 @@ export default observer(
     }, 16);
 
     componentDidMount() {
-      const { store, item } = this.props;
-      const annotation = store.annotationStore.selected;
+      const { item } = this.props;
 
-      window.addEventListener("resize", this.onResize);
+      window.addEventListener('resize', this.onResize);
       this.attachObserver(item.containerRef);
       this.updateReadyStatus();
 
-      hotkeys.addDescription("shift", "Pan image");
+      hotkeys.addDescription('shift', 'Pan image');
     }
 
     attachObserver = (node) => {
@@ -774,9 +766,9 @@ export default observer(
 
     componentWillUnmount() {
       this.detachObserver();
-      window.removeEventListener("resize", this.onResize);
+      window.removeEventListener('resize', this.onResize);
 
-      hotkeys.removeDescription("shift");
+      hotkeys.removeDescription('shift');
     }
 
     componentDidUpdate() {
@@ -823,19 +815,19 @@ export default observer(
       const containerClassName = styles.container;
 
       if (getRoot(item).settings.fullscreen === false) {
-        containerStyle["maxWidth"] = item.maxwidth;
-        containerStyle["maxHeight"] = item.maxheight;
-        containerStyle["width"] = item.width;
-        containerStyle["height"] = item.height;
+        containerStyle['maxWidth'] = item.maxwidth;
+        containerStyle['maxHeight'] = item.maxheight;
+        containerStyle['width'] = item.width;
+        containerStyle['height'] = item.height;
       }
 
       if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1){
-        containerStyle["imageRendering"] = 'pixelated';
+        containerStyle['imageRendering'] = 'pixelated';
       }
-      
+
       const imagePositionClassnames =  [
-        styles["image_position"],
-        styles[`image_position__${item.verticalalignment === "center" ? "middle" : item.verticalalignment}`],
+        styles['image_position'],
+        styles[`image_position__${item.verticalalignment === 'center' ? 'middle' : item.verticalalignment}`],
         styles[`image_position__${item.horizontalalignment}`],
       ];
 
@@ -864,7 +856,7 @@ export default observer(
       return (
         <ObjectTag
           item={item}
-          className={wrapperClasses.join(" ")}
+          className={wrapperClasses.join(' ')}
         >
           <div
             ref={node => {
@@ -879,13 +871,13 @@ export default observer(
                 this.filler = node;
               }}
               className={styles.filler}
-              style={{ width: "100%", marginTop: item.fillerHeight }}
+              style={{ width: '100%', marginTop: item.fillerHeight }}
             />
             <div
               className={[
                 styles.frame,
                 ...imagePositionClassnames,
-              ].join(" ")}
+              ].join(' ')}
               style={item.canvasSize}
             >
               <img
@@ -893,7 +885,7 @@ export default observer(
                   item.setImageRef(ref);
                   this.imageRef.current = ref;
                 }}
-                loading={(isFF(FF_DEV_3077) && !item.lazyoff) && "lazy"}
+                loading={(isFF(FF_DEV_3077) && !item.lazyoff) && 'lazy'}
                 style={item.imageTransform}
                 src={item._value}
                 onLoad={item.updateImageSize}
@@ -907,9 +899,9 @@ export default observer(
                 ref={ref => {
                   item.setStageRef(ref);
                 }}
-                className={[styles[`image-element`],
+                className={[styles['image-element'],
                   ...imagePositionClassnames,
-                ].join(" ")}
+                ].join(' ')}
                 width={item.canvasSize.width}
                 height={item.canvasSize.height}
                 scaleX={item.zoomScale}
@@ -938,7 +930,7 @@ export default observer(
                   } else if (mouseposX >= stageWidth) {
                     e.offsetX = stageWidth;
                   }
-                  
+
                   if (mouseposY <= 0) {
                     e.offsetY = 0;
                   } else if (mouseposY >= stageHeight) {
@@ -963,7 +955,7 @@ export default observer(
 
                 {renderableRegions.map(([groupName, list]) => {
                   const isBrush = groupName.match(/brush/i) !== null;
-                  const isSuggestion = groupName.match("suggested") !== null;
+                  const isSuggestion = groupName.match('suggested') !== null;
 
                   return list.length > 0 ? (
                     <Regions

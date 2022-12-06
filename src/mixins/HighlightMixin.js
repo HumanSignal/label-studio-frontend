@@ -1,10 +1,10 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import Utils from "../utils";
-import { guidGenerator } from "../utils/unique";
-import Constants, { defaultStyle } from "../core/Constants";
-import { isDefined } from "../utils/utilities";
-import { FF_DEV_2786, isFF } from "../utils/feature-flags";
+import Utils from '../utils';
+import { guidGenerator } from '../utils/unique';
+import Constants, { defaultStyle } from '../core/Constants';
+import { isDefined } from '../utils/utilities';
+import { FF_DEV_2786, isFF } from '../utils/feature-flags';
 
 export const HighlightMixin = types
   .model()
@@ -37,7 +37,7 @@ export const HighlightMixin = types
 
       // Avoid rendering before view is ready
       if (!range) {
-        console.warn("No range found to highlight");
+        console.warn('No range found to highlight');
         return;
       }
 
@@ -47,15 +47,15 @@ export const HighlightMixin = types
       const identifier = guidGenerator(5);
       // @todo use label-based stylesheets created only once
       const stylesheet = createSpanStylesheet(root.ownerDocument, identifier, labelColor);
-      const classNames = ["htx-highlight", stylesheet.className];
+      const classNames = ['htx-highlight', stylesheet.className];
 
       if (!(self.parent.showlabels ?? self.store.settings.showLabels)) {
-        classNames.push("htx-no-label");
+        classNames.push('htx-no-label');
       }
 
       // in this case labels presence can't be changed from settings — manual mode
       if (isDefined(self.parent.showlabels)) {
-        classNames.push("htx-manual-label");
+        classNames.push('htx-manual-label');
       }
 
       self._stylesheet = stylesheet;
@@ -91,8 +91,8 @@ export const HighlightMixin = types
         const label = self.getLabels();
 
         // label is array, string or null, so check for length
-        if (!label?.length) lastSpan.removeAttribute("data-label");
-        else lastSpan.setAttribute("data-label", label);
+        if (!label?.length) lastSpan.removeAttribute('data-label');
+        else lastSpan.setAttribute('data-label', label);
       }
     },
 
@@ -100,7 +100,7 @@ export const HighlightMixin = types
      * Removes current highlights
      */
     removeHighlight() {
-      self._spans.forEach(span => span.querySelectorAll("area").forEach(area => area.remove()));
+      self._spans.forEach(span => span.querySelectorAll('area').forEach(area => area.remove()));
       Utils.Selection.removeRange(self._spans);
       self._spans = undefined;
       self.cachedRange = undefined;
@@ -150,7 +150,7 @@ export const HighlightMixin = types
       if (first.scrollIntoViewIfNeeded) {
         first.scrollIntoViewIfNeeded();
       } else {
-        first.scrollIntoView({ block: "center", behavior: "smooth" });
+        first.scrollIntoView({ block: 'center', behavior: 'smooth' });
       }
     },
 
@@ -160,7 +160,7 @@ export const HighlightMixin = types
     afterUnselectRegion() {
       self.removeClass(self._stylesheet?.state.active);
       if (isFF(FF_DEV_2786)) {
-        self._spans?.forEach(span => span.querySelectorAll("area").forEach(area => area.remove()));
+        self._spans?.forEach(span => span.querySelectorAll('area').forEach(area => area.remove()));
       }
     },
 
@@ -242,9 +242,9 @@ export const HighlightMixin = types
     toggleHidden(e) {
       self.hidden = !self.hidden;
       if (self.hidden) {
-        self.addClass("__hidden");
+        self.addClass('__hidden');
       } else {
-        self.removeClass("__hidden");
+        self.removeClass('__hidden');
       }
 
       e?.stopPropagation();
@@ -254,14 +254,14 @@ export const HighlightMixin = types
 
 
 const stateClass = {
-  active: "__active",
-  dragging: "__dragging",
-  highlighted: "__highlighted",
-  resizeAreaRight: "__resizeAreaRight",
-  resizeAreaLeft: "__resizeAreaLeft",
-  collapsed: "__collapsed",
-  hidden: "__hidden",
-  noLabel: "htx-no-label",
+  active: '__active',
+  dragging: '__dragging',
+  highlighted: '__highlighted',
+  resizeAreaRight: '__resizeAreaRight',
+  resizeAreaLeft: '__resizeAreaLeft',
+  collapsed: '__collapsed',
+  hidden: '__hidden',
+  noLabel: 'htx-no-label',
 };
 
 /**
@@ -395,9 +395,9 @@ const createSpanStylesheet = (document, identifier, color) => {
     `,
   };
 
-  const styleTag = document.createElement("style");
+  const styleTag = document.createElement('style');
 
-  styleTag.type = "text/css";
+  styleTag.type = 'text/css';
   styleTag.id = `highlight-${identifier}`;
   document.head.appendChild(styleTag);
 
@@ -417,20 +417,25 @@ const createSpanStylesheet = (document, identifier, color) => {
    */
   const setColor = color => {
     const newActiveColor = toActiveColor(color);
-    const { style } = stylesheet.rules[2];
+    // sheet could change during iframe transfers, so look up in the tag
+    const stylesheet = styleTag.sheet ?? styleTag.styleSheet;
+    // they are on different positions for old/new regions
+    const rule = [...stylesheet.rules].find(rule => rule.selectorText.includes('__active'));
+    const { style } = rule;
 
-    document.documentElement.style.setProperty(variables.color, color);
+    // document in a closure may be a working iframe, so go up from the tag
+    styleTag.ownerDocument.documentElement.style.setProperty(variables.color, color);
 
-    style.backgroundColor = newActiveColor;
+    style.setProperty(variables.color, newActiveColor);
     style.color = Utils.Colors.contrastColor(newActiveColor);
   };
 
   /**
-   * Ser cursor style
-   * @param {import("prettier").CursorOptions} cursor
+   * Set cursor style
+   * @param {string} cursor
    */
   const setCursor = cursor => {
-    document.documentElement.style.setProperty(variables.cursor, cursor);
+    styleTag.ownerDocument.documentElement.style.setProperty(variables.cursor, cursor);
   };
 
   /**

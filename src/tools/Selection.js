@@ -1,20 +1,20 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import BaseTool from "./Base";
-import ToolMixin from "../mixins/Tool";
-import { AnnotationMixin } from "../mixins/AnnotationMixin";
-import { IconMoveTool } from "../assets/icons";
+import BaseTool from './Base';
+import ToolMixin from '../mixins/Tool';
+import { AnnotationMixin } from '../mixins/AnnotationMixin';
+import { IconMoveTool } from '../assets/icons';
 
-const _Tool = types.model("SelectionTool", {
-  shortcut: "V",
-  group: "control",
+const _Tool = types.model('SelectionTool', {
+  shortcut: 'V',
+  group: 'control',
 }).views(() => {
   return {
     get isSeparated() {
       return true;
     },
     get viewTooltip() {
-      return "Move";
+      return 'Move';
     },
     get iconComponent() {
       return IconMoveTool;
@@ -57,6 +57,6 @@ const _Tool = types.model("SelectionTool", {
   };
 });
 
-const Selection = types.compose("MoveTool", ToolMixin, BaseTool, AnnotationMixin, _Tool);
+const Selection = types.compose('MoveTool', ToolMixin, BaseTool, AnnotationMixin, _Tool);
 
 export { Selection };

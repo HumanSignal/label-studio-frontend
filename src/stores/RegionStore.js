@@ -1,24 +1,25 @@
-import { destroy, detach, getEnv, getParent, onPatch, types } from "mobx-state-tree";
+import { destroy, detach, getEnv, getParent, onPatch, types } from 'mobx-state-tree';
 
-import { Hotkey } from "../core/Hotkey";
-import { isDefined } from "../utils/utilities";
-import { AllRegionsType } from "../regions";
-import { debounce } from "../utils/debounce";
-import Tree, { TRAVERSE_STOP } from "../core/Tree";
-import { FF_DEV_2755, isFF } from "../utils/feature-flags";
+import { Hotkey } from '../core/Hotkey';
+import { isDefined } from '../utils/utilities';
+import { AllRegionsType } from '../regions';
+import { debounce } from '../utils/debounce';
+import Tree, { TRAVERSE_STOP } from '../core/Tree';
+import { FF_DEV_2755, isFF } from '../utils/feature-flags';
 
-const hotkeys = Hotkey("RegionStore");
+const hotkeys = Hotkey('RegionStore');
 
 const localStorageKeys = {
-  sort: "outliner:sort",
-  sortDirection: "outliner:sort-direction",
-  group: "outliner:group",
-  view: "regionstore:view",
+  sort: 'outliner:sort',
+  sortDirection: 'outliner:sort-direction',
+  group: 'outliner:group',
+  view: 'regionstore:view',
 };
 
 const SelectionMap = types.model(
   {
     selected: types.optional(types.map(types.safeReference(AllRegionsType)), {}),
+    drawingSelected: types.optional(types.map(types.safeReference(AllRegionsType)), {}),
   }).views(self => {
   return {
     get keys() {
@@ -52,6 +53,14 @@ const SelectionMap = types.model(
     afterUnselect(region) {
       region.afterUnselectRegion?.();
     },
+    drawingSelect(region){
+      self.drawingSelected.put(region);
+    },
+    drawingUnselect(){
+      Array.from(self.drawingSelected.values()).forEach(region => {
+        self.drawingSelected.delete(region.id);
+      });
+    },
     select(region) {
       self.selected.put(region);
       region.selectRegion && region.selectRegion();
@@ -66,10 +75,13 @@ const SelectionMap = types.model(
       }
     },
     _updateResultsFromSelection() {
+      self._updateResultsFromRegions(self.selected.values());
+    },
+    _updateResultsFromRegions(regions) {
       const valuesFromControls = {};
       const controlsByName = {};
 
-      Array.from(self.selected.values()).map((region) => {
+      Array.from(regions).map((region) => {
         region.results.forEach(result => {
           const controlName = result.from_name.name;
           const currentValue = valuesFromControls[controlName];
@@ -95,42 +107,44 @@ const SelectionMap = types.model(
       self.afterUnselect(region);
     },
     clear() {
-      const regionEntries = self.selected.toJS();
+      // clear() in the middle empties selected regions, so store them in separate array
+      const regionEntries = [...self.selected.values()];
 
-      for (const [, region] of regionEntries) {
+      for (const region of regionEntries) {
         self.beforeUnselect(region);
       }
       self.selected.clear();
-      for (const [, region] of regionEntries) {
+      for (const region of regionEntries) {
         self.afterUnselect(region);
       }
     },
     highlight(region) {
       self.clear();
       self.select(region);
+      region?.shapeRef?.parent?.canvas?._canvas?.scrollIntoView?.();
     },
   };
 });
 
-export default types.model("RegionStore", {
+export default types.model('RegionStore', {
   sort: types.optional(
-    types.enumeration(["date", "score"]),
-    window.localStorage.getItem(localStorageKeys.sort) ?? "date",
+    types.enumeration(['date', 'score']),
+    window.localStorage.getItem(localStorageKeys.sort) ?? 'date',
   ),
 
   sortOrder: types.optional(
-    types.enumeration(["asc", "desc"]),
-    window.localStorage.getItem(localStorageKeys.sortDirection) ?? "asc",
+    types.enumeration(['asc', 'desc']),
+    window.localStorage.getItem(localStorageKeys.sortDirection) ?? 'asc',
   ),
 
   group: types.optional(
-    types.enumeration(["type", "label", "manual"]),
-    () => window.localStorage.getItem(localStorageKeys.group) ?? "manual",
+    types.enumeration(['type', 'label', 'manual']),
+    () => window.localStorage.getItem(localStorageKeys.group) ?? 'manual',
   ),
 
   view: types.optional(
-    types.enumeration(["regions", "labels"]),
-    window.localStorage.getItem(localStorageKeys.view) ?? "regions",
+    types.enumeration(['regions', 'labels']),
+    window.localStorage.getItem(localStorageKeys.view) ?? 'regions',
   ),
   selection: types.optional(SelectionMap, {}),
 }).views(self => {
@@ -186,7 +200,7 @@ export default types.model("RegionStore", {
     get classifications() {
       const textAreas = Array.from(self.annotation.names.values())
         .filter(t => isDefined(t))
-        .filter(t => t.type === "textarea" && !t.perregion)
+        .filter(t => t.type === 'textarea' && !t.perregion)
         .map(t => t.regions);
 
       return [].concat(...textAreas);
@@ -210,13 +224,13 @@ export default types.model("RegionStore", {
         score: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.score - a.score : (a, b) => a.score - b.score),
       };
 
-      const sorted = sorts[self.sort](self.sortOrder === "desc");
+      const sorted = sorts[self.sort](self.sortOrder === 'desc');
 
       return sorted;
     },
 
     getRegionsTree(enrich) {
-      if (self.group === null || self.group === "manual") {
+      if (self.group === null || self.group === 'manual') {
         return self.asTree(enrich);
       } else if (self.group === 'label') {
         return self.asLabelsTree(enrich);
@@ -340,7 +354,7 @@ export default types.model("RegionStore", {
         if (group) return group;
 
         const groupingEntity = {
-          type: "tool",
+          type: 'tool',
           value: key.replace('region', ''),
           background: '#000',
         };
@@ -397,18 +411,18 @@ export default types.model("RegionStore", {
 }).actions(self => ({
   addRegion(region) {
     self.regions.push(region);
-    getEnv(self).events.invoke("entityCreate", region);
+    getEnv(self).events.invoke('entityCreate', region);
   },
 
   toggleSortOrder() {
-    if (self.sortOrder === "asc") self.sortOrder = "desc";
-    else self.sortOrder = "asc";
+    if (self.sortOrder === 'asc') self.sortOrder = 'desc';
+    else self.sortOrder = 'asc';
   },
 
   setView(view) {
     if( isFF( FF_DEV_2755 ) ) {
       window.localStorage.setItem(localStorageKeys.view, view);
-      console.log("setView", window.localStorage.getItem(localStorageKeys.view));
+      console.log('setView', window.localStorage.getItem(localStorageKeys.view));
     }
     self.view = view;
   },
@@ -417,7 +431,7 @@ export default types.model("RegionStore", {
     if (self.sort === sort) {
       self.toggleSortOrder();
     } else {
-      self.sortOrder = "asc";
+      self.sortOrder = 'asc';
       self.sort = sort;
     }
 
@@ -444,7 +458,7 @@ export default types.model("RegionStore", {
 
     children && children.forEach(r => r.setParentID(region.parentID));
 
-    getEnv(self).events.invoke("entityDelete", region);
+    getEnv(self).events.invoke('entityDelete', region);
 
     destroy(region);
     self.initHotkeys();
@@ -464,16 +478,16 @@ export default types.model("RegionStore", {
 
   afterCreate() {
     onPatch(self, patch => {
-      if ((patch.op === "add" || patch.op === "delete") && patch.path.indexOf("/regions/") !== -1) {
+      if ((patch.op === 'add' || patch.op === 'delete') && patch.path.indexOf('/regions/') !== -1) {
         self.initHotkeys();
       }
     });
-    self.view = window.localStorage.getItem(localStorageKeys.view) ?? (self.annotation.store.settings.displayLabelsByDefault ? "labels" : "regions");
+    self.view = window.localStorage.getItem(localStorageKeys.view) ?? (self.annotation.store.settings.displayLabelsByDefault ? 'labels' : 'regions');
   },
 
   // init Alt hotkeys for regions selection
   initHotkeys() {
-    const PREFIX = "alt+shift+";
+    const PREFIX = 'alt+shift+';
 
     hotkeys.unbindAll();
 
@@ -486,7 +500,7 @@ export default types.model("RegionStore", {
 
     // this is added just for the reference to show up in the
     // settings page
-    hotkeys.addKey("alt+shift+$n", () => {}, "Select a region");
+    hotkeys.addKey('alt+shift+$n', () => {}, 'Select a region');
   },
 
   /**

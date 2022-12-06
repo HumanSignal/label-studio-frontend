@@ -1,26 +1,26 @@
-import { Block, Elem } from "../../utils/bem";
-import { Fragment, useEffect, useState } from "react";
-import { Hotkey } from "../../core/Hotkey";
+import { Block, Elem } from '../../utils/bem';
+import { Fragment, useEffect, useState } from 'react';
+import { Hotkey } from '../../core/Hotkey';
 
 const hotkeys = Hotkey(
-  "SegmentationToolbar",
-  "Segmentation Tools",
+  'SegmentationToolbar',
+  'Segmentation Tools',
 );
 
 const keysDictionary = {
-  plus: "+",
-  minus: "-",
+  plus: '+',
+  minus: '-',
 };
 
 const shortcutView = (shortcut) => {
   if (!shortcut) return null;
 
-  const combos = shortcut.split(",").map(s => s.trim());
+  const combos = shortcut.split(',').map(s => s.trim());
 
   return (
     <Elem name="shortcut">
       {combos.map((combo, index) => {
-        const keys = combo.split("+");
+        const keys = combo.split('+');
 
         return (
           <Fragment key={`${keys.join('-')}-${index}`}>
@@ -80,9 +80,9 @@ export const FlyoutMenu = ({
       }
     };
 
-    window.addEventListener("click", windowClickHandler);
+    window.addEventListener('click', windowClickHandler);
     return () => {
-      window.removeEventListener("click", windowClickHandler);
+      window.removeEventListener('click', windowClickHandler);
     };
   });
 

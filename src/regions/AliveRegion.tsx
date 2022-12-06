@@ -1,7 +1,7 @@
-import { observer } from "mobx-react";
-import { isAlive } from "mobx-state-tree";
+import { observer } from 'mobx-react';
+import { isAlive } from 'mobx-state-tree';
 
-import { IReactComponent } from "mobx-react/dist/types/IReactComponent";
+import { IReactComponent } from 'mobx-react/dist/types/IReactComponent';
 
 type Region = {
   hidden: boolean,
