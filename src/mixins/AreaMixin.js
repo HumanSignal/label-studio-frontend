@@ -133,7 +133,9 @@ export const AreaMixinBase = types
      * Remove region
      */
     deleteRegion() {
+      console.log(self.isReadOnly());
       if (self.annotation.isReadOnly()) return;
+      if (self.isReadOnly()) return;
       if (self.selected) self.annotation.unselectAll(true);
       if (self.destroyRegion) self.destroyRegion();
       self.annotation.deleteRegion(self);

@@ -24,6 +24,6 @@ export const ReadOnlyAreaMixin = types
   })
   .views(self => ({
     isReadOnly() {
-      return self.readonly || self.parent.result?.isReadOnly() || self.annotation.isReadOnly();
+      return self.locked || self.readonly || self.parent.result?.isReadOnly() || self.annotation.isReadOnly();
     },
   }));

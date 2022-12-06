@@ -414,11 +414,13 @@ const RegionControls: FC<RegionControlsProps> = observer(({
         )}
       </Elem>
       <Elem name="control" mod={{ type: 'lock' }}>
-        {item && (hovered || item.isReadOnly()) && (
-          <RegionControlButton disabled={item.isReadOnly()} onClick={onToggleLocked}>
-            {item.isReadOnly() ? <IconLockLocked/> : <IconLockUnlocked/>}
-          </RegionControlButton>
-        )}
+        <LockButton
+          item={item}
+          annotation={item?.annotation}
+          hovered={hovered}
+          locked={item?.locked}
+          onClick={onToggleLocked}
+        />
       </Elem>
       <Elem name="control" mod={{ type: 'visibility' }}>
         {(hovered || hidden) && (
@@ -439,6 +441,23 @@ const RegionControls: FC<RegionControlsProps> = observer(({
         </Elem>
       )}
     </Elem>
+  );
+});
+
+const LockButton: FC<{
+  item: any,
+  annotation: any,
+  hovered: boolean,
+  locked: boolean,
+  onClick: () => void,
+}> = observer(({ item, annotation, hovered, locked, onClick }) => {
+  const isLocked = locked || item.isReadOnly() || annotation.isReadOnly();
+  const isRegionReadonly = item.isReadOnly() && !locked;
+
+  return item && (hovered || item.isReadOnly() || locked) && (
+    <RegionControlButton disabled={isRegionReadonly} onClick={onClick}>
+      {isLocked ? <IconLockLocked/> : <IconLockUnlocked/>}
+    </RegionControlButton>
   );
 });
 
