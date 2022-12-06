@@ -248,8 +248,13 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [offset, step]);
 
   useEffect(() => {
-    if (playing && position > lastVisibleFrame) {
-      setScroll({ left: lastVisibleFrame * step });
+    const leftOfView = position < firstVisibleFrame;
+    const rightOfView = position > lastVisibleFrame;
+
+    if (playing && (leftOfView || rightOfView)) {
+      const left = leftOfView ? lastVisibleFrame / step : lastVisibleFrame * step;
+      
+      setScroll({ left });
     }
   }, [playing, position]);
 
