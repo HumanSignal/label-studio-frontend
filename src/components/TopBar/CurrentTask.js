@@ -24,7 +24,7 @@ export const CurrentTask = observer(({ store }) => {
   const canPrepone = isFF(FF_DEV_3034)
     && !store.canGoPrevTask
     && !store.hasInterface('review')
-    && store.hasInterface("postpone");
+    && store.hasInterface('postpone');
 
   return (
     <Elem name="section">

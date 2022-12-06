@@ -448,6 +448,9 @@ export default types
 
 
       self.task = Task.create(taskObject);
+
+      console.log('taskHistory', taskHistory);
+
       if (taskHistory) {
         self.taskHistory = taskHistory;
       } else if (!self.taskHistory.some((x) => x.taskId === self.task.id)) {
