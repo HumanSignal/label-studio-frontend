@@ -19,6 +19,7 @@ interface VisualizerEvents {
   layersUpdated: (layers: Map<string, Layer>) => void;
   layerAdded: (layer: Layer) => void;
   layerRemoved: (layer: Layer) => void;
+  heightAdjusted: (Visualizer: Visualizer) => void;
 }
 
 export type VisualizerOptions = Pick<WaveformOptions,
@@ -412,8 +413,10 @@ export class Visualizer extends Events<VisualizerEvents> {
     const timelineLayer = this.getLayer('timeline');
     const waveformLayer = this.getLayer('waveform');
 
+    console.log('visualizer height', waveformLayer?.height, this.wf.params.height);
+
     height += timelineLayer?.isVisible ? this.timelineHeight : 0;
-    height += waveformLayer?.isVisible ? this.container.clientHeight - this.timelineHeight : 0;
+    height += waveformLayer?.isVisible ? (this?.wf?.params?.height ?? 0) - this.timelineHeight : 0;
     return height;
   }
 
@@ -513,6 +516,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.invoke('layerAdded', [layer]);
     layer.on('layerUpdated', () => {
+      this.container.style.height = `${this.height}px`;
       this.draw();
       this.invokeLayersUpdated();
     });
