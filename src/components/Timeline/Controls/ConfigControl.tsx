@@ -48,6 +48,8 @@ export const ConfigControl: FC<ConfigControlProps> = ({
   const handleChangePlaybackSpeed = (e: React.FormEvent<HTMLInputElement>) => {
     const _playbackSpeed = parseFloat(e.currentTarget.value);
 
+    if (isNaN(_playbackSpeed)) return;
+
     setplaybackSpeed(_playbackSpeed);
     onSpeedChange(_playbackSpeed);
   };
