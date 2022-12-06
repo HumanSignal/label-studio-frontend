@@ -66,7 +66,7 @@ const TagAttrs = types.model({
   label: types.optional(types.string, ''),
   value: types.maybeNull(types.string),
   rows: types.optional(types.string, '1'),
-  showsubmitbutton: types.optional(types.boolean, false),
+  showsubmitbutton: types.maybeNull(types.boolean),
   placeholder: types.maybeNull(types.string),
   maxsubmissions: types.maybeNull(types.string),
   editable: types.optional(types.boolean, false),
@@ -339,7 +339,7 @@ const HtxTextArea = observer(({ item }) => {
 
   const visibleStyle = item.perRegionVisible() ? {} : { display: 'none' };
 
-  const showAddButton = (!item.isReadOnly() && rows !== 1) || item.showSubmitButton === true;
+  const showAddButton = !item.isReadOnly() && (item.showsubmitbutton ?? rows !== 1);
   const itemStyle = {};
 
   if (showAddButton) itemStyle['marginBottom'] = 0;
@@ -577,7 +577,7 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
 
   if (item.annotation.isReadOnly()) props['disabled'] = true;
 
-  const showAddButton = (!item.annotation.isReadOnly() && rows !== 1) || item.showSubmitButton === true;
+  const showAddButton = !item.annotation.isReadOnly() && (item.showsubmitbutton ?? rows !== 1);
   const itemStyle = {};
 
   if (showAddButton) itemStyle['marginBottom'] = 0;
