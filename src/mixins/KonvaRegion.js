@@ -1,10 +1,10 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
 export const KonvaRegionMixin = types.model({})
   .views((self) => {
     return {
       get bboxCoords() {
-        console.warn("KonvaRegionMixin needs to implement bboxCoords getter in regions");
+        console.warn('KonvaRegionMixin needs to implement bboxCoords getter in regions');
         return null;
       },
       get control() {
@@ -36,10 +36,9 @@ export const KonvaRegionMixin = types.model({})
         const ev = e?.evt || e;
         const additiveMode = ev?.ctrlKey || ev?.metaKey;
 
-        if (!annotation.editable || self.isDrawing || annotation.isDrawing) return;
         if (e) e.cancelBubble = true;
 
-        if (annotation.relationMode) {
+        if (annotation.editable && annotation.relationMode) {
           annotation.addRelation(self);
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();

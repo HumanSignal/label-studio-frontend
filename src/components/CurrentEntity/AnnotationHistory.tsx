@@ -1,6 +1,6 @@
-import { inject, observer } from "mobx-react";
-import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Tooltip } from "antd";
+import { inject, observer } from 'mobx-react';
+import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Tooltip } from 'antd';
 import {
   IconAnnotationAccepted,
   IconAnnotationImported,
@@ -13,12 +13,12 @@ import {
   IconCheck,
   IconDraftCreated,
   LsSparks
-} from "../../assets/icons";
-import { Space } from "../../common/Space/Space";
-import { Userpic } from "../../common/Userpic/Userpic";
-import { Block, Elem } from "../../utils/bem";
-import { humanDateDiff, userDisplayName } from "../../utils/utilities";
-import "./AnnotationHistory.styl";
+} from '../../assets/icons';
+import { Space } from '../../common/Space/Space';
+import { Userpic } from '../../common/Userpic/Userpic';
+import { Block, Elem } from '../../utils/bem';
+import { humanDateDiff, userDisplayName } from '../../utils/utilities';
+import './AnnotationHistory.styl';
 
 type HistoryItemType = (
   'prediction' |
@@ -103,7 +103,7 @@ const AnnotationHistoryComponent: FC<any> = ({
   inline = false,
 }) => {
   const annotation = annotationStore.selected;
-  const lastItem = history[0];
+  const lastItem = history?.length ? history[0] : null;
   const hasChanges = annotation.history.hasChanges;
   // if user makes changes at the first time there are no draft yet
   const isDraftSelected = !annotationStore.selectedHistory && (annotation.draftSelected || (!annotation.versions.draft && hasChanges));
@@ -181,17 +181,17 @@ const HistoryItemComponent: FC<{
 
   const reason = useMemo(() => {
     switch(acceptedState) {
-      case "accepted": return "Accepted";
-      case "rejected": return "Rejected";
-      case "fixed_and_accepted": return "Fixed";
-      case "updated": return "Updated";
-      case "submitted": return "Submitted";
-      case 'prediction': return "From prediction";
-      case 'imported': return "Imported";
-      case 'skipped': return "Skipped";
-      case "draft_created": return "Draft";
-      case "deleted_review": return "Review deleted";
-      case "propagated_annotation": return "Propagated";
+      case 'accepted': return 'Accepted';
+      case 'rejected': return 'Rejected';
+      case 'fixed_and_accepted': return 'Fixed';
+      case 'updated': return 'Updated';
+      case 'submitted': return 'Submitted';
+      case 'prediction': return 'From prediction';
+      case 'imported': return 'Imported';
+      case 'skipped': return 'Skipped';
+      case 'draft_created': return 'Draft';
+      case 'deleted_review': return 'Review deleted';
+      case 'propagated_annotation': return 'Propagated';
       default: return null;
     }
   }, []);
@@ -276,7 +276,7 @@ const HistoryComment: FC<{
           e.stopPropagation();
           setCollapsed((v) => !v);
         }}>
-          {collapsed ? "Show more" : "Show less"}
+          {collapsed ? 'Show more' : 'Show less'}
         </Elem>
       )}
     </Elem>
@@ -286,11 +286,11 @@ const HistoryComment: FC<{
 const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
   const icon = useMemo(() => {
     switch(type) {
-      case 'submitted': return <IconAnnotationSubmitted style={{ color: "#0099FF" }}/>;
-      case 'updated': return <IconAnnotationSubmitted style={{ color: "#0099FF" }}/>;
-      case 'draft_created': return <IconDraftCreated style={{ color: "#0099FF" }}/>;
+      case 'submitted': return <IconAnnotationSubmitted style={{ color: '#0099FF' }}/>;
+      case 'updated': return <IconAnnotationSubmitted style={{ color: '#0099FF' }}/>;
+      case 'draft_created': return <IconDraftCreated style={{ color: '#0099FF' }}/>;
       case 'accepted': return <IconAnnotationAccepted style={{ color: '#2AA000' }}/>;
-      case 'rejected': return <IconAnnotationRejected style={{ color: "#dd0000" }}/>;
+      case 'rejected': return <IconAnnotationRejected style={{ color: '#dd0000' }}/>;
       case 'fixed_and_accepted': return <IconAnnotationAccepted style={{ color: '#FA8C16' }}/>;
       case 'prediction': return <IconAnnotationPrediction style={{ color: '#944BFF' }}/>;
       case 'imported': return <IconAnnotationImported style={{ color: '#2AA000' }}/>;

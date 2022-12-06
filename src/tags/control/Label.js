@@ -1,26 +1,26 @@
-import { inject, observer } from "mobx-react";
-import { getType, types } from "mobx-state-tree";
-import ColorScheme from "pleasejs";
-import React from "react";
+import { inject, observer } from 'mobx-react';
+import { getType, types } from 'mobx-state-tree';
+import ColorScheme from 'pleasejs';
+import React from 'react';
 
-import { Tooltip } from "../../common/Tooltip/Tooltip";
-import InfoModal from "../../components/Infomodal/Infomodal";
-import { Label } from "../../components/Label/Label";
-import Constants from "../../core/Constants";
-import { customTypes } from "../../core/CustomTypes";
-import { guidGenerator } from "../../core/Helpers";
-import Registry from "../../core/Registry";
-import Types from "../../core/Types";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
-import { TagParentMixin } from "../../mixins/TagParentMixin";
-import ToolsManager from "../../tools/Manager";
-import Utils from "../../utils";
-import { parseValue } from "../../utils/data";
-import { FF_DEV_2128, isFF } from "../../utils/feature-flags";
+import { Tooltip } from '../../common/Tooltip/Tooltip';
+import InfoModal from '../../components/Infomodal/Infomodal';
+import { Label } from '../../components/Label/Label';
+import Constants from '../../core/Constants';
+import { customTypes } from '../../core/CustomTypes';
+import { guidGenerator } from '../../core/Helpers';
+import Registry from '../../core/Registry';
+import Types from '../../core/Types';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import ProcessAttrsMixin from '../../mixins/ProcessAttrs';
+import { TagParentMixin } from '../../mixins/TagParentMixin';
+import ToolsManager from '../../tools/Manager';
+import Utils from '../../utils';
+import { parseValue } from '../../utils/data';
+import { FF_DEV_2128, isFF } from '../../utils/feature-flags';
 
 /**
- * Label tag represents a single label. Use with the Labels tag, including BrushLabels, EllipseLabels, HyperTextLabels, KeyPointLabels, and other Labels tags to specify the value of a specific label.
+ * The `Label` tag represents a single label. Use with the `Labels` tag, including `BrushLabels`, `EllipseLabels`, `HyperTextLabels`, `KeyPointLabels`, and other `Labels` tags to specify the value of a specific label.
  *
  * @example
  * <!--Basic named entity recognition labeling configuration for text-->
@@ -56,11 +56,11 @@ const TagAttrs = types.model({
   hint: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   showalias: types.optional(types.boolean, false),
-  aliasstyle: types.optional(types.string, "opacity: 0.6"),
-  size: types.optional(types.string, "medium"),
+  aliasstyle: types.optional(types.string, 'opacity: 0.6'),
+  size: types.optional(types.string, 'medium'),
   background: types.optional(customTypes.color, Constants.LABEL_BACKGROUND),
-  selectedcolor: types.optional(customTypes.color, "#ffffff"),
-  granularity: types.maybeNull(types.enumeration(["symbol", "word", "sentence", "paragraph"])),
+  selectedcolor: types.optional(customTypes.color, '#ffffff'),
+  granularity: types.maybeNull(types.enumeration(['symbol', 'word', 'sentence', 'paragraph'])),
   groupcancontain: types.maybeNull(types.string),
   // childrencheck: types.optional(types.enumeration(["any", "all"]), "any")
   ...(isFF(FF_DEV_2128) ? { html: types.maybeNull(types.string) } : {} ),
@@ -68,19 +68,19 @@ const TagAttrs = types.model({
 
 const Model = types.model({
   id: types.optional(types.identifier, guidGenerator),
-  type: "label",
+  type: 'label',
   visible: types.optional(types.boolean, true),
-  _value: types.optional(types.string, ""),
+  _value: types.optional(types.string, ''),
   parentTypes: Types.tagsTypes([
-    "Labels",
-    "EllipseLabels",
-    "RectangleLabels",
-    "PolygonLabels",
-    "KeyPointLabels",
-    "BrushLabels",
-    "HyperTextLabels",
-    "TimeSeriesLabels",
-    "ParagraphLabels",
+    'Labels',
+    'EllipseLabels',
+    'RectangleLabels',
+    'PolygonLabels',
+    'KeyPointLabels',
+    'BrushLabels',
+    'HyperTextLabels',
+    'TimeSeriesLabels',
+    'ParagraphLabels',
   ]),
 }).volatile(self => {
   return {
@@ -112,16 +112,30 @@ const Model = types.model({
    * Select label
    */
   toggleSelected() {
+    let sameObjectSelectedRegions = [];
+
     // here we check if you click on label from labels group
     // connected to the region on the same object tag that is
     // right now highlighted, and if that region is readonly
-    const sameObjectSelectedRegions = self.annotation.selectedRegions.filter(region => {
-      return region.parent?.name === self.parent?.toname;
-    });
+
+    if(self.annotation.selectedDrawingRegions.length > 0){
+      /*  here we are validating if we are drawing a new region or if region is already closed
+          the way that new drawing region and a finished regions work is similar, but new drawing region
+          doesn't visualy select the polygons when you are drawing.
+       */
+      sameObjectSelectedRegions = self.annotation.selectedDrawingRegions.filter(region => {
+        return region.parent?.name === self.parent?.toname;
+      });
+    } else if(self.annotation.selectedRegions.length > 0) {
+      sameObjectSelectedRegions = self.annotation.selectedRegions.filter(region => {
+        return region.parent?.name === self.parent?.toname;
+      });
+    }
+
+
     const affectedRegions = sameObjectSelectedRegions.filter(region => {
       return region.editable;
     });
-
 
     // one more check if that label can be selected
     if (!self.annotation.editable) return;
@@ -147,7 +161,7 @@ const Model = types.model({
         (!self.parent?.allowempty || self.isEmpty)
       )
         return false;
-      if (self.parent?.type !== "labels" && !self.parent?.type.includes(region.results[0].type)) return false;
+      if (self.parent?.type !== 'labels' && !self.parent?.type.includes(region.results[0].type)) return false;
       return true;
     });
 
@@ -157,7 +171,7 @@ const Model = types.model({
     if (!labels.selectedLabels.length && !self.selected) {
       // unselect labels from other groups of labels connected to this obj
       self.annotation.toNames.get(labels.toname).
-        filter(tag => tag.type && tag.type.endsWith("labels") && tag.name !== labels.name).
+        filter(tag => tag.type && tag.type.endsWith('labels') && tag.name !== labels.name).
         forEach(tag => tag.unselectAll && tag.unselectAll());
 
       // unselect other tools if they exist and selected
@@ -236,12 +250,16 @@ const Model = types.model({
   },
 
   onHotKey() {
-    if(self.annotation.isDrawing) {
-      return false;
-    } else {
-      self.annotation.unselectAreas();
-      return self.toggleSelected();
-    }
+    return self.onLabelInteract();
+  },
+
+  onClick() {
+    self.onLabelInteract();
+    return false;
+  },
+
+  onLabelInteract() {
+    return self.toggleSelected();
   },
 
   _updateBackgroundColor(val) {
@@ -257,16 +275,15 @@ const Model = types.model({
   },
 }));
 
-const LabelModel = types.compose("LabelModel", TagParentMixin, TagAttrs, ProcessAttrsMixin, Model, AnnotationMixin);
+const LabelModel = types.compose('LabelModel', TagParentMixin, TagAttrs, ProcessAttrsMixin, Model, AnnotationMixin);
 
-const HtxLabelView = inject("store")(
+const HtxLabelView = inject('store')(
   observer(({ item, store }) => {
     const hotkey = (store.settings.enableTooltips || store.settings.enableLabelTooltips) && store.settings.enableHotkeys && item.hotkey;
 
     const label = (
       <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={() => {
-        item.toggleSelected();
-        return false;
+        return item.onClick();
       }}>
         {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
         {item.showalias === true && item.alias && (
@@ -281,6 +298,6 @@ const HtxLabelView = inject("store")(
   }),
 );
 
-Registry.addTag("label", LabelModel, HtxLabelView);
+Registry.addTag('label', LabelModel, HtxLabelView);
 
 export { HtxLabelView, LabelModel };

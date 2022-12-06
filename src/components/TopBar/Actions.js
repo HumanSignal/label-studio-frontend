@@ -1,11 +1,11 @@
-import { IconCopy, IconInfo, IconViewAll, LsSettings, LsTrash } from "../../assets/icons";
-import { Button } from "../../common/Button/Button";
-import { Tooltip } from "../../common/Tooltip/Tooltip";
-import { Elem } from "../../utils/bem";
-import { GroundTruth } from "../CurrentEntity/GroundTruth";
-import { EditingHistory } from "./HistoryActions";
-import { confirm } from "../../common/Modal/Modal";
-import { useCallback } from "react";
+import { IconCopy, IconInfo, IconViewAll, LsSettings, LsTrash } from '../../assets/icons';
+import { Button } from '../../common/Button/Button';
+import { Tooltip } from '../../common/Tooltip/Tooltip';
+import { Elem } from '../../utils/bem';
+import { GroundTruth } from '../CurrentEntity/GroundTruth';
+import { EditingHistory } from './HistoryActions';
+import { confirm } from '../../common/Modal/Modal';
+import { useCallback } from 'react';
 
 export const Actions = ({ store }) => {
   const annotationStore = store.annotationStore;
@@ -13,9 +13,6 @@ export const Actions = ({ store }) => {
   const saved = !entity.userGenerate || entity.sentUserGenerate;
   const isPrediction = entity?.type === 'prediction';
   const isViewAll = annotationStore.viewingAll;
-  const hasVideo = Array.from(store.annotationStore.names.values()).some((tag) => {
-    return tag.type.match(/video/ig);
-  });
 
   const onToggleVisibility = useCallback(() => {
     annotationStore.toggleViewingAllAnnotations();
@@ -23,7 +20,7 @@ export const Actions = ({ store }) => {
 
   return (
     <Elem name="section">
-      {store.hasInterface("annotations:view-all")  && (
+      {store.hasInterface('annotations:view-all')  && (
         <Tooltip title="View all annotations">
           <Button
             icon={<IconViewAll />}
@@ -40,11 +37,11 @@ export const Actions = ({ store }) => {
         </Tooltip>
       )}
 
-      {!isViewAll && store.hasInterface("ground-truth") && <GroundTruth entity={entity}/>}
+      {!isViewAll && store.hasInterface('ground-truth') && <GroundTruth entity={entity}/>}
 
       {!isPrediction && !isViewAll && store.hasInterface('edit-history') && <EditingHistory entity={entity} />}
 
-      {!isViewAll && store.hasInterface("annotations:delete") && (
+      {!isViewAll && store.hasInterface('annotations:delete') && (
         <Tooltip title="Delete annotation">
           <Button
             icon={<LsTrash />}
@@ -53,10 +50,10 @@ export const Actions = ({ store }) => {
             aria-label="Delete"
             onClick={() => {
               confirm({
-                title: "Delete annotation",
-                body: "This action cannot be undone",
-                buttonLook: "destructive",
-                okText: "Proceed",
+                title: 'Delete annotation',
+                body: 'This action cannot be undone',
+                buttonLook: 'destructive',
+                okText: 'Proceed',
                 onOk: () => entity.list.deleteAnnotation(entity),
               });
             }}
@@ -69,7 +66,7 @@ export const Actions = ({ store }) => {
         </Tooltip>
       )}
 
-      {!isViewAll && store.hasInterface("annotations:add-new") && saved && (
+      {!isViewAll && store.hasInterface('annotations:add-new') && saved && (
         <Tooltip title={`Create copy of current ${entity.type}`}>
           <Button
             icon={<IconCopy style={{ width: 36, height: 36 }}/>}

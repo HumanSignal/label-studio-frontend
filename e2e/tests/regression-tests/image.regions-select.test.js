@@ -1,17 +1,17 @@
 /* global Htx, Feature, DataTable, Data, locate */
 
-const { initLabelStudio } = require("../helpers");
+const { initLabelStudio } = require('../helpers');
 
-Feature("Select region by click on it");
+Feature('Select region by click on it');
 
 const IMAGE =
-  "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg";
+  'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg';
 
 const BLUEVIOLET = {
-  color: "#8A2BE2",
+  color: '#8A2BE2',
   rgbArray: [138, 43, 226],
 };
-const getConfigWithShape = (shape, props = "") => `
+const getConfigWithShape = (shape, props = '') => `
   <View>
     <Image name="img" value="$image" zoom="true" zoomBy="1.5" zoomControl="true" rotateControl="true"></Image>
     <${shape}Labels ${props} name="tag" toName="img">
@@ -21,8 +21,8 @@ const getConfigWithShape = (shape, props = "") => `
 
 const shapes = [
   {
-    shape: "Polygon",
-    action: "drawByClickingPoints",
+    shape: 'Polygon',
+    action: 'drawByClickingPoints',
     regions: [
       {
         params: [
@@ -38,8 +38,8 @@ const shapes = [
     ],
   },
   {
-    shape: "Rectangle",
-    action: "drawByDrag",
+    shape: 'Rectangle',
+    action: 'drawByDrag',
     regions: [
       {
         params: [5, 5, 55, 55],
@@ -47,8 +47,8 @@ const shapes = [
     ],
   },
   {
-    shape: "Ellipse",
-    action: "drawByDrag",
+    shape: 'Ellipse',
+    action: 'drawByDrag',
     regions: [
       {
         params: [30, 30, 25, 25],
@@ -56,9 +56,9 @@ const shapes = [
     ],
   },
   {
-    shape: "KeyPoint",
+    shape: 'KeyPoint',
     props: 'strokeWidth="5"',
-    action: "drawByClick",
+    action: 'drawByClick',
     regions: [
       {
         params: [30, 30],
@@ -66,8 +66,8 @@ const shapes = [
     ],
   },
   {
-    shape: "Brush",
-    action: "drawThroughPoints",
+    shape: 'Brush',
+    action: 'drawThroughPoints',
     regions: [
       {
         params: [
@@ -85,16 +85,16 @@ const shapes = [
     ],
   },
 ];
-const shapesTable = new DataTable(["shape", "props", "action", "regions"]);
+const shapesTable = new DataTable(['shape', 'props', 'action', 'regions']);
 
-shapes.forEach(({ shape, props = "", action, regions }) => {
+shapes.forEach(({ shape, props = '', action, regions }) => {
   shapesTable.add([shape, props, action, regions]);
 });
 
-function convertParamsToPixels(params, canvasSize, key = "width") {
+function convertParamsToPixels(params, canvasSize, key = 'width') {
   if (Array.isArray(params)) {
     for (const idx in params) {
-      params[idx] = convertParamsToPixels(params[idx], canvasSize, idx % 2 ? "height" : "width");
+      params[idx] = convertParamsToPixels(params[idx], canvasSize, idx % 2 ? 'height' : 'width');
     }
   } else {
     params = canvasSize[key] / 100 * params;
@@ -102,7 +102,7 @@ function convertParamsToPixels(params, canvasSize, key = "width") {
   return params;
 }
 
-Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtImageView, AtSidebar, current }) {
+Data(shapesTable).Scenario('Selecting after creation', async function({ I, AtImageView, AtSidebar, current }) {
   const params = {
     config: getConfigWithShape(current.shape, current.props),
     data: { image: IMAGE },
@@ -113,7 +113,7 @@ Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtIma
     }
   };
 
-  I.amOnPage("/");
+  I.amOnPage('/');
   await I.executeScript(initLabelStudio, params);
   await I.executeScript(setSelectAfterCreate, false);
 
@@ -123,17 +123,17 @@ Data(shapesTable).Scenario("Selecting after creation", async function({ I, AtIma
   const canvasSize = await AtImageView.getCanvasSize();
 
   for (const region of current.regions) {
-    I.pressKey(["u"]);
-    I.pressKey("1");
+    I.pressKey(['u']);
+    I.pressKey('1');
     AtImageView[current.action](...convertParamsToPixels(region.params, canvasSize));
   }
-  I.pressKey(["u"]);
-  if (current.shape === "Brush") {
+  I.pressKey(['u']);
+  if (current.shape === 'Brush') {
     // Switching to the move tool
-    I.pressKey(["v"]);
+    I.pressKey(['v']);
   }
 
   AtImageView.clickAt(canvasSize.width * 0.3, canvasSize.height * 0.3);
-  I.seeElement(locate(".ant-list-item[class*='selected--']"));
-  I.seeElement(locate(".lsf-entity"));
+  I.seeElement(locate('.ant-list-item[class*=\'selected--\']'));
+  I.seeElement(locate('.lsf-entity'));
 });

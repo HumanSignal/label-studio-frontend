@@ -1,16 +1,16 @@
-import { types } from "mobx-state-tree";
-import * as xpath from "xpath-range";
-import Registry from "../core/Registry";
-import { AreaMixin } from "../mixins/AreaMixin";
-import { HighlightMixin } from "../mixins/HighlightMixin";
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
-import WithStatesMixin from "../mixins/WithStates";
-import { RichTextModel } from "../tags/object/RichText/model";
-import { findRangeNative, rangeToGlobalOffset } from "../utils/selection-tools";
-import { isDefined } from "../utils/utilities";
+import { types } from 'mobx-state-tree';
+import * as xpath from 'xpath-range';
+import Registry from '../core/Registry';
+import { AreaMixin } from '../mixins/AreaMixin';
+import { HighlightMixin } from '../mixins/HighlightMixin';
+import NormalizationMixin from '../mixins/Normalization';
+import RegionsMixin from '../mixins/Regions';
+import WithStatesMixin from '../mixins/WithStates';
+import { RichTextModel } from '../tags/object/RichText/model';
+import { findRangeNative, rangeToGlobalOffset } from '../utils/selection-tools';
+import { isDefined } from '../utils/utilities';
 
-const GlobalOffsets = types.model("GlobalOffset", {
+const GlobalOffsets = types.model('GlobalOffset', {
   start: types.number,
   end: types.number,
   // distinguish loaded globalOffsets from user's annotation and internally calculated one;
@@ -25,8 +25,8 @@ const GlobalOffsets = types.model("GlobalOffset", {
 }));
 
 const Model = types
-  .model("RichTextRegionModel", {
-    type: "richtextregion",
+  .model('RichTextRegionModel', {
+    type: 'richtextregion',
     object: types.late(() => types.reference(RichTextModel)),
 
     startOffset: types.integer,
@@ -104,8 +104,8 @@ const Model = types
         }
       }
 
-      if (self.object.savetextresult === "yes" && isDefined(self.text)) {
-        res.value["text"] = self.text;
+      if (self.object.savetextresult === 'yes' && isDefined(self.text)) {
+        res.value['text'] = self.text;
       }
 
       return res;
@@ -264,7 +264,7 @@ const Model = types
         return xpath.toRange(start, startOffset, end, endOffset, rootNode);
       } catch (err) {
         // actually this happens when regions cannot be located by xpath for some reason
-        console.warn("can't locate xpath", { start, end }, err);
+        console.warn('can\'t locate xpath', { start, end }, err);
       }
 
       return undefined;
@@ -272,7 +272,7 @@ const Model = types
   }));
 
 const RichTextRegionModel = types.compose(
-  "RichTextRegionModel",
+  'RichTextRegionModel',
   WithStatesMixin,
   RegionsMixin,
   AreaMixin,
@@ -281,8 +281,8 @@ const RichTextRegionModel = types.compose(
   HighlightMixin,
 );
 
-Registry.addRegionType(RichTextRegionModel, "text");
-Registry.addRegionType(RichTextRegionModel, "hypertext");
-Registry.addRegionType(RichTextRegionModel, "richtext");
+Registry.addRegionType(RichTextRegionModel, 'text');
+Registry.addRegionType(RichTextRegionModel, 'hypertext');
+Registry.addRegionType(RichTextRegionModel, 'richtext');
 
 export { RichTextRegionModel };

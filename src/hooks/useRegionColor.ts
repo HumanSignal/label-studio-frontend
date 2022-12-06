@@ -1,9 +1,9 @@
-import chroma from "chroma-js";
-import { observe } from "mobx";
-import { useContext, useEffect, useMemo, useState } from "react";
-import { ImageViewContext } from "../components/ImageView/ImageViewContext";
-import Constants, { defaultStyle } from "../core/Constants";
-import { isDefined } from "../utils/utilities";
+import chroma from 'chroma-js';
+import { observe } from 'mobx';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { ImageViewContext } from '../components/ImageView/ImageViewContext';
+import Constants, { defaultStyle } from '../core/Constants';
+import { isDefined } from '../utils/utilities';
 
 const defaultStyles = {
   defaultOpacity: defaultStyle.opacity,

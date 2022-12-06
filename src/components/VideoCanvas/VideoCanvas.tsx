@@ -1,11 +1,11 @@
-import { forwardRef, memo, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Block, Elem } from "../../utils/bem";
-import { clamp, isDefined } from "../../utils/utilities";
-import "./VideoCanvas.styl";
-import { MAX_ZOOM, MIN_ZOOM } from "./VideoConstants";
-import { VirtualCanvas } from "./VirtualCanvas";
-import { VirtualVideo } from "./VirtualVideo";
-import InfoModal from "../../components/Infomodal/Infomodal";
+import { forwardRef, memo, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Block, Elem } from '../../utils/bem';
+import { clamp, isDefined } from '../../utils/utilities';
+import './VideoCanvas.styl';
+import { MAX_ZOOM, MIN_ZOOM } from './VideoConstants';
+import { VirtualCanvas } from './VirtualCanvas';
+import { VirtualVideo } from './VirtualVideo';
+import InfoModal from '../../components/Infomodal/Infomodal';
 
 type VideoProps = {
   src: string,
@@ -20,6 +20,8 @@ type VideoProps = {
   pan?: PanOptions,
   allowInteractions?: boolean,
   speed: number,
+
+  allowPanOffscreen?: boolean,
 
   contrast?: number,
   brightness?: number,
@@ -81,6 +83,7 @@ export interface VideoRef {
   setSaturation: (value: number) => void;
   setZoom: (value: number) => void;
   setPan: (x: number, y: number) => void;
+  adjustPan: (x: number, y: number) => PanOptions;
 }
 
 export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) => {
@@ -116,8 +119,22 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     if (brightness !== 1) result.push(`brightness(${brightness})`);
     if (saturation !== 1) result.push(`saturate(${saturation})`);
 
-    return result.join(" ");
+    return result.join(' ');
   }, [brightness, contrast, saturation]);
+
+  const processPan = useCallback((pan: PanOptions) => {
+    const { width, height } = videoDimensions;
+    const resultWidth = width * zoom;
+    const resultHeight = height * zoom;
+
+    const xMinMax = clamp((resultWidth - canvasWidth) / 2, 0, Infinity);
+    const yMinMax = clamp((resultHeight - canvasHeight) / 2, 0, Infinity);
+
+    const panX = props.allowPanOffscreen ? pan.x : clamp(pan.x, -xMinMax, xMinMax);
+    const panY = props.allowPanOffscreen ? pan.y : clamp(pan.y, -yMinMax, yMinMax);
+
+    return { x: panX, y: panY };
+  }, [props.allowPanOffscreen, canvasWidth, canvasHeight, zoom]);
 
   const drawVideo = useCallback(() => {
     try {
@@ -264,7 +281,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
   useEffect(() => {
     if (!props.allowInteractions) return;
-    rootRef.current?.addEventListener("wheel", (e) => {
+    rootRef.current?.addEventListener('wheel', (e) => {
       e.preventDefault();
     });
   }, []);
@@ -277,9 +294,9 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
 
   useEffect(() => {
     if (isDefined(props.pan)) {
-      setPan(props.pan);
+      setPan(processPan(props.pan));
     }
-  }, [props.pan]);
+  }, [props.pan, processPan]);
 
   useEffect(() => {
     if (isDefined(props.brightness)){
@@ -345,11 +362,16 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         video.currentTime = value;
       }
     },
+    adjustPan(x, y) {
+      return processPan({ x, y });
+    },
     setZoom(value) {
       setZoom(clampZoom(value));
     },
     setPan(x, y) {
-      setPan({ x, y });
+      const pan = this.adjustPan(x, y);
+
+      setPan(pan);
     },
     setContrast(value) {
       setContrast(value);
@@ -535,4 +557,4 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   );
 }));
 
-
+VideoCanvas.displayName = 'VideoCanvas';

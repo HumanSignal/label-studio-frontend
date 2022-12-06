@@ -1,34 +1,34 @@
-import React from "react";
-import { Form, Select } from "antd";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { Form, Select } from 'antd';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import RequiredMixin from "../../mixins/Required";
-import PerRegionMixin from "../../mixins/PerRegion";
-import InfoModal from "../../components/Infomodal/Infomodal";
-import Registry from "../../core/Registry";
-import SelectedModelMixin from "../../mixins/SelectedModel";
-import VisibilityMixin from "../../mixins/Visibility";
-import Tree from "../../core/Tree";
-import Types from "../../core/Types";
-import { guidGenerator } from "../../core/Helpers";
-import ControlBase from "./Base";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
-import { Block, Elem } from "../../utils/bem";
-import "./Choices/Choises.styl";
+import RequiredMixin from '../../mixins/Required';
+import PerRegionMixin from '../../mixins/PerRegion';
+import InfoModal from '../../components/Infomodal/Infomodal';
+import Registry from '../../core/Registry';
+import SelectedModelMixin from '../../mixins/SelectedModel';
+import VisibilityMixin from '../../mixins/Visibility';
+import Tree from '../../core/Tree';
+import Types from '../../core/Types';
+import { guidGenerator } from '../../core/Helpers';
+import ControlBase from './Base';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import { Block } from '../../utils/bem';
+import './Choices/Choises.styl';
 
-import "./Choice";
-import DynamicChildrenMixin from "../../mixins/DynamicChildrenMixin";
-import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from "../../utils/feature-flags";
+import './Choice';
+import DynamicChildrenMixin from '../../mixins/DynamicChildrenMixin';
+import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from '../../utils/feature-flags';
 
 const { Option } = Select;
 
 /**
- * Use the Choices tag to create a group of choices, with radio buttons or checkboxes. Can be used for single or multi-class classification. Use for advanced classification tasks where annotators can choose one or multiple answers.
+ * The `Choices` tag is used to create a group of choices, with radio buttons or checkboxes. It can be used for single or multi-class classification. Also, it is used for advanced classification tasks where annotators can choose one or multiple answers.
  *
  * Choices can have dynamic value to load labels from task. This task data should contain a list of options to create underlying <Choice>s. All the parameters from options will be transferred to corresponding tags.
  *
- * The Choices tag can be used with any data types.
+ * The `Choices` tag can be used with any data types.
  * @example
  * <!--Basic text classification labeling configuration-->
  * <View>
@@ -84,16 +84,15 @@ const { Option } = Select;
  * @param {boolean} [allowNested]      - Allow to use `children` field in dynamic choices to nest them. Submitted result will contain array of arrays, every item is a list of values from topmost parent choice down to selected one.
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
 
   showinline: types.maybeNull(types.boolean),
 
-  choice: types.optional(types.enumeration(["single", "single-radio", "multiple"]), "single"),
+  choice: types.optional(types.enumeration(['single', 'single-radio', 'multiple']), 'single'),
 
-  layout: types.optional(types.enumeration(["select", "inline", "vertical"]), "vertical"),
+  layout: types.optional(types.enumeration(['select', 'inline', 'vertical']), 'vertical'),
 
-  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, "") } : {}),
+  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, '') } : {}),
 
   allownested: types.optional(types.boolean, false),
 });
@@ -105,12 +104,12 @@ const Model = types
     readonly: types.optional(types.boolean, false),
     visible: types.optional(types.boolean, true),
 
-    type: "choices",
-    children: Types.unionArray(["choice", "view", "header", "hypertext"]),
+    type: 'choices',
+    children: Types.unionArray(['choice', 'view', 'header', 'hypertext']),
   })
   .views(self => ({
     get shouldBeUnselected() {
-      return self.choice === "single" || self.choice === "single-radio";
+      return self.choice === 'single' || self.choice === 'single-radio';
     },
 
     states() {
@@ -149,7 +148,7 @@ const Model = types
     },
 
     get defaultChildType() {
-      return "choice";
+      return 'choice';
     },
 
     // perChoiceVisible() {
@@ -171,8 +170,8 @@ const Model = types
   .actions(self => ({
     afterCreate() {
       // TODO depricate showInline
-      if (self.showinline === true) self.layout = "inline";
-      if (self.showinline === false) self.layout = "vertical";
+      if (self.showinline === true) self.layout = 'inline';
+      if (self.showinline === false) self.layout = 'vertical';
     },
 
     needsUpdate() {
@@ -251,7 +250,7 @@ const Model = types
     fromStateJSON(obj) {
       self.unselectAll();
 
-      if (!obj.value.choices) throw new Error("No labels param");
+      if (!obj.value.choices) throw new Error('No labels param');
 
       if (obj.id) self.pid = obj.id;
 
@@ -260,7 +259,7 @@ const Model = types
       obj.value.choices.forEach(l => {
         const choice = self.findLabel(l);
 
-        if (!choice) throw new Error("No label " + l);
+        if (!choice) throw new Error('No label ' + l);
 
         choice.setSelected(true);
       });
@@ -268,10 +267,10 @@ const Model = types
   }));
 
 const ChoicesModel = types.compose(
-  "ChoicesModel",
+  'ChoicesModel',
   ControlBase,
   TagAttrs,
-  SelectedModelMixin.props({ _child: "ChoiceModel" }),
+  SelectedModelMixin.props({ _child: 'ChoiceModel' }),
   RequiredMixin,
   PerRegionMixin,
   VisibilityMixin,
@@ -283,9 +282,9 @@ const ChoicesModel = types.compose(
 const ChoicesSelectLayout = observer(({ item }) => {
   return (
     <Select
-      style={{ width: "100%" }}
+      style={{ width: '100%' }}
       value={item.selectedLabels.map(l => l._value)}
-      mode={item.choice === "multiple" ? "multiple" : ""}
+      mode={item.choice === 'multiple' ? 'multiple' : ''}
       onChange={function(val) {
         if (Array.isArray(val)) {
           item.resetSelected();
@@ -312,17 +311,17 @@ const ChoicesSelectLayout = observer(({ item }) => {
 const HtxChoices = observer(({ item }) => {
   return (
     <Block name="choices" mod={{ hidden: !item.isVisible || !item.perRegionVisible(), layout: item.layout }}>
-      {item.layout === "select" ? (
+      {item.layout === 'select' ? (
         <ChoicesSelectLayout item={item} />
       ) : (
         !isFF(FF_DEV_2007)
-          ? <Form layout={item.layout}>{Tree.renderChildren(item)}</Form> 
-          : Tree.renderChildren(item)
+          ? <Form layout={item.layout}>{Tree.renderChildren(item, item.annotation)}</Form>
+          : Tree.renderChildren(item, item.annotation)
       )}
     </Block>
   );
 });
 
-Registry.addTag("choices", ChoicesModel, HtxChoices);
+Registry.addTag('choices', ChoicesModel, HtxChoices);
 
 export { HtxChoices, ChoicesModel, TagAttrs };
