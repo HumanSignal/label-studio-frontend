@@ -252,7 +252,14 @@ export class Regions {
       }
 
       if (Math.abs(currentX - startX) > 5) {
-        region.updatePosition(region.start, this.pixelsToTime(currentX));
+        let currentStart = this.pixelsToTime(startX);
+        let currentEnd = this.pixelsToTime(currentX);
+
+        if (currentEnd < currentStart) {
+          [currentStart, currentEnd] = [currentEnd, currentStart];
+        }
+
+        region.updatePosition(currentStart, currentEnd);
         region.render();
       }
     };
