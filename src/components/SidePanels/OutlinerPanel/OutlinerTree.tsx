@@ -2,17 +2,18 @@ import chroma from 'chroma-js';
 import { observer } from 'mobx-react';
 import Tree from 'rc-tree';
 import { createContext, FC, MouseEvent, useCallback, useContext, useMemo, useState } from 'react';
-import { IconLockLocked, IconLockUnlocked, IconWarning, LsSparks } from '../../../assets/icons';
+import { IconWarning, LsSparks } from '../../../assets/icons';
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
 import { IconArrow } from '../../../assets/icons/tree';
-import { Button, ButtonProps } from '../../../common/Button/Button';
+import { Tooltip } from '../../../common/Tooltip/Tooltip';
 import Registry from '../../../core/Registry';
 import { PER_REGION_MODES } from '../../../mixins/PerRegionModes';
 import { Block, cn, Elem } from '../../../utils/bem';
+import { FF_DEV_2755, isFF } from '../../../utils/feature-flags';
 import { flatten, isDefined, isMacOS } from '../../../utils/utilities';
 import { NodeIcon } from '../../Node/Node';
-import { FF_DEV_2755, isFF } from '../../../utils/feature-flags';
-import { Tooltip } from '../../../common/Tooltip/Tooltip';
+import { LockButton } from '../Components/LockButton';
+import { RegionControlButton } from '../Components/RegionControlButton';
 import './TreeView.styl';
 
 const { localStorage } = window;
@@ -443,39 +444,6 @@ const RegionControls: FC<RegionControlsProps> = observer(({
     </Elem>
   );
 });
-
-const LockButton: FC<{
-  item: any,
-  annotation: any,
-  hovered: boolean,
-  locked: boolean,
-  onClick: () => void,
-}> = observer(({ item, annotation, hovered, locked, onClick }) => {
-  const isLocked = locked || item.isReadOnly() || annotation.isReadOnly();
-  const isRegionReadonly = item.isReadOnly() && !locked;
-
-  return item && (hovered || item.isReadOnly() || locked) && (
-    <RegionControlButton disabled={isRegionReadonly} onClick={onClick}>
-      {isLocked ? <IconLockLocked/> : <IconLockUnlocked/>}
-    </RegionControlButton>
-  );
-});
-
-const RegionControlButton: FC<ButtonProps> = ({ children, onClick, ...props }) => {
-  return (
-    <Button
-      {...props}
-      onClick={(e) => {
-        e.stopPropagation(),
-        onClick?.(e);
-      }}
-      type="text"
-      style={{ padding: 0, width: 24, height: 24 }}
-    >
-      {children}
-    </Button>
-  );
-};
 
 interface RegionItemOCSProps {
   item: any;

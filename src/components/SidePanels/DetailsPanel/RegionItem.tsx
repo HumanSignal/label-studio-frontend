@@ -1,11 +1,12 @@
 import chroma from 'chroma-js';
 import { observer } from 'mobx-react';
 import { FC, useMemo, useState } from 'react';
-import { IconLink, IconLockLocked, IconLockUnlocked, IconPlusAlt, IconTrash, IconWarning } from '../../../assets/icons';
+import { IconLink, IconPlusAlt, IconTrash, IconWarning } from '../../../assets/icons';
 import { IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
 import { Button, ButtonProps } from '../../../common/Button/Button';
 import { Block, Elem } from '../../../utils/bem';
 import { NodeIcon } from '../../Node/Node';
+import { LockButton } from '../Components/LockButton';
 
 interface RegionItemProps {
   region: any;
@@ -121,11 +122,15 @@ const RegionAction: FC<any> = observer(({
         {!region.isReadOnly() && entityButtons}
       </Elem>
       <Elem name="group" mod={{ align: 'right' }}>
-        <RegionActionButton
-          icon={region.isReadOnly() ? <IconLockUnlocked/> : <IconLockLocked/>}
-          disabled={region.isReadOnly()}
+        <LockButton
+          item={region}
+          annotation={region?.annotation}
+          hovered={true}
+          locked={region?.locked}
           onClick={() => region.setLocked(!region.locked)}
           hotkey="region:lock"
+          look='alt'
+          style={{ width: 36, height: 32 }}
         />
         <RegionActionButton
           icon={region.hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
