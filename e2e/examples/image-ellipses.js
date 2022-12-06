@@ -48,7 +48,7 @@ const result = [
     value: {
       x: 80,
       y: 80,
-      ellipselabels: ['Hello'],
+      ellipselabels: ['World'],
       rotation: 0,
       radiusY: 5,
       radiusX: 7,

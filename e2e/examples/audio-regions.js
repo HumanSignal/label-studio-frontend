@@ -24,16 +24,6 @@ const data = {
 
 const result = [
   {
-    from_name: 'choice',
-    id: 'hIj6zg57SY',
-    to_name: 'audio',
-    type: 'choices',
-    origin: 'manual',
-    value: {
-      choices: ['Lo-Fi'],
-    },
-  },
-  {
     from_name: 'label',
     id: 'SsGrpVgy_C',
     to_name: 'audio',
@@ -59,6 +49,16 @@ const result = [
       end: 59.39854733358493,
       labels: ['Other'],
       start: 55.747572792986325,
+    },
+  },
+  {
+    from_name: 'choice',
+    id: 'hIj6zg57SY',
+    to_name: 'audio',
+    type: 'choices',
+    origin: 'manual',
+    value: {
+      choices: ['Lo-Fi'],
     },
   },
 ];

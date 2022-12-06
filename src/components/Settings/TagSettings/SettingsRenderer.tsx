@@ -9,6 +9,7 @@ const SettingsRendererPure: FC<{store: any, settings: SettingsProperties}> = ({
   store,
   settings,
 }) => {
+  console.log({ store, settings });
   return (
     <Block name="settings">
       {Object.entries(settings).map(([key, value]) => {
@@ -25,6 +26,7 @@ const SettingsField: FC<{
   name: string,
   value: SettingsProperty,
 }> = observer(({ store, name, value }) => {
+  console.log({ store });
   const handler = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (value.onChangeEvent) {
       value.onChangeEvent(e);

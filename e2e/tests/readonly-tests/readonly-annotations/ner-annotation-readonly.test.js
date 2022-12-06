@@ -33,7 +33,7 @@ Data(imageExamples).Scenario('NER Readonly Annotations', async ({
   AtSidebar.seeRegions(regions.length);
   AtSidebar.clickRegion(current.regionName);
 
-  I.pressKey('Delete');
+  I.pressKey('Backspace');
   I.say('Results are equal after deletion attempt');
   await LabelStudio.resultsNotChanged(result);
 

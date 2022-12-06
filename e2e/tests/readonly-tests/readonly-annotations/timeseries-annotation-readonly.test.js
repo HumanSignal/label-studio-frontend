@@ -39,7 +39,7 @@ Data(imageExamples).Scenario('Timeseries Readonly Annotations', async ({
   AtSidebar.clickRegion(current.regionName);
 
   I.say('Results are equal after deletion attempt');
-  I.pressKey('Delete');
+  I.pressKey('Backspace');
   await LabelStudio.resultsNotChanged(result);
 
   const wrapperPosition = await LSFTools.getElementPosition('.htx-timeseries-channel');

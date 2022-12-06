@@ -47,7 +47,7 @@ Data(imageExamples).Scenario('Image Readonly Annotations', async ({
 
   assert.equal(isTransformerExist, false);
 
-  I.pressKey('Delete');
+  I.pressKey('Backspace');
   I.say('Results are equal after deletion attempt');
   await LabelStudio.resultsNotChanged(result, 1);
 

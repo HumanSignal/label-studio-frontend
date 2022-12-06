@@ -42,7 +42,7 @@ Data(imageExamples).Scenario('Audio Readonly Annotations', async ({
   I.say('Results are equal after modification attempt');
   await LabelStudio.resultsNotChanged(result);
 
-  I.pressKey('Delete');
+  I.pressKey('Backspace');
   I.say('Results are equal after deletion attempt');
   await LabelStudio.resultsNotChanged(result);
 
