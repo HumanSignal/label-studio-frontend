@@ -32,6 +32,7 @@ export class Timeline {
   private placement: TimelinePlacement;
   private padding: Padding = { left: 0, right: 0, top: 0, bottom: 0 };
   private height = defaults.timelineHeight as number;
+  private initHeight = defaults.timelineHeight as number;
   private fontSize = 12;
   private gridWidth = 1;
   private fontFamily = 'Arial';
@@ -51,7 +52,8 @@ export class Timeline {
     this.padding = {  ...this.padding, ...options?.padding };
     this.fontSize = options?.fontSize ?? this.fontSize;
     this.fontFamily = options?.fontFamily ?? this.fontFamily;
-    this.height = options?.height || defaults.timelinePlacement ? defaults.timelineHeight : this.height;
+    this.height = options?.height ?? defaults.timelinePlacement ? options?.height ?? defaults.timelineHeight : this.height;
+    this.initHeight = this.height;
     this.gridWidth = options?.gridWidth ?? this.gridWidth;
     this.fontColor = options?.fontColor ? rgba(options?.fontColor) : this.fontColor;
     this.selectionColor = options?.selectedColor ?? this.selectionColor;
@@ -65,7 +67,13 @@ export class Timeline {
       this.visualizer.on('draw', () => this.render());
     });
     this.layer.on('layerUpdated', () => {
-      this.layer.isVisible ? this.render() : this.layer.clear();
+      if (this.layer.isVisible) {
+        this.height = this.initHeight;
+        this.render();
+      } else {
+        this.height = 0;
+        this.layer.clear();
+      }
     });
   }
 

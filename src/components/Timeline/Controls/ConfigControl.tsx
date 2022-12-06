@@ -35,7 +35,7 @@ export const ConfigControl: FC<ConfigControlProps> = ({
   const [playbackSpeed, setplaybackSpeed] = useState(speed ?? 1);
   const [isTimeline, setTimeline] = useState(true);
   const [isAudioWave, setAudioWave] = useState(true);
-  const [isAudioTrack, setAudioTrack] = useState(true);
+  // const [isAudioTrack, setAudioTrack] = useState(true);
 
   useEffect(() => {
     if (layerVisibility) {
@@ -43,7 +43,7 @@ export const ConfigControl: FC<ConfigControlProps> = ({
 
       setTimeline(layerVisibility?.get?.('timeline') ?? defaultDisplay);
       setAudioWave(layerVisibility?.get?.('waveform') ?? defaultDisplay);
-      setAudioTrack(layerVisibility?.get?.('main') ?? defaultDisplay);
+      // setAudioTrack(layerVisibility?.get?.('main') ?? defaultDisplay);
     }
   }, [layerVisibility]);
   
@@ -58,10 +58,10 @@ export const ConfigControl: FC<ConfigControlProps> = ({
     toggleVisibility?.('waveform', !isAudioWave);
   };
 
-  const handleSetAudioTrack = () => {
-    setAudioTrack(!isAudioTrack);
-    toggleVisibility?.('main', !isAudioWave);
-  };
+  // const handleSetAudioTrack = () => {
+  //   setAudioTrack(!isAudioTrack);
+  //   toggleVisibility?.('main', !isAudioWave);
+  // };
 
   const handleChangePlaybackSpeed = (e: React.FormEvent<HTMLInputElement>) => {
     const _playbackSpeed = parseFloat(e.currentTarget.value);
@@ -91,12 +91,12 @@ export const ConfigControl: FC<ConfigControlProps> = ({
         >
           { isAudioWave ? 'Hide' : 'Show' } audio wave
         </Elem>
-        <Elem
+        {/* <Elem
           name="menu-button"
           onClick={handleSetAudioTrack}
         >
           { isAudioTrack ? 'Hide' : 'Show' } audio track
-        </Elem>
+        </Elem> */}
       </Elem>
     );
   };

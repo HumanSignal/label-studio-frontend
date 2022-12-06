@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import { FC, useEffect, useRef } from 'react';
+import { FC, useCallback, useEffect, useRef } from 'react';
 import { Hotkey } from '../../../core/Hotkey';
 import { useWaveform } from '../../../lib/AudioUltra/react';
 import { Controls } from '../../../components/Timeline/Controls';
@@ -166,13 +166,15 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         amp={controls.amp}
         onAmpChange={amp => controls.setAmp(amp)}
         mediaType="audio"
-        toggleVisibility={(layerName: string, isVisible: boolean) => {
-          console.log('toggleVisibility', layerName, isVisible, waveform);
-          const layer = waveform.current.getLayer(layerName);
+        toggleVisibility={useCallback((layerName: string, isVisible: boolean) => {
+          if (waveform.current) {
+            const layer = waveform.current?.getLayer(layerName);
 
-          layer.isVisible = isVisible;
-          layer.invoke('layerUpdated');
-        }}
+            if (layer) {
+              layer.setVisibility(isVisible);
+            }
+          }
+        }, [waveform])}
         layerVisibility={controls.layerVisibility}
       />
     </div>
