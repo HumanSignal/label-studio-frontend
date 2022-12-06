@@ -67,13 +67,9 @@ export class Timeline {
       this.visualizer.on('draw', () => this.render());
     });
     this.layer.on('layerUpdated', () => {
-      if (this.layer.isVisible) {
-        this.height = this.initHeight;
-        this.render();
-      } else {
-        this.height = 0;
-        this.layer.clear();
-      }
+      this.height = this.layer.isVisible ? this.initHeight : 0;
+      this.visualizer.reserveSpace({ height: this.height });
+      this.render();
     });
   }
 
@@ -90,16 +86,18 @@ export class Timeline {
     const xOffset = placement === 'top' ? (this.padding?.left || 0) : 0;
 
     layer.clear();
-    layer.lineWidth = lineWidth;
-    layer.strokeStyle = strokeStyle;
-    layer.fillStyle = fillStyle;
-    layer.beginPath();
-    layer.fillRect(0, yOffset, width + xOffset, height);
-    this.renderIntervals();
-    this.renderSelections();
-    layer.fillStyle = strokeStyle;
-    layer.fillRect(0, yOffset + height, width + xOffset, lineWidth);
-    layer.stroke();
+    if (this.layer.isVisible) {
+      layer.lineWidth = lineWidth;
+      layer.strokeStyle = strokeStyle;
+      layer.fillStyle = fillStyle;
+      layer.beginPath();
+      layer.fillRect(0, yOffset, width + xOffset, height);
+      this.renderIntervals();
+      this.renderSelections();
+      layer.fillStyle = strokeStyle;
+      layer.fillRect(0, yOffset + height, width + xOffset, lineWidth);
+      layer.stroke();
+    }
   }
   
   private renderSelections() {

@@ -460,23 +460,25 @@ export class Waveform extends Events<WaveformEventTypes> {
    * Handle cursor move event
    */
   private handleCursorMove = (e: MouseEvent) => {
-    if (this.loaded && this.cursor.inView) {
-      if (this.focusTimeout) clearTimeout(this.focusTimeout);
-
-      this.focusTimeout = setTimeout(() => {
-        if (!this.cursor.hasFocus()) {
-          this.cursor.set(CursorSymbol.crosshair);
-        }
-      }, 1);
-
-      const cursorTime = getCursorTime(e, this.visualizer, this.duration);
-      const timeDate = new Date(cursorTime * 1000);
-      const onlyTime = timeDate.toISOString().match(/T(.*?)Z/)?.[1];
-
-      this.tooltip.show(e.pageX + 14, e.pageY - 20, onlyTime);
-    } else {
-      this.cursor.set(CursorSymbol.default);
-      this.tooltip.hide();
+    if (e.target && this.visualizer.container.contains(e.target)) {
+      if (this.loaded && this.cursor.inView) {
+        if (this.focusTimeout) clearTimeout(this.focusTimeout);
+  
+        this.focusTimeout = setTimeout(() => {
+          if (!this.cursor.hasFocus()) {
+            this.cursor.set(CursorSymbol.crosshair);
+          }
+        }, 1);
+  
+        const cursorTime = getCursorTime(e, this.visualizer, this.duration);
+        const timeDate = new Date(cursorTime * 1000);
+        const onlyTime = timeDate.toISOString().match(/T(.*?)Z/)?.[1];
+  
+        this.tooltip.show(e.pageX + 14, e.pageY - 20, onlyTime);
+      } else {
+        this.cursor.set(CursorSymbol.default);
+        this.tooltip.hide();
+      }
     }
   };
 }

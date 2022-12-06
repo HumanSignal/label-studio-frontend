@@ -56,6 +56,7 @@ export const ConfigControl: FC<ConfigControlProps> = ({
   const handleSetAudioWave = () => {
     setAudioWave(!isAudioWave);
     toggleVisibility?.('waveform', !isAudioWave);
+    toggleVisibility?.('regions', !isAudioWave);
   };
 
   // const handleSetAudioTrack = () => {
