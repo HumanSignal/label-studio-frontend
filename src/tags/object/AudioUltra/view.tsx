@@ -6,6 +6,8 @@ import { Controls } from '../../../components/Timeline/Controls';
 import { Region } from '../../../lib/AudioUltra/Regions/Region';
 import { Segment } from '../../../lib/AudioUltra/Regions/Segment';
 import { Regions } from '../../../lib/AudioUltra/Regions/Regions';
+import { Block } from '../../../utils/bem';
+import './view.styl';
 
 interface AudioUltraProps {
   item: any;
@@ -129,17 +131,12 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
 
       return () => {
         hotkeys.unbindAll();
-        waveform.current?.off('beforeRegionsDraw', updateBeforeRegionDraw);
-        waveform.current?.off('afterRegionsDraw', updateAfterRegionDraw);
-        waveform.current?.off('regionSelected', selectRegion);
-        waveform.current?.off('regionCreated', createRegion);
-        waveform.current?.off('regionUpdatedEnd', updateRegion);
       };
     }
   }, [item.annotationStore.store.hydrated]);
 
   return (
-    <div>
+    <Block name="audio-tag">
       <div ref={(el) => (rootRef.current = el)}></div>
       <Controls
         position={controls.currentTime}
@@ -167,7 +164,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         onAmpChange={amp => controls.setAmp(amp)}
         mediaType="audio"
       />
-    </div>
+    </Block>
   );
 };
 
