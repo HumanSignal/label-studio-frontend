@@ -71,7 +71,7 @@ import { ClassificationMixed } from '../examples/classification_mixed';
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = TimeSeriesSingle;
+const data = ImageSegmentation;
 
 function getData(task) {
   if (task && task.data) {

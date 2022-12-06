@@ -137,7 +137,7 @@ export const Annotation = types
         return self.list.toNames;
       },
       isReadOnly() {
-        return self.readonly;
+        return self.readonly || !self.editable;
       },
     })
   .views(self => ({

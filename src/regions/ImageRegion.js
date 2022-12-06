@@ -35,10 +35,6 @@ const RegionMixin = types
       return getParent(self);
     },
 
-    get editable() {
-      throw new Error('Not implemented');
-    },
-
     get labelsState() {
       return self.states.find(s => s.type.indexOf('labels') !== -1);
     },
