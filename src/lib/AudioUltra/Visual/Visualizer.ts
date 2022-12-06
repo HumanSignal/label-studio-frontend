@@ -686,9 +686,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private handleScroll = (e: WheelEvent) => {
     if (!this.wf.loaded) return;
 
-    const [dX, dY] = [Math.abs(e.deltaX), Math.abs(e.deltaY)];
-
-    if (e.ctrlKey && dY > dX) {
+    if (this.isZooming(e)) {
       const zoom = this.zoom - (e.deltaY * 0.2);
 
       this.setZoom(zoom);
@@ -697,7 +695,7 @@ export class Visualizer extends Events<VisualizerEvents> {
       // Base values
       const maxScroll = this.scrollWidth;
       const maxRelativeScroll = maxScroll / this.fullWidth * this.zoom;
-      const delta = e.deltaX * this.zoom * 1.25;
+      const delta = (Math.abs(e.deltaX) === 0 ? e.deltaY : e.deltaX) * this.zoom * 1.25;
       const position = this.scrollLeft * this.zoom;
 
       // Values for the update
@@ -735,15 +733,14 @@ export class Visualizer extends Events<VisualizerEvents> {
     return this.samplesPerPx;
   }
 
+  private isZooming(e: WheelEvent) {
+    return e.ctrlKey || e.metaKey;
+  }
+
   private preventScrollX = (e: WheelEvent) => {
-    if (!this.wf.loaded) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
     const [dX, dY] = [Math.abs(e.deltaX), Math.abs(e.deltaY)];
 
-    if (dX >= dY || (e.ctrlKey && dY >= dX)) {
+    if (dX >= dY || (this.isZooming(e) && dY >= dX)) {
       e.preventDefault();
       e.stopPropagation();
     }
