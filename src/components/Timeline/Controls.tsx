@@ -61,6 +61,8 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   onSpeedChange,
   onToggleCollapsed,
   formatPosition,
+  toggleVisibility,
+  layerVisibility,
   mediaType,
   ...props
 }) => {
@@ -112,6 +114,8 @@ export const Controls: FC<TimelineControlsProps> = memo(({
           onSpeedChange={(speed: number) => onSpeedChange?.(speed)}
           speed={props.speed || 0}
           amp={props.amp || 0}
+          toggleVisibility={toggleVisibility}
+          layerVisibility={layerVisibility}
         />
         <AudioControl
           volume={props.volume || 0}

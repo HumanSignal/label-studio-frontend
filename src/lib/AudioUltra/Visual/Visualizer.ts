@@ -20,6 +20,7 @@ interface VisualizerEvents {
   layersUpdated: (layers: Map<string, Layer>) => void;
   layerAdded: (layer: Layer) => void;
   layerRemoved: (layer: Layer) => void;
+  heightAdjusted: (Visualizer: Visualizer) => void;
 }
 
 export type VisualizerOptions = Pick<WaveformOptions,
@@ -426,7 +427,13 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   get height() {
-    return this.container.clientHeight;
+    let height = 0;
+    const timelineLayer = this.getLayer('timeline');
+    const waveformLayer = this.getLayer('waveform');
+
+    height += timelineLayer?.isVisible ? this.timelineHeight : 0;
+    height += waveformLayer?.isVisible ? (this?.wf?.params?.height ?? 0) - this.timelineHeight : 0;
+    return height;
   }
 
   get scrollWidth() {
@@ -490,11 +497,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   reserveSpace({ height }: { height: number }) {
-    if (typeof height !== 'number' || height <= 0) {
-      throw new Error('Invalid height. Only positive numbers are allowed.');
-    }
-
-    this.reservedSpace += height;
+    this.reservedSpace = height;
   }
 
   createLayer(options : {name: string, groupName?:string, offscreen?: boolean, zIndex?: number, opacity?: number, compositeOperation?: CanvasCompositeOperation, isVisible?: boolean}) {
@@ -531,6 +534,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.invoke('layerAdded', [layer]);
     layer.on('layerUpdated', () => {
+      this.container.style.height = `${this.height}px`;
       this.draw();
       this.invokeLayersUpdated();
     });
@@ -642,21 +646,23 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   private playHeadMove = (e: MouseEvent, cursor: Cursor) => {
     if (!this.wf.loaded) return;
-    const { x, y } = cursor;
-    const { playhead, playheadPadding, height } = this;
-    const playHeadTop = (this.reservedSpace - playhead.capHeight - playhead.capPadding);
-    
-    if(x >= playhead.x - playheadPadding && 
-      x <= (playhead.x + playhead.width + playheadPadding) &&
-        y >= playHeadTop &&
-        y <= height) {
-      if(!playhead.isHovered) {
-        playhead.invoke('mouseEnter', [e]);
+    if (e.target && this.container.contains(e.target)) {
+      const { x, y } = cursor;
+      const { playhead, playheadPadding, height } = this;
+      const playHeadTop = (this.reservedSpace - playhead.capHeight - playhead.capPadding);
+
+      if (x >= playhead.x - playheadPadding && 
+        x <= (playhead.x + playhead.width + playheadPadding) &&
+          y >= playHeadTop &&
+          y <= height) {
+        if(!playhead.isHovered) {
+          playhead.invoke('mouseEnter', [e]);
+        }
+        this.draw(true);
+      } else if (playhead.isHovered) {
+        playhead.invoke('mouseLeave', [e]);
+        this.draw(true);
       }
-      this.draw(true);
-    } else if (playhead.isHovered) {
-      playhead.invoke('mouseLeave', [e]);
-      this.draw(true);
     }
   };
 
