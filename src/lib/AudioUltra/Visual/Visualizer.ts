@@ -534,7 +534,12 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.invoke('layerAdded', [layer]);
     layer.on('layerUpdated', () => {
+      const mainLayer = this.getLayer('main');
+
       this.container.style.height = `${this.height}px`;
+      if (mainLayer) {
+        mainLayer.height = this.height;
+      }
       this.draw();
       this.invokeLayersUpdated();
     });
@@ -596,7 +601,9 @@ export class Visualizer extends Events<VisualizerEvents> {
     }
   }
 
-  private invokeLayersUpdated = debounce(() => this.invoke('layersUpdated', [this.layers]), 150);
+  private invokeLayersUpdated = debounce(() => {
+    this.invoke('layersUpdated', [this.layers]);
+  }, 150);
 
   private attachEvents() {
     // Observers
@@ -667,7 +674,9 @@ export class Visualizer extends Events<VisualizerEvents> {
   };
 
   private handleSeek = (e: MouseEvent) => {
-    if (!this.wf.loaded || this.seekLocked) return;
+    const mainLayer = this.getLayer('main');
+
+    if (!this.wf.loaded || this.seekLocked || !(e.target && mainLayer?.canvas?.contains(e.target))) return;
     const offset = this.wrapper.getBoundingClientRect().left;
     const x = e.clientX - offset;
     const duration = this.wf.duration;
@@ -756,7 +765,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     if (!this.wf.loaded) return;
     requestAnimationFrame(() => {
       const newWidth = this.wrapper.clientWidth;
-      const newHeight = this.waveHeight;
+      const newHeight = this.height;
 
       this.updateChannels(() => {
         this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
