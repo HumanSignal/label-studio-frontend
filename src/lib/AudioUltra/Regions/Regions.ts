@@ -186,6 +186,10 @@ export class Regions {
     return this.regions.filter(region => region.selected);
   }
 
+  isOverrideKeyPressed(e: MouseEvent) {
+    return e.shiftKey;
+  }
+
   private handleInit = () => {
     if (this.initialRegions.length) {
       this.regions = this.initialRegions.map(region => {
@@ -209,9 +213,7 @@ export class Regions {
 
   private handleDrawRegion = (e: MouseEvent) => {
     if (this.locked || !this.createable) return;
-    if (this.hoveredRegions.size > 0 && !e.shiftKey) {
-      return;
-    }
+    if (this.hoveredRegions.size > 0 && !this.isOverrideKeyPressed(e)) return;
     if (!this.layerGroup.isVisible) return;
 
     this.lock();
