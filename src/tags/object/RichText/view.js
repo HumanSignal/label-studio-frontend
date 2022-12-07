@@ -75,6 +75,7 @@ class RichTextPieceView extends Component {
       item.isFreezingEdge = isEdge && { left: freezeSideLeft, right: freezeSideRight };
       item.isActive = isEdge || target?.classList.contains('__active');
     }
+    else this.draggableRegion = undefined;
   };
 
   _setSelectionStyle = (target, root, doc) => {
@@ -101,6 +102,7 @@ class RichTextPieceView extends Component {
   };
 
   _initializeDrag = (event) => {
+    console.log('Initializing drag');
     const { item } = this.props;
     const root = item.visibleRoot;
     const doc = item.visibleDoc;
@@ -276,6 +278,8 @@ class RichTextPieceView extends Component {
       normedRange.dynamic = this.props.store.autoAnnotation;
 
       if (isFF(FF_DEV_2786) && this.draggableRegion) {
+        console.log('getting this far', this.draggableRegion);
+
         item.highlightRegion(this.draggableRegion, normedRange);
         this.draggableRegion = undefined;
       } else {
