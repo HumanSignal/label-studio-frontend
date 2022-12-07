@@ -4,6 +4,7 @@ import { Block, Elem } from '../../utils/bem';
 import './TimeBox.styl';
 
 export interface TimerProps {
+  sidepanel: boolean;
   value: number | undefined;
   readonly?: boolean;
   inverted?: boolean;
@@ -11,6 +12,7 @@ export interface TimerProps {
 }
 
 export const TimeBox: FC<TimerProps> = ({
+  sidepanel = false,
   value,
   inverted = false,
   readonly = false,
@@ -119,7 +121,7 @@ export const TimeBox: FC<TimerProps> = ({
   };
 
   return (
-    <Block name="time-box" mod={{ inverted }}>
+    <Block name="time-box" mod={{ inverted, sidepanel }}>
       {inputIsVisible ?
         renderInputTime() : renderDisplayedTime()
       }
