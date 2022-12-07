@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, MouseEvent, useState } from 'react';
 import { Block, Elem } from '../../../utils/bem';
 
 import './ConfigControl.styl';
@@ -15,7 +15,7 @@ export interface ConfigControlProps {
   configModal: boolean;
   speed: number;
   amp: number;
-  onSetModal?: () => void;
+  onSetModal?: (e: MouseEvent<HTMLButtonElement>) => void;
   onSpeedChange: (speed: number) => void;
   onAmpChange: (amp: number) => void;
 }

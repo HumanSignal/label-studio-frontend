@@ -87,13 +87,16 @@ export const Controls: FC<TimelineControlsProps> = memo(({
     playing ? onPause?.() : onPlay?.();
   }, [playing, onPlay, onPause]);
 
-  const onSetVolumeModal = () => {
+  const onSetVolumeModal = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
     if (configModal) setConfigModal(false);
 
     setAudioModal(!audioModal);
   };
 
-  const onSetConfigModal = () => {
+  const onSetConfigModal = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+
     if (audioModal) setAudioModal(false);
 
     setConfigModal(!configModal);
@@ -121,6 +124,11 @@ export const Controls: FC<TimelineControlsProps> = memo(({
     );
   };
 
+  const closeModalHandler = () => {
+    setConfigModal(false);
+    setAudioModal(false);
+  };
+
   useEffect(() => {
     const keyboardHandler = (e: KeyboardEvent) => {
       if (!settings?.stepSize) return;
@@ -135,10 +143,12 @@ export const Controls: FC<TimelineControlsProps> = memo(({
 
     document.addEventListener('keydown', keyboardHandler);
     document.addEventListener('keyup', keyboardHandler);
+    document.addEventListener('click', closeModalHandler);
 
     return () => {
       document.removeEventListener('keydown', keyboardHandler);
       document.removeEventListener('keyup', keyboardHandler);
+      document.removeEventListener('click', closeModalHandler);
     };
   }, [altControlsMode]);
 
