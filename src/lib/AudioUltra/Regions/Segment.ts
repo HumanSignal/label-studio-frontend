@@ -293,8 +293,9 @@ export class Segment extends Events<SegmentEvents> {
 
     const { color, handleColor, timelinePlacement, timelineHeight } = this;
     const { height } = this.visualizer;
+    const timelineLayer = this.visualizer.getLayer('timeline');
     const timelineTop = timelinePlacement === defaults.timelinePlacement;
-    const top = timelineTop ? timelineHeight : 0;
+    const top = timelineLayer?.isVisible && timelineTop ? timelineHeight : 0;
     const layer = this.controller.layerGroup;
 
     // @todo - this should account for timeline placement and start at the reservedSpace height

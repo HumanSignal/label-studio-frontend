@@ -162,6 +162,7 @@ export interface TimelineControlsProps {
   altHopSize?: TimelineProps['altHopSize'];
   customControls?: TimelineCustomControls[];
   mediaType: string;
+  layerVisibility?: Map<string, boolean>;
   onRewind: (steps?: number) => void;
   onForward: (steps?: number) => void;
   onPositionChange: (position: number) => void;
@@ -176,6 +177,7 @@ export interface TimelineControlsProps {
   onSpeedChange: TimelineProps['onSpeedChange'];
   onZoom: TimelineProps['onZoom'];
   onAmpChange: (amp: number) => void;
+  toggleVisibility?: (layerName: string, isVisible: boolean) => void;
 }
 
 export interface TimelineCustomControls {
