@@ -1,4 +1,4 @@
-name: Build bundle
+name: Build Bundle
 
 on:
   workflow_call:
@@ -17,6 +17,7 @@ env:
 
 jobs:
   build:
+    name: "Build"
     runs-on: ubuntu-latest
 
     # ci can be skipped with `[skip ci]` prefix in message
@@ -52,9 +53,6 @@ jobs:
 
     - name: Install dependencies
       run: yarn install --frozen-lockfile
-
-    - name: Unit tests
-      run: yarn test && yarn test:coverage
 
     - name: Build distribution package
       timeout-minutes: 10

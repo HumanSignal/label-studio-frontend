@@ -1,10 +1,10 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import Registry from "../../core/Registry";
-import ControlBase from "./Base";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
-import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
-import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
+import Registry from '../../core/Registry';
+import ControlBase from './Base';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import SeparatedControlMixin from '../../mixins/SeparatedControlMixin';
+import { ToolManagerMixin } from '../../mixins/ToolManagerMixin';
 
 /**
  * The `Brush` tag is used for image segmentation tasks where you want to apply a mask or use a brush to draw a region on the image.
@@ -34,12 +34,12 @@ import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 
 const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
-  strokewidth: types.optional(types.string, "15"),
+  strokewidth: types.optional(types.string, '15'),
 });
 
 const Model = types
   .model({
-    type: "brush",
+    type: 'brush',
   })
   .views(self => ({
     get hasStates() {
@@ -52,7 +52,7 @@ const Model = types
     toolNames: ['Brush', 'Erase'],
   }));
 
-const BrushModel = types.compose("BrushModel",
+const BrushModel = types.compose('BrushModel',
   ControlBase,
   AnnotationMixin,
   SeparatedControlMixin,
@@ -65,6 +65,6 @@ const HtxView = () => {
   return null;
 };
 
-Registry.addTag("brush", BrushModel, HtxView);
+Registry.addTag('brush', BrushModel, HtxView);
 
 export { HtxView, BrushModel };

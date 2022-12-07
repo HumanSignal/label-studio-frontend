@@ -1,16 +1,16 @@
-import { render, unmountComponentAtNode } from "react-dom";
-import App from "./components/App/App";
-import { configureStore } from "./configureStore";
+import { render, unmountComponentAtNode } from 'react-dom';
+import App from './components/App/App';
+import { configureStore } from './configureStore';
 import { LabelStudio as LabelStudioReact } from './Component';
-import { registerPanels } from "./registerPanels";
-import { configure } from "mobx";
+import { registerPanels } from './registerPanels';
+import { configure } from 'mobx';
 import { EventInvoker } from './utils/events';
 import legacyEvents from './core/External';
-import { toCamelCase } from "strman";
-import { isDefined } from "./utils/utilities";
-import { Hotkey } from "./core/Hotkey";
+import { toCamelCase } from 'strman';
+import { isDefined } from './utils/utilities';
+import { Hotkey } from './core/Hotkey';
 import defaultOptions from './defaultOptions';
-import { destroy } from "mobx-state-tree";
+import { destroy } from 'mobx-state-tree';
 import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
 
 configure({

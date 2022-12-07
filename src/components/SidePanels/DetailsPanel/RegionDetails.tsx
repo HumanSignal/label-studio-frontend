@@ -1,11 +1,11 @@
-import { Typography } from "antd";
-import { observer } from "mobx-react";
-import { FC, useEffect, useMemo, useRef } from "react";
-import { Tag } from "../../../common/Tag/Tag";
-import { PER_REGION_MODES } from "../../../mixins/PerRegionModes";
-import { Block, Elem, useBEM } from "../../../utils/bem";
-import { RegionEditor } from "./RegionEditor";
-import "./RegionDetails.styl";
+import { Typography } from 'antd';
+import { observer } from 'mobx-react';
+import { FC, useEffect, useMemo, useRef } from 'react';
+import { Tag } from '../../../common/Tag/Tag';
+import { PER_REGION_MODES } from '../../../mixins/PerRegionModes';
+import { Block, Elem, useBEM } from '../../../utils/bem';
+import { RegionEditor } from './RegionEditor';
+import './RegionDetails.styl';
 
 const { Text } = Typography;
 
@@ -18,7 +18,7 @@ const RegionLabels: FC<{result: any}> = ({ result }) => {
       {showLabels && (
         <Elem name="content">
           {labels.map(label => {
-            const bgColor = label.background || "#000000";
+            const bgColor = label.background || '#000000';
 
             return (
               <Tag key={label.id} color={bgColor} solid>
@@ -32,7 +32,7 @@ const RegionLabels: FC<{result: any}> = ({ result }) => {
       {result.area.text ? (
         <Elem
           name="content"
-          mod={{ type: "text" }}
+          mod={{ type: 'text' }}
           dangerouslySetInnerHTML={{
             __html: result.area.text.replace(/\\n/g, '\n'),
           }}
@@ -55,7 +55,7 @@ const TextResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
 const ChoicesResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
   return (
     <Text mark>
-      {mainValue.join(", ")}
+      {mainValue.join(', ')}
     </Text>
   );
 });
@@ -73,11 +73,11 @@ const ResultItem: FC<{result: any}> = observer(({ result }) => {
   const isRegionList = from_name.displaMode === PER_REGION_MODES.REGION_LIST;
 
   const content = useMemo(() => {
-    if (type.endsWith("labels")) {
+    if (type.endsWith('labels')) {
       return (
         <RegionLabels result={result}/>
       );
-    } else if (type === "rating") {
+    } else if (type === 'rating') {
       return (
         <Elem name="result">
           <Text>Rating: </Text>
@@ -86,7 +86,7 @@ const ResultItem: FC<{result: any}> = observer(({ result }) => {
           </Elem>
         </Elem>
       );
-    } else if (type === "textarea" && !(from_name.perregion && isRegionList)) {
+    } else if (type === 'textarea' && !(from_name.perregion && isRegionList)) {
       return (
         <Elem name="result">
           <Text>Text: </Text>
@@ -95,7 +95,7 @@ const ResultItem: FC<{result: any}> = observer(({ result }) => {
           </Elem>
         </Elem>
       );
-    } else if (type === "choices") {
+    } else if (type === 'choices') {
       return (
         <Elem name="result">
           <Text>Choices: </Text>
@@ -163,7 +163,7 @@ export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
         <textarea
           ref={el => input.current = el}
           placeholder="Meta"
-          className={bem.elem("meta-text").toClassName()}
+          className={bem.elem('meta-text').toClassName()}
           value={region.normInput}
           onChange={(e) => saveMeta(e.target.value)}
           onBlur={() => {
