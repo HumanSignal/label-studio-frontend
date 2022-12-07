@@ -27,9 +27,16 @@ jobs:
       - name: "Checkout codebase"
         uses: actions/checkout@v3
 
-      - name: "Download all coverage artifacts"
+      - name: "Download unit coverage artifacts"
         uses: actions/download-artifact@v3
         with:
+          name: unit-tests-coverage
+          path: coverage/
+          
+      - name: "Download e2e coverage artifacts"
+        uses: actions/download-artifact@v3
+        with:
+          name: e2e-tests-coverage
           path: coverage/
 
       - name: Upload coverage to Codecov

@@ -53,5 +53,6 @@ jobs:
     - name: Upload coverage to artifact
       uses: actions/upload-artifact@v3
       with:
+        name: unit-tests-coverage
         path: coverage/
 

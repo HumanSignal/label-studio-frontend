@@ -108,4 +108,5 @@ jobs:
     - name: Upload coverage to artifact
       uses: actions/upload-artifact@v3
       with:
+        name: e2e-tests-coverage
         path: coverage/
