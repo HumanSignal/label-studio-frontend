@@ -24,7 +24,7 @@ export const Slider: FC<SliderProps> = ({
   onChange,
 }) => {
   const sliderRef = useRef<HTMLDivElement>();
-  const [inputVolumeError, setInputVolumeError] = useState(min);
+  const [valueError, setValueError] = useState<number|string|undefined>();
 
   useEffect(() => {
     changeBackgroundSize();
@@ -36,10 +36,26 @@ export const Slider: FC<SliderProps> = ({
   };
 
   const handleChangeInputValue = (e: React.FormEvent<HTMLInputElement>) => {
-    setInputVolumeError(min);
+    setValueError(undefined);
 
-    if (parseFloat(e.currentTarget.value) > max || parseFloat(e.currentTarget.value) < min) {
-      setInputVolumeError(parseFloat(e.currentTarget.value));
+    // match only numbers and dot
+    const partialFloat = e.currentTarget.value.match(/^[0-9]*\.$/);
+
+    if (partialFloat) {
+      setValueError(e.currentTarget.value);
+      return;
+    }
+
+    const noZero = e.currentTarget.value.match(/^\.[0-9]*$/);
+    const normalizedValue = noZero ? '0' + e.currentTarget.value : e.currentTarget.value;
+
+    const newValue = parseFloat(normalizedValue);
+
+    if (isNaN(newValue)) {
+      setValueError(e.currentTarget.value);
+      return;
+    } else if (newValue > max || newValue < min) {
+      setValueError(newValue);
     } else {
       onChange(e);
     }
@@ -47,19 +63,19 @@ export const Slider: FC<SliderProps> = ({
 
   const renderInput = () => {
     return (
-      <Elem name={'volume'}>
+      <Elem name="control">
         <Elem name="info">
           {description}
           {info && <Info text={info} />}
         </Elem>
         <Elem
-          name="input-volume"
+          name="input"
           tag="input"
           type="text"
-          mod={(inputVolumeError > max || inputVolumeError < min) && { error:'volume' }}
+          mod={(valueError !== undefined && (typeof valueError === 'string' || valueError > max || valueError < min)) && { error:'control' }}
           min={min}
           max={max}
-          value={(inputVolumeError === min) ? value : inputVolumeError}
+          value={valueError === undefined ? value : valueError}
           onChange={handleChangeInputValue}
         />
       </Elem>

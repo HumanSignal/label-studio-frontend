@@ -186,10 +186,6 @@ export class Segment extends Events<SegmentEvents> {
     return ![CursorSymbol.crosshair].includes(symbol);
   }
 
-  private get cursorLockedByOther() {
-    return this.waveform.cursor.hasFocus() && !this.waveform.cursor.isFocused(this.layerName);
-  }
-
   switchCursor = (symbol: CursorSymbol, shouldGrabFocus = true) => {
     this.waveform.cursor.set(symbol, shouldGrabFocus && this.requiresCursorFocus(symbol) ? this.layerName : '');
   };
@@ -207,7 +203,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private mouseOver = (_: Segment, e: MouseEvent) => {
-    if (!this.updateable || !this.controller.layerGroup.isVisible || this.cursorLockedByOther) return;
+    if (!this.updateable || !this.controller.layerGroup.isVisible) return;
     const isEdgeGrab = this.edgeGrabCheck(e);
 
     if (this.isDragging) return;
@@ -216,7 +212,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private handleMouseUp = (e: MouseEvent) => {
-    if (!this.updateable || this.cursorLockedByOther) return;
+    if (!this.updateable) return;
 
     if (this.isDragging) {
       this.switchCursor(CursorSymbol.grab);
@@ -234,7 +230,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private handleDrag = (e: MouseEvent) => {
-    if (!this.updateable || this.cursorLockedByOther) return;
+    if (!this.updateable) return;
     if (this.draggingStartPosition) {
       e.preventDefault();
       e.stopPropagation();
@@ -266,7 +262,7 @@ export class Segment extends Events<SegmentEvents> {
 
   private mouseDown = (_: Segment, e: MouseEvent) => {
     if (!this.updateable || !this.controller.layerGroup.isVisible) return;
-    if (e.shiftKey || this.controller.isLocked) return;
+    if (this.controller.isOverrideKeyPressed(e) || this.controller.isLocked) return;
     const { container } = this.visualizer;
     const scrollLeft = this.visualizer.getScrollLeft();
     const x = getCursorPositionX(e, container) + scrollLeft;
