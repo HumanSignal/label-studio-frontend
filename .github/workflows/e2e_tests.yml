@@ -96,3 +96,16 @@ jobs:
       with:
         name: e2e output
         path: e2e/output/
+
+    - name: Convert coverage
+      if: github.event_name == 'push'
+      timeout-minutes: 2
+      run: |
+        set -euo pipefail
+        cd e2e
+        yarn run coverage:istanbul
+
+    - name: Upload coverage to artifact
+      uses: actions/upload-artifact@v3
+      with:
+        path: coverage/

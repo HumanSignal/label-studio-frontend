@@ -24,7 +24,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
 
     steps:
-    - name: "Checlout codebase"
+    - name: "Checkout codebase"
       uses: actions/checkout@v3
 
     - name: "Setup NodeJS"

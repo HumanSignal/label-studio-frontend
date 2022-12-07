@@ -1,0 +1,43 @@
+name: "Send tests coverage"
+
+on:
+  workflow_call:
+    inputs:
+      sha:
+        required: true
+        type: string
+      branch_name:
+        required: true
+        type: string
+
+env:
+  # increment it in case if you need to reset cache
+  CACHE_NAME_PREFIX: v3
+  NODE: '14'
+
+jobs:
+  run:
+    name: "Coverage"
+    runs-on: ubuntu-latest
+
+    # ci can be skipped with `[skip ci]` prefix in message
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+
+    steps:
+      - name: "Checkout codebase"
+        uses: actions/checkout@v3
+
+      - name: "Download all coverage artifacts"
+        uses: actions/download-artifact@v3
+        with:
+          path: coverage/
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3.1.1
+        with:
+          fail_ci_if_error: true
+          # files: ./label-studio-frontend/coverage/coverage.xml
+          # verbose: true
+          # name: codecov-lsf-${{ matrix.python-version }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+

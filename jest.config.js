@@ -8,7 +8,7 @@ module.exports = {
   'testEnvironment': 'jsdom',
   'verbose': false,
   'coverageDirectory': 'coverage',
-  'coverageReporters': ['json', 'lcov', 'clover'],
+  'coverageReporters': ['json'],
   'coverageThreshold': {
     'global': {
       'branches': 1,
