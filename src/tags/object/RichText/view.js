@@ -278,8 +278,6 @@ class RichTextPieceView extends Component {
       normedRange.dynamic = this.props.store.autoAnnotation;
 
       if (isFF(FF_DEV_2786) && this.draggableRegion) {
-        console.log('getting this far', this.draggableRegion);
-
         item.highlightRegion(this.draggableRegion, normedRange);
         this.draggableRegion = undefined;
       } else {
