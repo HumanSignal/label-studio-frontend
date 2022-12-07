@@ -413,8 +413,6 @@ export class Visualizer extends Events<VisualizerEvents> {
     const timelineLayer = this.getLayer('timeline');
     const waveformLayer = this.getLayer('waveform');
 
-    console.log('visualizer height', waveformLayer?.height, this.wf.params.height);
-
     height += timelineLayer?.isVisible ? this.timelineHeight : 0;
     height += waveformLayer?.isVisible ? (this?.wf?.params?.height ?? 0) - this.timelineHeight : 0;
     return height;
