@@ -144,11 +144,10 @@ export const AudioModel = types.compose(
               if (r.isRegion) {
                 self.updateRegion(r);
               } else {
-                const newRegion = self.addRegion(r);
-
-                self.annotation.selectArea(newRegion);
+                self.annotation.selectArea(self.addRegion(r));
               }
             });
+
             if (selectedRegions.length) {
               self.requestWSUpdate();
             }
@@ -335,19 +334,6 @@ export const AudioModel = types.compose(
           return r;
         },
 
-        selectRange(ev, ws_region) {
-          const selectedRegions = self.regs.filter(r => r.start >= ws_region.start && r.end <= ws_region.end);
-
-          ws_region.remove && ws_region.remove();
-          if (!selectedRegions.length) return;
-          // @todo: needs preventing drawing with ctrl pressed
-          // if (ev.ctrlKey || ev.metaKey) {
-          //   self.annotation.extendSelectionWith(selectedRegions);
-          //   return;
-          // }
-          self.annotation.selectAreas(selectedRegions);
-        },
-
         addRegion(wsRegion) {
         // area id is assigned to WS region during deserealization
           const find_r = self.annotation.areas.get(wsRegion.id);
@@ -432,6 +418,7 @@ export const AudioModel = types.compose(
 
           self.setSyncedDuration(self._ws.duration);
           self.needsUpdate();
+          self.onReady();
         },
 
         onSeek(time) {

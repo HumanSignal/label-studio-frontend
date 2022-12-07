@@ -13,6 +13,9 @@ export class MediaLoader extends Destructable {
   private options: Options;
   private cancel: () => void;
 
+  duration = 0;
+  sampleRate = 0;
+
   constructor(wf: Waveform, options: Options) {
     super();
     this.wf = wf;
@@ -35,6 +38,8 @@ export class MediaLoader extends Destructable {
 
     if (xhr.status === 200 && xhr.response) {
       const playAudio = (buffer: AudioBuffer) => {
+        this.duration = buffer.duration;
+        this.sampleRate = audio.sampleRate;
         this.loaded = true;
         audio.buffer = buffer;
         audio.connect();
@@ -101,9 +106,5 @@ export class MediaLoader extends Destructable {
     if (this.audio) return this.audio;
 
     return this.audio = new WaveformAudio(options);
-  }
-
-  get sampleRate() {
-    return this.audio?.sampleRate ?? 0;
   }
 }

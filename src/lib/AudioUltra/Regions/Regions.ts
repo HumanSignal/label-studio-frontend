@@ -1,5 +1,5 @@
 import { rgba, RgbaColorArray } from '../Common/Color';
-import { defaults, findLast, getCursorPositionX, getCursorPositionY, isInRange, pixelsToTime } from '../Common/Utils';
+import { clamp, defaults, findLast, getCursorPositionX, getCursorPositionY, isInRange, pixelsToTime } from '../Common/Utils';
 import { CursorSymbol } from '../Cursor/Cursor';
 import { LayerGroup } from '../Visual/LayerGroup';
 import { Visualizer } from '../Visual/Visualizer';
@@ -186,6 +186,10 @@ export class Regions {
     return this.regions.filter(region => region.selected);
   }
 
+  isOverrideKeyPressed(e: MouseEvent) {
+    return e.shiftKey;
+  }
+
   private handleInit = () => {
     if (this.initialRegions.length) {
       this.regions = this.initialRegions.map(region => {
@@ -209,9 +213,7 @@ export class Regions {
 
   private handleDrawRegion = (e: MouseEvent) => {
     if (this.locked || !this.createable) return;
-    if (this.hoveredRegions.size > 0 && !e.shiftKey) {
-      return;
-    }
+    if (this.hoveredRegions.size > 0 && !this.isOverrideKeyPressed(e)) return;
     if (!this.layerGroup.isVisible) return;
 
     this.lock();
@@ -222,11 +224,11 @@ export class Regions {
     this.waveform.invoke('beforeRegionsDraw', [this]);
 
     const addRegion = () => {
-      const { container, zoomedWidth } = this.visualizer;
+      const { container, zoomedWidth, fullWidth } = this.visualizer;
       const { autoPlayNewSegments, duration } = this.waveform;
       const scrollLeft = this.visualizer.getScrollLeftPx();
 
-      startX = getCursorPositionX(e, container) + scrollLeft;
+      startX = clamp(getCursorPositionX(e, container) + scrollLeft, 0, fullWidth);
       const start = pixelsToTime(startX, zoomedWidth, duration);
       const end = pixelsToTime(startX, zoomedWidth, duration);
 
@@ -243,16 +245,23 @@ export class Regions {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      const { container } = this.visualizer;
+      const { container, fullWidth } = this.visualizer;
       const scrollLeft = this.visualizer.getScrollLeftPx();
-      const currentX = getCursorPositionX(e, container) + scrollLeft;
+      const currentX = clamp(getCursorPositionX(e, container) + scrollLeft, 0, fullWidth);
 
       if (!region) {
         addRegion();
       }
 
       if (Math.abs(currentX - startX) > 5) {
-        region.updatePosition(region.start, this.pixelsToTime(currentX));
+        let currentStart = this.pixelsToTime(startX);
+        let currentEnd = this.pixelsToTime(currentX);
+
+        if (currentEnd < currentStart) {
+          [currentStart, currentEnd] = [currentEnd, currentStart];
+        }
+
+        region.updatePosition(currentStart, currentEnd);
         region.render();
       }
     };

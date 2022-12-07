@@ -10,6 +10,7 @@ import { rgba } from '../Common/Color';
 import { Cursor } from '../Cursor/Cursor';
 import { Padding } from '../Common/Style';
 import { TimelineOptions } from '../Timeline/Timeline';
+import './Loader';
 
 interface VisualizerEvents {
   draw: (visualizer: Visualizer) => void;
@@ -67,6 +68,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private waveColor = rgba('#000');
   private waveHeight = 100;
   private _container!: HTMLElement;
+  private _loader!: HTMLElement;
 
   timelineHeight: number = defaults.timelineHeight;
   timelinePlacement: TimelineOptions['placement'] = 'top';
@@ -132,6 +134,15 @@ export class Visualizer extends Events<VisualizerEvents> {
     });
   }
 
+  setLoading(loading: boolean) {
+    if (loading) {
+      this._loader = document.createElement('audio-ultra-loader');
+      this._container.appendChild(this._loader);
+    } else {
+      this._container.removeChild(this._loader);
+    }
+  }
+
   async updateChannels(callback?: () => void) {
     for(const channel of this.channels) {
       if (!channel) continue;
@@ -192,6 +203,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     if (this.drawing && !forceDraw) return warn('Concurrent render detected');
 
     this.drawing = true;
+    const firstDrawn = !dry && !this.wf.renderedChannels;
 
     setTimeout(() => {
       if (!dry) {
@@ -212,12 +224,18 @@ export class Visualizer extends Events<VisualizerEvents> {
       this.transferImage();
 
       this.drawing = false;
+
+      if (firstDrawn) {
+        this.wf.renderedChannels = true;
+        this.setLoading(false);
+      }
     });
   }
 
   destroy() {
     this.invoke('destroy', [this]);
     this.clear();
+    this.playhead.destroy();
     super.destroy();
     this.audio = null;
     this.removeEvents();
@@ -443,6 +461,8 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     if (!result) throw new Error('Container element does not exist.');
 
+    result.style.position = 'relative';
+
     this._container = result;
 
     return result;
@@ -625,6 +645,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   private playHeadMove = (e: MouseEvent, cursor: Cursor) => {
+    if (!this.wf.loaded) return;
     if (e.target && this.container.contains(e.target)) {
       const { x, y } = cursor;
       const { playhead, playheadPadding, height } = this;
@@ -646,7 +667,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   };
 
   private handleSeek = (e: MouseEvent) => {
-    if (this.seekLocked) return;
+    if (!this.wf.loaded || this.seekLocked) return;
     const offset = this.wrapper.getBoundingClientRect().left;
     const x = e.clientX - offset;
     const duration = this.wf.duration;
@@ -658,18 +679,20 @@ export class Visualizer extends Events<VisualizerEvents> {
   };
 
   private handleMouseDown = (e: MouseEvent) => {
+    if (!this.wf.loaded) return;
     this.playhead.invoke('mouseDown', [e]);
   };
 
   private handlePlaying = (currentTime: number) => {
+    if (!this.wf.loaded) return;
     this.currentTime = currentTime / this.wf.duration;
     this.draw(this.zoom === 1);
   };
 
   private handleScroll = (e: WheelEvent) => {
-    const [dX, dY] = [Math.abs(e.deltaX), Math.abs(e.deltaY)];
+    if (!this.wf.loaded) return;
 
-    if (e.ctrlKey && dY > dX) {
+    if (this.isZooming(e)) {
       const zoom = this.zoom - (e.deltaY * 0.2);
 
       this.setZoom(zoom);
@@ -678,7 +701,7 @@ export class Visualizer extends Events<VisualizerEvents> {
       // Base values
       const maxScroll = this.scrollWidth;
       const maxRelativeScroll = maxScroll / this.fullWidth * this.zoom;
-      const delta = e.deltaX * this.zoom * 1.25;
+      const delta = (Math.abs(e.deltaX) === 0 ? e.deltaY : e.deltaX) * this.zoom * 1.25;
       const position = this.scrollLeft * this.zoom;
 
       // Values for the update
@@ -695,6 +718,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   };
 
   private updatePosition(redraw = true) {
+    if (!this.wf.loaded) return;
     const maxScroll = this.scrollWidth;
     const maxRelativeScroll = maxScroll / this.fullWidth * this.zoom;
 
@@ -715,23 +739,29 @@ export class Visualizer extends Events<VisualizerEvents> {
     return this.samplesPerPx;
   }
 
+  private isZooming(e: WheelEvent) {
+    return e.ctrlKey || e.metaKey;
+  }
+
   private preventScrollX = (e: WheelEvent) => {
     const [dX, dY] = [Math.abs(e.deltaX), Math.abs(e.deltaY)];
 
-    if (dX >= dY || (e.ctrlKey && dY >= dX)) {
+    if (dX >= dY || (this.isZooming(e) && dY >= dX)) {
       e.preventDefault();
       e.stopPropagation();
     }
   };
 
   private handleResize = () => {
+    if (!this.wf.loaded) return;
     requestAnimationFrame(() => {
       const newWidth = this.wrapper.clientWidth;
       const newHeight = this.waveHeight;
 
       this.updateChannels(() => {
         this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
-        this.draw();
+        this.getSamplesPerPx();
+        this.draw(false, this.zoom === 1);
       });
     });
   };

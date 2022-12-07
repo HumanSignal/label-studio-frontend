@@ -39,14 +39,14 @@ export const AudioControl: FC<AudioControlProps> = ({
       return;
     }
     if (_volumeValue > (MAX_VOL)) {
-      onVolumeChange?.(1);
+      onVolumeChange?.(MAX_VOL / 100);
       return;
     } else if (_volumeValue < 0) {
       onVolumeChange?.(0);
       return;
     }
 
-    onVolumeChange?.(_volumeValue / (MAX_VOL / 2));
+    onVolumeChange?.(_volumeValue / MAX_VOL * 2);
   };
 
   const handleSetMute = () => {
@@ -60,10 +60,10 @@ export const AudioControl: FC<AudioControlProps> = ({
         <Slider
           min={0}
           max={MAX_VOL}
-          value={volume * (MAX_VOL / 2)}
+          value={Math.round(volume * MAX_VOL / 2)}
           onChange={handleSetVolume}
           description={'Volume'}
-          info={'Increase or decrease the appearance of amplitude'}
+          info={'Increase or decrease the volume of the audio'}
         />
         {renderMuteButton()}
       </Elem>

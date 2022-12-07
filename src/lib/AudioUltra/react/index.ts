@@ -82,7 +82,7 @@ export const useWaveform = (
     waveform.current = wf;
 
     return () => {
-      wf.destroy();
+      waveform.current?.destroy();
     };
   }, []);
 
