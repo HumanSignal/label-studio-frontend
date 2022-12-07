@@ -14,7 +14,12 @@ export const ReadOnlyRegionMixin = types
   })
   .views(self => ({
     isReadOnly() {
-      return self.locked || self.readonly || self.annotation.isReadOnly() || (parent && (self.parent.isReadOnly() || self.parent.result?.isReadOnly()));
+      return (
+        self.locked ||
+        self.readonly ||
+        self.annotation.isReadOnly() ||
+        (self.parent && (self.parent.isReadOnly() || self.parent.result?.isReadOnly()))
+      );
     },
   }));
 
@@ -24,6 +29,11 @@ export const ReadOnlyAreaMixin = types
   })
   .views(self => ({
     isReadOnly() {
-      return self.locked || self.readonly || self.parent.result?.isReadOnly() || self.annotation.isReadOnly();
+      return (
+        self.locked ||
+        self.readonly ||
+        self.parent.result?.isReadOnly() ||
+        self.annotation.isReadOnly()
+      );
     },
   }));

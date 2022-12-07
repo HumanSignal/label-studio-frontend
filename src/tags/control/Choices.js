@@ -20,6 +20,7 @@ import './Choices/Choises.styl';
 import './Choice';
 import DynamicChildrenMixin from '../../mixins/DynamicChildrenMixin';
 import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from '../../utils/feature-flags';
+import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 
 const { Option } = Select;
 
@@ -151,10 +152,6 @@ const Model = types
       return 'choice';
     },
 
-    isReadOnly() {
-      return self.result?.isReadOnly() || self.annotation.isReadOnly();
-    },
-
     // perChoiceVisible() {
     //     if (! self.whenchoicevalue) return true;
 
@@ -259,7 +256,6 @@ const Model = types
     },
 
     fromStateJSON(obj) {
-      console.log('from state json');
       self.unselectAll();
 
       if (!obj.value.choices) throw new Error('No labels param');
@@ -283,6 +279,7 @@ const ChoicesModel = types.compose(
   SelectedModelMixin.props({ _child: 'ChoiceModel' }),
   RequiredMixin,
   PerRegionMixin,
+  ReadOnlyControlMixin,
   VisibilityMixin,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
   Model,
