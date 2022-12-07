@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, MouseEvent, useEffect, useState } from 'react';
 import { Block, Elem } from '../../../utils/bem';
 
 import './AudioControl.styl';
@@ -12,7 +12,7 @@ export interface AudioControlProps {
   volume: number;
   audioModal: boolean;
   onVolumeChange?: (volume: number) => void;
-  onSetModal?: () => void;
+  onSetModal?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const AudioControl: FC<AudioControlProps> = ({

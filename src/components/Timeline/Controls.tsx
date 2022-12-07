@@ -61,6 +61,8 @@ export const Controls: FC<TimelineControlsProps> = memo(({
   onSpeedChange,
   onToggleCollapsed,
   formatPosition,
+  toggleVisibility,
+  layerVisibility,
   mediaType,
   ...props
 }) => {
@@ -87,13 +89,16 @@ export const Controls: FC<TimelineControlsProps> = memo(({
     playing ? onPause?.() : onPlay?.();
   }, [playing, onPlay, onPause]);
 
-  const onSetVolumeModal = () => {
+  const onSetVolumeModal = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
     if (configModal) setConfigModal(false);
 
     setAudioModal(!audioModal);
   };
 
-  const onSetConfigModal = () => {
+  const onSetConfigModal = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+
     if (audioModal) setAudioModal(false);
 
     setConfigModal(!configModal);
@@ -109,6 +114,8 @@ export const Controls: FC<TimelineControlsProps> = memo(({
           onSpeedChange={(speed: number) => onSpeedChange?.(speed)}
           speed={props.speed || 0}
           amp={props.amp || 0}
+          toggleVisibility={toggleVisibility}
+          layerVisibility={layerVisibility}
         />
         <AudioControl
           volume={props.volume || 0}
@@ -119,6 +126,11 @@ export const Controls: FC<TimelineControlsProps> = memo(({
 
       </Elem>
     );
+  };
+
+  const closeModalHandler = () => {
+    setConfigModal(false);
+    setAudioModal(false);
   };
 
   useEffect(() => {
@@ -135,10 +147,12 @@ export const Controls: FC<TimelineControlsProps> = memo(({
 
     document.addEventListener('keydown', keyboardHandler);
     document.addEventListener('keyup', keyboardHandler);
+    document.addEventListener('click', closeModalHandler);
 
     return () => {
       document.removeEventListener('keydown', keyboardHandler);
       document.removeEventListener('keyup', keyboardHandler);
+      document.removeEventListener('click', closeModalHandler);
     };
   }, [altControlsMode]);
 

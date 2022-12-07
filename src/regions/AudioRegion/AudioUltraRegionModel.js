@@ -83,14 +83,6 @@ export const AudioUltraRegionModel = types
         self._ws_region?.updatePosition(start ?? self.start, end ?? self.end);
       },
 
-      // updateAppearenceFromState() {
-      //   if (self._ws_region?.update) {
-      //     self._ws_region.start = self.start;
-      //     self._ws_region.end = self.end;
-      //     self.applyCSSClass(self._ws_region);
-      //   }
-      // },
-
       /**
        * Select audio region
        */
@@ -117,53 +109,29 @@ export const AudioUltraRegionModel = types
 
         if (!self._ws_region) return;
         self._ws_region.handleHighlighted(val);
-
-        // if (val) {
-        //   self.updateColor(0.8);
-        //   self._ws_region.element.style.border = Constants.HIGHLIGHTED_CSS_BORDER;
-        // } else {
-        //   self.updateColor(0.3);
-        //   self._ws_region.element.style.border = "none";
-        // }
       },
 
       beforeDestroy() {
         if (self._ws_region) self._ws_region.remove();
       },
 
-      onClick(wavesurfer, ev) {
-        // if (! self.editable) return;
-
-        if (!self.annotation.relationMode) {
-          // Object.values(wavesurfer.regions.list).forEach(r => {
-          //   // r.update({ color: self.selectedregionbg });
-          // });
-
-          // self._ws_region.update({ color: Utils.Colors.rgbaChangeAlpha(self.selectedregionbg, 0.8) });
-        }
-
-        self.onClickRegion(ev);
-      },
-
       onMouseOver() {
         if (self.annotation.relationMode) {
           self.setHighlight(true);
-          self._ws_region.swithCursor(Constants.RELATION_MODE_CURSOR);
+          self._ws_region.switchCursor(Constants.RELATION_MODE_CURSOR);
         }
       },
 
       onMouseLeave() {
         if (self.annotation.relationMode) {
           self.setHighlight(false);
-          self._ws_region.swithCursor(Constants.MOVE_CURSOR);
+          self._ws_region.switchCursor(Constants.MOVE_CURSOR);
         }
       },
 
       onUpdateEnd() {
         self.start = self._ws_region.start;
         self.end = self._ws_region.end;
-        // @todo: where are labels changed for the region?
-        // self.labels = self._ws_region.labels;
         self.notifyDrawingFinished();
       },
 

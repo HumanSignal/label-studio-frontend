@@ -109,7 +109,7 @@ export class Layer extends Events<LayerEvents> {
   }
 
   get height(){
-    return this.canvas.height;
+    return this.isVisible ? this.canvas.height : 0;
   }
 
   set height(value: number) {
@@ -368,7 +368,7 @@ export class Layer extends Events<LayerEvents> {
 
     canvas.id = `waveform-layer-${this.options.name ?? 'default'}`;
     canvas.width = width * pixelRatio;
-    canvas.height = height * pixelRatio;
+    canvas.height = this.isVisible ? height * pixelRatio : 0;
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     canvas.style.visibility = this.isVisible ? 'visible' : 'hidden';
