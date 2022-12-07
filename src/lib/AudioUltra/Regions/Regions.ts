@@ -1,5 +1,5 @@
 import { rgba, RgbaColorArray } from '../Common/Color';
-import { defaults, findLast, getCursorPositionX, getCursorPositionY, isInRange, pixelsToTime } from '../Common/Utils';
+import { clamp, defaults, findLast, getCursorPositionX, getCursorPositionY, isInRange, pixelsToTime } from '../Common/Utils';
 import { CursorSymbol } from '../Cursor/Cursor';
 import { LayerGroup } from '../Visual/LayerGroup';
 import { Visualizer } from '../Visual/Visualizer';
@@ -224,11 +224,11 @@ export class Regions {
     this.waveform.invoke('beforeRegionsDraw', [this]);
 
     const addRegion = () => {
-      const { container, zoomedWidth } = this.visualizer;
+      const { container, zoomedWidth, fullWidth } = this.visualizer;
       const { autoPlayNewSegments, duration } = this.waveform;
       const scrollLeft = this.visualizer.getScrollLeftPx();
 
-      startX = getCursorPositionX(e, container) + scrollLeft;
+      startX = clamp(getCursorPositionX(e, container) + scrollLeft, 0, fullWidth);
       const start = pixelsToTime(startX, zoomedWidth, duration);
       const end = pixelsToTime(startX, zoomedWidth, duration);
 
@@ -245,9 +245,9 @@ export class Regions {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      const { container } = this.visualizer;
+      const { container, fullWidth } = this.visualizer;
       const scrollLeft = this.visualizer.getScrollLeftPx();
-      const currentX = getCursorPositionX(e, container) + scrollLeft;
+      const currentX = clamp(getCursorPositionX(e, container) + scrollLeft, 0, fullWidth);
 
       if (!region) {
         addRegion();
