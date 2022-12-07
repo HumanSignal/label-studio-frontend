@@ -1,9 +1,9 @@
 import { destroy, types } from 'mobx-state-tree';
+import { defaultStyle } from '../core/Constants';
 import { guidGenerator } from '../core/Helpers';
 import Result from '../regions/Result';
-import { defaultStyle } from '../core/Constants';
 import { PER_REGION_MODES } from './PerRegion';
-import { ReadOnlyAreaMixin } from './ReadOnlyMixin';
+import { ReadOnlyRegionMixin } from './ReadOnlyMixin';
 
 let ouid = 1;
 
@@ -175,4 +175,4 @@ export const AreaMixinBase = types
     },
   }));
 
-export const AreaMixin = types.compose('AreaMixin', AreaMixinBase, ReadOnlyAreaMixin);
+export const AreaMixin = types.compose('AreaMixin', AreaMixinBase, ReadOnlyRegionMixin);

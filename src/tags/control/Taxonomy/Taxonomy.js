@@ -104,8 +104,6 @@ const Model = types
   .model({
     pid: types.optional(types.string, guidGenerator),
 
-    readonly: types.optional(types.boolean, false),
-
     type: 'taxonomy',
     [isFF(FF_DEV_3617) ? '_children' : 'children']: Types.unionArray(['choice']),
   })

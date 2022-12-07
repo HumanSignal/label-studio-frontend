@@ -2,6 +2,7 @@ import { getParent, getRoot, types } from 'mobx-state-tree';
 import { cloneNode } from '../core/Helpers';
 import { guidGenerator } from '../core/Helpers';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
+import { ReadOnlyRegionMixin } from '../mixins/ReadOnlyMixin';
 
 // @todo remove file
 const RegionMixin = types
@@ -10,8 +11,6 @@ const RegionMixin = types
     pid: types.optional(types.string, guidGenerator),
 
     score: types.maybeNull(types.number),
-
-    readonly: types.optional(types.boolean, false),
 
     hidden: types.optional(types.boolean, false),
 
@@ -276,4 +275,4 @@ const RegionMixin = types
     },
   }));
 
-export default types.compose(RegionMixin, AnnotationMixin);
+export default types.compose(RegionMixin, ReadOnlyRegionMixin, AnnotationMixin);

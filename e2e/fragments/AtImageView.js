@@ -17,7 +17,6 @@ module.exports = {
     await I.scrollPageToTop();
 
     this._stageBBox = await this.grabStageBBox();
-    console.log('Stage bbox:', this._stageBBox);
   },
 
   stageBBox() {
@@ -255,8 +254,6 @@ module.exports = {
     assert.notEqual(region, undefined, 'Region not found');
 
     const position = await this.getRegionAbsoultePosition(region.id);
-
-    console.log(position);
 
     I.say('Drag region by ' + shiftX + ' ' + shiftY);
     await I.dragAndDropMouse(position, {

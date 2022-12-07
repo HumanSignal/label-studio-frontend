@@ -102,7 +102,6 @@ const Model = types
   .model({
     pid: types.optional(types.string, guidGenerator),
 
-    readonly: types.optional(types.boolean, false),
     visible: types.optional(types.boolean, true),
 
     type: 'choices',

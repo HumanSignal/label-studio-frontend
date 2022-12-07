@@ -58,7 +58,7 @@ Data(imageExamples).Scenario('Image Readonly Annotations', async ({
   AtSidebar.seeRegions(regions.length);
   await LabelStudio.resultsNotChanged(result, 1);
 
-  I.press('u');
+  I.pressKey('u');
   I.say('Can\'t draw new shape');
   I.pressKey('1');
 
