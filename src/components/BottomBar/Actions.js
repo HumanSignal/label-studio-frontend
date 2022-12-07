@@ -1,11 +1,11 @@
-import { IconCopy, IconInfo, LsSettings, LsTrash } from '../../assets/icons';
-//IconViewAll,
+import { IconCopy, IconInfo, LsSettings } from '../../assets/icons';
+//IconViewAll, LsTrash
 import { Button } from '../../common/Button/Button';
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 import { Elem } from '../../utils/bem';
 // import { GroundTruth } from '../CurrentEntity/GroundTruth';
 import { EditingHistory } from './HistoryActions';
-import { confirm } from '../../common/Modal/Modal';
+// import { confirm } from '../../common/Modal/Modal';
 // import { useCallback } from 'react';
 
 export const Actions = ({ store }) => {
@@ -19,7 +19,7 @@ export const Actions = ({ store }) => {
     <Elem name="section">
       {!isPrediction && !isViewAll && store.hasInterface('edit-history') && <EditingHistory entity={entity} />}
 
-      {!isViewAll && store.hasInterface('annotations:delete') && (
+      {/* {!isViewAll && store.hasInterface('annotations:delete') && (
         <Tooltip title="Delete annotation">
           <Button
             icon={<LsTrash />}
@@ -42,7 +42,7 @@ export const Actions = ({ store }) => {
             }}
           />
         </Tooltip>
-      )}
+      )} */}
 
       {!isViewAll && store.hasInterface('annotations:add-new') && saved && (
         <Tooltip title={`Create copy of current ${entity.type}`}>

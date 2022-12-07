@@ -7,8 +7,11 @@
     height 100%
     position relative
     z-index 1
-    overflow auto
     styled-scrollbars()
+
+    & .main-content
+      overflow auto
+      padding-bottom calc(var(--bottombar-height) + 8px);
 
     &_resizing
       position relative

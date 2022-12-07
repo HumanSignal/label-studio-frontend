@@ -261,7 +261,6 @@ class App extends Component {
                   </Block>
                 )}
 
-
                 {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store}/>}
               </>
             )}

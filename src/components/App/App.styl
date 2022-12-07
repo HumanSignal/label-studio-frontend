@@ -47,6 +47,9 @@
 
   &_outliner
     grid-template-columns 100%
+    
+    & .menu 
+      padding-bottom 8px
 
   &_bsp
     display block
@@ -111,6 +114,7 @@
   align-self stretch
   background-color #fff
   border-left 1px solid rgba(#000, 0.1)
+  padding-bottom calc(var(--bottombar-height) + 8px)
 
   @include respond("phone")
     margin-left 0
