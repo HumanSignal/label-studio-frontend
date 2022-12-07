@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from '../../assets/icons';
+import { IconCheckBox, IconPlusCircle, LsComment, LsCommentRed, LsSparks } from '../../assets/icons';
 import { Space } from '../../common/Space/Space';
 import { Userpic } from '../../common/Userpic/Userpic';
 import { Block, Elem } from '../../utils/bem';
@@ -185,6 +185,7 @@ const CreateAnnotation = observer(({ annotationStore, onClick }) => {
 });
 
 const Annotation = observer(({ entity, selected, onClick, extra, ...props }) => {
+  console.log('Annotation', entity, selected, extra, props);
   const isPrediction = entity.type === 'prediction';
   const username = userDisplayName(entity.user ?? {
     firstName: entity.createdBy || 'Admin',
@@ -201,7 +202,10 @@ const Annotation = observer(({ entity, selected, onClick, extra, ...props }) => 
             username={isPrediction ? entity.createdBy : null}
             user={entity.user ?? { username }}
             mod={{ prediction: isPrediction }}
-          >{isPrediction && <LsSparks color="#944BFF" style={{ width: 18, height: 18 }}/>}</Elem>
+          >
+            {isPrediction && <LsSparks color="#944BFF" style={{ width: 18, height: 18 }}/>}
+            {isDefined(entity.acceptedState) && <IconCheckBox color="#389E0D" style={{ width: 18, height: 18 }}/>}
+          </Elem>
           <Space direction="vertical" size="none">
             <Elem name="user">
               <Elem tag="span" name="name">{username}</Elem>
