@@ -28,7 +28,7 @@ jobs:
   run_e2e:
     name: "Tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
-    uses: ./.github/workflows/e2e_tests.yml
+    uses: heartexlabs/label-studio-frontend/.github/workflows/e2e_tests.yml@master
     needs:
       - build_bundle
     with:
@@ -39,7 +39,7 @@ jobs:
   run_unit:
     name: "Tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
-    uses: ./.github/workflows/unit_tests.yml
+    uses: heartexlabs/label-studio-frontend/.github/workflows/unit_tests.yml@master
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
       branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
@@ -48,7 +48,7 @@ jobs:
   run_coverage:
     name: "Coverage"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
-    uses: ./.github/workflows/tests_coverage.yml
+    uses: heartexlabs/label-studio-frontend/.github/workflows/tests_coverage.yml@master
     needs:
       - run_unit
       - run_e2e
