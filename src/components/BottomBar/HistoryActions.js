@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react';
 import { LsRedo, LsUndo } from '../../assets/icons';
-// LsRemove, 
 import { Button } from '../../common/Button/Button';
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 import { Block, Elem } from '../../utils/bem';
@@ -33,18 +32,6 @@ export const EditingHistory = observer(({ entity }) => {
           icon={<LsRedo />}
         />
       </Tooltip>
-      {/* <Tooltip title="Reset">
-        <Elem
-          tag={Button}
-          name="action"
-          look="danger"
-          type="text"
-          aria-label="Reset"
-          disabled={!history?.canUndo}
-          onClick={() => history?.reset()}
-          icon={<LsRemove />}
-        />
-      </Tooltip> */}
     </Block>
   );
 });

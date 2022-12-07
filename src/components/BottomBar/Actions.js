@@ -1,12 +1,8 @@
 import { IconCopy, IconInfo, LsSettings } from '../../assets/icons';
-//IconViewAll, LsTrash
 import { Button } from '../../common/Button/Button';
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 import { Elem } from '../../utils/bem';
-// import { GroundTruth } from '../CurrentEntity/GroundTruth';
 import { EditingHistory } from './HistoryActions';
-// import { confirm } from '../../common/Modal/Modal';
-// import { useCallback } from 'react';
 
 export const Actions = ({ store }) => {
   const annotationStore = store.annotationStore;
@@ -18,31 +14,6 @@ export const Actions = ({ store }) => {
   return (
     <Elem name="section">
       {!isPrediction && !isViewAll && store.hasInterface('edit-history') && <EditingHistory entity={entity} />}
-
-      {/* {!isViewAll && store.hasInterface('annotations:delete') && (
-        <Tooltip title="Delete annotation">
-          <Button
-            icon={<LsTrash />}
-            look="danger"
-            type="text"
-            aria-label="Delete"
-            onClick={() => {
-              confirm({
-                title: 'Delete annotation',
-                body: 'This action cannot be undone',
-                buttonLook: 'destructive',
-                okText: 'Proceed',
-                onOk: () => entity.list.deleteAnnotation(entity),
-              });
-            }}
-            style={{
-              height: 36,
-              width: 36,
-              padding: 0,
-            }}
-          />
-        </Tooltip>
-      )} */}
 
       {!isViewAll && store.hasInterface('annotations:add-new') && saved && (
         <Tooltip title={`Create copy of current ${entity.type}`}>
