@@ -72,7 +72,7 @@ module.exports.config = {
     // For the future generations
     // coverage: {
     //   enabled: true,
-    //   coverageDir: "output/coverage",
+    //   coverageDir: 'output/coverage',
     // },
     screenshotOnFail: {
       enabled: true,
