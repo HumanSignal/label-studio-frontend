@@ -342,10 +342,14 @@ export class Regions {
   };
 
   private handleClick = (e: MouseEvent) => {
-    const region = this.findRegionUnderCursor(e);
+    const mainLayer = this.visualizer.getLayer('main');
 
-    if (this.layerGroup.isVisible && region) {
-      region.invoke('click', [region, e]);
+    if (e.target && mainLayer?.canvas?.contains(e.target)) {
+      const region = this.findRegionUnderCursor(e);
+  
+      if (this.layerGroup.isVisible && region) {
+        region.invoke('click', [region, e]);
+      }
     }
   };
 
