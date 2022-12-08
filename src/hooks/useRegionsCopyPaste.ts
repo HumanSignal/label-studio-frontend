@@ -2,6 +2,17 @@ import { useEffect } from 'react';
 
 export const useRegionsCopyPaste = (entity: any) => {
   useEffect(()=>{
+    const isFocusable = (el: Node | Window | HTMLElement | null) => {
+      if ((el as Node).nodeType !== Node.ELEMENT_NODE) return false;
+
+      const element = el as HTMLElement;
+      const tabIndex = parseInt(element.getAttribute('tabindex') ?? '', 10);
+      const contenteditable = element.getAttribute('contenteditable') === 'true';
+      const isFocusable = element.matches('a, button, input, textarea, select, details, [tabindex]');
+
+      return isFocusable || contenteditable || tabIndex > -1;
+    };
+
     const copyToClipboard = (ev: ClipboardEvent) => {
       const { clipboardData } = ev;
       const results = entity.serializedSelection;
@@ -26,19 +37,16 @@ export const useRegionsCopyPaste = (entity: any) => {
 
     const copyHandler = (ev: Event) =>{
       const selection = window.getSelection();
-      const exceptionList = ['input', 'textarea'];
-      const target = (ev.target as HTMLElement | null)?.tagName?.toLowerCase();
 
-      if (!selection?.isCollapsed || (target && exceptionList.includes(target))) return;
+      if (!selection?.isCollapsed || isFocusable(ev.target as HTMLElement)) return;
 
       copyToClipboard(ev as ClipboardEvent);
     };
 
     const pasteHandler = (ev: Event) =>{
-      const selection = window.getSelection();
-      const focusNode = selection?.focusNode;
+      const focusNode = window.getSelection()?.focusNode;
 
-      if (Node.ELEMENT_NODE === focusNode?.nodeType && ('focus' in focusNode)) return;
+      if (isFocusable(focusNode as HTMLElement) || isFocusable(document.activeElement)) return;
 
       pasteFromClipboard(ev as ClipboardEvent);
     };
