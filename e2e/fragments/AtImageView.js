@@ -20,7 +20,7 @@ module.exports = {
   },
 
   stageBBox() {
-    if (!this._stageBBox) console.trace('Stage bbox wasn\'t grabbed');
+    if (!this._stageBBox) console.log('Stage bbox wasn\'t grabbed');
     return this._stageBBox ?? {
       x: 0,
       y: 0,
@@ -30,12 +30,12 @@ module.exports = {
   },
 
   stageX() {
-    if (!this._stageBBox) console.trace('Stage bbox wasn\'t grabbed');
+    if (!this._stageBBox) console.log('Stage bbox wasn\'t grabbed');
     return this._stageBBox?.x ?? 0;
   },
 
   stageY() {
-    if (!this._stageBBox) console.trace('Stage bbox wasn\'t grabbed');
+    if (!this._stageBBox) console.log('Stage bbox wasn\'t grabbed');
     return this._stageBBox?.y ?? 0;
   },
 

@@ -136,9 +136,6 @@ export const Annotation = types
       get toNames() {
         return self.list.toNames;
       },
-      isReadOnly() {
-        return self.readonly || !self.editable;
-      },
     })
   .views(self => ({
     get store() {
@@ -233,6 +230,10 @@ export const Annotation = types
         return res && ['text', 'hypertext', 'paragraphs'].includes(obj.type);
       }, true);
     },
+
+    isReadOnly() {
+      return self.readonly || !self.editable;
+    },
   }))
   .volatile(() => ({
     hidden: false,
@@ -262,7 +263,6 @@ export const Annotation = types
     },
 
     setReadonly(val) {
-      console.log('setting readonly');
       self.readonly = val;
     },
 
