@@ -118,7 +118,7 @@ export const ConfigControl: FC<ConfigControlProps> = ({
   };
 
   return (
-    <Block name="audio-config">
+    <Block name="audio-config" onClick={(e: MouseEvent<HTMLButtonElement>) => e.stopPropagation()}>
       <ControlButton
         look={configModal ? 'active' : undefined}
         onClick={onSetModal}
