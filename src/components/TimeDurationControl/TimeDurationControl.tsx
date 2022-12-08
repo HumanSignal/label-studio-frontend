@@ -5,6 +5,7 @@ import './TimeDurationControl.styl';
 import { TimeBox } from './TimeBox';
 
 export interface TimerProps {
+  isSidepanel: boolean | undefined;
   startTime: number;
   endTime: number | undefined;
   minTime: number;
@@ -17,6 +18,7 @@ export interface TimerProps {
 }
 
 export const TimeDurationControl: FC<TimerProps> = ({
+  isSidepanel = false,
   startTime,
   endTime = 0,
   minTime,
@@ -40,11 +42,13 @@ export const TimeDurationControl: FC<TimerProps> = ({
   return (
     <Block name="timer-duration-control">
       <TimeBox
+        sidepanel={isSidepanel}
         readonly={startTimeReadonly}
         value={_currentTime}
         onChange={handleChangeCurrentTime}
       />
       <TimeBox
+        sidepanel={isSidepanel}
         readonly={endTimeReadonly}
         value={endTime}
         onChange={handleChangeEndTime}
