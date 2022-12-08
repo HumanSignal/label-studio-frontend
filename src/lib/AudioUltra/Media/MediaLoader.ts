@@ -15,17 +15,20 @@ export class MediaLoader extends Destructable {
 
   duration = 0;
   sampleRate = 0;
+  loadingProgressType: 'determinate' | 'indeterminate';
 
   constructor(wf: Waveform, options: Options) {
     super();
     this.wf = wf;
     this.options = options;
     this.cancel = () => {};
+    this.loadingProgressType = 'determinate';
   }
 
   reset() {
     this.cancel();
     this.loaded = false;
+    this.loadingProgressType = 'determinate';
   }
 
   async load(options: WaveformAudioOptions): Promise<WaveformAudio| null> {
@@ -87,11 +90,16 @@ export class MediaLoader extends Destructable {
 
       xhr.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
-          this.wf.setLoadingProgress(Math.round(e.loaded / e.total * 100));
+          this.loadingProgressType = 'determinate';
+          this.wf.setLoadingProgress(e.loaded, e.total);
+        } else {
+          this.loadingProgressType = 'indeterminate';
+          this.wf.setLoadingProgress(e.loaded, -1);
         }
       });
 
       xhr.addEventListener('load', async () => {
+        this.wf.setLoadingProgress(undefined, undefined, true);
         resolve(xhr);
       });
 

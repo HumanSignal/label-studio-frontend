@@ -143,9 +143,15 @@ export class Visualizer extends Events<VisualizerEvents> {
     }
   }
 
-  setLoadingProgress(progress: number) {
+  setLoadingProgress(loaded?: number, total?: number, completed?: boolean) {
     if (this._loader) {
-      (this._loader as any).value = progress;
+      if (completed) {
+        (this._loader as any).total = (this._loader as any).loaded;
+      } else {
+        if (loaded !== undefined) (this._loader as any).loaded = loaded;
+        if (total !== undefined) (this._loader as any).total = total;
+      }
+      (this._loader as any).update();
     }
   }
 

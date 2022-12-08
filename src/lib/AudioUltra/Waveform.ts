@@ -311,8 +311,8 @@ export class Waveform extends Events<WaveformEventTypes> {
     }
   }
 
-  setLoadingProgress(progress: number) {
-    this.visualizer.setLoadingProgress(progress);
+  setLoadingProgress(loaded?: number, total?: number, complete?: boolean) {
+    this.visualizer.setLoadingProgress(loaded, total, complete);
   }
 
   /**
