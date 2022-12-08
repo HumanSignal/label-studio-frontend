@@ -84,7 +84,7 @@ export const AudioControl: FC<AudioControlProps> = ({
   };
 
   return (
-    <Block name="audio-control">
+    <Block name="audio-control" onClick={(e: MouseEvent<HTMLButtonElement>) => e.stopPropagation()}>
       <ControlButton
         look={audioModal ? 'active' : undefined}
         onClick={onSetModal}
