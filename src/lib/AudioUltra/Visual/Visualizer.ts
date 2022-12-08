@@ -136,10 +136,22 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   setLoading(loading: boolean) {
     if (loading) {
-      this._loader = document.createElement('audio-ultra-loader');
+      this._loader = document.createElement('loading-progress-bar');
       this._container.appendChild(this._loader);
     } else {
       this._container.removeChild(this._loader);
+    }
+  }
+
+  setLoadingProgress(loaded?: number, total?: number, completed?: boolean) {
+    if (this._loader) {
+      if (completed) {
+        (this._loader as any).total = (this._loader as any).loaded;
+      } else {
+        if (loaded !== undefined) (this._loader as any).loaded = loaded;
+        if (total !== undefined) (this._loader as any).total = total;
+      }
+      (this._loader as any).update();
     }
   }
 
