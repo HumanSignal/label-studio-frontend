@@ -1,7 +1,7 @@
+import { nanoid } from 'nanoid';
 import { rgba, RgbaColorArray } from '../Common/Color';
 import { Events } from '../Common/Events';
-import { getCursorPositionX, getCursorPositionY } from '../Common/Utils';
-import { RenderingContext } from '../Visual/Layer';
+import { getCursorPositionX, getCursorPositionY, getOffsetLeft, getOffsetTop } from '../Common/Utils';
 import { Visualizer } from '../Visual/Visualizer';
 
 interface CursorEvents {
@@ -57,16 +57,20 @@ export class Cursor extends Events<CursorEvents> {
   private symbol = CursorSymbol.default;
   private focusId = '';
 
-  color = rgba('#000000');
+  id = 'cursor';
+  color = rgba('rgba(65, 60, 74, 0.16)');
   x: number;
   y: number;
-  width = 1;
+  offsetX = 0;
+  offsetY= 0;
+  width = 2;
 
   constructor(
     options: CursorOptions,
     visualizer: Visualizer,
   ) {
     super();
+    this.id = `cursor-${nanoid()}`;
     this.visualizer = visualizer;
     this.color = options?.color ? rgba(options.color) : this.color;
     this.x = options.x ?? 0;
@@ -76,11 +80,54 @@ export class Cursor extends Events<CursorEvents> {
   }
 
   initialize() {
+    if (document.getElementById(this.id)) return;
+    const span = document.createElement('span');
+    const root = document.body;
+
+    span.id = this.id;
+    span.style.display = 'none';
+    span.style.position = 'absolute';
+    this.apply(span);
+
+    root?.appendChild(span);
+
     this.set(this.symbol);
     document.addEventListener('mousemove', this.handleMouseMove);
   }
 
+  apply(node: HTMLElement) {
+    node.style.backgroundColor = this.color.toString();
+    node.style.width = `${this.width}px`;
+    node.style.top = '0px';
+    node.style.zIndex = '9998';
+    node.style.pointerEvents = 'none';
+  }
+
+  show() {
+    if (!this.shouldRender)  {
+      this.hide();
+      return;
+    }
+    const span = document.getElementById(this.id);
+
+    if (span) {
+      span.style.height = `${this.visualizer.height}px`;
+      span.style.display = 'block';
+      span.style.top = `${this.offsetY}px`;
+      span.style.left = `${this.x + this.offsetX - span.clientWidth / 2}px`;
+    }
+  }
+
+  hide() {
+    const span = document.getElementById(this.id);
+
+    if (span) {
+      span.style.display = 'none';
+    }
+  }
+
   destroy() {
+    document.getElementById(this.id)?.remove();
     document.removeEventListener('mousemove', this.handleMouseMove);
     super.destroy();
   }
@@ -119,12 +166,8 @@ export class Cursor extends Events<CursorEvents> {
     }
   }
 
-  render(ctx: RenderingContext) {
-    if (this.symbol !== 'crosshair') {
-      return;
-    }
-    ctx.fillStyle = this.color.toString();
-    ctx.fillRect(this.x, this.y, this.width, this.visualizer.height);
+  private get shouldRender() {
+    return this.inView;
   }
 
   get inView() {
@@ -136,6 +179,8 @@ export class Cursor extends Events<CursorEvents> {
   private handleMouseMove = (e: MouseEvent) => {
     const { container } = this.visualizer;
 
+    this.offsetX = getOffsetLeft(container);
+    this.offsetY = getOffsetTop(container);
     this.x = getCursorPositionX(e, container);
     this.y = getCursorPositionY(e, container);
     this.invoke('mouseMove', [e, this]);

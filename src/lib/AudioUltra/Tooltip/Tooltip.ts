@@ -76,14 +76,18 @@ export class Tooltip {
     node.style.pointerEvents = 'none';
   }
 
-  show(x: number, y: number, text?: string) {
+  show(x: number, y: number, text?: string, center = true) {
     const span = document.getElementById(this.id);
 
     this.visible = true;
 
     if (span && text) {
       span.style.display = 'block';
-      span.style.left = `${x}px`;
+      if (center) {
+        span.style.left = `${x - span.clientWidth / 2}px`;
+      } else {
+        span.style.left = `${x}px`;
+      }
       span.style.top = `${y}px`;
       span.innerText = text;
     }
