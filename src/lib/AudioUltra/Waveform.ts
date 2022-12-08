@@ -311,6 +311,10 @@ export class Waveform extends Events<WaveformEventTypes> {
     }
   }
 
+  setLoadingProgress(progress: number) {
+    this.visualizer.setLoadingProgress(progress);
+  }
+
   /**
    * Stop playback
    */

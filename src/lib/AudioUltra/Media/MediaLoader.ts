@@ -85,9 +85,11 @@ export class MediaLoader extends Destructable {
     return new Promise<XMLHttpRequest>((resolve, reject) => {
       xhr.responseType = 'arraybuffer';
 
-      // xhr.addEventListener("progress", (e) => {
-      //   console.log(Math.round(e.loaded / e.total * 100));
-      // });
+      xhr.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          this.wf.setLoadingProgress(Math.round(e.loaded / e.total * 100));
+        }
+      });
 
       xhr.addEventListener('load', async () => {
         resolve(xhr);

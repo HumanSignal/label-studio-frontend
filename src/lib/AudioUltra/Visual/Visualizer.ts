@@ -136,10 +136,16 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   setLoading(loading: boolean) {
     if (loading) {
-      this._loader = document.createElement('audio-ultra-loader');
+      this._loader = document.createElement('loading-progress-bar');
       this._container.appendChild(this._loader);
     } else {
       this._container.removeChild(this._loader);
+    }
+  }
+
+  setLoadingProgress(progress: number) {
+    if (this._loader) {
+      (this._loader as any).value = progress;
     }
   }
 
