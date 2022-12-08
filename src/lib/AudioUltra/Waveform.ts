@@ -467,7 +467,7 @@ export class Waveform extends Events<WaveformEventTypes> {
    * Handle cursor move event
    */
   private handleCursorMove = (e: MouseEvent) => {
-    if (e.target && this.visualizer.container.contains(e.target)) {
+    if (e.target && this.visualizer.container.contains(e.target as Node)) {
       if (this.loaded && this.cursor.inView) {
         if (this.focusTimeout) clearTimeout(this.focusTimeout);
   
@@ -481,11 +481,14 @@ export class Waveform extends Events<WaveformEventTypes> {
         const timeDate = new Date(cursorTime * 1000);
         const onlyTime = timeDate.toISOString().match(/T(.*?)Z/)?.[1];
   
-        this.tooltip.show(e.pageX + 14, e.pageY - 20, onlyTime);
+        this.tooltip.show(e.pageX, e.pageY + 16, onlyTime);
       } else {
         this.cursor.set(CursorSymbol.default);
-        this.tooltip.hide();
       }
+      this.cursor.show();
+    } else {
+      this.cursor.hide();
+      this.tooltip.hide();
     }
   };
 }

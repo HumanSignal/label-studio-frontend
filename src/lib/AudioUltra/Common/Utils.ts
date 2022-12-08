@@ -180,18 +180,20 @@ export const bufferAllocator = () => {
   return { allocate };
 };
 
-export const getCursorPositionX = (e: MouseEvent, offsetElement: HTMLElement) => {
-  const parentOffset = (offsetElement).getBoundingClientRect();
-  const cursorOffset = (e.clientX - parentOffset.left);
+export const getOffsetLeft = (element: HTMLElement) => {
+  return element.getBoundingClientRect().left;
+};
 
-  return cursorOffset;
+export const getOffsetTop = (element: HTMLElement) => {
+  return element.getBoundingClientRect().top;
+};
+
+export const getCursorPositionX = (e: MouseEvent, offsetElement: HTMLElement) => {
+  return (e.clientX - getOffsetLeft(offsetElement));
 };
 
 export const getCursorPositionY = (e: MouseEvent, offsetElement: HTMLElement) => {
-  const parentOffset = (offsetElement).getBoundingClientRect();
-  const cursorOffset = (e.clientY - parentOffset.top);
-
-  return cursorOffset;
+  return (e.clientY - getOffsetTop(offsetElement));
 };
 
 export const pixelsToTime = (pixels: number, zoomedWidth: number, duration: number) => {
