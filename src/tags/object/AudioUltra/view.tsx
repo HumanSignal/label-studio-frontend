@@ -81,17 +81,15 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
 
       const selectRegion = (region: Region|Segment, event: MouseEvent) => {
         const growSelection = event.metaKey || event.ctrlKey;
-        const itemRegions = item.annotation.regions.filter((r: any) => r.object.name === item.name);
+        const itemRegions = item.regs.filter((r: any) => r.object.name === item.name);
 
         if (!growSelection || (!region.selected && !region.isRegion))
           item.annotation.regionStore.unselectAll();
 
         // to select or unselect region
-        itemRegions.forEach((obj: any) => {
-          if (obj.id === region.id) {
-            obj.annotation.regionStore.toggleSelection(obj, region.selected);
-          }
-        });
+        const itemRegion = itemRegions.find((obj: any) => obj.id === region.id);
+
+        itemRegion && item.annotation.regionStore.toggleSelection(itemRegion, region.selected);
 
         // to select or unselect unlabeled segments
         const targetInWave = item._ws.regions.findRegion(region.id);
