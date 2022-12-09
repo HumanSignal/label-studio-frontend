@@ -133,6 +133,7 @@ export class Player extends Destructable {
   }
 
   handleEnded = () => {
+    if (this.loop) return this.play();
     this.ended = true;
     this.updateCurrentTime(true);
     this.pause();
@@ -190,18 +191,12 @@ export class Player extends Destructable {
         this.currentTime = this.loop.start;
       }
 
-      const loopEnd = clamp(this.loop.end, 0, this.duration);
-
-      this.audio.source.loop = true;
-      this.audio.source.loopStart = this.loop.start;
-      this.audio.source.loopEnd = loopEnd;
-      this.audio.source.start(0, this.currentTime);
-    } else {
-      this.audio.source.start(0, start ?? 0, duration ?? this.duration);
+      duration = clamp(this.loop.end, 0, this.duration);
+      start = clamp(this.loop.start, 0, duration);
     }
 
+    this.audio.source.start(0, start ?? 0, duration ?? this.duration);
     this.audio.source.addEventListener('ended', this.handleEnded);
-
     this.watch();
   }
 
@@ -214,9 +209,14 @@ export class Player extends Destructable {
       const regionsStart = Math.min(...selected.map(r => r.start));
       const regionsEnd = Math.max(...selected.map(r => r.end));
 
+      const start = clamp(this.currentTime, regionsStart, regionsEnd);
+
       this.loop = { start: regionsStart, end: regionsEnd };
 
-      return this.loop;
+      return {
+        start,
+        end: regionsEnd,
+      };
     } 
     const start = from ?? this.currentTime;
     const end = to !== undefined ? (to - start) : undefined;
