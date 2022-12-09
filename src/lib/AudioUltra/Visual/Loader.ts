@@ -101,8 +101,7 @@ export class Loader extends HTMLElement {
     return this._loaded;
   }
 
-  set loaded(value: number) {Loader;
-    console.log('loaded', value);
+  set loaded(value: number) {
     this._loaded = value;
   }
 
@@ -111,7 +110,6 @@ export class Loader extends HTMLElement {
   }
 
   set total(value: number) {
-    console.log('total', value);
     this._total= value;
   }
 
