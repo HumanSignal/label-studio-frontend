@@ -8,7 +8,7 @@ export type Options = {
 
 export class MediaLoader extends Destructable {
   private wf: Waveform;
-  private audio!: WaveformAudio | null;
+  private audio?: WaveformAudio;
   private loaded = false;
   private options: Options;
   private cancel: () => void;
@@ -16,6 +16,8 @@ export class MediaLoader extends Destructable {
   duration = 0;
   sampleRate = 0;
   loadingProgressType: 'determinate' | 'indeterminate';
+
+  static promiseChain: Promise<any> |null = null;
 
   constructor(wf: Waveform, options: Options) {
     super();
@@ -31,6 +33,15 @@ export class MediaLoader extends Destructable {
     this.loadingProgressType = 'determinate';
   }
 
+  async decodeAudioData(arrayBuffer: ArrayBuffer) {
+    if (!this.audio?.context || this.isDestroyed) return null;
+
+    return await this.audio.context.decodeAudioData(arrayBuffer).then((buffer) => {
+      if (this.isDestroyed) return null;
+      return buffer;
+    });
+  }
+
   async load(options: WaveformAudioOptions): Promise<WaveformAudio| null> {
     if (this.isDestroyed || this.loaded) {
       return Promise.resolve(null);
@@ -42,7 +53,7 @@ export class MediaLoader extends Destructable {
     if (xhr.status === 200 && xhr.response) {
       const playAudio = (buffer: AudioBuffer) => {
         this.duration = buffer.duration;
-        this.sampleRate = audio.sampleRate;
+        this.sampleRate = audio.sampleRate ?? buffer.sampleRate;
         this.loaded = true;
         audio.buffer = buffer;
         audio.connect();
@@ -50,11 +61,32 @@ export class MediaLoader extends Destructable {
       };
 
       try {
-        const buffer = await audio.context.decodeAudioData(
-          xhr.response,
-        );
 
-        return playAudio(buffer);
+        if (!audio.context) {
+          return Promise.resolve(null);
+        }
+
+        if (MediaLoader.promiseChain) {
+          MediaLoader.promiseChain = MediaLoader.promiseChain.then(() => {
+            return this.decodeAudioData(xhr.response);
+          }).then((buffer) => {
+            if (buffer) {
+              return playAudio(buffer);
+            }
+            return null;
+          });
+        } else {
+          MediaLoader.promiseChain = this.decodeAudioData(xhr.response).then((buffer) => {
+            if (buffer) {
+              return playAudio(buffer);
+            }
+            return null;
+          }).finally(() => {
+            MediaLoader.promiseChain = null;
+          });
+        }
+
+        return MediaLoader.promiseChain;
       } catch (err) {
       // TODO: Handle properly (exiquio)
       // NOTE: error is being received
@@ -66,14 +98,23 @@ export class MediaLoader extends Destructable {
   }
 
   destroy() {
+    if (this.isDestroyed) return;
+
     super.destroy();
     this.reset();
 
     if (this.audio) {
-      this.audio.buffer = null;
       this.audio.disconnect();
-      this.audio.context.close();
-      this.audio = null;
+
+      if (this.audio.context) {
+        this.audio.context.close().then(() => {
+          console.log('destroyed context');
+        });
+      }
+
+      delete this.audio.context;
+      delete this.audio.buffer;
+      delete this.audio;
     }
   }
 

@@ -144,7 +144,7 @@ export class Regions {
     const region = this.findRegion(regionId);
 
     if (this.deleteable && region?.deleteable) {
-      region.destroy();
+      region.destroy(false);
       this.regions = this.regions.filter(r => r !== region);
     }
 

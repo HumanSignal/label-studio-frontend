@@ -234,17 +234,20 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   async load() {
+    if (this.isDestroyed) return;
+
     const audio = await this.media.load({
       muted: this.params.muted ?? false,
       volume: this.params.volume ?? 1,
       rate: this.params.rate ?? 1,
     });
 
+    if (this.isDestroyed) return;
+
     if (audio) {
       this.player.init(audio);
       this.visualizer.init(audio);
       this.loaded = true;
-
       this.invoke('load');
     }
   }
@@ -326,12 +329,16 @@ export class Waveform extends Events<WaveformEventTypes> {
    * Detach all the event handlers, cleanup the cache, remove Waveform from the dom
    */
   destroy() {
-    super.destroy(); // Events -> Destructable
+    if (this.isDestroyed) return;
+
     this.regions.destroy();
-    this.visualizer.destroy();
     this.media.destroy();
+    this.player.destroy();
+    this.visualizer.destroy();
     this.cursor.destroy();
     this.tooltip.destroy();
+
+    super.destroy(); // Events -> Destructable
   }
 
   addRegion(options: RegionOptions, render = true) {

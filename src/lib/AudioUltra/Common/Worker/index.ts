@@ -46,6 +46,7 @@ export class ComputeWorker {
       };
 
       self.addEventListener('message', (e) => {
+        if (e.data) return;
         const { data, type, eventId } = e.data;
 
         switch(type) {
@@ -93,7 +94,7 @@ export class ComputeWorker {
     return response?.data?.result;
   }
 
-  terminate() {
+  destroy() {
     this.worker.terminate();
   }
 

@@ -5,11 +5,11 @@ export interface WaveformAudioOptions {
 }
 
 export class WaveformAudio {
-  context: AudioContext;
-  analyzer: AnalyserNode | null = null;
-  source: AudioBufferSourceNode | null = null;
-  gain: GainNode | null = null;
-  buffer: AudioBuffer | null = null;
+  context?: AudioContext;
+  analyzer?: AnalyserNode;
+  source?: AudioBufferSourceNode;
+  gain?: GainNode;
+  buffer?: AudioBuffer;
 
   private _rate = 1;
   private _volume = 1;
@@ -30,7 +30,7 @@ export class WaveformAudio {
   }
 
   get sampleRate() {
-    return this.context.sampleRate;
+    return this.context?.sampleRate;
   }
 
   get volume() {
@@ -61,16 +61,23 @@ export class WaveformAudio {
 
   connect() {
     if (this.source) this.disconnect();
+    if (!this.context || !this.buffer) return;
 
-    const source = this.context.createBufferSource();
+    const source = this.context?.createBufferSource();
+
+    if (!source) return;
 
     source.buffer = this.buffer;
 
-    const analyzer = this.context.createAnalyser();
+    const analyzer = this.context?.createAnalyser();
+
+    if (!analyzer) return;
 
     analyzer.fftSize = 2048;
 
-    const gain = this.context.createGain();
+    const gain = this.context?.createGain();
+
+    if (!gain) return;
 
     source.connect(gain);
 
@@ -88,15 +95,22 @@ export class WaveformAudio {
   }
 
   disconnect() {
-    if (!this.source) return;
-
-    this.analyzer?.disconnect();
-    this.source.disconnect();
-    this.gain?.disconnect();
-
-    this.source = null;
-    this.analyzer = null;
-    this.gain = null;
+    if (this.source) {
+      this.source.disconnect();
+      delete this.source;
+    }
+    if (this.analyzer) {
+      this.analyzer.disconnect();
+      delete this.analyzer;
+    }
+    if (this.gain) {
+      this.gain.disconnect();
+      delete this.gain;
+    }
+  }
+  
+  destroy() {
+    this.disconnect();
   }
 
   mute() {
