@@ -141,11 +141,9 @@ export const AudioModel = types.compose(
             selectedRegions.forEach(r => {
               r.update({ color: selectedColor, labels: labels ?? [] });
 
-              if (r.isRegion) {
-                self.updateRegion(r);
-              } else {
-                self.annotation.selectArea(self.addRegion(r));
-              }
+              const region = r.isRegion ? self.updateRegion(r) : self.addRegion(r);
+
+              self.annotation.selectArea(region);
             });
 
             if (selectedRegions.length) {
@@ -353,7 +351,6 @@ export const AudioModel = types.compose(
 
           const control = self.activeState;
           const labels = { [control.valueType]: control.selectedValues() };
-
           const r = self.annotation.createResult(wsRegion, labels, control, self);
 
           r._ws_region = wsRegion;
@@ -367,6 +364,7 @@ export const AudioModel = types.compose(
           if (!r) return;
 
           r.onUpdateEnd();
+          return r;
         },
 
         /**
