@@ -256,7 +256,7 @@ export class Segment extends Events<SegmentEvents> {
       if (freezeStart || freezeEnd) this.switchCursor(CursorSymbol.colResize);
       else  this.switchCursor(CursorSymbol.grabbing);
 
-      this.updatePosition(startTime, endTime);
+      this.updatePosition(clamp(startTime, 0, duration), clamp(endTime, 0, duration));
     }
   };
 
