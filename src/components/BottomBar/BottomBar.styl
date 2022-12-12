@@ -1,5 +1,5 @@
-.topbar
-  height var(--topbar-height)
+.bottombar
+  height var(--bottombar-height)
   width 100%
   z-index 101
   flex none
@@ -9,12 +9,12 @@
   background-color #fff
   border-bottom 1px solid rgba(#000, 0.1)
   user-select none
-  position sticky
-  top 0
+  position absolute
+  bottom 0
 
   &__group
     display flex
-    align-items center
+    align-items stretch
 
   &__section
     display flex
@@ -25,5 +25,8 @@
     &_flat
       padding 0
 
-    & + &
-      border-left 1px solid rgba(#000, 0.1)
+    & .button
+      &_withIcon
+        &:not([disabled]):hover
+            background-color rgba(65, 60, 74, 0.08) !important
+            border-radius 4px
