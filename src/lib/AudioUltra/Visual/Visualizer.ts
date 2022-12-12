@@ -496,6 +496,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const { container } = this;
 
     this.wrapper = document.createElement('div');
+    this.wrapper.style.height = '100%';
 
     this.createLayer({ name: 'main' });
     this.createLayer({ name: 'background', offscreen: true, zIndex: 0, isVisible: false });
