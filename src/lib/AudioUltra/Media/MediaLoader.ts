@@ -17,8 +17,6 @@ export class MediaLoader extends Destructable {
   sampleRate = 0;
   loadingProgressType: 'determinate' | 'indeterminate';
 
-  static promiseChain: Promise<any> |null = null;
-
   constructor(wf: Waveform, options: Options) {
     super();
     this.wf = wf;
@@ -65,27 +63,12 @@ export class MediaLoader extends Destructable {
           return Promise.resolve(null);
         }
 
-        if (MediaLoader.promiseChain) {
-          MediaLoader.promiseChain = MediaLoader.promiseChain.then(() => {
-            return this.decodeAudioData(xhr.response);
-          }).then((buffer) => {
-            if (buffer) {
-              return playAudio(buffer);
-            }
-            return null;
-          });
-        } else {
-          MediaLoader.promiseChain = this.decodeAudioData(xhr.response).then((buffer) => {
-            if (buffer) {
-              return playAudio(buffer);
-            }
-            return null;
-          }).finally(() => {
-            MediaLoader.promiseChain = null;
-          });
-        }
-
-        return MediaLoader.promiseChain;
+        return this.decodeAudioData(xhr.response).then((buffer) => {
+          if (buffer) {
+            return playAudio(buffer);
+          }
+          return null;
+        });
       } catch (err) {
       // TODO: Handle properly (exiquio)
       // NOTE: error is being received

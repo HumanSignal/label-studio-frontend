@@ -97,17 +97,17 @@ export class WaveformAudio {
   }
 
   disconnect() {
-    if (this.source) {
-      this.source.disconnect();
-      delete this.source;
+    if (this.gain) {
+      this.gain.disconnect();
+      delete this.gain;
     }
     if (this.analyzer) {
       this.analyzer.disconnect();
       delete this.analyzer;
     }
-    if (this.gain) {
-      this.gain.disconnect();
-      delete this.gain;
+    if (this.source) {
+      this.source.disconnect();
+      delete this.source;
     }
   }
   
