@@ -6,6 +6,7 @@ export interface WaveformAudioOptions {
 
 export class WaveformAudio {
   context?: AudioContext;
+  offline?: OfflineAudioContext;
   analyzer?: AnalyserNode;
   source?: AudioBufferSourceNode;
   gain?: GainNode;
@@ -18,7 +19,8 @@ export class WaveformAudio {
   private _channelCount = 1;
 
   constructor(options: WaveformAudioOptions) {
-    this.context = new AudioContext();
+    this.context = this.createAudioContext();
+    this.offline = this.createOfflineAudioContext();
 
     this._rate = options.rate;
     this._savedVolume = options.volume;
@@ -30,7 +32,7 @@ export class WaveformAudio {
   }
 
   get sampleRate() {
-    return this.context?.sampleRate;
+    return this.context?.sampleRate ?? 44100;
   }
 
   get volume() {
@@ -111,6 +113,7 @@ export class WaveformAudio {
   
   destroy() {
     this.disconnect();
+    delete this.buffer;
   }
 
   mute() {
@@ -140,5 +143,49 @@ export class WaveformAudio {
     }
 
     return data;
+  }
+
+  async decodeAudioData(arraybuffer: ArrayBuffer): Promise<AudioBuffer | null | undefined> {
+    return new Promise((resolve, reject) => {
+      if (!this.offline) {
+        this.offline = this.createOfflineAudioContext();
+      }
+      // Safari doesn't support promise based decodeAudioData by default
+      if ('webkitAudioContext' in window) {
+        this.offline?.decodeAudioData(
+          arraybuffer,
+          data => resolve(data),
+          err => reject(err),
+        );
+      } else {
+        this.offline?.decodeAudioData(arraybuffer).then(
+          resolve,
+        ).catch(
+          reject,
+        );
+      }
+    });
+  }
+
+  private createOfflineAudioContext(sampleRate?: number) {
+    if (!(window as any).WebAudioOfflineAudioContext) {
+      (window as any).WebAudioOfflineAudioContext = new (window.OfflineAudioContext ||
+                (window as any).webkitOfflineAudioContext)(1, 2, sampleRate ?? this.sampleRate);
+    }
+    return (window as any).WebAudioOfflineAudioContext;
+  }
+
+  private createAudioContext() {
+    if (!window.AudioContext) {
+      return;
+    }
+
+    if ((window as any).WebAudioContext) {
+      return (window as any).WebAudioContext as AudioContext;
+    }
+
+    (window as any).WebAudioContext = new AudioContext();
+
+    return (window as any).WebAudioContext as AudioContext;
   }
 }

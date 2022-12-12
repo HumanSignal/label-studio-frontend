@@ -8,7 +8,7 @@ export type Options = {
 
 export class MediaLoader extends Destructable {
   private wf: Waveform;
-  private audio?: WaveformAudio;
+  private audio?: WaveformAudio | null;
   private loaded = false;
   private options: Options;
   private cancel: () => void;
@@ -36,7 +36,7 @@ export class MediaLoader extends Destructable {
   async decodeAudioData(arrayBuffer: ArrayBuffer) {
     if (!this.audio?.context || this.isDestroyed) return null;
 
-    return await this.audio.context.decodeAudioData(arrayBuffer).then((buffer) => {
+    return await this.audio.decodeAudioData(arrayBuffer).then((buffer) => {
       if (this.isDestroyed) return null;
       return buffer;
     });
@@ -61,7 +61,6 @@ export class MediaLoader extends Destructable {
       };
 
       try {
-
         if (!audio.context) {
           return Promise.resolve(null);
         }
@@ -104,17 +103,8 @@ export class MediaLoader extends Destructable {
     this.reset();
 
     if (this.audio) {
-      this.audio.disconnect();
-
-      if (this.audio.context) {
-        this.audio.context.close().then(() => {
-          console.log('destroyed context');
-        });
-      }
-
-      delete this.audio.context;
-      delete this.audio.buffer;
-      delete this.audio;
+      this.audio.destroy();
+      this.audio = null;
     }
   }
 
