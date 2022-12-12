@@ -81,13 +81,12 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
 
       const selectRegion = (region: Region|Segment, event: MouseEvent) => {
         const growSelection = event.metaKey || event.ctrlKey;
-        const itemRegions = item.regs.filter((r: any) => r.object.name === item.name);
 
         if (!growSelection || (!region.selected && !region.isRegion))
           item.annotation.regionStore.unselectAll();
 
         // to select or unselect region
-        const itemRegion = itemRegions.find((obj: any) => obj.id === region.id);
+        const itemRegion = item.regs.find((obj: any) => obj.id === region.id);
 
         itemRegion && item.annotation.regionStore.toggleSelection(itemRegion, region.selected);
 
