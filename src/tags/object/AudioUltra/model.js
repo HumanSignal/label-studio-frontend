@@ -133,10 +133,13 @@ export const AudioModel = types.compose(
       return {
         afterCreate() {
           dispose = observe(self, 'activeLabel', () => {
+            const selectedRegions = self._ws?.regions?.selected;
+
+            if (!selectedRegions || selectedRegions.length === 0) return;
+
             const activeState = self.activeState;
             const selectedColor = activeState?.selectedColor;
             const labels = activeState?.selectedValues();
-            const selectedRegions = self._ws.regions.selected;
 
             selectedRegions.forEach(r => {
               r.update({ color: selectedColor, labels: labels ?? [] });
