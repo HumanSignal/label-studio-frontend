@@ -814,6 +814,10 @@ const Model = types.model({
       currentTool?.updateCursor?.();
     },
 
+    setOverlayRef(ref) {
+      self.overlayRef = ref;
+    },
+
     // @todo remove
     setSelected() {
       // self.selectedShape = shape;

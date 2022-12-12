@@ -10,7 +10,7 @@ import {
 
 import './Node.styl';
 import { Block, Elem } from '../../utils/bem';
-import { IconBrushTool, IconBrushToolSmart, IconCircleTool, IconCircleToolSmart, IconKeypointsTool, IconKeypointsToolSmart, IconPolygonTool, IconPolygonToolSmart, IconRectangle3PointTool, IconRectangle3PointToolSmart, IconRectangleTool, IconRectangleToolSmart, IconText, IconWarning } from '../../assets/icons';
+import { IconBrushTool, IconBrushToolSmart, IconMagicWandTool, IconCircleTool, IconCircleToolSmart, IconKeypointsTool, IconKeypointsToolSmart, IconPolygonTool, IconPolygonToolSmart, IconRectangle3PointTool, IconRectangle3PointToolSmart, IconRectangleTool, IconRectangleToolSmart, IconText, IconWarning } from '../../assets/icons';
 import { NodeView } from './NodeView';
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 

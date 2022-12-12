@@ -4,19 +4,104 @@ import Constants from '../core/Constants';
 
 import * as Colors from './colors';
 
-// given the imageData object returns the DOM Image with loaded data
-function imageData2Image(imagedata) {
+// given a single channel UInt8 image data mask with non-zero values indicating the
+// mask, turn it into a 4 channgel RGBA image data URL filled in with the given
+// color for pixels turned on in the mask.
+function mask2DataURL(singleChannelData, nw, nh, color) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
-  canvas.width = imagedata.width;
-  canvas.height = imagedata.height;
-  ctx.putImageData(imagedata, 0, 0);
+  canvas.width = nw;
+  canvas.height = nh;
 
-  const image = new Image();
+  const numChannels = 1;
 
-  image.src = canvas.toDataURL();
-  return image;
+  setMaskPixelColors(ctx, singleChannelData, nw, nh, color, numChannels);
+  
+  const url = canvas.toDataURL();
+
+  return url;
+}
+
+// given an RGBA image data URL, turn it into an actual DOM Image filled in with the current
+// class color.
+function maskDataURL2Image(maskDataURL, { color = Constants.FILL_COLOR } = {}) {
+  return new Promise((resolve, reject) => {
+    const img = document.createElement('img');
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const nw = img.width,
+        nh = img.height;
+
+      canvas.width = nw;
+      canvas.height = nh;
+
+      const ctx = canvas.getContext('2d');
+
+      ctx.drawImage(img, 0, 0);
+
+      const imgData = ctx.getImageData(0, 0, nw, nh);
+
+      const numChannels = 4; // RGBA
+
+      setMaskPixelColors(ctx, imgData.data, nw, nh, color, numChannels);
+
+      img.src = canvas.toDataURL();
+
+      resolve(img);
+    };
+    img.src = maskDataURL;
+  });
+}
+
+// Given some RGBA mask pixel array, efficiently sets the colors. Note that we assume that the same value is set
+// throughout the channels of the mask, so that no channel will be set to 0 if there is a valid mask
+// position there (i.e. all channels might be 255 if a mask is present).
+function setMaskPixelColors(ctx, data, nw, nh, color, numChannels) {
+  const [red, green, blue] = chroma(color).rgb();
+  const alpha = 255;
+
+  // Efficently expand the single channel mask to be multi-channel by treating the
+  // target array as single 32-bit numbers, so that the RGBA values can be set in
+  // a single machine instruction via bit-shifting in a performance conscious way.
+  const resultsData = ctx.getImageData(0, 0, nw, nh);
+  const buffer = new ArrayBuffer(nw * nh * 4); // RGBA
+  const dataView = new Uint32Array(buffer);
+  const expandedView = new Uint8ClampedArray(buffer);
+
+  // Clamped arrays have different byte endian ordering for different platforms,
+  // effecting the order in which we set 8-bit colors via 32-bit values.
+  const endian = checkEndian();
+  let finalColor;
+
+  if (endian === 'little endian') {
+    finalColor = (alpha << 24) | (blue << 16) | (green << 8) | red;
+  } else if (endian === 'big endian') {
+    finalColor = (red << 24) | (green << 16) | (blue << 8) | alpha;
+  } else {
+    throw new Error(`Unknown platform endianness: ${endian}`);
+  }
+
+  let x, y;
+  const sourceNumChannels = numChannels; // Could be 1-channel mask or RGBA mask.
+
+  for (y = 0; y <= nh; y++) {
+    for (x = 0; x <= nw; x++) {
+      // The source is UInt8, while the target is UInt32.
+      // This means indexing the source should be multiplied by the number
+      // of channels, while for the target every 32-bit entry contains the full
+      // RGBA value so we can index into it directly.
+      const idx = (y * nw + x);
+
+      if (data[idx * sourceNumChannels]) { // If the mask is set at this position...
+        dataView[idx] = finalColor;
+      }
+    }
+  }
+
+  resultsData.data.set(expandedView);
+  ctx.putImageData(resultsData, 0, 0);
 }
 
 // given the RLE array returns the DOM Image element with loaded image
@@ -318,10 +403,28 @@ const trim = (canvas) => {
   };
 };
 
+/**
+ * JavaScript clamped arrays will follow the byte ordering of their platform (either little-
+ * or big endian). This method returns "little endian" if byte ordering starts to the right, or
+ * "big endian" if byte ordering starts from the left.
+ */
+function checkEndian() {
+  const arrayBuffer = new ArrayBuffer(2);
+  const uint8Array = new Uint8Array(arrayBuffer);
+  const uint16array = new Uint16Array(arrayBuffer);
+
+  uint8Array[0] = 0xAA; // set first byte
+  uint8Array[1] = 0xBB; // set second byte
+  if (uint16array[0] === 0xBBAA) return 'little endian';
+  if (uint16array[0] === 0xAABB) return 'big endian';
+  else throw new Error('Can not determine platform endianness');
+}
+
 export default {
-  imageData2Image,
   Region2RLE,
   RLE2Region,
+  mask2DataURL,
+  maskDataURL2Image,
   brushSizeCircle,
   labelToSVG,
   trim,
