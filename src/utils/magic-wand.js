@@ -1,6 +1,7 @@
 /* eslint-disable prefer-const */
 
-// import { MagicWand } from "magic-wand-js";
+import chroma from 'chroma-js';
+
 // Magic Wand (Fuzzy Selection Tool) for Javascript
 //
 // The MIT License (MIT)
@@ -100,8 +101,7 @@ const MagicWand = (function() {
           if (c > colorThreshold || c < -colorThreshold) break;
           c = data[i + 1] - sampleColor[1]; // check by green
           if (c > colorThreshold || c < -colorThreshold) break;
-          c = data[i + 2] - sampleColor[2]; // check by blue
-          if (c > colorThreshold || c < -colorThreshold) break;
+          c = data[i + 2] - sampleColor[2]; // check by blue          if (c > colorThreshold || c < -colorThreshold) break;
 
           result[dyl] = 1;
           visited[dyl] = 1;
@@ -852,47 +852,75 @@ const MagicWand = (function() {
   return lib;
 })();
 
-export function getImageData(img) {
-  const canvas = document.createElement('canvas');
+/**
+ * Given some mask with non-zero values indicating pixels to color, draws it on the given
+ * canvas Context.
+ * @param ctx Canvas 2D context to use for drawing the image data.
+ * @param w When creating an image from the mask, the width of that image.
+ * @param h When creating an image from the mask, the height of that image.
+ * @param color Chroma.js compatible RGB color to use when drawing the mask.
+ * @param alpha Float 0 to 1 value of how much opacity to use for thresholded, filled pixels.
+ */ 
+function paint(ctx, w, h, mask, color, alpha) {
+  if (!mask) return;
+  
+  const [r, g, b] = chroma(color).rgb();
 
-  canvas.width = img.width;
-  canvas.height = img.height;
-  const ctx = canvas.getContext('2d');
+  alpha = Math.round(alpha * 255.0);
+  
+  let x,y,
+    data = mask.data,
+    bounds = mask.bounds,
+    maskW = mask.width,
+    imgData = ctx.createImageData(w, h),
+    res = imgData.data;
 
-  ctx.drawImage(img, 0, 0);
-  return ctx.getImageData(0, 0, img.width, img.height);
+  for (y = bounds.minY; y <= bounds.maxY; y++) {
+    for (x = bounds.minX; x <= bounds.maxX; x++) {
+      if (data[y * maskW + x] === 0) continue;
+      let k = (y * w + x) * 4;
+
+      res[k] = r;
+      res[k + 1] = g;
+      res[k + 2] = b;
+      res[k + 3] = alpha;
+    }
+  }
+  
+  ctx.putImageData(imgData, 0, 0);
 }
 
-export function calcBorder(imageData, width, height, x, y, threshold, simple) {
-  const blurRadius = 5;
-  const simplifyTolerant = 5;
-  const simplifyCount = 50;
-
-  const parentPoints = [];
+/**
+ * Given some image, apply a threshold to it anchored at the x and y location, and also
+ * draw a results border around the thresholded mask.
+ * @param {ImageData} imageData Raw image data to do the thresholding on.
+ * @param {CanvasRenderingContext2D} ctx Image context on which to draw the results.
+ * @param {int} width of the image.
+ * @param {int} height of the image.
+ * @param {int} x of start pixel
+ * @param {int} y of start pixel.
+ * @param {int} threshold Color range around anchor pixel to include within mask.
+ * @param {string} color The color to draw the mask as, passed in as an RGB string.
+ * @param {float} alpha Alpha opacity of the mask when drawn, 0. to 1.
+ * @param {boolean} doPaint Whether to draw the mask once its calculated; not drawing
+ *  it can save some performance time.
+ * @param {int} blurRadius The degree of gaussian blur to apply to the contour.
+ * @param {boolean} doPaint Whether to draw the mask once its calculated; not drawing
+ *  it can save some performance time.
+ * @returns The mask as {Uint8Array} data, {int} width, {int} height, {Object} bounds.
+ */
+export function drawMask(imageData, ctx, width, height, x, y, threshold, color, alpha, blurRadius, doPaint) {
   const image = {
-    data: imageData,
+    data: imageData.data,
     width,
     height,
-    bytes: 4,
+    bytes: 4, // RGBA
   };
+  const existingMask = null;
+  let mask = MagicWand.floodFill(image, x, y, threshold, existingMask);
 
-  let mask = MagicWand.floodFill(image, x, y, threshold, null, true);
+  if (mask) mask = MagicWand.gaussBlurOnlyBorder(mask, blurRadius, existingMask);
+  if (doPaint) paint(ctx, width, height, mask, color, alpha);
 
-  mask = MagicWand.gaussBlurOnlyBorder(mask, blurRadius);
-
-  let cs = MagicWand.traceContours(mask);
-
-  cs = MagicWand.simplifyContours(cs, simplifyTolerant, simplifyCount);
-
-  if (cs.length > 0) {
-    if (simple) {
-      return cs[0].points;
-    }
-    for (let j = 0, icsl = cs[0].points.length; j < icsl; j++) {
-      parentPoints.push([cs[0].points[j].x, cs[0].points[j].y]);
-    }
-    return parentPoints;
-  } else {
-    return false;
-  }
+  return mask;
 }

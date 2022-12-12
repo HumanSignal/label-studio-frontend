@@ -891,7 +891,15 @@ export default observer(
                 src={item._value}
                 onLoad={item.updateImageSize}
                 onError={this.handleError}
+                crossOrigin="Anonymous"
                 alt="LS"
+              />
+              <canvas
+                className={styles.overlay}
+                ref={ref => {
+                  item.setOverlayRef(ref);
+                }}
+                style={item.imageTransform}
               />
             </div>
             {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
