@@ -25,6 +25,16 @@ class MouseActions extends Helper {
 
     return page.mouse.move(x, y, { steps });
   }
+
+  /**
+   * Mouse wheel action
+   * @param {{deltaY: number, deltaX: number}} deltas
+   */
+  mouseWheel({ deltaX = 0, deltaY = 0 }) {
+    const page = getPage(this.helpers);
+
+    return page.mouse.wheel(deltaX, deltaY);
+  }
 }
 
 module.exports = MouseActions;
