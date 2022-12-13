@@ -14,6 +14,11 @@ import { guidGenerator } from '../core/Helpers';
 import { IconMagicWandTool } from '../assets/icons';
 import { Tool } from '../components/Toolbar/Tool';
 
+// TODO!!! Adding a bunch of Magic Wand annotations then updating is slow when saving. Investigate.
+// TODO!!! Once a magic wand selection has been made, save the scene and make sure its task
+// annotations are correct, then also export final results and ensure they are legible.
+// TODO!!! Write tests
+
 
 /**
  * This file implements a Magic Wand, making it possible to click in a region of an image a user is doing
@@ -70,7 +75,7 @@ import { Tool } from '../components/Toolbar/Tool';
  * This is a performance bottleneck, so we directly turn it into an image URL that can be passed into the
  * BrushRegion. The BrushRegion can then apply the correct class color to the image URL results to draw
  * onto it's canvas quickly, which also makes it possible for the user to dynamically
- * change the class color later on. We keep a cached naturalCanvas around from previous masking sessions on
+ * change the class color later on. We keep a cachedNaturalCanvas around from previous masking sessions on
  * the same class in order to collapse multiple Magic Wand additions into the same class.
  */
 
@@ -115,8 +120,9 @@ const _Tool = types
 
     currentRegion: null,
 
-    naturalCanvas: null,
     isFirstWand: true,
+    cachedRegionId: null,
+    cachedNaturalCanvas: null,
 
     naturalWidth: null,
     naturalHeight: null,
@@ -185,20 +191,17 @@ const _Tool = types
         return null;
       }
     },
+
+    /**
+     * We maintain an offscreen cache of the natural canvas containing previous Magic Wand sessions
+     * with the current region being selected. If the user selects a different region we must invalidate
+     * this cache.
+     */
+    shouldInvalidateCache() {
+      return self.existingRegion && self.existingRegion.id !== self.cachedRegionId;
+    },
   }))
   .actions(self => ({
-
-    getEventCoords(ev) {
-      // Mouse click x, y coordinates should be relative to the offsetX/offsetY of the actual
-      // fragment of image being displayed in the viewport. If the image is zoomed and
-      // panned, offsetX/offsetY will still stay relative to what is actually being
-      // displayed (i.e. it will change if we pan around).
-
-      const x = ev.offsetX,
-        y = ev.offsetY;
-
-      return [x, y];
-    },
 
     mousedownEv(ev) {
       // Start magic wand thresholding.
@@ -206,8 +209,53 @@ const _Tool = types
       self.mode = 'drawing';
       self.currentThreshold = self.defaultthreshold;
 
-      // Has the user previously used the Magic Wand for the current class setting?
-      self.isFirstWand = self.existingRegion === null;
+      const image = self.obj;
+      const imageRef = image.imageRef;
+
+      self.naturalWidth = imageRef.naturalWidth;
+      self.naturalHeight = imageRef.naturalHeight;
+      self.imageDisplayedInBrowserWidth = imageRef.width;
+      self.imageDisplayedInBrowserHeight = imageRef.height;
+      self.viewportWidth = Math.round(image.canvasSize.width);
+      self.viewportHeight = Math.round(image.canvasSize.height);
+      self.zoomScale = image.zoomScale;
+      self.zoomingPositionX = image.zoomingPositionX;
+      self.zoomingPositionY = image.zoomingPositionY;
+      self.negativezoom = self.zoomScale < 1;
+      self.rotation = image.rotation;
+
+      if (self.rotation || image.crosshair) {
+        self.mode = 'viewing';
+        self.annotation.history.unfreeze();
+
+        let msg;
+
+        if (self.rotation) {
+          msg = 'The Magic Wand is not supported on rotated images';
+        } else {
+          msg = 'The Magic Wand is not supported if the crosshair is turned on';
+        } 
+
+        alert(msg);
+        throw msg;
+      }
+
+      // Has the user previously used the Magic Wand for the current class setting? 
+      self.isFirstWand = (self.existingRegion === null) || (self.existingRegion.id !== self.cachedRegionId);
+      if (self.shouldInvalidateCache() || self.isFirstWand) {
+        self.cachedNaturalCanvas = document.createElement('canvas');
+        self.cachedNaturalCanvas.width = self.naturalWidth;
+        self.cachedNaturalCanvas.height = self.naturalHeight;
+      }
+      if (self.shouldInvalidateCache()) {
+        // Note: in an ideal world we would access self.existingRegion.maskDataURL to blit the existing
+        // older mask onto the offscreen natural canvas. However, as soon as we do this, we enter into
+        // some of the black magic mobx-state-tree uses to version data and things get very slow as
+        // alot of state is captured. Instead, just invalidate the cache, which will cause a new region
+        // to be created rather than stacking with the earlier, older region.
+        self.isFirstWand = true;
+        self.cachedRegionId = null;
+      }
 
       // Listen for the escape key to quit the Magic Wand; get the event
       // before others, allowing it to bubble upwards (useCapture: true),
@@ -257,6 +305,17 @@ const _Tool = types
       }
     },
 
+    getEventCoords(ev) {
+      // Mouse click x, y coordinates should be relative to the offsetX/offsetY of the actual
+      // fragment of image being displayed in the viewport. If the image is zoomed and
+      // panned, offsetX/offsetY will still stay relative to what is actually being
+      // displayed (i.e. it will change if we pan around).
+
+      const x = ev.offsetX,
+        y = ev.offsetY;
+
+      return [x, y];
+    },
 
     /**
      * Setup an initial canvas overlay and an initial transformed mask to match where the
@@ -265,34 +324,6 @@ const _Tool = types
     initCanvas() {
       const image = self.obj;
       const imageRef = image.imageRef;
-
-      self.naturalWidth = imageRef.naturalWidth;
-      self.naturalHeight = imageRef.naturalHeight;
-      self.imageDisplayedInBrowserWidth = imageRef.width;
-      self.imageDisplayedInBrowserHeight = imageRef.height;
-      self.viewportWidth = Math.round(image.canvasSize.width);
-      self.viewportHeight = Math.round(image.canvasSize.height);
-      self.zoomScale = image.zoomScale;
-      self.zoomingPositionX = image.zoomingPositionX;
-      self.zoomingPositionY = image.zoomingPositionY;
-      self.negativezoom = self.zoomScale < 1;
-      self.rotation = image.rotation;
-
-      if (self.rotation || image.crosshair) {
-        self.mode = 'viewing';
-        self.annotation.history.unfreeze();
-
-        let msg;
-
-        if (self.rotation) {
-          msg = 'The Magic Wand is not supported on rotated images';
-        } else {
-          msg = 'The Magic Wand is not supported if the crosshair is turned on';
-        } 
-
-        alert(msg);
-        throw msg;
-      }
 
       // Make sure to apply any CSS transforms that might be showing (zooms, pans, etc.)
       // but in a way that allows us to access the pixel-level data under those transforms.
@@ -421,13 +452,7 @@ const _Tool = types
      *  ready for us to get pixels from.
      */
     copyTransformedMaskToNaturalSize(blitImg) {
-      if (self.isFirstWand) {
-        self.naturalCanvas = document.createElement('canvas');
-        self.naturalCanvas.width = self.naturalWidth;
-        self.naturalCanvas.height = self.naturalHeight;
-      }
-
-      const naturalCtx = self.naturalCanvas.getContext('2d');
+      const naturalCtx = self.cachedNaturalCanvas.getContext('2d');
 
       // Get the dimensions of what we are showing in the browser, but transform them into coordinates
       // relative to the full, natural size of the image. Useful so that we can ultimately transform
@@ -459,7 +484,7 @@ const _Tool = types
 
       // Turn this into a data URL that we can use to initialize a real brush region, as well
       // as the bounding coordinates of the mask in natural coordinate space.
-      const maskDataURL = self.naturalCanvas.toDataURL();
+      const maskDataURL = self.cachedNaturalCanvas.toDataURL();
 
       return maskDataURL;
     },
@@ -474,6 +499,7 @@ const _Tool = types
       if (self.isFirstWand) {
         const newRegion = self.commitDrawingRegion(maskDataURL);
 
+        self.cachedRegionId = newRegion.id;
         self.obj.annotation.selectArea(newRegion);
       } else {
         self.currentRegion.endUpdatedMaskDataURL(maskDataURL);
