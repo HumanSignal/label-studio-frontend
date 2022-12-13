@@ -1,6 +1,6 @@
 /* global Feature, Scenario, locate */
 const { initLabelStudio } = require('./helpers');
-// const Utils = require("../examples/utils");
+const assert = require('assert');
 
 const config = ({ timeformat }) => `
 <View>
@@ -169,6 +169,22 @@ const scenarios = {
   },
 };
 
+function generateData(stepsNumber) {
+  const timeseries = {
+    time: [],
+    one: [],
+    two: [],
+  };
+
+  for (let i = 0; i < stepsNumber; i++) {
+    timeseries.time[i] = i;
+    timeseries.one[i] = Math.sin(Math.sqrt(i));
+    timeseries.two[i] = Math.cos(Math.sqrt(i));
+  }
+
+  return timeseries;
+}
+
 Feature('TimeSeries datasets');
 Object.entries(scenarios).forEach(([title, scenario]) =>
   Scenario(title, async function({ I }) {
@@ -181,3 +197,81 @@ Object.entries(scenarios).forEach(([title, scenario]) =>
 
     scenario.assert(I);
   }));
+
+Scenario('TimeSeries with optimized data', async ({ I, LabelStudio, ErrorsCollector, AtTimeSeries }) => {
+  async function doNotSeeProblems() {
+    await I.wait(2);
+    I.seeElement('.htx-timeseries');
+    const errors = await ErrorsCollector.grabErrors();
+
+    if (errors.length) {
+      assert.fail(`Got an error: ${errors[0]}`);
+    }
+
+    const counters = await I.executeScript(() => {
+      return {
+        NaN: document.querySelectorAll('[d*=\'NaN\']').length +
+          document.querySelectorAll('[cy*=\'NaN\']').length +
+          document.querySelectorAll('[transform*=\'NaN\']').length,
+        Infinity: document.querySelectorAll('[transform*=\'Infinity\']').length,
+      };
+    }); 
+
+    if (counters.NaN) {
+      assert.fail('Found element with NaN in attribute');
+    }
+    if (counters.Infinity) {
+      assert.fail('Found element with Infinity in attribute');
+    }
+  }
+
+  I.amOnPage('/');
+  await ErrorsCollector.run();
+
+  const SLICES_COUNT = 10;
+  const BAD_MULTIPLIER = 1.9;
+  const screenWidth = await I.executeScript(()=>{
+    return window.screen.width * window.devicePixelRatio;
+  });
+  const stepsToGenerate = screenWidth * SLICES_COUNT * BAD_MULTIPLIER;
+  const params = {
+    annotations: [{
+      id: 'test',
+      result: [], 
+    }],
+    config: config({}),
+    data: {
+      timeseries: generateData(stepsToGenerate),
+    },
+  };
+
+  LabelStudio.init(params);
+  I.waitForVisible('.htx-timeseries');
+
+  I.say('try to get errors by selecting overview range');
+  await AtTimeSeries.selectOverviewRange(.98, 1);
+  await doNotSeeProblems();
+
+  I.say('try to get errors by zooming in by mouse wheel');
+  I.pressKeyDown('Control');
+  for (let i = 0; i < 10; i++) {
+    await AtTimeSeries.zoomByMouse(-100, { x: .98 });
+  }
+  I.pressKeyUp('Control');
+  await doNotSeeProblems();
+
+  I.say('try to get errors by moving handle to the extreme position');
+  await AtTimeSeries.moveHandle(1.1);
+  await AtTimeSeries.moveHandle(1.1);
+  await doNotSeeProblems();
+
+  I.say('try to get errors by moving overview range by click');
+  await AtTimeSeries.clickOverview(0.15);
+  await doNotSeeProblems();
+
+  I.say('try to get errors by creating micro ranges at overview');
+  await AtTimeSeries.selectOverviewRange(.9, .9001);
+  await doNotSeeProblems();
+  await AtTimeSeries.selectOverviewRange(.9, .8999);
+  await doNotSeeProblems();
+});

@@ -46,6 +46,7 @@ module.exports.config = {
     AtSettings: './fragments/AtSettings.js',
     AtTopbar: './fragments/AtTopbar.js',
     AtParagraphs: './fragments/AtParagraphs.js',
+    AtTimeSeries: './fragments/AtTimeSeries.js',
     ErrorsCollector: './fragments/ErrorsCollector.js',
   },
   bootstrap: null,
