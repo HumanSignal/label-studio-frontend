@@ -4,7 +4,7 @@ import { clamp } from '../Common/Utils';
 import { Waveform } from '../Waveform';
 
 export class Player extends Destructable {
-  private audio!: WaveformAudio;
+  private audio?: WaveformAudio;
   private wf: Waveform;
   private timer!: number;
   private loop:  {start: number, end: number}|null = null;
@@ -159,8 +159,9 @@ export class Player extends Destructable {
   }
 
   destroy() {
-    super.destroy();
     this.stop();
+    this.cleanupSource();
+    super.destroy();
   }
 
   private updatePlayback() {
@@ -244,6 +245,15 @@ export class Player extends Destructable {
     this.audio.source?.stop(0);
     this.audio.disconnect();
   }
+
+  private cleanupSource() {
+    if (this.isDestroyed || !this.audio) return;
+    this.disconnectSource();
+
+    delete this.audio.source;
+    delete this.audio;
+  }
+
 
   private watch = () => {
     if (!this.playing) return;

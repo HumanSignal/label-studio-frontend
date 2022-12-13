@@ -400,14 +400,14 @@ export class Segment extends Events<SegmentEvents> {
    * Remove all event listeners and remove the region from the canvas
    * Remove region's layer
    */
-  destroy() {
+  destroy(notify = true) {
     if (!this.deleteable || this.isDestroyed) return;
 
+    if (notify) {
+      this.remove();
+    }
+
     super.destroy();
-
-    this.controller.layerGroup.removeLayer(this.layer);
-
-    this.remove();
   }
 
   toJSON() {

@@ -1,3 +1,4 @@
+import { Destructable } from '../Common/Destructable';
 import { ComputeWorker } from '../Common/Worker';
 import { Visualizer } from '../Visual/Visualizer';
 import { Waveform } from '../Waveform';
@@ -15,7 +16,7 @@ type ChunkComputerOutput = Float32Array[][];
 const worker = new Worker(new URL('./ChannelDataWorker.ts', import.meta.url));
 const chunkComputer = new ComputeWorker(worker);
 
-export class ChannelData {
+export class ChannelData extends Destructable {
   private options: ChannelDataOptions;
 
   // Audio data
@@ -45,8 +46,17 @@ export class ChannelData {
   }
 
   constructor(options: ChannelDataOptions) {
+    super();
     this.options = options;
     this.data = options.data;
+  }
+
+  destroy() {
+    chunkComputer.destroy();
+    this.data = new Float32Array();
+    this.normalized = [];
+    this.views = [];
+    super.destroy();
   }
 
   async recalculate(){

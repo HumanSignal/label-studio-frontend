@@ -5,11 +5,12 @@ export interface WaveformAudioOptions {
 }
 
 export class WaveformAudio {
-  context: AudioContext;
-  analyzer: AnalyserNode | null = null;
-  source: AudioBufferSourceNode | null = null;
-  gain: GainNode | null = null;
-  buffer: AudioBuffer | null = null;
+  context?: AudioContext;
+  offline?: OfflineAudioContext;
+  analyzer?: AnalyserNode;
+  source?: AudioBufferSourceNode;
+  gain?: GainNode;
+  buffer?: AudioBuffer;
 
   private _rate = 1;
   private _volume = 1;
@@ -18,7 +19,8 @@ export class WaveformAudio {
   private _channelCount = 1;
 
   constructor(options: WaveformAudioOptions) {
-    this.context = new AudioContext();
+    this.context = this.createAudioContext();
+    this.offline = this.createOfflineAudioContext();
 
     this._rate = options.rate;
     this._savedVolume = options.volume;
@@ -30,7 +32,7 @@ export class WaveformAudio {
   }
 
   get sampleRate() {
-    return this.context.sampleRate;
+    return this.context?.sampleRate ?? 44100;
   }
 
   get volume() {
@@ -61,16 +63,23 @@ export class WaveformAudio {
 
   connect() {
     if (this.source) this.disconnect();
+    if (!this.context || !this.buffer) return;
 
-    const source = this.context.createBufferSource();
+    const source = this.context?.createBufferSource();
+
+    if (!source) return;
 
     source.buffer = this.buffer;
 
-    const analyzer = this.context.createAnalyser();
+    const analyzer = this.context?.createAnalyser();
+
+    if (!analyzer) return;
 
     analyzer.fftSize = 2048;
 
-    const gain = this.context.createGain();
+    const gain = this.context?.createGain();
+
+    if (!gain) return;
 
     source.connect(gain);
 
@@ -88,15 +97,23 @@ export class WaveformAudio {
   }
 
   disconnect() {
-    if (!this.source) return;
-
-    this.analyzer?.disconnect();
-    this.source.disconnect();
-    this.gain?.disconnect();
-
-    this.source = null;
-    this.analyzer = null;
-    this.gain = null;
+    if (this.gain) {
+      this.gain.disconnect();
+      delete this.gain;
+    }
+    if (this.analyzer) {
+      this.analyzer.disconnect();
+      delete this.analyzer;
+    }
+    if (this.source) {
+      this.source.disconnect();
+      delete this.source;
+    }
+  }
+  
+  destroy() {
+    this.disconnect();
+    delete this.buffer;
   }
 
   mute() {
@@ -126,5 +143,49 @@ export class WaveformAudio {
     }
 
     return data;
+  }
+
+  async decodeAudioData(arraybuffer: ArrayBuffer): Promise<AudioBuffer | null | undefined> {
+    return new Promise((resolve, reject) => {
+      if (!this.offline) {
+        this.offline = this.createOfflineAudioContext();
+      }
+      // Safari doesn't support promise based decodeAudioData by default
+      if ('webkitAudioContext' in window) {
+        this.offline?.decodeAudioData(
+          arraybuffer,
+          data => resolve(data),
+          err => reject(err),
+        );
+      } else {
+        this.offline?.decodeAudioData(arraybuffer).then(
+          resolve,
+        ).catch(
+          reject,
+        );
+      }
+    });
+  }
+
+  private createOfflineAudioContext(sampleRate?: number) {
+    if (!(window as any).WebAudioOfflineAudioContext) {
+      (window as any).WebAudioOfflineAudioContext = new (window.OfflineAudioContext ||
+                (window as any).webkitOfflineAudioContext)(1, 2, sampleRate ?? this.sampleRate);
+    }
+    return (window as any).WebAudioOfflineAudioContext;
+  }
+
+  private createAudioContext() {
+    if (!window.AudioContext) {
+      return;
+    }
+
+    if ((window as any).WebAudioContext) {
+      return (window as any).WebAudioContext as AudioContext;
+    }
+
+    (window as any).WebAudioContext = new AudioContext();
+
+    return (window as any).WebAudioContext as AudioContext;
   }
 }

@@ -118,6 +118,7 @@ export class Visualizer extends Events<VisualizerEvents> {
       const data = filterData(audio.buffer, channelNumber);
 
       this.getSamplesPerPx();
+
       this.channels[channelNumber] = new ChannelData({
         data,
         visualizer: this,
@@ -129,6 +130,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     });
 
     this.updateChannels(() => {
+      this.setLoading(false);
       this.invoke('initialized', [this]);
       this.draw();
     });
@@ -215,7 +217,6 @@ export class Visualizer extends Events<VisualizerEvents> {
     if (this.drawing && !forceDraw) return warn('Concurrent render detected');
 
     this.drawing = true;
-    const firstDrawn = !dry && !this.wf.renderedChannels;
 
     setTimeout(() => {
       if (!dry) {
@@ -236,23 +237,26 @@ export class Visualizer extends Events<VisualizerEvents> {
       this.transferImage();
 
       this.drawing = false;
-
-      if (firstDrawn) {
-        this.wf.renderedChannels = true;
-        this.setLoading(false);
-      }
     });
   }
 
   destroy() {
+    if (this.isDestroyed) return;
+
+    this.channels.forEach(channel => {
+      if (channel) {
+        channel.destroy();
+      }
+    });
     this.invoke('destroy', [this]);
     this.clear();
     this.playhead.destroy();
-    super.destroy();
     this.audio = null;
     this.removeEvents();
     this.layers.forEach(layer => layer.remove());
     this.wrapper.remove();
+
+    super.destroy();
   }
 
   clear() {
@@ -305,13 +309,16 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   private renderWave(channelNumber: number, layer: Layer) {
+    const channel = this.channels[channelNumber];
+   
+    if (!channel || channel.isDestroyed) return;
+
     const fullHeight = this.height;
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
     const waveHeight = fullHeight - this.reservedSpace;
     const zero = fullHeight * (this.splitChannels ? channelNumber : 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
     const height = waveHeight / (this.splitChannels ? this.audio?.channelCount ?? 1 : 1);
-    const channel = this.channels[channelNumber];
 
     const dataLength = channel.data.length;
     const scrollLeftPx = this.getScrollLeftPx();
@@ -332,6 +339,8 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     const x = 0;
     const y = zero + paddingTop + height / 2;
+
+    if (this.isDestroyed || channel.isDestroyed) return;
 
     const renderable = channel.data.slice(iStart, iEnd);
 
