@@ -1,6 +1,7 @@
 import { Visualizer } from '../Visual/Visualizer';
 
 export const __DEV__ = process.env.NODE_ENV === 'development';
+export const OFFSCREEN_CANVAS_SUPPORTED = 'OffscreenCanvas' in globalThis;
 
 const TIME_TOLERANCE = 0.000001;
 
