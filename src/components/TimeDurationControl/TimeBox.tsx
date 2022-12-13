@@ -87,23 +87,29 @@ export const TimeBox: FC<TimerProps> = ({
   const handleChangeInput = (e: React.FormEvent<HTMLInputElement>) => {
     let input = e.currentTarget.value;
 
-    input = input.replace(/[^0-9]+/g, '');
-
-    input = `${input.substr(0, 2)}:${input.substr(2, 2)}:${input.substr(4, input.length)}`;
-
-    input = input.substring(0, 9);
+    input = input.replace(/\D/g, '')
+      .replace(/(\d{2})(\d)/, '$1:$2')
+      .replace(/(\d{2})(\d)/, '$1:$2');
 
     setCurrentInputTime(input);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget?.blur?.();
+    }
   };
 
   const renderInputTime = () => {
     return (
       <Elem name={'input-time'}
+        maxLength={9}
         tag={'input'}
         autoFocus
         ref={inputRef}
         type="text"
         value={ currentInputTime }
+        onKeyDown={handleKeyDown}
         onChange={handleChangeInput}
         onFocus={handleFocusInput}
         onBlur={handleBlurInput} />
