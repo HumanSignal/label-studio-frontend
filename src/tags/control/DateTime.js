@@ -257,9 +257,16 @@ const Model = types
     },
 
     setDate(dateArray) {
-      self.day = dateArray[2];
-      self.month = dateArray[1];
-      self.year = dateArray[0];
+      // forced to clear date fields
+      if (!dateArray) {
+        self.day = undefined;
+        self.month = undefined;
+        self.year = undefined;
+      } else {
+        self.day = dateArray[2];
+        self.month = dateArray[1];
+        self.year = dateArray[0];
+      }
       self.updateResult();
     },
 
