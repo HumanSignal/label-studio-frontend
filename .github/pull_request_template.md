@@ -21,8 +21,6 @@ _(check only one)_
 #### Change has impacts in these area(s)
 _(check all that apply)_
 - [ ] Product design
-- [ ] Backend (Database)
-- [ ] Backend (API)
 - [ ] Frontend
 
 
