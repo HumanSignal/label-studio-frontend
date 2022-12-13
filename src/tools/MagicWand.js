@@ -122,6 +122,7 @@ const _Tool = types
 
     isFirstWand: true,
     cachedRegionId: null,
+    cachedLabel: null,
     cachedNaturalCanvas: null,
 
     naturalWidth: null,
@@ -173,6 +174,17 @@ const _Tool = types
       return chroma(color).hex();
     },
 
+    get selectedLabel() {
+      const states = self.obj.states();
+
+      if (!states.length) return null;
+
+      const selectedEntry = states.find(entry => typeof entry.isSelected);
+      const label = selectedEntry.selectedValues()[0];
+
+      return label;
+    },
+
     get blurradius() {
       return parseInt(self.control.blurradius, 10);
     },
@@ -200,6 +212,18 @@ const _Tool = types
     shouldInvalidateCache() {
       return self.existingRegion && self.existingRegion.id !== self.cachedRegionId;
     },
+
+    /**
+     * Helps with handling an edge case related to panning that results in a better user experience when
+     * dealing with our cached natural canvas: If the user has a region selected, then zooms and pans,
+     * Label Studio loses the current selection. If the user then wants to continue Magic Wanding with
+     * the same label & region, self.getSelectedShape will return null. This method helps detect this
+     * situation, and if it applies find the cached region and continue from there.
+     */
+    detectPanningLostSelection() {
+      return self.cachedRegionId && self.getSelectedShape === null && self.cachedLabel === self.selectedLabel;
+    },
+
   }))
   .actions(self => ({
 
@@ -208,6 +232,7 @@ const _Tool = types
       self.annotation.history.freeze();
       self.mode = 'drawing';
       self.currentThreshold = self.defaultthreshold;
+      self.currentRegion = null;
 
       const image = self.obj;
       const imageRef = image.imageRef;
@@ -240,29 +265,13 @@ const _Tool = types
         throw msg;
       }
 
-      // Has the user previously used the Magic Wand for the current class setting? 
-      self.isFirstWand = (self.existingRegion === null) || (self.existingRegion.id !== self.cachedRegionId);
-      if (self.shouldInvalidateCache() || self.isFirstWand) {
-        self.cachedNaturalCanvas = document.createElement('canvas');
-        self.cachedNaturalCanvas.width = self.naturalWidth;
-        self.cachedNaturalCanvas.height = self.naturalHeight;
-      }
-      if (self.shouldInvalidateCache()) {
-        // Note: in an ideal world we would access self.existingRegion.maskDataURL to blit the existing
-        // older mask onto the offscreen natural canvas. However, as soon as we do this, we enter into
-        // some of the black magic mobx-state-tree uses to version data and things get very slow as
-        // alot of state is captured. Instead, just invalidate the cache, which will cause a new region
-        // to be created rather than stacking with the earlier, older region.
-        self.isFirstWand = true;
-        self.cachedRegionId = null;
-      }
-
       // Listen for the escape key to quit the Magic Wand; get the event
       // before others, allowing it to bubble upwards (useCapture: true),
       // as otherwise the escape key gets eaten by other keyboard listeners.
       window.addEventListener('keydown', self.keydownEv, true /* useCapture */);
 
       [self.anchorX, self.anchorY] = self.getEventCoords(ev);
+      self.initCache();
       self.initCanvas();
       self.initCurrentRegion();
     },
@@ -315,6 +324,53 @@ const _Tool = types
         y = ev.offsetY;
 
       return [x, y];
+    },
+
+    /**
+     * We maintain an offscreen natural sized canvas to efficiently keep adding masks onto
+     * as a user continues to Magic Wand with the same, currently selected region.
+     */
+    initCache() {
+      // Has the user previously used the Magic Wand for the current class setting? 
+      self.isFirstWand = (self.existingRegion === null) || (self.existingRegion.id !== self.cachedRegionId);
+
+      // Did panning break the current selection? If so, get the correct region to continue working
+      // from.
+      if (self.detectPanningLostSelection()) {
+        const regionStore =
+          self.annotationStore.annotations.length ? self.annotationStore.annotations[0].regionStore : null;
+
+        if (regionStore) {
+          const region = regionStore.findRegionID(self.cachedRegionId);
+
+          if (region) {
+            self.obj.annotation.selectArea(region);
+            self.isFirstWand = false;
+
+            // Initialize our work moving forward to use the correct region.
+            self.currentRegion = region;
+          }
+        }
+      }
+
+      if (self.isFirstWand) {
+        self.cachedNaturalCanvas = document.createElement('canvas');
+        self.cachedNaturalCanvas.width = self.naturalWidth;
+        self.cachedNaturalCanvas.height = self.naturalHeight;
+        self.cachedLabel = self.selectedLabel;
+      } else if (self.shouldInvalidateCache()) {
+        // Note: in an ideal world we would access self.existingRegion.maskDataURL to blit the existing
+        // older mask onto the offscreen natural canvas. However, as soon as we do this, we enter into
+        // some of the black magic mobx-state-tree uses to version data and things get very slow as
+        // alot of state is captured. Instead, just invalidate the cache, which will cause a new region
+        // to be created rather than stacking with the earlier, older region.
+        self.cachedNaturalCanvas = document.createElement('canvas');
+        self.cachedNaturalCanvas.width = self.naturalWidth;
+        self.cachedNaturalCanvas.height = self.naturalHeight;
+        self.isFirstWand = true;
+        self.cachedRegionId = null;
+        self.cachedLabel = self.selectedLabel;
+      }
     },
 
     /**
@@ -374,7 +430,7 @@ const _Tool = types
         };
 
         self.currentRegion = self.createDrawingRegion(regionOpts);
-      } else {
+      } else if (!self.detectPanningLostSelection()) {
         self.currentRegion = self.existingRegion;
       }
     },
