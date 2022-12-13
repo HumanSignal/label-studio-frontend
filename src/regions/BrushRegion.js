@@ -315,7 +315,6 @@ const Model = types
       },
 
       endUpdatedMaskDataURL(maskDataURL) {
-        console.log("endUpdatedMaskDataURL");
         const { annotation } = self.object;
 
         // will resume in the next tick...
