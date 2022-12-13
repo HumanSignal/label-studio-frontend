@@ -302,7 +302,7 @@ const HtxDateTime = inject('store')(
       const validDateArray = item.validDateFormat(value);
 
       setDateInputValue(value);
-      if (validDateArray) item.setDate(validDateArray);
+      if (!value || validDateArray) item.setDate(validDateArray);
     };
 
     if (item.updateValue) {
