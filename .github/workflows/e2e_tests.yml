@@ -76,7 +76,6 @@ jobs:
         done
 
     - name: "Setup e2e"
-      if: github.event_name == 'push'
       timeout-minutes: 1
       run: |
         set -euo pipefail
@@ -84,7 +83,6 @@ jobs:
         yarn install --frozen-lockfile
 
     - name: Run e2e test suite
-      if: github.event_name == 'push'
       timeout-minutes: 20 # 8-10 minutes is enough to pass tests
       run: |
         set -euo pipefail
