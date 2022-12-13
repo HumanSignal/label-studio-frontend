@@ -1,7 +1,7 @@
 import React from 'react';
 import chroma from 'chroma-js';
 import { observer } from 'mobx-react';
-import { types } from 'mobx-state-tree';
+import { flow, types } from 'mobx-state-tree';
 
 import BaseTool from './Base';
 import Canvas from '../utils/canvas';
@@ -70,7 +70,8 @@ import { Tool } from '../components/Toolbar/Tool';
  * This is a performance bottleneck, so we directly turn it into an image URL that can be passed into the
  * BrushRegion. The BrushRegion can then apply the correct class color to the image URL results to draw
  * onto it's canvas quickly, which also makes it possible for the user to dynamically
- * change the class color later on.
+ * change the class color later on. We keep a cached naturalCanvas around from previous masking sessions on
+ * the same class in order to collapse multiple Magic Wand additions into the same class.
  */
 
 const ToolView = observer(({ item }) => {
@@ -112,7 +113,10 @@ const _Tool = types
     transformedData: null,
     transformedCanvas: null,
 
-    currentArea: null,
+    currentRegion: null,
+
+    naturalCanvas: null,
+    isFirstWand: true,
 
     naturalWidth: null,
     naturalHeight: null,
@@ -166,6 +170,21 @@ const _Tool = types
     get blurradius() {
       return parseInt(self.control.blurradius, 10);
     },
+
+    /**
+     * The user might have an existing mask selected that we need to combine new Magic Wand results
+     * with.
+     *
+     * @returns {BrushRegion} Returns an existing brush region if one is present containing an old
+     *  mask, or null otherwise.
+     */
+    get existingRegion() {
+      if (self.getSelectedShape && self.getSelectedShape.type && self.getSelectedShape.maskDataURL) {
+        return self.getSelectedShape;
+      } else {
+        return null;
+      }
+    },
   }))
   .actions(self => ({
 
@@ -187,6 +206,9 @@ const _Tool = types
       self.mode = 'drawing';
       self.currentThreshold = self.defaultthreshold;
 
+      // Has the user previously used the Magic Wand for the current class setting?
+      self.isFirstWand = self.existingRegion === null;
+
       // Listen for the escape key to quit the Magic Wand; get the event
       // before others, allowing it to bubble upwards (useCapture: true),
       // as otherwise the escape key gets eaten by other keyboard listeners.
@@ -194,7 +216,7 @@ const _Tool = types
 
       [self.anchorX, self.anchorY] = self.getEventCoords(ev);
       self.initCanvas();
-      self.initCurrentArea();
+      self.initCurrentRegion();
     },
 
     mousemoveEv(ev) {
@@ -206,7 +228,7 @@ const _Tool = types
       self.threshold(newX, newY, self.fillcolor, self.opacity);
     },
 
-    mouseupEv() {
+    mouseupEv: flow(function* mouseupEv() {
       // Note: If the mouse button is released outside of the stage area, mouseupEv is called
       // but not clickEv. For this reason do final work in mouseUp to handle this edge
       // condition instead of using clickEv.
@@ -218,8 +240,8 @@ const _Tool = types
       self.mode = 'viewing';
       window.removeEventListener('keydown', self.keydownEv, true /* useCapture */);
 
-      self.setupFinalMask();
-    },
+      yield self.setupFinalMask();
+    }),
 
     keydownEv(e) {
       const { key } = e;
@@ -308,18 +330,22 @@ const _Tool = types
      * Creates an empty BrushRegion drawing area that we will plug our final mask into
      * once the user is done with the Magic Wand by releasing the mouse button.
      */
-    initCurrentArea() {
-      const regionOpts = {
-        id: guidGenerator(),
-        strokewidth: 1,
-        object: self.obj,
-        points: [],
-        fillcolor: self.fillcolor,
-        strokecolor: self.fillcolor,
-        opacity: self.opacity,
-      };
+    initCurrentRegion() {
+      if (self.isFirstWand){
+        const regionOpts = {
+          id: guidGenerator(),
+          strokewidth: 1,
+          object: self.obj,
+          points: [],
+          fillcolor: self.fillcolor,
+          strokecolor: self.fillcolor,
+          opacity: self.opacity,
+        };
 
-      self.currentArea = self.createDrawingRegion(regionOpts);
+        self.currentRegion = self.createDrawingRegion(regionOpts);
+      } else {
+        self.currentRegion = self.existingRegion;
+      }
     },
 
     /**
@@ -356,7 +382,7 @@ const _Tool = types
      * Take the final results from the user and create a final mask we can work with,
      * ultimately producing a BrushRegion with the Magic Wand results.
      */
-    setupFinalMask() {
+    setupFinalMask: flow(function* setupFinalMask() {
       // The mask is a single channel; convert it to be RGBA multi-channel data as a data URL.
       const singleChannelMask = self.mask;
       let canvasWidth, canvasHeight;
@@ -376,9 +402,15 @@ const _Tool = types
       // the final results.
       const blitImg = document.createElement('img');
 
-      blitImg.onload = self.copyTransformedMaskToNaturalSize.bind(this, blitImg);
       blitImg.src = scaledDataURL;
-    },
+      yield blitImg.decode();
+
+      // Efficiently copy our transformed mask onto our offscreen, naturally sized canvas.
+      const maskDataURL = self.copyTransformedMaskToNaturalSize(blitImg);
+
+      // Now create a final region to work with, or update an existing one.
+      self.finalMaskToRegion(maskDataURL);
+    }),
 
     /**
      * Given some mask that was drawn on an area that might be zoomed, panned,
@@ -389,12 +421,13 @@ const _Tool = types
      *  ready for us to get pixels from.
      */
     copyTransformedMaskToNaturalSize(blitImg) {
-      const naturalCanvas = document.createElement('canvas');
+      if (self.isFirstWand) {
+        self.naturalCanvas = document.createElement('canvas');
+        self.naturalCanvas.width = self.naturalWidth;
+        self.naturalCanvas.height = self.naturalHeight;
+      }
 
-      naturalCanvas.width = self.naturalWidth;
-      naturalCanvas.height = self.naturalHeight;
-
-      const naturalCtx = naturalCanvas.getContext('2d');
+      const naturalCtx = self.naturalCanvas.getContext('2d');
 
       // Get the dimensions of what we are showing in the browser, but transform them into coordinates
       // relative to the full, natural size of the image. Useful so that we can ultimately transform
@@ -426,9 +459,9 @@ const _Tool = types
 
       // Turn this into a data URL that we can use to initialize a real brush region, as well
       // as the bounding coordinates of the mask in natural coordinate space.
-      const maskDataURL = naturalCanvas.toDataURL();
+      const maskDataURL = self.naturalCanvas.toDataURL();
 
-      self.finalMaskToRegion(maskDataURL);
+      return maskDataURL;
     },
 
     /**
@@ -438,18 +471,13 @@ const _Tool = types
      *  color, turned into an image data URL.
      */
     finalMaskToRegion(maskDataURL) {
-      const value = {
-        maskDataURL,
-        coordstype: 'px',
-        dynamic: false,
-      };
-      const newArea = self.annotation.createResult(value,
-        self.currentArea.results[0].value.toJSON(), self.control, self.obj);
+      if (self.isFirstWand) {
+        const newRegion = self.commitDrawingRegion(maskDataURL);
 
-      self.currentArea.setDrawing(false);
-      self.applyActiveStates(newArea);
-      self.deleteRegion();
-      newArea.notifyDrawingFinished();
+        self.obj.annotation.selectArea(newRegion);
+      } else {
+        self.currentRegion.endUpdatedMaskDataURL(maskDataURL);
+      }
 
       self.annotation.history.unfreeze();
       self.annotation.setIsDrawing(false);
@@ -463,6 +491,23 @@ const _Tool = types
         self.overlayCtx.clearRect(0, 0, self.overlay.width, self.overlay.height);
       });
     },
+
+    commitDrawingRegion(maskDataURL) {
+      const value = {
+        maskDataURL,
+        coordstype: "px",
+        dynamic: false,
+      };
+      const newRegion = self.annotation.createResult(value,
+        self.currentRegion.results[0].value.toJSON(), self.control, self.obj);
+
+      self.applyActiveStates(newRegion);
+      self.deleteRegion();
+      newRegion.notifyDrawingFinished();
+
+      return newRegion;
+    },
+
   }));
 
 const MagicWand = types.compose(_Tool.name, ToolMixin, BaseTool, DrawingTool, _Tool);

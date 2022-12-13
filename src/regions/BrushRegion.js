@@ -314,6 +314,21 @@ const Model = types
         annotation.autosave && setTimeout(() => annotation.autosave());
       },
 
+      endUpdatedMaskDataURL(maskDataURL) {
+        console.log("endUpdatedMaskDataURL");
+        const { annotation } = self.object;
+
+        // will resume in the next tick...
+        annotation.startAutosave();
+
+        self.maskDataURL = maskDataURL;
+
+        self.notifyDrawingFinished();
+
+        // ...so we run this toggled function also delayed
+        annotation.autosave && setTimeout(() => annotation.autosave());
+      },
+
       convertPointsToMask() {},
 
       setScale(x, y) {
