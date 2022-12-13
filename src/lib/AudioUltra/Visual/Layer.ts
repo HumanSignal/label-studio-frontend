@@ -1,4 +1,4 @@
-import { clamp } from '../Common/Utils';
+import { clamp, OFFSCREEN_CANVAS_SUPPORTED } from '../Common/Utils';
 import { Events } from '../Common/Events';
 import { LayerGroup } from './LayerGroup';
 
@@ -310,27 +310,35 @@ export class Layer extends Events<LayerEvents> {
   }
 
   transferTo(targetCanvas: Layer | HTMLCanvasElement) {
-    if (!this.canvas) return;
+    try {
+      if (!this.canvas) return;
 
-    let context: RenderingContext | null;
+      let context: RenderingContext | null;
 
-    let targetOpacity = 1;
+      let targetOpacity = 1;
 
-    if (targetCanvas instanceof Layer) {
-      context = targetCanvas.context;
-      targetOpacity = targetCanvas.opacity;
-    } else {
-      context = targetCanvas.getContext('2d');
-    }
+      if (targetCanvas instanceof Layer) {
+        context = targetCanvas.context;
+        targetOpacity = targetCanvas.opacity;
+      } else {
+        context = targetCanvas.getContext('2d');
+      }
 
-    if (!context) return;
+      if (!context) return;
 
-    if (this.compositeAsGroup) {
-      context.globalAlpha = this.opacity;
-    }
-    context.drawImage(this.canvas, 0, 0, this.width, this.height);
-    if (this.compositeAsGroup) {
-      context.globalAlpha = targetOpacity;
+      if (this.compositeAsGroup) {
+        context.globalAlpha = this.opacity;
+      }
+
+      if (this.height > 0 && this.width > 0) {
+        context.drawImage(this.canvas, 0, 0, this.width, this.height);
+      }
+
+      if (this.compositeAsGroup) {
+        context.globalAlpha = targetOpacity;
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -351,8 +359,6 @@ export class Layer extends Events<LayerEvents> {
     } else {
       this.canvas = this.createVisibleCanvas();
     }
-
-    Object.assign(this.canvas, { layer: this });
 
     if (this.offscreen && this.canvas instanceof HTMLCanvasElement) {
       document.body.appendChild(this.canvas);
@@ -388,7 +394,7 @@ export class Layer extends Events<LayerEvents> {
   private createOffscreenCanvas() {
     let canvas: HTMLCanvasElement | OffscreenCanvas;
 
-    if (window.OffscreenCanvas && !USE_FALLBACK) {
+    if (OFFSCREEN_CANVAS_SUPPORTED && !USE_FALLBACK) {
       const { pixelRatio } = this;
       const width = this.container.clientWidth;
       const height = (this.options.height ?? 100);
