@@ -133,7 +133,7 @@ export class Player extends Destructable {
   }
 
   handleEnded = () => {
-    if (this.loop) return this.play();
+    if (this.loop) return;
     this.ended = true;
     this.updateCurrentTime(true);
     this.pause();
@@ -258,6 +258,8 @@ export class Player extends Destructable {
     if (this.isDestroyed || !this.loop) return;
     if (time >= this.loop.end) {
       this.currentTime = this.loop.start;
+      this.playing = false;
+      this.play();
     }
   }
 
