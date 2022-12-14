@@ -22,10 +22,18 @@ export const TimeBox: FC<TimerProps> = ({
   const [inputIsVisible, setInputVisible] = useState(false);
   const [currentDisplayedTime, setCurrentDisplayedTime] = useState(value);
   const [currentInputTime, setCurrentInputTime] = useState<string | number | undefined>(value);
+  const [inputSelectionStart, setInputSelectionStart] = useState<number | null>(null);
+
+
 
   useEffect(() => {
     setCurrentDisplayedTime(value);
   }, [value]);
+
+  useEffect(() => {
+    if (inputSelectionStart !== null)
+      inputRef?.current?.setSelectionRange(inputSelectionStart, inputSelectionStart);
+  }, [currentInputTime, inputSelectionStart]);
 
   const formatPosition = useCallback((time: number): string => {
     const roundedFps = Math.round(999).toString();
@@ -86,10 +94,14 @@ export const TimeBox: FC<TimerProps> = ({
 
   const handleChangeInput = (e: React.FormEvent<HTMLInputElement>) => {
     let input = e.currentTarget.value;
+    let selectionStart = e.currentTarget.selectionStart;
+
+    if (input.length === selectionStart) selectionStart = null;
+
+    setInputSelectionStart(selectionStart);
 
     input = input.replace(/\D/g, '')
-      .replace(/(\d{2})(\d)/, '$1:$2')
-      .replace(/(\d{2})(\d)/, '$1:$2');
+      .replace(/(\d{2})(\d{2})(\d)/, '$1:$2:$3');
 
     setCurrentInputTime(input);
   };

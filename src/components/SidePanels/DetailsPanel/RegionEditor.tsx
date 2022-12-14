@@ -73,7 +73,6 @@ const RegionEditorComponent: FC<RegionEditorProps> = ({
           endTime={region.end}
           minTime={0}
           maxTime={region?._ws_region?.duration}
-          endTimeReadonly={false}
           isSidepanel={true}
           onChangeStartTime={changeStartTimeHandler}
           onChangeEndTime={changeEndTimeHandler}

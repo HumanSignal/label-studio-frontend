@@ -309,6 +309,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
               endTime={duration}
               minTime={0}
               maxTime={duration}
+              endTimeReadonly={true}
               currentTime={position}
               onChangeStartTime={onTimeUpdateChange}
             />
