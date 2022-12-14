@@ -1,8 +1,9 @@
-import { IconInfoOutline, LsSettings } from '../../assets/icons';
+import { IconInfoOutline, LsSettingsAlt } from '../../assets/icons';
 import { Button } from '../../common/Button/Button';
 import { Elem } from '../../utils/bem';
 import { EditingHistory } from './HistoryActions';
 import { DynamicPreannotationsToggle } from '../AnnotationTab/DynamicPreannotationsToggle';
+import { GroundTruth } from '../CurrentEntity/GroundTruth';
 
 export const Actions = ({ store }) => {
   const annotationStore = store.annotationStore;
@@ -30,7 +31,7 @@ export const Actions = ({ store }) => {
       )}
 
       <Button
-        icon={<LsSettings/>}
+        icon={<LsSettingsAlt/>}
         type="text"
         aria-label="Settings"
         onClick={() => store.toggleSettings()}
@@ -40,6 +41,8 @@ export const Actions = ({ store }) => {
           padding: 0,
         }}
       />
+
+      {store.hasInterface('ground-truth') && <GroundTruth entity={entity}/>}
 
       {!isViewAll && (
 
