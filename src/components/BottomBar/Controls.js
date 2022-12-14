@@ -75,7 +75,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const RejectButton = useMemo(() => {
     return (
       <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
-        <Button aria-label="reject-annotation" disabled={disabled} look="danger" onClick={async (e)=> {
+        <Button aria-label="reject-annotation" disabled={disabled} onClick={async (e)=> {
           if(store.hasInterface('comments:reject') ?? true) {
             buttonHandler(e, () => store.rejectAnnotation({}), 'Please enter a comment before rejecting');
           } else {
@@ -122,7 +122,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     if (store.hasInterface('skip')) {
       buttons.push(
         <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
-          <Button aria-label="skip-task" disabled={disabled} look="danger" onClick={async (e)=> {
+          <Button aria-label="skip-task" disabled={disabled} onClick={async (e)=> {
             if(store.hasInterface('comments:skip') ?? true) {
               buttonHandler(e, () => store.skipTask({}), 'Please enter a comment before skipping');
             } else {
