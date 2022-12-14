@@ -89,12 +89,12 @@ const optimizer = () => {
 const output = () => {
   const result = {
     filename: "[name]-[contenthash].js",
-    chunkFilename: "[name]-[contenthash]-[id].chunk.js",
+    chunkFilename: "[name]-[contenthash]-[id]-chunk.js",
   };
 
   if (BUILD.NO_HASH) {
     result.filename = "[name].js";
-    result.chunkFilename = "[name].chunk.js";
+    result.chunkFilename = "[name]-chunk.js";
   }
 
   if (BUILD.MODULE) {
@@ -113,12 +113,12 @@ const output = () => {
 const cssOutput = () => {
   const result = {
     filename: "[name]-[contenthash].css",
-    chunkFilename: "[name]-[contenthash]-[id].chunk.css",
+    chunkFilename: "[name]-[contenthash]-[id]-chunk.css",
   };
 
   if (BUILD.NO_HASH) {
     result.filename = "[name].css";
-    result.chunkFilename = "[name].[contenthash:8].chunk.css";
+    result.chunkFilename = "[name]-[contenthash:8]-chunk.css";
   }
 
   result.filename = dirPrefix.css + result.filename;
