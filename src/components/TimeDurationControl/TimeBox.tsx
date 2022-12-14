@@ -22,10 +22,16 @@ export const TimeBox: FC<TimerProps> = ({
   const [inputIsVisible, setInputVisible] = useState(false);
   const [currentDisplayedTime, setCurrentDisplayedTime] = useState(value);
   const [currentInputTime, setCurrentInputTime] = useState<string | number | undefined>(value);
+  const [inputSelectionStart, setInputSelectionStart] = useState<number | null>(null);
 
   useEffect(() => {
     setCurrentDisplayedTime(value);
   }, [value]);
+
+  useEffect(() => {
+    if (inputSelectionStart !== null)
+      inputRef?.current?.setSelectionRange(inputSelectionStart, inputSelectionStart);
+  }, [currentInputTime, inputSelectionStart]);
 
   const formatPosition = useCallback((time: number): string => {
     const roundedFps = Math.round(999).toString();
@@ -86,24 +92,34 @@ export const TimeBox: FC<TimerProps> = ({
 
   const handleChangeInput = (e: React.FormEvent<HTMLInputElement>) => {
     let input = e.currentTarget.value;
+    let selectionStart = e.currentTarget.selectionStart;
 
-    input = input.replace(/[^0-9]+/g, '');
+    if (input.length === selectionStart) selectionStart = null;
 
-    input = `${input.substr(0, 2)}:${input.substr(2, 2)}:${input.substr(4, input.length)}`;
+    setInputSelectionStart(selectionStart);
 
-    input = input.substring(0, 9);
+    input = input.replace(/\D/g, '')
+      .replace(/(\d{2})(\d{2})(\d)/, '$1:$2:$3');
 
     setCurrentInputTime(input);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget?.blur?.();
+    }
   };
 
   const renderInputTime = () => {
     return (
       <Elem name={'input-time'}
+        maxLength={9}
         tag={'input'}
         autoFocus
         ref={inputRef}
         type="text"
         value={ currentInputTime }
+        onKeyDown={handleKeyDown}
         onChange={handleChangeInput}
         onFocus={handleFocusInput}
         onBlur={handleBlurInput} />
