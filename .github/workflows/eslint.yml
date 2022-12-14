@@ -9,6 +9,9 @@ on:
       branch_name:
         required: true
         type: string
+      ref:
+        required: true
+        type: string
 
 env:
   # increment it in case if you need to reset cache
