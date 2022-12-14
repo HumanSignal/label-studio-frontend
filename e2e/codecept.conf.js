@@ -1,6 +1,7 @@
 // turn on headless mode when running with HEADLESS=true environment variable
 // HEADLESS=true npx codecept run
 const headless = process.env.HEADLESS;
+const port = process.env.LSF_PORT ?? 3000;
 
 module.exports.config = {
   timeout: 60 * 30, // Time out after 30 minutes
@@ -14,7 +15,7 @@ module.exports.config = {
     //   windowSize: "1200x900",
     // },
     Playwright: {
-      url: 'http://localhost:3000',
+      url: `http://localhost:${port}`,
       show: !headless,
       restart: 'context',
       timeout: 60000, // Action timeout after 60 seconds

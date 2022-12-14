@@ -10,6 +10,7 @@ export const AudioRegionModel = types
 
     start: types.number,
     end: types.number,
+    channel: types.optional(types.number, 0),
 
     selectedregionbg: types.optional(types.string, 'rgba(0, 0, 0, 0.5)'),
   })
@@ -35,6 +36,7 @@ export const AudioRegionModel = types
         id: self.id,
         start: self.start,
         end: self.end,
+        channel: self.channel,
         color: 'orange',
       };
 
@@ -53,6 +55,7 @@ export const AudioRegionModel = types
      *   "value": {
      *     "start": 3.1,
      *     "end": 8.2,
+     *     "channel": 0,
      *     "labels": ["Voice"]
      *   }
      * }
@@ -61,6 +64,7 @@ export const AudioRegionModel = types
      * @property {Object} value
      * @property {number} value.start start time of the fragment (seconds)
      * @property {number} value.end end time of the fragment (seconds)
+     * @property {number} value.channel channel identifier which was targeted
      */
 
     /**
@@ -72,6 +76,7 @@ export const AudioRegionModel = types
         value: {
           start: self.start,
           end: self.end,
+          channel: self.channel,
         },
       };
 
@@ -207,6 +212,7 @@ export const AudioRegionModel = types
     onUpdateEnd() {
       self.start = self._ws_region.start;
       self.end = self._ws_region.end;
+      self.channel = self._ws_region.channelIdx ?? 0;
       self.updateColor(self.selected ? 0.8 : 0.3);
       self.notifyDrawingFinished();
     },
