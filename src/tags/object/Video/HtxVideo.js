@@ -17,6 +17,9 @@ import { useFullscreen } from '../../../hooks/useFullscreen';
 import ResizeObserver from '../../../utils/resize-observer';
 import './Video.styl';
 import { VideoRegions } from './VideoRegions';
+import { FF_DEV_2715, isFF } from '../../../utils/feature-flags';
+
+const isFFDev2715 = isFF(FF_DEV_2715);
 
 const HtxVideoView = ({ item, store }) => {
   if (!item._value) return null;
@@ -224,6 +227,9 @@ const HtxVideoView = ({ item, store }) => {
     item.setOnlyFrame(1);
     item.setLength(length);
     item.setReady(true);
+    if (isFFDev2715) {
+      item.setSyncedDuration(item.ref.current?.duration);
+    }
   }, [item, setVideoLength]);
 
   const handleVideoResize = useCallback((videoDimensions) => {
@@ -237,24 +243,46 @@ const HtxVideoView = ({ item, store }) => {
 
   // TIMELINE EVENT HANDLERS
   const handlePlay = useCallback(() => {
-    setPlaying((playing) => {
-      if (playing === false) {
-        item.ref.current.play();
-        item.triggerSyncPlay();
-        return true;
+    setPlaying((_playing) => {
+      // Audio v3
+      if (isFFDev2715) {
+        if (item.isCurrentlyPlaying === false) {
+          item.triggerSyncPlay();
+          return true;
+        }
+        return item.isCurrentlyPlaying;
+      } 
+      // Audio v1,v2
+      else {
+        if (_playing === false) {
+          item.ref.current.play();
+          item.triggerSyncPlay();
+          return true;
+        }
+        return _playing;
       }
-      return playing;
     });
   }, []);
 
   const handlePause = useCallback(() => {
-    setPlaying((playing) => {
-      if (playing === true) {
-        item.ref.current.pause();
-        item.triggerSyncPause();
-        return false;
+    setPlaying((_playing) => {
+      // Audio v3
+      if (isFFDev2715) {
+        if (item.isCurrentlyPlaying === true) {
+          item.triggerSyncPause();
+          return false;
+        }
+        return item.isCurrentlyPlaying;
+      } 
+      // Audio v1,v2
+      else {
+        if (_playing === true) {
+          item.ref.current.pause();
+          item.triggerSyncPause();
+          return false;
+        }
+        return _playing;
       }
-      return playing;
     });
   }, []);
 
