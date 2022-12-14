@@ -150,6 +150,10 @@ export interface TimelineControlsProps {
   collapsed: boolean;
   fullscreen: boolean;
   volume?: number;
+  speed?: number;
+  zoom?: number;
+  amp?: number;
+  duration?: number;
   disableFrames?: boolean;
   extraControls?: JSX.Element | null;
   allowFullscreen?: boolean;
@@ -157,6 +161,8 @@ export interface TimelineControlsProps {
   controls?: TimelineProps['controls'];
   altHopSize?: TimelineProps['altHopSize'];
   customControls?: TimelineCustomControls[];
+  mediaType: string;
+  layerVisibility?: Map<string, boolean>;
   onRewind: (steps?: number) => void;
   onForward: (steps?: number) => void;
   onPositionChange: (position: number) => void;
@@ -168,6 +174,10 @@ export interface TimelineControlsProps {
   onPause?: TimelineProps['onPause'];
   onFullScreenToggle: TimelineProps['onFullscreenToggle'];
   onVolumeChange: TimelineProps['onVolumeChange'];
+  onSpeedChange: TimelineProps['onSpeedChange'];
+  onZoom: TimelineProps['onZoom'];
+  onAmpChange: (amp: number) => void;
+  toggleVisibility?: (layerName: string, isVisible: boolean) => void;
 }
 
 export interface TimelineCustomControls {
