@@ -500,12 +500,13 @@ export default observer(
 
     handleMouseDown = e => {
       const { item } = this.props;
+      const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
 
       item.updateSkipInteractions(e);
 
       const p = e.target.getParent();
 
-      if (!item.annotation.editable) return;
+      if (!item.annotation.editable && !isPanTool) return;
       if (p && p.className === 'Transformer') return;
 
       const handleMouseDown = () => {

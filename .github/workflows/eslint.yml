@@ -9,6 +9,9 @@ on:
       branch_name:
         required: true
         type: string
+      ref:
+        required: true
+        type: string
 
 env:
   # increment it in case if you need to reset cache
@@ -26,6 +29,8 @@ jobs:
     steps:
     - name: "Checlout codebase"
       uses: actions/checkout@v3
+      with:
+        ref: ${{ inputs.ref }}
 
     - name: "Setup NodeJS"
       uses: actions/setup-node@v3
