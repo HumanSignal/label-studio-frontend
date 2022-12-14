@@ -41,7 +41,6 @@ const result = [
     type: 'labels',
     origin: 'manual',
     value: {
-      channel: 0,
       end: 28.50568583621215,
       labels: ['Beat'],
       start: 12.778410892095105,
@@ -55,7 +54,6 @@ const result = [
     type: 'labels',
     origin: 'manual',
     value: {
-      channel: 1,
       end: 59.39854733358493,
       labels: ['Other'],
       start: 55.747572792986325,
