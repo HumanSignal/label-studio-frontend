@@ -14,12 +14,6 @@ import { guidGenerator } from '../core/Helpers';
 import { IconMagicWandTool } from '../assets/icons';
 import { Tool } from '../components/Toolbar/Tool';
 
-// TODO!!! Adding a bunch of Magic Wand annotations then updating is slow when saving. Investigate.
-// TODO!!! Once a magic wand selection has been made, save the scene and make sure its task
-// annotations are correct, then also export final results and ensure they are legible.
-// TODO!!! Write tests
-
-
 /**
  * This file implements a Magic Wand, making it possible to click in a region of an image a user is doing
  * segmentation labeling on, drag the mouse to dynamically change flood filling tolerance, then release
