@@ -105,7 +105,6 @@ const output = () => {
   }
 
   result.filename = dirPrefix.js + result.filename;
-  result.chunkFilename = dirPrefix.js + result.chunkFilename;
 
   return result;
 };
@@ -122,7 +121,6 @@ const cssOutput = () => {
   }
 
   result.filename = dirPrefix.css + result.filename;
-  result.chunkFilename = dirPrefix.css + result.chunkFilename;
 
   return result;
 };
