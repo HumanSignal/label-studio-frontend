@@ -1,16 +1,19 @@
-import React from 'react';
 import { Checkbox, Modal, Table, Tabs } from 'antd';
-import { observer } from 'mobx-react';
+import { createElement, FC } from 'react';
 
-import { Hotkey } from '../../core/Hotkey';
+import { Hotkey, HotkeyNamespace } from '../../core/Hotkey';
 
-import './Settings.styl';
 import { Block, Elem } from '../../utils/bem';
 import { triggerResizeEvent } from '../../utils/utilities';
+import './Settings.styl';
 
+import { useAtom } from 'jotai';
+import { useMemo } from 'react';
+import { useAnnotationsNames } from '../../Atoms/AnnotationsAtom/Hooks';
+import { useSettings } from '../../Atoms/SettingsAtom/Hooks';
+import { SettingsVisibilityAtom } from '../../Atoms/SettingsAtom/SettingsAtom';
 import EditorSettings from '../../core/settings/editorsettings';
 import * as TagSettings from './TagSettings';
-import { useMemo } from 'react';
 
 const HotkeysDescription = () => {
   const columns = [
@@ -20,19 +23,21 @@ const HotkeysDescription = () => {
 
   const keyNamespaces = Hotkey.namespaces();
 
-  const getData = (descr) => Object.keys(descr)
-    .filter(k => descr[k])
-    .map(k => ({
-      key: k,
-      combo: k.split(',').map(keyGroup => {
-        return (
-          <Elem name="key-group" key={keyGroup}>
-            {keyGroup.trim().split('+').map((k) => <Elem tag="kbd" name="key" key={k}>{k}</Elem>)}
-          </Elem>
-        );
-      }),
-      descr: descr[k],
-    }));
+  const getData = (descriptions: HotkeyNamespace['descriptions']) => {
+    return Object.keys(descriptions)
+      .filter(k => descriptions[k])
+      .map(k => ({
+        key: k,
+        combo: k.split(',').map(keyGroup => {
+          return (
+            <Elem name="key-group" key={keyGroup}>
+              {keyGroup.trim().split('+').map((k) => <Elem tag="kbd" name="key" key={k}>{k}</Elem>)}
+            </Elem>
+          );
+        }),
+        descr: descriptions[k],
+      }));
+  };
 
   return (
     <Block name="keys">
@@ -53,18 +58,24 @@ const HotkeysDescription = () => {
   );
 };
 
+const GeneralSettings: FC = () => {
+  type SettingsNames = keyof typeof EditorSettings;
+  const settingsNames = Object.keys(EditorSettings) as SettingsNames[];
+  const [settings, updateSettings] = useSettings();
 
-
-const GeneralSettings = observer(({ store }) => {
   return (
     <Block name="settings">
-      {Object.keys(EditorSettings).map((obj, index)=> {
+      {settingsNames.map((obj, index)=> {
         return (
           <Elem name="field" key={index}>
             <Checkbox
               key={index}
-              checked={store.settings[obj]}
-              onChange={store.settings[EditorSettings[obj].onChangeEvent]}
+              checked={settings[obj]}
+              onChange={(e) => {
+                updateSettings({
+                  [obj]: e.target.checked,
+                });
+              }}
             >
               {EditorSettings[obj].description}
             </Checkbox>
@@ -74,16 +85,20 @@ const GeneralSettings = observer(({ store }) => {
       })}
     </Block>
   );
-});
+};
 
-const LayoutSettings = observer(({ store }) => {
+const LayoutSettings = () => {
+  const [settings, updateSettings] = useSettings();
+
   return (
     <Block name="settings">
       <Elem name="field">
         <Checkbox
-          checked={store.settings.bottomSidePanel}
+          checked={settings.bottomSidePanel}
           onChange={() => {
-            store.settings.toggleBottomSP();
+            updateSettings({
+              bottomSidePanel: !settings.bottomSidePanel,
+            });
             setTimeout(triggerResizeEvent);
           }}
         >
@@ -92,17 +107,13 @@ const LayoutSettings = observer(({ store }) => {
       </Elem>
 
       <Elem name="field">
-        <Checkbox checked={store.settings.displayLabelsByDefault} onChange={store.settings.toggleSidepanelModel}>
-            Display Labels by default in Results panel
-        </Checkbox>
-      </Elem>
-
-      <Elem name="field">
         <Checkbox
           value="Show Annotations panel"
-          defaultChecked={store.settings.showAnnotationsPanel}
+          defaultChecked={settings.showAnnotationsPanel}
           onChange={() => {
-            store.settings.toggleAnnotationsPanel();
+            updateSettings({
+              showAnnotationsPanel: !settings.showAnnotationsPanel,
+            });
           }}
         >
             Show Annotations panel
@@ -112,9 +123,11 @@ const LayoutSettings = observer(({ store }) => {
       <Elem name="field">
         <Checkbox
           value="Show Predictions panel"
-          defaultChecked={store.settings.showPredictionsPanel}
+          defaultChecked={settings.showPredictionsPanel}
           onChange={() => {
-            store.settings.togglePredictionsPanel();
+            updateSettings({
+              showPredictionsPanel: !settings.showPredictionsPanel,
+            });
           }}
         >
               Show Predictions panel
@@ -136,7 +149,7 @@ const LayoutSettings = observer(({ store }) => {
       </Elem> */}
     </Block>
   );
-});
+};
 
 const Settings = {
   General: { name: 'General', component: GeneralSettings },
@@ -146,14 +159,18 @@ const Settings = {
 
 const DEFAULT_ACTIVE = Object.keys(Settings)[0];
 
-export default observer(({ store }) => {
+export const SettingsView: FC = () => {
+  const names = useAnnotationsNames();
+  const [visible, setVisible] = useAtom(SettingsVisibilityAtom);
   const availableSettings = useMemo(() => {
-    const availableTags = Object.values(store.annotationStore.names.toJSON());
+    const availableTags = Object.values(names);
     const settingsScreens = Object.values(TagSettings);
 
     return availableTags.reduce((res, tagName) => {
-      const tagType = store.annotationStore.names.get(tagName).type;
-      const settings = settingsScreens.find(({ tagName }) => tagName.toLowerCase() === tagType.toLowerCase());
+      const tagType = names.get(tagName).type;
+      const settings = settingsScreens.find(({ tagName }) => {
+        return tagName.toLowerCase() === tagType.toLowerCase();
+      });
 
       if (settings) res.push(settings);
 
@@ -163,24 +180,25 @@ export default observer(({ store }) => {
 
   return (
     <Modal
-      visible={store.showingSettings}
+      visible={visible}
       title="Settings"
       bodyStyle={{ paddingTop: '0' }}
       footer=""
-      onCancel={store.toggleSettings}
+      onCancel={() => setVisible(false)}
     >
       <Tabs defaultActiveKey={DEFAULT_ACTIVE}>
         {Object.entries(Settings).map(([key, { name, component }]) => (
           <Tabs.TabPane tab={name} key={key}>
-            {React.createElement(component, { store })}
+            {createElement(component)}
           </Tabs.TabPane>
         ))}
-        {availableSettings.map((Page) => (
+        {/* TODO: implement Page */}
+        {availableSettings.map((Page: any) => (
           <Tabs.TabPane tab={Page.title} key={Page.tagName}>
-            <Page store={store}/>
+            <Page/>
           </Tabs.TabPane>
         ))}
       </Tabs>
     </Modal>
   );
-});
+};

@@ -1,8 +1,6 @@
-import { render, unmountComponentAtNode } from 'react-dom';
-import App from './components/App/App';
+import { createRoot } from 'react-dom/client';
 import { configureStore } from './configureStore';
-import { LabelStudio as LabelStudioReact } from './Component';
-import { registerPanels } from './registerPanels';
+// import { LabelStudio as LabelStudioReact } from './Component';
 import { configure } from 'mobx';
 import { EventInvoker } from './utils/events';
 import legacyEvents from './core/External';
@@ -11,21 +9,30 @@ import { isDefined } from './utils/utilities';
 import { Hotkey } from './core/Hotkey';
 import defaultOptions from './defaultOptions';
 import { destroy } from 'mobx-state-tree';
-import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
+// import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
+import { App } from './components/App/AppNew';
 
 configure({
   isolateGlobalState: true,
 });
 
 export class LabelStudio {
-  static instances = new Set();
+  // static Component = LabelStudioReact;
+
+  static instances = new Set<LabelStudio>();
 
   static destroyAll() {
-    this.instances.forEach(inst => inst.destroy());
+    this.instances.forEach(inst => inst.destroy?.());
     this.instances.clear();
   }
 
-  constructor(root, userOptions = {}) {
+  root: HTMLElement | string;
+  events: EventInvoker;
+  options: any;
+  store: any;
+  destroy: (() => void) | null;
+
+  constructor(root: string | HTMLElement, userOptions = {}) {
     const options = Object.assign({}, defaultOptions, userOptions ?? {});
 
     if (options.keymap) {
@@ -37,17 +44,17 @@ export class LabelStudio {
     this.options = options ?? {};
     this.destroy = (() => { /* noop */ });
 
-    this.supportLgacyEvents(options);
+    this.supportLgacyEvents();
     this.createApp();
 
-    this.constructor.instances.add(this);
+    LabelStudio.instances.add(this);
   }
 
-  on(...args) {
-    this.events.on(...args);
+  on(eventName: string, callback: () => void) {
+    this.events.on(eventName, callback);
   }
 
-  off(eventName, callback){
+  off(eventName: string, callback: () => void){
     if (isDefined(callback)) {
       this.events.off(eventName, callback);
     } else {
@@ -57,21 +64,18 @@ export class LabelStudio {
 
   async createApp() {
     const { store, getRoot } = await configureStore(this.options, this.events);
-    const rootElement = getRoot(this.root);
+    const rootElement = getRoot(this.root) as unknown as HTMLElement;
+    const appRoot = createRoot(rootElement);
 
     this.store = store;
-    window.Htx = this.store;
+    Object.assign(window, { Htx: this.store });
 
-    render((
-      <App
-        store={this.store}
-        panels={registerPanels(this.options.panels) ?? []}
-      />
-    ), rootElement);
+    appRoot.render(<App/>);
 
     const destructor = () => {
-      unmountComponentAtNode(rootElement);
-      destroySharedStore();
+      appRoot.unmount();
+      // TODO: fix this
+      // destroySharedStore();
       destroy(this.store);
     };
 
@@ -92,5 +96,3 @@ export class LabelStudio {
     });
   }
 }
-
-LabelStudio.Component = LabelStudioReact;

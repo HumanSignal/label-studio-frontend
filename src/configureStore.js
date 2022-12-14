@@ -1,5 +1,3 @@
-import AppStore from './stores/AppStore';
-
 const getEnvironment = async () => {
   if (process.env.NODE_ENV === 'development' && !process.env.BUILD_NO_SERVER) {
     return (await import('./env/development')).default;
@@ -8,7 +6,7 @@ const getEnvironment = async () => {
   return (await import('./env/production')).default;
 };
 
-export const configureStore = async (params, events) => {
+export const configureStore = async (params) => {
   if (params.options?.secureMode) window.LS_SECURE_MODE = true;
 
   const env = await getEnvironment();
@@ -27,17 +25,17 @@ export const configureStore = async (params, events) => {
     params.taskHistory = [{ taskId: params.task.id, annotationId: null }];
   }
 
-  const store = AppStore.create(params, {
-    ...env.configureApplication(params),
-    events,
-  });
+  // const store = AppStore.create(params, {
+  //   ...env.configureApplication(params),
+  //   events,
+  // });
 
-  store.initializeStore({
-    ...(params.task ?? {}),
-    users: params.users ?? [],
-    annotationHistory: params.history ?? [],
-  });
+  // store.initializeStore({
+  //   ...(params.task ?? {}),
+  //   users: params.users ?? [],
+  //   annotationHistory: params.history ?? [],
+  // });
 
-  return { store, getRoot: env.rootElement };
+  return { store: null, getRoot: env.rootElement };
 };
 

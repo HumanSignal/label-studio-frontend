@@ -4,6 +4,8 @@ import { Block, Elem } from '../../utils/bem';
 import { DetailsPanel } from './DetailsPanel/DetailsPanel';
 import { OutlinerPanel } from './OutlinerPanel/OutlinerPanel';
 
+import { useRegions } from '@atoms/AnnotationsAtom/Hooks';
+import { Annotation, AnnotationHistoryItem, Prediction } from '@atoms/AnnotationsAtom/Types';
 import { IconDetails, IconHamburger } from '../../assets/icons';
 import { useMedia } from '../../hooks/useMedia';
 import ResizeObserver from '../../utils/resize-observer';
@@ -17,8 +19,8 @@ const maxWindowWidth = 980;
 
 interface SidePanelsProps {
   panelsHidden: boolean;
-  store: any;
-  currentEntity: any;
+  currentEntity: Annotation | Prediction | AnnotationHistoryItem;
+  children: React.ReactNode;
 }
 
 interface PanelBBox {
@@ -79,7 +81,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   children,
 }) => {
   const snapTreshold = 5;
-  const regions = currentEntity.regionStore;
+  const regions = useRegions(currentEntity);
   const viewportSize = useRef({ width: 0, height: 0 });
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [panelMaxWidth, setPanelMaxWidth] = useState(DEFAULT_PANEL_MAX_WIDTH);
@@ -284,7 +286,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       selection: regions.selection,
       currentEntity,
     };
-  }, [eventHandlers, rootRef, regions, regions.selectio, currentEntity]);
+  }, [eventHandlers, rootRef, regions, regions.selection, currentEntity]);
 
   const padding = useMemo(() => {
     const result = {

@@ -4,7 +4,19 @@ import React from 'react';
 
 const URL_CORS_DOCS = 'https://labelstud.io/guide/storage.html#Troubleshoot-CORS-and-access-problems';
 
-export default {
+type MessageOptions = {
+  modelName?: string,
+  field?: string,
+  value?: string,
+  attr?: string,
+  url?: string,
+  error?: string,
+  validType: string[],
+}
+
+type Message = string | ((options: MessageOptions) => string | JSX.Element);
+
+const messages: Record<string, Message> = {
   DONE: 'Done!',
   NO_COMP_LEFT: 'No more annotations',
   NO_NEXT_TASK: 'No More Tasks Left in Queue',
@@ -26,13 +38,13 @@ export default {
   },
 
   ERR_TAG_UNSUPPORTED: ({ modelName, field, value, validType }) => {
-    return `Invalid attribute <b>${field}</b> for <b>${modelName}</b>: referenced tag is <b>${value}</b>, but <b>${modelName}</b> can only control <b>${[]
+    return `Invalid attribute <b>${field}</b> for <b>${modelName}</b>: referenced tag is <b>${value}</b>, but <b>${modelName}</b> can only control <b>${([] as string[])
       .concat(validType)
       .join(', ')}</b>`;
   },
 
   ERR_PARENT_TAG_UNEXPECTED: ({ validType, value }) => {
-    return `Tag <b>${value}</b> must be a child of one of the tags <b>${[].concat(validType).join(', ')}</b>.`;
+    return `Tag <b>${value}</b> must be a child of one of the tags <b>${([] as string[]).concat(validType).join(', ')}</b>.`;
   },
 
   ERR_BAD_TYPE: ({ modelName, field, validType }) => {
@@ -44,7 +56,7 @@ export default {
   },
 
   ERR_GENERAL: ({ value }) => {
-    return value;
+    return value || 'Unknown error';
   },
 
   // Object loading errors
@@ -113,3 +125,5 @@ export default {
     </div>
   `,
 };
+
+export default messages;

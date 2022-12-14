@@ -7,6 +7,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 const ESLintPlugin = require('eslint-webpack-plugin');
+
 const { EnvironmentPlugin, DefinePlugin } = require("webpack");
 
 const workingDirectory = process.env.WORK_DIR
@@ -286,6 +287,11 @@ module.exports = ({withDevServer = true} = {}) => ({
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
+    alias: {
+      "@components": path.resolve(__dirname, "src/components"),
+      "@hooks": path.resolve(__dirname, "src/hooks"),
+      "@atoms": path.resolve(__dirname, "src/Atoms")
+    },
   },
   plugins: withDevServer ? [
     ...plugins,

@@ -4,6 +4,11 @@ import External from '../core/External';
 import Messages from '../utils/messages';
 
 /**
+ * Empty
+ */
+import { Empty } from '../examples/empty';
+
+/**
  * Text
  */
 import { DialogueAnalysis } from '../examples/dialogue_analysis';
@@ -70,7 +75,7 @@ import { TimeSeriesSingle } from '../examples/timeseries_single';
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = VideoRectangles;
+const data = Empty;
 
 function getData(task) {
   if (task && task.data) {
@@ -101,14 +106,17 @@ async function getExample() {
   const datatype = data;
 
   const config = await getConfig(datatype.config);
-  const annotations = datatype.annotation.annotations;
-  const predictions = datatype.tasks[0].predictions;
+  const tasks = datatype.tasks ?? [];
+  const annotations = (datatype.annotation?.annotations) ?? [];
+  const predictions = (tasks[0]?.predictions) ?? [];
 
   const task = {
     annotations,
     predictions,
-    data: JSON.stringify(datatype.tasks[0].data),
+    data: JSON.stringify(tasks[0]?.data ?? ''),
   };
+
+  console.log({ task, datatype });
 
   return { config, task, annotations, predictions };
 }
