@@ -34,7 +34,7 @@ import { Tool } from '../components/Toolbar/Tool';
  *  viewer.
  * - `imageDisplayedInBrowserWidth`/`imageDisplayedInBrowserHeight`: The size of the image shown in
  *  the browser.
- * - `viewportWidth`/`viewportHeight`: Even if the image is `imageDisplayedInBrowser`` size, parts of
+ * - `viewportWidth`/`viewportHeight`: Even if the image is `imageDisplayedInBrowser` size, parts of
  *  it might be clipped and overflow hidden by a viewport lying over it and constraining it.
  *  `viewportWidth`/`viewportHeight` relates the size of the viewport.
  *
