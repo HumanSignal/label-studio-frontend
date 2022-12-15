@@ -101,7 +101,8 @@ const MagicWand = (function() {
           if (c > colorThreshold || c < -colorThreshold) break;
           c = data[i + 1] - sampleColor[1]; // check by green
           if (c > colorThreshold || c < -colorThreshold) break;
-          c = data[i + 2] - sampleColor[2]; // check by blue          if (c > colorThreshold || c < -colorThreshold) break;
+          c = data[i + 2] - sampleColor[2]; // check by blue
+          if (c > colorThreshold || c < -colorThreshold) break;
 
           result[dyl] = 1;
           visited[dyl] = 1;
