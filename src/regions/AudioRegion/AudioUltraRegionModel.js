@@ -10,6 +10,7 @@ export const AudioUltraRegionModel = types
 
     start: types.number,
     end: types.number,
+    channel: types.optional(types.number, 0),
 
     selectedregionbg: types.optional(types.string, 'rgba(0, 0, 0, 0.5)'),
   })
@@ -26,6 +27,7 @@ export const AudioUltraRegionModel = types
         visible: !self.hidden,
         updateable: !self.readonly,
         deletable: !self.readonly,
+        channel: self.channel ?? 0,
       };
 
       return reg;
@@ -63,6 +65,7 @@ export const AudioUltraRegionModel = types
           value: {
             start: self.start,
             end: self.end,
+            channel: self.channel,
           },
         };
 
