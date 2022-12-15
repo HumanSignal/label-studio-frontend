@@ -22,6 +22,7 @@ const customDistDir = !!process.env.WORK_DIR;
 const DEFAULT_NODE_ENV = process.env.BUILD_MODULE ? "production" : process.env.NODE_ENV || "development";
 
 const isDevelopment = DEFAULT_NODE_ENV !== "production";
+const isTest = process.env.TEST_ENV === "true";
 
 const BUILD = {
   NO_SERVER: !!process.env.BUILD_NO_MINIMIZATION,
@@ -152,6 +153,11 @@ const babelLoader = {
       "@babel/plugin-proposal-class-properties",
       "@babel/plugin-proposal-optional-chaining",
       "@babel/plugin-proposal-nullish-coalescing-operator",
+      ...(
+        isTest
+          ? ["istanbul"]
+          : []
+      )
     ],
     ...babelOptimizeOptions(),
   },

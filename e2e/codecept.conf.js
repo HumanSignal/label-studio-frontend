@@ -73,6 +73,10 @@ module.exports.config = {
       enabled: true,
       coverageDir: 'output/coverage',
     },
+    // istanbulCoverage: {
+    //   require: './plugins/istanbulСoverage.js',
+    //   enabled: true,
+    // },
     screenshotOnFail: {
       enabled: true,
     },
