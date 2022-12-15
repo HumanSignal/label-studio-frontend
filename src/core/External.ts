@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import { Annotation } from '../Atoms/AnnotationsAtom/Types';
+
 /**
  * Callback on submit annotation
  */
@@ -53,28 +55,28 @@ function onGroundTruth() {}
 /**
  * Callback when a new annotation gets selected
  */
-function onSelectAnnotation(annotation, previousAnnotation) {}
+function onSelectAnnotation(annotation: Annotation, previousAnnotation: Annotation) {}
 
 /**
  * Called when "Accept" or "Fix + Accept" is pressed
  */
-function onAcceptAnnotation(store, entity){}
+function onAcceptAnnotation(store: any, entity: Annotation){}
 
 /**
  * Called when "Reject" is pressed
  */
-function onRejectAnnotation(store, entity){}
+function onRejectAnnotation(store: any, entity: Annotation){}
 
 /**
  * Called when storage gets initialized for the first time
  */
-function onStorageInitialized(ls) {}
+function onStorageInitialized(ls: any) {}
 
-function onSubmitDraft(entity) {}
+function onSubmitDraft(entity: any) {}
 
-function onNextTask(nextTaskId) {}
+function onNextTask(nextTaskId: number) {}
 
-function onPrevTask(prevTaskId) {}
+function onPrevTask(prevTaskId: number) {}
 
 export default {
   onDeleteAnnotation,

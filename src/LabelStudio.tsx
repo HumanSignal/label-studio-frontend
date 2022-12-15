@@ -2,19 +2,25 @@ import { createRoot } from 'react-dom/client';
 import { configureStore } from './configureStore';
 // import { LabelStudio as LabelStudioReact } from './Component';
 import { configure } from 'mobx';
-import { EventInvoker } from './utils/events';
-import legacyEvents from './core/External';
+import { destroy } from 'mobx-state-tree';
 import { toCamelCase } from 'strman';
-import { isDefined } from './utils/utilities';
+import legacyEvents from './core/External';
 import { Hotkey } from './core/Hotkey';
 import defaultOptions from './defaultOptions';
-import { destroy } from 'mobx-state-tree';
+import { EventInvoker } from './utils/events';
+import { isDefined } from './utils/utilities';
 // import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
 import { App } from './components/App/AppNew';
+import { DataStore } from './components/App/DataStore';
+import { Store } from './core/Data/Store';
+import { InternalSDK } from './core/SDK/Internal/Internal.sdk';
+import { LSOptions } from './Types/LabelStudio/LabelStudio';
 
 configure({
   isolateGlobalState: true,
 });
+
+const INTERNAL_SDK = Symbol('INTERNAL_SDK');
 
 export class LabelStudio {
   // static Component = LabelStudioReact;
@@ -26,14 +32,22 @@ export class LabelStudio {
     this.instances.clear();
   }
 
-  root: HTMLElement | string;
-  events: EventInvoker;
-  options: any;
+  private root: HTMLElement | string;
+  private events: EventInvoker;
+  private options: LSOptions;
+  private [INTERNAL_SDK]!: InternalSDK;
+
   store: any;
   destroy: (() => void) | null;
 
-  constructor(root: string | HTMLElement, userOptions = {}) {
-    const options = Object.assign({}, defaultOptions, userOptions ?? {});
+  constructor(root: string | HTMLElement, userOptions: LSOptions = {}) {
+    const options: LSOptions = {};
+
+    Object.assign(
+      options,
+      (defaultOptions as LSOptions),
+      (userOptions ?? {}) as LSOptions,
+    );
 
     if (options.keymap) {
       Hotkey.setKeymap(options.keymap);
@@ -50,6 +64,10 @@ export class LabelStudio {
     LabelStudio.instances.add(this);
   }
 
+  get internalSDK() {
+    return this[INTERNAL_SDK];
+  }
+
   on(eventName: string, callback: () => void) {
     this.events.on(eventName, callback);
   }
@@ -63,14 +81,30 @@ export class LabelStudio {
   }
 
   async createApp() {
-    const { store, getRoot } = await configureStore(this.options, this.events);
+    const { getRoot, params } = await configureStore(this.options);
     const rootElement = getRoot(this.root) as unknown as HTMLElement;
     const appRoot = createRoot(rootElement);
 
-    this.store = store;
-    Object.assign(window, { Htx: this.store });
+    const store = new Store();
+    const internalSDK = new InternalSDK(store);
 
-    appRoot.render(<App/>);
+    const hydrateStore = () => {
+      internalSDK.hydrate({
+        config: params.config,
+        interfaces: params.interfaces,
+        user: params.user,
+        task: params.task,
+        users: params.users,
+      });
+    };
+
+    appRoot.render((
+      <DataStore store={store} afterInit={hydrateStore}>
+        <App/>
+      </DataStore>
+    ));
+
+    this[INTERNAL_SDK] = internalSDK;
 
     const destructor = () => {
       appRoot.unmount();
@@ -83,7 +117,7 @@ export class LabelStudio {
   }
 
   supportLgacyEvents() {
-    const keys = Object.keys(legacyEvents);
+    const keys = Object.keys(legacyEvents) as (keyof typeof legacyEvents)[];
 
     keys.forEach(key => {
       const callback = this.options[key];

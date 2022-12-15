@@ -1,8 +1,8 @@
-import { atomWithReset } from 'jotai/utils';
+import { atom } from 'jotai';
 import { focusAtom } from 'jotai-optics';
+import { atomWithReset } from 'jotai/utils';
 import { InitialState } from './InitialState';
 import { RootStore } from './Types';
-import { atom } from 'jotai';
 
 export const RootAtom = atomWithReset<RootStore>(InitialState);
 

@@ -14,12 +14,13 @@ import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH
 import { PanelProps } from './PanelBase';
 import './SidePanels.styl';
 import { SidePanelsContext } from './SidePanelsContext';
+import { Atom } from 'jotai';
 
 const maxWindowWidth = 980;
 
 interface SidePanelsProps {
   panelsHidden: boolean;
-  currentEntity: Annotation | Prediction | AnnotationHistoryItem;
+  currentEntity: Atom<Annotation | Prediction | AnnotationHistoryItem>;
   children: React.ReactNode;
 }
 

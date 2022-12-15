@@ -14,9 +14,9 @@ type MessageOptions = {
   validType: string[],
 }
 
-type Message = string | ((options: MessageOptions) => string | JSX.Element);
+export type SystemMessage = string | ((options: MessageOptions) => string | JSX.Element);
 
-const messages: Record<string, Message> = {
+const messages: Record<string, SystemMessage> = {
   DONE: 'Done!',
   NO_COMP_LEFT: 'No more annotations',
   NO_NEXT_TASK: 'No More Tasks Left in Queue',

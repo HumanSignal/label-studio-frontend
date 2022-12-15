@@ -1,9 +1,11 @@
-import { Atom } from 'jotai';
 import { Regions } from '@atoms/RegionsAtom/Types';
+import { Atom } from 'jotai';
 
-type AnnotationBase = {
+export type EntityType = 'annotation' | 'prediction';
+
+export type AnnotationBase = {
   id: string,
-  type: string,
+  type: EntityType | 'history',
   onlyTextObjects: boolean,
   regions: Atom<Regions>,
 }
@@ -25,10 +27,10 @@ export type ConfigValidation = {
 }
 
 export type AnnotationsStore = {
-  current?: Annotation | Prediction,
-  currentHistory?: AnnotationHistoryItem,
-  annotations: Annotation[],
-  predictions: Prediction[],
+  current?: Atom<Annotation | Prediction>,
+  currentHistory?: Atom<AnnotationHistoryItem>,
+  annotations: Atom<Annotation>[],
+  predictions: Atom<Prediction>[],
   annotationHistory: AnnotationHistoryItem[],
   viewingAllAnnotations: boolean,
   viewingAllPredictions: boolean,

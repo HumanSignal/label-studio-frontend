@@ -1,8 +1,8 @@
-import './core/feature-flags';
 import './assets/styles/global.scss';
+import './core/feature-flags';
 import { LabelStudio } from './LabelStudio';
 
-window.LabelStudio = LabelStudio;
+Object.assign(window, { LabelStudio });
 
 export default LabelStudio;
 

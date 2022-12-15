@@ -9,6 +9,14 @@ import { AnnotationsStore } from './Types';
  */
 export const AnnotationsAtom = atomWithReset<AnnotationsStore>(InitialState);
 
+export const AnnotationsListAtom = atom(() => {
+  const annotations = focusAtom(AnnotationsAtom, (optic) => {
+    return optic.prop('annotations');
+  });
+
+  return annotations;
+});
+
 /**
  * Holds the currently selected annotation or prediction.
  */
@@ -44,9 +52,12 @@ export const ConfigValidationAtom = focusAtom(AnnotationsAtom, (optic) => {
   return optic.prop('validation');
 });
 
+/**
+ * Gives access to the regions of the currently selected annotation.
+ */
 export const AnnotationRegionsAtom = atom(get => {
   const annotation = get(SelectedAnnotationAtom);
-  const regionsStore = annotation && get(annotation.regions);
+  const regionsStore = annotation && get(get(annotation).regions);
   const regions = regionsStore && splitAtom(regionsStore.regions);
 
   return {

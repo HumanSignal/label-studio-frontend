@@ -1,19 +1,21 @@
+import { LSOptions } from './Types/LabelStudio/LabelStudio';
+
 const getEnvironment = async () => {
   if (process.env.NODE_ENV === 'development' && !process.env.BUILD_NO_SERVER) {
-    return (await import('./env/development')).default;
+    return import('./env/development');
   }
 
-  return (await import('./env/production')).default;
+  return import('./env/production');
 };
 
-export const configureStore = async (params) => {
+export const configureStore = async (params: LSOptions) => {
   if (params.options?.secureMode) window.LS_SECURE_MODE = true;
 
   const env = await getEnvironment();
 
   params = { ...params };
 
-  if (!params?.config && env.getExample) {
+  if (!params?.config && env.name === 'development') {
     const { task, config } = await env.getExample();
 
     params.config = config;
@@ -21,6 +23,7 @@ export const configureStore = async (params) => {
   } else if (params?.task) {
     params.task = env.getData(params.task);
   }
+
   if (params.task?.id) {
     params.taskHistory = [{ taskId: params.task.id, annotationId: null }];
   }
@@ -36,6 +39,6 @@ export const configureStore = async (params) => {
   //   annotationHistory: params.history ?? [],
   // });
 
-  return { store: null, getRoot: env.rootElement };
+  return { store: null, params, getRoot: env.rootElement };
 };
 

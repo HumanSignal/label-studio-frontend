@@ -9,7 +9,7 @@ import { useInterfaces } from '@atoms/RootAtom/Hooks';
 import { InstructionsAtom, RootAtom, TaskAtom } from '@atoms/RootAtom/RootAtom';
 import { SettingsAtom } from '@atoms/SettingsAtom/SettingsAtom';
 import { Result, Spin } from 'antd';
-import { useAtomValue } from 'jotai';
+import { Atom, useAtomValue } from 'jotai';
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Space } from '../../common/Space/Space';
 import { Block, Elem } from '../../utils/bem';
@@ -75,8 +75,8 @@ export const App = () => {
               {validation === null ? (
                 <MainView
                   viewingAll={viewingAll}
-                  selectedAnnotation={selectedAnnotation}
-                  selectedHistory={selectedHistory}
+                  selectedAnnotationAtom={selectedAnnotation}
+                  selectedHistoryAtom={selectedHistory}
                 />
               ): <ConfigValidation/>}
             </Block>
@@ -90,15 +90,21 @@ export const App = () => {
 
 type MainViewProps = {
   viewingAll: boolean,
-  selectedAnnotation?: Annotation | Prediction,
-  selectedHistory?: AnnotationHistoryItem,
+  selectedAnnotationAtom?: Atom<Annotation | Prediction>,
+  selectedHistoryAtom?: Atom<AnnotationHistoryItem>,
 }
 
 const MainView: FC<MainViewProps> = ({
-  selectedAnnotation,
-  selectedHistory,
+  selectedAnnotationAtom,
+  selectedHistoryAtom,
   ...props
 }) => {
+  if (!selectedAnnotationAtom && !selectedHistoryAtom) return null;
+
+  const selectedHistory =  selectedHistoryAtom ? useAtomValue(selectedHistoryAtom) : null;
+  const selectedAnnotation = selectedAnnotationAtom ? useAtomValue(selectedAnnotationAtom) : null;
+  const selectedEntity = selectedHistory ?? selectedAnnotation;
+
   // TODO: support relations overlay
   const relationsRef = useRef(null);
   const hasInterface = useInterfaces();
@@ -114,7 +120,7 @@ const MainView: FC<MainViewProps> = ({
     <>
       {!props.viewingAll && (
         <Block
-          key={(selectedHistory ?? selectedAnnotation)?.id}
+          key={selectedEntity?.id}
           name="main-view"
           onScrollCapture={notifyScroll}
         >

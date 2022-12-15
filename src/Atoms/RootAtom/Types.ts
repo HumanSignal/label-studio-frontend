@@ -3,11 +3,12 @@ import { User } from '../UsersAtom';
 export type Task = {
   id: number,
   queue: string,
+  data: string | Record<string, any>,
 }
 
 export type TaskHistoryItem = {
   taskId: number,
-  annotationId?: string,
+  annotationId?: string | null,
 }
 
 export type Project = {

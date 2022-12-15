@@ -1,7 +1,30 @@
+import { TaskInput } from '../core/Data/Inputs/TaskInput';
 import External from '../core/External';
+import { LSOptions } from '../Types/LabelStudio/LabelStudio';
 import Messages from '../utils/messages';
 
-function getData(task) {
+/**
+ * Function to return App element
+ */
+export function rootElement(element: string | HTMLElement) {
+  let root: HTMLElement | null = null;
+
+  if (typeof element === 'string') {
+    root = document.getElementById(element);
+  } else {
+    root = element;
+  }
+
+  if (!root) return null;
+
+  root.innerHTML = '';
+
+  root.style.width = 'auto';
+
+  return root;
+}
+
+export function getData(task: TaskInput) {
   if (task && task.data) {
     return {
       ...task,
@@ -12,57 +35,19 @@ function getData(task) {
   return task;
 }
 
-function getState(task) {
-  return {
-    annotations: task?.annotations,
-    completions: task?.completions,
-    predictions: task?.predictions,
-  };
-}
-
-/**
- * LS will render in this part
- */
-function rootElement(element) {
-  let root;
-
-  if (typeof element === 'string') {
-    root = document.getElementById(element);
-  } else {
-    root = element;
-  }
-
-  root.innerHTML = '';
-
-  return root;
-}
-
 /**
  * Function to configure application with callbacks
  * @param {object} params
  */
-function configureApplication(params) {
-  // callbacks for back compatibility
-  const osCB = params.submitAnnotation || params.onSubmitAnnotation;
-  const ouCB = params.updateAnnotation || params.onUpdateAnnotation;
-  const odCB = params.deleteAnnotation || params.onDeleteAnnotation;
-
+export function configureApplication(params: LSOptions) {
   const options = {
-    // communication with the server
-    // fetch: params.fetch || Requests.fetcher,
-    // patch: params.patch || Requests.patch,
-    // post: params.post || Requests.poster,
-    // remove: params.remove || Requests.remover,
-
-    // communication with the user
     settings: params.settings || {},
-    alert: m => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },
 
     // callbacks and event handlers
-    onSubmitAnnotation: params.onSubmitAnnotation ? osCB : External.onSubmitAnnotation,
-    onUpdateAnnotation: params.onUpdateAnnotation ? ouCB : External.onUpdateAnnotation,
-    onDeleteAnnotation: params.onDeleteAnnotation ? odCB : External.onDeleteAnnotation,
+    onSubmitAnnotation: params.onSubmitAnnotation ?? External.onSubmitAnnotation,
+    onUpdateAnnotation: params.onUpdateAnnotation ?? External.onUpdateAnnotation,
+    onDeleteAnnotation: params.onDeleteAnnotation ?? External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
     onUnskipTask: params.onUnskipTask ? params.onUnskipTask : External.onUnskipTask,
     onSubmitDraft: params.onSubmitDraft,
@@ -85,5 +70,3 @@ function configureApplication(params) {
 
   return options;
 }
-
-export default { getData, getState, rootElement, configureApplication };

@@ -6,5 +6,6 @@ declare global {
   interface Window {
     APP_SETTINGS: Record<string, any>;
     HTX_DEBUG?: boolean;
+    LS_SECURE_MODE?: boolean;
   }
 }

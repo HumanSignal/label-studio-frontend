@@ -153,6 +153,7 @@ const babelLoader = {
       "@babel/plugin-proposal-class-properties",
       "@babel/plugin-proposal-optional-chaining",
       "@babel/plugin-proposal-nullish-coalescing-operator",
+      "jotai/babel/plugin-debug-label",
     ],
     ...babelOptimizeOptions(),
   },
@@ -277,7 +278,7 @@ module.exports = ({withDevServer = true} = {}) => ({
   ...(withDevServer ? devServer() : {}),
   entry: {
     main: [
-      path.resolve(__dirname, "src/index.js"),
+      path.resolve(__dirname, "src/index.ts"),
     ],
   },
   output: {
