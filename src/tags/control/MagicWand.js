@@ -21,7 +21,6 @@ const Model = types
   })
   .views(self => ({
     get hasStates() {
-      console.log("MagicWand tags/control.hasStates");
       const states = self.states();
 
       return states && states.length > 0;
