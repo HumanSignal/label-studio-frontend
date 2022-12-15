@@ -12,9 +12,10 @@ import { isDefined } from './utils/utilities';
 // import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
 import { App } from './components/App/AppNew';
 import { DataStore } from './components/App/DataStore';
-import { Store } from './core/Data/Store';
+import { Store } from '@atoms/Store';
 import { InternalSDK } from './core/SDK/Internal/Internal.sdk';
 import { LSOptions } from './Types/LabelStudio/LabelStudio';
+import { StrictMode } from 'react';
 
 configure({
   isolateGlobalState: true,
@@ -99,9 +100,11 @@ export class LabelStudio {
     };
 
     appRoot.render((
-      <DataStore store={store} afterInit={hydrateStore}>
-        <App/>
-      </DataStore>
+      <StrictMode>
+        <DataStore store={store} afterInit={hydrateStore}>
+          <App/>
+        </DataStore>
+      </StrictMode>
     ));
 
     this[INTERNAL_SDK] = internalSDK;

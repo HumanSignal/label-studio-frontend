@@ -1,6 +1,6 @@
-import { TaskHistoryItem } from '../../Atoms/RootAtom/Types';
-import { User } from '../../Atoms/UsersAtom';
-import { TaskInput } from '../../core/Data/Inputs/TaskInput';
+import { TaskHistoryItem } from '@atoms/Models/RootAtom/Types';
+import { User } from '@atoms/UsersAtom';
+import { TaskInput } from '@atoms/Inputs/TaskInput';
 import legacyEvents from '../../core/External';
 import { SystemMessage } from '../../utils/messages';
 

@@ -1,6 +1,5 @@
 import { Atom, useAtomValue } from 'jotai';
 import { focusAtom } from 'jotai-optics';
-import { splitAtom } from 'jotai/vanilla/utils';
 import { AnnotationsAtom } from './AnnotationsAtom';
 import { Annotation, AnnotationHistoryItem, Prediction } from './Types';
 
@@ -17,10 +16,6 @@ export const useAnnotationsNames = () => {
 export const useRegions = (annotationAtom: Atom<Annotation | Prediction | AnnotationHistoryItem>) => {
   const annotaion = useAtomValue(annotationAtom);
   const regionsStore = annotaion && useAtomValue(annotaion.regions);
-  const regions = regionsStore && splitAtom(regionsStore.regions);
 
-  return {
-    regions,
-    selection: regionsStore?.selection,
-  };
+  return regionsStore;
 };

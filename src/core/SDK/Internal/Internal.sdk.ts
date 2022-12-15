@@ -1,9 +1,9 @@
 import { User } from '@atoms/UsersAtom';
-import { RootAtom } from '../../../Atoms/RootAtom/RootAtom';
-import { TaskInput } from '../../Data/Inputs/TaskInput';
-import { Store } from '../../Data/Store';
-import { AnnotationsSDK } from '../Shared/Annotations.sdk';
-import { StoreAccess } from '../Shared/StoreAccess.sdk';
+import { TaskInput } from '@atoms/Inputs/TaskInput';
+import { RootAtom } from '@atoms/Models/RootAtom/RootAtom';
+import { Store } from '@atoms/Store';
+import { AnnotationModel } from '@atoms/Models/AnnotationsAtom/Model';
+import { StoreAccess } from '@atoms/StoreAccess';
 
 type Hydrate = {
   interfaces?: string[],
@@ -16,11 +16,11 @@ type Hydrate = {
 }
 
 class InternalSDK extends StoreAccess {
-  annotations: AnnotationsSDK;
+  annotations: AnnotationModel;
 
   constructor(store: Store) {
     super(store);
-    this.annotations = new AnnotationsSDK(store);
+    this.annotations = new AnnotationModel(store);
   }
 
   hydrate(data: Hydrate) {

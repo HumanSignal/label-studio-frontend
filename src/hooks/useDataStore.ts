@@ -1,6 +1,6 @@
 import { atom, useSetAtom } from 'jotai';
 import { useMemo } from 'react';
-import { Store } from '../core/Data/Store';
+import { Store } from '@atoms/Store';
 
 // Use a write only atom to init the store instance
 const storeAtom = atom(null, (get, set, storeInstance: Store) => {

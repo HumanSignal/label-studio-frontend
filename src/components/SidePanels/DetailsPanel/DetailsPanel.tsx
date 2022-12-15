@@ -1,31 +1,33 @@
+import { Annotation, Prediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { Regions } from '@atoms/Models/RegionsAtom/Types';
+import { Atom } from 'jotai';
 import { inject, observer } from 'mobx-react';
 import { FC } from 'react';
 import { Elem } from '../../../utils/bem';
 import { FF_DEV_2290, isFF } from '../../../utils/feature-flags';
 import { Comments } from '../../Comments/Comments';
 import { AnnotationHistory } from '../../CurrentEntity/AnnotationHistory';
+import { DraftPanel } from '../../DraftPanel/DraftPanel';
 import { PanelBase, PanelProps } from '../PanelBase';
 import './DetailsPanel.styl';
 import { RegionDetailsMain, RegionDetailsMeta } from './RegionDetails';
 import { RegionItem } from './RegionItem';
 import { Relations } from './Relations';
-import { DraftPanel } from '../../DraftPanel/DraftPanel';
-interface DetailsPanelProps extends PanelProps {
-  regions: any;
-  selection: any;
-}
 
-const DetailsPanelComponent: FC<DetailsPanelProps> = ({ currentEntity, regions, ...props }) => {
-  const selectedRegions = regions.selection;
-
+const DetailsPanelComponent: FC<PanelProps> = (props) => {
   return (
-    <PanelBase {...props} currentEntity={currentEntity} name="details" title="Details">
-      <Content selection={selectedRegions} currentEntity={currentEntity} />
+    <PanelBase {...props} name="details" title="Details">
+      <Content selection={props.selection} currentEntity={props.currentEntity} />
     </PanelBase>
   );
 };
 
-const Content: FC<any> = observer(({
+type ContentProps = {
+  selection: Regions['selection'],
+  currentEntity: Atom<Annotation | Prediction>,
+}
+
+const Content: FC<ContentProps> = observer(({
   selection,
   currentEntity,
 }) => {

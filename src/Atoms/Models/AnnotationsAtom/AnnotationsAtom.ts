@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
 import { focusAtom } from 'jotai-optics';
-import { atomWithReset, splitAtom } from 'jotai/utils';
+import { atomWithReset } from 'jotai/utils';
 import { InitialState } from './InitialState';
 import { AnnotationsStore } from './Types';
 
@@ -58,10 +58,6 @@ export const ConfigValidationAtom = focusAtom(AnnotationsAtom, (optic) => {
 export const AnnotationRegionsAtom = atom(get => {
   const annotation = get(SelectedAnnotationAtom);
   const regionsStore = annotation && get(get(annotation).regions);
-  const regions = regionsStore && splitAtom(regionsStore.regions);
 
-  return {
-    regions,
-    selection: regionsStore?.selection,
-  };
+  return regionsStore;
 });

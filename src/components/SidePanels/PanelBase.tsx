@@ -1,12 +1,13 @@
 import { FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Block, Elem } from '../../utils/bem';
 import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand } from '../../assets/icons';
+import { Block, Elem } from '../../utils/bem';
 
-import './PanelBase.styl';
-import { PanelType } from './SidePanels';
+import { Regions, RegionsAtom } from '@atoms/Models/RegionsAtom/Types';
 import { useDrag } from '../../hooks/useDrag';
 import { clamp, isDefined } from '../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
+import './PanelBase.styl';
+import { PanelType } from './SidePanels';
 
 export type PanelBaseExclusiveProps = 'name' | 'title'
 
@@ -31,6 +32,8 @@ const resizers = [
 
 interface PanelBaseProps {
   root: MutableRefObject<HTMLDivElement | undefined>;
+  regions: RegionsAtom;
+  selection: Regions['selection'];
   name: PanelType;
   title: string;
   tooltip: string;
@@ -49,6 +52,7 @@ interface PanelBaseProps {
   locked: boolean;
   zIndex: number;
   positioning: boolean;
+  children: React.ReactNode | null;
   onResize: ResizeHandler;
   onResizeStart: () => void;
   onResizeEnd: () => void;

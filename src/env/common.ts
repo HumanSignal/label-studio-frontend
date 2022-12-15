@@ -1,4 +1,4 @@
-import { TaskInput } from '../core/Data/Inputs/TaskInput';
+import { TaskInput } from '@atoms/Inputs/TaskInput';
 import External from '../core/External';
 import { LSOptions } from '../Types/LabelStudio/LabelStudio';
 import Messages from '../utils/messages';

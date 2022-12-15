@@ -1,5 +1,5 @@
-import { Regions } from '@atoms/RegionsAtom/Types';
 import { Atom } from 'jotai';
+import { Regions } from '../RegionsAtom/Types';
 
 export type EntityType = 'annotation' | 'prediction';
 

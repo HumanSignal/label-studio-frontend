@@ -1,14 +1,15 @@
-import { Annotation, EntityType, Prediction } from '@atoms/AnnotationsAtom/Types';
 import { Atom, atom } from 'jotai';
-import { AnnotationsAtom, AnnotationsListAtom, SelectedAnnotationAtom } from '../../../Atoms/AnnotationsAtom/AnnotationsAtom';
-import { AnnotationInput, PredictionInput } from '../../Data/Inputs/AnnotationInput';
-import { guidGenerator } from '../../Helpers';
-import { StoreAccess } from './StoreAccess.sdk';
+import { guidGenerator } from '../../../utils/unique';
+import { StoreAccess } from '../../StoreAccess';
+import { AnnotationInput, PredictionInput } from '../../Inputs/AnnotationInput';
+import { Regions } from '../RegionsAtom/Types';
+import { AnnotationsAtom, AnnotationsListAtom, SelectedAnnotationAtom } from './AnnotationsAtom';
+import { Annotation, EntityType, Prediction } from './Types';
 
 /**
  * Operates on the AnnotationStore
  */
-export class AnnotationsSDK extends StoreAccess {
+export class AnnotationModel extends StoreAccess {
   get annotations() {
     const annotationsAtom = this.store.get(AnnotationsListAtom);
 
@@ -71,9 +72,12 @@ export class AnnotationsSDK extends StoreAccess {
   }
 
   private createRegionsAtom() {
-    return atom({
-      regions: atom([]),
+    return atom<Regions>({
+      regions: [],
       selection: new Set<string>(),
+      group: 'manual',
+      orderBy: 'date',
+      order: 'asc',
     });
   }
 }

@@ -1,6 +1,6 @@
 import chroma from 'chroma-js';
 import { observer } from 'mobx-react';
-import Tree from 'rc-tree';
+import Tree, { TreeProps } from 'rc-tree';
 import { createContext, FC, MouseEvent, useCallback, useContext, useMemo, useState } from 'react';
 import { IconLockLocked, IconLockUnlocked, IconWarning, LsSparks } from '../../../assets/icons';
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
@@ -8,12 +8,14 @@ import { IconArrow } from '../../../assets/icons/tree';
 import { Button, ButtonProps } from '../../../common/Button/Button';
 import Registry from '../../../core/Registry';
 import { PER_REGION_MODES } from '../../../mixins/PerRegionModes';
-import { Block, cn, Elem } from '../../../utils/bem';
+import { Block, CN, cn, Elem } from '../../../utils/bem';
 import { flatten, isDefined, isMacOS } from '../../../utils/utilities';
 import { NodeIcon } from '../../Node/Node';
 import { FF_DEV_2755, isFF } from '../../../utils/feature-flags';
 import { Tooltip } from '../../../common/Tooltip/Tooltip';
 import './TreeView.styl';
+import { Region, Regions } from '@atoms/Models/RegionsAtom/Types';
+import { Atom } from 'jotai';
 
 const { localStorage } = window;
 const localStoreName = 'collapsed-label-pos';
@@ -26,13 +28,17 @@ const OutlinerContext = createContext<OutlinerContextProps>({
   regions: null,
 });
 
+type DragOptions = TreeProps<any>['onDrop'];
+
 interface OutlinerTreeProps {
-  regions: any;
+  regions: Atom<Region>[];
+  group: Regions['group'];
   selectedKeys: string[];
 }
 
 const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
   regions,
+  group,
   selectedKeys,
 }) => {
   const rootClass = cn('tree');
@@ -68,7 +74,7 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
       <OutlinerContext.Provider value={{ regions }}>
         <Block name="outliner-tree">
           <Tree
-            draggable={regions.group === 'manual'}
+            draggable={group === 'manual'}
             multiple
             defaultExpandAll={true}
             defaultExpandParent={false}
@@ -97,7 +103,7 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
       <OutlinerContext.Provider value={{ regions }}>
         <Block name="outliner-tree">
           <Tree
-            draggable={regions.group === 'manual'}
+            draggable={group === 'manual'}
             multiple
             defaultExpandAll
             defaultExpandParent
@@ -122,7 +128,12 @@ const useDataTree = ({
   hovered,
   rootClass,
   selectedKeys,
-}: any) => {
+}: {
+  regions: Atom<Region>[],
+  hovered: string | null,
+  rootClass: CN,
+  selectedKeys: string[],
+}) => {
   const processor = useCallback((item: any, idx, _false, _null, _onClick) => {
     const { id, type, hidden, isDrawing } = item ?? {};
     const style = item?.background ?? item?.getOneColor?.();
@@ -221,7 +232,7 @@ const useEventHandlers = ({
     return 1 + Math.max(...childrenHeight);
   }, []);
 
-  const onDrop = useCallback(({ node, dragNode, dropPosition, dropToGap }) => {
+  const onDrop = useCallback<DragOptions>(({ node, dragNode, dropPosition, dropToGap }) => {
     if (node.classification) return false;
     const dropKey = node.props.eventKey;
     const dragKey = dragNode.props.eventKey;
@@ -514,4 +525,4 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
 });
 
 
-export const OutlinerTree = observer(OutlinerTreeComponent);
+export const OutlinerTree = OutlinerTreeComponent;

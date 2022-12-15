@@ -43,6 +43,14 @@ type Setter<T = any> = {
 const STORE_GET = Symbol('store.get');
 const STORE_SET = Symbol('store.set');
 
+/**
+ * Store gives external world access to the atoms inside the app
+ * It is initialized once at the very beginning of the app initialization
+ * It is used by the SDK to access the atoms both internally and externally
+ * See more in:
+ *  - src/code/SDK/Internal/Internal.sdk.ts
+ *  - src/code/SDK/External/External.sdk.ts
+ */
 export class Store {
   // private members
   private [STORE_GET]: WriteGetter | null = null;

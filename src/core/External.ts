@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { Annotation } from '../Atoms/AnnotationsAtom/Types';
+import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
 
 /**
  * Callback on submit annotation

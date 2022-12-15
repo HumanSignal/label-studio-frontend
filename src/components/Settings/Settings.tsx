@@ -9,9 +9,9 @@ import './Settings.styl';
 
 import { useAtom } from 'jotai';
 import { useMemo } from 'react';
-import { useAnnotationsNames } from '../../Atoms/AnnotationsAtom/Hooks';
-import { useSettings } from '../../Atoms/SettingsAtom/Hooks';
-import { SettingsVisibilityAtom } from '../../Atoms/SettingsAtom/SettingsAtom';
+import { useAnnotationsNames } from '@atoms/Models/AnnotationsAtom/Hooks';
+import { useSettings } from '@atoms/Models/SettingsAtom/Hooks';
+import { SettingsVisibilityAtom } from '@atoms/Models/SettingsAtom/SettingsAtom';
 import EditorSettings from '../../core/settings/editorsettings';
 import * as TagSettings from './TagSettings';
 

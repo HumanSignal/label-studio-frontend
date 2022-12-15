@@ -4,8 +4,8 @@ import { Block, Elem } from '../../utils/bem';
 import { DetailsPanel } from './DetailsPanel/DetailsPanel';
 import { OutlinerPanel } from './OutlinerPanel/OutlinerPanel';
 
-import { useRegions } from '@atoms/AnnotationsAtom/Hooks';
-import { Annotation, AnnotationHistoryItem, Prediction } from '@atoms/AnnotationsAtom/Types';
+import { useRegions } from '@atoms/Models/AnnotationsAtom/Hooks';
+import { Annotation, AnnotationHistoryItem, Prediction } from '@atoms/Models/AnnotationsAtom/Types';
 import { IconDetails, IconHamburger } from '../../assets/icons';
 import { useMedia } from '../../hooks/useMedia';
 import ResizeObserver from '../../utils/resize-observer';
@@ -14,7 +14,7 @@ import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH
 import { PanelProps } from './PanelBase';
 import './SidePanels.styl';
 import { SidePanelsContext } from './SidePanelsContext';
-import { Atom } from 'jotai';
+import { Atom, useAtomValue } from 'jotai';
 
 const maxWindowWidth = 980;
 
@@ -82,6 +82,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   children,
 }) => {
   const snapTreshold = 5;
+  const entity = useAtomValue(currentEntity);
   const regions = useRegions(currentEntity);
   const viewportSize = useRef({ width: 0, height: 0 });
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
@@ -283,7 +284,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     return {
       ...eventHandlers,
       root: rootRef,
-      regions,
+      regions: entity.regions,
       selection: regions.selection,
       currentEntity,
     };

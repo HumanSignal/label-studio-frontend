@@ -1,4 +1,4 @@
-import { Store } from '../../Data/Store';
+import { Store } from './Store';
 
 export class StoreAccess {
   store: Store;

@@ -6,6 +6,8 @@
     "checkJs": false,
     "jsx": "preserve",
     "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
     "rootDirs": ["./src"],
     "typeRoots": ["./types", "./node_modules/@types"],
     "esModuleInterop": true,

@@ -3,11 +3,11 @@ import {
   SelectedAnnotationAtom,
   SelectedAnnotationHistoryAtom,
   ViewingAllAtom
-} from '@atoms/AnnotationsAtom/AnnotationsAtom';
-import { Annotation, AnnotationHistoryItem, Prediction } from '@atoms/AnnotationsAtom/Types';
-import { useInterfaces } from '@atoms/RootAtom/Hooks';
-import { InstructionsAtom, RootAtom, TaskAtom } from '@atoms/RootAtom/RootAtom';
-import { SettingsAtom } from '@atoms/SettingsAtom/SettingsAtom';
+} from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
+import { Annotation, AnnotationHistoryItem, Prediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
+import { InstructionsAtom, RootAtom, TaskAtom } from '@atoms/Models/RootAtom/RootAtom';
+import { SettingsAtom } from '@atoms/Models/SettingsAtom/SettingsAtom';
 import { Result, Spin } from 'antd';
 import { Atom, useAtomValue } from 'jotai';
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
@@ -21,7 +21,7 @@ import { SidePanels } from '../SidePanels/SidePanels';
  * Tags
  */
 import { ResultStatusType } from 'antd/lib/result';
-import { MessagesAtom } from '../../Atoms/MessagesAtom';
+import { MessagesAtom } from '@atoms/MessagesAtom';
 import messages from '../../utils/messages';
 
 export const App = () => {
