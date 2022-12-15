@@ -76,9 +76,9 @@ import { Tool } from '../components/Toolbar/Tool';
 const ToolView = observer(({ item }) => {
   return (
     <Tool
-      label="Magic Wand"
-      ariaLabel="magicwand"
-      shortcut="W"
+      label='Magic Wand'
+      ariaLabel='magicwand'
+      shortcut='W'
       active={item.selected}
       icon={item.iconClass}
       tool={item}
@@ -393,7 +393,7 @@ const _Tool = types
       self.overlay = image.overlayRef;
       self.overlayOrigStyle = self.overlay.style;
 
-      self.overlay.style = "";
+      self.overlay.style = '';
       self.overlay.width = self.transformedCanvas.width;
       self.overlay.height = self.transformedCanvas.height;
       self.overlayCtx = self.overlay.getContext('2d');
@@ -571,7 +571,7 @@ const _Tool = types
     commitDrawingRegion(maskDataURL) {
       const value = {
         maskDataURL,
-        coordstype: "px",
+        coordstype: 'px',
         dynamic: false,
       };
       const newRegion = self.annotation.createResult(value,

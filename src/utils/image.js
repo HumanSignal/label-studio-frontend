@@ -230,7 +230,7 @@ export function getTransformedImageData(img,
     canvasHeight = viewportHeight;
   }
 
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
 
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
@@ -281,7 +281,7 @@ export function getTransformedImageData(img,
   try {
     transformedData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   } catch (err) {
-    const msg = "Please configure CORS cross-domain headers correctly for getting image labeling data";
+    const msg = 'Please configure CORS cross-domain headers correctly for getting image labeling data';
 
     alert(msg);
     console.error(msg);

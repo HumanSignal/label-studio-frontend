@@ -26,7 +26,7 @@ function mask2DataURL(singleChannelData, nw, nh, color) {
 // given an RGBA image data URL, turn it into an actual DOM Image filled in with the current
 // class color.
 function maskDataURL2Image(maskDataURL, { color = Constants.FILL_COLOR } = {}) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _reject) => {
     const img = document.createElement('img');
 
     img.onload = () => {
