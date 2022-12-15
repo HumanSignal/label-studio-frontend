@@ -99,7 +99,8 @@ export const TimeBox: FC<TimerProps> = ({
     setInputSelectionStart(selectionStart);
 
     input = input.replace(/\D/g, '')
-      .replace(/(\d{2})(\d{2})(\d)/, '$1:$2:$3');
+      .replace(/(\d{2})(\d)/, '$1:$2')
+      .replace(/(\d{2})(\d)/, '$1:$2');
 
     setCurrentInputTime(input);
   };
