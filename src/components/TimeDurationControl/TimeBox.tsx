@@ -35,7 +35,7 @@ export const TimeBox: FC<TimerProps> = ({
 
   const formatPosition = useCallback((time: number): string => {
     const roundedFps = Math.round(999).toString();
-    const fpsMs = 1000 / 999;
+    const fpsMs = 1;
     const currentSecond = (time * 1000) % 1000;
     const result = Math.round(currentSecond / fpsMs).toString();
 
