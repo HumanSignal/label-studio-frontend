@@ -7,7 +7,7 @@ import * as Examples from './examples';
  */
 // import { AllTypes } from "../examples/all_types";
 
-const example = Examples.Empty;
+const example = Examples.RichTextHtml;
 
 /**
  * Get current config

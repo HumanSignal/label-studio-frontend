@@ -1,21 +1,20 @@
+import { Region, Regions } from '@atoms/Models/RegionsAtom/Types';
 import chroma from 'chroma-js';
-import { observer } from 'mobx-react';
+import { Atom } from 'jotai';
 import Tree, { TreeProps } from 'rc-tree';
 import { createContext, FC, MouseEvent, useCallback, useContext, useMemo, useState } from 'react';
 import { IconLockLocked, IconLockUnlocked, IconWarning, LsSparks } from '../../../assets/icons';
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
 import { IconArrow } from '../../../assets/icons/tree';
 import { Button, ButtonProps } from '../../../common/Button/Button';
+import { Tooltip } from '../../../common/Tooltip/Tooltip';
 import Registry from '../../../core/Registry';
 import { PER_REGION_MODES } from '../../../mixins/PerRegionModes';
 import { Block, CN, cn, Elem } from '../../../utils/bem';
+import { FF_DEV_2755, isFF } from '../../../utils/feature-flags';
 import { flatten, isDefined, isMacOS } from '../../../utils/utilities';
 import { NodeIcon } from '../../Node/Node';
-import { FF_DEV_2755, isFF } from '../../../utils/feature-flags';
-import { Tooltip } from '../../../common/Tooltip/Tooltip';
 import './TreeView.styl';
-import { Region, Regions } from '@atoms/Models/RegionsAtom/Types';
-import { Atom } from 'jotai';
 
 const { localStorage } = window;
 const localStoreName = 'collapsed-label-pos';
@@ -36,7 +35,7 @@ interface OutlinerTreeProps {
   selectedKeys: string[];
 }
 
-const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
+export const OutlinerTree: FC<OutlinerTreeProps> = ({
   regions,
   group,
   selectedKeys,
@@ -84,8 +83,8 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
             className={rootClass.toClassName()}
             treeData={regionsTree}
             selectedKeys={selectedKeys}
-            icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
-            switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
+            icon={({ entity }: any) => <NodeIcon node={entity}/>}
+            switcherIcon={({ isLeaf }: any) => isLeaf ? null : <IconArrow/>}
             expandedKeys={expandedKeys}
             onExpand={( internalExpandedKeys, { node } ) => {
               const region = regionsTree.find((region: any) => region.key === node.key);
@@ -113,8 +112,8 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
             className={rootClass.toClassName()}
             treeData={regionsTree}
             selectedKeys={selectedKeys}
-            icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
-            switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
+            icon={({ entity }: any) => <NodeIcon node={entity}/>}
+            switcherIcon={({ isLeaf }: any) => isLeaf ? null : <IconArrow/>}
             {...eventHandlers}
           />
         </Block>
@@ -291,15 +290,7 @@ const useEventHandlers = ({
   };
 };
 
-const SwitcherIcon: FC<any> = observer(({ isLeaf }) => {
-  return isLeaf ? null : <IconArrow/>;
-});
-
-const NodeIconComponent: FC<any> = observer(({ node }) => {
-  return node ? <NodeIcon node={node}/> : null;
-});
-
-const RootTitle: FC<any> = observer(({
+const RootTitle: FC<any> = ({
   item,
   hovered,
   label,
@@ -317,7 +308,7 @@ const RootTitle: FC<any> = observer(({
     return controls.length > 0;
   }, [controls.length]);
 
-  const toggleCollapsed = useCallback((e) => {
+  const toggleCollapsed = useCallback((e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setCollapsed(!collapsed);
@@ -361,7 +352,7 @@ const RootTitle: FC<any> = observer(({
       )}
     </Block>
   );
-});
+};
 
 interface RegionControlsProps {
   item: any;
@@ -374,7 +365,7 @@ interface RegionControlsProps {
   toggleCollapsed: (e: any) => void;
 }
 
-const RegionControls: FC<RegionControlsProps> = observer(({
+const RegionControls: FC<RegionControlsProps> = ({
   hovered,
   item,
   entity,
@@ -452,7 +443,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
       )}
     </Elem>
   );
-});
+};
 
 const RegionControlButton: FC<ButtonProps> = ({ children, onClick, ...props }) => {
   return (
@@ -478,7 +469,7 @@ interface RegionItemOCSProps {
   setCollapsed: (value: boolean) => void;
 }
 
-const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
+const RegionItemDesc: FC<RegionItemOCSProps> = ({
   item,
   collapsed,
   setCollapsed,
@@ -486,7 +477,7 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
 }) => {
   const controls: any[] = item.perRegionDescControls || [];
 
-  const onClick = useCallback((e) => {
+  const onClick = useCallback((e: MouseEvent) => {
     e.stopPropagation();
 
     if (!selected) {
@@ -522,7 +513,4 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
       </Elem>
     </Block>
   );
-});
-
-
-export const OutlinerTree = OutlinerTreeComponent;
+};

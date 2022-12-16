@@ -20,9 +20,10 @@ import { SidePanels } from '../SidePanels/SidePanels';
 /**
  * Tags
  */
-import { ResultStatusType } from 'antd/lib/result';
 import { MessagesAtom } from '@atoms/MessagesAtom';
+import { ResultStatusType } from 'antd/lib/result';
 import messages from '../../utils/messages';
+import './App.styl';
 
 export const App = () => {
   const {

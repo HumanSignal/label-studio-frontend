@@ -1,6 +1,5 @@
 import { useRegionsOrder } from '@atoms/Models/RegionsAtom/Hooks';
 import { useAtomValue } from 'jotai';
-import { observer } from 'mobx-react';
 import { FC } from 'react';
 import { Elem } from '../../../utils/bem';
 import { PanelBase, PanelProps } from '../PanelBase';
@@ -8,7 +7,7 @@ import './OutlinerPanel.styl';
 import { OutlinerTree } from './OutlinerTree';
 import { ViewControls } from './ViewControls';
 
-const OutlinerPanelComponent: FC<PanelProps> = (props) => {
+export const OutlinerPanel: FC<PanelProps> = (props) => {
   const regionsOrder = useRegionsOrder(props.regions);
 
   const {
@@ -39,5 +38,3 @@ const OutlinerPanelComponent: FC<PanelProps> = (props) => {
     </PanelBase>
   );
 };
-
-export const OutlinerPanel = observer(OutlinerPanelComponent);

@@ -1,11 +1,11 @@
-import { observer } from 'mobx-react';
-import { CSSProperties, FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, FC, Fragment, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
 import { DetailsPanel } from './DetailsPanel/DetailsPanel';
 import { OutlinerPanel } from './OutlinerPanel/OutlinerPanel';
 
 import { useRegions } from '@atoms/Models/AnnotationsAtom/Hooks';
 import { Annotation, AnnotationHistoryItem, Prediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { Atom, useAtomValue } from 'jotai';
 import { IconDetails, IconHamburger } from '../../assets/icons';
 import { useMedia } from '../../hooks/useMedia';
 import ResizeObserver from '../../utils/resize-observer';
@@ -14,14 +14,13 @@ import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH
 import { PanelProps } from './PanelBase';
 import './SidePanels.styl';
 import { SidePanelsContext } from './SidePanelsContext';
-import { Atom, useAtomValue } from 'jotai';
 
 const maxWindowWidth = 980;
 
 interface SidePanelsProps {
   panelsHidden: boolean;
   currentEntity: Atom<Annotation | Prediction | AnnotationHistoryItem>;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 interface PanelBBox {
@@ -76,7 +75,7 @@ const panelView: Record<PanelType, PanelView> = {
   },
 };
 
-const SidePanelsComponent: FC<SidePanelsProps> = ({
+export const SidePanels: FC<SidePanelsProps> = ({
   currentEntity,
   panelsHidden,
   children,
@@ -443,4 +442,4 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   );
 };
 
-export const SidePanels = observer(SidePanelsComponent);
+

@@ -1,7 +1,7 @@
 import { Atom, atom } from 'jotai';
 import { guidGenerator } from '../../../utils/unique';
-import { StoreAccess } from '../../StoreAccess';
 import { AnnotationInput, PredictionInput } from '../../Inputs/AnnotationInput';
+import { StoreAccess } from '../../StoreAccess';
 import { Regions } from '../RegionsAtom/Types';
 import { AnnotationsAtom, AnnotationsListAtom, SelectedAnnotationAtom } from './AnnotationsAtom';
 import { Annotation, EntityType, Prediction } from './Types';
@@ -10,6 +10,9 @@ import { Annotation, EntityType, Prediction } from './Types';
  * Operates on the AnnotationStore
  */
 export class AnnotationModel extends StoreAccess {
+  /**
+   * List all the annotations
+   */
   get annotations() {
     const annotationsAtom = this.store.get(AnnotationsListAtom);
 
@@ -27,6 +30,9 @@ export class AnnotationModel extends StoreAccess {
     this.store.set(SelectedAnnotationAtom, annotaionAtom);
   }
 
+  /**
+   * Finds the first annotation in the list and selects it if exists
+   */
   selectFirstAnnotation() {
     const annotation = this.annotations.at(0);
 
@@ -50,15 +56,15 @@ export class AnnotationModel extends StoreAccess {
     const predictionsAtoms = predictions.map((prediction) =>
       this.createEntity(prediction, 'prediction') as Atom<Prediction>);
 
-    this.store.set(AnnotationsAtom, (state) => {
-      return {
-        ...state,
-        annotations: annotationsAtoms,
-        predictions: predictionsAtoms,
-      };
+    this.store.patch(AnnotationsAtom, {
+      annotations: annotationsAtoms,
+      predictions: predictionsAtoms,
     });
   }
 
+  /**
+   * Creates a new annotation atom
+   */
   private createEntity({ id, ...raw }: AnnotationInput | PredictionInput, type: EntityType) {
     const annotation = atom<Annotation | Prediction>({
       id: id ?? guidGenerator(),
@@ -71,6 +77,9 @@ export class AnnotationModel extends StoreAccess {
     return annotation;
   }
 
+  /**
+   * Creates a new regions atom
+   */
   private createRegionsAtom() {
     return atom<Regions>({
       regions: [],

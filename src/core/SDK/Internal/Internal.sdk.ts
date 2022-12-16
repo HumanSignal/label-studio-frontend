@@ -1,55 +1,36 @@
-import { User } from '@atoms/UsersAtom';
+import { RootStoreInput } from '@atoms/Inputs/RootStore';
 import { TaskInput } from '@atoms/Inputs/TaskInput';
-import { RootAtom } from '@atoms/Models/RootAtom/RootAtom';
-import { Store } from '@atoms/Store';
 import { AnnotationModel } from '@atoms/Models/AnnotationsAtom/Model';
+import { RootModel } from '@atoms/Models/RootAtom/Model';
+import { Store } from '@atoms/Store';
 import { StoreAccess } from '@atoms/StoreAccess';
-
-type Hydrate = {
-  interfaces?: string[],
-  description?: string,
-  user?: User,
-  users?: User[],
-  task?: TaskInput,
-  taskHistory?: any,
-  config?: string,
-}
+import { ConfigTree } from 'src/core/ConfigTree/ConfigTree';
 
 class InternalSDK extends StoreAccess {
+  root: RootModel;
   annotations: AnnotationModel;
+  tree!: ConfigTree;
 
   constructor(store: Store) {
     super(store);
+    this.root = new RootModel(store);
     this.annotations = new AnnotationModel(store);
   }
 
-  hydrate(data: Hydrate) {
-    console.log('Hydrate');
+  hydrate(data: RootStoreInput) {
+    console.log('RootStoreInput');
 
     this.hydrateRoot(data);
     this.hydrateAnnotations(data.task);
+    this.tree = new ConfigTree(data.config ?? '');
+    this.tree.parse();
+
+    this.tree.walkTree(node => console.log(node));
+    this.annotations.selectFirstAnnotation();
   }
 
-  private hydrateRoot(data: Hydrate) {
-    const { interfaces, description, taskHistory, task, user, users } = data;
-
-    const taskData = task && ((task.data && !(typeof task.data === 'string'))
-      ? JSON.stringify(task.data)
-      : task.data) || '';
-
-    this.store.patch(RootAtom, {
-      task: {
-        id: task?.id ?? 0,
-        queue: task?.queue ?? '',
-        data: taskData,
-      },
-      config: data.config ?? '',
-      interfaces: interfaces ?? [],
-      description: description ?? '',
-      taskHistory: taskHistory ?? [],
-      user,
-      users: users ?? [],
-    });
+  private hydrateRoot(data: RootStoreInput) {
+    this.root.hydrate(data);
   }
 
   private hydrateAnnotations(task?: TaskInput) {

@@ -1,6 +1,5 @@
 declare module '*.xml' {
-  const value: SvgrComponent;
+  const value: string;
 
   export default value;
-  export const ReactComponent = value;
 }

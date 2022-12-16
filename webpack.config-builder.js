@@ -221,6 +221,21 @@ const devServer = () => {
   } : {};
 };
 
+const aliases = () => {
+  const config = require("./tsconfig.base.json");
+  const basePathConfig = require("./tsconfig.json").compilerOptions.baseUrl;
+  const basePath = path.resolve(__dirname, basePathConfig);
+
+  const aliasesArray = Object.entries(config.compilerOptions.paths).map(([key, value]) => {
+    return [
+      key.replace("/*", ""),
+      path.resolve(basePath, value[0].replace("/*", ""))
+    ];
+  });
+
+  return Object.fromEntries(aliasesArray);
+}
+
 const plugins = [
   new Dotenv({
     path: "./.env",
@@ -289,9 +304,7 @@ module.exports = ({withDevServer = true} = {}) => ({
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
     alias: {
-      "@components": path.resolve(__dirname, "src/components"),
-      "@hooks": path.resolve(__dirname, "src/hooks"),
-      "@atoms": path.resolve(__dirname, "src/Atoms")
+      ...aliases(),
     },
   },
   plugins: withDevServer ? [

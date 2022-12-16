@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@components/*": ["src/components/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@atoms/*": ["src/Atoms/*"],
+      "@examples/*": ["examples/*"],
+      "src/*": ["src/*"]
+    }
+  }
+}

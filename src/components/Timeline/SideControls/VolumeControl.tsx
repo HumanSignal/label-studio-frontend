@@ -1,7 +1,7 @@
 import { CSSProperties, FC, useMemo, useRef } from 'react';
 import { IconVolumeFull, IconVolumeHalf, IconVolumeMute } from '../../../assets/icons';
 import { Range } from '../../../common/Range/Range';
-import { WS_VOLUME } from '../../../tags/object/AudioNext/constants';
+import { WS_VOLUME } from '../../../_tags/object/AudioNext/constants';
 import { TimelineSideControlProps } from '../Types';
 
 export const AudioVolumeControl: FC<TimelineSideControlProps> = ({
