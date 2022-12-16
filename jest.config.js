@@ -7,6 +7,12 @@ module.exports = {
   'preset': 'ts-jest',
   'testEnvironment': 'jsdom',
   'verbose': false,
+  'collectCoverageFrom': [
+    '**/*.{js,jsx,ts,tsx}',
+    '!**/*.d.ts',
+    '!**/node_modules/**',
+    '!**/examples/**',
+  ],
   'coverageDirectory': 'coverage',
   'coverageReporters': ['json'],
   'coverageThreshold': {
