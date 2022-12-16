@@ -1,4 +1,7 @@
 <View>
+  <Header>
+    Hello world!
+  </Header>
   <HyperTextLabels name="ner" toName="text">
     <Label value="Person"></Label>
     <Label value="Organization"></Label>

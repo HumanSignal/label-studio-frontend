@@ -9,7 +9,7 @@ import { Annotation, EntityType, Prediction } from './Types';
 /**
  * Operates on the AnnotationStore
  */
-export class AnnotationModel extends StoreAccess {
+export class AnnotationController extends StoreAccess {
   /**
    * List all the annotations
    */

@@ -10,12 +10,10 @@ import defaultOptions from './defaultOptions';
 import { EventInvoker } from './utils/events';
 import { isDefined } from './utils/utilities';
 // import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
-import { App } from './components/App/AppNew';
-import { DataStore } from './components/App/DataStore';
 import { Store } from '@atoms/Store';
+import { App } from './App';
 import { InternalSDK } from './core/SDK/Internal/Internal.sdk';
 import { LSOptions } from './Types/LabelStudio/LabelStudio';
-import { StrictMode } from 'react';
 
 configure({
   isolateGlobalState: true,
@@ -65,10 +63,6 @@ export class LabelStudio {
     LabelStudio.instances.add(this);
   }
 
-  get internalSDK() {
-    return this[INTERNAL_SDK];
-  }
-
   on(eventName: string, callback: () => void) {
     this.events.on(eventName, callback);
   }
@@ -99,13 +93,7 @@ export class LabelStudio {
       });
     };
 
-    appRoot.render((
-      <StrictMode>
-        <DataStore store={store} afterInit={hydrateStore}>
-          <App/>
-        </DataStore>
-      </StrictMode>
-    ));
+    appRoot.render(<App store={store} sdk={internalSDK} afterInit={hydrateStore}/>);
 
     this[INTERNAL_SDK] = internalSDK;
 
@@ -131,5 +119,10 @@ export class LabelStudio {
         this.events.on(eventName, callback);
       }
     });
+  }
+
+
+  get internalSDK() {
+    return this[INTERNAL_SDK];
   }
 }

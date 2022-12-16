@@ -13,13 +13,6 @@
     "typeRoots": ["./types", "./node_modules/@types"],
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
-    "paths": {
-      "@components/*": ["src/components/*"],
-      "@hooks/*": ["src/hooks/*"],
-      "@atoms/*": ["src/Atoms/*"],
-      "@examples/*": ["examples/*"]
-    }
+    "forceConsistentCasingInFileNames": true
   }
 }

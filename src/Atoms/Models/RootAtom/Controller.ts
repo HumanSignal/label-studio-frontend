@@ -2,7 +2,7 @@ import { RootStoreInput } from '@atoms/Inputs/RootStore';
 import { StoreAccess } from '@atoms/StoreAccess';
 import { RootAtom } from './RootAtom';
 
-export class RootModel extends StoreAccess {
+export class RootController extends StoreAccess {
   hydrate(input: RootStoreInput): void {
     const { interfaces, description, taskHistory, task: taskRaw, user, users } = input;
 

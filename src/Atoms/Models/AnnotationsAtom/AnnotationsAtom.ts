@@ -32,6 +32,17 @@ export const SelectedAnnotationHistoryAtom = focusAtom(AnnotationsAtom, (optic) 
 });
 
 /**
+ * Represents the currently selected annotation or prediction or annotation history item.
+ */
+export const SelectedAnnotationEntityAtom = atom(get => {
+  const selectedAnnotation = get(SelectedAnnotationAtom);
+  const selectedAnnotationHistory = get(SelectedAnnotationHistoryAtom);
+
+  return selectedAnnotationHistory || selectedAnnotation;
+});
+
+
+/**
  * Wether or not the user is in View All mode.
  */
 export const ViewingAllAtom = atom((get=> {

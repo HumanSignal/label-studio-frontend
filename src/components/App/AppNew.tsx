@@ -23,9 +23,10 @@ import { SidePanels } from '../SidePanels/SidePanels';
 import { MessagesAtom } from '@atoms/MessagesAtom';
 import { ResultStatusType } from 'antd/lib/result';
 import messages from '../../utils/messages';
+import { AnnotationView } from './Annotation';
 import './App.styl';
 
-export const App = () => {
+export const AppRoot = () => {
   const {
     fullscreen,
     bottomSidePanel,
@@ -100,9 +101,9 @@ const MainView: FC<MainViewProps> = ({
   selectedHistoryAtom,
   ...props
 }) => {
-  if (!selectedAnnotationAtom && !selectedHistoryAtom) return null;
+  if (!(selectedAnnotationAtom || selectedHistoryAtom)) return null;
 
-  const selectedHistory =  selectedHistoryAtom ? useAtomValue(selectedHistoryAtom) : null;
+  const selectedHistory = selectedHistoryAtom ? useAtomValue(selectedHistoryAtom) : null;
   const selectedAnnotation = selectedAnnotationAtom ? useAtomValue(selectedAnnotationAtom) : null;
   const selectedEntity = selectedHistory ?? selectedAnnotation;
 
@@ -126,7 +127,10 @@ const MainView: FC<MainViewProps> = ({
           onScrollCapture={notifyScroll}
         >
           <Elem name="annotation">
-            {/* {<Annotation root={root} annotation={as.selected} />} */}
+            <AnnotationView
+              annotationAtom={selectedAnnotationAtom}
+              historyItemAtom={selectedHistoryAtom}
+            />
             {/* <RelationsOverlay
               key={guidGenerator()}
               store={store}
