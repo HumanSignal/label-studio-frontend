@@ -5,6 +5,20 @@ const { recorder, event, output } = require('codeceptjs');
 const Container = require('codeceptjs/lib/container');
 const { clearString } = require('codeceptjs/lib/utils');
 
+function hashCode(str) {
+  let hash = 0;
+
+  if (str.length === 0) {
+    return hash + '';
+  }
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash.toString(16);
+}
 
 const defaultConfig = {
   coverageDir: 'output/coverage',
@@ -15,6 +29,7 @@ const supportedHelpers = ['Puppeteer', 'Playwright'];
 
 function buildFileName(test, uniqueFileName) {
   let fileName = clearString(test.title);
+  const originalName = fileName;
 
   // This prevent data driven to be included in the failed screenshot file name
   if (fileName.indexOf('{') !== -1) {
@@ -26,11 +41,9 @@ function buildFileName(test, uniqueFileName) {
   }
 
   if (uniqueFileName) {
-    const uuid = test.uuid
-      || test.ctx.test.uuid
-      || Math.floor(new Date().getTime() / 1000);
+    const uuid = hashCode(originalName);
 
-    fileName = `${fileName.substring(0, 10)}_${uuid}.coverage.json`;
+    fileName = `${fileName.substring(0, 15)}_${uuid}.coverage.json`;
   } else {
     fileName = `${fileName}.coverage.json`;
   }

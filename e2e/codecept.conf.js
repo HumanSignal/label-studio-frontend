@@ -69,14 +69,16 @@ module.exports.config = {
         'have*',
       ],
     },
-    coverage: {
-      enabled: true,
-      coverageDir: 'output/coverage',
-    },
-    // istanbulCoverage: {
-    //   require: './plugins/istanbulСoverage.js',
+    // coverage: {
     //   enabled: true,
+    //   coverageDir: 'output/coverage',
     // },
+    istanbulCoverage: {
+      require: './plugins/istanbulСoverage.js',
+      enabled: true,
+      uniqueFileName: true,
+      coverageDir: '../coverage',
+    },
     screenshotOnFail: {
       enabled: true,
     },
