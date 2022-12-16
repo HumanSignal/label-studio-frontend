@@ -3,7 +3,7 @@ import VideoProperties from '../../../core/settings/videosettings';
 import { SettingsRenderer } from './SettingsRenderer';
 import { Settings } from './Types';
 
-const VideoSettingsPure: Settings = ({ store }) => {
+const VideoSettingsPure: Settings<any> = ({ store }) => {
   return (
     <SettingsRenderer
       store={store}

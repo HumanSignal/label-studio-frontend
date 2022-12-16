@@ -1,9 +1,11 @@
-import { observer } from 'mobx-react';
-import { CSSProperties, FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, FC, Fragment, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
 import { DetailsPanel } from './DetailsPanel/DetailsPanel';
 import { OutlinerPanel } from './OutlinerPanel/OutlinerPanel';
 
+import { useRegions } from '@atoms/Models/AnnotationsAtom/Hooks';
+import { Annotation, AnnotationHistoryItem, Prediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { Atom, useAtomValue } from 'jotai';
 import { IconDetails, IconHamburger } from '../../assets/icons';
 import { useMedia } from '../../hooks/useMedia';
 import ResizeObserver from '../../utils/resize-observer';
@@ -17,8 +19,8 @@ const maxWindowWidth = 980;
 
 interface SidePanelsProps {
   panelsHidden: boolean;
-  store: any;
-  currentEntity: any;
+  currentEntity: Atom<Annotation | Prediction | AnnotationHistoryItem>;
+  children: ReactNode;
 }
 
 interface PanelBBox {
@@ -73,13 +75,14 @@ const panelView: Record<PanelType, PanelView> = {
   },
 };
 
-const SidePanelsComponent: FC<SidePanelsProps> = ({
+export const SidePanels: FC<SidePanelsProps> = ({
   currentEntity,
   panelsHidden,
   children,
 }) => {
   const snapTreshold = 5;
-  const regions = currentEntity.regionStore;
+  const entity = useAtomValue(currentEntity);
+  const regions = useRegions(currentEntity);
   const viewportSize = useRef({ width: 0, height: 0 });
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [panelMaxWidth, setPanelMaxWidth] = useState(DEFAULT_PANEL_MAX_WIDTH);
@@ -280,11 +283,11 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     return {
       ...eventHandlers,
       root: rootRef,
-      regions,
+      regions: entity.regions,
       selection: regions.selection,
       currentEntity,
     };
-  }, [eventHandlers, rootRef, regions, regions.selectio, currentEntity]);
+  }, [eventHandlers, rootRef, regions, regions.selection, currentEntity]);
 
   const padding = useMemo(() => {
     const result = {
@@ -439,4 +442,4 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   );
 };
 
-export const SidePanels = observer(SidePanelsComponent);
+

@@ -194,12 +194,12 @@ function attrsToProps(node: Element, replaces?: Record<string, string>): Record<
 
 /**
  *
- * @param {string} html
+ * @param {string} xml
  */
-function treeToModel(html: string, store: { task: { dataObj: Record<string, any> }}): ConfigNode {
+export function parseFromString(xml: string, store: { task: { dataObj: Record<string, any> }}): ConfigNode {
   const parser = new DOMParser();
 
-  const doc = parser.parseFromString(html, 'application/xml');
+  const doc = parser.parseFromString(xml, 'application/xml');
 
   const root = doc?.children?.[0];
   const parserError = detectParseError(doc);
@@ -209,16 +209,6 @@ function treeToModel(html: string, store: { task: { dataObj: Record<string, any>
   }
 
   return tagIntoObject(root, store.task?.dataObj ?? {});
-
-  // this.serializer = new XMLSerializer();
-
-  // this.initRoot();
-
-  // const root = buildData(Object.values(document)[0]);
-
-  // root.children = addNode(Object.values(document)[0]);
-
-  // return root;
 }
 
 /**

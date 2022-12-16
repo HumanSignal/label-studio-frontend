@@ -1,4 +1,5 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
@@ -6,10 +7,19 @@
     "checkJs": false,
     "jsx": "preserve",
     "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
     "rootDirs": ["./src"],
     "typeRoots": ["./types", "./node_modules/@types"],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@components/*": ["src/components/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@atoms/*": ["src/Atoms/*"],
+      "@examples/*": ["examples/*"]
+    }
   }
 }

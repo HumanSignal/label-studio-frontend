@@ -7,6 +7,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 const ESLintPlugin = require('eslint-webpack-plugin');
+
 const { EnvironmentPlugin, DefinePlugin } = require("webpack");
 
 const workingDirectory = process.env.WORK_DIR
@@ -152,6 +153,7 @@ const babelLoader = {
       "@babel/plugin-proposal-class-properties",
       "@babel/plugin-proposal-optional-chaining",
       "@babel/plugin-proposal-nullish-coalescing-operator",
+      "jotai/babel/plugin-debug-label",
     ],
     ...babelOptimizeOptions(),
   },
@@ -219,6 +221,21 @@ const devServer = () => {
   } : {};
 };
 
+const aliases = () => {
+  const config = require("./tsconfig.base.json");
+  const basePathConfig = require("./tsconfig.json").compilerOptions.baseUrl;
+  const basePath = path.resolve(__dirname, basePathConfig);
+
+  const aliasesArray = Object.entries(config.compilerOptions.paths).map(([key, value]) => {
+    return [
+      key.replace("/*", ""),
+      path.resolve(basePath, value[0].replace("/*", ""))
+    ];
+  });
+
+  return Object.fromEntries(aliasesArray);
+}
+
 const plugins = [
   new Dotenv({
     path: "./.env",
@@ -276,7 +293,7 @@ module.exports = ({withDevServer = true} = {}) => ({
   ...(withDevServer ? devServer() : {}),
   entry: {
     main: [
-      path.resolve(__dirname, "src/index.js"),
+      path.resolve(__dirname, "src/index.ts"),
     ],
   },
   output: {
@@ -286,6 +303,9 @@ module.exports = ({withDevServer = true} = {}) => ({
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
+    alias: {
+      ...aliases(),
+    },
   },
   plugins: withDevServer ? [
     ...plugins,

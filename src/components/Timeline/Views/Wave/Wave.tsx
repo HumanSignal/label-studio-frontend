@@ -1,22 +1,21 @@
-import { CSSProperties, FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { Block, Elem } from '../../../../utils/bem';
-import { TimelineContext } from '../../Context';
-import { TimelineContextValue, TimelineViewProps } from '../../Types';
+import { CSSProperties, FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
-import './Wave.styl';
+import CursorPlugin from 'wavesurfer.js/src/plugin/cursor';
 import RegionsPlugin from 'wavesurfer.js/src/plugin/regions';
 import TimelinePlugin from 'wavesurfer.js/src/plugin/timeline';
-import { formatTimeCallback, secondaryLabelInterval, timeInterval } from './Utils';
-import { clamp, isDefined, isMacOS } from '../../../../utils/utilities';
-import { Range } from '../../../../common/Range/Range';
-import { IconFast, IconSlow, IconZoomIn, IconZoomOut } from '../../../../assets/icons';
-import { Space } from '../../../../common/Space/Space';
-import CursorPlugin from 'wavesurfer.js/src/plugin/cursor';
-import { useMemoizedHandlers } from '../../../../hooks/useMemoizedHandlers';
-import { useMemo } from 'react';
 import { WaveSurferParams } from 'wavesurfer.js/types/params';
+import { IconFast, IconSlow, IconZoomIn, IconZoomOut } from '../../../../assets/icons';
+import { Range } from '../../../../common/Range/Range';
+import { Space } from '../../../../common/Space/Space';
+import { useMemoizedHandlers } from '../../../../hooks/useMemoizedHandlers';
+import { Block, Elem } from '../../../../utils/bem';
 import ResizeObserver from '../../../../utils/resize-observer';
-import { WS_SPEED, WS_ZOOM_X } from '../../../../tags/object/AudioNext/constants';
+import { clamp, isDefined, isMacOS } from '../../../../utils/utilities';
+import { WS_SPEED, WS_ZOOM_X } from '../../../../_tags/object/AudioNext/constants';
+import { TimelineContext } from '../../Context';
+import { TimelineContextValue, TimelineViewProps } from '../../Types';
+import { formatTimeCallback, secondaryLabelInterval, timeInterval } from './Utils';
+import './Wave.styl';
 
 export const Wave: FC<TimelineViewProps> = ({
   position,

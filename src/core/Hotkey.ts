@@ -27,7 +27,7 @@ type HotkeyMap = {
   [key: string]: keymaster.KeyHandler,
 }
 
-type HotkeyNamespace = {
+export type HotkeyNamespace = {
   description: string,
   readonly keys: HotkeyMap,
   readonly descriptions: [string, string][],
