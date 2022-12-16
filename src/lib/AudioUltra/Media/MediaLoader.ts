@@ -6,6 +6,8 @@ export type Options = {
   src: string,
 }
 
+type MediaResponse = {buffer: ArrayBuffer, length: number}|null
+
 export class MediaLoader extends Destructable {
   private wf: Waveform;
   private audio?: WaveformAudio | null;
@@ -31,10 +33,12 @@ export class MediaLoader extends Destructable {
     this.loadingProgressType = 'determinate';
   }
 
-  async decodeAudioData(arrayBuffer: ArrayBuffer) {
+  async decodeAudioData(arrayBuffer: ArrayBuffer, length: number) {
     if (!this.audio?.context || this.isDestroyed) return null;
 
-    return await this.audio.decodeAudioData(arrayBuffer).then((buffer) => {
+    return await this.audio.decodeAudioData(arrayBuffer, length, {
+      multiChannel: (this.wf.params.enabledChannels?.length || 1) > 1,
+    }).then((buffer) => {
       if (this.isDestroyed) return null;
       return buffer;
     });
@@ -46,15 +50,13 @@ export class MediaLoader extends Destructable {
     }
 
     const audio = this.createAnalyzer(options);
-    const xhr = await this.performRequest(this.options.src);
+    const req = await this.performRequest(this.options.src);
 
-    if (xhr.status === 200 && xhr.response) {
-      const playAudio = (buffer: AudioBuffer) => {
-        this.duration = buffer.duration;
-        this.sampleRate = audio.sampleRate ?? buffer.sampleRate;
+    if (req) {
+      const playAudio = (meta: { sampleRate: number, channelCount: number, duration: number}) => {
+        this.duration = meta.duration;
+        this.sampleRate = meta.sampleRate;
         this.loaded = true;
-        audio.buffer = buffer;
-        audio.connect();
         return audio;
       };
 
@@ -63,9 +65,9 @@ export class MediaLoader extends Destructable {
           return Promise.resolve(null);
         }
 
-        return this.decodeAudioData(xhr.response).then((buffer) => {
-          if (buffer) {
-            return playAudio(buffer);
+        return this.decodeAudioData(req.buffer, req.length).then((meta) => {
+          if (meta) {
+            return playAudio(meta);
           }
           return null;
         });
@@ -91,7 +93,7 @@ export class MediaLoader extends Destructable {
     }
   }
 
-  private async performRequest(url: string): Promise<XMLHttpRequest> {
+  private async performRequest(url: string): Promise<MediaResponse> {
     const xhr = new XMLHttpRequest();
 
     this.cancel = () => {
@@ -99,7 +101,7 @@ export class MediaLoader extends Destructable {
       this.cancel = () => {};
     };
 
-    return new Promise<XMLHttpRequest>((resolve, reject) => {
+    return new Promise<MediaResponse>((resolve, reject) => {
       xhr.responseType = 'arraybuffer';
 
       xhr.addEventListener('progress', (e) => {
@@ -114,7 +116,7 @@ export class MediaLoader extends Destructable {
 
       xhr.addEventListener('load', async () => {
         this.wf.setLoadingProgress(undefined, undefined, true);
-        resolve(xhr);
+        resolve({ buffer: xhr.response, length: xhr.response.byteLength } as any);
       });
 
       xhr.addEventListener('error', () => {

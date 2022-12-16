@@ -1,3 +1,8 @@
+import { AudioDecoderWorker, getAudioDecoderWorker } from 'audio-file-decoder';
+// eslint-disable-next-line
+// @ts-ignore
+import DecodeAudioWasm from 'audio-file-decoder/decode-audio.wasm';
+
 export interface WaveformAudioOptions {
   volume: number;
   muted: boolean;
@@ -10,13 +15,16 @@ export class WaveformAudio {
   analyzer?: AnalyserNode;
   source?: AudioBufferSourceNode;
   gain?: GainNode;
-  buffer?: AudioBuffer;
+  buffer?: Float32Array[];
 
+  private decodeId = 0; // if id=0, decode is not in progress
   private _rate = 1;
   private _volume = 1;
-  private _muted = false;
   private _savedVolume = 1;
   private _channelCount = 1;
+  private _sampleRate = 44100;
+  private _duration = 0;
+  private decoder: AudioDecoderWorker | undefined;
 
   constructor(options: WaveformAudioOptions) {
     this.context = this.createAudioContext();
@@ -32,7 +40,11 @@ export class WaveformAudio {
   }
 
   get sampleRate() {
-    return this.context?.sampleRate ?? 44100;
+    return this._sampleRate;
+  }
+  
+  get duration() {
+    return this._duration;
   }
 
   get volume() {
@@ -63,40 +75,41 @@ export class WaveformAudio {
 
   connect() {
     if (this.source) this.disconnect();
-    if (!this.context || !this.buffer) return;
+    // if (!this.context || !this.buffer) return;
 
-    const source = this.context?.createBufferSource();
+    // const source = this.context?.createBufferSource();
 
-    if (!source) return;
+    // if (!source) return;
 
-    source.buffer = this.buffer;
+    // source.buffer = this.buffer;
 
-    const analyzer = this.context?.createAnalyser();
+    // const analyzer = this.context?.createAnalyser();
 
-    if (!analyzer) return;
+    // if (!analyzer) return;
 
-    analyzer.fftSize = 2048;
+    // analyzer.fftSize = 2048;
 
-    const gain = this.context?.createGain();
+    // const gain = this.context?.createGain();
 
-    if (!gain) return;
+    // if (!gain) return;
 
-    source.connect(gain);
+    // source.connect(gain);
 
-    gain.connect(analyzer);
+    // gain.connect(analyzer);
 
-    analyzer.connect(this.context.destination);
+    // analyzer.connect(this.context.destination);
 
-    this.source = source;
-    this.analyzer = analyzer;
-    this.gain = gain;
+    // this.source = source;
+    // this.analyzer = analyzer;
+    // this.gain = gain;
 
-    this.source.playbackRate.value = this.speed;
-    this.gain.gain.value = this.volume;
-    this._channelCount = source.channelCount;
+    // this.source.playbackRate.value = this.speed;
+    // this.gain.gain.value = this.volume;
   }
 
   disconnect() {
+    this.decodeId = 0;
+    this.disposeDecoder();
     if (this.gain) {
       this.gain.disconnect();
       delete this.gain;
@@ -145,26 +158,126 @@ export class WaveformAudio {
     return data;
   }
 
-  async decodeAudioData(arraybuffer: ArrayBuffer): Promise<AudioBuffer | null | undefined> {
-    return new Promise((resolve, reject) => {
-      if (!this.offline) {
-        this.offline = this.createOfflineAudioContext();
+  /**
+   * Decode in chunks of up to 600 seconds until the whole file is decoded.
+   * Do the work in a Web Worker to avoid blocking the UI.
+   * Do the work in a interruptible generator to avoid blocking the worker.
+   */
+  private *chunkDecoder(options?: {multiChannel?: boolean}): Generator<Promise<Float32Array|null>|null> {
+    if (!this.decoder || !this.decodeId) return null;
+
+    const totalDuration = this.decoder.duration;
+
+    let durationOffset = 0;
+    const durationChunkSize = 60 * 30; // 30 minutes
+
+    while (durationOffset < totalDuration) {
+      console.log({ durationOffset, totalDuration });
+      yield new Promise((resolve) => {
+        if (!this.decoder) return resolve(null);
+
+        const nextChunkDuration = Math.min(durationChunkSize, Math.max(0, totalDuration - durationOffset));
+
+        console.log({ durationOffset, toDuration: nextChunkDuration });
+
+        const currentOffset = durationOffset;
+
+        durationOffset += nextChunkDuration;
+
+        this.decoder.decodeAudioData(currentOffset, nextChunkDuration, {
+          multiChannel: false,
+          ...options,
+        }).then(resolve);
+      });
+    }
+  }
+
+  cancelDecode() {
+    this.decodeId = 0;
+  }
+
+  async decodeAudioData(arraybuffer: ArrayBuffer, length: number, options?: {multiChannel?: boolean}): Promise<{sampleRate: number, channelCount: number, duration: number}|undefined> {
+    this.cancelDecode();
+    this.decodeId = Date.now();
+
+    return getAudioDecoderWorker(DecodeAudioWasm, arraybuffer).then(async (decoder) => {
+      if (!this.decodeId) return null;
+
+      this.decoder = decoder;
+
+      const chunks = []; 
+
+      const chunkIterator = this.chunkDecoder(options);
+
+      // Work through the chunks of the file in a generator until done.
+      // Allow this to be interrupted at any time safely.
+      // eslint-disable-next-line
+      while (true) {
+        if (!this.decodeId) return null;
+
+        const result = chunkIterator.next();
+
+        if (!result.done) {
+          const value = await result.value;
+
+          if (value) {
+            chunks.push(value);
+          }
+        }
+
+        if (result.done) {
+          return chunks;
+        }
       }
-      // Safari doesn't support promise based decodeAudioData by default
-      if ('webkitAudioContext' in window) {
-        this.offline?.decodeAudioData(
-          arraybuffer,
-          data => resolve(data),
-          err => reject(err),
-        );
-      } else {
-        this.offline?.decodeAudioData(arraybuffer).then(
-          resolve,
-        ).catch(
-          reject,
-        );
+    }).then(bufferData => {
+      let meta = undefined;
+      
+      if (bufferData) {
+        this.buffer = bufferData;
+        console.log('bufferData', bufferData);
       }
+
+      if (this.decoder) {
+        meta = {
+          sampleRate: this.decoder.sampleRate,
+          channelCount: this.decoder.channelCount,
+          duration: this.decoder.duration,
+        };
+
+        this._channelCount = meta.channelCount;
+        this._sampleRate = meta.sampleRate;
+        this._duration = meta.duration;
+      } 
+
+      return meta;
+    }).finally(() => {
+      this.disposeDecoder();
     });
+      
+    // if (!this.offline) {
+    //   this.offline = this.createOfflineAudioContext();
+    // }
+    // // Safari doesn't support promise based decodeAudioData by default
+    // if ('webkitAudioContext' in window) {
+    //   this.offline?.decodeAudioData(
+    //     arraybuffer,
+    //     data => resolve(data),
+    //     err => reject(err),
+    //   );
+    // } else {
+    //   this.offline?.decodeAudioData(arraybuffer).then(
+    //     resolve,
+    //   ).catch(
+    //     reject,
+    //   );
+    // }
+  }
+
+  private disposeDecoder() {
+    if (this.decoder) {
+      this.decoder.dispose();
+      this.decoder = undefined;
+    }
   }
 
   private createOfflineAudioContext(sampleRate?: number) {
