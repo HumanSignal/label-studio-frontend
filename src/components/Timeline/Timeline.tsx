@@ -154,6 +154,7 @@ const TimelineComponent: FC<TimelineProps> = ({
             }}
           />
         ) : null}
+        mediaType="timeline"
       />
 
       {allowSeek && (
