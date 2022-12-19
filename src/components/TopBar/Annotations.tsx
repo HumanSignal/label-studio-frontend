@@ -1,43 +1,42 @@
-import { observer } from 'mobx-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { SelectedAnnotationAtom } from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
+import { useAnnotaionsList } from '@atoms/Models/AnnotationsAtom/Hooks';
+import { AnnotationOrPrediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
+import { Atom, useAtom, useAtomValue } from 'jotai';
+import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from '../../assets/icons';
 import { Space } from '../../common/Space/Space';
+import { TimeAgo } from '../../common/TimeAgo/TimeAgo';
 import { Userpic } from '../../common/Userpic/Userpic';
 import { Block, Elem } from '../../utils/bem';
 import { isDefined, userDisplayName } from '../../utils/utilities';
 import { GroundTruth } from '../CurrentEntity/GroundTruth';
 import './Annotations.styl';
-import { TimeAgo }  from '../../common/TimeAgo/TimeAgo';
-import { reaction } from 'mobx';
 
-export const Annotations = observer(({ store, annotationStore, commentStore }) => {
-  const dropdownRef = useRef();
+export const AnnotationsList = () => {
+  const dropdownRef = useRef<HTMLElement | null>();
+  const hasInterface = useInterfaces();
   const [opened, setOpened] = useState(false);
-  const enableAnnotations = store.hasInterface('annotations:tabs');
-  const enablePredictions = store.hasInterface('predictions:tabs');
-  const enableCreateAnnotation = store.hasInterface('annotations:add-new');
-  const groundTruthEnabled = store.hasInterface('ground-truth');
+  const [selectedAnnotation, setSelectedAnnotation] = useAtom(SelectedAnnotationAtom);
+  const enableAnnotations = hasInterface('annotations:tabs');
+  const enablePredictions = hasInterface('predictions:tabs');
+  const enableCreateAnnotation = hasInterface('annotations:add-new');
+  const groundTruthEnabled = hasInterface('ground-truth');
 
-  const entities = [];
+  const entities = useAnnotaionsList({
+    includeAnnotations: enableAnnotations,
+    includePredictions: enablePredictions,
+  });
 
-
-  if (enablePredictions) entities.push(...annotationStore.predictions);
-
-  if (enableAnnotations) entities.push(...annotationStore.annotations);
-
-  const onAnnotationSelect = useCallback((entity, isPrediction) => {
-    if (!entity.selected) {
-      if (isPrediction) {
-        annotationStore.selectPrediction(entity.id);
-      } else {
-        annotationStore.selectAnnotation(entity.id);
-      }
+  const onAnnotationSelect = useCallback((entity: Atom<AnnotationOrPrediction>) => {
+    if (entity !== selectedAnnotation) {
+      setSelectedAnnotation(entity);
     }
-  }, [annotationStore]);
+  }, [selectedAnnotation]);
 
   useEffect(() => {
-    const handleClick = (e) => {
-      const target = e.target;
+    const handleClick = (e: globalThis.MouseEvent) => {
+      const target = e.target as Node;
       const dropdown = dropdownRef.current;
 
       if (target !== dropdown && !dropdown?.contains(target)) {
@@ -47,29 +46,29 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
 
     document.addEventListener('click', handleClick);
 
-    const runOnPropertyChange = (value) => {
-      let _unresolvedComments = 0;
-      let _comments = 0;
+    // const runOnPropertyChange = (value) => {
+    //   let _unresolvedComments = 0;
+    //   let _comments = 0;
 
-      value.forEach(obj => {
-        _comments++;
+    //   value.forEach(obj => {
+    //     _comments++;
 
-        if (!obj) _unresolvedComments++;
-      });
+    //     if (!obj) _unresolvedComments++;
+    //   });
 
-      commentStore.annotation.setUnresolvedCommentCount(_unresolvedComments);
-      commentStore.annotation.setCommentCount(_comments);
-    };
+    //   commentStore.annotation.setUnresolvedCommentCount(_unresolvedComments);
+    //   commentStore.annotation.setCommentCount(_comments);
+    // };
 
-    const reactionDisposer = reaction(
-      () => [...commentStore.comments.map(item => item.isResolved)],
-      runOnPropertyChange,
-    );
+    // const reactionDisposer = reaction(
+    //   () => [...commentStore.comments.map(item => item.isResolved)],
+    //   runOnPropertyChange,
+    // );
 
-    return () => {
-      document.removeEventListener('click', handleClick);
-      reactionDisposer();
-    };
+    // return () => {
+    //   document.removeEventListener('click', handleClick);
+    //   reactionDisposer();
+    // };
   }, []);
 
   const renderCommentIcon = (ent) => {
@@ -82,18 +81,20 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
     return null;
   };
 
-  const renderAnnotation = (ent, i) => {
+  const renderAnnotation = (ent: Atom<AnnotationOrPrediction>, i) => {
+    const entity = useAtomValue(ent);
+
     return (
-      <Annotation
-        key={`${ent.pk ?? ent.id}${ent.type}`}
+      <AnnotationListItem
+        key={`${entity.id}${entity.type}`}
         entity={ent}
-        aria-label={`${ent.type} ${i + 1}`}
-        selected={ent === annotationStore.selected}
-        onClick={e => {
+        aria-label={`${entity.type} ${i + 1}`}
+        selected={ent === selectedAnnotation}
+        onClick={(e: MouseEvent) => {
           e.preventDefault();
           e.stopPropagation();
           setOpened(false);
-          onAnnotationSelect?.(ent, ent.type === 'prediction');
+          onAnnotationSelect?.(ent);
         }}
         extra={(
           <Elem name={'icons'} >
@@ -129,7 +130,7 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
     <Elem name="section" mod={{ flat: true }}>
       <Block name="annotations-list" ref={dropdownRef}>
         <Elem name="selected">
-          <Annotation
+          <AnnotationListItem
             aria-label="Annotations List Toggle"
             entity={annotationStore.selected}
             onClick={(e) => {
@@ -149,7 +150,7 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
 
         {opened && (
           <Elem name="list">
-            {store.hasInterface('annotations:add-new') && (
+            {hasInterface('annotations:add-new') && (
               <CreateAnnotation
                 annotationStore={annotationStore}
                 onClick={() => setOpened(false)}
@@ -162,9 +163,9 @@ export const Annotations = observer(({ store, annotationStore, commentStore }) =
       </Block>
     </Elem>
   ) : null;
-});
+};
 
-const CreateAnnotation = observer(({ annotationStore, onClick }) => {
+const CreateAnnotation = ({ annotationStore, onClick }) => {
   const onCreateAnnotation = useCallback(() => {
     const c = annotationStore.createAnnotation();
 
@@ -182,9 +183,9 @@ const CreateAnnotation = observer(({ annotationStore, onClick }) => {
       </Space>
     </Elem>
   );
-});
+};
 
-const Annotation = observer(({ entity, selected, onClick, extra, ...props }) => {
+const AnnotationListItem = ({ entity, selected, onClick, extra, ...props }) => {
   const isPrediction = entity.type === 'prediction';
   const username = userDisplayName(entity.user ?? {
     firstName: entity.createdBy || 'Admin',
@@ -223,4 +224,4 @@ const Annotation = observer(({ entity, selected, onClick, extra, ...props }) => 
       </Space>
     </Elem>
   );
-});
+};

@@ -26,8 +26,10 @@ export type ConfigValidation = {
   valid: boolean,
 }
 
+export type AnnotationOrPrediction = Annotation | Prediction
+
 export type AnnotationsStore = {
-  current?: Atom<Annotation | Prediction>,
+  current?: Atom<AnnotationOrPrediction>,
   currentHistory?: Atom<AnnotationHistoryItem>,
   annotations: Atom<Annotation>[],
   predictions: Atom<Prediction>[],

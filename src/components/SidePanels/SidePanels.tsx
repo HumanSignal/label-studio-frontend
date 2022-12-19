@@ -4,7 +4,7 @@ import { DetailsPanel } from './DetailsPanel/DetailsPanel';
 import { OutlinerPanel } from './OutlinerPanel/OutlinerPanel';
 
 import { useRegions } from '@atoms/Models/AnnotationsAtom/Hooks';
-import { Annotation, AnnotationHistoryItem, Prediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { AnnotationHistoryItem, AnnotationOrPrediction } from '@atoms/Models/AnnotationsAtom/Types';
 import { Atom, useAtomValue } from 'jotai';
 import { IconDetails, IconHamburger } from '../../assets/icons';
 import { useMedia } from '../../hooks/useMedia';
@@ -19,7 +19,7 @@ const maxWindowWidth = 980;
 
 interface SidePanelsProps {
   panelsHidden: boolean;
-  currentEntity: Atom<Annotation | Prediction | AnnotationHistoryItem>;
+  currentEntity: Atom<AnnotationOrPrediction | AnnotationHistoryItem>;
   children: ReactNode;
 }
 

@@ -1,45 +1,40 @@
-import { observer } from 'mobx-react';
+import { ViewingAllAtom } from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
+import { useSelectedAnnotation } from '@atoms/Models/AnnotationsAtom/Hooks';
+import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
+import { useAtomValue } from 'jotai';
 import { Block, Elem } from '../../utils/bem';
 import { DynamicPreannotationsToggle } from '../AnnotationTab/DynamicPreannotationsToggle';
 import { Actions } from './Actions';
-import { Annotations } from './Annotations';
+import { AnnotationsList } from './Annotations';
 import { Controls } from './Controls';
 import { CurrentTask } from './CurrentTask';
 import './TopBar.styl';
 
-export const TopBar = observer(({ store }) => {
-  const annotationStore = store.annotationStore;
-  const entity = annotationStore?.selected;
+export const TopBar = () => {
+  const entity = useSelectedAnnotation();
+  const viewingAll = useAtomValue(ViewingAllAtom);
+  const hasInterface = useInterfaces();
   const isPrediction = entity?.type === 'prediction';
 
-  const isViewAll = annotationStore?.viewingAll === true;
-
-  return store ? (
+  return (
     <Block name="topbar">
       <Elem name="group">
-        <CurrentTask store={store}/>
-        {!isViewAll && (
-          <Annotations
-            store={store}
-            annotationStore={store.annotationStore}
-            commentStore={store.commentStore}
-          />
-        )}
-        <Actions store={store}/>
+        <CurrentTask/>
+        {!viewingAll && <AnnotationsList/>}
+        <Actions/>
       </Elem>
       <Elem name="group">
-        {!isViewAll && (
-
+        {!viewingAll && (
           <Elem name="section">
             <DynamicPreannotationsToggle />
           </Elem>
         )}
-        {!isViewAll && store.hasInterface('controls') && (store.hasInterface('review') || !isPrediction) && (
+        {!viewingAll && hasInterface('controls') && (hasInterface('review') || !isPrediction) && (
           <Elem name="section" mod={{ flat: true }} style={{ width: 320, boxSizing: 'border-box' }}>
             <Controls annotation={entity} />
           </Elem>
         )}
       </Elem>
     </Block>
-  ) : null;
-});
+  );
+};

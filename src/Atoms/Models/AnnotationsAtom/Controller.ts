@@ -4,7 +4,7 @@ import { AnnotationInput, PredictionInput } from '../../Inputs/AnnotationInput';
 import { StoreAccess } from '../../StoreAccess';
 import { Regions } from '../RegionsAtom/Types';
 import { AnnotationsAtom, AnnotationsListAtom, SelectedAnnotationAtom } from './AnnotationsAtom';
-import { Annotation, EntityType, Prediction } from './Types';
+import { Annotation, AnnotationOrPrediction, EntityType, Prediction } from './Types';
 
 /**
  * Operates on the AnnotationStore
@@ -18,13 +18,13 @@ export class AnnotationController extends StoreAccess {
 
     if (!annotationsAtom) return [];
 
-    return this.store.get(annotationsAtom) ?? [];
+    return annotationsAtom ?? [];
   }
 
   /**
    * Selects the annotation or prediction for rendering
    */
-  select(annotaionAtom: Atom<Annotation | Prediction>) {
+  select(annotaionAtom: Atom<AnnotationOrPrediction>) {
     if (!annotaionAtom) return;
 
     this.store.set(SelectedAnnotationAtom, annotaionAtom);
@@ -66,7 +66,7 @@ export class AnnotationController extends StoreAccess {
    * Creates a new annotation atom
    */
   private createEntity({ id, ...raw }: AnnotationInput | PredictionInput, type: EntityType) {
-    const annotation = atom<Annotation | Prediction>({
+    const annotation = atom<AnnotationOrPrediction>({
       id: id ?? guidGenerator(),
       regions: this.createRegionsAtom(),
       type,

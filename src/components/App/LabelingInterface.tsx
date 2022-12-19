@@ -4,7 +4,7 @@ import {
   SelectedAnnotationHistoryAtom,
   ViewingAllAtom
 } from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
-import { Annotation, AnnotationHistoryItem, Prediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { AnnotationHistoryItem, AnnotationOrPrediction } from '@atoms/Models/AnnotationsAtom/Types';
 import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
 import { InstructionsAtom, RootAtom, TaskAtom } from '@atoms/Models/RootAtom/RootAtom';
 import { SettingsAtom } from '@atoms/Models/SettingsAtom/SettingsAtom';
@@ -21,12 +21,13 @@ import { SidePanels } from '../SidePanels/SidePanels';
  * Tags
  */
 import { MessagesAtom } from '@atoms/MessagesAtom';
+import { TopBar } from '@components/TopBar/TopBar';
 import { ResultStatusType } from 'antd/lib/result';
 import messages from '../../utils/messages';
 import { AnnotationView } from './Annotation';
-import './App.styl';
+import './LabelingInterface.styl';
 
-export const AppRoot = () => {
+export const LabelingInterface = () => {
   const {
     fullscreen,
     bottomSidePanel,
@@ -41,7 +42,7 @@ export const AppRoot = () => {
   const currentEntity = useMemo(() => {
     return selectedHistory ?? selectedAnnotation;
   }, [selectedHistory, selectedAnnotation]);
-  // const hasInterface = useInterfaces();
+  const hasInterface = useInterfaces();
 
   useEffect(() => {
     // Hack to activate app hotkeys
@@ -67,9 +68,9 @@ export const AppRoot = () => {
       )}
 
       {/* TODO: implement topbar */}
-      {/* {hasInterface('topbar') && (
-        <TopBar store={store}/>
-      )} */}
+      {hasInterface('topbar') && (
+        <TopBar/>
+      )}
       <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: bottomSidePanel, outliner: true }}>
         {currentEntity ? (
           <SidePanels panelsHidden={viewingAll} currentEntity={currentEntity}>
@@ -92,7 +93,7 @@ export const AppRoot = () => {
 
 type MainViewProps = {
   viewingAll: boolean,
-  selectedAnnotationAtom?: Atom<Annotation | Prediction>,
+  selectedAnnotationAtom?: Atom<AnnotationOrPrediction>,
   selectedHistoryAtom?: Atom<AnnotationHistoryItem>,
 }
 

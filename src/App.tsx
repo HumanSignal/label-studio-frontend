@@ -1,6 +1,6 @@
 import { Store } from '@atoms/Store';
-import { AppRoot } from '@components/App/AppNew';
 import { DataStore } from '@components/App/DataStore';
+import { LabelingInterface } from '@components/App/LabelingInterface';
 import { createContext, FC, StrictMode, useContext } from 'react';
 import { InternalSDK } from './core/SDK/Internal/Internal.sdk';
 
@@ -21,7 +21,7 @@ export const App: FC<AppProps> = ({
     <StrictMode>
       <DataStore store={store} afterInit={afterInit}>
         <SDKContext.Provider value={sdk}>
-          <AppRoot/>
+          <LabelingInterface/>
         </SDKContext.Provider>
       </DataStore>
     </StrictMode>

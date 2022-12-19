@@ -9,12 +9,18 @@ import { AnnotationsStore } from './Types';
  */
 export const AnnotationsAtom = atomWithReset<AnnotationsStore>(InitialState);
 
-export const AnnotationsListAtom = atom(() => {
-  const annotations = focusAtom(AnnotationsAtom, (optic) => {
-    return optic.prop('annotations');
-  });
+/**
+ * List all available annotations
+ */
+export const AnnotationsListAtom = focusAtom(AnnotationsAtom, (optic) => {
+  return optic.prop('annotations');
+});
 
-  return annotations;
+/**
+ * List all available predictions
+ */
+export const PredictionsListAtom = focusAtom(AnnotationsAtom, (optic) => {
+  return optic.prop('predictions');
 });
 
 /**
