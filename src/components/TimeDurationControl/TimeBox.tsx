@@ -5,7 +5,6 @@ import './TimeBox.styl';
 
 export interface TimerProps {
   sidepanel: boolean;
-  maxTime: number;
   value: number;
   readonly?: boolean;
   inverted?: boolean;
@@ -14,7 +13,6 @@ export interface TimerProps {
 
 export const TimeBox: FC<TimerProps> = ({
   sidepanel = false,
-  maxTime= 0,
   value,
   inverted = false,
   readonly = false,
@@ -25,15 +23,10 @@ export const TimeBox: FC<TimerProps> = ({
   const [currentDisplayedTime, setCurrentDisplayedTime] = useState(value);
   const [currentInputTime, setCurrentInputTime] = useState<string | number | undefined>(value);
   const [inputSelectionStart, setInputSelectionStart] = useState<number | null>(null);
-  const [inputLength, setInputLength] = useState<number>(9);
 
   useEffect(() => {
     setCurrentDisplayedTime(value);
   }, [value]);
-
-  useEffect(() => {
-    setInputLength(formatTime(maxTime).length + 4);
-  }, [maxTime]);
 
   useEffect(() => {
     if (inputSelectionStart !== null)
@@ -53,12 +46,14 @@ export const TimeBox: FC<TimerProps> = ({
     const timeDate = new Date(time * 1000).toISOString();
     let formatted = time > 3600
       ? timeDate.substr(11, 8)
-      : timeDate.substr(14, 5);
+      : '00:' + timeDate.substr(14, 5);
 
     if (input) {
       const isHour = timeDate.substr(11, 2) !== '00';
 
       formatted = timeDate.substr(isHour ? 11 : 14, isHour ? 12 : 9).replace('.', ':');
+
+      formatted = !isHour ? '00:' + formatted : formatted;
     }
 
     return formatted;
@@ -110,10 +105,8 @@ export const TimeBox: FC<TimerProps> = ({
 
     input = input.replace(/\D/g, '')
       .replace(/(\d{2})(\d)/, '$1:$2')
+      .replace(/(\d{2})(\d)/, '$1:$2')
       .replace(/(\d{2})(\d)/, '$1:$2');
-
-    if(input.length >= 10)
-      input = input.replace(/(\d{2})(\d)/, '$1:$2');
 
     setCurrentInputTime(input);
   };
@@ -127,7 +120,7 @@ export const TimeBox: FC<TimerProps> = ({
   const renderInputTime = () => {
     return (
       <Elem name={'input-time'}
-        maxLength={inputLength}
+        maxLength={12}
         tag={'input'}
         autoFocus
         ref={inputRef}
