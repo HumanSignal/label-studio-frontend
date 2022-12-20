@@ -14,6 +14,7 @@ export const CurrentTask = observer(({ store }) => {
   }, [store.taskHistory]);
 
   const historyEnabled = store.hasInterface('topbar:prevnext');
+  const showCounter = store.hasInterface('topbar:task-counter');
   // @todo some interface?
   const canPostpone = isFF(FF_DEV_3034)
     && !isDefined(store.annotationStore.selected.pk)
@@ -26,7 +27,7 @@ export const CurrentTask = observer(({ store }) => {
       <Block name="current-task" mod={{ 'with-history': historyEnabled }}>
         <Elem name="task-id">
           {store.task.id ?? guidGenerator()}
-          {historyEnabled && (
+          {historyEnabled && showCounter && (
             <Elem name="task-count">
               {currentIndex} of {store.taskHistory.length}
             </Elem>
