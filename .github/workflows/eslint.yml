@@ -6,12 +6,6 @@ on:
       sha:
         required: true
         type: string
-      branch_name:
-        required: true
-        type: string
-      ref:
-        required: true
-        type: string
 
 env:
   # increment it in case if you need to reset cache
@@ -22,36 +16,33 @@ jobs:
   run:
     name: Run ESLint
     runs-on: ubuntu-latest
-
     # ci can be skipped with `[skip ci]` prefix in message
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-
     steps:
-    - name: "Checlout codebase"
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ inputs.ref }}
+      - uses: hmarr/debug-action@v2.1.0
+      - name: "Checkout codebase"
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.sha }}
 
-    - name: "Setup NodeJS"
-      uses: actions/setup-node@v3
-      with:
-        node-version: "${{ env.NODE }}"
+      - name: "Setup NodeJS"
+        uses: actions/setup-node@v3
+        with:
+          node-version: "${{ env.NODE }}"
 
-    - name: Upgrade Yarn
-      run: npm install -g yarn@1.22
+      - name: Upgrade Yarn
+        run: npm install -g yarn@1.22
 
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
-    - name: Configure yarn cache
-      uses: actions/cache@v3
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
+      - name: Configure yarn cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
-    - run: yarn install --frozen-lockfile && yarn lint
-
-
+      - run: yarn install --frozen-lockfile && yarn lint

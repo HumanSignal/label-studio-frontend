@@ -1,10 +1,11 @@
-name: "CI/CD Pipleline"
+name: "CI/CD Pipeline"
 
 on:
   push:
     branches:
       - master
       - 'lse-release/**'
+      - 'ls-release/**'
   pull_request_target:
     types:
       - opened
@@ -14,29 +15,34 @@ on:
     branches:
       - master
       - 'lse-release/**'
+      - 'ls-release/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions: read-all
 
 jobs:
   build_bundle:
     name: "Build JS Bundle"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/build_bundle.yml@master
+    permissions:
+      contents: write
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
-      branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
-      ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
-    secrets: inherit
 
   run_e2e:
     name: "Tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/e2e_tests.yml@master
+    permissions:
+      contents: write
     needs:
       - build_bundle
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
-      branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
-      ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
-    secrets: inherit
 
   run_unit:
     name: "Tests"
@@ -44,8 +50,6 @@ jobs:
     uses: heartexlabs/label-studio-frontend/.github/workflows/unit_tests.yml@master
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
-      branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
-      ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
     secrets: inherit
 
   run_lint:
@@ -54,6 +58,3 @@ jobs:
     uses: heartexlabs/label-studio-frontend/.github/workflows/eslint.yml@master
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
-      branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
-      ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
-    secrets: inherit
