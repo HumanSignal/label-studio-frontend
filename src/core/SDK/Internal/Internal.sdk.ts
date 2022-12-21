@@ -6,18 +6,27 @@ import { Store } from '@atoms/Store';
 import { StoreAccess } from '@atoms/StoreAccess';
 import { TagRegistry } from '@tags/Registry';
 import { ConfigTree } from 'src/core/ConfigTree/ConfigTree';
+import { EventInvoker } from 'src/utils/events';
+
+type InternalSDKParams = {
+  store: Store,
+  events: EventInvoker,
+}
 
 class InternalSDK extends StoreAccess {
+  private events: EventInvoker;
   root: RootController;
   annotations: AnnotationController;
   tagRegistry: TagRegistry;
   tree!: ConfigTree;
 
-  constructor(store: Store) {
-    super(store);
-    this.root = new RootController(store);
+  constructor(params: InternalSDKParams) {
+    super(params.store);
+    this.events = params.events;
+
+    this.root = new RootController(params.store);
     this.tagRegistry = TagRegistry.getInstance();
-    this.annotations = new AnnotationController(store);
+    this.annotations = new AnnotationController(params.store);
   }
 
   hydrate(data: RootStoreInput) {

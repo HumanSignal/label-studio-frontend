@@ -1,47 +1,17 @@
-import { Atom, WritableAtom } from 'jotai';
+import { Atom, Getter, Setter, WritableAtom } from 'jotai';
 
-type Getter = {
-  <Value>(atom: Atom<Value | Promise<Value>>): Value,
-  <Value>(atom: Atom<Promise<Value>>): Value,
-  <Value>(atom: Atom<Value>): Awaited<Value>,
-};
-
-type WriteGetter = Getter & {
-  <Value>(
-    atom: Atom<Value | Promise<Value>>,
-    options: {
-      unstable_promise: true,
-    }
-  ): Promise<Value> | Value,
-  <Value>(
-    atom: Atom<Promise<Value>>,
-    options: {
-      unstable_promise: true,
-    }
-  ): Promise<Value> | Value,
-  <Value>(
-    atom: Atom<Value>,
-    options: {
-      unstable_promise: true,
-    }
-  ): Promise<Awaited<Value>> | Awaited<Value>,
-};
-
-type SetValue<T> = T | ((prev: T) => T);
-
-type Setter<T = any> = {
-  <Value, Result extends void | Promise<void>>(
-    atom: WritableAtom<Value, undefined, Result>
-  ): Result,
-  <Value, Update extends SetValue<T>, Result extends void | Promise<void>>(
-    atom: WritableAtom<Value, Update, Result>,
-    update: Update
-  ): Result,
-};
+export type SetAtom<
+  Update,
+  Result extends void | Promise<void>
+> = undefined extends Update
+  ? (update?: Update) => Result
+  : (update: Update) => Result;
 
 // Store/SDK implementation
 const STORE_GET = Symbol('store.get');
 const STORE_SET = Symbol('store.set');
+
+type InputValue<AtomType> = AtomType extends WritableAtom<any, infer Input> ? Input : never;
 
 /**
  * Store gives external world access to the atoms inside the app
@@ -53,7 +23,7 @@ const STORE_SET = Symbol('store.set');
  */
 export class Store {
   // private members
-  private [STORE_GET]: WriteGetter | null = null;
+  private [STORE_GET]: Getter | null = null;
   private [STORE_SET]: Setter | null = null;
 
   // public members
@@ -63,14 +33,21 @@ export class Store {
     console.log('Before initialized', this.initialized);
   }
 
-  init(get: WriteGetter, set: Setter) {
+  init(get: Getter, set: Setter) {
     this[STORE_GET] = get;
     this[STORE_SET] = set;
     this.initialized = true;
     console.log('After initialized', this.initialized, this);
   }
 
-  set<T>(atom: WritableAtom<T, any, any>, update: SetValue<T>) {
+  set<
+    Value,
+    Update,
+    Result extends void | Promise<void>,
+  >(
+    atom: WritableAtom<Value, Update, Result>,
+    update: Update,
+  ) {
     const setter = this[STORE_SET];
 
     if (!setter) return;
@@ -78,8 +55,11 @@ export class Store {
     setter(atom, update);
   }
 
-  patch<T>(atom: WritableAtom<T, any, any>, patch: Partial<T>) {
-    this.set(atom, (state: T) => ({ ...state, ...patch }));
+  patch<
+    AtomValue extends WritableAtom<any, any>,
+    Update extends InputValue<AtomValue>,
+  >(atom: AtomValue, patch: Partial<Update>) {
+    this.set(atom, (state: Update) => ({ ...state, ...patch }));
   }
 
   get<T>(atom: Atom<T>) {

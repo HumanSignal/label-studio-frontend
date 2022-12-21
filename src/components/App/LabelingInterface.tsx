@@ -1,10 +1,10 @@
 import {
-  ConfigValidationAtom,
-  SelectedAnnotationAtom,
-  SelectedAnnotationHistoryAtom,
-  ViewingAllAtom
+  configValidationAtom,
+  selectedAnnotationHistoryAtom,
+  selectedAnnotationPropertyAtom,
+  viewingAllAtom
 } from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
-import { AnnotationHistoryItem, AnnotationOrPrediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
 import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
 import { InstructionsAtom, RootAtom, TaskAtom } from '@atoms/Models/RootAtom/RootAtom';
 import { SettingsAtom } from '@atoms/Models/SettingsAtom/SettingsAtom';
@@ -34,14 +34,14 @@ export const LabelingInterface = () => {
   } = useAtomValue(SettingsAtom).settings;
 
   const root = useAtomValue(RootAtom);
-  const selectedAnnotation = useAtomValue(SelectedAnnotationAtom);
-  const selectedHistory = useAtomValue(SelectedAnnotationHistoryAtom);
-  const viewingAll = useAtomValue(ViewingAllAtom);
+  const selectedAnnotationAtom = useAtomValue(selectedAnnotationPropertyAtom);
+  const selectedHistoryAtom = useAtomValue(selectedAnnotationHistoryAtom);
+  const viewingAll = useAtomValue(viewingAllAtom);
   const instructions = useAtomValue(InstructionsAtom);
-  const validation = useAtomValue(ConfigValidationAtom);
+  const validation = useAtomValue(configValidationAtom);
   const currentEntity = useMemo(() => {
-    return selectedHistory ?? selectedAnnotation;
-  }, [selectedHistory, selectedAnnotation]);
+    return selectedHistoryAtom ?? selectedAnnotationAtom;
+  }, [selectedHistoryAtom, selectedAnnotationAtom]);
   const hasInterface = useInterfaces();
 
   useEffect(() => {
@@ -69,7 +69,7 @@ export const LabelingInterface = () => {
 
       {/* TODO: implement topbar */}
       {hasInterface('topbar') && (
-        <TopBar/>
+        <TopBar annotationAtom={currentEntity}/>
       )}
       <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: bottomSidePanel, outliner: true }}>
         {currentEntity ? (
@@ -78,8 +78,8 @@ export const LabelingInterface = () => {
               {validation === null ? (
                 <MainView
                   viewingAll={viewingAll}
-                  selectedAnnotationAtom={selectedAnnotation}
-                  selectedHistoryAtom={selectedHistory}
+                  selectedAnnotationAtom={selectedAnnotationAtom}
+                  selectedHistoryAtom={selectedHistoryAtom}
                 />
               ): <ConfigValidation/>}
             </Block>
@@ -93,8 +93,8 @@ export const LabelingInterface = () => {
 
 type MainViewProps = {
   viewingAll: boolean,
-  selectedAnnotationAtom?: Atom<AnnotationOrPrediction>,
-  selectedHistoryAtom?: Atom<AnnotationHistoryItem>,
+  selectedAnnotationAtom?: Atom<Annotation>,
+  selectedHistoryAtom?: Atom<Annotation>,
 }
 
 const MainView: FC<MainViewProps> = ({

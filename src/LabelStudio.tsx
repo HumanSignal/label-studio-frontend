@@ -81,7 +81,10 @@ export class LabelStudio {
     const appRoot = createRoot(rootElement);
 
     const store = new Store();
-    const internalSDK = new InternalSDK(store);
+    const internalSDK = new InternalSDK({
+      store,
+      events: this.events,
+    });
 
     const hydrateStore = () => {
       internalSDK.hydrate({

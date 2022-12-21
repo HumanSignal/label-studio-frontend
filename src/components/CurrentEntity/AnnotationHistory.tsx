@@ -1,6 +1,6 @@
+import { Tooltip } from 'antd';
 import { inject, observer } from 'mobx-react';
 import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Tooltip } from 'antd';
 import {
   IconAnnotationAccepted,
   IconAnnotationImported,
@@ -196,7 +196,7 @@ const HistoryItemComponent: FC<{
     }
   }, []);
 
-  const handleClick = useCallback((e) => {
+  const handleClick = useCallback((e: MouseEvent) => {
     if (disabled) return;
 
     onClick(e);

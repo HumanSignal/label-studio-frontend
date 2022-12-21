@@ -1,9 +1,9 @@
-import { SelectedAnnotationAtom } from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
-import { useAnnotaionsList } from '@atoms/Models/AnnotationsAtom/Hooks';
-import { AnnotationOrPrediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { useAnnotaionsList } from '@atoms/Models/AnnotationsAtom/Hooks/useAnnotationsList';
+import { Annotation, AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
 import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
-import { Atom, useAtom, useAtomValue } from 'jotai';
-import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { Atom, useAtomValue } from 'jotai';
+import { FC, MouseEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSDK } from 'src/App';
 import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from '../../assets/icons';
 import { Space } from '../../common/Space/Space';
 import { TimeAgo } from '../../common/TimeAgo/TimeAgo';
@@ -13,24 +13,32 @@ import { isDefined, userDisplayName } from '../../utils/utilities';
 import { GroundTruth } from '../CurrentEntity/GroundTruth';
 import './Annotations.styl';
 
-export const AnnotationsList = () => {
+type AnnotationListProps = {
+  selectedAnnotation: AnnotationAtom,
+  selectAnnotation: (annotation: AnnotationAtom) => void,
+  updateAnnotation: (annotation: Partial<Annotation>) => void,
+}
+
+export const AnnotationsList: FC<AnnotationListProps> = ({
+  selectedAnnotation,
+  selectAnnotation,
+}) => {
   const dropdownRef = useRef<HTMLElement | null>();
   const hasInterface = useInterfaces();
   const [opened, setOpened] = useState(false);
-  const [selectedAnnotation, setSelectedAnnotation] = useAtom(SelectedAnnotationAtom);
   const enableAnnotations = hasInterface('annotations:tabs');
   const enablePredictions = hasInterface('predictions:tabs');
   const enableCreateAnnotation = hasInterface('annotations:add-new');
-  const groundTruthEnabled = hasInterface('ground-truth');
 
   const entities = useAnnotaionsList({
     includeAnnotations: enableAnnotations,
     includePredictions: enablePredictions,
   });
 
-  const onAnnotationSelect = useCallback((entity: Atom<AnnotationOrPrediction>) => {
+  const onAnnotationSelect = useCallback((entity: AnnotationAtom) => {
     if (entity !== selectedAnnotation) {
-      setSelectedAnnotation(entity);
+      selectAnnotation(entity);
+      setOpened(false);
     }
   }, [selectedAnnotation]);
 
@@ -71,60 +79,12 @@ export const AnnotationsList = () => {
     // };
   }, []);
 
-  const renderCommentIcon = (ent) => {
-    if (ent.unresolved_comment_count > 0) {
-      return <LsCommentRed />;
-    } else if (ent.comment_count > 0) {
-      return <LsComment />;
-    }
+  const counter = useMemo(() => {
+    const currentIndex = entities.indexOf(selectedAnnotation) + 1;
+    const total = entities.length;
 
-    return null;
-  };
-
-  const renderAnnotation = (ent: Atom<AnnotationOrPrediction>, i) => {
-    const entity = useAtomValue(ent);
-
-    return (
-      <AnnotationListItem
-        key={`${entity.id}${entity.type}`}
-        entity={ent}
-        aria-label={`${entity.type} ${i + 1}`}
-        selected={ent === selectedAnnotation}
-        onClick={(e: MouseEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setOpened(false);
-          onAnnotationSelect?.(ent);
-        }}
-        extra={(
-          <Elem name={'icons'} >
-            <Elem name="icon-column">{renderCommentIcon(ent)}</Elem>
-            <Elem name="icon-column">{groundTruthEnabled && <GroundTruth entity={ent} disabled />}</Elem>
-          </Elem>
-        )}
-      />
-    );
-  };
-
-  const renderAnnotationList = (entities) => {
-    const _drafts = [];
-    const _annotations = [];
-
-    entities.forEach((obj, i) => {
-      if (obj.pk) {
-        _annotations.push(renderAnnotation(obj, i));
-      } else {
-        _drafts.push(renderAnnotation(obj, i));
-      }
-    });
-
-    return (
-      <>
-        <Elem name="draft">{_drafts}</Elem>
-        <Elem name="annotation">{_annotations}</Elem>
-      </>
-    );
-  };
+    return [currentIndex, total];
+  }, [selectAnnotation, entities.length]);
 
   return (enableAnnotations || enablePredictions || enableCreateAnnotation) ? (
     <Elem name="section" mod={{ flat: true }}>
@@ -132,7 +92,7 @@ export const AnnotationsList = () => {
         <Elem name="selected">
           <AnnotationListItem
             aria-label="Annotations List Toggle"
-            entity={annotationStore.selected}
+            entityAtom={selectedAnnotation}
             onClick={(e) => {
               e.stopPropagation();
               setOpened(!opened);
@@ -140,7 +100,7 @@ export const AnnotationsList = () => {
             extra={entities.length > 0 ? (
               <Space size="none" style={{ marginRight: -8, marginLeft: 8 }}>
                 <Elem name="counter">
-                  {entities.indexOf(annotationStore.selected) + 1}/{entities.length}
+                  {counter.join('/')}
                 </Elem>
                 <Elem name="toggle" mod={{ opened }}/>
               </Space>
@@ -151,13 +111,14 @@ export const AnnotationsList = () => {
         {opened && (
           <Elem name="list">
             {hasInterface('annotations:add-new') && (
-              <CreateAnnotation
-                annotationStore={annotationStore}
-                onClick={() => setOpened(false)}
-              />
+              <CreateAnnotation onClick={() => setOpened(false)}/>
             )}
 
-            {renderAnnotationList(entities)}
+            <AnnotationListWrapper
+              entities={entities}
+              selectedAnnotationAtom={selectedAnnotation}
+              onAnnotationSelect={onAnnotationSelect}
+            />
           </Elem>
         )}
       </Block>
@@ -165,13 +126,156 @@ export const AnnotationsList = () => {
   ) : null;
 };
 
-const CreateAnnotation = ({ annotationStore, onClick }) => {
-  const onCreateAnnotation = useCallback(() => {
-    const c = annotationStore.createAnnotation();
+type CommentIconProps = {
+  annotationAtom: Atom<Annotation>,
+}
 
-    annotationStore.selectAnnotation(c.id);
-    onClick();
-  }, [annotationStore, onClick]);
+const CommentIcon: FC<CommentIconProps> = ({
+  annotationAtom,
+}) => {
+  const entity = useAtomValue(annotationAtom);
+
+  if (!entity) return null;
+
+  if (entity.unresolved_comment_count > 0) {
+    return <LsCommentRed />;
+  } else if (entity.comment_count > 0) {
+    return <LsComment />;
+  }
+
+  return null;
+};
+
+type AnnotationItemProps = {
+  index: number,
+  annotationAtom: Atom<Annotation>,
+  selectedAnnotationAtom: AnnotationAtom,
+  onAnnotationSelect: AnnotationListProps['selectAnnotation'],
+}
+
+const AnnotationItem: FC<AnnotationItemProps> = ({
+  index,
+  annotationAtom,
+  selectedAnnotationAtom,
+  onAnnotationSelect,
+}) => {
+  const hasInterface = useInterfaces();
+  const groundTruthEnabled = hasInterface('ground-truth');
+  const entity = useAtomValue(annotationAtom);
+  const selected = useMemo(() => {
+    return selectedAnnotationAtom === annotationAtom;
+  }, [selectedAnnotationAtom, annotationAtom]);
+
+  const onClick = useCallback((e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onAnnotationSelect?.(annotationAtom as AnnotationAtom);
+  }, []);
+
+  return (
+    <AnnotationListItem
+      entityAtom={annotationAtom}
+      aria-label={`${entity.type} ${index + 1}`}
+      selected={selected}
+      onClick={onClick}
+      extra={(
+        <Elem name={'icons'} >
+          <Elem name="icon-column">
+            <CommentIcon annotationAtom={annotationAtom}/>
+          </Elem>
+          <Elem name="icon-column">
+            {groundTruthEnabled && (
+              <GroundTruth
+                annotationAtom={selectedAnnotationAtom}
+                disabled
+              />
+            )}
+          </Elem>
+        </Elem>
+      )}
+    />
+  );
+};
+
+type AnnotationListWrapperProps = {
+  entities: Atom<Annotation>[],
+  selectedAnnotationAtom: AnnotationItemProps['selectedAnnotationAtom'],
+  onAnnotationSelect: AnnotationListProps['selectAnnotation'],
+}
+
+const AnnotationListWrapper: FC<AnnotationListWrapperProps> = ({
+  entities,
+  selectedAnnotationAtom,
+  onAnnotationSelect,
+}) => {
+  return (
+    <>
+      <Elem name="draft">
+        {entities.map((ent, index) => (
+          <FilteredAnnotationsList
+            key={ent.toString()}
+            entity={ent}
+            index={index}
+            isDraft
+            selectedAnnotationAtom={selectedAnnotationAtom}
+            onAnnotationSelect={onAnnotationSelect}
+          />
+        ))}
+      </Elem>
+      <Elem name="annotation">
+        {entities.map((ent, index) => (
+          <FilteredAnnotationsList
+            key={ent.toString()}
+            entity={ent}
+            index={index}
+            selectedAnnotationAtom={selectedAnnotationAtom}
+            onAnnotationSelect={onAnnotationSelect}
+          />
+        ))}
+      </Elem>
+    </>
+  );
+};
+
+type FilteredAnnotationsListProps = {
+  entity: Atom<Annotation>,
+  index: number,
+  isDraft?: boolean,
+  selectedAnnotationAtom: AnnotationItemProps['selectedAnnotationAtom'],
+  onAnnotationSelect: AnnotationListProps['selectAnnotation'],
+}
+
+const FilteredAnnotationsList: FC<FilteredAnnotationsListProps> = ({
+  entity,
+  index,
+  isDraft,
+  selectedAnnotationAtom,
+  onAnnotationSelect,
+}) => {
+  const annotation = useAtomValue(entity);
+  const sholdRender = isDraft ? annotation.type === 'draft' : annotation.type !== 'draft';
+
+  return sholdRender ? (
+    <AnnotationItem
+      index={index}
+      annotationAtom={entity}
+      selectedAnnotationAtom={selectedAnnotationAtom}
+      onAnnotationSelect={onAnnotationSelect}
+    />
+  ) : null;
+};
+
+const CreateAnnotation: FC<{
+  onClick: (e: MouseEvent) => void,
+}> = ({ onClick }) => {
+  const SDK = useSDK();
+  const onCreateAnnotation = useCallback((e: MouseEvent) => {
+    const newAnnotation = SDK.annotations.create();
+
+    SDK.annotations.select(newAnnotation);
+
+    onClick(e);
+  }, [onClick]);
 
   return (
     <Elem name="create" aria-label="Create Annotation" onClick={onCreateAnnotation}>
@@ -185,7 +289,21 @@ const CreateAnnotation = ({ annotationStore, onClick }) => {
   );
 };
 
-const AnnotationListItem = ({ entity, selected, onClick, extra, ...props }) => {
+type AnnotationListItemProps = {
+  entityAtom: Atom<Annotation>,
+  selected?: boolean,
+  onClick?: (e: MouseEvent) => void,
+  extra?: ReactNode,
+}
+
+const AnnotationListItem: FC<AnnotationListItemProps> = ({
+  entityAtom,
+  selected,
+  onClick,
+  extra,
+  ...props
+}) => {
+  const entity = useAtomValue(entityAtom);
   const isPrediction = entity.type === 'prediction';
   const username = userDisplayName(entity.user ?? {
     firstName: entity.createdBy || 'Admin',

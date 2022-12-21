@@ -18,3 +18,38 @@ export const InstructionsAtom = atom((get) => {
 export const InterfacesAtom = focusAtom(RootAtom, (optic) => optic.prop('interfaces'));
 
 export const TaskAtom = focusAtom(RootAtom, (optic) => optic.prop('task'));
+
+export const TaskHistoryAtom = focusAtom(RootAtom, (optic) => optic.prop('taskHistory'));
+
+export const InstructionsVisibilityAtom = focusAtom(RootAtom, (optic) => optic.prop('showingDescription'));
+
+export const TaskHistoryControlAtom = atom((get) => {
+  const task = get(TaskAtom);
+  const taskHistory = get(TaskHistoryAtom);
+
+  const hasHistory = task && taskHistory && taskHistory.length > 1;
+  const canGoNext = () => {
+    if (hasHistory) {
+      const lastTaskId = taskHistory[taskHistory.length - 1].taskId;
+
+      return task.id !== lastTaskId;
+    }
+    return false;
+  };
+
+  const canGoPrev = () => {
+    if (hasHistory) {
+      const firstTaskId = taskHistory[0].taskId;
+
+      return task.id !== firstTaskId;
+    }
+
+    return false;
+  };
+
+  return {
+    history: taskHistory,
+    canGoNext,
+    canGoPrev,
+  };
+});

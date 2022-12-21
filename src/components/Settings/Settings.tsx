@@ -7,11 +7,11 @@ import { Block, Elem } from '../../utils/bem';
 import { triggerResizeEvent } from '../../utils/utilities';
 import './Settings.styl';
 
-import { useAtom } from 'jotai';
-import { useMemo } from 'react';
-import { useAnnotationsNames } from '@atoms/Models/AnnotationsAtom/Hooks';
+import { useAnnotationNames } from '@atoms/Models/AnnotationsAtom/Hooks/useAnnotationNames';
 import { useSettings } from '@atoms/Models/SettingsAtom/Hooks';
 import { SettingsVisibilityAtom } from '@atoms/Models/SettingsAtom/SettingsAtom';
+import { useAtom } from 'jotai';
+import { useMemo } from 'react';
 import EditorSettings from '../../core/settings/editorsettings';
 import * as TagSettings from './TagSettings';
 
@@ -160,7 +160,7 @@ const Settings = {
 const DEFAULT_ACTIVE = Object.keys(Settings)[0];
 
 export const SettingsView: FC = () => {
-  const names = useAnnotationsNames();
+  const names = useAnnotationNames();
   const [visible, setVisible] = useAtom(SettingsVisibilityAtom);
   const availableSettings = useMemo(() => {
     const availableTags = Object.values(names);

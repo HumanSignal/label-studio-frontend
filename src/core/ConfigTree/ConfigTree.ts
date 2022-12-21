@@ -1,10 +1,10 @@
-import { AnnotationHistoryItem, AnnotationOrPrediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
 import { TagController, TagControllerName, Tags } from '@tags/Tags';
 import { Atom } from 'jotai';
 import { ConfigTreeNode } from './ConfigTreeNode';
 
 type RenderProps = {
-  annotationEntity: Atom<AnnotationOrPrediction | AnnotationHistoryItem>,
+  annotationEntity: Atom<Annotation>,
   node?: Node,
 }
 export class ConfigTree {

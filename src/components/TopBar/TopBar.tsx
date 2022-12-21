@@ -1,37 +1,60 @@
-import { ViewingAllAtom } from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
-import { useSelectedAnnotation } from '@atoms/Models/AnnotationsAtom/Hooks';
+import { viewingAllAtom } from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
+import { useWriteableAnnotation } from '@atoms/Models/AnnotationsAtom/Hooks/useWritableAnnotation';
+import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
 import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
 import { useAtomValue } from 'jotai';
+import { FC } from 'react';
 import { Block, Elem } from '../../utils/bem';
-import { DynamicPreannotationsToggle } from '../AnnotationTab/DynamicPreannotationsToggle';
-import { Actions } from './Actions';
+import { Actions } from './Actions/Actions';
 import { AnnotationsList } from './Annotations';
-import { Controls } from './Controls';
 import { CurrentTask } from './CurrentTask';
+import { SubmissionControls } from './SubmissionControls/SubmissionControls';
 import './TopBar.styl';
 
-export const TopBar = () => {
-  const entity = useSelectedAnnotation();
-  const viewingAll = useAtomValue(ViewingAllAtom);
+type TopBarProps = {
+  annotationAtom?: AnnotationAtom,
+}
+
+export const TopBar: FC<TopBarProps> = ({
+  annotationAtom,
+}) => {
+  const [
+    selectedEntityAtom,
+    updateSelectedEntityAtom,
+    setSelectedEntityAtom,
+  ] = useWriteableAnnotation(annotationAtom);
+
+  const selectedEntity = useAtomValue(selectedEntityAtom);
+  const viewingAll = useAtomValue(viewingAllAtom);
   const hasInterface = useInterfaces();
-  const isPrediction = entity?.type === 'prediction';
+  const isPrediction = selectedEntity?.type === 'prediction';
 
   return (
     <Block name="topbar">
       <Elem name="group">
-        <CurrentTask/>
-        {!viewingAll && <AnnotationsList/>}
-        <Actions/>
+        <CurrentTask selectedEntityId={selectedEntity?.id}/>
+        {!viewingAll && (
+          <AnnotationsList
+            selectedAnnotation={selectedEntityAtom}
+            selectAnnotation={setSelectedEntityAtom}
+            updateAnnotation={updateSelectedEntityAtom}
+          />
+        )}
+        <Actions
+          annotationAtom={selectedEntityAtom}
+        />
       </Elem>
       <Elem name="group">
         {!viewingAll && (
           <Elem name="section">
-            <DynamicPreannotationsToggle />
+            {/* <DynamicPreannotationsToggle /> */}
           </Elem>
         )}
         {!viewingAll && hasInterface('controls') && (hasInterface('review') || !isPrediction) && (
           <Elem name="section" mod={{ flat: true }} style={{ width: 320, boxSizing: 'border-box' }}>
-            <Controls annotation={entity} />
+            <SubmissionControls
+              selectedAnnotationAtom={selectedEntityAtom}
+            />
           </Elem>
         )}
       </Elem>

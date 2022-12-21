@@ -4,14 +4,29 @@ import { useCallback } from 'react';
 import { SettingsAtom } from './SettingsAtom';
 import { Settings } from './Types';
 
-const SettingsParamsAtom = focusAtom(SettingsAtom, (optic) => optic.prop('settings'));
+const settingsParamsAtom = focusAtom(SettingsAtom, (optic) => optic.prop('settings'));
 
-export const useSettings = (): [Settings, (patch: Partial<Settings>) => void] => {
-  const [settings, updateSettings] = useAtom(SettingsParamsAtom);
+const settingsVisibilityAtom = focusAtom(SettingsAtom, (optic) => optic.prop('visible'));
+
+type UseSettingsResult = [Settings, (patch: Partial<Settings>) => void, () => void]
+
+export const useSettings = (): UseSettingsResult => {
+  const [_, toggleVisibility] = useSettingsVisibility();
+  const [settings, updateSettings] = useAtom(settingsParamsAtom);
 
   const setSettings = useCallback((settings: Partial<Settings>) => {
     updateSettings((currentSettings) => ({ ...currentSettings, ...settings }));
   }, [settings]);
 
-  return [settings, setSettings];
+  return [settings, setSettings, toggleVisibility];
+};
+
+export const useSettingsVisibility = (): [boolean, () => void] => {
+  const [visible, setVisible] = useAtom(settingsVisibilityAtom);
+
+  const toggleVisibility = useCallback(() => {
+    setVisible(current => !current);
+  }, [visible]);
+
+  return [visible, toggleVisibility];
 };
