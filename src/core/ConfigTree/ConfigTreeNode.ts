@@ -4,7 +4,7 @@ import { guidGenerator } from '../Helpers';
 import { ConfigTree } from './ConfigTree';
 
 export type ConfigTreeNodeParams = {
-  node: Node,
+  node: Element,
   name: string,
   tree: ConfigTree,
   controller: {
@@ -19,10 +19,10 @@ export class ConfigTreeNode {
   type: InternalTagType;
   controllerName: TagControllerName;
   controller: TagController;
-  parent: Node | null;
-  node: Node;
+  parent: ParentNode | null;
+  node: Element;
   tree: ConfigTree;
-  children: Set<Node>;
+  children: Set<ChildNode>;
 
   constructor(params: ConfigTreeNodeParams) {
     this.id = guidGenerator();

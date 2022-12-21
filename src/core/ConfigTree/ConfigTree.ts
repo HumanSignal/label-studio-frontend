@@ -15,7 +15,6 @@ export class ConfigTree {
 
   constructor(config: string) {
     this.config = config;
-    console.log(this);
   }
 
   getNode(node: Node) {
@@ -33,8 +32,6 @@ export class ConfigTree {
     const ControllerClass = configNode?.controller;
 
     const controller = new ControllerClass(configNode);
-
-    console.log(configNode, annotationEntity);
 
     return controller.render()({
       tree: this,
