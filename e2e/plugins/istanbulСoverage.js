@@ -1,6 +1,8 @@
+/* global global */
+
 const fs = require('fs');
 const path = require('path');
-
+const TestExclude = require('test-exclude');
 const { recorder, event, output } = require('codeceptjs');
 const Container = require('codeceptjs/lib/container');
 const { clearString } = require('codeceptjs/lib/utils');
@@ -22,7 +24,17 @@ function hashCode(str) {
 
 const defaultConfig = {
   coverageDir: 'output/coverage',
+  actionCoverage: false,
   uniqueFileName: true,
+};
+
+const defaultActionCoverageConfig = {
+  enabled: true,
+  beginActionName: 'performActionBegin',
+  endActionName: 'performActionEnd',
+  coverageDir: 'output/actionCoverage',
+  include: true,
+  exclude: false,
 };
 
 const supportedHelpers = ['Puppeteer', 'Playwright'];
@@ -49,6 +61,14 @@ function buildFileName(test, uniqueFileName) {
   }
 
   return fileName;
+}
+
+function prepareActionStepConfig(actionCoverageConfig) {
+  const config = typeof actionCoverageConfig === 'boolean' ? {
+    enabled: actionCoverageConfig,
+  } : actionCoverageConfig;
+
+  return Object.assign({}, defaultActionCoverageConfig, config );
 }
 
 /**
@@ -88,19 +108,163 @@ module.exports = function(config) {
 
   const options = Object.assign(defaultConfig, helper.options, config);
 
-  event.dispatcher.on(event.all.before, async () => {
-    output.debug('*** Collecting istanbul coverage for tests ****');
+  options.actionCoverage = prepareActionStepConfig(options.actionCoverage);
+
+  const excludeTester = new TestExclude({
+    ...options.actionCoverage,
+    cwd: path.resolve('../'),
   });
 
+  let lastCoverages = {};
+  let lastActionKeys = new Set();
+  let actionCoverages = {};
+
+  const actionsStack = [];
+  let prevActionsStack = [];
+
+  const performActionBegin = (name) => {
+    actionsStack.push(name);
+  };
+
+  const performActionEnd = () => {
+    actionsStack.pop();
+  };
+
+  if (options.actionCoverage.enabled) {
+    global[options.actionCoverage.beginActionName] = performActionBegin;
+    global[options.actionCoverage.endActionName] = performActionEnd;
+  } else {
+    global[options.actionCoverage.beginActionName] = global[options.actionCoverage.endActionName] = ()=>{};
+  }
+
+  const getCoverage = async () => {
+    const coverageInfo = await helper.page.evaluate(() => {
+      const coverageInfo = window.__coverage__;
+
+      return coverageInfo;
+    });
+
+    return coverageInfo;
+  };
+
+  function hasActionChanges() {
+    return actionsStack.length !== prevActionsStack.length || actionsStack.some((val, key) => val !== prevActionsStack[key]);
+  }
+
+  function filterActionCoverage(actionCoverage) {
+    return Object.fromEntries(Object.entries(actionCoverage).filter(([path]) => excludeTester.shouldInstrument(path)));
+  }
+  async function collectLastCoverage(actionKeys, endOfTest = false) {
+    const coverageInfo = await getCoverage();
+
+    if (!coverageInfo) return {};
+    const actionCoverageInfo = filterActionCoverage(coverageInfo);
+
+    actionKeys.forEach(actionKey => {
+      if (!lastCoverages[actionKey]) {
+        lastCoverages[actionKey] = actionCoverageInfo;
+      }
+    });
+
+    for (const lastActionKey of lastActionKeys) {
+      if (endOfTest || actionKeys.indexOf(lastActionKey) === -1) {
+        const additionalCoverage = subCoverage(actionCoverageInfo, lastCoverages[lastActionKey]);
+
+        if (!actionCoverages[lastActionKey]) {
+          actionCoverages[lastActionKey] = additionalCoverage;
+        } else {
+          actionCoverages[lastActionKey] = addCoverage(actionCoverages[lastActionKey], additionalCoverage);
+        }
+
+        lastCoverages[lastActionKey] = undefined;
+        delete lastCoverages[lastActionKey];
+      }
+    }
+
+    lastActionKeys = [...actionKeys];
+
+    return coverageInfo;
+  }
+
+  function operateCoverage(aCoverage, bCoverage, op) {
+    const resultCoverage = {};
+
+    for (const [filePath, aFileCoverage] of Object.entries(aCoverage)) {
+      const bFileCoverage = bCoverage[filePath];
+      const resultFileCoverage = { ...aFileCoverage, s: {}, f: {}, b: {} };
+
+      for (const [key, value] of Object.entries(aFileCoverage.s)) {
+        resultFileCoverage.s[key] = op(value, bFileCoverage.s[key]);
+      }
+      for (const [key, value] of Object.entries(aFileCoverage.f)) {
+        resultFileCoverage.f[key] = op(value, bFileCoverage.f[key]);
+      }
+      for (const [key, values] of Object.entries(aFileCoverage.b)) {
+        resultFileCoverage.b[key] = values.map((val, idx)=> op(val, bFileCoverage.b[key][idx]));
+      }
+      resultCoverage[filePath] = resultFileCoverage;
+    }
+    return resultCoverage;
+  }
+
+  function subCoverage(aCoverage, bCoverage) {
+    return operateCoverage(aCoverage, bCoverage, (a,b) => a - b);
+  }
+  function addCoverage(aCoverage, bCoverage) {
+    return operateCoverage(aCoverage, bCoverage, (a,b) => a + b);
+  }
+
+  event.dispatcher.on(event.all.before, async () => {
+    output.debug('*** Collecting istanbul coverage for tests ****');
+    if (!options.actionCoverage.enabled) return;
+    actionCoverages = {};
+  });
+
+  event.dispatcher.on(event.all.after, async () => {
+    if (!options.actionCoverage.enabled) return;
+    recorder.add(
+      'saving action coverage',
+      async () => {
+        try {
+          const coverageDir = path.resolve(
+            process.cwd(),
+            options.actionCoverage.coverageDir,
+          );
+
+          if (!fs.existsSync(coverageDir)) {
+            fs.mkdirSync(coverageDir, { recursive: true });
+          }
+
+          for (const [actionName, coverage] of Object.entries(actionCoverages)) {
+            const coveragePath = path.resolve(
+              coverageDir,
+              actionName+'.coverage.json',
+            );
+
+            output.print(`writing ${coveragePath}`);
+            fs.writeFileSync(coveragePath, JSON.stringify(coverage));
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      true,
+    );
+  });
+
+  event.dispatcher.on(event.test.before, async () => {
+    if (!options.actionCoverage.enabled) return;
+    lastCoverages = {};
+    lastActionKeys = new Set();
+    prevActionsStack = [];
+  });
   // Save coverage data after every test run
   event.dispatcher.on(event.test.after, async (test) => {
     recorder.add(
       'saving coverage',
       async () => {
         try {
-          const coverageInfo = await helper.page.evaluate(() => {
-            return window.__coverage__;
-          });
+          const coverageInfo = await collectLastCoverage(actionsStack, true);
 
           const coverageDir = path.resolve(
             process.cwd(),
@@ -124,5 +288,20 @@ module.exports = function(config) {
       },
       true,
     );
+  });
+
+  event.dispatcher.on(event.step.before, async () => {
+    if (!options.actionCoverage.enabled) return;
+    if (!hasActionChanges()) return;
+    prevActionsStack = [...actionsStack];
+    const stack = [...actionsStack];
+
+    recorder.add('collect last coverage', async () => {
+      try {
+        await collectLastCoverage(stack);
+      } catch (err) {
+        console.error(err);
+      }
+    });
   });
 };

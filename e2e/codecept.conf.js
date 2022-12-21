@@ -78,6 +78,11 @@ module.exports.config = {
       enabled: true,
       uniqueFileName: true,
       coverageDir: '../coverage',
+      actionCoverage: {
+        enabled: false,
+        include: ['**/src/**'],
+        exclude: ['**/common/**', '**/components/**'],
+      },
     },
     screenshotOnFail: {
       enabled: true,
