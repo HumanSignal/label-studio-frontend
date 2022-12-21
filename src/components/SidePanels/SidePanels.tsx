@@ -3,8 +3,8 @@ import { Block, Elem } from '../../utils/bem';
 import { DetailsPanel } from './DetailsPanel/DetailsPanel';
 import { OutlinerPanel } from './OutlinerPanel/OutlinerPanel';
 
-import { useRegions } from '@atoms/Models/AnnotationsAtom/Hooks';
-import { Annotation, AnnotationHistoryItem, Prediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { useAnnotationRegions } from '@atoms/Models/AnnotationsAtom/Hooks/useAnnotationRegions';
+import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
 import { Atom, useAtomValue } from 'jotai';
 import { IconDetails, IconHamburger } from '../../assets/icons';
 import { useMedia } from '../../hooks/useMedia';
@@ -19,7 +19,7 @@ const maxWindowWidth = 980;
 
 interface SidePanelsProps {
   panelsHidden: boolean;
-  currentEntity: Atom<Annotation | Prediction | AnnotationHistoryItem>;
+  currentEntity: Atom<Annotation>;
   children: ReactNode;
 }
 
@@ -82,7 +82,7 @@ export const SidePanels: FC<SidePanelsProps> = ({
 }) => {
   const snapTreshold = 5;
   const entity = useAtomValue(currentEntity);
-  const regions = useRegions(currentEntity);
+  const regions = useAnnotationRegions(currentEntity);
   const viewportSize = useRef({ width: 0, height: 0 });
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [panelMaxWidth, setPanelMaxWidth] = useState(DEFAULT_PANEL_MAX_WIDTH);

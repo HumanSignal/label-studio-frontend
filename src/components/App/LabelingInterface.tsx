@@ -1,10 +1,10 @@
 import {
-  ConfigValidationAtom,
-  SelectedAnnotationAtom,
-  SelectedAnnotationHistoryAtom,
-  ViewingAllAtom
+  configValidationAtom,
+  selectedAnnotationHistoryAtom,
+  selectedAnnotationPropertyAtom,
+  viewingAllAtom
 } from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
-import { Annotation, AnnotationHistoryItem, Prediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
 import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
 import { InstructionsAtom, RootAtom, TaskAtom } from '@atoms/Models/RootAtom/RootAtom';
 import { SettingsAtom } from '@atoms/Models/SettingsAtom/SettingsAtom';
@@ -21,26 +21,28 @@ import { SidePanels } from '../SidePanels/SidePanels';
  * Tags
  */
 import { MessagesAtom } from '@atoms/MessagesAtom';
+import { TopBar } from '@components/TopBar/TopBar';
 import { ResultStatusType } from 'antd/lib/result';
 import messages from '../../utils/messages';
-import './App.styl';
+import { AnnotationView } from './Annotation';
+import './LabelingInterface.styl';
 
-export const App = () => {
+export const LabelingInterface = () => {
   const {
     fullscreen,
     bottomSidePanel,
   } = useAtomValue(SettingsAtom).settings;
 
   const root = useAtomValue(RootAtom);
-  const selectedAnnotation = useAtomValue(SelectedAnnotationAtom);
-  const selectedHistory = useAtomValue(SelectedAnnotationHistoryAtom);
-  const viewingAll = useAtomValue(ViewingAllAtom);
+  const selectedAnnotationAtom = useAtomValue(selectedAnnotationPropertyAtom);
+  const selectedHistoryAtom = useAtomValue(selectedAnnotationHistoryAtom);
+  const viewingAll = useAtomValue(viewingAllAtom);
   const instructions = useAtomValue(InstructionsAtom);
-  const validation = useAtomValue(ConfigValidationAtom);
+  const validation = useAtomValue(configValidationAtom);
   const currentEntity = useMemo(() => {
-    return selectedHistory ?? selectedAnnotation;
-  }, [selectedHistory, selectedAnnotation]);
-  // const hasInterface = useInterfaces();
+    return selectedHistoryAtom ?? selectedAnnotationAtom;
+  }, [selectedHistoryAtom, selectedAnnotationAtom]);
+  const hasInterface = useInterfaces();
 
   useEffect(() => {
     // Hack to activate app hotkeys
@@ -66,9 +68,9 @@ export const App = () => {
       )}
 
       {/* TODO: implement topbar */}
-      {/* {hasInterface('topbar') && (
-        <TopBar store={store}/>
-      )} */}
+      {hasInterface('topbar') && (
+        <TopBar annotationAtom={currentEntity}/>
+      )}
       <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: bottomSidePanel, outliner: true }}>
         {currentEntity ? (
           <SidePanels panelsHidden={viewingAll} currentEntity={currentEntity}>
@@ -76,8 +78,8 @@ export const App = () => {
               {validation === null ? (
                 <MainView
                   viewingAll={viewingAll}
-                  selectedAnnotationAtom={selectedAnnotation}
-                  selectedHistoryAtom={selectedHistory}
+                  selectedAnnotationAtom={selectedAnnotationAtom}
+                  selectedHistoryAtom={selectedHistoryAtom}
                 />
               ): <ConfigValidation/>}
             </Block>
@@ -91,8 +93,8 @@ export const App = () => {
 
 type MainViewProps = {
   viewingAll: boolean,
-  selectedAnnotationAtom?: Atom<Annotation | Prediction>,
-  selectedHistoryAtom?: Atom<AnnotationHistoryItem>,
+  selectedAnnotationAtom?: Atom<Annotation>,
+  selectedHistoryAtom?: Atom<Annotation>,
 }
 
 const MainView: FC<MainViewProps> = ({
@@ -100,9 +102,9 @@ const MainView: FC<MainViewProps> = ({
   selectedHistoryAtom,
   ...props
 }) => {
-  if (!selectedAnnotationAtom && !selectedHistoryAtom) return null;
+  if (!(selectedAnnotationAtom || selectedHistoryAtom)) return null;
 
-  const selectedHistory =  selectedHistoryAtom ? useAtomValue(selectedHistoryAtom) : null;
+  const selectedHistory = selectedHistoryAtom ? useAtomValue(selectedHistoryAtom) : null;
   const selectedAnnotation = selectedAnnotationAtom ? useAtomValue(selectedAnnotationAtom) : null;
   const selectedEntity = selectedHistory ?? selectedAnnotation;
 
@@ -126,7 +128,10 @@ const MainView: FC<MainViewProps> = ({
           onScrollCapture={notifyScroll}
         >
           <Elem name="annotation">
-            {/* {<Annotation root={root} annotation={as.selected} />} */}
+            <AnnotationView
+              annotationAtom={selectedAnnotationAtom}
+              historyItemAtom={selectedHistoryAtom}
+            />
             {/* <RelationsOverlay
               key={guidGenerator()}
               store={store}

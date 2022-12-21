@@ -14,6 +14,7 @@ export interface SpaceProps {
   collapsed?: boolean;
   truncated?: boolean;
   className?: string;
+  children?: React.ReactNode;
 }
 
 export const Space: FC<SpaceProps> = ({

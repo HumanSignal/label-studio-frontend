@@ -1,4 +1,4 @@
-import { Annotation, Prediction } from '@atoms/Models/AnnotationsAtom/Types';
+import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
 import { Regions } from '@atoms/Models/RegionsAtom/Types';
 // import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
 import { Atom } from 'jotai';
@@ -20,7 +20,7 @@ const DetailsPanelComponent: FC<PanelProps> = (props) => {
 
 type ContentProps = {
   selection: Regions['selection'],
-  currentEntity: Atom<Annotation | Prediction>,
+  currentEntity: Atom<Annotation>,
 }
 
 const Content: FC<ContentProps> = ({

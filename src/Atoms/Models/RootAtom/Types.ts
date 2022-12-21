@@ -1,4 +1,4 @@
-import { User } from '../UsersAtom';
+import { User } from '../../UsersAtom';
 
 export type Task = {
   id: number,
