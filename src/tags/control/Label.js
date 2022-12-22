@@ -172,7 +172,9 @@ const Model = types.model({
       // unselect labels from other groups of labels connected to this obj
       self.annotation.toNames.get(labels.toname).
         filter(tag => tag.type && tag.type.endsWith('labels') && tag.name !== labels.name).
-        forEach(tag => tag.unselectAll && tag.unselectAll());
+        forEach(tag => {
+          if (tag.unselectAll && tag.choice !== 'multiple') tag.unselectAll();
+        });
 
       // unselect other tools if they exist and selected
       const manager = ToolsManager.getInstance({ name: self.parent.toname });
