@@ -4,7 +4,7 @@ import { guidGenerator } from '../../../utils/unique';
 import { AnnotationInput, PredictionInput } from '../../Inputs/AnnotationInput';
 import { StoreAccess } from '../../StoreAccess';
 import { Regions } from '../RegionsAtom/Types';
-import { annotationsAtom, annotationsListAtom, predictionsListAtom, selectedAnnotationPropertyAtom, writableAnnotationsListAtom } from './AnnotationsAtom';
+import { annotationsAtom, annotationsListAtom, predictionsListAtom, selectedAnnotationAtom, selectedAnnotationPropertyAtom, writableAnnotationsListAtom } from './AnnotationsAtom';
 import { Annotation, AnnotationAtom, EntityType } from './Types';
 
 /**
@@ -20,6 +20,10 @@ export class AnnotationController extends StoreAccess {
     if (!annotationsAtom) return [];
 
     return annotationsAtom ?? [];
+  }
+
+  get selected() {
+    return this.store.get(selectedAnnotationAtom);
   }
 
   /**
@@ -69,6 +73,8 @@ export class AnnotationController extends StoreAccess {
    */
   selectFirstAnnotation() {
     const annotation = this.annotations.at(0);
+
+    console.log('selectFirstAnnotation', annotation);
 
     if (!annotation) return;
 

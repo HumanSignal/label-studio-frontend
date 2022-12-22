@@ -6,7 +6,7 @@
       "@hooks/*": ["src/hooks/*"],
       "@atoms/*": ["src/Atoms/*"],
       "@examples/*": ["examples/*"],
-      "@tags/*": ["src/Tags/*"],
+      "@tags/*": ["src/ConfigParser/Tags/*"],
       "src/*": ["src/*"]
     }
   }

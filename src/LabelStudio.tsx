@@ -36,7 +36,7 @@ export class LabelStudio {
   private options: LSOptions;
   private [INTERNAL_SDK]!: InternalSDK;
 
-  store: any;
+  store!: Store;
   destroy: (() => void) | null;
 
   constructor(root: string | HTMLElement, userOptions: LSOptions = {}) {
@@ -75,7 +75,7 @@ export class LabelStudio {
     }
   }
 
-  async createApp() {
+  private async createApp() {
     const { getRoot, params } = await configureStore(this.options);
     const rootElement = getRoot(this.root) as unknown as HTMLElement;
     const appRoot = createRoot(rootElement);
@@ -107,10 +107,11 @@ export class LabelStudio {
       destroy(this.store);
     };
 
+    this.store = store;
     this.destroy = destructor;
   }
 
-  supportLgacyEvents() {
+  private supportLgacyEvents() {
     const keys = Object.keys(legacyEvents) as (keyof typeof legacyEvents)[];
 
     keys.forEach(key => {

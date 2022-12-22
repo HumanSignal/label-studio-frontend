@@ -1,10 +1,10 @@
-import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
+import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
 import { TagController, TagControllerName, Tags } from '@tags/Tags';
-import { Atom } from 'jotai';
+import { createElement, Fragment } from 'react';
 import { ConfigTreeNode } from './ConfigTreeNode';
 
 type RenderProps = {
-  annotationEntity: Atom<Annotation>,
+  annotationAtom: AnnotationAtom,
   node?: Node,
 }
 export class ConfigTree {
@@ -22,21 +22,49 @@ export class ConfigTree {
   }
 
   render({
-    annotationEntity,
+    annotationAtom,
     node,
   }: RenderProps) {
     const configNode = this.structure.get(node ?? this.root);
+
+    console.log({ node, configNode });
 
     if (!configNode) return null;
 
     const ControllerClass = configNode?.controller;
 
     const controller = new ControllerClass(configNode);
+    const component = controller.render();
 
-    return controller.render()({
+    return component({
       tree: this,
-      annotationEntity,
+      annotationAtom,
       node: configNode,
+    });
+  }
+
+  renderChildren({
+    node,
+    annotationAtom,
+  }: {
+    node: Element,
+    annotationAtom: AnnotationAtom,
+  }) {
+    const childList = Array.from(node.children);
+
+    return childList.map((child) => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        return child.textContent;
+      }
+
+      const configNode = this.getNode(child);
+
+      return configNode ? createElement(Fragment, {
+        key: configNode.id,
+      }, this.render({
+        node: child,
+        annotationAtom,
+      })) : null;
     });
   }
 
@@ -52,9 +80,15 @@ export class ConfigTree {
       const controller = this.findController(node.nodeName);
 
       if (!controller) {
-        console.warn(`Unknown tag ${node.nodeName}. Available tags: ${Object.values(Tags).map(t => t.type).join(', ')}`);
-        return;
+        const supportedTags = Object
+          .keys(Tags)
+          .map(name => name.replace('TagController', ''))
+          .join('\n');
+
+        return console.error(`Unknown tag ${node.nodeName}. Available tags:\n${supportedTags}`);
       }
+
+      console.log(node, node.nodeName, controller);
 
       this.structure.set(node, new ConfigTreeNode({
         node,
@@ -84,7 +118,7 @@ export class ConfigTree {
   private findController(tag: string) {
     const entry = Object
       .entries(Tags)
-      .find(([_, value]) => value.type === tag.toLowerCase()) as [TagControllerName, TagController] | undefined;
+      .find(([_, value]) => value.type.toLowerCase() === tag.toLowerCase()) as [TagControllerName, TagController] | undefined;
 
     return entry ? {
       name: entry[0],

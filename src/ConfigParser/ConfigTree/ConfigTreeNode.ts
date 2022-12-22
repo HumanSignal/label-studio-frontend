@@ -1,6 +1,6 @@
 import { InternalTagType } from '@tags/Base/BaseTag/BaseTagController';
 import { TagController, TagControllerName } from '@tags/Tags';
-import { guidGenerator } from '../Helpers';
+import { guidGenerator } from '../../core/Helpers';
 import { ConfigTree } from './ConfigTree';
 
 export type ConfigTreeNodeParams = {

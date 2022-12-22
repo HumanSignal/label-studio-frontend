@@ -8,10 +8,10 @@ import { IconFast, IconSlow, IconZoomIn, IconZoomOut } from '../../../../assets/
 import { Range } from '../../../../common/Range/Range';
 import { Space } from '../../../../common/Space/Space';
 import { useMemoizedHandlers } from '../../../../hooks/useMemoizedHandlers';
+import { WS_SPEED, WS_ZOOM_X } from '../../../../tags/object/AudioNext/constants';
 import { Block, Elem } from '../../../../utils/bem';
 import ResizeObserver from '../../../../utils/resize-observer';
 import { clamp, isDefined, isMacOS } from '../../../../utils/utilities';
-import { WS_SPEED, WS_ZOOM_X } from '../../../../_tags/object/AudioNext/constants';
 import { TimelineContext } from '../../Context';
 import { TimelineContextValue, TimelineViewProps } from '../../Types';
 import { formatTimeCallback, secondaryLabelInterval, timeInterval } from './Utils';

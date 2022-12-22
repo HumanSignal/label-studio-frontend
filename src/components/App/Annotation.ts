@@ -1,11 +1,10 @@
-import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
-import { Atom } from 'jotai';
+import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
 import { FC } from 'react';
 import { useSDK } from 'src/App';
 
 type AnnotationProps = {
-  annotationAtom?: Atom<Annotation>,
-  historyItemAtom?: Atom<Annotation>,
+  annotationAtom?: AnnotationAtom,
+  historyItemAtom?: AnnotationAtom,
 }
 
 export const AnnotationView: FC<AnnotationProps> = ({
@@ -16,6 +15,6 @@ export const AnnotationView: FC<AnnotationProps> = ({
   const entity = historyItemAtom ?? annotationAtom;
 
   return (SDK.root && entity) ? SDK.tree.render({
-    annotationEntity: entity,
+    annotationAtom: entity,
   }) : null;
 };

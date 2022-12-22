@@ -5,7 +5,7 @@ import { RootController } from '@atoms/Models/RootAtom/Controller';
 import { Store } from '@atoms/Store';
 import { StoreAccess } from '@atoms/StoreAccess';
 import { TagRegistry } from '@tags/Registry';
-import { ConfigTree } from 'src/core/ConfigTree/ConfigTree';
+import { ConfigTree } from 'src/ConfigParser/ConfigTree/ConfigTree';
 import { EventInvoker } from 'src/utils/events';
 
 type InternalSDKParams = {
