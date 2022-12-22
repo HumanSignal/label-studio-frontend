@@ -1,5 +1,6 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
+import { MaskUtil } from '../../utils/InputMask';
 
 import './TimeBox.styl';
 
@@ -19,28 +20,17 @@ export const TimeBox: FC<TimerProps> = ({
   onChange,
 }) => {
   const inputRef = React.createRef<HTMLInputElement>();
-  const [inputIsVisible, setInputVisible] = useState(false);
-  const [currentDisplayedTime, setCurrentDisplayedTime] = useState(value);
   const [currentInputTime, setCurrentInputTime] = useState<string | number | undefined>(value);
-  const [inputSelectionStart, setInputSelectionStart] = useState<number | null>(null);
 
   useEffect(() => {
-    setCurrentDisplayedTime(value);
-  }, [value]);
-
-  useEffect(() => {
-    if (inputSelectionStart !== null)
-      inputRef?.current?.setSelectionRange(inputSelectionStart, inputSelectionStart);
-  }, [currentInputTime, inputSelectionStart]);
-
-  const formatPosition = useCallback((time: number): string => {
-    const roundedFps = Math.round(999).toString();
-    const fpsMs = 1;
-    const currentSecond = (time * 1000) % 1000;
-    const result = Math.round(currentSecond / fpsMs).toString();
-
-    return result.padStart(roundedFps.length, '0');
+    if(inputRef.current) new MaskUtil(inputRef.current, '11:11:11:111',(data: string) => {
+      setCurrentInputTime(data);
+    });
   }, []);
+
+  useEffect(() => {
+    setCurrentInputTime(formatTime(value || 0, true));
+  }, [value]);
 
   const formatTime = useCallback((time: number, input = false): any => {
     const timeDate = new Date(time * 1000).toISOString();
@@ -63,6 +53,8 @@ export const TimeBox: FC<TimerProps> = ({
     const splittedValue = value.split(':').reverse();
     let totalTime = 0;
 
+    if(value.indexOf('_') >= 0) return;
+
     const calcs = [
       (x: number) => x / 1000,
       (x: number) => x,
@@ -77,38 +69,13 @@ export const TimeBox: FC<TimerProps> = ({
     onChange(totalTime);
   };
 
-  const handleClickToInput = () => {
-    if(!readonly) setInputVisible(true);
-  };
-
   const handleBlurInput = (e: React.FormEvent<HTMLInputElement>) => {
     const splittedValue = e.currentTarget.value.split(':');
 
     splittedValue[0] = splittedValue[0].toString().length === 1 ? `0${splittedValue[0].toString()}` : `${splittedValue[0]}`;
 
-    setInputVisible(false);
-
     convertTextToTime(splittedValue.join(':'));
-  };
-
-  const handleFocusInput = () => {
-    setCurrentInputTime(formatTime(currentDisplayedTime || 0, true));
-  };
-
-  const handleChangeInput = (e: React.FormEvent<HTMLInputElement>) => {
-    let input = e.currentTarget.value;
-    let selectionStart = e.currentTarget.selectionStart;
-
-    if (input.length === selectionStart) selectionStart = null;
-
-    setInputSelectionStart(selectionStart);
-
-    input = input.replace(/\D/g, '')
-      .replace(/(\d{2})(\d)/, '$1:$2')
-      .replace(/(\d{2})(\d)/, '$1:$2')
-      .replace(/(\d{2})(\d)/, '$1:$2');
-
-    setCurrentInputTime(input);
+    setCurrentInputTime(formatTime(value || 0, true));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -122,32 +89,19 @@ export const TimeBox: FC<TimerProps> = ({
       <Elem name={'input-time'}
         maxLength={12}
         tag={'input'}
-        autoFocus
         ref={inputRef}
         type="text"
+        readOnly={readonly}
         value={ currentInputTime }
         onKeyDown={handleKeyDown}
-        onChange={handleChangeInput}
-        onFocus={handleFocusInput}
+        onChange={() => {}}
         onBlur={handleBlurInput} />
-    );
-  };
-
-  const renderDisplayedTime = () => {
-    return (
-      <Elem name={'displayed-time'}
-        onClick={handleClickToInput}
-      >
-        {formatTime(currentDisplayedTime || 0)}:<span>{formatPosition(currentDisplayedTime || 0)}</span>
-      </Elem>
     );
   };
 
   return (
     <Block name="time-box" mod={{ inverted, sidepanel }}>
-      {inputIsVisible ?
-        renderInputTime() : renderDisplayedTime()
-      }
+      {renderInputTime()}
     </Block>
   );
 };
