@@ -200,3 +200,102 @@ Data(configParams).Scenario('Should work with existent regions.', async ({ I, La
   AtSidebar.see('-A + B!');
 });
 
+{
+  const paramsTable = new DataTable(['isInline', 'isPerRegion']);
+
+  for (const isPerRegion of [true, false]) {
+    for (const isInline of [true, false]) {
+      paramsTable.add([isInline, isPerRegion]);
+    }
+  }
+
+  const createConfig = ({ rows = '1' }) => {
+    return `<View>
+  <Text name="text" value="$text" />
+  <TextArea name="comment" toName="text" editable="true" rows="${rows}">
+    <Shortcut value="Shortcut" hotkey="Alt+V" />
+  </TextArea>
+</View>
+`;
+  };
+  const createPerRegionConfig = ({ rows = '1' }) => {
+    return `<View>
+  <Labels name="label" toName="text">
+    <Label value="region" />
+  </Labels>
+  <Text name="text" value="$text" />
+  <TextArea name="comment" toName="text" editable="true" rows="${rows}">
+    <Shortcut value="Shortcut" hotkey="Alt+V" />
+  </TextArea>
+</View>
+`;
+  };
+
+  Data(paramsTable).Scenario('Initial focus', async ({ I, LabelStudio, AtOutliner, current }) => {
+    const { isInline, isPerRegion } = current;
+    const config = (isPerRegion ? createPerRegionConfig : createConfig)({
+      rows: isInline ? '1' : '3',
+    });
+
+    I.amOnPage('/');
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_1564_dev_1565_shortcuts_focus_and_cursor_010222_short: true,
+      ff_front_dev_1566_shortcuts_in_results_010222_short: true,
+      ff_front_1170_outliner_030222_short: true,
+      fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short: true,
+    });
+
+    LabelStudio.init({
+      config,
+      data: { text: 'A simple text' },
+      annotations: [{
+        id: 'Test',
+        result: isPerRegion ? [
+          {
+            'value': {
+              'start': 9,
+              'end': 13,
+              'text': 'text',
+              'labels': [
+                'region',
+              ],
+            },
+            'id': 'Yk0XNP_zRJ',
+            'from_name': 'label',
+            'to_name': 'text',
+            'type': 'labels',
+            'origin': 'manual',
+          },
+        ] : [],
+      }],
+    });
+
+    if (isPerRegion) {
+      I.say('Select region');
+      AtOutliner.clickRegion(1);
+    }
+    I.say('Try to use shortcut at the start');
+    I.click(locate('.ant-tag').withText('Shortcut'));
+    // eslint-disable-next-line
+    // pause();
+
+    I.waitForValue('[name="comment"]', 'Shortcut');
+
+    I.say('Commit text');
+    I.pressKey(['Shift', 'Enter']);
+
+    I.say('Check that shortcuts still work in the edit mode');
+    I.click('[aria-label="edit"]');
+    I.click(locate('.ant-tag').withText('Shortcut'));
+    I.waitForValue('[name^="comment:"]', 'ShortcutShortcut');
+
+    I.say('Commit changes');
+    I.pressKey(['Shift', 'Enter']);
+
+    I.say('Check that shortcuts work with textarea again');
+    I.click(locate('.ant-tag').withText('Shortcut'));
+    I.waitForValue('[name="comment"]', 'Shortcut');
+
+  });
+}
+
