@@ -8,10 +8,19 @@ export const useRegionsCopyPaste = (entity: any) => {
 
       const element = el as HTMLElement;
       const tabIndex = parseInt(element.getAttribute('tabindex') ?? '', 10);
-      const contenteditable = element.getAttribute('contenteditable') === 'true';
-      const isFocusable = element.matches('a, button, input, textarea, select, details, [tabindex]');
+      const isFocusable = element.matches('a, button, input, textarea, select, details, [tabindex], [contenteditable]');
 
-      return isFocusable || contenteditable || tabIndex > -1;
+      return isFocusable || tabIndex > -1;
+    };
+
+    const allowCopyPaste = () => {
+      const selection = window.getSelection();
+      const focusNode = selection?.focusNode;
+      const nodeIsFocusable = isFocusable(focusNode as HTMLElement);
+      const activeElementIsFocusable = isFocusable(document.activeElement);
+      const selectionIsCollapsed = selection?.isCollapsed ?? true;
+
+      return selectionIsCollapsed && !nodeIsFocusable && !activeElementIsFocusable;
     };
 
     const copyToClipboard = (ev: ClipboardEvent) => {
@@ -31,6 +40,8 @@ export const useRegionsCopyPaste = (entity: any) => {
           return { ...res, readonly: false };
         });
 
+        console.log({ results });
+
         entity.appendResults(results);
         ev.preventDefault();
       } catch (e) {
@@ -40,21 +51,13 @@ export const useRegionsCopyPaste = (entity: any) => {
     };
 
     const copyHandler = (ev: Event) =>{
-      const selection = window.getSelection();
-
-      if (!selection?.isCollapsed || isFocusable(ev.target as HTMLElement)) return;
+      if (!allowCopyPaste()) return;
 
       copyToClipboard(ev as ClipboardEvent);
     };
 
     const pasteHandler = (ev: Event) =>{
-      const focusNode = window.getSelection()?.focusNode;
-
-      const nodeIsFocusable = isFocusable(focusNode as HTMLElement);
-      const activeElementIsFocusable = isFocusable(document.activeElement);
-
-      console.log('paste', { ev, nodeIsFocusable, activeElementIsFocusable });
-      if (nodeIsFocusable || activeElementIsFocusable) return;
+      if (!allowCopyPaste()) return;
 
       pasteFromClipboard(ev as ClipboardEvent);
     };
