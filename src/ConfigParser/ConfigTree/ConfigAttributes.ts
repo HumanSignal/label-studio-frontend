@@ -1,5 +1,5 @@
+import { BaseTagController } from '@tags/Base/BaseTag/BaseTagController';
 import { ConfigTreeNode } from 'src/ConfigParser/ConfigTree/ConfigTreeNode';
-import { BaseTagController } from './BaseTagController';
 
 const ATTRIBUTES = new WeakMap<ConfigTreeNode, Record<string, string>>();
 
@@ -25,15 +25,28 @@ export type AttributeParser = (atribute: AttributeParserParams) => any;
 
 export type AttributeParsers = Record<AttributeParserName<string>, AttributeParser>;
 
-export abstract class BaseTagAttributes {
+export class ConfigAttributes {
   parsers: AttributeParsers = {};
 
   private treeNode: ConfigTreeNode;
 
+  private availableAttributes?: AttributeConfig[];
+
+  get attrs() {
+    return ATTRIBUTES.get(this.treeNode);
+  }
+
+  private get controller() {
+    return this.treeNode.controller.constructor as typeof BaseTagController;
+  }
+
   constructor(treeNode: ConfigTreeNode) {
-    this.treeNode = treeNode;
-    this.grabAttributes();
     ATTRIBUTES.set(treeNode, {});
+    this.treeNode = treeNode;
+
+    this.availableAttributes = VALID_ATTRIBUTES.get(this.controller);
+
+    this.grabAttributes();
   }
 
   private grabAttributes() {
@@ -61,12 +74,10 @@ export abstract class BaseTagAttributes {
   }
 
   private validateAttribute(name: string, value: string) {
-    const controller = this.treeNode.controller.constructor as typeof BaseTagController;
-    const attributes = VALID_ATTRIBUTES.get(controller);
-    const attribute = attributes?.find((attr) => attr.name === name);
+    const attribute = this.availableAttributes?.find((attr) => attr.name === name);
 
     if (attribute?.required && !value) {
-      throw new Error(`Attribute ${name} is required for tag ${controller.type}`);
+      throw new Error(`Attribute ${name} is required for tag ${this.controller.type}`);
     }
   }
 }

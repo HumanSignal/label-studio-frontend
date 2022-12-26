@@ -3,7 +3,9 @@
     ["@babel/preset-react", {
       "runtime": "automatic"
     }],
-    "@babel/preset-typescript",
+    ["@babel/preset-typescript", {
+      "isTSX": true
+    }],
     ["@babel/preset-env", {
       "targets": {
         "browsers": ["last 2 Chrome versions"],
@@ -12,7 +14,13 @@
     }]
   ],
   "plugins": [
-    ["babel-plugin-import", { "libraryName": "antd" }],
+    ["babel-plugin-import", {
+      "libraryName": "antd"
+    }],
+    ["@babel/plugin-proposal-decorators", {
+      "decoratorsBeforeExport": true
+    }],
+    "@babel/plugin-proposal-class-static-block",
     "@babel/plugin-proposal-class-properties",
     "@babel/plugin-proposal-private-methods",
     "@babel/plugin-proposal-optional-chaining",

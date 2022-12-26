@@ -6,7 +6,8 @@ export const LabelsTagView: BaseTagView = ({
   node,
   annotationAtom,
 }) => {
-  console.log('render labels');
+  console.log({ node });
+
   return (
     <Block name="labels">
       {tree.renderChildren({

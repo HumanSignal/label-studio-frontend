@@ -131,24 +131,27 @@ const babelLoader = {
   loader: 'babel-loader',
   options: {
     presets: [
-      [
-        '@babel/preset-react',
-        {
-          runtime: 'automatic',
+      ['@babel/preset-react', {
+        runtime: 'automatic',
+      }],
+      ['@babel/preset-typescript', {
+        'isTSX': true,
+      }],
+      ['@babel/preset-env', {
+        targets: {
+          browsers: ['last 2 Chrome versions'],
         },
-      ],
-      '@babel/preset-typescript',
-      [
-        '@babel/preset-env',
-        {
-          targets: {
-            browsers: ['last 2 Chrome versions'],
-          },
-        },
-      ],
+      }],
     ],
     plugins: [
       'react-hot-loader/babel',
+      ['babel-plugin-import', {
+        'libraryName': 'antd',
+      }],
+      ['@babel/plugin-proposal-decorators', {
+        'version': '2022-03',
+      }],
+      '@babel/plugin-proposal-class-static-block',
       '@babel/plugin-proposal-class-properties',
       '@babel/plugin-proposal-optional-chaining',
       '@babel/plugin-proposal-nullish-coalescing-operator',
@@ -404,6 +407,7 @@ module.exports = ({ withDevServer = true } = {}) => ({
             loader: '@svgr/webpack',
             options: {
               ref: true,
+
             },
           },
           'url-loader',

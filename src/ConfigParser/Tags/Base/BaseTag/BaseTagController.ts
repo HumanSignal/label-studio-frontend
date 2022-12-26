@@ -3,31 +3,31 @@ import { ConfigTreeNode } from 'src/ConfigParser/ConfigTree/ConfigTreeNode';
 
 type TagView = typeof TagViews[keyof typeof TagViews];
 
-export type InternalTagType =
-  | 'base-visual'
-  | 'base'
-  | 'view'
-  | 'header'
-  | 'labels'
-  | 'label'
-  | 'hypertextlabels';
+export enum TagType {
+  /* @private */
+  'baseVisual' = 'base-visual',
+  'base' = 'base',
+  'view' = 'view',
+  'header' = 'header',
+  'labels' = 'labels',
+  'label' = 'label',
+  'hypertextlabels' = 'hypertextlabels',
+}
 
 export abstract class BaseTagControllerAbstract {
-  static type: InternalTagType = 'base';
+  static type = TagType.base;
 
-  static allowedChildrenTypes: InternalTagType[] = [];
+  static allowedChildrenTypes: TagType[] = [];
 
   static allowChildren: boolean;
 
-  abstract get type(): InternalTagType;
+  abstract get type(): TagType;
 
   private view: any;
 }
 
 export abstract class BaseTagController extends BaseTagControllerAbstract {
-  static type: InternalTagType = 'base';
-
-  static allowedChildrenTypes: InternalTagType[] = [];
+  static type = TagType.base;
 
   static allowChildren = true;
 
@@ -45,7 +45,7 @@ export abstract class BaseTagController extends BaseTagControllerAbstract {
   }
 
   get type() {
-    return (this.constructor as typeof BaseTagController).type as InternalTagType;
+    return (this.constructor as typeof BaseTagController).type as TagType;
   }
 
   render() {

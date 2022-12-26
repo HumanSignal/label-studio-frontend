@@ -6,4 +6,7 @@ module.exports = {
     __dirname: true,
   },
   extends: ['plugin:@heartexlabs/frontend/recommended'],
+  rules: {
+    '@typescript-eslint/indent': 'off',
+  },
 };

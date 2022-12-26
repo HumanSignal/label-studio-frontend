@@ -4,7 +4,7 @@ import { AnnotationController } from '@atoms/Models/AnnotationsAtom/Controller';
 import { RootController } from '@atoms/Models/RootAtom/Controller';
 import { Store } from '@atoms/Store';
 import { StoreAccess } from '@atoms/StoreAccess';
-import { TagRegistry } from '@tags/Registry';
+import { Registry } from '@tags/Registry';
 import { ConfigTree } from 'src/ConfigParser/ConfigTree/ConfigTree';
 import { EventInvoker } from 'src/utils/events';
 
@@ -17,7 +17,7 @@ class InternalSDK extends StoreAccess {
   private events: EventInvoker;
   root: RootController;
   annotations: AnnotationController;
-  tagRegistry: TagRegistry;
+  tagRegistry: Registry;
   tree!: ConfigTree;
 
   constructor(params: InternalSDKParams) {
@@ -25,13 +25,11 @@ class InternalSDK extends StoreAccess {
     this.events = params.events;
 
     this.root = new RootController(params.store);
-    this.tagRegistry = TagRegistry.getInstance();
+    this.tagRegistry = Registry.getInstance();
     this.annotations = new AnnotationController(params.store);
   }
 
   hydrate(data: RootStoreInput) {
-    console.log('RootStoreInput');
-
     this.hydrateRoot(data);
     this.hydrateAnnotations(data.task);
     this.parseConfig(data.config ?? '');
@@ -42,7 +40,6 @@ class InternalSDK extends StoreAccess {
     this.tree = new ConfigTree(config ?? '');
 
     this.tree.parse();
-    this.tree.walkTree(node => console.log(node));
   }
 
   private hydrateRoot(data: RootStoreInput) {

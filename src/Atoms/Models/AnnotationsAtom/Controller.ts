@@ -74,8 +74,6 @@ export class AnnotationController extends StoreAccess {
   selectFirstAnnotation() {
     const annotation = this.annotations.at(0);
 
-    console.log('selectFirstAnnotation', annotation);
-
     if (!annotation) return;
 
     this.select(annotation as AnnotationAtom);

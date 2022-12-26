@@ -1,9 +1,18 @@
-import { BaseTagController, BaseTagControllerAbstract, InternalTagType } from '../BaseTag/BaseTagController';
+import { ConfigAttributes } from 'src/ConfigParser/ConfigTree/ConfigAttributes';
+import { withAttributes } from '../BaseTag/BaseTagAttributes';
+import { BaseTagController, TagType } from '../BaseTag/BaseTagController';
 
-export class BaseControlTagController extends BaseTagController implements BaseTagControllerAbstract {
-  static type: InternalTagType = 'base-visual';
+@withAttributes([
+  { name: 'name', required: false },
+])
+class BaseControlTagController extends BaseTagController {
+  static type: TagType = TagType.base;
 
-  static allowedChildrenTypes: InternalTagType[] = [];
+  static allowedChildrenTypes: TagType[] = [];
 
   static allowChildren = true;
+
+  static attributeParser = ConfigAttributes;
 }
+
+export { BaseControlTagController };

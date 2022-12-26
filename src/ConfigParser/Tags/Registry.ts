@@ -1,17 +1,17 @@
-export class TagRegistry {
-  private static instance: TagRegistry;
+class Registry {
+  private static instance: Registry;
   private tags: any;
 
   private constructor() {
     this.tags = {};
   }
 
-  public static getInstance(): TagRegistry {
-    if (!TagRegistry.instance) {
-      TagRegistry.instance = new TagRegistry();
+  public static getInstance(): Registry {
+    if (!Registry.instance) {
+      Registry.instance = new Registry();
     }
 
-    return TagRegistry.instance;
+    return Registry.instance;
   }
 
   public register(tag: any) {
@@ -22,3 +22,5 @@ export class TagRegistry {
     return this.tags[name];
   }
 }
+
+export { Registry };

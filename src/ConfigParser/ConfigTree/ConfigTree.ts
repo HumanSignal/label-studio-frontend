@@ -1,5 +1,7 @@
 import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
-import { TagController, TagControllerName, Tags } from '@tags/Tags';
+import { TagType } from '@tags/Base/BaseTag/BaseTagController';
+import { Tags } from '@tags/Tags';
+import { TagTypes } from '@tags/TagTypes';
 import { createElement, Fragment } from 'react';
 import { ConfigTreeNode } from './ConfigTreeNode';
 
@@ -26,8 +28,6 @@ export class ConfigTree {
     node,
   }: RenderProps) {
     const configNode = this.structure.get(node ?? this.root);
-
-    console.log({ node, configNode });
 
     if (!configNode) return null;
 
@@ -77,7 +77,7 @@ export class ConfigTree {
     this.walkTree(node => {
       this.nodes.push(node);
 
-      const controller = this.findController(node.nodeName);
+      const controller = this.findController(node.nodeName as TagType);
 
       if (!controller) {
         const supportedTags = Object
@@ -88,14 +88,14 @@ export class ConfigTree {
         return console.error(`Unknown tag ${node.nodeName}. Available tags:\n${supportedTags}`);
       }
 
-      console.log(node, node.nodeName, controller);
-
-      this.structure.set(node, new ConfigTreeNode({
+      const treeNode = new ConfigTreeNode({
         node,
         name: node.nodeName,
         tree: this,
         controller,
-      }));
+      });
+
+      this.structure.set(node, treeNode);
     });
   }
 
@@ -115,14 +115,16 @@ export class ConfigTree {
     }
   }
 
-  private findController(tag: string) {
-    const entry = Object
-      .entries(Tags)
-      .find(([_, value]) => value.type.toLowerCase() === tag.toLowerCase()) as [TagControllerName, TagController] | undefined;
+  private findController<TagName extends TagType>(tag: TagName): {
+    name: TagType,
+    class: ((typeof TagTypes)[TagName]),
+  } | null {
+    const tagName = tag.toLowerCase() as TagType;
+    const controller = TagTypes[tagName];
 
-    return entry ? {
-      name: entry[0],
-      class: entry[1],
+    return controller ? {
+      name: tagName,
+      class: controller,
     } : null;
   }
 }
