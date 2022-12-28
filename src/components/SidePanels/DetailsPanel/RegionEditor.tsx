@@ -1,10 +1,12 @@
 import { observe } from 'mobx';
 import { observer } from 'mobx-react';
 import { getType, IAnyType, isLiteralType, isOptionalType, isPrimitiveType, isUnionType, types } from 'mobx-state-tree';
-import { ChangeEvent, FC, HTMLInputTypeAttribute, InputHTMLAttributes, KeyboardEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, FC, HTMLInputTypeAttribute, InputHTMLAttributes, KeyboardEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { IconPropertyAngle } from '../../../assets/icons';
 import { Block, Elem, useBEM } from '../../../utils/bem';
 import './RegionEditor.styl';
+import { TimeDurationControl } from '../../TimeDurationControl/TimeDurationControl';
+import { FF_DEV_2715, isFF } from '../../../utils/feature-flags';
 
 interface RegionEditorProps {
   region: any;
@@ -38,21 +40,52 @@ const RegionEditorComponent: FC<RegionEditorProps> = ({
   region,
 }) => {
   const fields: any[] = region.editableFields ?? [];
+  const isAudioModel = getType(region).name === 'AudioRegionModel';
+
+  const changeStartTimeHandler = (value: number) => {
+    region.setProperty('start', value);
+  };
+
+  const changeEndTimeHandler = (value: number) => {
+    region.setProperty('end', value);
+  };
+
+  const renderRegionProperty = () => (
+    <Elem name="wrapper">
+      {region.editorEnabled && fields.map((field: any, i) => {
+        return (
+          <RegionProperty
+            key={`${field.property}-${i}`}
+            property={field.property}
+            label={field.label}
+            region={region}
+          />
+        );
+      })}
+    </Elem>
+  );
+
+  const renderAudioTimeControls = () => {
+    return (
+      <Elem name="wrapper-time-control">
+        <TimeDurationControl
+          startTime={region.start}
+          endTime={region.end}
+          minTime={0}
+          maxTime={region?._ws_region?.duration}
+          startTimeReadonly={true}
+          endTimeReadonly={true}
+          isSidepanel={true}
+          onChangeStartTime={changeStartTimeHandler}
+          onChangeEndTime={changeEndTimeHandler}
+        />
+      </Elem>
+    );
+  };
 
   return (
     <Block name="region-editor" mod={{ disabled: !region.editable }}>
-      <Elem name="wrapper">
-        {region.editorEnabled && fields.map((field: any, i) => {
-          return (
-            <RegionProperty
-              key={`${field.property}-${i}`}
-              property={field.property}
-              label={field.label}
-              region={region}
-            />
-          );
-        })}
-      </Elem>
+      {(isAudioModel && isFF(FF_DEV_2715)) ? renderAudioTimeControls() : renderRegionProperty()}
     </Block>
   );
 };
@@ -184,7 +217,7 @@ const RegionInput: FC<RegionInputProps> = ({
 
 
     if (type === 'number') {
-      if (!value.match(/^([0-9,.]*)$/ig)) {
+      if (!value.match(/^([0-9,.]+)$/ig)) {
         safeValue = false;
       }
 

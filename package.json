@@ -114,6 +114,7 @@
     "@types/jest": "^29.2.3",
     "@types/keymaster": "^1.6.30",
     "@types/lodash.ismatch": "^4.4.6",
+    "@types/offscreencanvas": "^2019.6.4",
     "@types/nanoid": "^3.0.0",
     "@types/react-dom": "^17.0.11",
     "@types/react-window": "^1.8.5",
