@@ -5,7 +5,6 @@ import './VideoCanvas.styl';
 import { MAX_ZOOM, MIN_ZOOM } from './VideoConstants';
 import { VirtualCanvas } from './VirtualCanvas';
 import { VirtualVideo } from './VirtualVideo';
-import InfoModal from '../../components/Infomodal/Infomodal';
 
 type VideoProps = {
   src: string,
