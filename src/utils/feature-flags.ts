@@ -130,6 +130,12 @@ export const FF_DEV_3617 = 'fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix';
  */
 export const FF_DEV_1284 = 'fflag_fix_front_dev_1284_auto_detect_undo_281022_short';
 
+/**
+ * Fixing issue with overlapping taxonomy items during searching
+ * @link https://app.launchdarkly.com/default/community/features/fflag_fix_front_dev_4075_taxonomy_overlap_281222_short
+ */
+export const FF_DEV_4075 = 'fflag_fix_front_dev_4075_taxonomy_overlap_281222_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
