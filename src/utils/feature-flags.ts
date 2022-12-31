@@ -13,7 +13,7 @@ export const FF_DEV_1564_DEV_1565 = 'ff_front_dev_1564_dev_1565_shortcuts_focus_
 // Fix work of shortcuts in results
 // @requires FF_DEV_1564_DEV_1565
 export const FF_DEV_1566 = 'ff_front_dev_1566_shortcuts_in_results_010222_short';
-
+ 
 // User labels for Taxonomy
 export const FF_DEV_1536 = 'ff_front_dev_1536_taxonomy_user_labels_150222_long';
 
@@ -134,7 +134,7 @@ export const FF_DEV_1284 = 'fflag_fix_front_dev_1284_auto_detect_undo_281022_sho
  * Fixing maxUsages prop of *labels on region creation.
  * @link https://app.launchdarkly.com/default/test/features/fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short
  */
-export const FF_DEV_3666 = "fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short";
+export const FF_DEV_3666 = 'fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short';
 
 function getFeatureFlags() {
   return {
