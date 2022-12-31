@@ -1,11 +1,11 @@
-import { observer } from "mobx-react";
-import { useMemo } from "react";
-import { Button } from "../../common/Button/Button";
-import { Block, Elem } from "../../utils/bem";
-import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
-import { guidGenerator } from "../../utils/unique";
-import { isDefined } from "../../utils/utilities";
-import "./CurrentTask.styl";
+import { observer } from 'mobx-react';
+import { useMemo } from 'react';
+import { Button } from '../../common/Button/Button';
+import { Block, Elem } from '../../utils/bem';
+import { FF_DEV_3034, isFF } from '../../utils/feature-flags';
+import { guidGenerator } from '../../utils/unique';
+import { isDefined } from '../../utils/utilities';
+import './CurrentTask.styl';
 
 
 export const CurrentTask = observer(({ store }) => {
@@ -14,19 +14,20 @@ export const CurrentTask = observer(({ store }) => {
   }, [store.taskHistory]);
 
   const historyEnabled = store.hasInterface('topbar:prevnext');
+  const showCounter = store.hasInterface('topbar:task-counter');
   // @todo some interface?
   const canPostpone = isFF(FF_DEV_3034)
     && !isDefined(store.annotationStore.selected.pk)
     && !store.canGoNextTask
     && !store.hasInterface('review')
-    && store.hasInterface("postpone");
+    && store.hasInterface('postpone');
 
   return (
     <Elem name="section">
       <Block name="current-task" mod={{ 'with-history': historyEnabled }}>
         <Elem name="task-id">
           {store.task.id ?? guidGenerator()}
-          {historyEnabled && (
+          {historyEnabled && showCounter && (
             <Elem name="task-count">
               {currentIndex} of {store.taskHistory.length}
             </Elem>

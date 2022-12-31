@@ -1,14 +1,14 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import Tree from "../core/Tree";
-import { isDefined } from "../utils/utilities";
-import { FF_DEV_3666, isFF } from "../utils/feature-flags";
+import Tree from '../core/Tree';
+import { isDefined } from '../utils/utilities';
+import { FF_DEV_3666, isFF } from '../utils/feature-flags';
 
 const SelectedModelMixin = types
   .model()
   .volatile(() => {
     return {
-      isSeparated: false,
+      isSeparated: false, 
     };
   })
   .views(self => ({
@@ -58,7 +58,7 @@ const SelectedModelMixin = types
       return self.selectedLabels.filter(c => c.alias).map(c => c.alias);
     },
 
-    getSelectedString(joinstr = " ") {
+    getSelectedString(joinstr = ' ') {
       return self.selectedValues().join(joinstr);
     },
 

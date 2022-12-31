@@ -1,4 +1,4 @@
-import { getParent, types } from "mobx-state-tree";
+import { getParent, types } from 'mobx-state-tree';
 
 const RequiredMixin = types
   .model({
@@ -16,7 +16,7 @@ const RequiredMixin = types
         for (const reg of objectTag.regs) {
           const s = reg.results.find(s => s.from_name === self);
 
-          if (self.visiblewhen === "region-selected") {
+          if (self.visiblewhen === 'region-selected') {
             if (self.whentagname) {
               const label = reg.labeling?.from_name?.name;
 

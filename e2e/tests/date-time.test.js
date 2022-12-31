@@ -1,10 +1,10 @@
 /* global Feature, Scenario, locate */
 
-const { serialize, selectText } = require("./helpers");
+const { serialize, selectText } = require('./helpers');
 
-const assert = require("assert");
+const assert = require('assert');
 
-Feature("Date Time");
+Feature('Date Time');
 
 const config = `<View>
 <Header>Select text to see related smaller DateTime controls for every region</Header>
@@ -26,7 +26,7 @@ const config = `<View>
 
 
 const data = {
-  text: `Albert Einstein (/ˈaɪnstaɪn/ EYEN-styne;[6] German: [ˈalbɛʁt ˈʔaɪnʃtaɪn] (listen); 14 March 1879 – 18 April 1955) was a German-born theoretical physicist,[7] widely acknowledged to be one of the greatest and most influential physicists of all time. Einstein is best known for developing the theory of relativity, but he also made important contributions to the development of the theory of quantum mechanics. Relativity and quantum mechanics are together the two pillars of modern physics.[3][8] His mass–energy equivalence formula E = mc2, which arises from relativity theory, has been dubbed "the world's most famous equation".[9] His work is also known for its influence on the philosophy of science.[10][11] He received the 1921 Nobel Prize in Physics "for his services to theoretical physics, and especially for his discovery of the law of the photoelectric effect",[12] a pivotal step in the development of quantum theory. His intellectual achievements and originality resulted in "Einstein" becoming synonymous with "genius".[13]`,
+  text: 'Albert Einstein (/ˈaɪnstaɪn/ EYEN-styne;[6] German: [ˈalbɛʁt ˈʔaɪnʃtaɪn] (listen); 14 March 1879 – 18 April 1955) was a German-born theoretical physicist,[7] widely acknowledged to be one of the greatest and most influential physicists of all time. Einstein is best known for developing the theory of relativity, but he also made important contributions to the development of the theory of quantum mechanics. Relativity and quantum mechanics are together the two pillars of modern physics.[3][8] His mass–energy equivalence formula E = mc2, which arises from relativity theory, has been dubbed "the world\'s most famous equation".[9] His work is also known for its influence on the philosophy of science.[10][11] He received the 1921 Nobel Prize in Physics "for his services to theoretical physics, and especially for his discovery of the law of the photoelectric effect",[12] a pivotal step in the development of quantum theory. His intellectual achievements and originality resulted in "Einstein" becoming synonymous with "genius".[13]',
 };
 
 const annotations = [
@@ -37,27 +37,27 @@ const annotations = [
 
 const params = { config, data };
 
-Scenario("Check DateTime holds state between annotations and saves result", async function({ I, LabelStudio }) {
+Scenario('Check DateTime holds state between annotations and saves result', async function({ I, LabelStudio }) {
 
-  I.amOnPage("/");
+  I.amOnPage('/');
 
   LabelStudio.init(params);
 
   annotations.forEach(annotation => {
-    I.click(locate("span").withText(annotation.label));
+    I.click(locate('span').withText(annotation.label));
     I.executeScript(selectText, {
-      selector: ".lsf-htx-richtext",
+      selector: '.lsf-htx-richtext',
       rangeStart: annotation.rangeStart,
       rangeEnd: annotation.rangeEnd,
     });
-    I.click(locate("li").withText(annotation.text));
+    I.click(locate('li').withText(annotation.text));
     I.fillField('input[type=date]', annotation.date);
     I.selectOption('select[name=year-year]', annotation.year);
-    I.click(locate("li").withText(annotation.text));
+    I.click(locate('li').withText(annotation.text));
   });
 
   annotations.forEach(annotation => {
-    I.click(locate("li").withText(annotation.text));
+    I.click(locate('li').withText(annotation.text));
     I.seeInField('input[type=date]', annotation.dateValue);
     I.seeInField('select[name=year-year]', annotation.year);
 

@@ -1,4 +1,4 @@
-import { forwardRef, LegacyRef, useEffect, useRef } from "react";
+import { forwardRef, LegacyRef, useEffect, useRef } from 'react';
 
 interface VirtualCanvasProps {
   width: number;
@@ -18,7 +18,7 @@ export const VirtualCanvas = forwardRef<HTMLCanvasElement, VirtualCanvasProps>((
   };
 
   useEffect(() => {
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
 
     canvas.width = props.width;
     canvas.height = props.height;

@@ -1,21 +1,21 @@
-import React from "react";
-import { Checkbox, Modal, Table, Tabs } from "antd";
-import { observer } from "mobx-react";
+import React from 'react';
+import { Checkbox, Modal, Table, Tabs } from 'antd';
+import { observer } from 'mobx-react';
 
-import { Hotkey } from "../../core/Hotkey";
+import { Hotkey } from '../../core/Hotkey';
 
-import "./Settings.styl";
-import { Block, Elem } from "../../utils/bem";
-import { triggerResizeEvent } from "../../utils/utilities";
+import './Settings.styl';
+import { Block, Elem } from '../../utils/bem';
+import { triggerResizeEvent } from '../../utils/utilities';
 
-import EditorSettings from "../../core/settings/editorsettings";
-import * as TagSettings from "./TagSettings";
-import { useMemo } from "react";
+import EditorSettings from '../../core/settings/editorsettings';
+import * as TagSettings from './TagSettings';
+import { useMemo } from 'react';
 
 const HotkeysDescription = () => {
   const columns = [
-    { title: "Shortcut", dataIndex: "combo", key: "combo" },
-    { title: "Description", dataIndex: "descr", key: "descr" },
+    { title: 'Shortcut', dataIndex: 'combo', key: 'combo' },
+    { title: 'Description', dataIndex: 'descr', key: 'descr' },
   ];
 
   const keyNamespaces = Hotkey.namespaces();
@@ -24,10 +24,10 @@ const HotkeysDescription = () => {
     .filter(k => descr[k])
     .map(k => ({
       key: k,
-      combo: k.split(",").map(keyGroup => {
+      combo: k.split(',').map(keyGroup => {
         return (
           <Elem name="key-group" key={keyGroup}>
-            {keyGroup.trim().split("+").map((k) => <Elem tag="kbd" name="key" key={k}>{k}</Elem>)}
+            {keyGroup.trim().split('+').map((k) => <Elem tag="kbd" name="key" key={k}>{k}</Elem>)}
           </Elem>
         );
       }),
@@ -139,9 +139,9 @@ const LayoutSettings = observer(({ store }) => {
 });
 
 const Settings = {
-  General: { name: "General", component: GeneralSettings },
-  Hotkeys: { name: "Hotkeys", component: HotkeysDescription },
-  Layout: { name: "Layout", component: LayoutSettings },
+  General: { name: 'General', component: GeneralSettings },
+  Hotkeys: { name: 'Hotkeys', component: HotkeysDescription },
+  Layout: { name: 'Layout', component: LayoutSettings },
 };
 
 const DEFAULT_ACTIVE = Object.keys(Settings)[0];
@@ -165,7 +165,7 @@ export default observer(({ store }) => {
     <Modal
       visible={store.showingSettings}
       title="Settings"
-      bodyStyle={{ paddingTop: "0" }}
+      bodyStyle={{ paddingTop: '0' }}
       footer=""
       onCancel={store.toggleSettings}
     >

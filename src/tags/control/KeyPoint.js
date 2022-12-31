@@ -1,11 +1,11 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import Registry from "../../core/Registry";
-import ControlBase from "./Base";
-import { customTypes } from "../../core/CustomTypes";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
-import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
-import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
+import Registry from '../../core/Registry';
+import ControlBase from './Base';
+import { customTypes } from '../../core/CustomTypes';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import SeparatedControlMixin from '../../mixins/SeparatedControlMixin';
+import { ToolManagerMixin } from '../../mixins/ToolManagerMixin';
 
 /**
  * The `KeyPoint` tag is used to add a key point to an image without selecting a label. This can be useful when you have only one label to assign to the key point.
@@ -32,16 +32,16 @@ import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
 const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(customTypes.range(), "0.9"),
-  fillcolor: types.optional(customTypes.color, "#8bad00"),
+  opacity: types.optional(customTypes.range(), '0.9'),
+  fillcolor: types.optional(customTypes.color, '#8bad00'),
 
-  strokecolor: types.optional(customTypes.color, "#8bad00"),
-  strokewidth: types.optional(types.string, "2"),
+  strokecolor: types.optional(customTypes.color, '#8bad00'),
+  strokewidth: types.optional(types.string, '2'),
 });
 
 const Model = types
   .model({
-    type: "keypoint",
+    type: 'keypoint',
     isDrawingTool: true,
     // tools: types.array(BaseTool)
   })
@@ -56,7 +56,7 @@ const Model = types
     toolNames: ['KeyPoint'],
   }));
 
-const KeyPointModel = types.compose("KeyPointModel",
+const KeyPointModel = types.compose('KeyPointModel',
   ControlBase,
   AnnotationMixin,
   SeparatedControlMixin,
@@ -69,6 +69,6 @@ const HtxView = () => {
   return null;
 };
 
-Registry.addTag("keypoint", KeyPointModel, HtxView);
+Registry.addTag('keypoint', KeyPointModel, HtxView);
 
 export { HtxView, KeyPointModel };

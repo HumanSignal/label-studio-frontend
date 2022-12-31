@@ -1,11 +1,11 @@
-import AppStore from "./stores/AppStore";
+import AppStore from './stores/AppStore';
 
 const getEnvironment = async () => {
-  if (process.env.NODE_ENV === "development" && !process.env.BUILD_NO_SERVER) {
-    return (await import("./env/development")).default;
+  if (process.env.NODE_ENV === 'development' && !process.env.BUILD_NO_SERVER) {
+    return (await import('./env/development')).default;
   }
 
-  return (await import("./env/production")).default;
+  return (await import('./env/production')).default;
 };
 
 export const configureStore = async (params, events) => {
@@ -34,6 +34,9 @@ export const configureStore = async (params, events) => {
 
   store.initializeStore({
     ...(params.task ?? {}),
+    // allow external integrations to control when the app is fully hydrated
+    // default behaviour is to consider this point as hydrated
+    hydrated: params?.hydrated ?? true,
     users: params.users ?? [],
     annotationHistory: params.history ?? [],
   });

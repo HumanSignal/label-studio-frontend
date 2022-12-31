@@ -1,10 +1,10 @@
 /* global inject */
 const { I } = inject();
 
-const Helpers = require("../tests/helpers");
+const Helpers = require('../tests/helpers');
 
 module.exports = {
-  _stageSelector: ".konvajs-content",
+  _stageSelector: '.konvajs-content',
   _stageBBox: { x: 0, y: 0, width: 0, height: 0 },
 
   async grabStageBBox() {
@@ -21,9 +21,9 @@ module.exports = {
   },
 
   waitForImage() {
-    I.say("Waiting for image to be loaded");
+    I.say('Waiting for image to be loaded');
     I.executeScript(Helpers.waitForImage);
-    I.waitForVisible("canvas", 5);
+    I.waitForVisible('canvas', 5);
   },
 
   async getCanvasSize() {
@@ -170,7 +170,7 @@ module.exports = {
    * @param {"steps"|"rate"} mode - mode of firing mousemove event
    * @param {number} parameter - parameter for mode
    */
-  drawThroughPoints(points, mode = "steps", parameter = 1) {
+  drawThroughPoints(points, mode = 'steps', parameter = 1) {
     I.scrollPageToTop();
     const calcSteps = {
       steps: () => parameter,

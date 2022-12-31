@@ -1,14 +1,14 @@
-import React, { Component } from "react";
-import { Button, Spin } from "antd";
-import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
-import styles from "./Grid.module.scss";
-import { EntityTab } from "../AnnotationTabs/AnnotationTabs";
-import { observe } from "mobx";
-import Konva from "konva";
-import { Annotation } from "./Annotation";
-import { isDefined } from "../../utils/utilities";
-import { FF_DEV_3391, isFF } from "../../utils/feature-flags";
-import { moveStylesBetweenHeadTags } from "../../utils/html";
+import React, { Component } from 'react';
+import { Button, Spin } from 'antd';
+import { LeftCircleOutlined, RightCircleOutlined } from '@ant-design/icons';
+import styles from './Grid.module.scss';
+import { EntityTab } from '../AnnotationTabs/AnnotationTabs';
+import { observe } from 'mobx';
+import Konva from 'konva';
+import { Annotation } from './Annotation';
+import { isDefined } from '../../utils/utilities';
+import { FF_DEV_3391, isFF } from '../../utils/feature-flags';
+import { moveStylesBetweenHeadTags } from '../../utils/html';
 
 /***** DON'T TRY THIS AT HOME *****/
 /*
@@ -24,7 +24,7 @@ class Item extends Component {
       return o.isReady
         ? Promise.resolve(o.isReady)
         : new Promise(resolve => {
-          const dispose = observe(o, "isReady", ()=>{
+          const dispose = observe(o, 'isReady', ()=>{
             dispose();
             resolve();
           });
@@ -88,19 +88,19 @@ export default class Grid extends Component {
     Konva.stages.map(stage => stage.draw());
 
     /* canvases are cloned empty, so clone their content */
-    const sourceCanvas = item.querySelectorAll("canvas");
-    const clonedCanvas = clone.querySelectorAll("canvas");
+    const sourceCanvas = item.querySelectorAll('canvas');
+    const clonedCanvas = clone.querySelectorAll('canvas');
 
     clonedCanvas.forEach((canvas, i) => {
-      canvas.getContext("2d").drawImage(sourceCanvas[i], 0, 0);
+      canvas.getContext('2d').drawImage(sourceCanvas[i], 0, 0);
     });
 
     /*
       Procedure created style rules are not clonable so for
       iframe we should take care about them (highlight styles)
     */
-    const sourceIframe = item.querySelectorAll("iframe");
-    const clonedIframe = clone.querySelectorAll("iframe");
+    const sourceIframe = item.querySelectorAll('iframe');
+    const clonedIframe = clone.querySelectorAll('iframe');
 
     clonedIframe.forEach((iframe, idx) => {
       iframe.contentWindow.document.open();
@@ -132,7 +132,7 @@ export default class Grid extends Component {
     if (next < 0 || next > count - 1) return;
     const newPosition = children[next].offsetLeft;
 
-    container.scrollTo({ left: newPosition, top: 0, behavior: "smooth" });
+    container.scrollTo({ left: newPosition, top: 0, behavior: 'smooth' });
   };
 
   left = () => {
@@ -146,7 +146,7 @@ export default class Grid extends Component {
   select = c => {
     const { store } = this.props;
 
-    c.type === "annotation" ? store.selectAnnotation(c.id) : store.selectPrediction(c.id);
+    c.type === 'annotation' ? store.selectAnnotation(c.id) : store.selectPrediction(c.id);
   };
 
 
@@ -164,7 +164,7 @@ export default class Grid extends Component {
               <EntityTab
                 entity={c}
                 onClick={() => this.select(c)}
-                prediction={c.type === "prediction"}
+                prediction={c.type === 'prediction'}
                 bordered={false}
                 style={{ height: 44 }}
               />
@@ -188,10 +188,10 @@ export default class Grid extends Component {
             </div>
           ))}
           {isRenderingNext && (
-            <div id={`c-tmp`} key={`anno-tmp`} style={{ opacity: 0, position: 'relative', right: 99999 }}>
+            <div id={'c-tmp'} key={'anno-tmp'} style={{ opacity: 0, position: 'relative', right: 99999 }}>
               <EntityTab
                 entity={selected}
-                prediction={selected.type === "prediction"}
+                prediction={selected.type === 'prediction'}
                 bordered={false}
                 style={{ height: 44 }}
               />

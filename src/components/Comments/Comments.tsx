@@ -1,10 +1,10 @@
-import { FC, useEffect } from "react";
-import { observer } from "mobx-react";
-import { Block } from "../../utils/bem";
-import { CommentForm } from "./CommentForm";
-import { CommentsList } from "./CommentsList";
-import { useMounted } from "../../common/Utils/useMounted";
-import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
+import { FC, useEffect } from 'react';
+import { observer } from 'mobx-react';
+import { Block } from '../../utils/bem';
+import { CommentForm } from './CommentForm';
+import { CommentsList } from './CommentsList';
+import { useMounted } from '../../common/Utils/useMounted';
+import { FF_DEV_3034, isFF } from '../../utils/feature-flags';
 
 import './Comments.styl';
 
@@ -30,16 +30,16 @@ export const Comments: FC<{ commentStore: any, cacheKey?: string }>= observer(({
     const confirmCommentsLoss = (e: any) => {
 
       if (commentStore.hasUnsaved) {
-        e.returnValue = "You have unpersisted comments which will be lost if continuing.";
+        e.returnValue = 'You have unpersisted comments which will be lost if continuing.';
       }
 
       return e;
     };
 
     // Need to handle this entirely separate to client-side based navigation
-    window.addEventListener("beforeunload", confirmCommentsLoss);
+    window.addEventListener('beforeunload', confirmCommentsLoss);
     return () => {
-      window.removeEventListener("beforeunload", confirmCommentsLoss);
+      window.removeEventListener('beforeunload', confirmCommentsLoss);
     };
   }, [commentStore.hasUnsaved]);
 
