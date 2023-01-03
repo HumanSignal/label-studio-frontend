@@ -628,18 +628,10 @@ export const Annotation = types
       // mobx will modify methods, so add it directly to have cancel() method
       self.autosave = throttle(
         () => {
+          // if autosave is paused, do nothing
           if (self.autosave.paused) return;
 
-          const result = self.serializeAnnotation({ fast: true });
-          // if this is new annotation and no regions added yet
-
-          if (!self.pk && !result.length) return;
-
-          self.setDraftSelected();
-          self.versions.draft = result;
-          self.setDraftSaving(true);
-
-          self.store.submitDraft(self).then(self.onDraftSaved);
+          self.saveDraft();
         },
         self.autosaveDelay,
         { leading: false },
@@ -647,6 +639,22 @@ export const Annotation = types
 
       onSnapshot(self.areas, self.autosave);
     }),
+
+    saveDraft() {
+      // if this is now a history item or prediction don't save it
+      if (!self.editable) return;
+
+      const result = self.serializeAnnotation({ fast: true });
+      // if this is new annotation and no regions added yet
+
+      if (!self.pk && !result.length) return;
+
+      self.setDraftSelected();
+      self.versions.draft = result;
+      self.setDraftSaving(true);
+
+      self.store.submitDraft(self).then(self.onDraftSaved);
+    },
 
     saveDraftImmediately() {
       if (self.autosave) self.autosave.flush();
