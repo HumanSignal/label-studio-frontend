@@ -1,6 +1,6 @@
-import Keymaster from "keymaster";
-import { useEffect, useRef } from "react";
-import { Hotkey } from "../core/Hotkey";
+import Keymaster from 'keymaster';
+import { useEffect, useRef } from 'react';
+import { Hotkey } from '../core/Hotkey';
 
 type Keyname = keyof typeof Hotkey.keymap;
 

@@ -1,11 +1,11 @@
-import React, { Component } from "react";
-import { Button, Card, List, Tooltip } from "antd";
-import { observer } from "mobx-react";
+import React, { Component } from 'react';
+import { Button, Card, List, Tooltip } from 'antd';
+import { observer } from 'mobx-react';
 
-import { CopyOutlined, EyeInvisibleOutlined, EyeOutlined, WindowsOutlined } from "@ant-design/icons";
+import { CopyOutlined, EyeInvisibleOutlined, EyeOutlined, WindowsOutlined } from '@ant-design/icons';
 
-import Utils from "../../utils";
-import styles from "../Annotations/Annotations.module.scss";
+import Utils from '../../utils';
+import styles from '../Annotations/Annotations.module.scss';
 
 const Prediction = observer(({ item, store }) => {
   const toggleVisibility = e => {
@@ -14,19 +14,19 @@ const Prediction = observer(({ item, store }) => {
     item.toggleVisibility();
     const c = document.getElementById(`c-${item.id}`);
 
-    if (c) c.style.display = item.hidden ? "none" : "unset";
+    if (c) c.style.display = item.hidden ? 'none' : 'unset';
   };
 
   const highlight = () => {
     const c = document.getElementById(`c-${item.id}`);
 
-    if (c) c.classList.add("hover");
+    if (c) c.classList.add('hover');
   };
 
   const unhighlight = () => {
     const c = document.getElementById(`c-${item.id}`);
 
-    if (c) c.classList.remove("hover");
+    if (c) c.classList.remove('hover');
   };
 
   return (
@@ -84,14 +84,14 @@ class Predictions extends Component {
     const { predictions } = store.annotationStore;
 
     const title = (
-      <div className={styles.title + " " + styles.titlespace}>
+      <div className={styles.title + ' ' + styles.titlespace}>
         <h3>Predictions</h3>
         {/* @todo fix View All mode */}
         {store.annotationStore.predictions.length > 0 && false && (
           <Tooltip placement="topLeft" title="View all predictions">
             <Button
               size="small"
-              type={store.annotationStore.viewingAllPredictions ? "primary" : ""}
+              type={store.annotationStore.viewingAllPredictions ? 'primary' : ''}
               onClick={ev => {
                 ev.preventDefault();
                 store.annotationStore.toggleViewingAllPredictions();
@@ -105,13 +105,13 @@ class Predictions extends Component {
     );
 
     return (
-      <Card title={title} size="small" bodyStyle={{ padding: "0" }}>
+      <Card title={title} size="small" bodyStyle={{ padding: '0' }}>
         <List>
           {predictions && predictions.length ? (
             predictions.map(p => <Prediction key={p.id} item={p} store={store} />)
           ) : (
             <List.Item>
-              <div style={{ padding: "0 12px" }}>No predictions</div>
+              <div style={{ padding: '0 12px' }}>No predictions</div>
             </List.Item>
           )}
         </List>

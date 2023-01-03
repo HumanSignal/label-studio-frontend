@@ -1,5 +1,5 @@
-import { Shape, ShapeConfig } from "konva/lib/Shape";
-import { Stage } from "konva/lib/Stage";
+import { Shape, ShapeConfig } from 'konva/lib/Shape';
+import { Stage } from 'konva/lib/Stage';
 
 export type WorkingArea = {
   width: number,

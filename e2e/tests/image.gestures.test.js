@@ -1,8 +1,8 @@
 /* global Feature, Scenario */
 
-const { initLabelStudio, serialize, convertToFixed, getSizeConvertor } = require("./helpers");
+const { initLabelStudio, serialize, convertToFixed, getSizeConvertor } = require('./helpers');
 
-const assert = require("assert");
+const assert = require('assert');
 
 const DEFAULT_DIMENSIONS = {
   rect: { width: 30, height: 30 },
@@ -10,16 +10,16 @@ const DEFAULT_DIMENSIONS = {
   polygon: { length: 30 },
 };
 
-Feature("Creating regions with gesture");
+Feature('Creating regions with gesture');
 
 const IMAGE =
-  "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg";
+  'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg';
 
 const BLUEVIOLET = {
-  color: "#8A2BE2",
+  color: '#8A2BE2',
   rgbArray: [138, 43, 226],
 };
-const getConfigWithShapes = (shapes, props = "") => `
+const getConfigWithShapes = (shapes, props = '') => `
    <View>
     <Image name="img" value="$image" zoom="true" zoomBy="1.5" zoomControl="true" rotateControl="true"></Image>
     ${shapes
@@ -30,7 +30,7 @@ const getConfigWithShapes = (shapes, props = "") => `
     </${shape}Labels>
     `,
     )
-    .join("")}
+    .join('')}
   </View>`;
 
 const createShape = {
@@ -47,7 +47,7 @@ const createShape = {
       }
       return {
         ...opts,
-        action: "clickPolygonPointsKonva",
+        action: 'clickPolygonPointsKonva',
         params: [points],
         result: {
           points,
@@ -57,7 +57,7 @@ const createShape = {
     byDoubleClick(x, y, radius, opts = {}) {
       return {
         ...opts,
-        action: "clickPointsKonva",
+        action: 'clickPointsKonva',
         params: [
           [
             [x, y],
@@ -78,7 +78,7 @@ const createShape = {
     byDrag(x, y, radius, opts = {}) {
       return {
         ...opts,
-        action: "dragKonva",
+        action: 'dragKonva',
         params: [x - radius, y - radius, radius * 2, radius * 2],
         result: {
           width: radius * 2,
@@ -92,7 +92,7 @@ const createShape = {
     byThreeClicks(x, y, radius, opts = {}) {
       return {
         ...opts,
-        action: "clickPointsKonva",
+        action: 'clickPointsKonva',
         params: [
           [
             [x , y],
@@ -111,7 +111,7 @@ const createShape = {
     byDoubleClick(x, y, radius, opts = {}) {
       return {
         ...opts,
-        action: "clickPointsKonva",
+        action: 'clickPointsKonva',
         params: [
           [
             [x, y],
@@ -132,7 +132,7 @@ const createShape = {
     byDrag(x, y, radius, opts = {}) {
       return {
         ...opts,
-        action: "dragKonva",
+        action: 'dragKonva',
         params: [x, y, radius, radius],
         result: { radiusX: radius, radiusY: radius, rotation: 0, x, y },
       };
@@ -140,7 +140,7 @@ const createShape = {
     byTwoClicks(x, y, radius, opts = {}) {
       return {
         ...opts,
-        action: "clickPointsKonva",
+        action: 'clickPointsKonva',
         params: [
           [
             [x, y],
@@ -153,7 +153,7 @@ const createShape = {
     byDoubleClick(x, y, radius, opts = {}) {
       return {
         ...opts,
-        action: "clickPointsKonva",
+        action: 'clickPointsKonva',
         params: [
           [
             [x, y],
@@ -172,13 +172,13 @@ const createShape = {
   },
 };
 
-Scenario("Creating regions by various gestures", async function({ I, AtImageView, AtSidebar }) {
+Scenario('Creating regions by various gestures', async function({ I, AtImageView, AtSidebar }) {
   const params = {
     config: getConfigWithShapes(Object.keys(createShape)),
     data: { image: IMAGE },
   };
 
-  I.amOnPage("/");
+  I.amOnPage('/');
   await I.executeScript(initLabelStudio, params);
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);

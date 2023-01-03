@@ -1,23 +1,25 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "../../../common/Button/Button";
-import { Dropdown } from "../../../common/Dropdown/Dropdown";
-import { Menu } from "../../../common/Menu/Menu";
-import { ErrorMessage } from "../../../components/ErrorMessage/ErrorMessage";
-import ObjectTag from "../../../components/Tags/Object";
-import { Timeline } from "../../../components/Timeline/Timeline";
-import { clampZoom, VideoCanvas } from "../../../components/VideoCanvas/VideoCanvas";
-import { defaultStyle } from "../../../core/Constants";
-import { useToggle } from "../../../hooks/useToggle";
-import { Block, Elem } from "../../../utils/bem";
-import { clamp, isDefined } from "../../../utils/utilities";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from '../../../common/Button/Button';
+import { Dropdown } from '../../../common/Dropdown/Dropdown';
+import { Menu } from '../../../common/Menu/Menu';
+import { ErrorMessage } from '../../../components/ErrorMessage/ErrorMessage';
+import ObjectTag from '../../../components/Tags/Object';
+import { Timeline } from '../../../components/Timeline/Timeline';
+import { clampZoom, VideoCanvas } from '../../../components/VideoCanvas/VideoCanvas';
+import { defaultStyle } from '../../../core/Constants';
+import { useToggle } from '../../../hooks/useToggle';
+import { Block, Elem } from '../../../utils/bem';
+import { clamp, isDefined } from '../../../utils/utilities';
 
-import { IconZoomIn } from "../../../assets/icons";
-import { MAX_ZOOM_WHEEL, MIN_ZOOM_WHEEL, ZOOM_STEP, ZOOM_STEP_WHEEL } from "../../../components/VideoCanvas/VideoConstants";
-import { useFullscreen } from "../../../hooks/useFullscreen";
-import { FF_DEV_3350, isFF } from "../../../utils/feature-flags";
-import ResizeObserver from "../../../utils/resize-observer";
-import "./Video.styl";
-import { VideoRegions } from "./VideoRegions";
+import { IconZoomIn } from '../../../assets/icons';
+import { MAX_ZOOM_WHEEL, MIN_ZOOM_WHEEL, ZOOM_STEP, ZOOM_STEP_WHEEL } from '../../../components/VideoCanvas/VideoConstants';
+import { useFullscreen } from '../../../hooks/useFullscreen';
+import ResizeObserver from '../../../utils/resize-observer';
+import './Video.styl';
+import { VideoRegions } from './VideoRegions';
+import { FF_DEV_2715, isFF } from '../../../utils/feature-flags';
+
+const isFFDev2715 = isFF(FF_DEV_2715);
 
 const HtxVideoView = ({ item, store }) => {
   if (!item._value) return null;
@@ -138,21 +140,24 @@ const HtxVideoView = ({ item, store }) => {
 
   const onZoomChange = useCallback((e) => {
     if (!e.shiftKey || !stageRef.current) return;
-
+    const { width: containerWidth, height: containerHeight } = stageRef.current.content.getBoundingClientRect();
     // because its possible the shiftKey is the modifier, we need to check the appropriate delta
-    const wheelDelta = Math.abs(e.deltaY) === 0 ? e.deltaX : e.deltaY; 
+    const wheelDelta = Math.abs(e.deltaY) === 0 ? e.deltaX : e.deltaY;
     const polarity = wheelDelta > 0 ? 1 : -1;
+    const padding = 50;
     const stepDelta = Math.abs(wheelDelta * ZOOM_STEP_WHEEL);
     const delta = polarity * clamp(stepDelta, MIN_ZOOM_WHEEL, MAX_ZOOM_WHEEL);
+    const zoomCenteredY = containerHeight + padding > videoDimensions.height * zoom;
+    const zoomCenteredX = containerWidth + padding > videoDimensions.width * zoom;
+    const panValues = item.ref.current.adjustPan(
+      zoomCenteredX ? 0 : pan.x,
+      zoomCenteredY ? 0 : pan.y,
+    );
 
     requestAnimationFrame(() => {
       setZoom(prev => prev + delta);
-      setPan(prev => ({
-        x: prev.x + (prev.x / zoom) * polarity,
-        y: prev.y + (prev.y / zoom) * polarity,
-      }));
+      if (zoomCenteredY || zoomCenteredX) setPan(panValues);
     });
-
   }, [zoom]);
 
   const handlePan = useCallback((e) => {
@@ -222,6 +227,9 @@ const HtxVideoView = ({ item, store }) => {
     item.setOnlyFrame(1);
     item.setLength(length);
     item.setReady(true);
+    if (isFFDev2715) {
+      item.setSyncedDuration(item.ref.current?.duration);
+    }
   }, [item, setVideoLength]);
 
   const handleVideoResize = useCallback((videoDimensions) => {
@@ -235,24 +243,46 @@ const HtxVideoView = ({ item, store }) => {
 
   // TIMELINE EVENT HANDLERS
   const handlePlay = useCallback(() => {
-    setPlaying((playing) => {
-      if (playing === false) {
-        item.ref.current.play();
-        item.triggerSyncPlay();
-        return true;
+    setPlaying((_playing) => {
+      // Audio v3
+      if (isFFDev2715) {
+        if (item.isCurrentlyPlaying === false) {
+          item.triggerSyncPlay();
+          return true;
+        }
+        return item.isCurrentlyPlaying;
+      } 
+      // Audio v1,v2
+      else {
+        if (_playing === false) {
+          item.ref.current.play();
+          item.triggerSyncPlay();
+          return true;
+        }
+        return _playing;
       }
-      return playing;
     });
   }, []);
 
   const handlePause = useCallback(() => {
-    setPlaying((playing) => {
-      if (playing === true) {
-        item.ref.current.pause();
-        item.triggerSyncPause();
-        return false;
+    setPlaying((_playing) => {
+      // Audio v3
+      if (isFFDev2715) {
+        if (item.isCurrentlyPlaying === true) {
+          item.triggerSyncPause();
+          return false;
+        }
+        return item.isCurrentlyPlaying;
+      } 
+      // Audio v1,v2
+      else {
+        if (_playing === true) {
+          item.ref.current.pause();
+          item.triggerSyncPause();
+          return false;
+        }
+        return _playing;
       }
-      return playing;
     });
   }, []);
 
@@ -271,14 +301,14 @@ const HtxVideoView = ({ item, store }) => {
 
     regions.forEach(region => {
       switch(action) {
-        case "lifespan_add":
-        case "lifespan_remove":
+        case 'lifespan_add':
+        case 'lifespan_remove':
           region.toggleLifespan(data.frame);
           break;
-        case "keypoint_add":
+        case 'keypoint_add':
           region.addKeypoint(data.frame);
           break;
-        case "keypoint_remove":
+        case 'keypoint_remove':
           region.removeKeypoint(data.frame);
           break;
         default:
@@ -300,7 +330,7 @@ const HtxVideoView = ({ item, store }) => {
 
   const regions = item.regs.map(reg => {
     const color = reg.style?.fillcolor ?? reg.tag?.fillcolor ?? defaultStyle.fillcolor;
-    const label = reg.labels.join(", ") || "Empty";
+    const label = reg.labels.join(', ') || 'Empty';
     const sequence = reg.sequence.map(s => ({
       frame: s.frame,
       enabled: s.enabled,
@@ -390,7 +420,7 @@ const HtxVideoView = ({ item, store }) => {
             controls={{ FramesControl: true }}
             customControls={[
               {
-                position: "left",
+                position: 'left',
                 component: () => {
                   return (
                     <Dropdown.Trigger

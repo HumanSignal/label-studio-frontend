@@ -1,23 +1,23 @@
-import insertAfter from "insert-after";
-import * as Checkers from "./utilities";
-import Canvas from "./canvas";
+import insertAfter from 'insert-after';
+import * as Checkers from './utilities';
+import Canvas from './canvas';
 
 // fast way to change labels visibility for all text regions
 function toggleLabelsAndScores(show) {
   const toggleInDocument = document => {
-    const els = document.getElementsByClassName("htx-highlight");
+    const els = document.getElementsByClassName('htx-highlight');
 
     Array.from(els).forEach(el => {
       // labels presence controlled by explicit `showLabels` in the config
-      if (el.classList.contains("htx-manual-label")) return;
+      if (el.classList.contains('htx-manual-label')) return;
 
-      if (show) el.classList.remove("htx-no-label");
-      else el.classList.add("htx-no-label");
+      if (show) el.classList.remove('htx-no-label');
+      else el.classList.add('htx-no-label');
     });
   };
 
   toggleInDocument(document);
-  document.querySelectorAll("iframe.lsf-htx-richtext")
+  document.querySelectorAll('iframe.lsf-htx-richtext')
     .forEach(iframe => toggleInDocument(iframe.contentWindow.document));
 }
 
@@ -25,16 +25,16 @@ const labelWithCSS = (function() {
   const cache = {};
 
   return function(node, { labels, score }) {
-    const labelsStr = labels ? labels.join(",") : "";
+    const labelsStr = labels ? labels.join(',') : '';
     const clsName = Checkers.hashCode(labelsStr + score);
 
-    let cssCls = "htx-label-" + clsName;
+    let cssCls = 'htx-label-' + clsName;
 
     cssCls = cssCls.toLowerCase();
 
     if (cssCls in cache) return cache[cssCls];
 
-    node.setAttribute("data-labels", labelsStr);
+    node.setAttribute('data-labels', labelsStr);
 
     const resSVG = Canvas.labelToSVG({ label: labelsStr, score });
     const svgURL = `url(${resSVG})`;
@@ -49,12 +49,12 @@ const labelWithCSS = (function() {
 
 // work directly with the html tree
 function createClass(name, rules) {
-  const style = document.createElement("style");
+  const style = document.createElement('style');
 
-  style.type = "text/css";
-  document.getElementsByTagName("head")[0].appendChild(style);
+  style.type = 'text/css';
+  document.getElementsByTagName('head')[0].appendChild(style);
   if (!(style.sheet || {}).insertRule) (style.styleSheet || style.sheet).addRule(name, rules);
-  else style.sheet.insertRule(name + "{" + rules + "}", 0);
+  else style.sheet.insertRule(name + '{' + rules + '}', 0);
 }
 
 function documentForward(node) {
@@ -188,8 +188,8 @@ function normalizeBoundaries(range) {
 }
 
 function highlightRange(normedRange, cssClass, cssStyle) {
-  if (typeof cssClass === "undefined" || cssClass === null) {
-    cssClass = "htx-annotation";
+  if (typeof cssClass === 'undefined' || cssClass === null) {
+    cssClass = 'htx-annotation';
   }
 
   const allNodes = getNodesInRange(normedRange._range);
@@ -213,7 +213,7 @@ function highlightRange(normedRange, cssClass, cssStyle) {
     const node = nodes[i];
 
     if (!white.test(node.nodeValue)) {
-      const hl = window.document.createElement("span");
+      const hl = window.document.createElement('span');
 
       hl.style.backgroundColor = cssStyle.backgroundColor;
 
@@ -262,8 +262,8 @@ const toGlobalOffset = (container, element, len) => {
     if (node === element) {
       return pos;
     }
-    if (node.nodeName === "#text") pos = pos + node.length;
-    if (node.nodeName === "BR") pos = pos + 1;
+    if (node.nodeName === '#text') pos = pos + node.length;
+    if (node.nodeName === 'BR') pos = pos + 1;
 
     for (let i = 0; i <= node.childNodes.length; i++) {
       const n = node.childNodes[i];
@@ -291,7 +291,7 @@ const mainOffsets = element => {
   let passedEnd = false;
 
   const traverse = node => {
-    if (node.nodeName === "#text") {
+    if (node.nodeName === '#text') {
       if (node !== range.startContainer && !passedStart) start = start + node.length;
       if (node === range.startContainer) passedStart = true;
 
@@ -299,7 +299,7 @@ const mainOffsets = element => {
       if (node === range.endContainer) passedEnd = true;
     }
 
-    if (node.nodeName === "BR") {
+    if (node.nodeName === 'BR') {
       if (!passedStart) start = start + 1;
 
       if (!passedEnd) end = end + 1;
@@ -329,10 +329,10 @@ const findIdxContainer = (el, globidx) => {
   const traverse = node => {
     if (!node) return;
 
-    if (node.nodeName === "#text") {
+    if (node.nodeName === '#text') {
       if (len - node.length <= 0) return node;
       else len = len - node.length;
-    } else if (node.nodeName === "BR") {
+    } else if (node.nodeName === 'BR') {
       len = len - 1;
     } else if (node.childNodes.length > 0) {
       for (let i = 0; i <= node.childNodes.length; i++) {
@@ -374,7 +374,7 @@ function moveStylesBetweenHeadTags(srcHead, destHead) {
   for (let i = 0; i < srcHead.children.length; ) {
     const style = srcHead.children[i];
 
-    if (style?.tagName !== "STYLE") {
+    if (style?.tagName !== 'STYLE') {
       i++;
       continue;
     }
@@ -433,7 +433,7 @@ export const matchesSelector = (element, selector) => {
  * @param {Node} root
  */
 export const findByXpath = (xpath, root = document) => {
-  if (root !== document && xpath[0] !== ".") {
+  if (root !== document && xpath[0] !== '.') {
     xpath = `.${xpath}`;
   }
 
@@ -442,7 +442,7 @@ export const findByXpath = (xpath, root = document) => {
 
 export const htmlEscape = string => {
   const matchHtmlRegExp = /["'&<>]/;
-  const str = "" + string;
+  const str = '' + string;
   const match = matchHtmlRegExp.exec(str);
 
   if (!match) {
@@ -450,26 +450,26 @@ export const htmlEscape = string => {
   }
 
   let escape;
-  let html = "";
+  let html = '';
   let index = 0;
   let lastIndex = 0;
 
   for (index = match.index; index < str.length; index++) {
     switch (str.charCodeAt(index)) {
       case 34: // "
-        escape = "&quot;";
+        escape = '&quot;';
         break;
       case 38: // &
-        escape = "&amp;";
+        escape = '&amp;';
         break;
       case 39: // '
-        escape = "&#39;";
+        escape = '&#39;';
         break;
       case 60: // <
-        escape = "&lt;";
+        escape = '&lt;';
         break;
       case 62: // >
-        escape = "&gt;";
+        escape = '&gt;';
         break;
       default:
         continue;

@@ -1,13 +1,13 @@
-import React from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import BaseTool from "./Base";
-import SliderTool from "../components/Tools/Slider";
-import ToolMixin from "../mixins/Tool";
-import { PolygonRegionModel } from "../regions/PolygonRegion";
-import { calcBorder, getImageData } from "../utils/floodfill";
-import { guidGenerator } from "../core/Helpers";
+import BaseTool from './Base';
+import SliderTool from '../components/Tools/Slider';
+import ToolMixin from '../mixins/Tool';
+import { PolygonRegionModel } from '../regions/PolygonRegion';
+import { calcBorder, getImageData } from '../utils/floodfill';
+import { guidGenerator } from '../core/Helpers';
 
 const DEF_THRESHOLD = 10;
 
@@ -17,7 +17,7 @@ const ToolView = observer(({ item }) => {
       max={50}
       default={DEF_THRESHOLD}
       selected={item.selected}
-      icon={"tool"}
+      icon={'tool'}
       onClick={() => {
         const sel = item.selected;
 
@@ -31,9 +31,9 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model("FloodFillTool", {
+  .model('FloodFillTool', {
     threshold: types.optional(types.number, DEF_THRESHOLD),
-    group: "segmentation",
+    group: 'segmentation',
     isDrawingTool: true,
   })
   .views(self => ({
@@ -47,11 +47,11 @@ const _Tool = types
     },
 
     mouseupEv() {
-      self.mode = "viewing";
+      self.mode = 'viewing';
     },
 
     mousemoveEv() {
-      if (self.mode !== "drawing") return;
+      if (self.mode !== 'drawing') return;
     },
 
     createPolygonRegion(points) {
@@ -72,7 +72,7 @@ const _Tool = types
 
         states,
 
-        coordstype: "px",
+        coordstype: 'px',
       });
 
       points.forEach(t => p.addPoint(t.x, t.y));
@@ -95,7 +95,7 @@ const _Tool = types
     },
 
     mousedownEv() {
-      self.mode = "drawing";
+      self.mode = 'drawing';
     },
   }));
 

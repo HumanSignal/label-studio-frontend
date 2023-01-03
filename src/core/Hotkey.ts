@@ -1,12 +1,12 @@
-import keymaster from "keymaster";
-import { inject } from "mobx-react";
-import { observer } from "mobx-react";
-import { createElement, Fragment } from "react";
-import { Tooltip } from "../common/Tooltip/Tooltip";
-import Hint from "../components/Hint/Hint";
-import { Block, Elem } from "../utils/bem";
-import { isDefined, isMacOS } from "../utils/utilities";
-import defaultKeymap from "./settings/keymap.json";
+import keymaster from 'keymaster';
+import { inject } from 'mobx-react';
+import { observer } from 'mobx-react';
+import { createElement, Fragment } from 'react';
+import { Tooltip } from '../common/Tooltip/Tooltip';
+import Hint from '../components/Hint/Hint';
+import { Block, Elem } from '../utils/bem';
+import { isDefined, isMacOS } from '../utils/utilities';
+import defaultKeymap from './settings/keymap.json';
 
 // Validate keymap integrity
 const allowedKeympaKeys = ['key', 'mac', 'description', 'modifier', 'modifierDescription'];
@@ -33,18 +33,27 @@ type HotkeyNamespace = {
   readonly descriptions: [string, string][],
 }
 
-const DEFAULT_SCOPE = "__main__";
-const INPUT_SCOPE = "__input__";
+const DEFAULT_SCOPE = '__main__';
+const INPUT_SCOPE = '__input__';
 
 const _hotkeys_desc: { [key: string]: string } = {};
 const _namespaces: {[key: string]: HotkeyNamespace} = {};
 const _destructors: (() => void)[] = [];
 
+const translateNumpad = (event: any) => {
+  const numPadKeyCode = event.keyCode;
+  const translatedToDigit = numPadKeyCode - 48;
+
+  document.dispatchEvent(new KeyboardEvent('keydown', { keyCode: translatedToDigit }));
+};
+
 keymaster.filter = function(event) {
-  if (keymaster.getScope() === "__none__") return false;
+  if (keymaster.getScope() === '__none__') return false;
 
   const tag = (event.target || event.srcElement)?.tagName;
+  const inNumberPadCodeRange = event.keyCode >= 96 && event.keyCode <= 105;
 
+  if (inNumberPadCodeRange) translateNumpad(event);
   if (tag) {
     keymaster.setScope(/^(INPUT|TEXTAREA|SELECT)$/.test(tag) ? INPUT_SCOPE : DEFAULT_SCOPE);
   }
@@ -53,8 +62,8 @@ keymaster.filter = function(event) {
 };
 
 export const Hotkey = (
-  namespace = "global",
-  description = "Hotkeys",
+  namespace = 'global',
+  description = 'Hotkeys',
 ) => {
   let _hotkeys_map: HotkeyMap = {};
 
@@ -104,7 +113,7 @@ export const Hotkey = (
       if (desc) _hotkeys_desc[keyName] = desc;
 
       scope
-        .split(",")
+        .split(',')
         .map(s => s.trim())
         .filter(Boolean)
         .forEach(scope => {
@@ -143,7 +152,7 @@ export const Hotkey = (
 
       if (this.hasKey(keyName)) {
         scope
-          .split(",")
+          .split(',')
           .map(s => s.trim())
           .filter(Boolean)
           .forEach(scope => {
@@ -256,13 +265,13 @@ export const Hotkey = (
      */
     makeComb() {
       const prefix = null;
-      const st = "1234567890qwetasdfgzxcvbyiopjklnm";
-      const combs = st.split("");
+      const st = '1234567890qwetasdfgzxcvbyiopjklnm';
+      const combs = st.split('');
 
       for (let i = 0; i <= combs.length; i++) {
         let comb;
 
-        if (prefix) comb = prefix + "+" + combs[i];
+        if (prefix) comb = prefix + '+' + combs[i];
         else comb = combs[i];
 
         if (!{}.hasOwnProperty.call(_hotkeys_map, comb)) return comb;
@@ -308,7 +317,7 @@ Hotkey.setScope = function(scope: string) {
 /**
  * @param {{name: keyof defaultKeymap}} param0
  */
-Hotkey.Tooltip = inject("store")(observer(({ store, name, children, ...props }: any) => {
+Hotkey.Tooltip = inject('store')(observer(({ store, name, children, ...props }: any) => {
   const hotkey = Hotkey.keymap[name as string];
   const enabled = store.settings.enableTooltips && store.settings.enableHotkeys;
 
@@ -319,9 +328,9 @@ Hotkey.Tooltip = inject("store")(observer(({ store, name, children, ...props }: 
     const hotkeys: JSX.Element[] = [];
 
     if (enabled) {
-      shortcut.split(",").forEach((combination) => {
+      shortcut.split(',').forEach((combination) => {
         const keys = combination
-          .split("+")
+          .split('+')
           .map(key => createElement(Elem, {
             tag: 'kbd',
             name: 'key',
@@ -337,7 +346,7 @@ Hotkey.Tooltip = inject("store")(observer(({ store, name, children, ...props }: 
 
     return createElement(Tooltip, {
       ...props,
-      theme: "light",
+      theme: 'light',
       title: createElement(Fragment, {}, ...[description,...hotkeys]),
     }, children);
   }
@@ -348,7 +357,7 @@ Hotkey.Tooltip = inject("store")(observer(({ store, name, children, ...props }: 
 /**
  * @param {{name: keyof defaultKeymap}} param0
  */
-Hotkey.Hint = inject("store")(observer(({ store, name }: any) => {
+Hotkey.Hint = inject('store')(observer(({ store, name }: any) => {
   const hotkey = Hotkey.keymap[name];
   const enabled = store.settings.enableTooltips && store.settings.enableHotkeys;
 

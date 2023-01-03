@@ -1,9 +1,9 @@
-import { observer } from "mobx-react";
-import { LsRedo, LsRemove, LsUndo } from "../../assets/icons";
-import { Button } from "../../common/Button/Button";
-import { Tooltip } from "../../common/Tooltip/Tooltip";
-import { Block, Elem } from "../../utils/bem";
-import "./HistoryActions.styl";
+import { observer } from 'mobx-react';
+import { LsRedo, LsRemove, LsUndo } from '../../assets/icons';
+import { Button } from '../../common/Button/Button';
+import { Tooltip } from '../../common/Tooltip/Tooltip';
+import { Block, Elem } from '../../utils/bem';
+import './HistoryActions.styl';
 
 export const EditingHistory = observer(({ entity }) => {
   const { history } = entity;

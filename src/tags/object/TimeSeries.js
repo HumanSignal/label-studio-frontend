@@ -1,16 +1,16 @@
-import React from "react";
-import * as d3 from "d3";
-import { inject, observer } from "mobx-react";
-import { getRoot, getType, types } from "mobx-state-tree";
-import throttle from "lodash.throttle";
-import { Spin } from "antd";
+import React from 'react';
+import * as d3 from 'd3';
+import { inject, observer } from 'mobx-react';
+import { getRoot, getType, types } from 'mobx-state-tree';
+import throttle from 'lodash.throttle';
+import { Spin } from 'antd';
 
-import ObjectBase from "./Base";
-import ObjectTag from "../../components/Tags/Object";
-import Registry from "../../core/Registry";
-import Tree from "../../core/Tree";
-import Types from "../../core/Types";
-import { restoreNewsnapshot } from "../../core/Helpers";
+import ObjectBase from './Base';
+import ObjectTag from '../../components/Tags/Object';
+import Registry from '../../core/Registry';
+import Tree from '../../core/Tree';
+import Types from '../../core/Types';
+import { restoreNewsnapshot } from '../../core/Helpers';
 import {
   checkD3EventLoop,
   fixMobxObserve,
@@ -19,14 +19,14 @@ import {
   getRegionColor,
   idFromValue,
   sparseValues
-} from "./TimeSeries/helpers";
-import { parseCSV, tryToParseJSON } from "../../utils/data";
-import messages from "../../utils/messages";
-import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
-import PersistentStateMixin from "../../mixins/PersistentState";
+} from './TimeSeries/helpers';
+import { parseCSV, tryToParseJSON } from '../../utils/data';
+import messages from '../../utils/messages';
+import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
+import PersistentStateMixin from '../../mixins/PersistentState';
 
-import "./TimeSeries/Channel";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
+import './TimeSeries/Channel';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 
 /**
  * The `TimeSeries` tag can be used to label time series data. Read more about Time Series Labeling on [the time series template page](../templates/time_series.html).
@@ -72,15 +72,15 @@ import { AnnotationMixin } from "../../mixins/AnnotationMixin";
  */
 const TagAttrs = types.model({
   value: types.string,
-  valuetype: types.optional(types.enumeration(["url", "json"]), "url"),
-  timecolumn: "",
+  valuetype: types.optional(types.enumeration(['url', 'json']), 'url'),
+  timecolumn: '',
 
-  sep: ",",
-  timeformat: "",
-  timedisplayformat: "",
-  durationdisplayformat: ".0f",
-  overviewchannels: "", // comma-separated list of channels to show
-  overviewwidth: "25%",
+  sep: ',',
+  timeformat: '',
+  timedisplayformat: '',
+  durationdisplayformat: '.0f',
+  overviewchannels: '', // comma-separated list of channels to show
+  overviewwidth: '25%',
 
   fixedscale: false,
 
@@ -90,9 +90,9 @@ const TagAttrs = types.model({
 });
 
 const Model = types
-  .model("TimeSeriesModel", {
-    type: "timeseries",
-    children: Types.unionArray(["channel", "timeseriesoverview", "view", "hypertext"]),
+  .model('TimeSeriesModel', {
+    type: 'timeseries',
+    children: Types.unionArray(['channel', 'timeseriesoverview', 'view', 'hypertext']),
 
     width: 840,
     margin: types.frozen({ top: 20, right: 20, bottom: 30, left: 50, min: 10, max: 10 }),
@@ -138,7 +138,7 @@ const Model = types
 
     get keyColumn() {
       // for virtual column use just an uniq random name to not overlap with other column names
-      return (self.timecolumn || "#@$").toLowerCase();
+      return (self.timecolumn || '#@$').toLowerCase();
     },
 
     get parseTimeFn() {
@@ -172,12 +172,12 @@ const Model = types
       } else if(!self.timeformat && isNaN(data[self.keyColumn][0])) {
         const message = [
           `Looks like your <b>timeColumn</b> (${self.timecolumn}) contains non-numbers.`,
-          `You have to use <b>timeFormat</b> parameter if your values are datetimes.`,
-          `First wrong values: ${data[self.keyColumn].slice(0, 3).join(", ")}`,
-          `<a href="https://labelstud.io/tags/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.`,
+          'You have to use <b>timeFormat</b> parameter if your values are datetimes.',
+          `First wrong values: ${data[self.keyColumn].slice(0, 3).join(', ')}`,
+          '<a href="https://labelstud.io/tags/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.',
         ];
 
-        throw new Error(message.join("<br/>"));
+        throw new Error(message.join('<br/>'));
 
         // Ensure that the timestamps are incremental and formatted to proper numeric values
       } else {
@@ -197,9 +197,9 @@ const Model = types
 
             throw new Error([
               `<b>timeColumn</b> (${self.timecolumn}) must be incremental and sequentially ordered.`,
-              `First wrong values: ${nonSeqValues.join(", ")}`,
-              `<br/><a href="https://labelstud.io/tags/timeseries.html" target="_blank">Read Documentation</a> for details.`,
-            ].join("<br/>"));
+              `First wrong values: ${nonSeqValues.join(', ')}`,
+              '<br/><a href="https://labelstud.io/tags/timeseries.html" target="_blank">Read Documentation</a> for details.',
+            ].join('<br/>'));
           }
 
           previous = current;
@@ -208,18 +208,18 @@ const Model = types
         if (timestamps[0] === 0 && timestamps[1] === 0 && timestamps[2] === 0) {
           const message = [
             `<b>timeColumn</b> (${self.timecolumn}) cannot be parsed.`,
-            `First wrong values: ${data[self.keyColumn].slice(0, 3).join(", ")}`,
+            `First wrong values: ${data[self.keyColumn].slice(0, 3).join(', ')}`,
           ];
 
           if (self.timeformat) {
             message.push(`Your <b>timeFormat</b>: ${self.timeformat}. It should be compatible with these values.`);
           } else {
-            message.push(`You have to use <b>timeFormat</b> parameter if your values are datetimes.`);
+            message.push('You have to use <b>timeFormat</b> parameter if your values are datetimes.');
           }
           message.push(
-            `<br/><a href="https://labelstud.io/tags/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.`,
+            '<br/><a href="https://labelstud.io/tags/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.',
           );
-          throw new Error(message.join("<br/>"));
+          throw new Error(message.join('<br/>'));
         }
 
         data = { ...data, [self.keyColumn]: timestamps };
@@ -293,14 +293,14 @@ const Model = types
     activeStates() {
       const states = self.states();
 
-      return states ? states.filter(s => s.isSelected && getType(s).name === "TimeSeriesLabelsModel") : null;
+      return states ? states.filter(s => s.isSelected && getType(s).name === 'TimeSeriesLabelsModel') : null;
     },
 
     formatTime(time) {
       if (!self._format) {
         const { timedisplayformat: format, isDate } = self;
 
-        if (format === "date") self._format = formatTrackerTime;
+        if (format === 'date') self._format = formatTrackerTime;
         else if (format) self._format = isDate ? d3.utcFormat(format) : d3.format(format);
         else self._format = String;
       }
@@ -391,7 +391,7 @@ const Model = types
         self.annotation.names.get(obj.from_name).fromStateJSON(obj);
       }
 
-      if ("timeserieslabels" in obj.value) {
+      if ('timeserieslabels' in obj.value) {
         const states = restoreNewsnapshot(fromModel);
 
         states.fromStateJSON(obj);
@@ -434,7 +434,7 @@ const Model = types
     async preloadValue(store) {
       const dataObj = store.task.dataObj;
 
-      if (self.valuetype !== "url") {
+      if (self.valuetype !== 'url') {
         if (self.value) {
           self.setData(dataObj[idFromValue(self.value)]);
         } else {
@@ -451,13 +451,13 @@ const Model = types
       }
       const url = dataObj[idFromValue(self.value)];
 
-      if (!url || typeof url !== "string") {
+      if (!url || typeof url !== 'string') {
         const message = `Cannot find url in <b>${idFromValue(self.value)}</b> field of your task`;
 
         store.annotationStore.addErrors([errorBuilder.generalError(message)]);
         return;
       }
-      let text = "";
+      let text = '';
       let cors = false;
       let res;
 
@@ -478,7 +478,7 @@ const Model = types
 
         if (!res) {
           try {
-            res = await fetch(url, { mode: "no-cors" });
+            res = await fetch(url, { mode: 'no-cors' });
             if (!res.ok && res.status === 0) cors = true;
           } catch (e) {
             error = e;
@@ -498,7 +498,7 @@ const Model = types
           let separator = self.sep;
 
           if (separator?.length > 1) {
-            const aliases = { tab: "\t", "\\t": "\t", space: " ", auto: "auto", comma: ",", dot: "." };
+            const aliases = { 'tab': '\t', '\\t': '\t', 'space': ' ', 'auto': 'auto', 'comma': ',', 'dot': '.' };
 
             separator = aliases[separator] || separator[0];
           }
@@ -532,8 +532,8 @@ const Model = types
       if (!times) {
         const message = [
           `<b>${self.keyColumn}</b> not found in data.`,
-          `Use <b>valueType="url"</b> for data loading or column index for headless csv`,
-        ].join(" ");
+          'Use <b>valueType="url"</b> for data loading or column index for headless csv',
+        ].join(' ');
 
         store.annotationStore.addErrors([errorBuilder.generalError(message)]);
         return;
@@ -567,10 +567,10 @@ function useWidth() {
 
       measure();
 
-      window.addEventListener("resize", measure);
+      window.addEventListener('resize', measure);
 
       return () => {
-        window.removeEventListener("resize", measure);
+        window.removeEventListener('resize', measure);
       };
     }
   }, [node]);
@@ -592,7 +592,7 @@ const Overview = observer(({ item, data, series }) => {
   if (item.overviewchannels) {
     const channels = item.overviewchannels
       .toLowerCase()
-      .split(",")
+      .split(',')
       .map(name => (/^\d+$/.test(name) ? item.headers[name] : name))
       .filter(ch => keys.includes(ch));
 
@@ -617,7 +617,7 @@ const Overview = observer(({ item, data, series }) => {
   const MIN_OVERVIEW = 10;
 
   function brushed() {
-    if (d3.event.selection && !checkD3EventLoop("brush") && !checkD3EventLoop("wheel")) {
+    if (d3.event.selection && !checkD3EventLoop('brush') && !checkD3EventLoop('wheel')) {
       let [x1, x2] = d3.event.selection;
       const prev = prevBrush.current;
       const overviewWidth = x2 - x1;
@@ -670,25 +670,25 @@ const Overview = observer(({ item, data, series }) => {
       [0, 0],
       [width, focusHeight],
     ])
-    .on("brush", brushed)
-    .on("end", brushended);
+    .on('brush', brushed)
+    .on('end', brushended);
 
   const drawPath = key => {
     const channel = item.children.find(c => c.columnName === key);
-    const color = channel ? channel.strokecolor : "steelblue";
+    const color = channel ? channel.strokecolor : 'steelblue';
     const y = d3
       .scaleLinear()
       .domain([d3.min(data[key]), d3.max(data[key])])
       .range([focusHeight - margin.max, margin.min]);
 
     gChannels.current
-      .append("path")
+      .append('path')
       .datum(sparseValues(series, getOptimalWidth()))
-      .attr("class", "channel")
-      .attr("fill", "none")
-      .attr("stroke", color)
+      .attr('class', 'channel')
+      .attr('fill', 'none')
+      .attr('stroke', color)
       .attr(
-        "d",
+        'd',
         d3
           .line()
           .y(d => y(d[key]))
@@ -698,19 +698,19 @@ const Overview = observer(({ item, data, series }) => {
   };
 
   const drawRegions = ranges => {
-    const rSelection = gRegions.current.selectAll(".region").data(ranges);
+    const rSelection = gRegions.current.selectAll('.region').data(ranges);
 
     rSelection
       .enter()
-      .append("rect")
-      .attr("class", "region")
+      .append('rect')
+      .attr('class', 'region')
       .merge(rSelection)
-      .attr("y", 0)
-      .attr("height", focusHeight)
-      .attr("x", r => x(r.start))
-      .attr("width", r => Math.max(minRegionWidth, x(r.end) - x(r.start)))
-      .attr("fill", r => getRegionColor(r, r.selected ? 0.8 : 0.3))
-      .style("display", r => r.hidden ? "none" : "block");
+      .attr('y', 0)
+      .attr('height', focusHeight)
+      .attr('x', r => x(r.start))
+      .attr('width', r => Math.max(minRegionWidth, x(r.end) - x(r.start)))
+      .attr('fill', r => getRegionColor(r, r.selected ? 0.8 : 0.3))
+      .style('display', r => r.hidden ? 'none' : 'block');
     rSelection.exit().remove();
   };
 
@@ -728,34 +728,34 @@ const Overview = observer(({ item, data, series }) => {
 
     focus.current = d3
       .select(node)
-      .append("svg")
-      .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom])
-      .style("display", "block")
-      .append("g")
-      .attr("transform", "translate(" + margin.left + ",0)");
+      .append('svg')
+      .attr('viewBox', [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom])
+      .style('display', 'block')
+      .append('g')
+      .attr('transform', 'translate(' + margin.left + ',0)');
 
-    gAxis.current = focus.current.append("g").attr("transform", `translate(0,${focusHeight})`);
+    gAxis.current = focus.current.append('g').attr('transform', `translate(0,${focusHeight})`);
 
-    gChannels.current = focus.current.append("g").attr("class", "channels");
+    gChannels.current = focus.current.append('g').attr('class', 'channels');
 
-    gRegions.current = focus.current.append("g").attr("class", "regions");
+    gRegions.current = focus.current.append('g').attr('class', 'regions');
 
     gb.current = focus.current
-      .append("g")
+      .append('g')
       .call(brush)
       .call(brush.move, defaultSelection);
     // give a bit more space for brush moving
-    gb.current.select(".handle--w").style("transform", "translate(-1px, 0)");
-    gb.current.select(".handle--e").style("transform", "translate(1px, 0)");
+    gb.current.select('.handle--w').style('transform', 'translate(-1px, 0)');
+    gb.current.select('.handle--e').style('transform', 'translate(1px, 0)');
   }, [node]);
 
   React.useEffect(() => {
     if (node) {
       d3.select(node)
-        .selectAll("svg")
-        .attr("viewBox", [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom]);
+        .selectAll('svg')
+        .attr('viewBox', [0, 0, width + margin.left + margin.right, focusHeight + margin.bottom]);
 
-      gChannels.current.selectAll("path").remove();
+      gChannels.current.selectAll('path').remove();
       for (const key of keys) drawPath(key);
 
       drawAxis();
@@ -800,7 +800,7 @@ const HtxTimeSeriesViewRTS = ({ item }) => {
   // the last thing updated during initialisation
   if (!item?.brushRange?.length || !item.data)
     return (
-      <div style={{ textAlign: "center", height: 100 }}>
+      <div style={{ textAlign: 'center', height: 100 }}>
         <Spin size="large" delay={300} />
       </div>
     );
@@ -815,10 +815,10 @@ const HtxTimeSeriesViewRTS = ({ item }) => {
   );
 };
 
-const TimeSeriesModel = types.compose("TimeSeriesModel", ObjectBase, PersistentStateMixin, AnnotationMixin, TagAttrs, Model);
-const HtxTimeSeries = inject("store")(observer(HtxTimeSeriesViewRTS));
+const TimeSeriesModel = types.compose('TimeSeriesModel', ObjectBase, PersistentStateMixin, AnnotationMixin, TagAttrs, Model);
+const HtxTimeSeries = inject('store')(observer(HtxTimeSeriesViewRTS));
 
-Registry.addTag("timeseries", TimeSeriesModel, HtxTimeSeries);
+Registry.addTag('timeseries', TimeSeriesModel, HtxTimeSeries);
 Registry.addObjectType(TimeSeriesModel);
 
 export { TimeSeriesModel, HtxTimeSeries };

@@ -205,7 +205,7 @@ const devServer = () => {
   return (DEFAULT_NODE_ENV === 'development' && !BUILD.NO_SERVER) ? {
     devServer: {
       compress: true,
-      port: 3000,
+      port: process.env.LSF_PORT ?? 3000,
       static: {
         directory: path.join(__dirname, "public")
       },
