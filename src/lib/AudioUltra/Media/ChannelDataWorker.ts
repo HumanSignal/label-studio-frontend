@@ -9,26 +9,35 @@ export const reduceNoise = ({
   denoize,
 }: {
   sampleRate: number,
-  data: Float32Array,
+  data: Float32Array[],
   denoize?: boolean,
 }) => {
   if (denoize === false) return data;
 
-  // Get sample size for 0.01 seconds
-  const length = data.length;
-  const result = allocator.allocate(length);
-  const sampleSize = Math.ceil(sampleRate / 1000 * (0.001 * 1000));
+  const sampleSize = Math.floor(sampleRate * 0.01);
 
-  for (let i = 0; i < length; i += sampleSize) {
-    const slice = data.slice(i, i + sampleSize);
-    const avg = average(slice);
+  const chunks = Array.from({ length: data.length });
 
-    slice.fill(avg);
+  for (let i = 0; i < data.length; i++) {
+    const chunk = data[i];
 
-    result.set(slice, i);
+    // Get sample size for 0.01 seconds
+    const length = chunk.length;
+    const result = allocator.allocate(length);
+
+    for (let i = 0; i < length; i += sampleSize) {
+      const slice = chunk.slice(i, i + sampleSize);
+      const avg = average(slice);
+
+      slice.fill(avg);
+
+      result.set(slice, i);
+    }
+
+    chunks[i] = result;
   }
 
-  return result;
+  return chunks;
 };
 
 ComputeWorker.Messenger.receive({

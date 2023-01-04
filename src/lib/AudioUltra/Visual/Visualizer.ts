@@ -1,6 +1,6 @@
 import { ChannelData } from '../Media/ChannelData';
 import { WaveformAudio } from '../Media/WaveformAudio';
-import { averageMinMax, clamp, debounce, defaults, filterData, measure, roundToStep, warn } from '../Common/Utils';
+import { averageMinMax, clamp, debounce, defaults, measure, roundToStep, warn } from '../Common/Utils';
 import { Waveform, WaveformOptions } from '../Waveform';
 import { CanvasCompositeOperation, Layer, RenderingContext } from './Layer';
 import { Events } from '../Common/Events';
@@ -114,20 +114,20 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.audio = audio;
     this.channels.length = this.audio.channelCount;
 
-    this.enabledChannels.forEach((channelNumber: number) => {
-      const data = filterData(audio.buffer, channelNumber);
+    // this.enabledChannels.forEach((channelNumber: number) => {
+    //   const data = audio.buffer[channelNumber];
 
-      this.getSamplesPerPx();
+    //   this.getSamplesPerPx();
 
-      this.channels[channelNumber] = new ChannelData({
-        data,
-        visualizer: this,
-        waveform: this.wf,
-        getChunksSize: () => {
-          return this.samplesPerPx;
-        },
-      });
-    });
+    //   this.channels[channelNumber] = new ChannelData({
+    //     data,
+    //     visualizer: this,
+    //     waveform: this.wf,
+    //     getChunksSize: () => {
+    //       return this.samplesPerPx;
+    //     },
+    //   });
+    // });
 
     this.updateChannels(() => {
       this.setLoading(false);

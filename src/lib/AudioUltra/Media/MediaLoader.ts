@@ -6,7 +6,7 @@ export type Options = {
   src: string,
 }
 
-type MediaResponse = {buffer: ArrayBuffer, length: number}|null
+type MediaResponse = ArrayBuffer|null;
 
 export class MediaLoader extends Destructable {
   private wf: Waveform;
@@ -14,6 +14,9 @@ export class MediaLoader extends Destructable {
   private loaded = false;
   private options: Options;
   private cancel: () => void;
+  private decoderResolve?: () => void;
+  
+  decoderPromise?: Promise<void>;
 
   duration = 0;
   sampleRate = 0;
@@ -31,12 +34,14 @@ export class MediaLoader extends Destructable {
     this.cancel();
     this.loaded = false;
     this.loadingProgressType = 'determinate';
+    this.decoderResolve = undefined;
+    this.decoderPromise = undefined;
   }
 
-  async decodeAudioData(arrayBuffer: ArrayBuffer, length: number) {
-    if (!this.audio?.context || this.isDestroyed) return null;
+  async decodeAudioData(arrayBuffer: ArrayBuffer) {
+    if (!this.audio || this.isDestroyed) return null;
 
-    return await this.audio.decodeAudioData(arrayBuffer, length, {
+    return await this.audio.decodeAudioData(arrayBuffer, {
       multiChannel: (this.wf.params.enabledChannels?.length || 1) > 1,
     }).then((buffer) => {
       if (this.isDestroyed) return null;
@@ -49,27 +54,37 @@ export class MediaLoader extends Destructable {
       return Promise.resolve(null);
     }
 
-    const audio = this.createAnalyzer(options);
+    this.decoderPromise = new Promise((resolve) => {
+      this.decoderResolve = resolve;
+    });
+
+    this.createAnalyzer({
+      ...options,
+      src: this.options.src,
+    });
+
     const req = await this.performRequest(this.options.src);
 
     if (req) {
-      const playAudio = (meta: { sampleRate: number, channelCount: number, duration: number}) => {
-        this.duration = meta.duration;
-        this.sampleRate = meta.sampleRate;
-        this.loaded = true;
-        return audio;
-      };
-
       try {
-        if (!audio.context) {
+        if (!this.audio) {
           return Promise.resolve(null);
         }
 
-        return this.decodeAudioData(req.buffer, req.length).then((meta) => {
-          if (meta) {
-            return playAudio(meta);
-          }
-          return null;
+        const decodingPromise = this.decodeAudioData(req);
+
+        if (this.audio && this.audio.decoderPromise) {
+          await this.audio.decoderPromise.then(() => {
+            if (this.decoderResolve && this.audio) {
+              this.duration = this.audio.duration;
+              this.sampleRate = this.audio.sampleRate;
+              this.decoderResolve();
+            }
+          });
+        }
+
+        return decodingPromise.then(() => {
+          return this.audio ?? null;
         });
       } catch (err) {
       // TODO: Handle properly (exiquio)
@@ -116,7 +131,7 @@ export class MediaLoader extends Destructable {
 
       xhr.addEventListener('load', async () => {
         this.wf.setLoadingProgress(undefined, undefined, true);
-        resolve({ buffer: xhr.response, length: xhr.response.byteLength } as any);
+        resolve(xhr.response);
       });
 
       xhr.addEventListener('error', () => {
@@ -131,6 +146,8 @@ export class MediaLoader extends Destructable {
   private createAnalyzer(options: WaveformAudioOptions): WaveformAudio {
     if (this.audio) return this.audio;
 
-    return this.audio = new WaveformAudio(options);
+    this.audio = new WaveformAudio(options);
+
+    return this.audio;
   }
 }

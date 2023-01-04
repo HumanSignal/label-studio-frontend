@@ -27,9 +27,9 @@ export class Player extends Destructable {
    * Get current playback speed
    */
   get rate() {
-    if (this.audio?.source?.playbackRate.value) {
-      if (this.audio.source.playbackRate.value !== this._rate) {
-        this.audio.source.playbackRate.value = this._rate; // restore the correct rate
+    if (this.audio) {
+      if (this.audio.speed !== this._rate) {
+        this.audio.speed = this._rate; // restore the correct rate
       }
     }
 
@@ -44,8 +44,8 @@ export class Player extends Destructable {
 
     this._rate = value;
 
-    if (this.audio?.source) {
-      this.audio.source.playbackRate.value = value;
+    if (this.audio) {
+      this.audio.speed = value;
 
       if (rateChanged) {
         this.wf.invoke('rateChanged', [value]);
@@ -54,11 +54,11 @@ export class Player extends Destructable {
   }
 
   get duration() {
-    return this.audio?.buffer?.duration ?? 0;
+    return this.audio?.duration ?? 0;
   }
 
   get volume() {
-    return this.audio?.gain?.gain.value ?? 1;
+    return this.audio?.volume ?? 1;
   }
 
   set volume(value: number) {
@@ -183,7 +183,7 @@ export class Player extends Destructable {
     this.timestamp = performance.now();
     this.recreateSource();
 
-    if (!this.audio?.source) return;
+    if (!this.audio) return;
 
     this.playing = true;
 
@@ -196,8 +196,12 @@ export class Player extends Destructable {
       start = clamp(this.loop.start, 0, duration);
     }
 
-    this.audio.source.start(0, start ?? 0, duration ?? this.duration);
-    this.audio.source.addEventListener('ended', this.handleEnded);
+    if (this.audio.el) {
+      this.audio.el.currentTime = this.currentTime;
+      this.audio.el.addEventListener('ended', this.handleEnded);
+      this.audio.el.play();
+    }
+
     this.watch();
   }
 
@@ -241,16 +245,14 @@ export class Player extends Destructable {
   private disconnectSource() {
     if (this.isDestroyed || !this.audio || !this.connected) return;
     this.connected = false;
-    this.audio.source?.removeEventListener('ended', this.handleEnded);
-    this.audio.source?.stop(0);
+    this.audio.el?.removeEventListener('ended', this.handleEnded);
+    this.audio.el?.pause();
     this.audio.disconnect();
   }
 
   private cleanupSource() {
     if (this.isDestroyed || !this.audio) return;
     this.disconnectSource();
-
-    delete this.audio.source;
     delete this.audio;
   }
 

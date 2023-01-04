@@ -236,11 +236,20 @@ export class Waveform extends Events<WaveformEventTypes> {
   async load() {
     if (this.isDestroyed) return;
 
-    const audio = await this.media.load({
+    const loader = this.media.load({
       muted: this.params.muted ?? false,
       volume: this.params.volume ?? 1,
       rate: this.params.rate ?? 1,
     });
+
+    if (this.media.decoderPromise) {
+      await this.media.decoderPromise;
+
+      this.timeline.render();
+      this.visualizer.draw(true);
+    }
+
+    const audio = await loader;
 
     if (this.isDestroyed) return;
 
