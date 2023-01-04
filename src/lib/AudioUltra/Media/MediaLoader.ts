@@ -148,6 +148,10 @@ export class MediaLoader extends Destructable {
 
     this.audio = new WaveformAudio(options);
 
+    this.audio.on('durationChanged', (duration) => {
+      this.wf.invoke('durationChanged', [duration]);
+    });
+
     return this.audio;
   }
 }

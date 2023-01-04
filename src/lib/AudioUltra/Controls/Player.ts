@@ -69,7 +69,7 @@ export class Player extends Destructable {
       this.audio.volume = value;
 
       if (volumeChanged) {
-        this.wf.invoke('volumeChange', [value]);
+        this.wf.invoke('volumeChanged', [value]);
       }
     }
   }

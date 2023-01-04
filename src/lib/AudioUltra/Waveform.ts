@@ -157,8 +157,9 @@ interface WaveformEventTypes extends RegionsGlobalEvents, RegionGlobalEvents {
   'playend': () => void;
   'zoom': (zoom: number) => void;
   'muted': (muted: boolean) => void;
-  'volumeChange': (value: number) => void;
+  'volumeChanged': (value: number) => void;
   'rateChanged': (value: number) => void;
+  'durationChanged': (duration: number) => void;
   'scroll': (scroll: number) => void;
   'layersUpdated': (layers: Map<string, Layer>) => void;
 }

@@ -2,6 +2,7 @@ import { AudioDecoderWorker, getAudioDecoderWorker } from 'audio-file-decoder';
 // eslint-disable-next-line
 // @ts-ignore
 import DecodeAudioWasm from 'audio-file-decoder/decode-audio.wasm';
+import { Events } from '../Common/Events';
 import { average, bufferAllocator } from '../Common/Utils';
 
 export interface WaveformAudioOptions {
@@ -15,7 +16,11 @@ const DURATION_CHUNK_SIZE = 60 * 30; // 30 minutes
 
 const allocator = bufferAllocator();
 
-export class WaveformAudio {
+interface WaveformAudioEvents {
+  durationChanged: (duration: number) => void;
+}
+
+export class WaveformAudio extends Events<WaveformAudioEvents> {
   el?: HTMLAudioElement;
   buffer?: Float32Array[];
   decoderPromise: Promise<void> | undefined;
@@ -35,6 +40,7 @@ export class WaveformAudio {
   private decoderResolve?: (() => void);
 
   constructor(options: WaveformAudioOptions) {
+    super();
     this._rate = options.rate ?? this._rate;
     this._savedVolume = options.volume ?? this._volume;
     this._volume = options.muted ? 0 : this._savedVolume;
@@ -53,6 +59,16 @@ export class WaveformAudio {
   
   get duration() {
     return this._duration;
+  }
+
+  set duration(value: number) {
+    const durationChanged = this._duration !== value;
+
+    this._duration = value;
+
+    if (durationChanged) {
+      this.invoke('durationChanged', [value]);
+    }
   }
 
   get volume() {
@@ -95,6 +111,7 @@ export class WaveformAudio {
   }
   
   destroy() {
+    super.destroy();
     this.disconnect();
     delete this.buffer;
     delete this.el;
@@ -113,12 +130,8 @@ export class WaveformAudio {
     return this.buffer?.reduce((a, b) => a + b.byteLength, 0) ?? 0;
   }
 
-  get totalDuration() {
-    return this.decoder?.duration ?? 0;
-  }
-
   get totalChunks() {
-    return Math.ceil(this.totalDuration / DURATION_CHUNK_SIZE);
+    return Math.ceil(this.duration / DURATION_CHUNK_SIZE);
   }
 
   private createMediaElement() {
@@ -145,7 +158,7 @@ export class WaveformAudio {
   private *chunkDecoder(options?: {multiChannel?: boolean}): Generator<Promise<Float32Array|null>|null> {
     if (!this.decoder || !this.decodeId) return null;
 
-    const totalDuration = this.totalDuration;
+    const totalDuration = this.duration;
 
     let durationOffset = 0;
 
@@ -192,7 +205,7 @@ export class WaveformAudio {
       if (this.decoder) {
         this._channelCount = this.decoder.channelCount;
         this._sampleRate = this.decoder.sampleRate;
-        this._duration = this.decoder.duration;
+        this.duration = this.decoder.duration;
       }
 
       this.decoderResolve?.();
