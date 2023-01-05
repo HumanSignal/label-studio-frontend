@@ -424,7 +424,8 @@ module.exports = ({withDevServer = true} = {}) => ({
         type: "javascript/auto",
         loader: "file-loader",
         options: {
-          name: "[name].[ext]"
+          name: "[name].[ext]",
+          outputPath: dirPrefix.js, // colocate wasm with js
         }
       }
     ],
