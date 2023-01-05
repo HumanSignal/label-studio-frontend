@@ -1,6 +1,7 @@
 // turn on headless mode when running with HEADLESS=true environment variable
 // HEADLESS=true npx codecept run
 const headless = process.env.HEADLESS;
+const port = process.env.LSF_PORT ?? 3000;
 const fs = require('fs');
 const FRAGMENTS_PATH = './fragments/';
 
@@ -16,7 +17,7 @@ module.exports.config = {
     //   windowSize: "1200x900",
     // },
     Playwright: {
-      url: 'http://localhost:3000',
+      url: `http://localhost:${port}`,
       show: !headless,
       restart: 'context',
       timeout: 60000, // Action timeout after 60 seconds
@@ -70,6 +71,10 @@ module.exports.config = {
     //   enabled: true,
     //   coverageDir: 'output/coverage',
     // },
+    featureFlags: {
+      require: './plugins/featureFlags.js',
+      enabled: true,
+    },
     istanbulCoverage: {
       require: './plugins/istanbulСoverage.js',
       enabled: true,

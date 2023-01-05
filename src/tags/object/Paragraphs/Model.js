@@ -85,9 +85,9 @@ const Model = types
       return getRoot(self);
     },
 
-    get syncedAudio() {
+    get syncedAudioVideo() {
       if (!isFFDev2461) return false;
-      return self.syncedObject?.type?.startsWith('audio');
+      return self.syncedObject?.type?.startsWith('audio') || self.syncedObject?.type?.startsWith('video');
     },
 
     get audio() {
@@ -172,8 +172,6 @@ const Model = types
 
       const currentTime = audio.currentTime;
 
-      console.log({ currentTime, endDuration });
-
       if (currentTime < endDuration) {
         stopIn(endDuration - currentTime);
         return;
@@ -234,8 +232,10 @@ const Model = types
         audioRef.current.playbackRate = speed;
       },
 
+      handleSyncDuration() {},
+
       handlePause() {
-        if (self.syncedAudio) {
+        if (self.syncedAudioVideo) {
           self.triggerSyncPause();
         } else {
           self.handleSyncPause();
@@ -243,7 +243,7 @@ const Model = types
       },
 
       handlePlay() {
-        if (self.syncedAudio) {
+        if (self.syncedAudioVideo) {
           self.triggerSyncPlay();
         } else {
           self.handleSyncPlay();
@@ -251,7 +251,7 @@ const Model = types
       },
 
       handleSeek(time) {
-        if (self.syncedAudio) {
+        if (self.syncedAudioVideo) {
           self.triggerSyncSeek(time);
         } else {
           self.handleSyncSeek(time);
@@ -259,7 +259,7 @@ const Model = types
       },
 
       muteSelfWhenSynced() {
-        if (self.syncedAudio && audioRef.current) {
+        if (self.syncedAudioVideo && audioRef.current) {
           audioRef.current.muted = true;
         }
       },
@@ -279,14 +279,14 @@ const Model = types
 
         const isPlaying = isFFDev2461 ? self.isCurrentlyPlaying : !audio.paused;
 
-        if (isPlaying) {
+        if (isPlaying && currentId === idx) {
           if (isFFDev2461) {
             self.handlePause();
           } else {
             audio.pause();
             self.playingId = -1;
           }
-          if (idx === currentId) return;
+          return;
         }
 
         if (idx !== currentId) {
