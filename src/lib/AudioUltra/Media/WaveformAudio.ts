@@ -1,4 +1,3 @@
-import { Events } from '../Common/Events';
 import { AudioDecoder } from './AudioDecoder';
 
 export interface WaveformAudioOptions {
@@ -9,11 +8,7 @@ export interface WaveformAudioOptions {
 }
 
 
-interface WaveformAudioEvents {
-  durationChanged: (duration: number) => void;
-}
-
-export class WaveformAudio extends Events<WaveformAudioEvents> {
+export class WaveformAudio {
   decoder?: AudioDecoder;
   decoderPromise?: Promise<void>;
   el?: HTMLAudioElement;
@@ -26,13 +21,11 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private src?: string;
 
   constructor(options: WaveformAudioOptions) {
-    super();
     this._rate = options.rate ?? this._rate;
     this._savedVolume = options.volume ?? this._volume;
     this._volume = options.muted ? 0 : this._savedVolume;
     this.src = options.src;
-
-
+    this.createAudioDecoder();
     this.createMediaElement();
   }
 
@@ -83,11 +76,11 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   }
 
   disconnect() {
+    this.el?.pause();
     this.decoder?.cancel();
   }
   
   destroy() {
-    super.destroy();
     this.disconnect();
     delete this.decoderPromise;
     this.decoder?.destroy();
@@ -104,12 +97,18 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.volume = this._savedVolume;
   }
 
-  async decodeAudioData(arraybuffer: ArrayBuffer, options?: {multiChannel?: boolean}) {
-    if (!this.src) return;
+  async sourceDecoded() {
+    if (!this.decoder) return false;
 
-    if (!this.decoder) {
-      this.decoder = new AudioDecoder(this.src);
+    if (this.decoderPromise) {
+      await this.decoderPromise;
     }
+
+    return this.decoder.sourceDecoded;
+  }
+
+  async decodeAudioData(arraybuffer: ArrayBuffer, options?: {multiChannel?: boolean}) {
+    if (!this.decoder) return;
 
     const decoded = this.decoder.decode(arraybuffer, options);
 
@@ -132,5 +131,11 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
       this.el.src = this.src;
       this.el.load();
     }
+  }
+
+  private createAudioDecoder() {
+    if (!this.src || this.decoder) return;
+
+    this.decoder = new AudioDecoder(this.src);
   }
 }

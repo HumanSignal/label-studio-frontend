@@ -37,6 +37,7 @@ export class AudioDecoder {
     // and limit the memory usage of the browser
     AudioDecoder.cache.clear();
     this.buffer = bufferAllocator();
+    AudioDecoder.cache.set(src, this);
   }
 
   get channelCount() {
@@ -58,6 +59,10 @@ export class AudioDecoder {
     return this._dataLength;
   }
 
+  get sourceDecoded() {
+    return this.chunks !== undefined;
+  }
+
   /**
    * Cancel the decoding process.
    * This will stop the generator and dispose the worker.
@@ -74,9 +79,11 @@ export class AudioDecoder {
   destroy() {
     this.cancel();
     this.disposeWorker();
-    delete this.chunks;
-
-    AudioDecoder.cache.delete(this.src);
+    // TODO: dispose chunks and buffer based on a ttl so change between same sources
+    // doesn't cause a memory leak but also doesn't require reprocessing and downloading the same file again
+  
+    // delete this.chunks;
+    // AudioDecoder.cache.delete(this.src);
   }
 
   /**
@@ -93,7 +100,7 @@ export class AudioDecoder {
     // decoding is already in progress for this source, so wait for it to finish
     if (this.decodingPromise) return this.decodingPromise;
     // If the worker has cached data, we can skip the decode step
-    if (this.chunks) return Promise.resolve();
+    if (this.sourceDecoded) return Promise.resolve();
 
     // clear any previous decoding state
     this.cancel();

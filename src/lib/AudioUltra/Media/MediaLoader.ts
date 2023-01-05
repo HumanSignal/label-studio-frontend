@@ -76,6 +76,16 @@ export class MediaLoader extends Destructable {
       src: this.options.src,
     });
 
+    if (!this.audio) {
+      return Promise.resolve(null);
+    }
+
+    if (await this.audio.sourceDecoded()) {
+      this.duration = this.audio.duration;
+      this.decoderResolve?.();
+      return this.audio;
+    }
+
     const req = await this.performRequest(this.options.src);
 
     if (req) {
