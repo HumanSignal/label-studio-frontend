@@ -101,7 +101,7 @@ export class AudioDecoder {
     this.decodingPromise = new Promise(resolve => (this.decodingResolve = (resolve as any)));
     this.decoderPromise = new Promise(resolve => (this.decoderResolve = (resolve as any)));
 
-    getAudioDecoderWorker(DecodeAudioWasm, arraybuffer).then(async (worker) => {
+    await getAudioDecoderWorker(DecodeAudioWasm, arraybuffer).then(async (worker) => {
       // The decodeId has become falsey, decoding was cancelled
       if (!this.decodeId) return;
 
