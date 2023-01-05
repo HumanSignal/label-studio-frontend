@@ -15,11 +15,9 @@ export class MediaLoader extends Destructable {
   private options: Options;
   private cancel: () => void;
   private decoderResolve?: () => void;
+  private _duration = 0;
   
   decoderPromise?: Promise<void>;
-
-  duration = 0;
-  sampleRate = 0;
   loadingProgressType: 'determinate' | 'indeterminate';
 
   constructor(wf: Waveform, options: Options) {
@@ -28,6 +26,24 @@ export class MediaLoader extends Destructable {
     this.options = options;
     this.cancel = () => {};
     this.loadingProgressType = 'determinate';
+  }
+
+  get duration() {
+    return this._duration;
+  }
+
+  set duration(duration: number) {
+    const changed = this._duration !== duration;
+
+    this._duration = duration;
+    
+    if (changed) {
+      this.wf.invoke('durationChanged', [duration]);
+    }
+  }
+
+  get sampleRate() {
+    return this.audio?.sampleRate || 0;
   }
 
   reset() {
@@ -43,9 +59,6 @@ export class MediaLoader extends Destructable {
 
     return await this.audio.decodeAudioData(arrayBuffer, {
       multiChannel: (this.wf.params.enabledChannels?.length || 1) > 1,
-    }).then((buffer) => {
-      if (this.isDestroyed) return null;
-      return buffer;
     });
   }
 
@@ -73,11 +86,12 @@ export class MediaLoader extends Destructable {
 
         const decodingPromise = this.decodeAudioData(req);
 
-        if (this.audio && this.audio.decoderPromise) {
-          await this.audio.decoderPromise.then(() => {
+        if (this.audio) {
+          const decoderPromise = this.audio.decoderPromise || Promise.resolve();
+
+          await decoderPromise.then(() => {
             if (this.decoderResolve && this.audio) {
               this.duration = this.audio.duration;
-              this.sampleRate = this.audio.sampleRate;
               this.decoderResolve();
             }
           });
@@ -147,10 +161,6 @@ export class MediaLoader extends Destructable {
     if (this.audio) return this.audio;
 
     this.audio = new WaveformAudio(options);
-
-    this.audio.on('durationChanged', (duration) => {
-      this.wf.invoke('durationChanged', [duration]);
-    });
 
     return this.audio;
   }

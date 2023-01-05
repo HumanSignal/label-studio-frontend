@@ -1,9 +1,5 @@
-import { AudioDecoderWorker, getAudioDecoderWorker } from 'audio-file-decoder';
-// eslint-disable-next-line
-// @ts-ignore
-import DecodeAudioWasm from 'audio-file-decoder/decode-audio.wasm';
 import { Events } from '../Common/Events';
-import { average, bufferAllocator } from '../Common/Utils';
+import { AudioDecoder } from './AudioDecoder';
 
 export interface WaveformAudioOptions {
   src?: string;
@@ -12,32 +8,22 @@ export interface WaveformAudioOptions {
   rate?: number;
 }
 
-const DURATION_CHUNK_SIZE = 60 * 30; // 30 minutes
-
-const allocator = bufferAllocator();
 
 interface WaveformAudioEvents {
   durationChanged: (duration: number) => void;
 }
 
 export class WaveformAudio extends Events<WaveformAudioEvents> {
+  decoder?: AudioDecoder;
+  decoderPromise?: Promise<void>;
   el?: HTMLAudioElement;
-  buffer?: Float32Array[];
-  decoderPromise: Promise<void> | undefined;
 
   // private backed by audio element and getters/setters
   // underscored to keep the public API clean
   private _rate = 1;
   private _volume = 1;
   private _savedVolume = 1;
-  private _channelCount = 1;
-  private _sampleRate = 44100;
-  private _duration = 0;
-
   private src?: string;
-  private decodeId = 0; // if id=0, decode is not in progress
-  private decoder: AudioDecoderWorker | undefined;
-  private decoderResolve?: (() => void);
 
   constructor(options: WaveformAudioOptions) {
     super();
@@ -46,29 +32,20 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this._volume = options.muted ? 0 : this._savedVolume;
     this.src = options.src;
 
+
     this.createMediaElement();
   }
 
   get channelCount() {
-    return this._channelCount;
+    return this.decoder?.channelCount || 1;
+  }
+
+  get duration() {
+    return this.decoder?.duration || 0;
   }
 
   get sampleRate() {
-    return this._sampleRate;
-  }
-  
-  get duration() {
-    return this._duration;
-  }
-
-  set duration(value: number) {
-    const durationChanged = this._duration !== value;
-
-    this._duration = value;
-
-    if (durationChanged) {
-      this.invoke('durationChanged', [value]);
-    }
+    return this.decoder?.sampleRate || 44100;
   }
 
   get volume() {
@@ -106,14 +83,15 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   }
 
   disconnect() {
-    this.decodeId = 0;
-    this.disposeDecoder();
+    this.decoder?.cancel();
   }
   
   destroy() {
     super.destroy();
     this.disconnect();
-    delete this.buffer;
+    delete this.decoderPromise;
+    this.decoder?.destroy();
+    delete this.decoder;
     delete this.el;
   }
 
@@ -126,12 +104,18 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.volume = this._savedVolume;
   }
 
-  get dataLength() {
-    return this.buffer?.reduce((a, b) => a + b.byteLength, 0) ?? 0;
-  }
+  async decodeAudioData(arraybuffer: ArrayBuffer, options?: {multiChannel?: boolean}) {
+    if (!this.src) return;
 
-  get totalChunks() {
-    return Math.ceil(this.duration / DURATION_CHUNK_SIZE);
+    if (!this.decoder) {
+      this.decoder = new AudioDecoder(this.src);
+    }
+
+    const decoded = this.decoder.decode(arraybuffer, options);
+
+    this.decoderPromise = (this.decoder.decoderPromise || Promise.resolve());
+
+    return decoded;
   }
 
   private createMediaElement() {
@@ -147,129 +131,6 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     if (this.el.src !== this.src) {
       this.el.src = this.src;
       this.el.load();
-    }
-  }
-
-  /**
-   * Decode in chunks of up to 600 seconds until the whole file is decoded.
-   * Do the work in a Web Worker to avoid blocking the UI.
-   * Do the work in a interruptible generator to avoid blocking the worker.
-   */
-  private *chunkDecoder(options?: {multiChannel?: boolean}): Generator<Promise<Float32Array|null>|null> {
-    if (!this.decoder || !this.decodeId) return null;
-
-    const totalDuration = this.duration;
-
-    let durationOffset = 0;
-
-    while (true) {
-      yield new Promise((resolve) => {
-        if (!this.decoder) return resolve(null);
-
-        const nextChunkDuration = Math.min(DURATION_CHUNK_SIZE, Math.max(0, totalDuration - durationOffset));
-        const currentOffset = durationOffset;
-
-        durationOffset += nextChunkDuration;
-
-        this.decoder.decodeAudioData(currentOffset, nextChunkDuration, {
-          multiChannel: options?.multiChannel ?? false,
-          ...options,
-        }).then((chunk) => {
-          resolve(chunk);
-          if (!chunk) return; 
-        });
-      });
-    }
-  }
-
-  cancelDecode() {
-    this.decodeId = 0;
-    this.decoderResolve?.();
-    this.decoderResolve = undefined;
-  }
-
-  /**
-   * Decode the audio file in chunks to ensure the UI remains responsive.
-   */
-  async decodeAudioData(arraybuffer: ArrayBuffer, options?: {multiChannel?: boolean}): Promise<void> {
-    this.cancelDecode();
-    this.decodeId = Date.now();
-
-    this.decoderPromise = new Promise(resolve => (this.decoderResolve = resolve));
-
-    return getAudioDecoderWorker(DecodeAudioWasm, arraybuffer).then(async (decoder) => {
-      if (!this.decodeId) return null;
-
-      this.decoder = decoder;
-
-      if (this.decoder) {
-        this._channelCount = this.decoder.channelCount;
-        this._sampleRate = this.decoder.sampleRate;
-        this.duration = this.decoder.duration;
-      }
-
-      this.decoderResolve?.();
-
-      let chunkIndex = 0;
-      const totalChunks = this.totalChunks;
-      const chunkIterator = this.chunkDecoder(options);
-      const sampleSize = Math.floor(this.sampleRate * 0.01);
-      const chunks = Array.from({ length: totalChunks }) as Float32Array[];
-
-      // Work through the chunks of the file in a generator until done.
-      // Allow this to be interrupted at any time safely.
-      while (chunkIndex < totalChunks) {
-        if (!this.decodeId) return null;
-
-        const result = chunkIterator.next();
-
-        if (!result.done) {
-          console.log(`Decoding chunk ${chunkIndex + 1}/${totalChunks}`);
-
-          const value = await result.value;
-
-          if (!this.decodeId) return null;
-
-          if (value) {
-            // Get sample size for 0.01 seconds
-            const length = value.length;
-            const buffer = allocator.allocate(length);
-
-            for (let i = 0; i < length; i += sampleSize) {
-              const slice = value.slice(i, i + sampleSize);
-              const avg = average(slice);
-
-              slice.fill(avg);
-              buffer.set(slice, i);
-            }
-            chunks[chunkIndex] = buffer;
-          }
-
-          chunkIndex++;
-        }
-
-        if (result.done) {
-          break;
-        }
-      }
-
-      if (!this.decodeId) return null;
-
-      return chunks;
-    }).then(bufferData => {
-      if (bufferData) {
-        this.buffer = bufferData;
-        console.log('bufferData complete', this.dataLength);
-      }
-    }).finally(() => {
-      this.disposeDecoder();
-    });
-  }
-
-  private disposeDecoder() {
-    if (this.decoder) {
-      this.decoder.dispose();
-      this.decoder = undefined;
     }
   }
 }
