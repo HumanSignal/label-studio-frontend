@@ -1,5 +1,5 @@
-import { DetailedHTMLProps, forwardRef, useCallback, useEffect, useRef, VideoHTMLAttributes } from "react";
-import InfoModal from "../../components/Infomodal/Infomodal";
+import { DetailedHTMLProps, forwardRef, useCallback, useEffect, useRef, VideoHTMLAttributes } from 'react';
+import InfoModal from '../../components/Infomodal/Infomodal';
 
 
 type VirtualVideoProps = DetailedHTMLProps<VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement> & {
@@ -15,9 +15,11 @@ const canPlayUrl = async (url: string) => {
     method: 'HEAD',
   });
 
-  const fileType = fileMeta.headers.get("content-type");
-  const supported =  !!fileType && video.canPlayType(fileType) !== "";
+  const fileType = fileMeta.headers.get('content-type');
+  const supported =  !!fileType && video.canPlayType(fileType) !== '';
   const modalExists = document.querySelector('.ant-modal');
+
+  console.log('heartex', fileType, video.canPlayType(fileType));
 
   if (!supported && !modalExists) InfoModal.error('There has been an error rendering your video, please check the format is supported');
   return supported;
