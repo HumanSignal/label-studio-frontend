@@ -67,11 +67,6 @@ export interface WaveformOptions {
   splitChannels?: boolean;
 
   /**
-   * What channels to show
-   */
-  enabledChannels?: number[];
-
-  /**
    * Center the view to the cursor when zoomin
    * @default false
    */

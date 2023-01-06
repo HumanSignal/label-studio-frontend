@@ -58,7 +58,7 @@ export class MediaLoader extends Destructable {
     if (!this.audio || this.isDestroyed) return null;
 
     return await this.audio.decodeAudioData(arrayBuffer, {
-      multiChannel: (this.wf.params.enabledChannels?.length || 1) > 1,
+      multiChannel: this.wf.params.splitChannels,
     });
   }
 

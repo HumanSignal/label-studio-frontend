@@ -1,6 +1,6 @@
 import { ChannelData } from '../Media/ChannelData';
 import { WaveformAudio } from '../Media/WaveformAudio';
-import { averageMinMax, clamp, debounce, defaults, measure, roundToStep, warn } from '../Common/Utils';
+import { clamp, debounce, defaults, measure, roundToStep, warn } from '../Common/Utils';
 import { Waveform, WaveformOptions } from '../Waveform';
 import { CanvasCompositeOperation, Layer, RenderingContext } from './Layer';
 import { Events } from '../Common/Events';
@@ -27,7 +27,6 @@ export type VisualizerOptions = Pick<WaveformOptions,
 | 'zoomToCursor'
 | 'autoCenter'
 | 'splitChannels'
-| 'enabledChannels'
 | 'cursorWidth'
 | 'zoom'
 | 'amp'
@@ -60,7 +59,6 @@ export class Visualizer extends Events<VisualizerEvents> {
   private zoomToCursor = false;
   private autoCenter = false;
   private splitChannels = false;
-  private enabledChannels = [0];
   private padding: Padding = { top: 0, bottom: 0, left: 0, right: 0 };
   private gridWidth = 1;
   private gridColor = rgba('rgba(0, 0, 0, 0.1)');
@@ -89,7 +87,6 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.zoomToCursor = options.zoomToCursor ?? this.zoomToCursor;
     this.autoCenter = options.autoCenter ?? this.autoCenter;
     this.splitChannels = options.splitChannels ?? this.splitChannels;
-    this.enabledChannels = options.enabledChannels ?? this.enabledChannels;
     this.timelineHeight = options.timeline?.height ?? this.timelineHeight;
     this.timelinePlacement = options?.timeline?.placement ?? this.timelinePlacement;
     this.gridColor = options.gridColor ? rgba(options.gridColor) : this.gridColor;
@@ -204,7 +201,7 @@ export class Visualizer extends Events<VisualizerEvents> {
           this.centerToCurrentTime();
         }
 
-        // Render all enabled channels
+        // Render all available channels
         this.renderAvailableChannels();
       }
 
@@ -278,23 +275,20 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.useLayer('waveform', (layer) => {
       layer.clear();
-      this.enabledChannels.forEach((channel) => {
-        measure(`Render wave channel ${channel}`, () => {
-          this.renderWave(channel, layer);
-        });
+
+      measure('Render wave', () => {
+        this.renderWave(0, layer);
       });
     });
   }
 
   private renderWave(channelNumber: number, layer: Layer) {
-    // console.log(this.audio?.chunks(), this.samplesPerPx, this.scrollLeft, this.zoomedWidth, this.width);
-
     const fullHeight = this.height;
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
     const waveHeight = fullHeight - this.reservedSpace;
     const zero = fullHeight * (this.splitChannels ? channelNumber : 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
-    const height = waveHeight / (this.splitChannels ? this.audio?.channelCount ?? 1 : 1);
+    const height = waveHeight * (this.splitChannels ? this.audio?.channelCount ?? 1 : 1);
 
     const dataLength = this.dataLength;
     const scrollLeftPx = this.getScrollLeftPx();
@@ -388,14 +382,13 @@ export class Visualizer extends Events<VisualizerEvents> {
   private renderChunk(chunk: Float32Array, layer: Layer, height: number, offset: number, zero: number) {
     layer.save();
 
-    const renderable = averageMinMax(chunk);
-
-    renderable.forEach((v) => {
+    chunk.forEach((v: number) => {
       const H2 = height / 2;
-      const H = (v * this.amp * H2);
+      const H = (v * this.amp * height * 2);
 
       layer.lineTo(offset + 1, zero + H2 + H);
     });
+
     layer.restore();
   }
 
