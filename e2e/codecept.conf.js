@@ -70,8 +70,12 @@ module.exports.config = {
     // For the future generations
     // coverage: {
     //   enabled: true,
-    //   coverageDir: "output/coverage",
+    //   coverageDir: 'output/coverage',
     // },
+    featureFlags: {
+      require: './plugins/featureFlags.js',
+      enabled: true,
+    },
     screenshotOnFail: {
       enabled: true,
     },
