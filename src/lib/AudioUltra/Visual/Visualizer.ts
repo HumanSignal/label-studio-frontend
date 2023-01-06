@@ -114,6 +114,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.audio = audio;
     this.channels.length = this.audio.channelCount;
     this.setLoading(false);
+    this.getSamplesPerPx();
     this.invoke('initialized', [this]);
     this.draw();
   }
@@ -286,9 +287,8 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   private renderWave(channelNumber: number, layer: Layer) {
-    console.log(this.audio?.chunks());
+    // console.log(this.audio?.chunks(), this.samplesPerPx, this.scrollLeft, this.zoomedWidth, this.width);
 
-    return;
     const fullHeight = this.height;
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
@@ -358,30 +358,28 @@ export class Visualizer extends Events<VisualizerEvents> {
     layer.moveTo(x, y);
 
     // Render all chunks in the Float32Array[] between start and end
-    chunks.forEach((slice, index) => {
+    chunks.forEach((slice, _index) => {
       const chunkSize = slice.length;
-      const chunkStart = index * chunkSize;
+      const chunkStart = _index * chunkSize;
       const chunkEnd = chunkStart + chunkSize;
 
-      if (chunkEnd < start) return;
-      if (chunkStart > end) return;
+      if (chunkStart <= end && chunkEnd >= start) {
+        const l = slice.length - 1;
+        let i = l + 1;
 
-      const l = slice.length - 1;
-      let i = l + 1;
+        while (i > 0) {
+          const index = l - i;
+          const chunk = slice.slice(index, index + this.samplesPerPx);
 
-      while (i > 0) {
-        const index = l - i;
-        const chunk = slice.slice(index, index + this.samplesPerPx);
+          if (x >= 0 && chunk.length > 0) {
+            this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
+          }
 
-        if (x >= 0 && chunk.length > 0) {
-          this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
+          x += 1;
+          i = clamp(i - this.samplesPerPx, 0, l);
         }
-
-        x += 1;
-        i = clamp(i - this.samplesPerPx, 0, l);
       }
     });
-
 
     layer.stroke();
     layer.restore();
