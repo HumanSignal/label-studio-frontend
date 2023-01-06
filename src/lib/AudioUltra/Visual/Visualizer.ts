@@ -157,6 +157,14 @@ export class Visualizer extends Events<VisualizerEvents> {
     }
   }
 
+  setDecodingProgress(chunk?: number, total?: number) {
+    if (this._loader) {
+      if (chunk !== undefined) (this._loader as any).loaded = chunk;
+      if (total !== undefined) (this._loader as any).total = total;
+      (this._loader as any).update();
+    }
+  }
+
   async updateChannels(callback?: () => void) {
     for(const channel of this.channels) {
       if (!channel) continue;

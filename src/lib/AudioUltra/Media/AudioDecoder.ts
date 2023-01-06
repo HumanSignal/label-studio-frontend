@@ -2,15 +2,21 @@ import { AudioDecoderWorker, getAudioDecoderWorker } from 'audio-file-decoder';
 // eslint-disable-next-line
 // @ts-ignore
 import DecodeAudioWasm from 'audio-file-decoder/decode-audio.wasm';
+import { Events } from '../Common/Events';
 import { average, bufferAllocator } from '../Common/Utils';
 
 
 const DURATION_CHUNK_SIZE = 60 * 30; // 30 minutes
 
-export class AudioDecoder {
+interface AudioDecoderEvents {
+  progress: (chunk: number, total: number) => void;
+}
+
+export class AudioDecoder extends Events<AudioDecoderEvents> {
   static cache: Map<string, AudioDecoder> = new Map();
 
   private chunks?: Float32Array[];
+  // This is assigned in the constructor only when creating a new instance
   // eslint-disable-next-line
   // @ts-ignore
   private buffer: ReturnType<typeof bufferAllocator>;
@@ -33,11 +39,13 @@ export class AudioDecoder {
       return AudioDecoder.cache.get(src) as AudioDecoder;
     }
 
+    super();
+
     // only allow one cached decoder at a time to prevent memory leaks
     // and limit the memory usage of the browser
     AudioDecoder.cache.clear();
     this.buffer = bufferAllocator();
-    AudioDecoder.cache.set(src, this);
+    AudioDecoder.cache.set(this.src, this);
   }
 
   get channelCount() {
@@ -63,6 +71,10 @@ export class AudioDecoder {
     return this.chunks !== undefined;
   }
 
+  get sourceDecodeCancelled() {
+    return this.decodeId === 0;
+  }
+
   /**
    * Cancel the decoding process.
    * This will stop the generator and dispose the worker.
@@ -77,6 +89,9 @@ export class AudioDecoder {
   }
 
   destroy() {
+    // Since this is a singleton, we don't want to destroy the instance but clear all active
+    // subscriptions and cancel any pending decoding work
+    super.removeAllListeners();
     this.cancel();
     this.disposeWorker();
     // TODO: dispose chunks and buffer based on a ttl so change between same sources
@@ -109,8 +124,7 @@ export class AudioDecoder {
     this.decoderPromise = new Promise(resolve => (this.decoderResolve = (resolve as any)));
 
     await getAudioDecoderWorker(DecodeAudioWasm, arraybuffer).then(async (worker) => {
-      // The decodeId has become falsey, decoding was cancelled
-      if (!this.decodeId) return;
+      if (this.sourceDecodeCancelled) return;
 
       // Set the worker instance and resolve the decoder promise
       this.worker = worker;
@@ -126,22 +140,19 @@ export class AudioDecoder {
 
       this.chunks = Array.from({ length: totalChunks }) as Float32Array[];
 
+      this.invoke('progress', [0, totalChunks]);
+
       // Work through the chunks of the file in a generator until done.
       // Allow this to be interrupted at any time safely.
       while (chunkIndex < totalChunks) {
-        // The decodeId has become falsey, decoding was cancelled
-        if (!this.decodeId) return null;
+        if (this.sourceDecodeCancelled) return null;
 
         const result = chunkIterator.next();
 
         if (!result.done) {
-          // TODO: emit progress event with this data to display in the initializing loader text
-          console.log(`Decoding chunk ${chunkIndex + 1}/${totalChunks}`);
-
           const value = await result.value;
 
-          // The decodeId has become falsey, decoding was cancelled
-          if (!this.decodeId) return null;
+          if (this.sourceDecodeCancelled) return null;
 
           if (value) {
             // Get sample size for 0.01 seconds
@@ -157,6 +168,8 @@ export class AudioDecoder {
             }
             this.chunks[chunkIndex] = buffer;
           }
+
+          this.invoke('progress', [chunkIndex + 1, totalChunks]);
 
           chunkIndex++;
         }
@@ -186,7 +199,7 @@ export class AudioDecoder {
    * Do the work in a interruptible generator to avoid blocking the worker.
    */
   private *chunkDecoder(options?: {multiChannel?: boolean}): Generator<Promise<Float32Array|null>|null> {
-    if (!this.worker || !this.decodeId) return null;
+    if (!this.worker || this.sourceDecodeCancelled) return null;
 
     const totalDuration = this.worker.duration;
 
@@ -194,7 +207,7 @@ export class AudioDecoder {
 
     while (true) {
       yield new Promise((resolve) => {
-        if (!this.worker) return resolve(null);
+        if (!this.worker || this.sourceDecodeCancelled) return resolve(null);
 
         const nextChunkDuration = Math.min(DURATION_CHUNK_SIZE, Math.max(0, totalDuration - durationOffset));
         const currentOffset = durationOffset;

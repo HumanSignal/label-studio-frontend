@@ -172,6 +172,10 @@ export class MediaLoader extends Destructable {
 
     this.audio = new WaveformAudio(options);
 
+    this.audio.on('decodingProgress', (chunk, total) => {
+      this.wf.setDecodingProgress(chunk, total);
+    });
+
     return this.audio;
   }
 }

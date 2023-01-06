@@ -1,3 +1,4 @@
+import { Events } from '../Common/Events';
 import { AudioDecoder } from './AudioDecoder';
 
 export interface WaveformAudioOptions {
@@ -7,8 +8,11 @@ export interface WaveformAudioOptions {
   rate?: number;
 }
 
+interface WaveformAudioEvents {
+  decodingProgress: (chunk: number, total: number) => void;
+}
 
-export class WaveformAudio {
+export class WaveformAudio extends Events<WaveformAudioEvents> {
   decoder?: AudioDecoder;
   decoderPromise?: Promise<void>;
   el?: HTMLAudioElement;
@@ -21,6 +25,7 @@ export class WaveformAudio {
   private src?: string;
 
   constructor(options: WaveformAudioOptions) {
+    super();
     this._rate = options.rate ?? this._rate;
     this._savedVolume = options.volume ?? this._volume;
     this._volume = options.muted ? 0 : this._savedVolume;
@@ -81,6 +86,7 @@ export class WaveformAudio {
   }
   
   destroy() {
+    super.destroy();
     this.disconnect();
     delete this.decoderPromise;
     this.decoder?.destroy();
@@ -137,5 +143,9 @@ export class WaveformAudio {
     if (!this.src || this.decoder) return;
 
     this.decoder = new AudioDecoder(this.src);
+
+    this.decoder.on('progress', (chunk, total) => {
+      this.invoke('decodingProgress', [chunk, total]);
+    });
   }
 }

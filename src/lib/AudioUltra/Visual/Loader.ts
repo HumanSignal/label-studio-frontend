@@ -1,6 +1,7 @@
 export class Loader extends HTMLElement {
   _loaded: number;
   _total: number;
+  _initializing = false;
 
   constructor() {
     super();
@@ -135,6 +136,14 @@ export class Loader extends HTMLElement {
     const total = this.total;
 
     requestAnimationFrame(() => {
+      // Update the progress bar for decoding of chunks
+      if (this._initializing) {
+        loadedText.innerText = `${this.loaded}`;
+        totalText.innerText = `${this.total} chunks`;
+        percentageText.innerText = `(${this.value}%)`;
+        return;
+      }
+
       // Indeterminate progress bar is given if no calculable total available.
       if (total < 0) {
         if (!bar.classList.contains('progress-bar-indeterminate')) 
@@ -150,9 +159,11 @@ export class Loader extends HTMLElement {
 
       // Finished loading, starting initialization
       if (value === 100) {
+        this._initializing = true;
         if (this.total > 0) {
-          percentageText.innerText = `(${value}%)`;
+          loadedText.innerText = `${this.convertBytesToMegabytes(this.loaded)} MB`;
           totalText.innerText = `${this.convertBytesToMegabytes(this.total)} MB`;
+          percentageText.innerText = `(${value}%)`;
         }
         text.innerText = 'Initializing...';
         bar.classList.add('progress-bar-indeterminate');
