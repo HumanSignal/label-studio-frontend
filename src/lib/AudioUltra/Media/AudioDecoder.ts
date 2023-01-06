@@ -15,7 +15,7 @@ interface AudioDecoderEvents {
 export class AudioDecoder extends Events<AudioDecoderEvents> {
   static cache: Map<string, AudioDecoder> = new Map();
 
-  private chunks?: Float32Array[];
+  chunks?: Float32Array[];
   // This is assigned in the constructor only when creating a new instance
   // eslint-disable-next-line
   // @ts-ignore
@@ -25,6 +25,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   private decoderResolve?: (() => void);
   private decodingResolve?: (() => void);
   private _dataLength = 0;
+  private _dataSize = 0;
   private _channelCount = 1;
   private _sampleRate = 44100;
   private _duration = 0;
@@ -62,9 +63,16 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
 
   get dataLength() {
     if (this.chunks && !this._dataLength) {
-      this._dataLength = this.chunks?.reduce((a, b) => a + b.byteLength, 0) ?? 0;
+      this._dataLength = this.chunks?.reduce((a, b) => a + b.length, 0) ?? 0;
     }
     return this._dataLength;
+  }
+
+  get dataSize() {
+    if (this.chunks && !this._dataSize) {
+      this._dataSize = this.chunks?.reduce((a, b) => a + b.byteLength, 0) ?? 0;
+    }
+    return this._dataSize;
   }
 
   get sourceDecoded() {

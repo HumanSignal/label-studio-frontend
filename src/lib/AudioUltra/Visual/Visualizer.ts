@@ -113,27 +113,9 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.init = () => warn('Visualizer is already initialized');
     this.audio = audio;
     this.channels.length = this.audio.channelCount;
-
-    // this.enabledChannels.forEach((channelNumber: number) => {
-    //   const data = audio.buffer[channelNumber];
-
-    //   this.getSamplesPerPx();
-
-    //   this.channels[channelNumber] = new ChannelData({
-    //     data,
-    //     visualizer: this,
-    //     waveform: this.wf,
-    //     getChunksSize: () => {
-    //       return this.samplesPerPx;
-    //     },
-    //   });
-    // });
-
-    this.updateChannels(() => {
-      this.setLoading(false);
-      this.invoke('initialized', [this]);
-      this.draw();
-    });
+    this.setLoading(false);
+    this.invoke('initialized', [this]);
+    this.draw();
   }
 
   setLoading(loading: boolean) {
@@ -165,17 +147,6 @@ export class Visualizer extends Events<VisualizerEvents> {
     }
   }
 
-  async updateChannels(callback?: () => void) {
-    for(const channel of this.channels) {
-      if (!channel) continue;
-      await channel.recalculate();
-    }
-
-    if (callback instanceof Function) {
-      callback();
-    }
-  }
-
   setZoom(value: number) {
     this.zoom = clamp(value, 1, this.maxZoom);
     if (this.zoomToCursor) {
@@ -186,10 +157,8 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.getSamplesPerPx();
 
-    this.updateChannels(() => {
-      this.wf.invoke('zoom', [this.zoom]);
-      this.draw();
-    });
+    this.wf.invoke('zoom', [this.zoom]);
+    this.draw();
   }
 
   getZoom() {
@@ -317,10 +286,9 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   private renderWave(channelNumber: number, layer: Layer) {
-    const channel = this.channels[channelNumber];
-   
-    if (!channel || channel.isDestroyed) return;
+    console.log(this.audio?.chunks());
 
+    return;
     const fullHeight = this.height;
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
@@ -328,7 +296,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const zero = fullHeight * (this.splitChannels ? channelNumber : 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
     const height = waveHeight / (this.splitChannels ? this.audio?.channelCount ?? 1 : 1);
 
-    const dataLength = channel.data.length;
+    const dataLength = this.dataLength;
     const scrollLeftPx = this.getScrollLeftPx();
 
     const iStart = clamp(
@@ -348,15 +316,19 @@ export class Visualizer extends Events<VisualizerEvents> {
     const x = 0;
     const y = zero + paddingTop + height / 2;
 
-    if (this.isDestroyed || channel.isDestroyed) return;
+    if (this.isDestroyed || !this.audio) return;
 
-    const renderable = channel.data.slice(iStart, iEnd);
+    const chunks = this.audio.chunks();
+
+    if (!chunks) return;
 
     this.renderAllChunks(
       layer,
-      renderable,
+      chunks,
       x,
       y,
+      iStart,
+      iEnd,
       height,
       paddingLeft,
       zero,
@@ -365,9 +337,11 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   private renderAllChunks(
     layer: Layer,
-    chunks: Float32Array,
+    chunks: Float32Array[],
     x: number,
     y: number,
+    start: number,
+    end: number,
     height: number,
     paddingLeft: number,
     zero: number,
@@ -383,20 +357,31 @@ export class Visualizer extends Events<VisualizerEvents> {
     layer.beginPath();
     layer.moveTo(x, y);
 
-    const l = chunks.length - 1;
-    let i = l + 1;
+    // Render all chunks in the Float32Array[] between start and end
+    chunks.forEach((slice, index) => {
+      const chunkSize = slice.length;
+      const chunkStart = index * chunkSize;
+      const chunkEnd = chunkStart + chunkSize;
 
-    while (i > 0) {
-      const index = l - i;
-      const chunk = chunks.slice(index, index + this.samplesPerPx);
+      if (chunkEnd < start) return;
+      if (chunkStart > end) return;
 
-      if (x >= 0 && chunk.length > 0) {
-        this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
+      const l = slice.length - 1;
+      let i = l + 1;
+
+      while (i > 0) {
+        const index = l - i;
+        const chunk = slice.slice(index, index + this.samplesPerPx);
+
+        if (x >= 0 && chunk.length > 0) {
+          this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
+        }
+
+        x += 1;
+        i = clamp(i - this.samplesPerPx, 0, l);
       }
+    });
 
-      x += 1;
-      i = clamp(i - this.samplesPerPx, 0, l);
-    }
 
     layer.stroke();
     layer.restore();
@@ -797,11 +782,9 @@ export class Visualizer extends Events<VisualizerEvents> {
       const newWidth = this.wrapper.clientWidth;
       const newHeight = this.height;
 
-      this.updateChannels(() => {
-        this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
-        this.getSamplesPerPx();
-        this.draw(false, this.zoom === 1);
-      });
+      this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
+      this.getSamplesPerPx();
+      this.draw(false, this.zoom === 1);
     });
   };
 

@@ -46,6 +46,14 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     return this.decoder?.sampleRate || 44100;
   }
 
+  get dataLength() {
+    return this.decoder?.dataLength || 0;
+  }
+
+  get dataSize() {
+    return this.decoder?.dataSize || 0;
+  }
+
   get volume() {
     return this._volume ?? 1;
   }
@@ -101,6 +109,12 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
   unmute() {
     this.volume = this._savedVolume;
+  }
+
+  chunks(): Float32Array[]|undefined {
+    if (!this.decoder) return;
+
+    return this.decoder.chunks;
   }
 
   async sourceDecoded() {
