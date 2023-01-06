@@ -1,6 +1,6 @@
 import { ChannelData } from '../Media/ChannelData';
 import { WaveformAudio } from '../Media/WaveformAudio';
-import { clamp, debounce, defaults, measure, roundToStep, warn } from '../Common/Utils';
+import { clamp, debounce, defaults, roundToStep, scheduler, warn } from '../Common/Utils';
 import { Waveform, WaveformOptions } from '../Waveform';
 import { CanvasCompositeOperation, Layer, RenderingContext } from './Layer';
 import { Events } from '../Common/Events';
@@ -193,26 +193,40 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.drawing = true;
 
-    setTimeout(() => {
-      if (!dry) {
-        this.drawMiddleLine();
+    const that = this;
 
-        if (this.wf.playing && this.autoCenter) {
-          this.centerToCurrentTime();
+    const now = performance.now();
+
+    function* prioritizeDraw(ts: number) {
+      yield;
+      console.log('prioritizeDraw', { now, ts });
+      if (!dry) {
+        that.drawMiddleLine();
+
+        if (that.wf.playing && that.autoCenter) {
+          that.centerToCurrentTime();
         }
 
         // Render all available channels
-        this.renderAvailableChannels();
+        yield that.renderAvailableChannels();
+
+        console.log('prioritizeDraw:renderChannels', { now, ts });
       }
 
-      this.renderCursor();
+      that.renderCursor();
 
-      this.invoke('draw', [this]);
+      that.invoke('draw', [that]);
 
-      this.transferImage();
+      yield;
 
-      this.drawing = false;
-    });
+      console.log('prioritizeDraw:transfer', { now, ts });
+
+      that.transferImage();
+
+      that.drawing = false;
+    }
+
+    scheduler(prioritizeDraw(now));
   }
 
   destroy() {
@@ -270,19 +284,19 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.playhead.updatePositionFromTime(time);
   }
 
-  private renderAvailableChannels() {
+  private *renderAvailableChannels() {
     if (!this.audio) return;
 
-    this.useLayer('waveform', (layer) => {
-      layer.clear();
+    const layer = this.getLayer('waveform');
 
-      measure('Render wave', () => {
-        this.renderWave(0, layer);
-      });
-    });
+    if (!layer) return;
+
+    layer.clear();
+
+    yield this.renderWave(0, layer);
   }
 
-  private renderWave(channelNumber: number, layer: Layer) {
+  private *renderWave(channelNumber: number, layer: Layer) {
     const fullHeight = this.height;
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
@@ -312,11 +326,13 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     if (this.isDestroyed || !this.audio) return;
 
-    const chunks = this.audio.chunks();
+    const chunks = this.audio.chunks;
 
     if (!chunks) return;
 
-    this.renderAllChunks(
+    console.log('renderWave', { iStart, iEnd, scrollLeftPx, dataLength, chunks });
+
+    yield this.renderAllChunks(
       layer,
       chunks,
       x,
@@ -329,7 +345,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     );
   }
 
-  private renderAllChunks(
+  private *renderAllChunks(
     layer: Layer,
     chunks: Float32Array[],
     x: number,
@@ -351,35 +367,46 @@ export class Visualizer extends Events<VisualizerEvents> {
     layer.beginPath();
     layer.moveTo(x, y);
 
+    const that = this;
+
     // Render all chunks in the Float32Array[] between start and end
-    chunks.forEach((slice, _index) => {
+    for (let _index = 0; _index < chunks.length; _index++) {
+      const slice = chunks[_index];
       const chunkSize = slice.length;
       const chunkStart = _index * chunkSize;
       const chunkEnd = chunkStart + chunkSize;
 
       if (chunkStart <= end && chunkEnd >= start) {
-        const l = slice.length - 1;
+        // The chunk is in the range we want to render
+        const chunkStartIndex = Math.max(start - chunkStart, 0);
+        const chunkEndIndex = Math.min(end - chunkStart, chunkSize);
+
+        const chunkSlice = slice.slice(chunkStartIndex, chunkEndIndex);
+        const l = chunkSlice.length - 1;
+
         let i = l + 1;
 
         while (i > 0) {
           const index = l - i;
-          const chunk = slice.slice(index, index + this.samplesPerPx);
+          const chunk = slice.slice(index, index + that.samplesPerPx);
 
           if (x >= 0 && chunk.length > 0) {
-            this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
+            yield that.renderChunk(chunk, layer, height, x + paddingLeft, zero);
           }
 
           x += 1;
-          i = clamp(i - this.samplesPerPx, 0, l);
+          i = clamp(i - that.samplesPerPx, 0, l);
         }
       }
-    });
+    }
 
     layer.stroke();
     layer.restore();
   }
 
-  private renderChunk(chunk: Float32Array, layer: Layer, height: number, offset: number, zero: number) {
+  private *renderChunk(chunk: Float32Array, layer: Layer, height: number, offset: number, zero: number) {
+    yield;
+
     layer.save();
 
     chunk.forEach((v: number) => {

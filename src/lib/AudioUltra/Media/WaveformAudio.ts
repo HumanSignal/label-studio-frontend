@@ -111,7 +111,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.volume = this._savedVolume;
   }
 
-  chunks(): Float32Array[]|undefined {
+  get chunks(): Float32Array[]|undefined {
     if (!this.decoder) return;
 
     return this.decoder.chunks;

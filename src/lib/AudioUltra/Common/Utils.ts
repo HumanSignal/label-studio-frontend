@@ -181,6 +181,18 @@ export const bufferAllocator = () => {
   return { allocate };
 };
 
+export function scheduler(generator: Generator) {
+  function schedule(timestamp: number) {
+    const result = generator.next(timestamp);
+
+    if (!result.done) {
+      requestAnimationFrame(schedule);
+    }
+  }
+
+  requestAnimationFrame(schedule);
+}
+
 export const getOffsetLeft = (element: HTMLElement) => {
   return element.getBoundingClientRect().left;
 };
