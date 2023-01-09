@@ -26,8 +26,6 @@ jobs:
     name: "Build JS Bundle"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/build_bundle.yml@master
-    permissions:
-      contents: read
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
 
@@ -35,8 +33,6 @@ jobs:
     name: "Tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/e2e_tests.yml@master
-    permissions:
-      contents: read
     needs:
       - build_bundle
     with:
@@ -46,8 +42,6 @@ jobs:
     name: "Tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/unit_tests.yml@master
-    permissions:
-      contents: read
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
     secrets: inherit
@@ -56,7 +50,5 @@ jobs:
     name: "Lint"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/eslint.yml@master
-    permissions:
-      contents: read
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
