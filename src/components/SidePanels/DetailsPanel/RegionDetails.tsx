@@ -1,7 +1,6 @@
 import { Typography } from 'antd';
 import { observer } from 'mobx-react';
 import { FC, useEffect, useMemo, useRef } from 'react';
-import { PER_REGION_MODES } from '../../../mixins/PerRegionModes';
 import { Block, Elem, useBEM } from '../../../utils/bem';
 import { RegionEditor } from './RegionEditor';
 import './RegionDetails.styl';
@@ -36,8 +35,13 @@ const RatingResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
 });
 
 const ResultItem: FC<{result: any}> = observer(({ result }) => {
-  const { type, from_name, mainValue } = result;
-  const isRegionList = from_name.displaMode === PER_REGION_MODES.REGION_LIST;
+  const { type, mainValue } = result;
+  /**
+   * @todo before fix this var was always false, so fix is left commented out
+   * intention was to don't show per-region textarea text twice —
+   * in region list and in region details; it failed but there were no complaints
+   */
+  // const isRegionList = from_name.displaymode === PER_REGION_MODES.REGION_LIST;
 
   const content = useMemo(() => {
     if (type === 'rating') {
@@ -49,7 +53,7 @@ const ResultItem: FC<{result: any}> = observer(({ result }) => {
           </Elem>
         </Elem>
       );
-    } else if (type === 'textarea' && !(from_name.perregion && isRegionList)) {
+    } else if (type === 'textarea') {
       return (
         <Elem name="result">
           <Text>Text: </Text>
@@ -68,7 +72,7 @@ const ResultItem: FC<{result: any}> = observer(({ result }) => {
         </Elem>
       );
     }
-  }, [type, from_name, mainValue]);
+  }, [type, mainValue]);
 
   return content ? (
     <Block name="region-meta">
