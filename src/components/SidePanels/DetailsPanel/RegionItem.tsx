@@ -6,6 +6,7 @@ import { IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
 import { Button, ButtonProps } from '../../../common/Button/Button';
 import { Block, Elem } from '../../../utils/bem';
 import { NodeIcon } from '../../Node/Node';
+import { RegionLabels } from './RegionLabels';
 
 interface RegionItemProps {
   region: any;
@@ -32,22 +33,18 @@ export const RegionItem: FC<RegionItemProps> = observer(({
     return !!nodes.find((node: any) => node.editable && !node.classification);
   }, [nodes]);
 
-  const title = useMemo(() => {
-    return region.labels.join(', ') || 'No label';
-  }, [region.labels]);
-
   const color = useMemo(() => {
     const bgColor = region.background ?? region.getOneColor() ?? '#666';
 
     return chroma(bgColor).alpha(1);
-  }, [region]);
+  }, [region.background, region.style]);
 
   return (
     <Block name="detailed-region" mod={{ compact }}>
       <Elem name="head" style={{ color: color.css() }}>
         <Elem name="title">
           <Elem name="icon"><NodeIcon node={region}/></Elem>
-          {title}
+          <RegionLabels region={region} />
         </Elem>
         {withIds && <span>{region.cleanId}</span>}
       </Elem>

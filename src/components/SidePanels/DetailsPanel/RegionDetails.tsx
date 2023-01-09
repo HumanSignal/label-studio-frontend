@@ -1,7 +1,6 @@
 import { Typography } from 'antd';
 import { observer } from 'mobx-react';
 import { FC, useEffect, useMemo, useRef } from 'react';
-import { Tag } from '../../../common/Tag/Tag';
 import { PER_REGION_MODES } from '../../../mixins/PerRegionModes';
 import { Block, Elem, useBEM } from '../../../utils/bem';
 import { RegionEditor } from './RegionEditor';
@@ -9,38 +8,6 @@ import './RegionDetails.styl';
 
 const { Text } = Typography;
 
-const RegionLabels: FC<{result: any}> = ({ result }) => {
-  const labels: any[] = result.selectedLabels || []; // ensure labels is not underfined
-  const showLabels = labels.length > 1;
-
-  return (
-    <Elem name="item" key={result.pid}>
-      {showLabels && (
-        <Elem name="content">
-          {labels.map(label => {
-            const bgColor = label.background || '#000000';
-
-            return (
-              <Tag key={label.id} color={bgColor} solid>
-                {label.value}
-              </Tag>
-            );
-          })}
-        </Elem>
-      )}
-
-      {result.area.text ? (
-        <Elem
-          name="content"
-          mod={{ type: 'text' }}
-          dangerouslySetInnerHTML={{
-            __html: result.area.text.replace(/\\n/g, '\n'),
-          }}
-        />
-      ) : null}
-    </Elem>
-  );
-};
 
 const TextResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
   return (
@@ -73,11 +40,7 @@ const ResultItem: FC<{result: any}> = observer(({ result }) => {
   const isRegionList = from_name.displaMode === PER_REGION_MODES.REGION_LIST;
 
   const content = useMemo(() => {
-    if (type.endsWith('labels')) {
-      return (
-        <RegionLabels result={result}/>
-      );
-    } else if (type === 'rating') {
+    if (type === 'rating') {
       return (
         <Elem name="result">
           <Text>Rating: </Text>
