@@ -130,6 +130,8 @@ const _Tool = types
     zoomingPositionY: null,
     negativezoom: null,
     rotation: null,
+
+    timeTravellerListener: null,
   }))
   .views(self => ({
     get viewClass() {
@@ -222,6 +224,14 @@ const _Tool = types
   .actions(self => ({
 
     mousedownEv(ev) {
+      // If this is the first time the Magic Wand is being used, make sure we capture if an undo/redo
+      // happens to invalidate our cache.
+      if (!self.timeTravellerListener) {
+        self.timeTravellerListener = self.annotation.history.onUpdate(() => {
+          self.invalidateCache();
+        });
+      }
+
       // Start magic wand thresholding.
       self.annotation.history.freeze();
       self.mode = 'drawing';
@@ -353,18 +363,29 @@ const _Tool = types
         self.cachedNaturalCanvas.height = self.naturalHeight;
         self.cachedLabel = self.selectedLabel;
       } else if (self.shouldInvalidateCache()) {
-        // Note: in an ideal world we would access self.existingRegion.maskDataURL to blit the existing
-        // older mask onto the offscreen natural canvas. However, as soon as we do this, we enter into
-        // some of the black magic mobx-state-tree uses to version data and things get very slow as
-        // alot of state is captured. Instead, just invalidate the cache, which will cause a new region
-        // to be created rather than stacking with the earlier, older region.
-        self.cachedNaturalCanvas = document.createElement('canvas');
-        self.cachedNaturalCanvas.width = self.naturalWidth;
-        self.cachedNaturalCanvas.height = self.naturalHeight;
-        self.isFirstWand = true;
-        self.cachedRegionId = null;
-        self.cachedLabel = self.selectedLabel;
+        self.invalidateCache();
       }
+    },
+
+    /**
+     * We maintain a canvas cache that can be re-used during a single session of using
+     * the Magic Wand for a class that should have its values stacked. This drastically improves
+     * performance when Magic Wanding on large regions. However, several different conditions can
+     * invalidate this cache, such as using undo/redo, selecting an existing different Magic Wand
+     * region, etc. This method invalidates the cache and creates a new one.
+     */
+    invalidateCache() {
+      // Note: in an ideal world we would access self.existingRegion.maskDataURL to blit the existing
+      // older mask onto the offscreen natural canvas. However, as soon as we do this, we enter into
+      // some of the black magic mobx-state-tree uses to version data and things get very slow as
+      // alot of state is captured. Instead, just invalidate the cache, which will cause a new region
+      // to be created rather than stacking with the earlier, older region.
+      self.cachedNaturalCanvas = document.createElement('canvas');
+      self.cachedNaturalCanvas.width = self.naturalWidth;
+      self.cachedNaturalCanvas.height = self.naturalHeight;
+      self.isFirstWand = true;
+      self.cachedRegionId = null;
+      self.cachedLabel = self.selectedLabel;
     },
 
     /**
