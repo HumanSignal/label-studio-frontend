@@ -24,6 +24,9 @@
         display block
         position absolute
 
+    ~/_collapsed &
+      margin-bottom auto
+
   &__wrapper
     --snap-rotation 90deg
     top 0
@@ -69,3 +72,6 @@
   &_collapsed
     height auto
     overflow visible
+    min-height 100%
+    display flex
+    flex-direction column
