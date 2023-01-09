@@ -2,9 +2,9 @@ import { FC } from 'react';
 
 import { Block } from '../../../utils/bem';
 
-export const RegionLabels: FC<{region: any}> = ({ region }) => {
+export const RegionLabels: FC<{region: LSFRegion}> = ({ region }) => {
   const labelsInResults = region.results
-    .filter((result: any) => result.type.endsWith('labels'))
+    .filter(result => result.type.endsWith('labels'))
     .map((result: any) => result.selectedLabels || []);
   const labels: any[] = [].concat(...labelsInResults);
 
