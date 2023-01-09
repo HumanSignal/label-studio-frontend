@@ -84,6 +84,19 @@ export const RegionDetailsMain: FC<{region: any}> = observer(({
     <>
       <Elem name="result">
         {(region?.results as any[]).map((res) => <ResultItem key={res.pid} result={res}/>)}
+        {region?.text ? (
+          <Block name="region-meta">
+            <Elem name="item">
+              <Elem
+                name="content"
+                mod={{ type: 'text' }}
+                dangerouslySetInnerHTML={{
+                  __html: region.text.replace(/\\n/g, '\n'),
+                }}
+              />
+            </Elem>
+          </Block>
+        ) : null}
       </Elem>
       <RegionEditor region={region}/>
     </>
