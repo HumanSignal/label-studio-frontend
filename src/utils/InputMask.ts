@@ -196,7 +196,7 @@ export class MaskUtil {
   __inputKeydownMask(event: any) {
     const { selectionStart, selectionEnd } = event.target;
     const key = event.key;
-    let index = selectionStart;
+    let index = selectionStart > this.mask.length - 1 ? this.mask.length - 1 : selectionStart;
     let mask = this.mask[index];
 
     /** Set up which keys to ignore */
@@ -209,24 +209,26 @@ export class MaskUtil {
     /** If the value isn't a replacement of multiple characters */
     if (selectionStart === selectionEnd) {
       event.preventDefault();
-      if (key === 'Backspace') {
+      let _removingKey = null;
+
+      if (key === 'Backspace') _removingKey = 1;
+      else if (key === 'Delete') _removingKey = 0;
+
+      if (_removingKey !== null) {
+
         /** If this is a delete event, replace the deleted element with the placeholder */
-        const previous = this.mask[index - 1];
+        const previous = this.mask[selectionStart - _removingKey];
 
         if (previous) {
           const replacement = previous.validator ? this.proxyChar : previous.char;
 
-          this.onChange(this.splice(event.target.value, index - 1, replacement));
-          event.target.setSelectionRange(index - 1, index - 1);
+          this.onChange(this.splice(event.target.value, selectionStart - _removingKey, replacement));
+          event.target.setSelectionRange(selectionStart - _removingKey, selectionStart - _removingKey);
         }
 
         return;
       }
-      /** Prevent a user for entering more characters than the mask allows */
-      if (event.target.value.replace(this.proxyChar, '').length >= this.mask.length) {
-        event.preventDefault();
-        return false;
-      }
+
       /** While the input doesn't have a validator, splice character in */
       while(mask && !mask.validator && key !== mask.char) {
         this.onChange(this.splice(event.target.value, index, mask.char));
@@ -234,6 +236,7 @@ export class MaskUtil {
         mask = this.mask[index + 1];
         index += 1;
       }
+
       /** If we have a validator for the key */
       if (mask && mask.validator) {
         const match = !!key.match(mask.validator);
@@ -244,6 +247,7 @@ export class MaskUtil {
           return false;
         }
       }
+
       /** Splice in the added data */
       this.onChange(this.splice(event.target.value, index, key));
       setTimeout(target => target.setSelectionRange(index + 1, index + 1), 0, event.target);
@@ -251,14 +255,18 @@ export class MaskUtil {
     } else {
       /** If this input replaces multiple items, check its validity and format if possible */
       setTimeout(() => {
-        const partialValue = this.parsePartial(event.target.value);
+        let partialValue = event.target.value;
+        const newKey = key === 'Backspace' || key === 'Delete' ? this.proxyChar : key;
+        const selectionPosition = key === 'Backspace' || key === 'Delete' ? selectionStart : selectionStart + 1;
 
-        setTimeout(() => {
-          const firstOpen = partialValue.indexOf(this.proxyChar) || selectionStart;
+        for (let i = selectionStart; i < selectionEnd; i++) {
+          if (partialValue[i] !== ':') {
+            partialValue = `${partialValue.substring(0, i)}${i === selectionStart ? newKey : this.proxyChar}${partialValue.substring(i+1, partialValue.length)}`;
+          }
+        }
 
-          this.onChange(partialValue);
-          this.input.setSelectionRange(firstOpen, firstOpen);
-        });
+        this.onChange(partialValue);
+        this.input.setSelectionRange(selectionPosition, selectionPosition);
       });
     }
   }
