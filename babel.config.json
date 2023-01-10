@@ -4,7 +4,8 @@
       "runtime": "automatic"
     }],
     ["@babel/preset-typescript", {
-      "isTSX": true
+      "isTSX": true,
+      "allExtensions":true
     }],
     ["@babel/preset-env", {
       "targets": {
@@ -16,9 +17,6 @@
   "plugins": [
     ["babel-plugin-import", {
       "libraryName": "antd"
-    }],
-    ["@babel/plugin-proposal-decorators", {
-      "decoratorsBeforeExport": true
     }],
     "@babel/plugin-proposal-class-static-block",
     "@babel/plugin-proposal-class-properties",

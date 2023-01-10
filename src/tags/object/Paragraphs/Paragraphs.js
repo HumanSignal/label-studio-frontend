@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 
 import ObjectTag from '../../../components/Tags/Object';
-import { findNodeAt, matchesSelector, splitBoundaries } from '../../../utils/html';
+import Utils from '../../../utils';
 import { isSelectionContainsSpan } from '../../../utils/selection-tools';
 import styles from './Paragraphs.module.scss';
 import { AuthorFilter } from './AuthorFilter';
@@ -72,7 +72,7 @@ class HtxParagraphsView extends Component {
       if (r.collapsed || /^\s*$/.test(r.toString())) continue;
 
       try {
-        splitBoundaries(r);
+        Utils.HTML.splitBoundaries(r);
         const [startOffset, , start] = this.getOffsetInPhraseElement(r.startContainer, r.startOffset);
         const [endOffset, , end] = this.getOffsetInPhraseElement(r.endContainer, r.endOffset);
 
@@ -211,7 +211,7 @@ class HtxParagraphsView extends Component {
   };
 
   _determineRegion(element) {
-    if (matchesSelector(element, this._regionSpanSelector)) {
+    if (Utils.HTML.matchesSelector(element, this._regionSpanSelector)) {
       const span = element.tagName === 'SPAN' ? element : element.closest(this._regionSpanSelector);
       const { item } = this.props;
 
@@ -270,8 +270,8 @@ class HtxParagraphsView extends Component {
         const endNode = phrases[r.end].getElementsByClassName(item.layoutClasses.text)[0];
         let { startOffset, endOffset } = r;
 
-        range.setStart(...findNodeAt(startNode, startOffset));
-        range.setEnd(...findNodeAt(endNode, endOffset));
+        range.setStart(...Utils.HTML.findNodeAt(startNode, startOffset));
+        range.setEnd(...Utils.HTML.findNodeAt(endNode, endOffset));
 
         if (r.text && range.toString().replace(/\s+/g, '') !== r.text.replace(/\s+/g, '')) {
           console.info('Restore broken position', i, range.toString(), '->', r.text, r);
@@ -292,15 +292,15 @@ class HtxParagraphsView extends Component {
             startOffset = index;
             endOffset = startOffset + r.text.length;
 
-            range.setStart(...findNodeAt(startNode, startOffset));
-            range.setEnd(...findNodeAt(endNode, endOffset));
+            range.setStart(...Utils.HTML.findNodeAt(startNode, startOffset));
+            range.setEnd(...Utils.HTML.findNodeAt(endNode, endOffset));
             r.fixOffsets(startOffset, endOffset);
           }
         } else if (!r.text && range.toString()) {
           r.setText(range.toString());
         }
 
-        splitBoundaries(range);
+        Utils.HTML.splitBoundaries(range);
 
         r._range = range;
         const spans = r.createSpans();

@@ -1,10 +1,8 @@
-import { TagType } from '@tags/Base/BaseTag/BaseTagController';
-import { TagController } from '@tags/Tags';
+import { BaseTagController, TagType } from '@tags/Base/Base/BaseTagController';
 import { guidGenerator } from '../../core/Helpers';
-import { ConfigAttributes } from './ConfigAttributes';
 import { ConfigTree } from './ConfigTree';
 
-export type ConfigTreeNodeParams<Controller extends TagController> = {
+export type ConfigTreeNodeParams<Controller extends typeof BaseTagController> = {
   node: Element,
   name: string,
   tree: ConfigTree,
@@ -14,21 +12,22 @@ export type ConfigTreeNodeParams<Controller extends TagController> = {
   },
 }
 
-export class ConfigTreeNode<Controller extends TagController = any> {
+export class ConfigTreeNode<
+  Controller extends typeof BaseTagController = typeof BaseTagController,
+> {
   id: string;
   name: string;
   type: TagType;
   controllerName: TagType;
   controller: Controller;
   parent: ParentNode | null;
-  node: Element;
+  element: Element;
   tree: ConfigTree;
   children: Set<ChildNode>;
-  attributes: ConfigAttributes;
 
   constructor(params: ConfigTreeNodeParams<Controller>) {
     this.id = guidGenerator();
-    this.node = params.node;
+    this.element = params.node;
     this.tree = params.tree;
     this.name = params.name;
     this.type = this.name.toLowerCase() as TagType;
@@ -36,11 +35,10 @@ export class ConfigTreeNode<Controller extends TagController = any> {
     this.controller = params.controller.class;
     this.parent = this.findParent();
     this.children = new Set(params.node.childNodes);
-    this.attributes = new ConfigAttributes(this);
   }
 
   private findParent() {
-    const node = this.node;
+    const node = this.element;
     const parent = node.parentNode ?? null;
     const root = node.ownerDocument;
 

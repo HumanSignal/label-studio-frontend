@@ -3,7 +3,7 @@ import { User } from '../../UsersAtom';
 export type Task = {
   id: number,
   queue: string,
-  data: string | Record<string, any>,
+  data: string,
 }
 
 export type TaskHistoryItem = {
@@ -103,12 +103,16 @@ export type RootStore = {
   /**
    * Dynamic preannotations
    */
-  _autoAnnotation?: boolean,
+  autoAnnotation?: boolean,
 
   /**
    * Auto accept suggested annotations
    */
-  _autoAcceptSuggestions?: boolean,
+  autoAcceptSuggestions?: boolean,
+
+  forceAutoAnnotation?: boolean,
+
+  forceAutoAcceptSuggestions?: boolean,
 
   /**
    * Indicator for suggestions awaiting

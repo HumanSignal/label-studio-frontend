@@ -9,4 +9,6 @@ export type RootStoreInput = {
   task?: TaskInput,
   taskHistory?: any,
   config?: string,
+  forceAutoAnnotation?: boolean,
+  forceAutoAcceptSuggestions?: boolean,
 }

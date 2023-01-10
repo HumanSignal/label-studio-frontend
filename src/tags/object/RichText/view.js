@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { htmlEscape, matchesSelector, moveStylesBetweenHeadTags } from '../../../utils/html';
 import ObjectTag from '../../../components/Tags/Object';
 import * as xpath from 'xpath-range';
 import { inject, observer } from 'mobx-react';
@@ -108,7 +107,7 @@ class RichTextPieceView extends Component {
       this._selectionMode = false;
       return;
     }
-    if (!this.props.item.clickablelinks && matchesSelector(event.target, 'a[href]')) {
+    if (!this.props.item.clickablelinks && Utils.HTML.matchesSelector(event.target, 'a[href]')) {
       event.preventDefault();
       return;
     }
@@ -154,7 +153,7 @@ class RichTextPieceView extends Component {
     dest.appendChild(fragment);
   }
 
-  _moveStyles = moveStylesBetweenHeadTags;
+  _moveStyles = Utils.HTML.moveStylesBetweenHeadTags;
 
   _moveElementsToWorkingNode = () => {
     const { item } = this.props;
@@ -233,7 +232,7 @@ class RichTextPieceView extends Component {
    * @param {HTMLElement} element
    */
   _determineRegion(element) {
-    if (matchesSelector(element, this._regionSpanSelector)) {
+    if (Utils.HTML.matchesSelector(element, this._regionSpanSelector)) {
       const span = element.tagName === 'SPAN' ? element : element.closest(this._regionSpanSelector);
       const { item } = this.props;
 
@@ -357,7 +356,7 @@ class RichTextPieceView extends Component {
     if (isText) {
       const cnLine = cn('richtext', { elem: 'line' });
 
-      val = htmlEscape(val)
+      val = Utils.HTML.htmlEscape(val)
         .split(/\n|\r/g)
         .map(s => `<span class="${cnLine}">${s}</span>`)
         .join(newLineReplacement);

@@ -93,6 +93,8 @@ export class LabelStudio {
         user: params.user,
         task: params.task,
         users: params.users,
+        forceAutoAnnotation: params.forceAutoAnnotation,
+        forceAutoAcceptSuggestions: params.forceAutoAcceptSuggestions,
       });
     };
 

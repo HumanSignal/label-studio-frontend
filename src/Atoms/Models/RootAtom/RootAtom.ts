@@ -53,3 +53,13 @@ export const TaskHistoryControlAtom = atom((get) => {
     canGoPrev,
   };
 });
+
+export const autoAnnotationAtom = focusAtom(RootAtom, (optic) => optic.prop('autoAnnotation'));
+
+export const autoAcceptSuggestionsAtom = focusAtom(RootAtom, (optic) => optic.prop('autoAcceptSuggestions'));
+
+export const forceAutoAnnotationAtom = focusAtom(RootAtom, (optic) => optic.prop('forceAutoAnnotation'));
+
+export const forceAutoAcceptSuggestionsAtom = focusAtom(RootAtom, (optic) => optic.prop('forceAutoAcceptSuggestions'));
+
+export const taskAtom = focusAtom(RootAtom, (optic) => optic.prop('task'));

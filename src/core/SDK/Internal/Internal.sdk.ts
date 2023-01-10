@@ -2,6 +2,7 @@ import { RootStoreInput } from '@atoms/Inputs/RootStore';
 import { TaskInput } from '@atoms/Inputs/TaskInput';
 import { AnnotationController } from '@atoms/Models/AnnotationsAtom/Controller';
 import { RootController } from '@atoms/Models/RootAtom/Controller';
+import { taskAtom } from '@atoms/Models/RootAtom/RootAtom';
 import { Store } from '@atoms/Store';
 import { StoreAccess } from '@atoms/StoreAccess';
 import { Registry } from '@tags/Registry';
@@ -36,8 +37,19 @@ class InternalSDK extends StoreAccess {
     this.annotations.selectFirstAnnotation();
   }
 
+  get task() {
+    return this.store.get(taskAtom);
+  }
+
+  get data() {
+    return JSON.parse(this.task?.data ?? '{}');
+  }
+
   private parseConfig(config: string) {
-    this.tree = new ConfigTree(config ?? '');
+    this.tree = new ConfigTree({
+      config: config ?? '',
+      sdk: this,
+    });
 
     this.tree.parse();
   }

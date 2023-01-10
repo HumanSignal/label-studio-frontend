@@ -1,6 +1,8 @@
-export { HypertextLabelsTagController } from './ControlTags/HypertextLabelsTag/HypertextLabelsTagController';
-export { LabelsTagController } from './ControlTags/LabelsTag/LabelsTagController';
-export { LabelTagController } from './ControlTags/LabelTag/LabelTagController';
-export { HeaderTagController } from './VisualTags/HeaderTag/HeaderTagController';
-export { ViewTagController } from './VisualTags/ViewTag/ViewTagController';
+export { HypertextLabelsTagController } from './Control/HypertextLabels/HypertextLabelsTagController';
+export { LabelTagController } from './Control/Label/LabelTag';
+export { LabelsTagController } from './Control/Labels/LabelsTag';
+export { HypertextTagController } from './Object/Hypertext/HypertextTag';
+export { TextTagController } from './Object/Text/TextTag';
+export { HeaderTagController } from './Visual/Header/HeaderTag';
+export { ViewTagController } from './Visual/View/ViewTag';
 

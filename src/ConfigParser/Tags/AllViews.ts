@@ -1,5 +1,5 @@
-export { LabelsTagView as HypertextLabelsTagView, LabelsTagView } from './ControlTags/LabelsTag/LabelsTagView';
-export { LabelTagView } from './ControlTags/LabelTag/LabelTagView';
-export { HeaderTagView } from './VisualTags/HeaderTag/HeaderTagView';
-export { ViewTagView } from './VisualTags/ViewTag/ViewTagView';
+export { LabelTagView } from './Control/Label/LabelTagView';
+export { LabelsTagView as HypertextLabelsTagView, LabelsTagView } from './Control/Labels/LabelsTagView';
+export { HeaderTagView } from './Visual/Header/HeaderTagView';
+export { ViewTagView } from './Visual/View/ViewTagView';
 

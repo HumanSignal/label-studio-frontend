@@ -8,7 +8,7 @@ import Konva from 'konva';
 import { Annotation } from './Annotation';
 import { isDefined } from '../../utils/utilities';
 import { FF_DEV_3391, isFF } from '../../utils/feature-flags';
-import { moveStylesBetweenHeadTags } from '../../utils/html';
+import Utils from '../../utils';
 
 /***** DON'T TRY THIS AT HOME *****/
 /*
@@ -105,7 +105,7 @@ export default class Grid extends Component {
     clonedIframe.forEach((iframe, idx) => {
       iframe.contentWindow.document.open();
       iframe.contentWindow.document.write(sourceIframe[idx].contentDocument.documentElement.outerHTML);
-      moveStylesBetweenHeadTags(sourceIframe[idx].contentDocument.head, iframe.contentDocument.head);
+      Utils.HTML.moveStylesBetweenHeadTags(sourceIframe[idx].contentDocument.head, iframe.contentDocument.head);
     });
 
     this.setState((state) => {
@@ -125,10 +125,10 @@ export default class Grid extends Component {
     const current = Array.from(children).findIndex(child => container.scrollLeft <= child.offsetLeft);
 
     if (!container) return;
-    
+
     const count = this.props.annotations.length;
-    const next = current + delta; 
-    
+    const next = current + delta;
+
     if (next < 0 || next > count - 1) return;
     const newPosition = children[next].offsetLeft;
 

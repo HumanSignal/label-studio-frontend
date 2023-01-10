@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2022",
     "module": "commonjs",
     "allowJs": false,
     "checkJs": false,
@@ -9,7 +9,6 @@
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "experimentalDecorators": true,
     "rootDirs": ["./src"],
     "typeRoots": ["./types", "./node_modules/@types"],
     "esModuleInterop": true,

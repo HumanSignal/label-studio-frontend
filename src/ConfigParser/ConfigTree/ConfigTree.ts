@@ -1,22 +1,35 @@
 import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
-import { TagType } from '@tags/Base/BaseTag/BaseTagController';
+import { BaseTagController, TagType } from '@tags/Base/Base/BaseTagController';
 import { Tags } from '@tags/Tags';
 import { TagTypes } from '@tags/TagTypes';
 import { createElement, Fragment } from 'react';
+import { InternalSDK } from 'src/core/SDK/Internal/Internal.sdk';
 import { ConfigTreeNode } from './ConfigTreeNode';
 
 type RenderProps = {
   annotationAtom: AnnotationAtom,
   node?: Node,
 }
+
+type ConfigParams = {
+  config: string,
+  sdk: InternalSDK,
+}
+
 export class ConfigTree {
   private config: string;
   private root!: Element;
   private nodes: Node[] = [];
-  private structure: WeakMap<Node, ConfigTreeNode> = new WeakMap();
+  private structure: WeakMap<Node, ConfigTreeNode<any>> = new WeakMap();
+  private controllers: WeakMap<ConfigTreeNode<any>, any> = new WeakMap();
+  sdk: InternalSDK;
 
-  constructor(config: string) {
+  constructor({
+    config,
+    sdk,
+  }: ConfigParams) {
     this.config = config;
+    this.sdk = sdk;
   }
 
   getNode(node: Node) {
@@ -31,15 +44,13 @@ export class ConfigTree {
 
     if (!configNode) return null;
 
-    const ControllerClass = configNode?.controller;
+    const controller = this.initController(configNode);
 
-    const controller = new ControllerClass(configNode);
-    const component = controller.render();
-
-    return component({
+    return controller.render()({
       tree: this,
       annotationAtom,
       node: configNode,
+      controller,
     });
   }
 
@@ -115,11 +126,23 @@ export class ConfigTree {
     }
   }
 
-  private findController<TagName extends TagType>(tag: TagName): {
+  private initController<T extends typeof BaseTagController>(node: ConfigTreeNode<T>) {
+    if (this.controllers.has(node)) return this.controllers.get(node);
+
+    const ControllerClass = node.controller;
+    const controller = new ControllerClass(node, this.sdk);
+
+    controller.setAttributes();
+
+    this.controllers.set(node, controller);
+    return controller;
+  }
+
+  private findController(tagNameRaw: TagType): {
     name: TagType,
-    class: ((typeof TagTypes)[TagName]),
+    class: typeof TagTypes[TagType],
   } | null {
-    const tagName = tag.toLowerCase() as TagType;
+    const tagName = tagNameRaw.toLowerCase() as TagType;
     const controller = TagTypes[tagName];
 
     return controller ? {

@@ -1,5 +1,19 @@
 import { useAtom, useAtomValue } from 'jotai';
-import { InstructionsAtom, InstructionsVisibilityAtom, InterfacesAtom } from './RootAtom';
+import { autoAnnotationAtom, forceAutoAcceptSuggestionsAtom, forceAutoAnnotationAtom, InstructionsAtom, InstructionsVisibilityAtom, InterfacesAtom } from './RootAtom';
+
+export const useAutoAnnotation = () => {
+  const forceAutoAnnotation = useAtomValue(forceAutoAnnotationAtom);
+  const [autoAnnotation, setAutoAnnotation] = useAtom(autoAnnotationAtom);
+
+  return [forceAutoAnnotation || autoAnnotation, setAutoAnnotation];
+};
+
+export const useAutoAcceptSuggestions = () => {
+  const forceAutoAcceptSuggestions = useAtomValue(forceAutoAcceptSuggestionsAtom);
+  const [autoAcceptSuggestions, setAutoAcceptSuggestions] = useAtom(autoAnnotationAtom);
+
+  return [forceAutoAcceptSuggestions || autoAcceptSuggestions, setAutoAcceptSuggestions];
+};
 
 export const useInterfaces = () => {
   const interfaces = useAtomValue(InterfacesAtom);

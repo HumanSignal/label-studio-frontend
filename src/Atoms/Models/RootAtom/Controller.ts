@@ -17,6 +17,7 @@ export class RootController extends StoreAccess {
     };
 
     this.store.patch(RootAtom, {
+      ...input,
       task,
       config: input.config ?? '',
       interfaces: interfaces ?? [],

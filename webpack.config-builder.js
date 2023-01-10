@@ -136,6 +136,7 @@ const babelLoader = {
       }],
       ['@babel/preset-typescript', {
         'isTSX': true,
+        'allExtensions':true,
       }],
       ['@babel/preset-env', {
         targets: {
@@ -147,9 +148,6 @@ const babelLoader = {
       'react-hot-loader/babel',
       ['babel-plugin-import', {
         'libraryName': 'antd',
-      }],
-      ['@babel/plugin-proposal-decorators', {
-        'version': '2022-03',
       }],
       '@babel/plugin-proposal-class-static-block',
       '@babel/plugin-proposal-class-properties',

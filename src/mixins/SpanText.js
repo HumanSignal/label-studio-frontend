@@ -1,8 +1,7 @@
 import { getRoot, types } from 'mobx-state-tree';
 
-import Utils from '../utils';
 import Constants, { defaultStyle } from '../core/Constants';
-import { highlightRange } from '../utils/html';
+import Utils from '../utils';
 
 export default types
   .model()
@@ -31,7 +30,7 @@ export default types
 
     createSpans() {
       const labelColor = self.getLabelColor();
-      const spans = highlightRange(self, 'htx-highlight', { backgroundColor: labelColor });
+      const spans = Utils.HTML.highlightRange(self, 'htx-highlight', { backgroundColor: labelColor });
 
       const lastSpan = spans[spans.length - 1];
 
