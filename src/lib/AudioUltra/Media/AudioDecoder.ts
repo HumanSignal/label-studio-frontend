@@ -3,7 +3,6 @@ import { AudioDecoderWorker, getAudioDecoderWorker } from 'audio-file-decoder';
 // @ts-ignore
 import DecodeAudioWasm from 'audio-file-decoder/decode-audio.wasm';
 import { Events } from '../Common/Events';
-import { average, bufferAllocator } from '../Common/Utils';
 
 
 const DURATION_CHUNK_SIZE = 60 * 30; // 30 minutes
@@ -16,10 +15,6 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   static cache: Map<string, AudioDecoder> = new Map();
 
   chunks?: Float32Array[];
-  // This is assigned in the constructor only when creating a new instance
-  // eslint-disable-next-line
-  // @ts-ignore
-  private buffer: ReturnType<typeof bufferAllocator>;
   private decodeId = 0; // if id=0, decode is not in progress
   private worker: AudioDecoderWorker | undefined;
   private decoderResolve?: (() => void);
@@ -45,7 +40,6 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     // only allow one cached decoder at a time to prevent memory leaks
     // and limit the memory usage of the browser
     AudioDecoder.cache.clear();
-    this.buffer = bufferAllocator();
     AudioDecoder.cache.set(this.src, this);
   }
 
@@ -144,7 +138,6 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
       let chunkIndex = 0;
       const totalChunks = this.getTotalChunks(this.worker.duration);
       const chunkIterator = this.chunkDecoder(options);
-      const sampleSize = Math.floor(this.worker.sampleRate * 0.01);
 
       this.chunks = Array.from({ length: totalChunks }) as Float32Array[];
 
@@ -163,18 +156,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
           if (this.sourceDecodeCancelled) return null;
 
           if (value) {
-            // Get sample size for 0.01 seconds
-            const length = value.length;
-            const buffer = this.buffer.allocate(length);
-
-            for (let i = 0; i < length; i += sampleSize) {
-              const slice = value.slice(i, i + sampleSize);
-              const avg = average(slice);
-
-              slice.fill(avg);
-              buffer.set(slice, i);
-            }
-            this.chunks[chunkIndex] = buffer;
+            this.chunks[chunkIndex] = value;
           }
 
           this.invoke('progress', [chunkIndex + 1, totalChunks]);
