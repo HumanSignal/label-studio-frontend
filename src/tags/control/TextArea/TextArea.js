@@ -11,7 +11,6 @@ import Registry from '../../../core/Registry';
 import Tree from '../../../core/Tree';
 import Types from '../../../core/Types';
 import { HtxTextAreaRegion, TextAreaRegionModel } from '../../../regions/TextAreaRegion';
-import { cloneNode } from '../../../core/Helpers';
 import ControlBase from '../Base';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import styles from '../../../components/HtxTextBox/HtxTextBox.module.scss';
@@ -185,10 +184,6 @@ const Model = types.model({
       self.regions.splice(index, 1);
       destroy(region);
       self.onChange();
-    },
-
-    copyState(obj) {
-      self.regions = obj.regions.map(r => cloneNode(r));
     },
 
     perRegionCleanup() {

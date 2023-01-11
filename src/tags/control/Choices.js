@@ -183,12 +183,6 @@ const Model = types
       InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
     },
 
-    copyState(choices) {
-      choices.selectedValues().forEach(l => {
-        self.findLabel(l).setSelected(true);
-      });
-    },
-
     // this is not labels, unselect affects result, so don't unselect on random reason
     unselectAll() {},
 

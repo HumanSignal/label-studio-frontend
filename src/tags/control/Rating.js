@@ -87,10 +87,6 @@ const Model = types
       return self.rating + ' star';
     },
 
-    copyState(obj) {
-      self.setRating(obj.rating);
-    },
-
     needsUpdate() {
       if (self.result) self.rating = self.result.mainValue;
       else self.rating = null;

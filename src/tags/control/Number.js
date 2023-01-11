@@ -81,10 +81,6 @@ const Model = types
       return self.number + ' star';
     },
 
-    copyState(obj) {
-      self.setNumber(obj.number);
-    },
-
     needsUpdate() {
       if (self.result) self.number = self.result.mainValue;
       else self.number = null;
