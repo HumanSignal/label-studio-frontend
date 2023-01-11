@@ -1,11 +1,12 @@
-name: "CI/CD Pipleline"
+name: "CI/CD Pipeline"
 
 on:
   push:
     branches:
       - master
       - 'lse-release/**'
-  pull_request_target:
+      - 'ls-release/**'
+  pull_request:
     types:
       - opened
       - synchronize
@@ -14,6 +15,11 @@ on:
     branches:
       - master
       - 'lse-release/**'
+      - 'ls-release/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   build_bundle:
@@ -22,8 +28,6 @@ jobs:
     uses: heartexlabs/label-studio-frontend/.github/workflows/build_bundle.yml@master
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
-      branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
-    secrets: inherit
 
   run_e2e:
     name: "Tests"
@@ -33,8 +37,6 @@ jobs:
       - build_bundle
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
-      branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
-    secrets: inherit
 
   run_unit:
     name: "Tests"
@@ -42,7 +44,6 @@ jobs:
     uses: heartexlabs/label-studio-frontend/.github/workflows/unit_tests.yml@master
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
-      branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
     secrets: inherit
 
   run_lint:
@@ -51,5 +52,3 @@ jobs:
     uses: heartexlabs/label-studio-frontend/.github/workflows/eslint.yml@master
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
-      branch_name: ${{ github.event.pull_request.head.ref || github.ref_name }}
-    secrets: inherit

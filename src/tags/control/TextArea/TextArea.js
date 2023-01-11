@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { createRef, forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Button, Form, Input } from 'antd';
 import { observer } from 'mobx-react';
 import { destroy, isAlive, types } from 'mobx-state-tree';
@@ -18,7 +18,7 @@ import styles from '../../../components/HtxTextBox/HtxTextBox.module.scss';
 import { Block, Elem } from '../../../utils/bem';
 import './TextArea.styl';
 import { IconTrash } from '../../../assets/icons';
-import { FF_DEV_1564_DEV_1565, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_1564_DEV_1565, FF_DEV_3730, isFF } from '../../../utils/feature-flags';
 
 const { TextArea } = Input;
 
@@ -82,6 +82,7 @@ const Model = types.model({
 }).volatile(() => {
   return {
     focusable: true,
+    textareaRef: createRef(),
   };
 }).views(self => ({
   get isEditable() {
@@ -136,6 +137,14 @@ const Model = types.model({
 })).actions(self => {
   let lastActiveElement = null;
   let lastActiveElementModel = null;
+
+  const isAvailableElement = (element, elementModel) => {
+    if (!element || !elementModel || !isAlive(elementModel)) return false;
+    // Not available if active element is disappeared
+    if (self === elementModel && !self.showSubmit) return false;
+    if (!element.parentElement) return false;
+    return true;
+  };
 
   return {
     getSerializableValue() {
@@ -232,11 +241,21 @@ const Model = types.model({
 
     onShortcut(value) {
       if (isFF(FF_DEV_1564_DEV_1565)) {
-        if (!lastActiveElement || !lastActiveElementModel || !isAlive(lastActiveElementModel)) return;
-        // Do nothing if active element is disappeared
-        if (self === lastActiveElementModel && !self.showSubmit) return;
-        if (!lastActiveElement.parentElement) return;
-
+        if (!isAvailableElement(lastActiveElement, lastActiveElementModel)) {
+          if (isFF(FF_DEV_3730)) {
+          // Try to use main textarea element
+            const textareaElement = self.textareaRef.current?.input || self.textareaRef.current?.resizableTextArea?.textArea;
+          
+            if (isAvailableElement(textareaElement, self)) {
+              lastActiveElement = textareaElement;
+              lastActiveElementModel = self;
+            } else {
+              return;
+            }
+          } else {
+            return;
+          }
+        }
         lastActiveElement.setRangeText(value, lastActiveElement.selectionStart, lastActiveElement.selectionEnd, 'end');
         lastActiveElementModel.setValue(lastActiveElement.value);
       } else {
@@ -313,6 +332,7 @@ const HtxTextArea = observer(({ item }) => {
       item.setValue(value);
     },
     onFocus,
+    ref: item.textareaRef,
   };
 
   if (rows > 1) {
