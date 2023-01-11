@@ -68,8 +68,12 @@ const Model = types
     return {
       initializeHotkeys() {
         if (isFF(FF_DEV_2576)) {
-          hotkeys.addNamed('polygon:undo', () => self.annotation.undo());
-          hotkeys.addNamed('polygon:redo', () => self.annotation.redo());
+          hotkeys.addNamed('polygon:undo', () => {
+            if (self.annotation.isDrawing) self.annotation.undo();
+          });
+          hotkeys.addNamed('polygon:redo', () => {
+            if (self.annotation.isDrawing)  self.annotation.redo();
+          });
         }
       },
 
