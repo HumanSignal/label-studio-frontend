@@ -59,20 +59,6 @@ const Model = types
   }))
   .actions(self => ({
     afterCreate() {
-      if (self.coordstype === 'perc') {
-        // deserialization
-        self.relativeX = self.x;
-        self.relativeY = self.y;
-        self.checkSizes();
-      } else {
-        // creation
-        const { stageWidth: width, stageHeight: height } = self.parent;
-
-        if (width && height) {
-          self.relativeX = (self.x / width) * 100;
-          self.relativeY = (self.y / height) * 100;
-        }
-      }
     },
 
     // @todo not used
@@ -83,25 +69,11 @@ const Model = types
     },
 
     setPosition(x, y) {
-      self.x = x;
-      self.y = y;
-
-      self.relativeX = (x / self.parent.stageWidth) * 100;
-      self.relativeY = (y / self.parent.stageHeight) * 100;
+      self.x = self.screenToInternalX(x);
+      self.y = self.screenToInternalY(y);
     },
 
-    updateImageSize(wp, hp, sw, sh) {
-      if (self.coordstype === 'px') {
-        self.x = (sw * self.relativeX) / 100;
-        self.y = (sh * self.relativeY) / 100;
-      }
-
-      if (self.coordstype === 'perc') {
-        self.x = (sw * self.x) / 100;
-        self.y = (sh * self.y) / 100;
-        self.width = (sw * self.width) / 100;
-        self.coordstype = 'px';
-      }
+    updateImageSize() {
     },
 
     /**
@@ -136,9 +108,9 @@ const Model = types
         original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: self.convertXToPerc(self.x),
-          y: self.convertYToPerc(self.y),
-          width: self.convertHDimensionToPerc(self.width),
+          x: self.x,
+          y: self.y,
+          width: self.width,
         },
       };
 
@@ -166,8 +138,9 @@ const HtxKeyPointView = ({ item }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
-  const x = item.x;
-  const y = item.y;
+  const x = item.internalToScreenX(item.x);
+  const y = item.internalToScreenY(item.y);
+  const width = item.internalToScreenX(item.width);
 
   const regionStyles = useRegionStyles(item, {
     includeFill: true,
@@ -195,7 +168,7 @@ const HtxKeyPointView = ({ item }) => {
         x={x}
         y={y}
         // keypoint should always be the same visual size
-        radius={Math.max(item.width, 2) / item.parent.zoomScale}
+        radius={Math.max(width, 2) / item.parent.zoomScale}
         // fixes performance, but opactity+borders might look not so good
         perfectDrawEnabled={false}
         // for some reason this scaling doesn't work, so moved this to radius

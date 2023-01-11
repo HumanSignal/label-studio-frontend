@@ -112,64 +112,6 @@ const RegionsMixin = types
         self.dynamic = true;
       },
 
-      // All of the below accept size as an argument
-      moveTop() {},
-      moveBottom() {},
-      moveLeft() {},
-      moveRight() {},
-
-      sizeRight() {},
-      sizeLeft() {},
-      sizeTop() {},
-      sizeBottom() {},
-
-      // "web" degree is opposite to mathematical, -90 is 90 actually
-      // swapSizes = true when canvas is already rotated at this moment
-      // @todo not used
-      rotatePoint(point, degree, swapSizes = true) {
-        const { x, y } = point;
-
-        if (!degree) return { x, y };
-
-        degree = (360 + degree) % 360;
-        // transform origin is (w/2, w/2) for ccw rotation
-        // (h/2, h/2) for cw rotation
-        const w = self.parent.stageWidth;
-        const h = self.parent.stageHeight;
-        // actions: translate to fit origin, rotate, translate back
-        //   const shift = size / 2;
-        //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
-        //   const newY = -(x - shift) * sin + (y - shift) * cos + shift;
-        // for ortogonal degrees it's simple:
-
-        if (degree === 270) return { x: y, y: (swapSizes ? h : w) - x };
-        if (degree === 90) return { x: (swapSizes ? w : h) - y, y: x };
-        if (Math.abs(degree) === 180) return { x: w - x, y: h - y };
-        return { x, y };
-      },
-
-      // @todo not used
-      rotateDimensions({ width, height }, degree) {
-        if ((degree + 360) % 180 === 0) return { width, height };
-        return { width: height, height: width };
-      },
-
-      convertXToPerc(x) {
-        return (x * 100) / self.parent.stageWidth;
-      },
-
-      convertYToPerc(y) {
-        return (y * 100) / self.parent.stageHeight;
-      },
-
-      convertHDimensionToPerc(hd) {
-        return (hd * (self.scaleX || 1) * 100) / self.parent.stageWidth;
-      },
-
-      convertVDimensionToPerc(vd) {
-        return (vd * (self.scaleY || 1) * 100) / self.parent.stageHeight;
-      },
-
       // update region appearence based on it's current states, for
       // example bbox needs to update its colors when you change the
       // label, becuase it takes color from the label

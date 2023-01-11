@@ -38,7 +38,8 @@ const _Tool = types
       const keyPoint = self.createRegion({
         x,
         y,
-        width: Number(c.strokewidth),
+        // strokeWidth is visual only, so it's in screen dimension in config
+        width: self.obj.screenToInternalX(Number(c.strokewidth)),
         coordstype: 'px',
         dynamic: self.dynamic,
         negative: self.dynamic && ev.altKey,

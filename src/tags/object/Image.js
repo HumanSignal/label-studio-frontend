@@ -991,6 +991,23 @@ const Model = types.model({
       return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
     },
 
+    // @todo scale?
+    screenToInternalX(n) {
+      return n / self.stageWidth * 100;
+    },
+
+    screenToInternalY(n) {
+      return n / self.stageHeight * 100;
+    },
+
+    internalToScreenX(n) {
+      return n / 100 * self.stageWidth;
+    },
+
+    internalToScreenY(n) {
+      return n / 100 * self.stageHeight;
+    },
+
     /**
      * Resize of image canvas
      * @param {*} width
@@ -1000,8 +1017,14 @@ const Model = types.model({
       self._updateImageSize({ width, height, userResize });
     },
 
-    event(name, ev, ...coords) {
-      self.getToolsManager().event(name, ev.evt || ev, ...self.fixZoomedCoords(coords));
+    event(name, ev, screenX, screenY) {
+      // if (name === 'mousemove') return;
+      let [x, y] = self.fixZoomedCoords([screenX, screenY]);
+
+      x = self.screenToInternalX(x);
+      y = self.screenToInternalY(y);
+
+      self.getToolsManager().event(name, ev.evt || ev, x, y);
     },
 
     /**
