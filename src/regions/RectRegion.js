@@ -103,30 +103,29 @@ const Model = types
     },
   }))
   .actions(self => ({
-
     afterCreate() {
       self.startX = self.x;
       self.startY = self.y;
 
-      switch (self.coordstype)  {
-        case 'perc': {
-          self.relativeX = self.x;
-          self.relativeY = self.y;
-          self.relativeWidth = self.width;
-          self.relativeHeight = self.height;
-          break;
-        }
-        case 'px': {
-          const { stageWidth, stageHeight } = self.parent;
+      // switch (self.coordstype)  {
+      //   case 'perc': {
+      //     self.relativeX = self.x;
+      //     self.relativeY = self.y;
+      //     self.relativeWidth = self.width;
+      //     self.relativeHeight = self.height;
+      //     break;
+      //   }
+      //   case 'px': {
+      //     const { stageWidth, stageHeight } = self.parent;
 
-          if (stageWidth && stageHeight) {
-            self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
-          }
-          break;
-        }
-      }
-      self.checkSizes();
-      self.updateAppearenceFromState();
+      //     if (stageWidth && stageHeight) {
+      //       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+      //     }
+      //     break;
+      //   }
+      // }
+      // self.checkSizes();
+      // self.updateAppearenceFromState();
     },
 
     getDistanceBetweenPoints(pointA, pointB) {
@@ -175,7 +174,6 @@ const Model = types
           self.rotation = self.rotationAtCreation;
         }
         self.height = self.getHeightOnPerpendicular(points[0], points[1], { x, y });
-
       }
 
       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
@@ -214,6 +212,14 @@ const Model = types
       return false;
     },
 
+    setPositionInternal(x, y, width, height, rotation) {
+      self.x = x;
+      self.y = y;
+      self.width = width;
+      self.height = height;
+      self.rotation = (rotation + 360) % 360;
+    },
+
     /**
      * Bounding Box set position on canvas
      * @param {number} x
@@ -223,18 +229,13 @@ const Model = types
      * @param {number} rotation
      */
     setPosition(x, y, width, height, rotation) {
-      self.x = x;
-      self.y = y;
-      self.width = width;
-      self.height = height;
-
-      self.relativeX = (x / self.parent?.stageWidth) * 100;
-      self.relativeY = (y / self.parent?.stageHeight) * 100;
-
-      self.relativeWidth = (width / self.parent?.stageWidth) * 100;
-      self.relativeHeight = (height / self.parent?.stageHeight) * 100;
-
-      self.rotation = (rotation + 360) % 360;
+      self.setPositionInternal(
+        self.parent.screenToInternalX(x),
+        self.parent.screenToInternalY(y),
+        self.parent.screenToInternalX(width),
+        self.parent.screenToInternalY(height),
+        rotation,
+      );
     },
 
     setScale(x, y) {
@@ -250,19 +251,20 @@ const Model = types
       self.fill = color;
     },
 
-    updateImageSize(wp, hp, sw, sh) {
-      if (self.coordstype === 'px') {
-        self.x = (sw * self.relativeX) / 100;
-        self.y = (sh * self.relativeY) / 100;
-        self.width = (sw * self.relativeWidth) / 100;
-        self.height = (sh * self.relativeHeight) / 100;
-      } else if (self.coordstype === 'perc') {
-        self.x = (sw * self.x) / 100;
-        self.y = (sh * self.y) / 100;
-        self.width = (sw * self.width) / 100;
-        self.height = (sh * self.height) / 100;
-        self.coordstype = 'px';
-      }
+    updateImageSize() { // wp, hp, sw, sh
+      return;
+      // if (self.coordstype === 'px') {
+      //   self.x = (sw * self.relativeX) / 100;
+      //   self.y = (sh * self.relativeY) / 100;
+      //   self.width = (sw * self.relativeWidth) / 100;
+      //   self.height = (sh * self.relativeHeight) / 100;
+      // } else if (self.coordstype === 'perc') {
+      //   self.x = (sw * self.x) / 100;
+      //   self.y = (sh * self.y) / 100;
+      //   self.width = (sw * self.width) / 100;
+      //   self.height = (sh * self.height) / 100;
+      //   self.coordstype = 'px';
+      // }
     },
 
     /**
@@ -300,10 +302,10 @@ const Model = types
         original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: (self.parent.stageWidth > 1) ? self.convertXToPerc(self.x) : self.x,
-          y: (self.parent.stageWidth > 1) ? self.convertYToPerc(self.y) : self.y,
-          width: (self.parent.stageWidth > 1) ? self.convertHDimensionToPerc(self.width) : self.width,
-          height: (self.parent.stageWidth > 1) ? self.convertVDimensionToPerc(self.height) : self.height,
+          x: self.x,
+          y: self.y,
+          width: self.width,
+          height: self.height,
           rotation: self.rotation,
         },
       };
@@ -384,11 +386,11 @@ const HtxRectangleView = ({ item }) => {
   return (
     <RegionWrapper item={item}>
       <Rect
-        x={item.x}
-        y={item.y}
+        x={item.parent.internalToScreenX(item.x)}
+        y={item.parent.internalToScreenY(item.y)}
         ref={node => item.setShapeRef(node)}
-        width={item.width}
-        height={item.height}
+        width={item.parent.internalToScreenX(item.width)}
+        height={item.parent.internalToScreenY(item.height)}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}

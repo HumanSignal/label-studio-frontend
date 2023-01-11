@@ -227,7 +227,7 @@ const TwoPointsDrawingTool = DrawingTool.named('TwoPointsDrawingTool')
         x2 = Math.min(stageWidth, x2);
         y2 = Math.min(stageHeight, y2);
 
-        shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
+        shape.setPositionInternal(x1, y1, x2 - x1, y2 - y1, shape.rotation);
       },
 
       finishDrawing(x, y) {
