@@ -21,6 +21,10 @@ import { Tool } from '../components/Toolbar/Tool';
  * complex edged objects, such as clouds, cloud shadows, snow, etc. in earth observation applications or
  * organic shapes in biomedical applications.
  *
+ * Note that if you want use the Magic Wand you must turn on the feature flag
+ * `fflag_feat_front_dev_4081_magic_wand_tool` in the `flags.json` and
+ * `feature_flags.json` files; it is off by default.
+ *
  *
  * Technical Overview:
  *

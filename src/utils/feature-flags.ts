@@ -130,6 +130,9 @@ export const FF_DEV_3617 = 'fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix';
  */
 export const FF_DEV_1284 = 'fflag_fix_front_dev_1284_auto_detect_undo_281022_short';
 
+// Enable a Magic Wand to be used for quickly thresholding images with segmentation labels.
+export const FF_DEV_4081 = 'fflag_feat_front_dev_4081_magic_wand_tool';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),

@@ -20,6 +20,7 @@ import { RegionWrapper } from './RegionWrapper';
 import { Geometry } from '../components/RelationsOverlay/Geometry';
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
 import IsReadyMixin from '../mixins/IsReadyMixin';
+import { FF_DEV_4081, isFF } from '../../utils/feature-flags';
 
 const highlightOptions = {
   shadowColor: 'red',
@@ -491,7 +492,7 @@ const HtxBrushView = ({ item }) => {
 
     let img;
 
-    if (item.maskDataURL) {
+    if (item.maskDataURL && isFF(FF_DEV_4081)) {
       img = await Canvas.maskDataURL2Image(item.maskDataURL, { color: item.strokeColor });
     } else if (item.rle) {
       img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
