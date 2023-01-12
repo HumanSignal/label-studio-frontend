@@ -20,7 +20,7 @@ import { RegionWrapper } from './RegionWrapper';
 import { Geometry } from '../components/RelationsOverlay/Geometry';
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
 import IsReadyMixin from '../mixins/IsReadyMixin';
-import { FF_DEV_4081, isFF } from '../../utils/feature-flags';
+import { FF_DEV_4081, isFF } from '../utils/feature-flags';
 
 const highlightOptions = {
   shadowColor: 'red',
