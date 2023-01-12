@@ -1,0 +1,23 @@
+name: "Cancel PR CI/CD pipeline"
+
+on:
+  pull_request:
+    types:
+      - closed
+      - converted_to_draft
+      - locked
+    branches:
+      - master
+      - 'lse-release/**'
+      - 'ls-release/**'
+
+concurrency:
+  group: CI/CD Pipeline-${{ github.event.pull_request.number || github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  cancel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hmarr/debug-action@v2.1.0
+      - run: echo CI/CD Pipeline-${{ github.event.pull_request.number || github.event.pull_request.head.ref || github.ref_name }}
