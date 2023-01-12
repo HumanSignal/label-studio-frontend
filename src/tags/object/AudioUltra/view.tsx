@@ -153,7 +153,10 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
           waveform.current?.seekForward(NORMALIZED_STEP);
           waveform.current?.syncCursor();
         }}
-        onPositionChange={pos => controls.setCurrentTime(pos)}
+        onPositionChange={pos => {
+          waveform.current?.seek(pos);
+          waveform.current?.syncCursor();
+        }}
         onSpeedChange={speed => controls.setRate(speed)}
         onZoom={zoom => controls.setZoom(zoom)}
         amp={controls.amp}
