@@ -64,7 +64,7 @@ export const KonvaRegionMixin = types.model({})
                 self._selectArea(additiveMode);
               }
               deferredSelectId = null;
-            }, 300);
+            }, self.perRegionTags.length ? 300 : 0);
           }
         }
       },
