@@ -59,11 +59,11 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   }
 
   set volume(value: number) {
-    if (this.el && this._volume !== value) {
-      this.el.volume = this._volume;
-    }
-
     this._volume = value;
+
+    if (this.el) {
+      this.el.volume = value;
+    }
   }
 
   get speed() {
@@ -71,7 +71,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   }
 
   set speed(value: number) {
-    if (this.el && this._rate !== value) {
+    if (this.el) {
       this.el.playbackRate = this._rate;
     }
 
@@ -103,12 +103,18 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   }
 
   mute() {
-    this._savedVolume = this.volume;
+    this._savedVolume = this.volume || 1;
     this.volume = 0;
+    if (this.el) {
+      this.el.muted = true;
+    }
   }
 
   unmute() {
-    this.volume = this._savedVolume;
+    this.volume = this._savedVolume || 1; // 1 is the default volume, if manually muted this will be 0 and we want to restore to 1
+    if (this.el) {
+      this.el.muted = false;
+    }
   }
 
   get chunks(): Float32Array[]|undefined {

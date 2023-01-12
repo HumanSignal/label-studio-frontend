@@ -390,7 +390,7 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   /**
-   * Current gain 0..2, 0 is muted
+   * Current volume 0..1, 0 is muted
    * @default 1
    */
   get volume() {

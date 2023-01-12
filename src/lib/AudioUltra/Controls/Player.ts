@@ -66,10 +66,16 @@ export class Player extends Destructable {
 
       const volumeChanged = this.volume !== value;
 
-      this.audio.volume = value;
-
       if (volumeChanged) {
-        this.wf.invoke('volumeChanged', [value]);
+        if (value === 0) {
+          this.muted = true;
+        } else if(this.muted) {
+          this.muted = false;
+        } else {
+          this.audio.volume = value;
+        }
+
+        this.wf.invoke('volumeChanged', [this.volume]);
       }
     }
   }
@@ -91,13 +97,12 @@ export class Player extends Destructable {
   }
 
   get muted() {
-    return this.audio?.volume === 0;
+    return this.audio?.muted ?? false;
   }
 
   set muted(muted: boolean) {
     if (!this.audio) return;
-
-    if (this.audio.muted === muted) return;
+    if (this.muted === muted) return;
 
     if (muted) {
       this.audio.mute();
@@ -246,7 +251,6 @@ export class Player extends Destructable {
     if (this.isDestroyed || !this.audio || !this.connected) return;
     this.connected = false;
     this.audio.el?.removeEventListener('ended', this.handleEnded);
-    this.audio.el?.pause();
     this.audio.disconnect();
   }
 
