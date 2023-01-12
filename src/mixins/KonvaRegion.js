@@ -35,6 +35,9 @@ export const KonvaRegionMixin = types.model({})
         const annotation = self.annotation;
         const ev = e?.evt || e;
         const additiveMode = ev?.ctrlKey || ev?.metaKey;
+        // this flag holds region state at the start of click event
+        // so it can be used later in deferred method
+        const isSelected = self.selected;
 
         if (e) e.cancelBubble = true;
 
@@ -43,6 +46,13 @@ export const KonvaRegionMixin = types.model({})
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
         } else {
+          if (!isSelected) {
+            if (additiveMode) {
+              annotation.toggleRegionSelection(self);
+            } else {
+              annotation.selectArea(self);
+            }
+          }
           if (deferredSelectId) {
             clearTimeout(deferredSelectId);
             self.requestPerRegionFocus();
@@ -50,7 +60,9 @@ export const KonvaRegionMixin = types.model({})
             annotation.selectArea(self);
           } else {
             deferredSelectId = setTimeout(() => {
-              self._selectArea(additiveMode);
+              if (isSelected) {
+                self._selectArea(additiveMode);
+              }
               deferredSelectId = null;
             }, 300);
           }
