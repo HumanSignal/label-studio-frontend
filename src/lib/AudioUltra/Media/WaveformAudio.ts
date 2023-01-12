@@ -15,6 +15,7 @@ interface WaveformAudioEvents {
 export class WaveformAudio extends Events<WaveformAudioEvents> {
   decoder?: AudioDecoder;
   decoderPromise?: Promise<void>;
+  mediaPromise?: Promise<void>;
   el?: HTMLAudioElement;
 
   // private backed by audio element and getters/setters
@@ -23,6 +24,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private _volume = 1;
   private _savedVolume = 1;
   private src?: string;
+  private mediaResolve?: () => void;
 
   constructor(options: WaveformAudioOptions) {
     super();
@@ -39,7 +41,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   }
 
   get duration() {
-    return this.decoder?.duration || 0;
+    return this.el?.duration ?? 0;
   }
 
   get sampleRate() {
@@ -84,18 +86,23 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
   connect() {
     if (this.el) this.disconnect();
-
-    this.loadMedia();
   }
 
   disconnect() {
-    this.el?.pause();
+    try {
+      this.el?.pause();
+    } catch {
+      // ignore
+    }
     this.decoder?.cancel();
   }
   
   destroy() {
     super.destroy();
     this.disconnect();
+
+    delete this.mediaResolve;
+    delete this.mediaPromise;
     delete this.decoderPromise;
     this.decoder?.destroy();
     delete this.decoder;
@@ -129,6 +136,9 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     if (this.decoderPromise) {
       await this.decoderPromise;
     }
+    if (this.mediaPromise) {
+      await this.mediaPromise;
+    }
 
     return this.decoder.sourceDecoded;
   }
@@ -148,7 +158,23 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
     this.el = document.createElement('audio');
     this.el.preload = 'auto';
+
+    this.mediaPromise = new Promise((resolve) => {
+      this.mediaResolve = resolve;
+    });
+
+    this.el.addEventListener('canplay', this.mediaReady);
+    this.loadMedia();
   }
+
+  mediaReady = () => {
+    this.mediaResolve?.();
+    this.mediaResolve = undefined;
+
+    if (this.el) {
+      this.el.removeEventListener('canplay', this.mediaReady);
+    }
+  };
 
   private loadMedia() {
     if (!this.src || !this.el) return;

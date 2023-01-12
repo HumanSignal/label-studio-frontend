@@ -113,7 +113,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.setLoading(false);
     this.getSamplesPerPx();
     this.invoke('initialized', [this]);
-    this.draw();
+    this.draw(false, true);
   }
 
   setLoading(loading: boolean) {
@@ -275,7 +275,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     const layer = this.getLayer('waveform');
 
-    if (!layer) return;
+    if (!layer || !layer.isVisible) return;
 
     layer.clear();
 
@@ -315,6 +315,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const bufferChunks = this.audio.chunks;
 
     if (!bufferChunks) return;
+
 
     let total = 0;
 
@@ -359,45 +360,6 @@ export class Visualizer extends Events<VisualizerEvents> {
         // Ignore any out of bounds errors if they occur
       }
     });
-
-    layer.stroke();
-    layer.restore();
-  }
-
-  private renderAllChunks(
-    layer: Layer,
-    chunks: Float32Array,
-    x: number,
-    y: number,
-    height: number,
-    paddingLeft: number,
-    zero: number,
-  ) {
-    layer.save();
-
-    const waveColor = this.waveColor.toString();
-
-    layer.strokeStyle = waveColor;
-    layer.fillStyle = waveColor;
-    layer.lineWidth = 1;
-
-    layer.beginPath();
-    layer.moveTo(x, y);
-
-    const l = chunks.length - 1;
-    let i = l + 1;
-
-    while (i > 0) {
-      const index = l - i;
-      const chunk = chunks.slice(index, index + this.samplesPerPx);
-
-      if (x >= 0 && chunk.length > 0) {
-        this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
-      }
-
-      x += 1;
-      i = clamp(i - this.samplesPerPx, 0, l);
-    }
 
     layer.stroke();
     layer.restore();
