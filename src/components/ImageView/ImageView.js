@@ -891,7 +891,7 @@ export default observer(
                 src={item._value}
                 onLoad={item.updateImageSize}
                 onError={this.handleError}
-                crossOrigin="{isFF(FF_DEV_4081) ? 'Anonymous' : null}"
+                crossOrigin={item.imageCrossOrigin}
                 alt="LS"
               />
               {isFF(FF_DEV_4081)
