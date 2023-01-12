@@ -314,6 +314,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     const bufferChunks = this.audio.chunks;
 
+    console.log('renderWave', bufferChunks);
     if (!bufferChunks) return;
 
 

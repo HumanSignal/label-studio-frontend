@@ -106,6 +106,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     delete this.decoderPromise;
     this.decoder?.destroy();
     delete this.decoder;
+    this.el?.removeEventListener('canplay', this.mediaReady);
     delete this.el;
   }
 
@@ -140,6 +141,8 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
       await this.mediaPromise;
     }
 
+    console.log('sourceDecoded', this.decoder.sourceDecoded);
+
     return this.decoder.sourceDecoded;
   }
 
@@ -148,6 +151,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
     const decoded = this.decoder.decode(arraybuffer, options);
 
+    console.log(this.decoder.decoderPromise);
     this.decoderPromise = (this.decoder.decoderPromise || Promise.resolve());
 
     return decoded;

@@ -63,6 +63,7 @@ export class MediaLoader extends Destructable {
   }
 
   async load(options: WaveformAudioOptions): Promise<WaveformAudio| null> {
+    console.log('MediaLoader.load()');
     if (this.isDestroyed || this.loaded) {
       return Promise.resolve(null);
     }
@@ -81,6 +82,7 @@ export class MediaLoader extends Destructable {
     }
 
     if (await this.audio.sourceDecoded()) {
+      console.log('skipping decode', options.src);
       this.duration = this.audio.duration;
       this.decoderResolve?.();
       return this.audio;

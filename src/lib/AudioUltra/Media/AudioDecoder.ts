@@ -17,6 +17,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   chunks?: Float32Array[];
   private decodeId = 0; // if id=0, decode is not in progress
   private worker: AudioDecoderWorker | undefined;
+  private cleanupTimeout?: any;
   private decoderResolve?: (() => void);
   private decodingResolve?: (() => void);
   private _dataLength = 0;
@@ -32,14 +33,16 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     // This allows for multiple instances of the same audio file source to share the same worker
     // and decoded data results
     if (AudioDecoder.cache.has(src)) {
-      return AudioDecoder.cache.get(src) as AudioDecoder;
+      const instance = AudioDecoder.cache.get(src) as AudioDecoder;
+
+      instance.cancelCleanup();
+      return instance;
     }
 
     super();
 
     // only allow one cached decoder at a time to prevent memory leaks
     // and limit the memory usage of the browser
-    AudioDecoder.cache.clear();
     AudioDecoder.cache.set(this.src, this);
   }
 
@@ -96,11 +99,28 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     super.removeAllListeners();
     this.cancel();
     this.disposeWorker();
-    // TODO: dispose chunks and buffer based on a ttl so change between same sources
-    // doesn't cause a memory leak but also doesn't require reprocessing and downloading the same file again
-  
-    // delete this.chunks;
-    // AudioDecoder.cache.delete(this.src);
+    this.markForCleanup();
+  }
+
+  cancelCleanup() {
+    if (this.cleanupTimeout) {
+      console.log('cancelCleanup', this.src);
+      clearTimeout(this.cleanupTimeout);
+      this.cleanupTimeout = undefined;
+    }
+  }
+
+  markForCleanup() {
+    this.cancelCleanup();
+    console.log('markForCleanup', this.src);
+    this.cleanupTimeout =
+      setTimeout(() => {
+        // dispose chunks and buffer based on a ttl (10seconds) so change between same sources
+        // doesn't cause a memory leak but also doesn't require reprocessing and downloading the same file again
+        delete this.chunks;
+        AudioDecoder.cache.delete(this.src);
+        console.log('cleanedup', this.src);
+      }, 10000);
   }
 
   /**
@@ -120,7 +140,6 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     if (this.sourceDecoded) return Promise.resolve();
 
     // clear any previous decoding state
-    this.cancel();
     this.decodeId = Date.now();
     this.decodingPromise = new Promise(resolve => (this.decodingResolve = (resolve as any)));
     this.decoderPromise = new Promise(resolve => (this.decoderResolve = (resolve as any)));
@@ -139,7 +158,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
       const totalChunks = this.getTotalChunks(this.worker.duration);
       const chunkIterator = this.chunkDecoder(options);
 
-      this.chunks = Array.from({ length: totalChunks }) as Float32Array[];
+      const chunks = Array.from({ length: totalChunks }) as Float32Array[];
 
       this.invoke('progress', [0, totalChunks]);
 
@@ -156,7 +175,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
           if (this.sourceDecodeCancelled) return null;
 
           if (value) {
-            this.chunks[chunkIndex] = value;
+            chunks[chunkIndex] = value;
           }
 
           this.invoke('progress', [chunkIndex + 1, totalChunks]);
@@ -168,6 +187,8 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
           break;
         }
       }
+
+      this.chunks = chunks;
 
       return this.chunks;
     }).finally(() => {
