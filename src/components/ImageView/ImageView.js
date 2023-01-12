@@ -347,11 +347,15 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
   );
 });
 
-const Selection = observer(({ item, selectionArea }) => {
-
+/**
+ * Previously regions rerendered on window resize because of size recalculations,
+ * but now they are rerendered just by mistake because of unmemoized `splitRegions` in main render.
+ * This is temporary solution to pass in relevant props changed on window resize.
+ */
+const Selection = observer(({ item, selectionArea, ...triggeredOnResize }) => {
   return (
     <>
-      <SelectedRegions key="selected-regions" item={item} selectedRegions={item.selectedRegions} />
+      <SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />
       <SelectionLayer item={item} selectionArea={selectionArea}/>
     </>
   );
@@ -968,7 +972,15 @@ export default observer(
                     />
                   ) : <Fragment key={groupName} />;
                 })}
-                <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
+                <Selection
+                  item={item}
+                  selectionArea={item.selectionArea}
+                  isPanning={this.state.isPanning}
+                  // to trigger rerender on resize
+                  stageWidth={item.canvasSize.width}
+                  stageHeight={item.canvasSize.height}
+                  stageScale={item.zoomScale}
+                />
                 <DrawingRegion item={item} />
 
                 {item.crosshair && (
