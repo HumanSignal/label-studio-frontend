@@ -170,9 +170,9 @@ const Model = types.model({
     // if we are going to select label and it would be the first in this labels group
     if (!labels.selectedLabels.length && !self.selected) {
       // unselect labels from other groups of labels connected to this obj
+
       self.annotation.toNames.get(labels.toname).
-        filter(tag => tag.type && tag.type.endsWith('labels') && tag.name !== labels.name).
-        forEach(tag => tag.unselectAll && tag.unselectAll());
+        filter(tag => tag.type && tag.type.endsWith('labels') && tag.name !== labels.name);
 
       // unselect other tools if they exist and selected
       const manager = ToolsManager.getInstance({ name: self.parent.toname });

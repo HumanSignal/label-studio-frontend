@@ -28,7 +28,7 @@ export const FramesControl: FC<TimelineSideControlProps> = ({
           }}
         />
       ) : (
-        <>{Math.round(position + 1)} <span>of {Math.round(duration)}</span></>
+        <>{clamp(Math.round(position + 1), 1, duration)} <span>of {Math.round(duration)}</span></>
       )}
     </Block>
   );
