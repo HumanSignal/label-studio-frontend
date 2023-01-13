@@ -3,7 +3,7 @@ import { AudioDecoderWorker, getAudioDecoderWorker } from 'audio-file-decoder';
 // @ts-ignore
 import DecodeAudioWasm from 'audio-file-decoder/decode-audio.wasm';
 import { Events } from '../Common/Events';
-
+import { info } from '../Common/Utils';
 
 const DURATION_CHUNK_SIZE = 60 * 30; // 30 minutes
 
@@ -15,11 +15,11 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   static cache: Map<string, AudioDecoder> = new Map();
 
   chunks?: Float32Array[];
+  private cancelled = false;
   private decodeId = 0; // if id=0, decode is not in progress
   private worker: AudioDecoderWorker | undefined;
-  private cleanupTimeout?: any;
-  private decoderResolve?: (() => void);
-  private decodingResolve?: (() => void);
+  private decoderResolve?: () => void;
+  private decodingResolve?: () => void;
   private _dataLength = 0;
   private _dataSize = 0;
   private _channelCount = 1;
@@ -35,7 +35,10 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     if (AudioDecoder.cache.has(src)) {
       const instance = AudioDecoder.cache.get(src) as AudioDecoder;
 
-      instance.cancelCleanup();
+      instance.renew();
+
+      AudioDecoder.cache.set(src, instance);
+
       return instance;
     }
 
@@ -43,6 +46,13 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
 
     // only allow one cached decoder at a time to prevent memory leaks
     // and limit the memory usage of the browser
+    if (AudioDecoder.cache.size > 0) {
+      for (const decoder of AudioDecoder.cache.values()) {
+        decoder.destroy();
+        decoder.cleanupCache();
+      }
+    }
+
     AudioDecoder.cache.set(this.src, this);
   }
 
@@ -53,7 +63,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   get sampleRate() {
     return this._sampleRate;
   }
-  
+
   get duration() {
     return this._duration;
   }
@@ -77,7 +87,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   }
 
   get sourceDecodeCancelled() {
-    return this.decodeId === 0;
+    return this.cancelled && this.decodeId === 0;
   }
 
   /**
@@ -85,12 +95,13 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
    * This will stop the generator and dispose the worker.
    */
   cancel() {
+    this.cancelled = true;
     this.decodeId = 0;
-    this.decoderResolve?.();
-    this.decoderResolve = undefined;
-    this.decodingResolve?.();
-    this.decodingResolve = undefined;
     this.disposeWorker();
+  }
+
+  renew() {
+    this.cancelled = false;
   }
 
   destroy() {
@@ -98,29 +109,22 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     // subscriptions and cancel any pending decoding work
     super.removeAllListeners();
     this.cancel();
-    this.disposeWorker();
-    this.markForCleanup();
   }
 
-  cancelCleanup() {
-    if (this.cleanupTimeout) {
-      console.log('cancelCleanup', this.src);
-      clearTimeout(this.cleanupTimeout);
-      this.cleanupTimeout = undefined;
-    }
+  cleanupResolvers() {
+    this.decoderResolve?.();
+    this.decoderResolve = undefined;
+    this.decodingResolve?.();
+    this.decodingResolve = undefined;
   }
 
-  markForCleanup() {
-    this.cancelCleanup();
-    console.log('markForCleanup', this.src);
-    this.cleanupTimeout =
-      setTimeout(() => {
-        // dispose chunks and buffer based on a ttl (10seconds) so change between same sources
-        // doesn't cause a memory leak but also doesn't require reprocessing and downloading the same file again
-        delete this.chunks;
-        AudioDecoder.cache.delete(this.src);
-        console.log('cleanedup', this.src);
-      }, 10000);
+  /**
+   * Cleanup the decoder cache if it is no longer in use.
+   */
+  cleanupCache() {
+    delete this.chunks;
+    this.cleanupResolvers();
+    AudioDecoder.cache.delete(this.src);
   }
 
   /**
@@ -133,68 +137,82 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   /**
    * Decode the audio file in chunks to ensure the UI remains responsive.
    */
-  async decode(arraybuffer: ArrayBuffer, options?: {multiChannel?: boolean}): Promise<void> {
+  async decode(arraybuffer: ArrayBuffer, options?: { multiChannel?: boolean }): Promise<void> {
     // decoding is already in progress for this source, so wait for it to finish
-    if (this.decodingPromise) return this.decodingPromise;
     // If the worker has cached data, we can skip the decode step
-    if (this.sourceDecoded) return Promise.resolve();
+    if (this.cancelled || this.sourceDecoded) return Promise.resolve();
+
+    info('decode:start', this.src);
 
     // clear any previous decoding state
     this.decodeId = Date.now();
-    this.decodingPromise = new Promise(resolve => (this.decodingResolve = (resolve as any)));
-    this.decoderPromise = new Promise(resolve => (this.decoderResolve = (resolve as any)));
+    this.decodingPromise =  new Promise(resolve => (this.decodingResolve = resolve as any));
+    this.decoderPromise = new Promise(resolve => (this.decoderResolve = resolve as any));
 
-    await getAudioDecoderWorker(DecodeAudioWasm, arraybuffer).then(async (worker) => {
-      if (this.sourceDecodeCancelled) return;
+    await getAudioDecoderWorker(DecodeAudioWasm, arraybuffer)
+      .then(async worker => {
+        info('decode:worker:ready', this.src);
+        if (this.sourceDecodeCancelled) return;
 
-      // Set the worker instance and resolve the decoder promise
-      this.worker = worker;
-      this._channelCount = this.worker.channelCount;
-      this._sampleRate = this.worker.sampleRate;
-      this._duration = this.worker.duration;
-      this.decoderResolve?.();
+        // Set the worker instance and resolve the decoder promise
+        this.worker = worker;
+        this._channelCount = this.worker.channelCount;
+        this._sampleRate = this.worker.sampleRate;
+        this._duration = this.worker.duration;
+        this.decoderResolve?.();
 
-      let chunkIndex = 0;
-      const totalChunks = this.getTotalChunks(this.worker.duration);
-      const chunkIterator = this.chunkDecoder(options);
+        let chunkIndex = 0;
+        const totalChunks = this.getTotalChunks(this.worker.duration);
+        const chunkIterator = this.chunkDecoder(options);
 
-      const chunks = Array.from({ length: totalChunks }) as Float32Array[];
+        const chunks = Array.from({ length: totalChunks }) as Float32Array[];
 
-      this.invoke('progress', [0, totalChunks]);
+        info('decode:chunk:start', this.src, chunkIndex, totalChunks);
 
-      // Work through the chunks of the file in a generator until done.
-      // Allow this to be interrupted at any time safely.
-      while (chunkIndex < totalChunks) {
-        if (this.sourceDecodeCancelled) return null;
+        this.invoke('progress', [0, totalChunks]);
 
-        const result = chunkIterator.next();
-
-        if (!result.done) {
-          const value = await result.value;
-
+        // Work through the chunks of the file in a generator until done.
+        // Allow this to be interrupted at any time safely.
+        while (chunkIndex < totalChunks) {
           if (this.sourceDecodeCancelled) return null;
 
-          if (value) {
-            chunks[chunkIndex] = value;
+          const result = chunkIterator.next();
+
+          if (!result.done) {
+            const value = await result.value;
+
+            if (this.sourceDecodeCancelled) return null;
+
+            if (value) {
+              chunks[chunkIndex] = value;
+            }
+
+            this.invoke('progress', [chunkIndex + 1, totalChunks]);
+
+            info('decode:chunk:process', this.src, chunkIndex, totalChunks);
+
+            chunkIndex++;
           }
 
-          this.invoke('progress', [chunkIndex + 1, totalChunks]);
-
-          chunkIndex++;
+          if (result.done) {
+            break;
+          }
         }
 
-        if (result.done) {
-          break;
+        this.chunks = chunks;
+
+        info('decode:complete', this.src);
+
+        this.decodingResolve?.();
+
+        return this.chunks;
+      })
+      .finally(() => {
+        if (this.cancelled) {
+          info('decode:cancelled', this.src);
         }
-      }
-
-      this.chunks = chunks;
-
-      return this.chunks;
-    }).finally(() => {
-      this.decodingResolve?.();
-      this.disposeWorker();
-    });
+        this.disposeWorker();
+      });
   }
 
   private disposeWorker() {
@@ -209,7 +227,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
    * Do the work in a Web Worker to avoid blocking the UI.
    * Do the work in a interruptible generator to avoid blocking the worker.
    */
-  private *chunkDecoder(options?: {multiChannel?: boolean}): Generator<Promise<Float32Array|null>|null> {
+  private *chunkDecoder(options?: { multiChannel?: boolean }): Generator<Promise<Float32Array | null> | null> {
     if (!this.worker || this.sourceDecodeCancelled) return null;
 
     const totalDuration = this.worker.duration;
@@ -217,7 +235,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     let durationOffset = 0;
 
     while (true) {
-      yield new Promise((resolve) => {
+      yield new Promise(resolve => {
         if (!this.worker || this.sourceDecodeCancelled) return resolve(null);
 
         const nextChunkDuration = Math.min(DURATION_CHUNK_SIZE, Math.max(0, totalDuration - durationOffset));
@@ -225,13 +243,15 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
 
         durationOffset += nextChunkDuration;
 
-        this.worker.decodeAudioData(currentOffset, nextChunkDuration, {
-          multiChannel: options?.multiChannel ?? false,
-          ...options,
-        }).then((chunk) => {
-          resolve(chunk);
-          if (!chunk) return; 
-        });
+        this.worker
+          .decodeAudioData(currentOffset, nextChunkDuration, {
+            multiChannel: options?.multiChannel ?? false,
+            ...options,
+          })
+          .then(chunk => {
+            resolve(chunk);
+            if (!chunk) return;
+          });
       });
     }
   }

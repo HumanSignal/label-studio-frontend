@@ -56,7 +56,6 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   );
 
   useEffect(() => {
-    console.log(item.annotationStore.store.hydrated);
     if (item.annotationStore.store.hydrated) {
       const hotkeys = Hotkey('Audio', 'Audio Segmentation');
 

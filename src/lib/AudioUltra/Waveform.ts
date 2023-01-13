@@ -230,7 +230,6 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   async load() {
-    console.trace();
     if (this.isDestroyed) return;
 
     const loader = this.media.load({

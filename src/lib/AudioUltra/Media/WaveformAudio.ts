@@ -133,15 +133,12 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
   async sourceDecoded() {
     if (!this.decoder) return false;
-
-    if (this.decoderPromise) {
-      await this.decoderPromise;
-    }
     if (this.mediaPromise) {
       await this.mediaPromise;
     }
-
-    console.log('sourceDecoded', this.decoder.sourceDecoded);
+    if (this.decoderPromise) {
+      await this.decoderPromise;
+    }
 
     return this.decoder.sourceDecoded;
   }
@@ -151,7 +148,6 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
     const decoded = this.decoder.decode(arraybuffer, options);
 
-    console.log(this.decoder.decoderPromise);
     this.decoderPromise = (this.decoder.decoderPromise || Promise.resolve());
 
     return decoded;
