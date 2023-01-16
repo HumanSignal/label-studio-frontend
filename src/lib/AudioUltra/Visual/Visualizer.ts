@@ -12,8 +12,9 @@ import { Padding } from '../Common/Style';
 import { TimelineOptions } from '../Timeline/Timeline';
 import './Loader';
 
-// 1 million
-const STABLE_SAMPLES_TO_RENDER = 1000000;
+// Amount of data samples to buffer on either side of the renderable area
+const BUFFER_SAMPLES = 2;
+const CACHE_RENDER_THRESHOLD = 10000000;
 
 interface VisualizerEvents {
   draw: (visualizer: Visualizer) => void;
@@ -70,7 +71,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private waveHeight = 100;
   private lastRenderedZoom = 0;
   private lastRenderedStart = 0;
-  private lastRenderedEnd = 0;
+  private lastRenderedScrollLeftPx= 0;
   private _container!: HTMLElement;
   private _loader!: HTMLElement;
 
@@ -288,10 +289,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   private renderWave(channelNumber: number, layer: Layer) {
     const fullHeight = this.height;
-    const paddingTop = this.padding?.top ?? 0;
-    const paddingLeft = this.padding?.left ?? 0;
     const waveHeight = fullHeight - this.reservedSpace;
-    const zero = fullHeight * (this.splitChannels ? channelNumber : 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
     const height = waveHeight / (this.splitChannels ? this.audio?.channelCount ?? 1 : 1);
 
     const dataLength = this.dataLength;
@@ -302,77 +300,27 @@ export class Visualizer extends Events<VisualizerEvents> {
     const iEnd = clamp(iStart + (this.width * this.samplesPerPx), 0, dataLength);
 
     let x = 0;
-    const y = zero + paddingTop + height / 2;
 
     if (this.isDestroyed || !this.audio) return;
 
-    const bufferChunks = this.audio.chunks;
+    const renderableData = iEnd - iStart;
 
-    if (!bufferChunks) return;
-
-    let total = 0;
-
-    const samplesToRender = iEnd - iStart;
-
-    if (zoom !== this.lastRenderedZoom || samplesToRender < STABLE_SAMPLES_TO_RENDER) {
-      console.log({ samplesToRender, zoom, lastRenderedZoom: this.lastRenderedZoom });
+    if (zoom !== this.lastRenderedZoom || renderableData < CACHE_RENDER_THRESHOLD) {
       layer.clear();
-      layer.save();
-      const waveColor = this.waveColor.toString();
-
-      layer.strokeStyle = waveColor;
-      layer.fillStyle = waveColor;
-      layer.lineWidth = 1;
-
-      layer.beginPath();
-      layer.moveTo(x, y);
-
-      // Find all chunks in buffer chunks that are between iStart and iEnd
-      bufferChunks.forEach((slice) => {
-        const sliceLength = slice.length;
-
-        const chunkStart = Math.floor(clamp(iStart - total, 0, sliceLength));
-        const chunkEnd = Math.ceil(clamp(iEnd - total, 0, sliceLength));
-
-        total += sliceLength;
-
-        try {
-          const chunks = slice.slice(chunkStart, chunkEnd);
-
-          const l = chunks.length - 1;
-          let i = l + 1;
-
-          while (i > 0) {
-            const index = l - i;
-            const chunk = chunks.slice(index, index + this.samplesPerPx);
-
-            if (x >= 0 && chunk.length > 0) {
-              this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
-            }
-
-            x += 1;
-            i = clamp(i - this.samplesPerPx, 0, l);
-          }
-        } catch {
-        // Ignore any out of bounds errors if they occur
-        }
-      });
-
+      this.renderSlice(layer, height, iStart, iEnd, channelNumber, x);
       this.lastRenderedZoom = zoom;
       this.lastRenderedStart = iStart;
-      this.lastRenderedEnd = iEnd;
-
-      layer.stroke();
-      layer.restore();
+      this.lastRenderedScrollLeftPx = scrollLeftPx;
     } else {
-      const diff = this.lastRenderedStart - iStart;
+      let deltaX = this.lastRenderedScrollLeftPx - scrollLeftPx;
 
-      const deltaX = (diff) / this.samplesPerPx;
+      if (deltaX < 1 && deltaX > -1) return;
 
-      if (deltaX === 0) return;
+      // deltaX = deltaX > 0 ? Math.floor(deltaX) : Math.ceil(deltaX);
+      deltaX = Math.round(deltaX);
+      const diff = deltaX * this.samplesPerPx;
 
-      this.lastRenderedStart = iStart;
-      this.lastRenderedEnd = iEnd;
+      this.lastRenderedScrollLeftPx = scrollLeftPx;
 
       // Move the canvas to the left by deltaX
       layer.shift(deltaX, 0);
@@ -383,64 +331,75 @@ export class Visualizer extends Events<VisualizerEvents> {
       // Waveform visually moving to the right
       if (deltaX > 0) {
         // Draw the new data on the left
-        sEnd = Math.floor(iStart + diff);
+        sEnd = iStart + diff;
         x = 0;
 
       // Waveform visually moving to the left
       } else {
         // Draw the new data on the right
-        sStart = Math.ceil(iEnd + diff);
-        x = clamp(this.width + deltaX - 2, 0, this.width);
+        sStart = iEnd + diff;
+        x = clamp(this.width + deltaX - BUFFER_SAMPLES, 0, this.width);
       }
 
-      // sStart = clamp(sStart - (this.samplesPerPx * 5), 0, dataLength);
-      sEnd = clamp(sEnd + (this.samplesPerPx * 2), 0, dataLength);
-      console.log({ sStart, sEnd, iStart, iEnd, deltaX, samplesPerPx: this.samplesPerPx });
+      sEnd = clamp(sEnd + (this.samplesPerPx * BUFFER_SAMPLES), 0, dataLength);
 
-      const waveColor = this.waveColor.toString();
-
-      layer.save();
-      layer.strokeStyle = waveColor;
-      layer.fillStyle = waveColor;
-      layer.lineWidth = 1;
-
-      layer.moveTo(x, y);
-      layer.beginPath();
-
-      // Find all chunks in buffer chunks that are between sStart and sEnd
-      bufferChunks.forEach((slice) => {
-        const sliceLength = slice.length;
-
-        const chunkStart = Math.floor(clamp(sStart - total, 0, sliceLength));
-        const chunkEnd = Math.ceil(clamp(sEnd - total, 0, sliceLength));
-
-        total += sliceLength;
-
-        try {
-          const chunks = slice.slice(chunkStart, chunkEnd);
-
-          const l = chunks.length - 1;
-          let i = l + 1;
-
-          while (i > 0) {
-            const index = l - i;
-            const chunk = chunks.slice(index, index + this.samplesPerPx);
-
-            if (x >= 0 && chunk.length > 0) {
-              this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
-            }
-
-            x += 1;
-            i = clamp(i - this.samplesPerPx, 0, l);
-          }
-        } catch {
-        // Ignore any out of bounds errors if they occur
-        }
-      });
-
-      layer.stroke();
-      layer.restore();
+      this.renderSlice(layer, height, sStart, sEnd, channelNumber, x);
     }
+  }
+
+  private renderSlice(layer: Layer, height: number, iStart: number, iEnd: number, channelNumber: number, x = 0) {
+    const bufferChunks = this.audio?.chunks;
+
+    if (!bufferChunks) return;
+
+    const paddingTop = this.padding?.top ?? 0;
+    const paddingLeft = this.padding?.left ?? 0;
+    const zero = this.height * (this.splitChannels ? channelNumber : 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
+    const y = zero + paddingTop +  height / 2;
+    let total = 0;
+
+    layer.save();
+    const waveColor = this.waveColor.toString();
+
+    layer.strokeStyle = waveColor;
+    layer.fillStyle = waveColor;
+    layer.lineWidth = 1;
+
+    layer.beginPath();
+    layer.moveTo(x, y);
+
+    // Find all chunks in buffer chunks that are between iStart and iEnd
+    bufferChunks.forEach((slice) => {
+      const sliceLength = slice.length;
+
+      const chunkStart = Math.floor(clamp(iStart - total, 0, sliceLength));
+      const chunkEnd = Math.ceil(clamp(iEnd - total, 0, sliceLength));
+
+      total += sliceLength;
+
+      try {
+        const chunks = slice.slice(chunkStart, chunkEnd);
+
+        const l = chunks.length - 1;
+        let i = l + 1;
+
+        while (i > 0) {
+          const index = l - i;
+          const chunk = chunks.slice(index, index + this.samplesPerPx);
+
+          if (x >= 0 && chunk.length > 0) {
+            this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
+          }
+
+          x += 1;
+          i = clamp(i - this.samplesPerPx, 0, l);
+        }
+      } catch {
+        // Ignore any out of bounds errors if they occur
+      }
+    });
+    layer.stroke();
+    layer.restore();
   }
 
   private renderChunk(chunk: Float32Array, layer: Layer, height: number, offset: number, zero: number) {
