@@ -1,6 +1,6 @@
 import { ChannelData } from '../Media/ChannelData';
 import { WaveformAudio } from '../Media/WaveformAudio';
-import { averageMinMax, clamp, debounce, defaults, roundToStep, warn } from '../Common/Utils';
+import { averageMinMax, clamp, debounce, defaults, warn } from '../Common/Utils';
 import { Waveform, WaveformOptions } from '../Waveform';
 import { CanvasCompositeOperation, Layer, RenderingContext } from './Layer';
 import { Events } from '../Common/Events';
@@ -11,6 +11,9 @@ import { Cursor } from '../Cursor/Cursor';
 import { Padding } from '../Common/Style';
 import { TimelineOptions } from '../Timeline/Timeline';
 import './Loader';
+
+// 1 million
+const STABLE_SAMPLES_TO_RENDER = 1000000;
 
 interface VisualizerEvents {
   draw: (visualizer: Visualizer) => void;
@@ -65,6 +68,9 @@ export class Visualizer extends Events<VisualizerEvents> {
   private backgroundColor = rgba('#fff');
   private waveColor = rgba('#000');
   private waveHeight = 100;
+  private lastRenderedZoom = 0;
+  private lastRenderedStart = 0;
+  private lastRenderedEnd = 0;
   private _container!: HTMLElement;
   private _loader!: HTMLElement;
 
@@ -277,8 +283,6 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     if (!layer || !layer.isVisible) return;
 
-    layer.clear();
-
     this.renderWave(0, layer);
   }
 
@@ -288,24 +292,14 @@ export class Visualizer extends Events<VisualizerEvents> {
     const paddingLeft = this.padding?.left ?? 0;
     const waveHeight = fullHeight - this.reservedSpace;
     const zero = fullHeight * (this.splitChannels ? channelNumber : 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
-    const height = waveHeight * (this.splitChannels ? this.audio?.channelCount ?? 1 : 1);
+    const height = waveHeight / (this.splitChannels ? this.audio?.channelCount ?? 1 : 1);
 
     const dataLength = this.dataLength;
     const scrollLeftPx = this.getScrollLeftPx();
 
-    const iStart = clamp(
-      roundToStep(
-        scrollLeftPx * this.samplesPerPx,
-        this.samplesPerPx,
-        'floor',
-      ), 0, dataLength);
-
-    const iEnd = clamp(
-      roundToStep(
-        iStart + (this.width * this.samplesPerPx),
-        this.samplesPerPx,
-        'ceil',
-      ), 0, dataLength);
+    const zoom = this.zoom;
+    const iStart = clamp(scrollLeftPx * this.samplesPerPx, 0, dataLength);
+    const iEnd = clamp(iStart + (this.width * this.samplesPerPx), 0, dataLength);
 
     let x = 0;
     const y = zero + paddingTop + height / 2;
@@ -318,50 +312,135 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     let total = 0;
 
-    layer.save();
+    const samplesToRender = iEnd - iStart;
 
-    const waveColor = this.waveColor.toString();
+    if (zoom !== this.lastRenderedZoom || samplesToRender < STABLE_SAMPLES_TO_RENDER) {
+      console.log({ samplesToRender, zoom, lastRenderedZoom: this.lastRenderedZoom });
+      layer.clear();
+      layer.save();
+      const waveColor = this.waveColor.toString();
 
-    layer.strokeStyle = waveColor;
-    layer.fillStyle = waveColor;
-    layer.lineWidth = 1;
+      layer.strokeStyle = waveColor;
+      layer.fillStyle = waveColor;
+      layer.lineWidth = 1;
 
-    layer.beginPath();
-    layer.moveTo(x, y);
+      layer.beginPath();
+      layer.moveTo(x, y);
 
-    // Find all chunks in buffer chunks that are between iStart and iEnd
-    bufferChunks.forEach((slice) => {
-      const sliceLength = slice.length;
+      // Find all chunks in buffer chunks that are between iStart and iEnd
+      bufferChunks.forEach((slice) => {
+        const sliceLength = slice.length;
 
-      const chunkStart = Math.floor(clamp(iStart - total, 0, sliceLength - 1));
-      const chunkEnd = Math.ceil(clamp(iEnd - total, 0, sliceLength - 1));
+        const chunkStart = Math.floor(clamp(iStart - total, 0, sliceLength));
+        const chunkEnd = Math.ceil(clamp(iEnd - total, 0, sliceLength));
 
-      total += sliceLength;
+        total += sliceLength;
 
-      try {
-        const chunks = slice.slice(chunkStart, chunkEnd);
+        try {
+          const chunks = slice.slice(chunkStart, chunkEnd);
 
-        const l = chunks.length - 1;
-        let i = l + 1;
+          const l = chunks.length - 1;
+          let i = l + 1;
 
-        while (i > 0) {
-          const index = l - i;
-          const chunk = chunks.slice(index, index + this.samplesPerPx);
+          while (i > 0) {
+            const index = l - i;
+            const chunk = chunks.slice(index, index + this.samplesPerPx);
 
-          if (x >= 0 && chunk.length > 0) {
-            this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
+            if (x >= 0 && chunk.length > 0) {
+              this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
+            }
+
+            x += 1;
+            i = clamp(i - this.samplesPerPx, 0, l);
           }
-
-          x += 1;
-          i = clamp(i - this.samplesPerPx, 0, l);
-        }
-      } catch {
+        } catch {
         // Ignore any out of bounds errors if they occur
-      }
-    });
+        }
+      });
 
-    layer.stroke();
-    layer.restore();
+      this.lastRenderedZoom = zoom;
+      this.lastRenderedStart = iStart;
+      this.lastRenderedEnd = iEnd;
+
+      layer.stroke();
+      layer.restore();
+    } else {
+      const diff = this.lastRenderedStart - iStart;
+
+      const deltaX = (diff) / this.samplesPerPx;
+
+      if (deltaX === 0) return;
+
+      this.lastRenderedStart = iStart;
+      this.lastRenderedEnd = iEnd;
+
+      // Move the canvas to the left by deltaX
+      layer.shift(deltaX, 0);
+
+      let sStart = iStart;
+      let sEnd = iEnd;
+
+      // Waveform visually moving to the right
+      if (deltaX > 0) {
+        // Draw the new data on the left
+        sEnd = Math.floor(iStart + diff);
+        x = 0;
+
+      // Waveform visually moving to the left
+      } else {
+        // Draw the new data on the right
+        sStart = Math.ceil(iEnd + diff);
+        x = clamp(this.width + deltaX - 2, 0, this.width);
+      }
+
+      // sStart = clamp(sStart - (this.samplesPerPx * 5), 0, dataLength);
+      sEnd = clamp(sEnd + (this.samplesPerPx * 2), 0, dataLength);
+      console.log({ sStart, sEnd, iStart, iEnd, deltaX, samplesPerPx: this.samplesPerPx });
+
+      const waveColor = this.waveColor.toString();
+
+      layer.save();
+      layer.strokeStyle = waveColor;
+      layer.fillStyle = waveColor;
+      layer.lineWidth = 1;
+
+      layer.moveTo(x, y);
+      layer.beginPath();
+
+      // Find all chunks in buffer chunks that are between sStart and sEnd
+      bufferChunks.forEach((slice) => {
+        const sliceLength = slice.length;
+
+        const chunkStart = Math.floor(clamp(sStart - total, 0, sliceLength));
+        const chunkEnd = Math.ceil(clamp(sEnd - total, 0, sliceLength));
+
+        total += sliceLength;
+
+        try {
+          const chunks = slice.slice(chunkStart, chunkEnd);
+
+          const l = chunks.length - 1;
+          let i = l + 1;
+
+          while (i > 0) {
+            const index = l - i;
+            const chunk = chunks.slice(index, index + this.samplesPerPx);
+
+            if (x >= 0 && chunk.length > 0) {
+              this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
+            }
+
+            x += 1;
+            i = clamp(i - this.samplesPerPx, 0, l);
+          }
+        } catch {
+        // Ignore any out of bounds errors if they occur
+        }
+      });
+
+      layer.stroke();
+      layer.restore();
+    }
   }
 
   private renderChunk(chunk: Float32Array, layer: Layer, height: number, offset: number, zero: number) {
