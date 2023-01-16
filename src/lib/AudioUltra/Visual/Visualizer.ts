@@ -70,7 +70,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private waveColor = rgba('#000');
   private waveHeight = 100;
   private lastRenderedZoom = 0;
-  private lastRenderedStart = 0;
+  private lastRenderedAmp = 0;
   private lastRenderedScrollLeftPx= 0;
   private _container!: HTMLElement;
   private _loader!: HTMLElement;
@@ -296,6 +296,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const scrollLeftPx = this.getScrollLeftPx();
 
     const zoom = this.zoom;
+    const amp = this.amp;
     const iStart = clamp(scrollLeftPx * this.samplesPerPx, 0, dataLength);
     const iEnd = clamp(iStart + (this.width * this.samplesPerPx), 0, dataLength);
 
@@ -305,18 +306,17 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     const renderableData = iEnd - iStart;
 
-    if (zoom !== this.lastRenderedZoom || renderableData < CACHE_RENDER_THRESHOLD) {
+    if (zoom !== this.lastRenderedZoom || amp !== this.lastRenderedAmp || renderableData < CACHE_RENDER_THRESHOLD) {
       layer.clear();
       this.renderSlice(layer, height, iStart, iEnd, channelNumber, x);
       this.lastRenderedZoom = zoom;
-      this.lastRenderedStart = iStart;
+      this.lastRenderedAmp = amp;
       this.lastRenderedScrollLeftPx = scrollLeftPx;
     } else {
       let deltaX = this.lastRenderedScrollLeftPx - scrollLeftPx;
 
       if (deltaX < 1 && deltaX > -1) return;
 
-      // deltaX = deltaX > 0 ? Math.floor(deltaX) : Math.ceil(deltaX);
       deltaX = Math.round(deltaX);
       const diff = deltaX * this.samplesPerPx;
 
