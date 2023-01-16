@@ -11,7 +11,7 @@ import { ToolManagerMixin } from '../../mixins/ToolManagerMixin';
  *
  * Use with the following data types: image.
  * @example
- * Basic image segmentation labeling configuration:
+ * <!--Basic image segmentation labeling configuration:-->
  * <View>
  *   <Brush name="labels" toName="image">
  *     <Label value="Person" />
