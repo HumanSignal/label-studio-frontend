@@ -1,7 +1,7 @@
 name: "PR labeler"
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - edited
@@ -11,7 +11,12 @@ on:
     branches:
       - master
       - develop
+      - 'release/**'
       - 'lse-release/**'
+      - 'ls-release/**'
+
+env:
+  ACTIONS_STEP_DEBUG: '${{ secrets.ACTIONS_STEP_DEBUG }}'
 
 jobs:
   autolabel:
@@ -20,17 +25,20 @@ jobs:
     permissions:
       pull-requests: write
     steps:
+
       - uses: hmarr/debug-action@v2.1.0
-      - uses: thehanimo/pr-title-checker@v1.3.5
-        name: "Validate PR's title"
+
+      - name: "Validate PR's title"
+        uses: thehanimo/pr-title-checker@v1.3.5
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           pass_on_octokit_error: false
           configuration_path: ".github/pr-title-checker-config.json"
-      - uses: release-drafter/release-drafter@v5.21.1
-        name: "Set PR's label based on title"
+
+      - name: "Set PR's label based on title"
+        uses: release-drafter/release-drafter@v5.22.0
         with:
           disable-releaser: true
           config-name: autolabeler.yml
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}

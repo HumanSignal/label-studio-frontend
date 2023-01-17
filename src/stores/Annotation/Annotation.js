@@ -1,22 +1,22 @@
 import { destroy, detach, flow, getEnv, getParent, getRoot, isAlive, onSnapshot, types } from 'mobx-state-tree';
 
+import throttle from 'lodash.throttle';
 import Constants from '../../core/Constants';
+import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
+import { guidGenerator } from '../../core/Helpers';
 import { Hotkey } from '../../core/Hotkey';
-import RegionStore from '../RegionStore';
-import RelationStore from '../RelationStore';
 import TimeTraveller from '../../core/TimeTraveller';
 import Tree, { TRAVERSE_STOP } from '../../core/Tree';
 import Types from '../../core/Types';
-import Utils from '../../utils';
-import { delay, isDefined } from '../../utils/utilities';
-import { guidGenerator } from '../../core/Helpers';
-import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
 import Area from '../../regions/Area';
-import throttle from 'lodash.throttle';
-import { UserExtended } from '../UserStore';
-import { FF_DEV_1284, FF_DEV_1598, FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, FF_DEV_3391, isFF } from '../../utils/feature-flags';
 import Result from '../../regions/Result';
+import Utils from '../../utils';
+import { FF_DEV_1284, FF_DEV_1598, FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, FF_DEV_3391, isFF } from '../../utils/feature-flags';
+import { delay, isDefined } from '../../utils/utilities';
 import { CommentStore } from '../Comment/CommentStore';
+import RegionStore from '../RegionStore';
+import RelationStore from '../RelationStore';
+import { UserExtended } from '../UserStore';
 
 const hotkeys = Hotkey('Annotations', 'Annotations');
 
@@ -259,6 +259,7 @@ export const Annotation = types
     },
 
     setReadonly(val) {
+      console.trace('set to readonly');
       self.readonly = val;
     },
 
@@ -308,7 +309,7 @@ export const Annotation = types
 
     updatePersonalKey(value) {
       self.pk = value;
-      getRoot(self).addAnnotationToTaskHistory(self.pk);
+      getRoot(self).addAnnotationToTaskHistory?.(self.pk);
     },
 
     toggleVisibility(visible) {
@@ -627,18 +628,10 @@ export const Annotation = types
       // mobx will modify methods, so add it directly to have cancel() method
       self.autosave = throttle(
         () => {
+          // if autosave is paused, do nothing
           if (self.autosave.paused) return;
 
-          const result = self.serializeAnnotation({ fast: true });
-          // if this is new annotation and no regions added yet
-
-          if (!self.pk && !result.length) return;
-
-          self.setDraftSelected();
-          self.versions.draft = result;
-          self.setDraftSaving(true);
-
-          self.store.submitDraft(self).then(self.onDraftSaved);
+          self.saveDraft();
         },
         self.autosaveDelay,
         { leading: false },
@@ -646,6 +639,22 @@ export const Annotation = types
 
       onSnapshot(self.areas, self.autosave);
     }),
+
+    saveDraft() {
+      // if this is now a history item or prediction don't save it
+      if (!self.editable) return;
+
+      const result = self.serializeAnnotation({ fast: true });
+      // if this is new annotation and no regions added yet
+
+      if (!self.pk && !result.length) return;
+
+      self.setDraftSelected();
+      self.versions.draft = result;
+      self.setDraftSaving(true);
+
+      self.store.submitDraft(self).then(self.onDraftSaved);
+    },
 
     saveDraftImmediately() {
       if (self.autosave) self.autosave.flush();
@@ -863,6 +872,8 @@ export const Annotation = types
     },
 
     appendResults(results) {
+      if (!self.editable || self.readonly) return;
+
       const regionIdMap = {};
       const prevSize = self.regionStore.regions.length;
 
