@@ -34,6 +34,9 @@ const Model = types
     getRegionElement() {
       return document.querySelector(`#TextAreaRegion-${self.id}`);
     },
+    getOneColor() {
+      return null;
+    },
   }))
   .actions(self => ({
     setValue(val) {
