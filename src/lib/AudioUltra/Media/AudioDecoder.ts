@@ -225,9 +225,9 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   }
 
   /**
-   * Decode in chunks of up to 600 seconds until the whole file is decoded.
-   * Do the work in a Web Worker to avoid blocking the UI.
-   * Do the work in a interruptible generator to avoid blocking the worker.
+   * Decode in chunks of up to 30 minutes until the whole file is decoded.
+   * Do the work withing Web Worker to avoid blocking the UI.
+   * Allow the work to be interrupted so that the worker can be disposed at any time safely.
    */
   private *chunkDecoder(options?: { multiChannel?: boolean }): Generator<Promise<Float32Array | null> | null> {
     if (!this.worker || this.sourceDecodeCancelled) return null;
