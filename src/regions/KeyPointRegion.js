@@ -69,8 +69,8 @@ const Model = types
     },
 
     setPosition(x, y) {
-      self.x = self.screenToInternalX(x);
-      self.y = self.screenToInternalY(y);
+      self.x = self.parent.screenToInternalX(x);
+      self.y = self.parent.screenToInternalY(y);
     },
 
     updateImageSize() {
@@ -138,9 +138,9 @@ const HtxKeyPointView = ({ item }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
-  const x = item.internalToScreenX(item.x);
-  const y = item.internalToScreenY(item.y);
-  const width = item.internalToScreenX(item.width);
+  const x = item.parent.internalToScreenX(item.x);
+  const y = item.parent.internalToScreenY(item.y);
+  const width = item.parent.internalToScreenX(item.width);
 
   const regionStyles = useRegionStyles(item, {
     includeFill: true,

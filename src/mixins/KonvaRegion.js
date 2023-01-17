@@ -63,23 +63,6 @@ export const KonvaRegionMixin = types.model({})
       return { width: height, height: width };
     },
 
-    // @todo scale?
-    screenToInternalX(n) {
-      return n / self.parent.stageWidth * 100;
-    },
-
-    screenToInternalY(n) {
-      return n / self.parent.stageHeight * 100;
-    },
-
-    internalToScreenX(n) {
-      return n / 100 * self.parent.stageWidth;
-    },
-
-    internalToScreenY(n) {
-      return n / 100 * self.parent.stageHeight;
-    },
-
     // @todo use methods above
     convertXToPerc(x) {
       return (x * 100) / self.parent.stageWidth;
