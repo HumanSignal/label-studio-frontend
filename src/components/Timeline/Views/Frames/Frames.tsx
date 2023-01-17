@@ -22,7 +22,6 @@ export const Frames: FC<TimelineViewProps> = ({
   position = 1,
   length = 1024,
   step,
-  playing,
   regions,
   onScroll,
   onPositionChange,
@@ -85,7 +84,7 @@ export const Frames: FC<TimelineViewProps> = ({
       const limit = scroll.scrollWidth - scroll.clientWidth;
       const newOffsetX = clamp(offsetX + (e.deltaX * scrollMultiplier), 0, limit);
 
-      setScroll({ left :newOffsetX });
+      setScroll({ left: newOffsetX });
     } else {
       const limit = scroll.scrollHeight - scroll.clientHeight;
       const newOffsetY = clamp(offsetY + (e.deltaY * scrollMultiplier), 0, limit);
@@ -106,14 +105,15 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [offsetY]);
 
   const firstVisibleFrame = useMemo(() => {
-    return Math.ceil(currentOffsetX / step);
+    return toSteps(roundToStep(currentOffsetX, step), step);
   }, [currentOffsetX, step]);
 
+  const framesInView = useRef(toSteps(roundToStep((scrollable.current?.clientWidth ?? 0) - timelineStartOffset, step), step));
   const lastVisibleFrame = useMemo(() => {
-    const framesInView = toSteps(scrollable.current?.clientWidth ?? 0, step) - 1;
+    framesInView.current = toSteps(roundToStep((scrollable.current?.clientWidth ?? 0) - timelineStartOffset, step), step);
 
-    return firstVisibleFrame + framesInView;
-  }, [scrollable.current, firstVisibleFrame, step]);
+    return firstVisibleFrame + framesInView.current;
+  }, [scrollable.current, firstVisibleFrame, step, timelineStartOffset]);
 
   const handleMovement = useCallback((e) => {
     setHoverEnabled(false);
@@ -248,10 +248,14 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [offset, step]);
 
   useEffect(() => {
-    if (playing && position > lastVisibleFrame) {
+    if (position > lastVisibleFrame) {
       setScroll({ left: lastVisibleFrame * step });
+    } else if (position < firstVisibleFrame) {
+      const nextFrame = Math.max(firstVisibleFrame - framesInView.current, 1);
+
+      setScroll({ left: nextFrame * step });
     }
-  }, [playing, position]);
+  }, [position]);
 
   const styles = {
     '--frame-size': `${step}px`,
