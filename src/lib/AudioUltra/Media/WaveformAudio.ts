@@ -1,5 +1,5 @@
 import { Events } from '../Common/Events';
-import { AudioDecoder } from './AudioDecoder';
+import { AudioDecoder, DEFAULT_FREQUENCY_HZ } from './AudioDecoder';
 
 export interface WaveformAudioOptions {
   src?: string;
@@ -45,7 +45,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   }
 
   get sampleRate() {
-    return this.decoder?.sampleRate || 44100;
+    return this.decoder?.sampleRate || DEFAULT_FREQUENCY_HZ;
   }
 
   get dataLength() {

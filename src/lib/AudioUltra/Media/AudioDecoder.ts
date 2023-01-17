@@ -7,6 +7,8 @@ import { info } from '../Common/Utils';
 
 const DURATION_CHUNK_SIZE = 60 * 30; // 30 minutes
 
+export const DEFAULT_FREQUENCY_HZ = 44100;
+
 interface AudioDecoderEvents {
   progress: (chunk: number, total: number) => void;
 }
@@ -23,7 +25,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   private _dataLength = 0;
   private _dataSize = 0;
   private _channelCount = 1;
-  private _sampleRate = 44100;
+  private _sampleRate = DEFAULT_FREQUENCY_HZ;
   private _duration = 0;
   decoderPromise: Promise<void> | undefined;
   decodingPromise: Promise<void> | undefined;
