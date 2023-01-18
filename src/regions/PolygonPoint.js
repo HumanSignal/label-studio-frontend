@@ -48,13 +48,6 @@ const PolygonPoint = types
       self.initX = self.x;
       self.initY = self.y;
 
-      if (self.parent.coordstype === 'perc') {
-        self.relativeX = self.x;
-        self.relativeY = self.y;
-      } else {
-        self.relativeX = (self.x / self.stage.stageWidth) * 100;
-        self.relativeY = (self.y / self.stage.stageHeight) * 100;
-      }
     },
 
     /**
@@ -64,21 +57,21 @@ const PolygonPoint = types
      */
 
     movePoint(offsetX, offsetY) {
-      self.initX = self.initX + offsetX;
-      self.initY = self.initY + offsetY;
-      self.x = self.x + offsetX;
-      self.y = self.y + offsetY;
+      const dx = self.stage.screenToInternalX(offsetX);
+      const dy = self.stage.screenToInternalY(offsetY);
 
-      self.relativeX = (self.x / self.stage.stageWidth) * 100;
-      self.relativeY = (self.y / self.stage.stageHeight) * 100;
+      self.initX = self.initX + dx;
+      self.initY = self.initY + dy;
+      self.x = self.x + dx;
+      self.y = self.y + dy;
     },
 
-    _movePoint(x, y) {
+    _movePoint(screenX, screenY) {
+      const x = self.stage.screenToInternalX(screenX);
+      const y = self.stage.screenToInternalY(screenY);
+
       self.initX = x;
       self.initY = y;
-
-      self.relativeX = (x / self.stage.stageWidth) * 100;
-      self.relativeY = (y / self.stage.stageHeight) * 100;
 
       self.x = x;
       self.y = y;
@@ -249,8 +242,8 @@ const PolygonPointView = observer(({ item, name }) => {
       <Circle
         key={name}
         name={name}
-        x={item.x}
-        y={item.y}
+        x={item.stage.internalToScreenX(item.x)}
+        y={item.stage.internalToScreenY(item.y)}
         radius={w}
         fill={fill}
         stroke="black"
