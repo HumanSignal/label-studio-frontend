@@ -17,6 +17,7 @@ const AuthStore = types.model({
 const TaskStore = types
   .model('Task', {
     id: types.maybeNull(types.number),
+    annotationId: types.maybeNull(types.number),
     load: types.optional(types.boolean, false),
     auth: types.maybeNull(AuthStore),
     /**

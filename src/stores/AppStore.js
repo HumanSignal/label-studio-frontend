@@ -193,9 +193,9 @@ export default types
       const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
 
       if (hasHistory) {
-        const lastTaskId = self.taskHistory[self.taskHistory.length - 1].taskId;
+        const lastTask = self.taskHistory[self.taskHistory.length - 1];
 
-        return self.task.id !== lastTaskId;
+        return self.task.id !== lastTask.taskId && self.task.annotationId !== parseInt(lastTask.annotationId);
       }
       return false;
     },
@@ -203,9 +203,9 @@ export default types
       const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
 
       if (hasHistory) {
-        const firstTaskId = self.taskHistory[0].taskId;
+        const firstTask = self.taskHistory[0];
 
-        return self.task.id !== firstTaskId;
+        return self.task.id !== firstTask.taskId && self.task.annotationId !== parseInt(firstTask.annotationId);
       }
       return false;
     },
@@ -442,6 +442,8 @@ export default types
      * @param {*[]} taskHistory
      */
     function assignTask(taskObject, taskHistory, isPrevious) {
+      const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
+
       if (taskObject && !Utils.Checkers.isString(taskObject.data)) {
         taskObject = {
           ...taskObject,
@@ -449,21 +451,18 @@ export default types
         };
       }
 
-
       self.task = Task.create(taskObject);
 
-      if (taskHistory && !isPrevious) {
-        self.taskHistory = taskHistory;
-      } else if (!self.taskHistory.some((x) => x.taskId === self.task.id)) {
+      if (!hasHistory || !self.taskHistory.some((x) => parseInt(x.taskId) === self.task.id && parseInt(x.annotationId) === self.task.annotationId)) {
         if (isPrevious) {
           self.taskHistory.unshift({
             taskId: self.task.id,
-            annotationId: null,
+            annotationId: !self.task.annotationId ? null : self.task.annotationId.toString(),
           });
         } else {
           self.taskHistory.push({
             taskId: self.task.id,
-            annotationId: null,
+            annotationId: !self.task.annotationId ? null : self.task.annotationId.toString(),
           });
         }
       }
@@ -517,12 +516,12 @@ export default types
     function submitAnnotation() {
       if (self.isSubmitting) return;
 
-      if (self.taskHistory.findIndex((x) => x.taskId === self.task.id) !== self.taskHistory.length - 1) {
-        self.taskHistory = self.taskHistory.filter(a => a.taskId !== self.task.id);
+      if (self.taskHistory.findIndex((x) => x.taskId === self.task.id && parseInt(x.annotationId) === self.task.annotationId) !== self.taskHistory.length - 1) {
+        self.taskHistory = self.taskHistory.filter(a => a.taskId !== self.task.id  && parseInt(a.annotationId) === self.task.annotationId);
 
         self.taskHistory.splice(self.taskHistory.length - 1, 0, {
           taskId: self.task.id,
-          annotationId: null,
+          annotationId: !self.task.annotationId ? null : self.task.annotationId.toString(),
         });
       }
 
@@ -723,7 +722,11 @@ export default types
     });
 
     function addAnnotationToTaskHistory(annotationId) {
-      const taskIndex = self.taskHistory.findIndex(({ taskId }) => taskId === self.task.id);
+      const taskIndex = self.taskHistory.findIndex((x) => {
+        return x.taskId === self.task.id && !x.annotationId;
+      });
+
+      console.log(taskIndex);
 
       if (taskIndex >= 0) {
         self.taskHistory[taskIndex].annotationId = annotationId;
@@ -733,7 +736,7 @@ export default types
     async function postponeTask(type) {
       const annotation = self.annotationStore.selected;
 
-      if (annotation) {
+      if (annotation && type !== 'prevTask') {
         if (!annotation.versions.draft) {
           // annotation created from prediction, so no draft was created
           annotation.versions.draft = annotation.versions.result;
@@ -747,7 +750,7 @@ export default types
 
     function nextTask() {
       if (self.canGoNextTask) {
-        const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
+        const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => parseInt(x.taskId) === self.task.id && (parseInt(x.annotationId) || null) === (self.task.annotationId || null)) + 1];
 
         getEnv(self).events.invoke('nextTask', taskId, annotationId);
       }
@@ -755,7 +758,7 @@ export default types
 
     function prevTask() {
       if (self.canGoPrevTask) {
-        const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) - 1];
+        const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => parseInt(x.taskId) === self.task.id && (parseInt(x.annotationId) || null) === (self.task.annotationId || null)) - 1];
 
         getEnv(self).events.invoke('prevTask', taskId, annotationId);
       }

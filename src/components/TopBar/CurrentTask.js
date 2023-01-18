@@ -10,7 +10,7 @@ import './CurrentTask.styl';
 
 export const CurrentTask = observer(({ store }) => {
   const currentIndex = useMemo(() => {
-    return store.taskHistory.findIndex((x) => x.taskId === store.task.id) + 1;
+    return store.taskHistory.findIndex((x) => x.taskId === store.task.id && parseInt(x.annotationId) === store.task.annotationId) + 1;
   }, [store.taskHistory]);
 
   const historyEnabled = store.hasInterface('topbar:prevnext');
