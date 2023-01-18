@@ -68,16 +68,6 @@ const Model = types
     errors: [],
   }))
   .actions(self => ({
-    fromStateJSON(obj) {
-      if (obj.value.choices) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-      }
-
-      if (obj.value.text) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-      }
-    },
-
     handlePlay() {
       self.playing = !self.playing;
     },

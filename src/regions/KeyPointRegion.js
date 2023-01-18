@@ -28,7 +28,6 @@ const Model = types
     y: types.number,
 
     width: types.number,
-    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
     negative: false,
   })
   .volatile(() => ({
@@ -56,9 +55,6 @@ const Model = types
     },
   }))
   .actions(self => ({
-    // @todo not used
-    rotate() {},
-
     setPosition(x, y) {
       self.x = self.parent.screenToInternalX(x);
       self.y = self.parent.screenToInternalY(y);

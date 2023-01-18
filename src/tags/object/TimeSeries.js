@@ -11,7 +11,6 @@ import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
 import Registry from '../../core/Registry';
 import Tree from '../../core/Tree';
 import Types from '../../core/Types';
-import { restoreNewsnapshot } from '../../core/Helpers';
 import {
   checkD3EventLoop,
   formatTrackerTime,
@@ -384,22 +383,6 @@ const Model = types
 
     throttledRangeUpdate() {
       return throttle(self.updateTR, 100);
-    },
-
-    fromStateJSON(obj, fromModel) {
-      if (obj.value.choices) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-      }
-
-      if ('timeserieslabels' in obj.value) {
-        const states = restoreNewsnapshot(fromModel);
-
-        states.fromStateJSON(obj);
-
-        self.createRegion(obj.value.start, obj.value.end, [states]);
-
-        self.updateView();
-      }
     },
 
     addRegion(start, end) {

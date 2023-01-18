@@ -40,7 +40,6 @@ const _Tool = types
         y,
         // strokeWidth is visual only, so it's in screen dimension in config
         width: self.obj.screenToInternalX(Number(c.strokewidth)),
-        coordstype: 'px',
         dynamic: self.dynamic,
         negative: self.dynamic && ev.altKey,
       });

@@ -32,8 +32,6 @@ const Model = types
 
     points: types.array(types.union(PolygonPoint, types.array(types.number)), []),
     closed: true,
-
-    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
   })
   .volatile(() => ({
     mouseOverStartPoint: false,
@@ -185,16 +183,6 @@ const Model = types
           size: self.pointSize,
           style: self.pointStyle,
           index: self.points.length,
-        });
-      },
-
-      // @todo not used
-      // only px coordtype here
-      rotate(degree = -90) {
-        self.points.forEach(point => {
-          const p = self.rotatePoint(point, degree);
-
-          point._movePoint(p.x, p.y);
         });
       },
 

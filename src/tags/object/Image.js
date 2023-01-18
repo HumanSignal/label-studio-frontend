@@ -1026,22 +1026,6 @@ const Model = types.model({
 
       self.getToolsManager().event(name, ev.evt || ev, x, y);
     },
-
-    /**
-     * Transform JSON data (annotations and predictions) to format
-     */
-    fromStateJSON(obj, fromModel) {
-      const tools = self.getToolsManager().allTools();
-
-      // when there is only the image classification and nothing else, we need to handle it here
-      if (tools.length === 0 && obj.value.choices) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-
-        return;
-      }
-
-      tools.forEach(t => t.fromStateJSON && t.fromStateJSON(obj, fromModel));
-    },
   }));
 
 const ImageModel = types.compose('ImageModel', TagAttrs, ObjectBase, AnnotationMixin, IsReadyWithDepsMixin, Model);

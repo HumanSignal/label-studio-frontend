@@ -301,53 +301,6 @@ const Result = types
       return data;
     },
 
-    toStateJSON() {
-      const parent = self.parent;
-      const buildTree = control => {
-        const tree = {
-          id: self.pid,
-          from_name: control.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: control.type,
-          parent_id: self.parentID === '' ? null : self.parentID,
-        };
-
-        if (self.normalization) tree['normalization'] = self.normalization;
-
-        return tree;
-      };
-
-      if (self.states && self.states.length) {
-        return self.states
-          .map(s => {
-            const ser = self.serialize(s, parent);
-
-            if (!ser) return null;
-
-            const tree = {
-              ...buildTree(s),
-              ...ser,
-            };
-
-            // in case of labels it's gonna be, labels: ["label1", "label2"]
-
-            return tree;
-          })
-          .filter(Boolean);
-      } else {
-        const obj = self.annotation.toNames.get(parent.name);
-        const control = obj.length ? obj[0] : obj;
-
-        const tree = {
-          ...buildTree(control),
-          ...self.serialize(control, parent),
-        };
-
-        return tree;
-      }
-    },
-
     /**
      * Remove region
      */

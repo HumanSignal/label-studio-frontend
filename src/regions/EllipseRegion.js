@@ -32,26 +32,14 @@ const Model = types
 
     x: types.number,
     y: types.number,
-
     radiusX: types.number,
     radiusY: types.number,
 
     rotation: 0,
-
-    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
   })
   .volatile(() => ({
-    relativeX: 0,
-    relativeY: 0,
-
-    relativeWidth: 0,
-    relativeHeight: 0,
-
     startX: 0,
     startY: 0,
-
-    relativeRadiusX: 0,
-    relativeRadiusY: 0,
 
     // @todo not used
     scaleX: 1,
@@ -134,13 +122,6 @@ const Model = types
       } else {
         return false;
       }
-    },
-
-    // @todo not used
-    rotate(degree) {
-      const p = self.rotatePoint(self, degree);
-
-      self.setPosition(p.x, p.y, self.radiusY, self.radiusX, self.rotation);
     },
 
     setPositionInternal(x, y, radiusX, radiusY, rotation) {

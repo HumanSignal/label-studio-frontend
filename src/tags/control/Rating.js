@@ -134,28 +134,6 @@ const Model = types
     onHotKey() {
       return self.increaseValue();
     },
-
-    toStateJSON() {
-      if (self.rating) {
-        const toname = self.toname || self.name;
-
-        return {
-          id: self.pid,
-          from_name: self.name,
-          to_name: toname,
-          type: self.type,
-          value: {
-            rating: self.rating,
-          },
-        };
-      }
-    },
-
-    fromStateJSON(obj) {
-      if (obj.id) self.pid = obj.id;
-
-      self.rating = obj.value.rating;
-    },
   }));
 
 const RatingModel = types.compose('RatingModel', ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, AnnotationMixin);

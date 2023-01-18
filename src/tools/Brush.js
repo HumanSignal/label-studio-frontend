@@ -101,22 +101,6 @@ const _Tool = types
     let brush, isFirstBrushStroke;
 
     return {
-      fromStateJSON(json, controlTag) {
-        const region = self.createFromJSON(json, controlTag);
-
-        if (json.value.points) {
-          const p = region.addPoints({ type: 'add' });
-
-          p.addPoints(json.value.points);
-        }
-
-        if (json.value.format === 'rle') {
-          region._rle = json.value.rle;
-        }
-
-        return region;
-      },
-
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
         const source = currentArea.toJSON();

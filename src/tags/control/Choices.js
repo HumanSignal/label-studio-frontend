@@ -222,42 +222,6 @@ const Model = types
         }
       }
     },
-
-    toStateJSON() {
-      const names = self.selectedValues();
-
-      if (names && names.length) {
-        const toname = self.toname || self.name;
-
-        return {
-          id: self.pid,
-          from_name: self.name,
-          to_name: toname,
-          type: self.type,
-          value: {
-            choices: names,
-          },
-        };
-      }
-    },
-
-    fromStateJSON(obj) {
-      self.unselectAll();
-
-      if (!obj.value.choices) throw new Error('No labels param');
-
-      if (obj.id) self.pid = obj.id;
-
-      self.readonly = obj.readonly;
-
-      obj.value.choices.forEach(l => {
-        const choice = self.findLabel(l);
-
-        if (!choice) throw new Error('No label ' + l);
-
-        choice.setSelected(true);
-      });
-    },
   }));
 
 const ChoicesModel = types.compose(

@@ -39,12 +39,8 @@ const Model = types
 
     rotation: 0,
     rotationAtCreation: 0,
-    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
   })
   .volatile(() => ({
-    relativeWidth: 0,
-    relativeHeight: 0,
-
     startX: 0,
     startY: 0,
 
@@ -165,15 +161,6 @@ const Model = types
       ) {
         self.height = oldHeight;
       }
-    },
-
-    // @todo not used
-    rotate(degree) {
-      const p = self.rotatePoint(self, degree);
-
-      if (degree === -90) p.y -= self.width;
-      if (degree === 90) p.x -= self.height;
-      self.setPosition(p.x, p.y, self.height, self.width, self.rotation);
     },
 
     // @todo not used
