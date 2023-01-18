@@ -10,7 +10,7 @@ exports[`Seeker should render 1`] = `
     />
     <div
       class="dm-seeker__indicator"
-      style="left: 0.09910802775024777%; width: 6.206640237859267%;"
+      style="left: 0%; width: 6.206640237859267%;"
     />
     <div
       class="dm-seeker__position"

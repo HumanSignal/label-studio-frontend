@@ -33,6 +33,7 @@ export const Frames: FC<TimelineViewProps> = ({
   const timelineStartOffset = props.leftOffset ?? 150;
 
   const scrollable = useRef<HTMLDivElement>();
+  const lastScrollPosition = useRef<number>(0);
   const [hoverEnabled, setHoverEnabled] = useState(true);
   const [hoverOffset, setHoverOffset] = useState<number | null>(null);
   const [offsetX, setOffsetX] = useState(offset);
@@ -41,6 +42,10 @@ export const Frames: FC<TimelineViewProps> = ({
   const viewWidth = useMemo(() => {
     return length * step;
   }, [length, step]);
+
+  const framesInView = useMemo(() => toSteps(roundToStep((scrollable.current?.clientWidth ?? 0) - timelineStartOffset, step), step), [
+    scrollable.current, step, timelineStartOffset,
+  ]);
 
   const handlers = useMemoizedHandlers({
     onPositionChange,
@@ -57,6 +62,7 @@ export const Frames: FC<TimelineViewProps> = ({
 
   const setScroll = useCallback(({ left, top }) => {
     setHoverOffset(null);
+
 
     if (isDefined(top) && offsetY !== top) {
       setOffsetY(top);
@@ -103,17 +109,6 @@ export const Frames: FC<TimelineViewProps> = ({
   const currentOffsetY = useMemo(() => {
     return offsetY;
   }, [offsetY]);
-
-  const firstVisibleFrame = useMemo(() => {
-    return toSteps(roundToStep(currentOffsetX, step), step);
-  }, [currentOffsetX, step]);
-
-  const framesInView = useRef(toSteps(roundToStep((scrollable.current?.clientWidth ?? 0) - timelineStartOffset, step), step));
-  const lastVisibleFrame = useMemo(() => {
-    framesInView.current = toSteps(roundToStep((scrollable.current?.clientWidth ?? 0) - timelineStartOffset, step), step);
-
-    return firstVisibleFrame + framesInView.current;
-  }, [scrollable.current, firstVisibleFrame, step, timelineStartOffset]);
 
   const handleMovement = useCallback((e) => {
     setHoverEnabled(false);
@@ -248,14 +243,13 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [offset, step]);
 
   useEffect(() => {
-    if (position > lastVisibleFrame) {
-      setScroll({ left: lastVisibleFrame * step });
-    } else if (position < firstVisibleFrame) {
-      const nextFrame = Math.max(firstVisibleFrame - framesInView.current, 1);
+    const scrollTo = roundToStep(position, framesInView);
 
-      setScroll({ left: nextFrame * step });
+    if (lastScrollPosition.current !== scrollTo) {
+      setScroll({ left: scrollTo * step });
     }
-  }, [position]);
+    lastScrollPosition.current = scrollTo;
+  }, [position, framesInView, step]);
 
   const styles = {
     '--frame-size': `${step}px`,
