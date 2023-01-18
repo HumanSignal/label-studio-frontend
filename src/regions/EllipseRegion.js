@@ -105,25 +105,6 @@ const Model = types
       self.startX = self.x;
       self.startY = self.y;
 
-      switch (self.coordstype)  {
-        case 'perc': {
-          self.relativeX = self.x;
-          self.relativeY = self.y;
-          self.relativeRadiusX = self.radiusX;
-          self.relativeRadiusY = self.radiusY;
-          self.relativeWidth = self.width;
-          self.relativeHeight = self.height;
-          break;
-        }
-        case 'px': {
-          const { stageWidth, stageHeight } = self.parent;
-
-          if (stageWidth && stageHeight) {
-            self.setPosition(self.x, self.y, self.radiusX, self.radiusY, self.rotation);
-          }
-          break;
-        }
-      }
       self.checkSizes();
       self.updateAppearenceFromState();
     },
@@ -162,6 +143,14 @@ const Model = types
       self.setPosition(p.x, p.y, self.radiusY, self.radiusX, self.rotation);
     },
 
+    setPositionInternal(x, y, radiusX, radiusY, rotation) {
+      self.x = x;
+      self.y = y;
+      self.radiusX = radiusX;
+      self.radiusY = radiusY;
+      self.rotation = (rotation + 360) % 360;
+    },
+
     /**
      * Boundg Box set position on canvas
      * @param {number} x
@@ -171,18 +160,13 @@ const Model = types
      * @param {number} rotation
      */
     setPosition(x, y, radiusX, radiusY, rotation) {
-      self.x = x;
-      self.y = y;
-      self.radiusX = radiusX;
-      self.radiusY = radiusY;
-
-      self.relativeX = (x / self.parent?.stageWidth) * 100;
-      self.relativeY = (y / self.parent?.stageHeight) * 100;
-
-      self.relativeRadiusX = (radiusX / self.parent?.stageWidth) * 100;
-      self.relativeRadiusY = (radiusY / self.parent?.stageHeight) * 100;
-
-      self.rotation = (rotation + 360) % 360;
+      self.setPositionInternal(
+        self.parent.screenToInternalX(x),
+        self.parent.screenToInternalY(y),
+        self.parent.screenToInternalX(radiusX),
+        self.parent.screenToInternalY(radiusY),
+        rotation,
+      );
     },
 
     setScale(x, y) {
@@ -194,23 +178,7 @@ const Model = types
       self.fill = color;
     },
 
-    updateImageSize(wp, hp, sw, sh) {
-      self.sw = sw;
-      self.sh = sh;
-
-      if (self.coordstype === 'px') {
-        self.x = (sw * self.relativeX) / 100;
-        self.y = (sh * self.relativeY) / 100;
-        self.radiusX = (sw * self.relativeRadiusX) / 100;
-        self.radiusY = (sh * self.relativeRadiusY) / 100;
-      } else if (self.coordstype === 'perc') {
-        self.x = (sw * self.x) / 100;
-        self.y = (sh * self.y) / 100;
-        self.radiusX = (sw * self.radiusX) / 100;
-        self.radiusY = (sh * self.radiusY) / 100;
-        self.coordstype = 'px';
-      }
-    },
+    updateImageSize() {},
 
     /**
      * @example
@@ -247,10 +215,10 @@ const Model = types
         original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: self.convertXToPerc(self.x),
-          y: self.convertYToPerc(self.y),
-          radiusX: self.convertHDimensionToPerc(self.radiusX),
-          radiusY: self.convertVDimensionToPerc(self.radiusY),
+          x: self.x,
+          y: self.y,
+          radiusX: self.radiusX,
+          radiusY: self.radiusY,
           rotation: self.rotation,
         },
       };
@@ -281,10 +249,10 @@ const HtxEllipseView = ({ item }) => {
   return (
     <Fragment>
       <Ellipse
-        x={item.x}
-        y={item.y}
-        radiusX={item.radiusX}
-        radiusY={item.radiusY}
+        x={item.parent.internalToScreenX(item.x)}
+        y={item.parent.internalToScreenY(item.y)}
+        radiusX={item.parent.internalToScreenX(item.radiusX)}
+        radiusY={item.parent.internalToScreenY(item.radiusY)}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}
