@@ -236,8 +236,7 @@ const Model = types
         self.scaleY = y;
       },
 
-      updateImageSize() {
-      },
+      updateImageSize() {},
 
       /**
        * @example

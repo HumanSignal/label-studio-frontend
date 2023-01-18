@@ -42,9 +42,6 @@ const Model = types
     coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
   })
   .volatile(() => ({
-    relativeX: 0,
-    relativeY: 0,
-
     relativeWidth: 0,
     relativeHeight: 0,
 
@@ -106,26 +103,6 @@ const Model = types
     afterCreate() {
       self.startX = self.x;
       self.startY = self.y;
-
-      // switch (self.coordstype)  {
-      //   case 'perc': {
-      //     self.relativeX = self.x;
-      //     self.relativeY = self.y;
-      //     self.relativeWidth = self.width;
-      //     self.relativeHeight = self.height;
-      //     break;
-      //   }
-      //   case 'px': {
-      //     const { stageWidth, stageHeight } = self.parent;
-
-      //     if (stageWidth && stageHeight) {
-      //       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
-      //     }
-      //     break;
-      //   }
-      // }
-      // self.checkSizes();
-      // self.updateAppearenceFromState();
     },
 
     getDistanceBetweenPoints(pointA, pointB) {
@@ -251,21 +228,7 @@ const Model = types
       self.fill = color;
     },
 
-    updateImageSize() { // wp, hp, sw, sh
-      return;
-      // if (self.coordstype === 'px') {
-      //   self.x = (sw * self.relativeX) / 100;
-      //   self.y = (sh * self.relativeY) / 100;
-      //   self.width = (sw * self.relativeWidth) / 100;
-      //   self.height = (sh * self.relativeHeight) / 100;
-      // } else if (self.coordstype === 'perc') {
-      //   self.x = (sw * self.x) / 100;
-      //   self.y = (sh * self.y) / 100;
-      //   self.width = (sw * self.width) / 100;
-      //   self.height = (sh * self.height) / 100;
-      //   self.coordstype = 'px';
-      // }
-    },
+    updateImageSize() {},
 
     /**
      * @example

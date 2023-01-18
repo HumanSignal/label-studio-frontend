@@ -21,10 +21,6 @@ const PolygonPoint = types
   })
   .volatile(() => ({
     selected: false,
-    relativeX: 0,
-    relativeY: 0,
-    initX: 0,
-    initY: 0,
   }))
   .views(self => ({
     get parent() {
@@ -42,15 +38,6 @@ const PolygonPoint = types
   }))
   .actions(self => ({
     /**
-     * Triggered after create model
-     */
-    afterCreate() {
-      self.initX = self.x;
-      self.initY = self.y;
-
-    },
-
-    /**
      * External function for Polygon Parent
      * @param {number} x
      * @param {number} y
@@ -60,21 +47,13 @@ const PolygonPoint = types
       const dx = self.stage.screenToInternalX(offsetX);
       const dy = self.stage.screenToInternalY(offsetY);
 
-      self.initX = self.initX + dx;
-      self.initY = self.initY + dy;
       self.x = self.x + dx;
       self.y = self.y + dy;
     },
 
     _movePoint(screenX, screenY) {
-      const x = self.stage.screenToInternalX(screenX);
-      const y = self.stage.screenToInternalY(screenY);
-
-      self.initX = x;
-      self.initY = y;
-
-      self.x = x;
-      self.y = y;
+      self.x = self.stage.screenToInternalX(screenX);
+      self.y = self.stage.screenToInternalY(screenY);
     },
 
     /**

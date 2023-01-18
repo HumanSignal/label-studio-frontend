@@ -32,8 +32,6 @@ const Model = types
     negative: false,
   })
   .volatile(() => ({
-    relativeX: 0,
-    relativeY: 0,
     hideable: true,
     _supportsTransform: true,
     useTransformer: false,
@@ -58,23 +56,15 @@ const Model = types
     },
   }))
   .actions(self => ({
-    afterCreate() {
-    },
-
     // @todo not used
-    rotate(degree) {
-      const p = self.rotatePoint(self, degree);
-
-      self.setPosition(p.x, p.y);
-    },
+    rotate() {},
 
     setPosition(x, y) {
       self.x = self.parent.screenToInternalX(x);
       self.y = self.parent.screenToInternalY(y);
     },
 
-    updateImageSize() {
-    },
+    updateImageSize() {},
 
     /**
      * @example
