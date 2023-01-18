@@ -21,7 +21,7 @@ import { observer } from 'mobx-react';
 import { createDragBoundFunc } from '../utils/image';
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
 import { FF_DEV_2432, isFF } from '../utils/feature-flags';
-import { fixMobxObserve } from '../tags/object/TimeSeries/helpers';
+import { fixMobxObserve } from '../utils/utilities';
 
 const Model = types
   .model({

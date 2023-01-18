@@ -7,26 +7,26 @@ import { Spin } from 'antd';
 
 import ObjectBase from './Base';
 import ObjectTag from '../../components/Tags/Object';
+import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
 import Registry from '../../core/Registry';
 import Tree from '../../core/Tree';
 import Types from '../../core/Types';
 import { restoreNewsnapshot } from '../../core/Helpers';
 import {
   checkD3EventLoop,
-  fixMobxObserve,
   formatTrackerTime,
   getOptimalWidth,
   getRegionColor,
   idFromValue,
   sparseValues
 } from './TimeSeries/helpers';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import PersistentStateMixin from '../../mixins/PersistentState';
 import { parseCSV, tryToParseJSON } from '../../utils/data';
 import messages from '../../utils/messages';
-import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
-import PersistentStateMixin from '../../mixins/PersistentState';
+import { fixMobxObserve } from '../../utils/utilities';
 
 import './TimeSeries/Channel';
-import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 
 /**
  * The `TimeSeries` tag can be used to label time series data. Read more about Time Series Labeling on [the time series template page](../templates/time_series.html).
