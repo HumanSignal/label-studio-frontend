@@ -54,19 +54,21 @@ export class MediaLoader extends Destructable {
     this.decoderPromise = undefined;
   }
 
-  async decodeAudioData(arrayBuffer: ArrayBuffer) {
+  async decodeAudioData() {
     if (!this.audio || this.isDestroyed) return null;
 
-    return await this.audio.decodeAudioData(arrayBuffer, {
+    return await this.audio.decodeAudioData({
       multiChannel: this.wf.params.splitChannels,
     });
   }
 
   async load(options: WaveformAudioOptions): Promise<WaveformAudio| null> {
     if (this.isDestroyed || this.loaded) {
-      return Promise.resolve(null);
+      return null;
     }
 
+    // Create this as soon as possible so that we can
+    // update the loading progress from the waveform
     this.decoderPromise = new Promise((resolve) => {
       this.decoderResolve = resolve;
     });
@@ -76,43 +78,38 @@ export class MediaLoader extends Destructable {
       src: this.options.src,
     });
 
+    // If this failed to allocate an audio decoder, we can't continue
     if (!this.audio) {
-      return Promise.resolve(null);
+      throw new Error('MediaLoader: Failed to allocate audio decoder');
     }
 
+    // If there is an existing decoder promise,
+    // wait for it to resolve and use the existing
+    // audio decoder information
     if (await this.audio.sourceDecoded()) {
       this.duration = this.audio.duration;
       this.decoderResolve?.();
       return this.audio;
     }
 
+    // Get the audio data from the url src
     const req = await this.performRequest(this.options.src);
 
     if (req) {
       try {
-        if (!this.audio) {
-          return Promise.resolve(null);
-        }
+        await this.audio.initDecoder(req);
 
-        const decodingPromise = this.decodeAudioData(req);
+        // Get the duration from the audio file as soon as it is ready
+        this.decoderResolve?.();
 
         if (this.audio) {
-          const decoderPromise = this.audio.decoderPromise || Promise.resolve();
-
-          await decoderPromise.then(() => {
-            if (this.decoderResolve && this.audio) {
-              this.duration = this.audio.duration;
-              this.decoderResolve();
-            }
-          });
+          this.duration = this.audio.duration;
         }
+        // Proceed with the rest of the decoding
+        await this.decodeAudioData();
 
-        return decodingPromise.then(() => {
-          return this.audio ?? null;
-        });
+        return this.audio ?? null;
       } catch (err) {
-      // TODO: Handle properly (exiquio)
-      // NOTE: error is being received
         console.error('An audio decoding error occurred', err);
       }
     }

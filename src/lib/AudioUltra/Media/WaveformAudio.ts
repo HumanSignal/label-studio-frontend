@@ -143,14 +143,20 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     return this.decoder.sourceDecoded;
   }
 
-  async decodeAudioData(arraybuffer: ArrayBuffer, options?: {multiChannel?: boolean}) {
+  async initDecoder(arraybuffer?: ArrayBuffer) {
     if (!this.decoder) return;
 
-    const decoded = this.decoder.decode(arraybuffer, options);
+    if (!this.decoderPromise && arraybuffer) {
+      this.decoderPromise = this.decoder.init(arraybuffer);
+    }
 
-    this.decoderPromise = (this.decoder.decoderPromise || Promise.resolve());
+    return this.decoderPromise;
+  }
 
-    return decoded;
+  async decodeAudioData(options?: {multiChannel?: boolean}) {
+    if (!this.decoder) return;
+
+    return this.decoder.decode(options);
   }
 
   private createMediaElement() {

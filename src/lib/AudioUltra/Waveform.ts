@@ -238,6 +238,7 @@ export class Waveform extends Events<WaveformEventTypes> {
       rate: this.params.rate ?? 1,
     });
 
+    // Draw the timeline as soon as possible
     if (this.media.decoderPromise) {
       await this.media.decoderPromise;
 
@@ -245,10 +246,12 @@ export class Waveform extends Events<WaveformEventTypes> {
       this.visualizer.draw(true);
     }
 
+    // Wait for the file to be decoded
     const audio = await loader;
 
     if (this.isDestroyed) return;
 
+    // Initialize the visualizer and player
     if (audio) {
       this.player.init(audio);
       this.visualizer.init(audio);
