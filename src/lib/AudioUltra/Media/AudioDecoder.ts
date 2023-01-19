@@ -3,7 +3,7 @@ import { AudioDecoderWorker, getAudioDecoderWorker } from 'audio-file-decoder';
 // @ts-ignore
 import DecodeAudioWasm from 'audio-file-decoder/decode-audio.wasm';
 import { Events } from '../Common/Events';
-import { info } from '../Common/Utils';
+import { clamp, info } from '../Common/Utils';
 
 const DURATION_CHUNK_SIZE = 60 * 30; // 30 minutes
 
@@ -235,7 +235,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
       yield new Promise(resolve => {
         if (!this.worker || this.sourceDecodeCancelled) return resolve(null);
 
-        const nextChunkDuration = Math.min(DURATION_CHUNK_SIZE, Math.max(0, totalDuration - durationOffset));
+        const nextChunkDuration = clamp(totalDuration - durationOffset, 0, DURATION_CHUNK_SIZE);
         const currentOffset = durationOffset;
 
         durationOffset += nextChunkDuration;

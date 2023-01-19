@@ -99,12 +99,17 @@ export class MediaLoader extends Destructable {
       try {
         await this.audio.initDecoder(req);
 
-        // Get the duration from the audio file as soon as it is ready
+        // Notify the waveform that the audio decoder is ready
         this.decoderResolve?.();
 
-        if (this.audio) {
-          this.duration = this.audio.duration;
-        }
+        // The audio instance could be removed if it was destroyed
+        // while the decoder was being initialized.
+        // If this is the case, we can't continue
+        if (!this.audio) return null;
+
+        // Get the duration from the audio file as soon as it is ready
+        this.duration = this.audio.duration;
+
         // Proceed with the rest of the decoding
         await this.decodeAudioData();
 
