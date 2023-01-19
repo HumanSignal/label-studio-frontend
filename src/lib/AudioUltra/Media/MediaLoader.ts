@@ -115,8 +115,8 @@ export class MediaLoader extends Destructable {
 
         return this.audio ?? null;
       } catch (err) {
-        console.error('An audio decoding error occurred', err);
         this.wf.setError('An error occurred while decoding the audio file. Please select another file or try again.');
+        console.error('An audio decoding error occurred', err);
       }
     }
 

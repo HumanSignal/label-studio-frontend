@@ -232,7 +232,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     let durationOffset = 0;
 
     while (true) {
-      yield new Promise(resolve => {
+      yield new Promise((resolve, reject) => {
         if (!this.worker || this.sourceDecodeCancelled) return resolve(null);
 
         const nextChunkDuration = clamp(totalDuration - durationOffset, 0, DURATION_CHUNK_SIZE);
@@ -245,7 +245,8 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
             multiChannel: options?.multiChannel ?? false,
             ...options,
           })
-          .then(resolve);
+          .then(resolve)
+          .catch(reject);
       });
     }
   }

@@ -54,6 +54,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private zoom = 1;
   private scrollLeft = 0;
   private drawing = false;
+  private renderId = 0;
   private amp = 1;
   private seekLocked = false;
   private wf: Waveform;
@@ -70,6 +71,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private waveColor = rgba('#000');
   private waveHeight = 100;
   private lastRenderedZoom = 0;
+  private lastRenderedWidth = 0;
   private lastRenderedAmp = 0;
   private lastRenderedScrollLeftPx= 0;
   private _container!: HTMLElement;
@@ -207,7 +209,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.drawing = true;
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if (!dry) {
         this.drawMiddleLine();
 
@@ -216,7 +218,7 @@ export class Visualizer extends Events<VisualizerEvents> {
         }
 
         // Render all available channels
-        this.renderAvailableChannels();
+        await this.renderAvailableChannels();
       }
 
       this.renderCursor();
@@ -284,17 +286,20 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.playhead.updatePositionFromTime(time);
   }
 
-  private renderAvailableChannels() {
+  private async renderAvailableChannels() {
     if (!this.audio) return;
 
     const layer = this.getLayer('waveform');
 
     if (!layer || !layer.isVisible) return;
 
-    this.renderWave(0, layer);
+    this.renderId = performance.now();
+
+    return this.renderWave(0, layer);
   }
 
-  private renderWave(channelNumber: number, layer: Layer) {
+  private renderWave(channelNumber: number, layer: Layer): Promise<boolean> {
+    const renderId = this.renderId;
     const fullHeight = this.height;
     const waveHeight = fullHeight - this.reservedSpace;
     const height = waveHeight / (this.splitChannels ? this.audio?.channelCount ?? 1 : 1);
@@ -309,56 +314,90 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     let x = 0;
 
-    if (this.isDestroyed || !this.audio) return;
+    return new Promise(resolve => {
+      if (this.isDestroyed || !this.audio) return resolve(false);
 
-    const renderableData = iEnd - iStart;
+      const renderableData = iEnd - iStart;
 
-    if (zoom !== this.lastRenderedZoom || amp !== this.lastRenderedAmp || renderableData < CACHE_RENDER_THRESHOLD) {
-      layer.clear();
-      this.renderSlice(layer, height, iStart, iEnd, channelNumber, x);
-      this.lastRenderedZoom = zoom;
-      this.lastRenderedAmp = amp;
-      this.lastRenderedScrollLeftPx = scrollLeftPx;
-    } else {
-      let deltaX = this.lastRenderedScrollLeftPx - scrollLeftPx;
+      if (this.width !== this.lastRenderedWidth || zoom !== this.lastRenderedZoom || amp !== this.lastRenderedAmp || renderableData < CACHE_RENDER_THRESHOLD) {
+        layer.clear();
+        const renderIterator = this.renderSlice(layer, height, iStart, iEnd, channelNumber, x);
 
-      if (deltaX < 1 && deltaX > -1) return;
+        // Render iterator, allowing it to be cancelled if a new render is requested
+        const render = () => {
+          if (this.renderId !== renderId) return resolve(false);
 
-      deltaX = Math.round(deltaX);
-      const diff = deltaX * this.samplesPerPx;
+          const next = renderIterator.next();
 
-      this.lastRenderedScrollLeftPx = scrollLeftPx;
+          if (!next.done) {
+            requestAnimationFrame(render);
+          } else {
+            this.lastRenderedWidth = this.width;
+            this.lastRenderedZoom = zoom;
+            this.lastRenderedAmp = amp;
+            this.lastRenderedScrollLeftPx = scrollLeftPx;
+            resolve(true);
+          }
+        };
 
-      // Move the canvas to the left by deltaX
-      layer.shift(deltaX, 0);
-
-      let sStart = iStart;
-      let sEnd = iEnd;
-
-      // Waveform visually moving to the right
-      if (deltaX > 0) {
-        // Draw the new data on the left
-        sEnd = iStart + diff;
-        x = 0;
-
-      // Waveform visually moving to the left
+        render();
       } else {
+        let deltaX = this.lastRenderedScrollLeftPx - scrollLeftPx;
+
+        if (deltaX < 1 && deltaX > -1) return resolve(false);
+
+        deltaX = Math.round(deltaX);
+        const diff = deltaX * this.samplesPerPx;
+
+        this.lastRenderedScrollLeftPx = scrollLeftPx;
+
+        // Move the canvas to the left by deltaX
+        layer.shift(deltaX, 0);
+
+        let sStart = iStart;
+        let sEnd = iEnd;
+
+        // Waveform visually moving to the right
+        if (deltaX > 0) {
+        // Draw the new data on the left
+          sEnd = iStart + diff;
+          x = 0;
+
+          // Waveform visually moving to the left
+        } else {
         // Draw the new data on the right
-        sStart = iEnd + diff;
-        x = clamp(this.width + deltaX - BUFFER_SAMPLES, 0, this.width);
+          sStart = iEnd + diff;
+          x = clamp(this.width + deltaX - BUFFER_SAMPLES, 0, this.width);
+        }
+
+        sEnd = clamp(sEnd + (this.samplesPerPx * BUFFER_SAMPLES), 0, dataLength);
+
+        const renderIterator = this.renderSlice(layer, height, sStart, sEnd, channelNumber, x);
+
+        // Render iterator, allowing it to be cancelled if a new render is requested
+        const render = () => {
+          if (this.renderId !== renderId) return resolve(false);
+
+          const next = renderIterator.next();
+
+          if (!next.done) {
+            requestAnimationFrame(render);
+          } else {
+            resolve(true);
+          }
+        };
+
+        render();
       }
-
-      sEnd = clamp(sEnd + (this.samplesPerPx * BUFFER_SAMPLES), 0, dataLength);
-
-      this.renderSlice(layer, height, sStart, sEnd, channelNumber, x);
-    }
+    });
   }
 
-  private renderSlice(layer: Layer, height: number, iStart: number, iEnd: number, channelNumber: number, x = 0) {
+  private *renderSlice(layer: Layer, height: number, iStart: number, iEnd: number, channelNumber: number, x = 0): Generator<any, void, any> {
     const bufferChunks = this.audio?.chunks;
 
     if (!bufferChunks) return;
 
+    const bufferChunkSize = bufferChunks.length;
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
     const zero = this.height * (this.splitChannels ? channelNumber : 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
@@ -376,7 +415,11 @@ export class Visualizer extends Events<VisualizerEvents> {
     layer.moveTo(x, y);
 
     // Find all chunks in buffer chunks that are between iStart and iEnd
-    bufferChunks.forEach((slice) => {
+
+    const now = performance.now();
+
+    for (let i = 0; i < bufferChunkSize; i++) { 
+      const slice = bufferChunks[i];
       const sliceLength = slice.length;
 
       const chunkStart = Math.floor(clamp(iStart - total, 0, sliceLength));
@@ -394,6 +437,10 @@ export class Visualizer extends Events<VisualizerEvents> {
           const index = l - i;
           const chunk = chunks.slice(index, index + this.samplesPerPx);
 
+          if (now - performance.now() > 10) {
+            yield;
+          }
+
           if (x >= 0 && chunk.length > 0) {
             this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
           }
@@ -404,7 +451,7 @@ export class Visualizer extends Events<VisualizerEvents> {
       } catch {
         // Ignore any out of bounds errors if they occur
       }
-    });
+    }
     layer.stroke();
     layer.restore();
   }
@@ -800,13 +847,15 @@ export class Visualizer extends Events<VisualizerEvents> {
   };
 
   private handleResize = () => {
-    if (!this.wf.loaded) return;
+    if (!this.wf.duration) return;
+
     requestAnimationFrame(() => {
       const newWidth = this.wrapper.clientWidth;
       const newHeight = this.height;
 
       this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
       this.getSamplesPerPx();
+      this.wf.renderTimeline();
       this.draw(false, this.zoom === 1);
     });
   };

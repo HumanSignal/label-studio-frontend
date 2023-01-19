@@ -101,6 +101,13 @@ export class Loader extends HTMLElement {
     `;
   }
 
+  get error() {
+    return this._error;
+  }
+
+  set error(value: string) {
+    this._error = value;
+  }
 
   get loaded() {
     return this._loaded;

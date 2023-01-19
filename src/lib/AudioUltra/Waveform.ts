@@ -223,9 +223,13 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.loadingState();
   }
 
+  renderTimeline() {
+    this.timeline.render();
+  }
+
   loadingState() {
     this.visualizer.setLoading(true);
-    this.timeline.render();
+    this.renderTimeline();
     this.visualizer.draw(true);
   }
 
@@ -242,7 +246,7 @@ export class Waveform extends Events<WaveformEventTypes> {
     if (this.media.decoderPromise) {
       await this.media.decoderPromise;
 
-      this.timeline.render();
+      this.renderTimeline();
       this.visualizer.draw(true);
     }
 
