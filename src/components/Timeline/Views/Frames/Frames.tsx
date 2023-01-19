@@ -61,8 +61,9 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [step]);
 
   const setScroll = useCallback(({ left, top }) => {
-    setHoverOffset(null);
+    if (!length) return;
 
+    setHoverOffset(null);
 
     if (isDefined(top) && offsetY !== top) {
       setOffsetY(top);
@@ -75,7 +76,7 @@ export const Frames: FC<TimelineViewProps> = ({
 
       onScroll?.(clamp(frame + 1, 1, length));
     }
-  }, [offsetX, offsetY, step]);
+  }, [offsetX, offsetY, step, length]);
 
   const setIndicatorOffset = useCallback((value) => {
     const frame = toSteps(roundToStep(value, step), step);
