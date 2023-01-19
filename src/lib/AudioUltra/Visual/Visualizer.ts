@@ -152,6 +152,13 @@ export class Visualizer extends Events<VisualizerEvents> {
     }
   }
 
+  setError(error: string) {
+    if (this._loader) {
+      (this._loader as any).error = error;
+      (this._loader as any).update();
+    }
+  }
+
   setZoom(value: number) {
     this.zoom = clamp(value, 1, this.maxZoom);
     if (this.zoomToCursor) {

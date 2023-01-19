@@ -2,6 +2,7 @@ export class Loader extends HTMLElement {
   _loaded: number;
   _total: number;
   _initializing = false;
+  _error = '';
 
   constructor() {
     super();
@@ -77,6 +78,9 @@ export class Loader extends HTMLElement {
           font-weight: 500;
           margin: 0;
         }
+        .error {
+          color: var(--ls-loader-error-color, rgba(207, 19, 34, 1));
+        }
         @keyframes shimmer {
           50% {
             opacity: 0.5;
@@ -136,6 +140,14 @@ export class Loader extends HTMLElement {
     const total = this.total;
 
     requestAnimationFrame(() => {
+      // If an error occurred, show the error message and hide the progress bar
+      if (this._error) {
+        if (!text.classList.contains('error')) {
+          text.classList.add('error');
+        }
+        text.innerText = this._error;
+        return;
+      }
       // Update the progress bar for decoding of chunks
       if (this._initializing) {
         loadedText.innerText = `${this.loaded}`;

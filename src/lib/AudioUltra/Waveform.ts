@@ -330,6 +330,10 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.visualizer.setDecodingProgress(chunk, total);
   }
 
+  setError(error: string) {
+    this.visualizer.setError(error);
+  }
+
   /**
    * Stop playback
    */
