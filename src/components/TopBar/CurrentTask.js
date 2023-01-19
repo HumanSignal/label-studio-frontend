@@ -2,7 +2,7 @@ import { observer } from 'mobx-react';
 import { useMemo } from 'react';
 import { Button } from '../../common/Button/Button';
 import { Block, Elem } from '../../utils/bem';
-import { FF_DEV_3034, isFF } from '../../utils/feature-flags';
+import { FF_DEV_3034, FF_DEV_4174, isFF } from '../../utils/feature-flags';
 import { guidGenerator } from '../../utils/unique';
 import { isDefined } from '../../utils/utilities';
 import './CurrentTask.styl';
@@ -20,7 +20,9 @@ export const CurrentTask = observer(({ store }) => {
     && !isDefined(store.annotationStore.selected.pk)
     && !store.canGoNextTask
     && !store.hasInterface('review')
+    && (isFF(FF_DEV_4174) && store.commentStore.comments.length >= 1)
     && store.hasInterface('postpone');
+
 
   return (
     <Elem name="section">
