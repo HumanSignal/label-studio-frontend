@@ -131,6 +131,16 @@
         --button-color rgba(0,0,0,.02)
         background-color rgba(0,0,0,.05)
 
+    &_active
+      background none
+      border-radius 4px
+      border 1px solid #dfdfde
+      box-shadow none
+      outline none
+
+      &:focus
+        box-shadow none
+
   &_look_destructive:disabled,
   &_look_destructive&_waiting
     --button-color rgba(#fff, 0.5)
