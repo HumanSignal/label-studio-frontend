@@ -442,6 +442,22 @@ const clearModalIfPresent = () => {
   }
 };
 
+/**
+ *
+ * @param {object} bbox
+ * @param {number} bbox.x
+ * @param {number} bbox.y
+ * @param {number} bbox.width
+ * @param {number} bbox.height
+ * @returns {{x: number, y: number}}
+ */
+const centerOfBbox = (bbox) => {
+  return {
+    x: bbox.x + bbox.width / 2,
+    y: bbox.y + bbox.height / 2,
+  };
+};
+
 const getCanvasSize = () => {
   const stage = window.Konva.stages[0];
 
@@ -668,6 +684,7 @@ module.exports = {
   switchRegionTreeView,
   hasSelectedRegion,
   clearModalIfPresent,
+  centerOfBbox,
 
   serialize,
   selectText,
