@@ -26,6 +26,12 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   private decodingResolve?: () => void;
   decodingPromise: Promise<void> | undefined;
 
+  /**
+   * Timeout for removal of the decoder from the cache.
+   * Any subsequent requests for the same source will renew the decoder and cancel the removal.
+   */
+  removalId: any = null;
+
   constructor(private src: string) {
     super();
   }
@@ -69,38 +75,39 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
    * This will stop the generator and dispose the worker.
    */
   cancel() {
+    if (!this.cancelled) {
+      info('decode:cancelled', this.src);
+    }
     this.cancelled = true;
     this.decodeId = 0;
-    console.log('decode:cancelled', this.src);
+
     this.disposeWorker();
   }
 
   /**
-   * Renew the decoder instance to allow reuse of the same decoder if destroyed.
+   * Renew the decoder instance to allow reuse of the same decoder with any resultant encoding data.
    */
   renew() {
     this.cancelled = false;
   }
 
+  /**
+   * Since this is a singleton, we don't want to destroy the instance but clear all active
+   * subscriptions and cancel any pending decoding work
+   */
   destroy() {
-    // Since this is a singleton, we don't want to destroy the instance but clear all active
-    // subscriptions and cancel any pending decoding work
     super.removeAllListeners();
     this.cancel();
   }
 
+  /**
+   * Resolve and remove the shared decoding promise.
+   */
   cleanupResolvers() {
     this.decodingResolve?.();
     this.decodingResolve = undefined;
-  }
-
-  /**
-   * Cleanup the decoder cache if it is no longer in use.
-   */
-  cleanupCache() {
-    delete this.chunks;
-    this.cleanupResolvers();
-    AudioDecoder.cache.delete(this.src);
+    this.decodingPromise = undefined;
+    info('decode:cleanup', this.src);
   }
 
   /**
@@ -126,10 +133,18 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
    */
   async decode(options?: { multiChannel?: boolean }): Promise<void> {
     // If the worker has cached data we can skip the decode step
-    if (this.sourceDecoded) return Promise.resolve();
-    if (this.sourceDecodeCancelled) throw new Error('AudioDecoder: Worker decode cancelled and contains no data, did you call decoder.renew()?');
+    if (this.sourceDecoded) {
+      info('decode:cached', this.src);
+      return;
+    }
+    if (this.sourceDecodeCancelled) {
+      throw new Error('AudioDecoder: Worker decode cancelled and contains no data, did you call decoder.renew()?');
+    }
     // The decoding process is already in progress, so wait for it to finish
-    if (this.decodingPromise) return this.decodingPromise;
+    if (this.decodingPromise) {
+      info('decode:inprogress', this.src);
+      return this.decodingPromise;
+    }
     if (!this.worker) throw new Error('AudioDecoder: Worker not initialized, did you call decoder.init()?');
 
     info('decode:start', this.src);
@@ -186,8 +201,6 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
       this.chunks = chunks;
 
       info('decode:complete', this.src);
-
-      this.decodingResolve?.();
     } finally {
       this.disposeWorker();
     }
@@ -202,6 +215,8 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
       this.worker = undefined;
       info('decode:worker:disposed', this.src);
     }
+
+    this.cleanupResolvers();
   }
 
   /**

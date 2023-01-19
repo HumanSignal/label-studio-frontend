@@ -1,5 +1,6 @@
 import { Events } from '../Common/Events';
 import { AudioDecoder, DEFAULT_FREQUENCY_HZ } from './AudioDecoder';
+import { audioDecoderPool } from './AudioDecoderPool';
 
 export interface WaveformAudioOptions {
   src?: string;
@@ -194,7 +195,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private createAudioDecoder() {
     if (!this.src || this.decoder) return;
 
-    this.decoder = new AudioDecoder(this.src);
+    this.decoder = audioDecoderPool.getDecoder(this.src);
 
     this.decoder.on('progress', (chunk, total) => {
       this.invoke('decodingProgress', [chunk, total]);
