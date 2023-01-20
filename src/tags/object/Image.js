@@ -874,9 +874,11 @@ const Model = types.model({
 
         self._recalculateImageParams();
         if (isFF(FF_DEV_2394)) {
+          const zoomChangeRatio = self.stageZoom / prevStageZoom;
+
           self.setZoomPosition(
-            self.zoomingPositionX / prevStageZoom * self.stageZoom + (self.canvasSize.width / 2 - prevWidth / 2 / prevStageZoom * self.stageZoom ),
-            self.zoomingPositionY / prevStageZoom * self.stageZoom + (self.canvasSize.height / 2 - prevHeight / 2 / prevStageZoom * self.stageZoom),
+            self.zoomingPositionX * zoomChangeRatio + (self.canvasSize.width / 2 - prevWidth / 2 * zoomChangeRatio ),
+            self.zoomingPositionY * zoomChangeRatio + (self.canvasSize.height / 2 - prevHeight / 2 * zoomChangeRatio),
           );
         }
       }
