@@ -1,5 +1,4 @@
 /* global inject, locate */
-
 const { centerOfBbox } = require('../tests/helpers');
 const { I } = inject();
 
