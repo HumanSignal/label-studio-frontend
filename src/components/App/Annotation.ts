@@ -1,6 +1,6 @@
-import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
 import { FC } from 'react';
 import { useSDK } from 'src/App';
+import { AnnotationAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
 
 type AnnotationProps = {
   annotationAtom?: AnnotationAtom,

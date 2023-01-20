@@ -1,5 +1,5 @@
-import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
-import { Regions } from '@atoms/Models/RegionsAtom/Types';
+import { Results } from '@atoms/Models/ResultAtom/Types';
+import { Annotation } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
 // import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
 import { Atom } from 'jotai';
 import { FC } from 'react';
@@ -13,13 +13,13 @@ import { RegionItem } from './RegionItem';
 const DetailsPanelComponent: FC<PanelProps> = (props) => {
   return (
     <PanelBase {...props} name="details" title="Details">
-      <Content selection={props.selection} currentEntity={props.currentEntity} />
+      <Content selection={props.selection} currentEntity={props.annotationAtom} />
     </PanelBase>
   );
 };
 
 type ContentProps = {
-  selection: Regions['selection'],
+  selection: Results['selection'],
   currentEntity: Atom<Annotation>,
 }
 
@@ -93,7 +93,7 @@ const GeneralPanel: FC<any> = ({ currentEntity: _ }) => {
 
 GeneralPanel.displayName = 'GeneralPanel';
 
-const RegionsPanel: FC<{regions:  any}> = ({
+const RegionsPanel: FC<{regions: any}> = ({
   regions,
 }) => {
   return (

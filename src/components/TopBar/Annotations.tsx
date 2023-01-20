@@ -1,9 +1,9 @@
-import { useAnnotaionsList } from '@atoms/Models/AnnotationsAtom/Hooks/useAnnotationsList';
-import { Annotation, AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
-import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
 import { Atom, useAtomValue } from 'jotai';
 import { FC, MouseEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSDK } from 'src/App';
+import { useAnnotaionsList } from 'src/Engine/Atoms/Models/AnnotationsAtom/Hooks/useAnnotationsList';
+import { Annotation, AnnotationAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
+import { useInterfaces } from 'src/Engine/Atoms/Models/RootAtom/Hooks';
 import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from '../../assets/icons';
 import { Space } from '../../common/Space/Space';
 import { TimeAgo } from '../../common/TimeAgo/TimeAgo';

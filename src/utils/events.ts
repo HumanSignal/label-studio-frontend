@@ -1,7 +1,6 @@
 type Callback = (...args: any[]) => any
 
-export class EventInvoker {
-
+export class Events {
   events = new Map<string, Set<Callback>>();
 
   on(eventName: string, callback: Callback) {
@@ -48,6 +47,11 @@ export class EventInvoker {
 
   hasEvent(eventName: string) {
     return this.getEventMap(eventName).size > 0;
+  }
+
+  clear() {
+    this.events.forEach(eventMap => eventMap.clear());
+    this.events.clear();
   }
 
   private getEventMap(eventName: string) {

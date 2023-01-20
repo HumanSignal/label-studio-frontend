@@ -7,11 +7,12 @@ import { toCamelCase } from 'strman';
 import legacyEvents from './core/External';
 import { Hotkey } from './core/Hotkey';
 import defaultOptions from './defaultOptions';
-import { EventInvoker } from './utils/events';
+import { Events } from './utils/events';
 import { isDefined } from './utils/utilities';
 // import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
-import { Store } from '@atoms/Store';
+import { Store } from 'src/Engine/Atoms/Store';
 import { App } from './App';
+import { CommunicationBus } from './core/CommunicationBus/CommunicationBus';
 import { InternalSDK } from './core/SDK/Internal/Internal.sdk';
 import { LSOptions } from './Types/LabelStudio/LabelStudio';
 
@@ -26,13 +27,21 @@ export class LabelStudio {
 
   static instances = new Set<LabelStudio>();
 
+  static get onlyInstance() {
+    return Array.from(this.instances)[0];
+  }
+
+  static getInstance(root: HTMLElement | string) {
+    return Array.from(this.instances).find(inst => inst.root === root);
+  }
+
   static destroyAll() {
     this.instances.forEach(inst => inst.destroy?.());
     this.instances.clear();
   }
 
   private root: HTMLElement | string;
-  private events: EventInvoker;
+  private events: Events;
   private options: LSOptions;
   private [INTERNAL_SDK]!: InternalSDK;
 
@@ -53,7 +62,7 @@ export class LabelStudio {
     }
 
     this.root = root;
-    this.events = new EventInvoker();
+    this.events = new Events();
     this.options = options ?? {};
     this.destroy = (() => { /* noop */ });
 
@@ -67,7 +76,7 @@ export class LabelStudio {
     this.events.on(eventName, callback);
   }
 
-  off(eventName: string, callback: () => void){
+  off(eventName: string, callback: () => void) {
     if (isDefined(callback)) {
       this.events.off(eventName, callback);
     } else {
@@ -79,11 +88,13 @@ export class LabelStudio {
     const { getRoot, params } = await configureStore(this.options);
     const rootElement = getRoot(this.root) as unknown as HTMLElement;
     const appRoot = createRoot(rootElement);
+    const CB = new CommunicationBus();
 
     const store = new Store();
     const internalSDK = new InternalSDK({
       store,
       events: this.events,
+      communicationBus: CB,
     });
 
     const hydrateStore = () => {
@@ -126,7 +137,6 @@ export class LabelStudio {
       }
     });
   }
-
 
   get internalSDK() {
     return this[INTERNAL_SDK];

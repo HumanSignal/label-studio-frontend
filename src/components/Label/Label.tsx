@@ -15,7 +15,7 @@ export type LabelProps = {
   margins?: boolean,
   onClick: (ev: MouseEvent) => void,
   children: React.ReactNode,
-  hotkey: string,
+  hotkey?: string | false,
 }
 
 export const Label = forwardRef<unknown, LabelProps>(({

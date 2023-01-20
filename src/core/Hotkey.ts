@@ -73,7 +73,9 @@ export const Hotkey = (
       return _hotkeys_map;
     },
     get descriptions() {
-      const descriptions = Object.keys(this.keys).reduce<[string, string][]>((res, key) => {
+      const descriptions = Object
+        .keys(this.keys)
+        .reduce<[string, string][]>((res, key) => {
         if (_hotkeys_desc[key]) res.push([key, _hotkeys_desc[key]]);
 
         return res;

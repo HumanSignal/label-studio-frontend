@@ -1,10 +1,12 @@
-import { Store } from '@atoms/Store';
 import { atom, useSetAtom } from 'jotai';
 import { useMemo } from 'react';
+import { Store } from 'src/Engine/Atoms/Store';
 
 // Use a write only atom to init the store instance
 const storeAtom = atom(null, (get, set, storeInstance: Store) => {
-  storeInstance.init(get, set);
+  const constructor = storeInstance.constructor as typeof Store;
+
+  constructor.init(get, set);
 });
 
 // Can use this to setup an outside store instance (could be globally referenced or not)

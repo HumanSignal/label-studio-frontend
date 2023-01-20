@@ -1,4 +1,6 @@
-import { Region, Regions } from '@atoms/Models/RegionsAtom/Types';
+import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
+import { useRegionsTree } from '@atoms/Models/ResultAtom/Hooks/useRegionsTree';
+import { Result, Results } from '@atoms/Models/ResultAtom/Types';
 import chroma from 'chroma-js';
 import { Atom } from 'jotai';
 import Tree, { TreeProps } from 'rc-tree';
@@ -13,7 +15,6 @@ import { PER_REGION_MODES } from '../../../mixins/PerRegionModes';
 import { Block, CN, cn, Elem } from '../../../utils/bem';
 import { FF_DEV_2755, isFF } from '../../../utils/feature-flags';
 import { flatten, isDefined, isMacOS } from '../../../utils/utilities';
-import { NodeIcon } from '../../Node/Node';
 import './TreeView.styl';
 
 const { localStorage } = window;
@@ -30,44 +31,46 @@ const OutlinerContext = createContext<OutlinerContextProps>({
 type DragOptions = TreeProps<any>['onDrop'];
 
 interface OutlinerTreeProps {
-  regions: Atom<Region>[];
-  group: Regions['group'];
+  regions: Atom<Result>[];
+  group: Results['group'];
   selectedKeys: string[];
+  annotationAtom: AnnotationAtom;
 }
 
 export const OutlinerTree: FC<OutlinerTreeProps> = ({
   regions,
   group,
   selectedKeys,
+  annotationAtom,
 }) => {
   const rootClass = cn('tree');
   const [hovered, setHovered] = useState<string | null>(null);
   const onHover = (hovered: boolean, id: string) => setHovered(hovered ? id : null);
 
   const eventHandlers = useEventHandlers({ regions, onHover });
-  const regionsTree = useDataTree({ regions, hovered, rootClass, selectedKeys });
+  const regionsTree = useDataTree({ annotationAtom, hovered, rootClass, selectedKeys });
 
-  if( isFF(FF_DEV_2755) ) {
-    const [collapsedPos, setCollapsedPos] = useState( localStorage.getItem( localStoreName )?.split?.(',')?.filter( pos => !!pos ) ?? [] );
+  if (isFF(FF_DEV_2755)) {
+    const [collapsedPos, setCollapsedPos] = useState(localStorage.getItem(localStoreName)?.split?.(',')?.filter(pos => !!pos) ?? []);
 
-    const updateLocalStorage = ( collapsedPos: Array<string> ) => {
-      localStorage.setItem( localStoreName, collapsedPos.join(',') );
+    const updateLocalStorage = (collapsedPos: Array<string>) => {
+      localStorage.setItem(localStoreName, collapsedPos.join(','));
     };
 
-    const collapse = ( pos: string ) => {
+    const collapse = (pos: string) => {
       const newCollapsedPos = [...collapsedPos, pos];
 
-      setCollapsedPos( newCollapsedPos );
-      updateLocalStorage( newCollapsedPos );
+      setCollapsedPos(newCollapsedPos);
+      updateLocalStorage(newCollapsedPos);
     };
 
-    const expand = ( pos: string ) => {
-      const newCollapsedPos = collapsedPos.filter( cPos => cPos !== pos );
+    const expand = (pos: string) => {
+      const newCollapsedPos = collapsedPos.filter(cPos => cPos !== pos);
 
-      setCollapsedPos( newCollapsedPos );
-      updateLocalStorage( newCollapsedPos );
+      setCollapsedPos(newCollapsedPos);
+      updateLocalStorage(newCollapsedPos);
     };
-    const expandedKeys = regionsTree.filter( (item: any) => !collapsedPos.includes( item.pos ) ).map( (item: any) => item.key ) ?? [];
+    const expandedKeys = regionsTree.filter((item: any) => !collapsedPos.includes(item.pos)).map((item: any) => item.key) ?? [];
 
     return (
       <OutlinerContext.Provider value={{ regions }}>
@@ -83,10 +86,10 @@ export const OutlinerTree: FC<OutlinerTreeProps> = ({
             className={rootClass.toClassName()}
             treeData={regionsTree}
             selectedKeys={selectedKeys}
-            icon={({ entity }: any) => <NodeIcon node={entity}/>}
+            // icon={({ entity }: any) => <NodeIcon node={entity}/>}
             switcherIcon={({ isLeaf }: any) => isLeaf ? null : <IconArrow/>}
             expandedKeys={expandedKeys}
-            onExpand={( internalExpandedKeys, { node } ) => {
+            onExpand={(internalExpandedKeys, { node }) => {
               const region = regionsTree.find((region: any) => region.key === node.key);
               const pos = region.pos;
 
@@ -112,7 +115,7 @@ export const OutlinerTree: FC<OutlinerTreeProps> = ({
             className={rootClass.toClassName()}
             treeData={regionsTree}
             selectedKeys={selectedKeys}
-            icon={({ entity }: any) => <NodeIcon node={entity}/>}
+            // icon={({ entity }: any) => <NodeIcon node={entity}/>}
             switcherIcon={({ isLeaf }: any) => isLeaf ? null : <IconArrow/>}
             {...eventHandlers}
           />
@@ -123,17 +126,20 @@ export const OutlinerTree: FC<OutlinerTreeProps> = ({
 };
 
 const useDataTree = ({
-  regions,
+  annotationAtom,
   hovered,
   rootClass,
   selectedKeys,
 }: {
-  regions: Atom<Region>[],
+  annotationAtom: AnnotationAtom,
   hovered: string | null,
   rootClass: CN,
   selectedKeys: string[],
 }) => {
-  const processor = useCallback((item: any, idx, _false, _null, _onClick) => {
+  const tree = useRegionsTree(annotationAtom, (
+    item,
+    idx,
+  ) => {
     const { id, type, hidden, isDrawing } = item ?? {};
     const style = item?.background ?? item?.getOneColor?.();
     const color = chroma(style ?? '#666').alpha(1);
@@ -149,6 +155,8 @@ const useDataTree = ({
         return item.value;
       }
     })();
+
+    console.log({ label });
 
     return {
       idx,
@@ -168,9 +176,9 @@ const useDataTree = ({
       className: rootClass.elem('node').mod(mods).toClassName(),
       title: (data: any) => <RootTitle {...data}/>,
     };
-  }, [hovered, selectedKeys]);
+  });
 
-  return regions.getRegionsTree(processor);
+  return tree;
 };
 
 const useEventHandlers = ({
@@ -314,6 +322,14 @@ const RootTitle: FC<any> = ({
     setCollapsed(!collapsed);
   }, [collapsed]);
 
+  console.log('render title', {
+    item,
+    hovered,
+    label,
+    isArea,
+    props,
+  });
+
   return (
     <Block name="outliner-item">
       <Elem name="content">
@@ -389,7 +405,7 @@ const RegionControls: FC<RegionControlsProps> = ({
   const onToggleHidden = useCallback(() => {
     if (type?.includes('region') || type?.includes('range')) {
       entity.toggleHidden();
-    } else if(!type || type.includes('label')) {
+    } else if (!type || type.includes('label')) {
       regionStore.setHiddenByLabel(!hidden, entity);
     }
   }, [item, item?.toggleHidden, hidden]);
@@ -488,7 +504,7 @@ const RegionItemDesc: FC<RegionItemOCSProps> = ({
   return (
     <Block
       name="ocr"
-      mod={{ collapsed, empty: !(controls?.length > 0)  }}
+      mod={{ collapsed, empty: !(controls?.length > 0) }}
       onClick={onClick}
       onDragStart={(e: any) => e.stopPropagation()}
     >
@@ -508,7 +524,7 @@ const RegionItemDesc: FC<RegionItemOCSProps> = ({
               color={css}
               outliner
             />
-          ): null;
+          ) : null;
         })}
       </Elem>
     </Block>

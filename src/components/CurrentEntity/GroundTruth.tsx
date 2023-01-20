@@ -1,6 +1,6 @@
-import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
 import { useAtom } from 'jotai';
 import { FC, MouseEvent, useCallback, useMemo } from 'react';
+import { AnnotationAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
 import { LsStar } from '../../assets/icons';
 import { Button } from '../../common/Button/Button';
 import { Tooltip } from '../../common/Tooltip/Tooltip';

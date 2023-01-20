@@ -1,7 +1,7 @@
-import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
-import { TaskAtom, TaskHistoryControlAtom } from '@atoms/Models/RootAtom/RootAtom';
 import { useAtomValue } from 'jotai';
 import { FC, useCallback, useMemo } from 'react';
+import { useInterfaces } from 'src/Engine/Atoms/Models/RootAtom/Hooks';
+import { TaskAtom, TaskHistoryControlAtom } from 'src/Engine/Atoms/Models/RootAtom/RootAtom';
 import { Button } from '../../common/Button/Button';
 import { Block, Elem } from '../../utils/bem';
 import { FF_DEV_3034, isFF } from '../../utils/feature-flags';

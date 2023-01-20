@@ -1,15 +1,15 @@
+import { Result, Spin } from 'antd';
+import { useAtomValue } from 'jotai';
+import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   configValidationAtom,
   selectedAnnotationHistoryAtom,
   selectedAnnotationPropertyAtom,
   viewingAllAtom
-} from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
-import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
-import { InstructionsAtom, RootAtom, TaskAtom } from '@atoms/Models/RootAtom/RootAtom';
-import { SettingsAtom } from '@atoms/Models/SettingsAtom/SettingsAtom';
-import { Result, Spin } from 'antd';
-import { useAtomValue } from 'jotai';
-import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
+} from 'src/Engine/Atoms/Models/AnnotationsAtom/AnnotationsAtom';
+import { useInterfaces } from 'src/Engine/Atoms/Models/RootAtom/Hooks';
+import { InstructionsAtom, RootAtom, TaskAtom } from 'src/Engine/Atoms/Models/RootAtom/RootAtom';
+import { SettingsAtom } from 'src/Engine/Atoms/Models/SettingsAtom/SettingsAtom';
 import { Space } from '../../common/Space/Space';
 import { Block, Elem } from '../../utils/bem';
 import { Segment } from '../Segment/Segment';
@@ -19,10 +19,10 @@ import { SidePanels } from '../SidePanels/SidePanels';
 /**
  * Tags
  */
-import { MessagesAtom } from '@atoms/MessagesAtom';
-import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
 import { TopBar } from '@components/TopBar/TopBar';
 import { ResultStatusType } from 'antd/lib/result';
+import { MessagesAtom } from 'src/Engine/Atoms/MessagesAtom';
+import { AnnotationAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
 import messages from '../../utils/messages';
 import { AnnotationView } from './Annotation';
 import './LabelingInterface.styl';
@@ -81,7 +81,7 @@ export const LabelingInterface = () => {
                   selectedAnnotationAtom={selectedAnnotationAtom}
                   selectedHistoryAtom={selectedHistoryAtom}
                 />
-              ): <ConfigValidation/>}
+              ) : <ConfigValidation/>}
             </Block>
           </SidePanels>
         ) : <NothingToLabel/>}

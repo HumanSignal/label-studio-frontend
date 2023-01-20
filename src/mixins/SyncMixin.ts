@@ -1,11 +1,11 @@
 import { observe } from 'mobx';
 import { types } from 'mobx-state-tree';
 
-import { EventInvoker } from '../utils/events';
+import { Events } from '../utils/events';
 import { TimeSync, TimeSyncSubscriber } from '../utils/TimeSync';
 
 interface SyncMixinProps {
-  events: EventInvoker;
+  events: Events;
   synced: boolean;
   isCurrentlyPlaying: boolean;
   syncedObject: any;
@@ -21,7 +21,7 @@ const SyncMixin = types
     sync: types.maybeNull(types.string),
   })
   .volatile<SyncMixinProps>(() => ({
-  events: new EventInvoker(),
+  events: new Events(),
   synced: false,
   isCurrentlyPlaying: false,
   syncedObject: null,
@@ -80,7 +80,7 @@ const SyncMixin = types
       }, true);
     },
 
-    beforeDestroy(){
+    beforeDestroy() {
       if (self.timeSync && self.sync) {
         self.timeSync.unsubscribe(self.sync);
         sync.unregister((self as any).name);

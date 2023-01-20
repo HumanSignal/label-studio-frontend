@@ -1,4 +1,4 @@
-import { EventInvoker } from './events';
+import { Events } from './events';
 import { FF_DEV_2461, isFF } from './feature-flags';
 
 const isFFDev2461 = isFF(FF_DEV_2461);
@@ -18,7 +18,7 @@ export class TimeSyncSubscriber {
   private name: string;
   private sync: TimeSync;
   private lockedEvents: Set<TimeSyncEvent> = new Set();
-  private events = new EventInvoker();
+  private events = new Events();
   private object: any;
 
   playing = false;
@@ -81,7 +81,7 @@ export class TimeSyncSubscriber {
   }
 
   seek(time: number) {
-    if (!isFFDev2461 && time === this.currentTime){
+    if (!isFFDev2461 && time === this.currentTime) {
       this.releaseEvent('seek');
       return;
     }
@@ -138,7 +138,7 @@ export class TimeSync {
   members = new Map<string, TimeSyncSubscriber>();
   subscriptions = new Map<string, Set<string>>();
 
-  private events = new EventInvoker();
+  private events = new Events();
   private eventsCache = new Map<string, TimeSyncHandler[]>();
 
   register(name: string, object?: any) {

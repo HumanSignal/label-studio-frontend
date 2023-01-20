@@ -3,9 +3,9 @@ import { Block, Elem } from '../../utils/bem';
 import { DetailsPanel } from './DetailsPanel/DetailsPanel';
 import { OutlinerPanel } from './OutlinerPanel/OutlinerPanel';
 
-import { useAnnotationRegions } from '@atoms/Models/AnnotationsAtom/Hooks/useAnnotationRegions';
-import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
-import { Atom, useAtomValue } from 'jotai';
+import { useAtomValue } from 'jotai';
+import { useAnnotationRegions } from 'src/Engine/Atoms/Models/AnnotationsAtom/Hooks/useAnnotationRegions';
+import { AnnotationAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
 import { IconDetails, IconHamburger } from '../../assets/icons';
 import { useMedia } from '../../hooks/useMedia';
 import ResizeObserver from '../../utils/resize-observer';
@@ -19,13 +19,13 @@ const maxWindowWidth = 980;
 
 interface SidePanelsProps {
   panelsHidden: boolean;
-  currentEntity: Atom<Annotation>;
+  currentEntity: AnnotationAtom;
   children: ReactNode;
 }
 
 interface PanelBBox {
   width: number;
-  height:  number;
+  height: number;
   left: number;
   top: number;
   relativeLeft: number;
@@ -81,8 +81,8 @@ export const SidePanels: FC<SidePanelsProps> = ({
   children,
 }) => {
   const snapTreshold = 5;
-  const entity = useAtomValue(currentEntity);
-  const regions = useAnnotationRegions(currentEntity);
+  const { resultAtom } = useAnnotationRegions(currentEntity);
+  const regions = useAtomValue(resultAtom);
   const viewportSize = useRef({ width: 0, height: 0 });
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [panelMaxWidth, setPanelMaxWidth] = useState(DEFAULT_PANEL_MAX_WIDTH);
@@ -163,7 +163,7 @@ export const SidePanels: FC<SidePanelsProps> = ({
 
     if (left >= 0 && left <= snapTreshold && spaceFree('left')) {
       setSnap('left');
-    } else if (right <= parentWidth && right >= rightLimit  && spaceFree('right')) {
+    } else if (right <= parentWidth && right >= rightLimit && spaceFree('right')) {
       setSnap('right');
     } else {
       setSnap(undefined);
@@ -204,7 +204,7 @@ export const SidePanels: FC<SidePanelsProps> = ({
     setPanelData(patch);
   }, [panelData]);
 
-  const onPositionChange = useCallback((name: PanelType, t: number, l:  number, detached: boolean) => {
+  const onPositionChange = useCallback((name: PanelType, t: number, l: number, detached: boolean) => {
     const panel = panelData[name];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
 
@@ -279,13 +279,12 @@ export const SidePanels: FC<SidePanelsProps> = ({
     };
   }, [onResize, onResizeStart, onResizeEnd, onPositionChange, onVisibilityChange, onSnap]);
 
-  const commonProps = useMemo(() => {
+  const commonProps = useMemo((): Partial<PanelProps> => {
     return {
       ...eventHandlers,
       root: rootRef,
-      regions: entity.regions,
       selection: regions.selection,
-      currentEntity,
+      annotationAtom: currentEntity,
     };
   }, [eventHandlers, rootRef, regions, regions.selection, currentEntity]);
 
@@ -326,7 +325,7 @@ export const SidePanels: FC<SidePanelsProps> = ({
 
     const panels = Object.entries(panelData);
 
-    for(const [name, panelData] of panels) {
+    for (const [name, panelData] of panels) {
       const { alignment, detached } = panelData;
       const view = panelView[name as PanelType];
       const Component = view.component;

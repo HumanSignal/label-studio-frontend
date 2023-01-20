@@ -1,9 +1,8 @@
-import { observer } from 'mobx-react-lite';
 import VideoProperties from '../../../core/settings/videosettings';
 import { SettingsRenderer } from './SettingsRenderer';
 import { Settings } from './Types';
 
-const VideoSettingsPure: Settings<any> = ({ store }) => {
+export const VideoSettings: Settings = ({ store }) => {
   return (
     <SettingsRenderer
       store={store}
@@ -12,8 +11,6 @@ const VideoSettingsPure: Settings<any> = ({ store }) => {
   );
 };
 
-VideoSettingsPure.displayName = 'VideoSettings';
-VideoSettingsPure.tagName = 'Video';
-VideoSettingsPure.title = 'Video';
-
-export const VideoSettings = observer(VideoSettingsPure);
+VideoSettings.displayName = 'VideoSettings';
+VideoSettings.tagName = 'Video';
+VideoSettings.title = 'Video';

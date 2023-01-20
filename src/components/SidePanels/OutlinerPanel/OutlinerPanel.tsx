@@ -1,4 +1,5 @@
-import { useRegionsOrder } from '@atoms/Models/RegionsAtom/Hooks';
+import { useAnnotationRegions } from '@atoms/Models/AnnotationsAtom/Hooks/useAnnotationRegions';
+import { useRegionsOrder } from '@atoms/Models/ResultAtom/Hooks/useRegionsOrder';
 import { useAtomValue } from 'jotai';
 import { FC } from 'react';
 import { Elem } from '../../../utils/bem';
@@ -8,12 +9,11 @@ import { OutlinerTree } from './OutlinerTree';
 import { ViewControls } from './ViewControls';
 
 export const OutlinerPanel: FC<PanelProps> = (props) => {
-  const regionsOrder = useRegionsOrder(props.regions);
+  const regions = useAnnotationRegions(props.annotationAtom);
+  const regionsOrder = useRegionsOrder(regions.resultAtom);
 
-  const {
-    regions: regionsData,
-    selection,
-  } = useAtomValue(props.regions);
+  const { selection } = useAtomValue(regions.resultAtom);
+  const regionsData = useAtomValue(regions.resultListAtom);
 
   return (
     <PanelBase {...props} name="outliner" title="Outliner">
@@ -28,6 +28,7 @@ export const OutlinerPanel: FC<PanelProps> = (props) => {
         <OutlinerTree
           regions={regionsData}
           group={regionsOrder.group}
+          annotationAtom={props.annotationAtom}
           selectedKeys={Array.from(selection)}
         />
       ) : (

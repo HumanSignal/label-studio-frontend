@@ -1,9 +1,9 @@
-import { viewingAllAtom } from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
-import { useWriteableAnnotation } from '@atoms/Models/AnnotationsAtom/Hooks/useWritableAnnotation';
-import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
-import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
 import { useAtomValue } from 'jotai';
 import { FC } from 'react';
+import { viewingAllAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/AnnotationsAtom';
+import { useWriteableAnnotation } from 'src/Engine/Atoms/Models/AnnotationsAtom/Hooks/useWritableAnnotation';
+import { AnnotationAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
+import { useInterfaces } from 'src/Engine/Atoms/Models/RootAtom/Hooks';
 import { Block, Elem } from '../../utils/bem';
 import { Actions } from './Actions/Actions';
 import { AnnotationsList } from './Annotations';

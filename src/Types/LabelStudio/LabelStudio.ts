@@ -1,4 +1,4 @@
-import { RootStoreInput } from '@atoms/Inputs/RootStore';
+import { RootStoreInput } from 'src/Engine/Atoms/Inputs/RootStore';
 import legacyEvents from '../../core/External';
 import { SystemMessage } from '../../utils/messages';
 

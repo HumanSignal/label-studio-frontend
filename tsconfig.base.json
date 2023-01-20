@@ -3,10 +3,13 @@
     "baseUrl": ".",
     "paths": {
       "@components/*": ["src/components/*"],
+      "@UI/*": ["src/common/*"],
       "@hooks/*": ["src/hooks/*"],
-      "@atoms/*": ["src/Atoms/*"],
       "@examples/*": ["examples/*"],
-      "@tags/*": ["src/ConfigParser/Tags/*"],
+      "@atoms/*": ["src/Engine/Atoms/*"],
+      "@tags/*": ["src/Engine/Tags/*"],
+      "@result/*": ["src/Engine/Result/*"],
+      "@typedef/*": ["src/Types/*"],
       "src/*": ["src/*"]
     }
   }

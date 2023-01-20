@@ -1,12 +1,12 @@
 import { IconBan } from '../../../assets/icons';
 import { Block, Elem } from '../../../utils/bem';
 
-import { Annotation, AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
-import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
-import { RootAtom } from '@atoms/Models/RootAtom/RootAtom';
-import { SubmitAtom } from '@atoms/Models/SubmitAtom';
 import { useAtomValue } from 'jotai';
 import { FC, useCallback, useMemo, useState } from 'react';
+import { Annotation, AnnotationAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
+import { useInterfaces } from 'src/Engine/Atoms/Models/RootAtom/Hooks';
+import { RootAtom } from 'src/Engine/Atoms/Models/RootAtom/RootAtom';
+import { SubmitAtom } from 'src/Engine/Atoms/Models/SubmitAtom';
 import { SubmitButton } from './GenericSubmitButton';
 import './SubmissionControls.styl';
 
@@ -118,7 +118,7 @@ const DefaultControls: FC<{
           look="danger"
           ariaLabel="skip-task"
           onClick={async () => {
-            if(hasInterface('comments:skip') ?? true) {
+            if (hasInterface('comments:skip') ?? true) {
               buttonControl.handler(e, () => store.skipTask({}), 'Please enter a comment before skipping');
             } else {
               await store.commentStore.commentFormSubmit();
@@ -179,7 +179,7 @@ const ReviewButtons: FC<{
         disabled={disabled}
         ariaLabel="accept-annotation"
         onClick={async () => {
-          if(hasInterface('comments:reject') ?? true) {
+          if (hasInterface('comments:reject') ?? true) {
             buttonControl.handler(e, () => store.rejectAnnotation({}), 'Please enter a comment before rejecting');
           } else {
             await store.commentStore.commentFormSubmit();
@@ -237,9 +237,9 @@ const useButtonControl = () => {
 
     if (isInProgress) return;
     setIsInProgress(true);
-    if(!inputRef.current || addedCommentThisSession){
+    if (!inputRef.current || addedCommentThisSession) {
       callback();
-    } else if((currentComment ?? '').trim()) {
+    } else if ((currentComment ?? '').trim()) {
       e.preventDefault();
       await commentFormSubmit();
       callback();

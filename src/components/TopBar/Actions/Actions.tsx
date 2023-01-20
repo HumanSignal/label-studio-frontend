@@ -1,10 +1,10 @@
-import { viewingAllAtom } from '@atoms/Models/AnnotationsAtom/AnnotationsAtom';
-import { useAnnotationsController } from '@atoms/Models/AnnotationsAtom/Controller';
-import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
-import { useInstructions, useInterfaces } from '@atoms/Models/RootAtom/Hooks';
-import { useSettingsVisibility } from '@atoms/Models/SettingsAtom/Hooks';
 import { useAtom, useAtomValue } from 'jotai';
 import { FC, useCallback, useMemo } from 'react';
+import { viewingAllAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/AnnotationsAtom';
+import { useAnnotationsController } from 'src/Engine/Atoms/Models/AnnotationsAtom/Hooks/useAnnotationsController';
+import { AnnotationAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
+import { useInstructions, useInterfaces } from 'src/Engine/Atoms/Models/RootAtom/Hooks';
+import { useSettingsVisibility } from 'src/Engine/Atoms/Models/SettingsAtom/Hooks';
 import { IconViewAll, LsSettings, LsTrash } from '../../../assets/icons';
 import { Button } from '../../../common/Button/Button';
 import { confirm } from '../../../common/Modal/Modal';
@@ -50,7 +50,7 @@ export const Actions: FC<ActionsProps> = ({
 
   return (
     <Elem name="section">
-      {hasInterface('annotations:view-all')  && (
+      {hasInterface('annotations:view-all') && (
         <Tooltip title="View all annotations">
           <Button
             icon={<IconViewAll />}

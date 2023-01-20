@@ -1,7 +1,7 @@
-import { useSettings } from '@atoms/Models/SettingsAtom/Hooks';
 import { FC, MouseEvent } from 'react';
 import { Button, ButtonProps } from 'src/common/Button/Button';
 import { Tooltip } from 'src/common/Tooltip/Tooltip';
+import { useSettings } from 'src/Engine/Atoms/Models/SettingsAtom/Hooks';
 
 const TOOLTIP_DELAY = 0.8;
 

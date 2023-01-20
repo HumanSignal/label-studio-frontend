@@ -1,8 +1,8 @@
-import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
 import { FC } from 'react';
 import { IconCopy } from 'src/assets/icons';
 import { Button } from 'src/common/Button/Button';
 import { Tooltip } from 'src/common/Tooltip/Tooltip';
+import { Annotation } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
 
 type CopyAnnotationProps = {
   visible: boolean,

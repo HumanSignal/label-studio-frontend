@@ -1,17 +1,16 @@
-import { Checkbox, Modal, Table, Tabs } from 'antd';
+import { Checkbox, Table, Tabs } from 'antd';
 import { createElement, FC } from 'react';
 
 import { Hotkey, HotkeyNamespace } from '../../core/Hotkey';
 
+import { Modal } from '@UI/Modal/ModalPopup';
 import { Block, Elem } from '../../utils/bem';
 import { triggerResizeEvent } from '../../utils/utilities';
 import './Settings.styl';
 
-import { useAnnotationNames } from '@atoms/Models/AnnotationsAtom/Hooks/useAnnotationNames';
-import { useSettings } from '@atoms/Models/SettingsAtom/Hooks';
-import { SettingsVisibilityAtom } from '@atoms/Models/SettingsAtom/SettingsAtom';
-import { useAtom } from 'jotai';
 import { useMemo } from 'react';
+import { useAnnotationNames } from 'src/Engine/Atoms/Models/AnnotationsAtom/Hooks/useAnnotationNames';
+import { useSettings, useSettingsVisibility } from 'src/Engine/Atoms/Models/SettingsAtom/Hooks';
 import EditorSettings from '../../core/settings/editorsettings';
 import * as TagSettings from './TagSettings';
 
@@ -65,7 +64,7 @@ const GeneralSettings: FC = () => {
 
   return (
     <Block name="settings">
-      {settingsNames.map((obj, index)=> {
+      {settingsNames.map((obj, index) => {
         return (
           <Elem name="field" key={index}>
             <Checkbox
@@ -161,7 +160,9 @@ const DEFAULT_ACTIVE = Object.keys(Settings)[0];
 
 export const SettingsView: FC = () => {
   const names = useAnnotationNames();
-  const [visible, setVisible] = useAtom(SettingsVisibilityAtom);
+  const [settingsVisible, _, setSettingsVisibility] = useSettingsVisibility();
+
+  console.log({ settingsVisible });
   const availableSettings = useMemo(() => {
     const availableTags = Object.values(names);
     const settingsScreens = Object.values(TagSettings);
@@ -178,27 +179,28 @@ export const SettingsView: FC = () => {
     }, []);
   }, []);
 
-  return (
+  return settingsVisible ? (
     <Modal
-      visible={visible}
+      visible
       title="Settings"
-      bodyStyle={{ paddingTop: '0' }}
-      footer=""
-      onCancel={() => setVisible(false)}
-    >
-      <Tabs defaultActiveKey={DEFAULT_ACTIVE}>
-        {Object.entries(Settings).map(([key, { name, component }]) => (
-          <Tabs.TabPane tab={name} key={key}>
-            {createElement(component)}
-          </Tabs.TabPane>
-        ))}
-        {/* TODO: implement Page */}
-        {availableSettings.map((Page: any) => (
-          <Tabs.TabPane tab={Page.title} key={Page.tagName}>
-            <Page/>
-          </Tabs.TabPane>
-        ))}
-      </Tabs>
-    </Modal>
-  );
+      onHide={() => setSettingsVisibility(false)}
+      body={() => (
+        <Block name="settings">
+          <Tabs defaultActiveKey={DEFAULT_ACTIVE}>
+            {Object.entries(Settings).map(([key, { name, component }]) => (
+              <Tabs.TabPane tab={name} key={key}>
+                {createElement(component)}
+              </Tabs.TabPane>
+            ))}
+            {/* TODO: implement Page */}
+            {availableSettings.map((Page: any) => (
+              <Tabs.TabPane tab={Page.title} key={Page.tagName}>
+                <Page/>
+              </Tabs.TabPane>
+            ))}
+          </Tabs>
+        </Block>
+      )}
+    />
+  ) : null;
 };

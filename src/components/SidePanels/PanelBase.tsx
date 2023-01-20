@@ -2,7 +2,8 @@ import { FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useEffect
 import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand } from '../../assets/icons';
 import { Block, Elem } from '../../utils/bem';
 
-import { Regions, RegionsAtom } from '@atoms/Models/RegionsAtom/Types';
+import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
+import { Results } from '@atoms/Models/ResultAtom/Types';
 import { useDrag } from '../../hooks/useDrag';
 import { clamp, isDefined } from '../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
@@ -32,8 +33,7 @@ const resizers = [
 
 interface PanelBaseProps {
   root: MutableRefObject<HTMLDivElement | undefined>;
-  regions: RegionsAtom;
-  selection: Regions['selection'];
+  selection: Results['selection'];
   name: PanelType;
   title: string;
   tooltip: string;
@@ -46,7 +46,7 @@ interface PanelBaseProps {
   height: number;
   visible: boolean;
   alignment: 'left' | 'right';
-  currentEntity: any;
+  annotationAtom: AnnotationAtom;
   detached: boolean;
   expanded: boolean;
   locked: boolean;
@@ -234,7 +234,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       const target = e.target as HTMLElement;
       const type = target.dataset.resize;
       const shift = (() => {
-        switch(type) {
+        switch (type) {
           case 'top-left':
             return 'top-left';
           case 'top':

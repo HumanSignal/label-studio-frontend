@@ -2,7 +2,13 @@
   <Header>
     Hello world!
   </Header>
-  <HyperTextLabels name="ner" toName="text">
+  <HyperTextLabels name="ner1" toName="text">
+    <Label value="Jimmy"></Label>
+    <Label value="Oliver"></Label>
+    <Label value="Megan"></Label>
+  </HyperTextLabels>
+
+  <HyperTextLabels name="ner" toName="text" choice="multiple">
     <Label value="Person"></Label>
     <Label value="Organization"></Label>
     <Label value="Date"></Label>

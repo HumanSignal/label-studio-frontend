@@ -136,7 +136,7 @@ const babelLoader = {
       }],
       ['@babel/preset-typescript', {
         'isTSX': true,
-        'allExtensions':true,
+        'allExtensions': true,
       }],
       ['@babel/preset-env', {
         targets: {
@@ -216,6 +216,7 @@ const devServer = () => {
       },
       client: {
         overlay: false,
+        logging: 'error',
       },
     },
   } : {};

@@ -1,7 +1,7 @@
-import { Store } from '@atoms/Store';
 import { DataStore } from '@components/App/DataStore';
 import { LabelingInterface } from '@components/App/LabelingInterface';
 import { createContext, FC, StrictMode, useContext } from 'react';
+import { Store } from 'src/Engine/Atoms/Store';
 import { InternalSDK } from './core/SDK/Internal/Internal.sdk';
 
 type AppProps = {

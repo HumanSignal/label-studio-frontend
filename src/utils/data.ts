@@ -9,17 +9,17 @@ import { escapeHtml, isString } from './utilities';
  * @param {string} value param
  * @param {object} task
  */
-export const parseValue = (value: string, task: Record<string, any>) => {
+export const parseValue = <T>(value: string, task: Record<string, any>): T => {
   const reVar = /\$[\w[\].{}]+/ig;
 
-  if (!value) return '';
+  if (!value) return '' as T;
 
   // value can refer to structures, not only texts, so just replace wouldn't be enough
   if (value.match(reVar)?.[0] === value) {
     return get(task, value.substr(1)) ?? '';
   }
 
-  return value.replace(reVar, (v) => get(task, v.substr(1) ?? ''));
+  return value.replace(reVar, (v) => get(task, v.substr(1) ?? '')) as T;
 };
 
 /**

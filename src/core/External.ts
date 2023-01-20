@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
+import { Annotation } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
 
 /**
  * Callback on submit annotation
@@ -60,12 +60,12 @@ function onSelectAnnotation(annotation: Annotation, previousAnnotation: Annotati
 /**
  * Called when "Accept" or "Fix + Accept" is pressed
  */
-function onAcceptAnnotation(store: any, entity: Annotation){}
+function onAcceptAnnotation(store: any, entity: Annotation) {}
 
 /**
  * Called when "Reject" is pressed
  */
-function onRejectAnnotation(store: any, entity: Annotation){}
+function onRejectAnnotation(store: any, entity: Annotation) {}
 
 /**
  * Called when storage gets initialized for the first time

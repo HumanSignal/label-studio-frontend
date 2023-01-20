@@ -1,5 +1,5 @@
 import { FC, useEffect } from 'react';
-import { Annotation } from '@atoms/Models/AnnotationsAtom/Types';
+import { Annotation } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
 
 import styles from './Segment.module.scss';
 
