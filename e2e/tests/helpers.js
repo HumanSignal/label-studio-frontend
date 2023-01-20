@@ -281,6 +281,25 @@ const emulateClick = source => {
   source.dispatchEvent(event);
 };
 
+const emulateKeypress = (params) => {
+  document.activeElement.dispatchEvent(
+    new KeyboardEvent( 'keydown', {
+      bubbles: true,
+      cancelable: true,
+      ...params,
+    } ),
+  );
+  document.activeElement.dispatchEvent(
+    new KeyboardEvent( 'keyup', {
+      bubbles: true,
+      cancelable: true,
+      ...params,
+    } ),
+  );
+};
+
+
+
 // click the Rect on the Konva canvas
 const clickRect = () => {
   const rect = window.Konva.stages[0].findOne('Rect');
@@ -665,6 +684,7 @@ module.exports = {
   convertToFixed,
 
   emulateClick,
+  emulateKeypress,
   clickRect,
   clickKonva,
   clickMultipleKonva,
