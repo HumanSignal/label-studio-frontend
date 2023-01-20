@@ -50,7 +50,7 @@ const isFFDev2715 = isFF(FF_DEV_2715);
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
-  framerate: types.optional(types.string, 24),
+  framerate: types.optional(types.string, '24'),
   height: types.optional(types.string, '600'),
   muted: false,
 });
