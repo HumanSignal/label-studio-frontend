@@ -50,7 +50,7 @@ const isFFDev2715 = isFF(FF_DEV_2715);
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
-  framerate: types.optional(types.union(types.string, types.number), 24),
+  framerate: types.optional(types.string, 24),
   height: types.optional(types.string, '600'),
   muted: false,
 });
@@ -115,11 +115,11 @@ const Model = types
 
     return {
       afterCreate() {
-        const framerate = parseValue(self.framerate, self.store.task.dataObj);
+        const framerate = Number(parseValue(self.framerate, self.store.task.dataObj));
 
-        if (!framerate) self.framerate = 24;
-        else if (framerate < 1) self.framerate = 1 / framerate;
-        else self.framerate = Number(framerate);
+        if (!framerate || isNaN(framerate)) self.framerate = '24';
+        else if (framerate < 1) self.framerate = String(1 / framerate);
+        else self.framerate = String(framerate);
       },
 
       triggerSyncPlay() {
