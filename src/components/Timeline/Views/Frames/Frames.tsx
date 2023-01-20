@@ -74,14 +74,14 @@ export const Frames: FC<TimelineViewProps> = ({
 
       const frame = toSteps(roundToStep(left, step), step);
 
-      onScroll?.(clamp(frame + 1, 1, length));
+      onScroll?.(clamp(frame, 1, length));
     }
   }, [offsetX, offsetY, step, length]);
 
   const setIndicatorOffset = useCallback((value) => {
     const frame = toSteps(roundToStep(value, step), step);
 
-    handlers.onPositionChange?.(clamp(frame + 1, 1, length));
+    handlers.onPositionChange?.(clamp(frame, 1, length));
   }, [step, length, position]);
 
   const scrollHandler = useCallback((e) => {
@@ -161,10 +161,10 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [hoverOffset, currentOffsetX, step, setIndicatorOffset]);
 
   const seekerOffset = useMemo(() => {
-    const pixelOffset = clamp(position-1, 0, length - 1) * step;
-    const value = roundToStep(pixelOffset, step);
+    const pixelOffset = clamp(position, 0, length) * step;
+    const value = roundToStep(pixelOffset - currentOffsetX, step);
 
-    return value - currentOffsetX + timelineStartOffset;
+    return value + timelineStartOffset;
   }, [position, currentOffsetX, step, length]);
 
   const onFrameScrub = useCallback((e: MouseEvent) => {
@@ -271,7 +271,7 @@ export const Frames: FC<TimelineViewProps> = ({
           <Elem
             name="hover"
             style={{ left: roundToStep(hoverOffset, step), marginLeft: timelineStartOffset }}
-            data-frame={toSteps(currentOffsetX + hoverOffset, step) + 1}
+            data-frame={toSteps(currentOffsetX + hoverOffset, step)}
           />
         )}
       </Elem>
