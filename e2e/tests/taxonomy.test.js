@@ -23,7 +23,7 @@ Scenario('Lines overlap', async ({ I, LabelStudio, AtTaxonomy }) => {
 
     if (
       bbox1.y < bbox2.y && bbox2.y < bbox1.y2
-      || bbox1.y < bbox2.y2 && bbox2.y2 < bbox1.y + bbox1.height
+      || bbox1.y < bbox2.y2 && bbox2.y2 < bbox1.y2
     ) {
       assert.fail('Overlap has been detected');
     }
