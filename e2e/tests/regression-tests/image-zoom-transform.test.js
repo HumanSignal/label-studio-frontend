@@ -66,6 +66,7 @@ Scenario('Transforming the region on the border of zoomed image after window res
     'ff_front_dev_2394_zoomed_transforms_260522_short': true,
   });
 
+  I.amOnPage('/');
   I.resizeWindow(wWidthSmall, wHeight);
 
   LabelStudio.init(params);
