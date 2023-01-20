@@ -49,25 +49,6 @@ export const AudioRegionModel = types
   }))
   .actions(self => ({
     /**
-     * @example
-     * {
-     *   "original_length": 18,
-     *   "value": {
-     *     "start": 3.1,
-     *     "end": 8.2,
-     *     "channel": 0,
-     *     "labels": ["Voice"]
-     *   }
-     * }
-     * @typedef {Object} AudioRegionResult
-     * @property {number} original_length length of the original audio (seconds)
-     * @property {Object} value
-     * @property {number} value.start start time of the fragment (seconds)
-     * @property {number} value.end end time of the fragment (seconds)
-     * @property {number} value.channel channel identifier which was targeted
-     */
-
-    /**
      * @returns {AudioRegionResult}
      */
     serialize() {

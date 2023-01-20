@@ -112,6 +112,7 @@ const RegionAction: FC<any> = observer(({
       primary={editMode}
       onClick={() => onEditModeChange(!editMode)}
       hotkey="region:meta"
+      aria-label="Edit region's meta"
     />
   ));
 
