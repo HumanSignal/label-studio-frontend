@@ -1019,12 +1019,12 @@ const Model = types.model({
 
     event(name, ev, screenX, screenY) {
       // if (name === 'mousemove') return;
-      let [x, y] = self.fixZoomedCoords([screenX, screenY]);
+      [screenX, screenY] = self.fixZoomedCoords([screenX, screenY]);
 
-      x = self.screenToInternalX(x);
-      y = self.screenToInternalY(y);
+      const x = self.screenToInternalX(screenX);
+      const y = self.screenToInternalY(screenY);
 
-      self.getToolsManager().event(name, ev.evt || ev, x, y);
+      self.getToolsManager().event(name, ev.evt || ev, x, y, screenX, screenY);
     },
   }));
 

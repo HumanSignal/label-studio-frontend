@@ -67,21 +67,20 @@ const DrawingTool = types
     };
 
     return {
-      event(name, ev, args) {
+      event(name, ev, [x, y, screenX, screenY]) {
         // filter right clicks and middle clicks and shift pressed
         if (ev.button > 0 || ev.shiftKey) return;
         let fn = name + 'Ev';
 
-        if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, args);
+        if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, [x, y], [screenX, screenY]);
 
         // Emulating of dblclick event, 'cause redrawing will crush the the original one
         if (name === 'click') {
           const ts = ev.timeStamp;
-          const [x, y] = args;
 
           if (ts - lastClick.ts < 300 && self.comparePointsWithThreshold(lastClick, { x, y })) {
             fn = 'dbl' + fn;
-            if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, args);
+            if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, [x, y], [screenX, screenY]);
           }
           lastClick = { ts, x, y };
         }
