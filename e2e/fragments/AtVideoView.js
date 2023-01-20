@@ -1,4 +1,5 @@
 /* global inject */
+/* global locate */
 const { I } = inject();
 
 /**
@@ -10,11 +11,21 @@ const { I } = inject();
  */
 
 module.exports = {
+  _rootSelector: '.lsf-video-segmentation',
+  _videoRootSelector: '.lsf-video__main',
   _trackSelector: '.lsf-seeker__track',
   _indicatorSelector: '.lsf-seeker__indicator',
   _positionSelector: '.lsf-seeker__position',
   _seekStepForwardSelector: '.lsf-timeline-controls__main-controls > div:nth-child(2) > button:nth-child(4)',
   _seekStepBackwardSelector: '.lsf-timeline-controls__main-controls > div:nth-child(2) > button:nth-child(2)',
+
+  locateVideoContainer() {
+    return locate(this._videoRootSelector);
+  },
+
+  videoLocate(locator) {
+    return locator ? locate(locator).inside(this.locateVideoContainer()) : this.locateVideoContainer();
+  },
 
   /**
    * Grab the bounding rect of the video track
@@ -45,12 +56,13 @@ module.exports = {
    * @param {BoundingClientRect} bbox
    * @param {number} x
    * @param {number} [y=undefined]
+   * @returns {Promise<void>}
    */
   async drag(bbox, x, y) {
-    I.moveMouse(bbox.x + bbox.width / 2, bbox.y + bbox.height / 2);
-    I.pressMouseDown();
-    I.moveMouse(x,  y === undefined ?  bbox.y + bbox.height / 2 : y);
-    I.pressMouseUp();
+    const from = { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 };
+    const to = { x, y: y || from.y };
+
+    return I.dragAndDropMouse(from, to);
   },
 
   /**
@@ -75,4 +87,3 @@ module.exports = {
     }
   },
 };
-
