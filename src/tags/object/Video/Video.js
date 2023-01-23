@@ -115,7 +115,7 @@ const Model = types
 
     return {
       afterCreate() {
-        const framerate = Number(parseValue(self.framerate, self.store.task.dataObj));
+        const framerate = Number(parseValue(self.framerate, self.store.task?.dataObj));
 
         if (!framerate || isNaN(framerate)) self.framerate = '24';
         else if (framerate < 1) self.framerate = String(1 / framerate);
