@@ -1,6 +1,6 @@
 import { ChannelData } from '../Media/ChannelData';
 import { WaveformAudio } from '../Media/WaveformAudio';
-import { averageMinMax, clamp, debounce, defaults, filterData, measure, roundToStep, warn } from '../Common/Utils';
+import { averageMinMax, clamp, debounce, defaults, warn } from '../Common/Utils';
 import { Waveform, WaveformOptions } from '../Waveform';
 import { CanvasCompositeOperation, Layer, RenderingContext } from './Layer';
 import { Events } from '../Common/Events';
@@ -11,6 +11,10 @@ import { Cursor } from '../Cursor/Cursor';
 import { Padding } from '../Common/Style';
 import { TimelineOptions } from '../Timeline/Timeline';
 import './Loader';
+
+// Amount of data samples to buffer on either side of the renderable area
+const BUFFER_SAMPLES = 2;
+const CACHE_RENDER_THRESHOLD = 10000000;
 
 interface VisualizerEvents {
   draw: (visualizer: Visualizer) => void;
@@ -27,7 +31,6 @@ export type VisualizerOptions = Pick<WaveformOptions,
 | 'zoomToCursor'
 | 'autoCenter'
 | 'splitChannels'
-| 'enabledChannels'
 | 'cursorWidth'
 | 'zoom'
 | 'amp'
@@ -51,6 +54,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private zoom = 1;
   private scrollLeft = 0;
   private drawing = false;
+  private renderId = 0;
   private amp = 1;
   private seekLocked = false;
   private wf: Waveform;
@@ -60,13 +64,16 @@ export class Visualizer extends Events<VisualizerEvents> {
   private zoomToCursor = false;
   private autoCenter = false;
   private splitChannels = false;
-  private enabledChannels = [0];
   private padding: Padding = { top: 0, bottom: 0, left: 0, right: 0 };
   private gridWidth = 1;
   private gridColor = rgba('rgba(0, 0, 0, 0.1)');
   private backgroundColor = rgba('#fff');
   private waveColor = rgba('#000');
   private waveHeight = 100;
+  private lastRenderedZoom = 0;
+  private lastRenderedWidth = 0;
+  private lastRenderedAmp = 0;
+  private lastRenderedScrollLeftPx= 0;
   private _container!: HTMLElement;
   private _loader!: HTMLElement;
 
@@ -89,7 +96,6 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.zoomToCursor = options.zoomToCursor ?? this.zoomToCursor;
     this.autoCenter = options.autoCenter ?? this.autoCenter;
     this.splitChannels = options.splitChannels ?? this.splitChannels;
-    this.enabledChannels = options.enabledChannels ?? this.enabledChannels;
     this.timelineHeight = options.timeline?.height ?? this.timelineHeight;
     this.timelinePlacement = options?.timeline?.placement ?? this.timelinePlacement;
     this.gridColor = options.gridColor ? rgba(options.gridColor) : this.gridColor;
@@ -113,27 +119,10 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.init = () => warn('Visualizer is already initialized');
     this.audio = audio;
     this.channels.length = this.audio.channelCount;
-
-    this.enabledChannels.forEach((channelNumber: number) => {
-      const data = filterData(audio.buffer, channelNumber);
-
-      this.getSamplesPerPx();
-
-      this.channels[channelNumber] = new ChannelData({
-        data,
-        visualizer: this,
-        waveform: this.wf,
-        getChunksSize: () => {
-          return this.samplesPerPx;
-        },
-      });
-    });
-
-    this.updateChannels(() => {
-      this.setLoading(false);
-      this.invoke('initialized', [this]);
-      this.draw();
-    });
+    this.setLoading(false);
+    this.getSamplesPerPx();
+    this.invoke('initialized', [this]);
+    this.draw(false, true);
   }
 
   setLoading(loading: boolean) {
@@ -157,14 +146,18 @@ export class Visualizer extends Events<VisualizerEvents> {
     }
   }
 
-  async updateChannels(callback?: () => void) {
-    for(const channel of this.channels) {
-      if (!channel) continue;
-      await channel.recalculate();
+  setDecodingProgress(chunk?: number, total?: number) {
+    if (this._loader) {
+      if (chunk !== undefined) (this._loader as any).loaded = chunk;
+      if (total !== undefined) (this._loader as any).total = total;
+      (this._loader as any).update();
     }
+  }
 
-    if (callback instanceof Function) {
-      callback();
+  setError(error: string) {
+    if (this._loader) {
+      (this._loader as any).error = error;
+      (this._loader as any).update();
     }
   }
 
@@ -178,10 +171,8 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.getSamplesPerPx();
 
-    this.updateChannels(() => {
-      this.wf.invoke('zoom', [this.zoom]);
-      this.draw();
-    });
+    this.wf.invoke('zoom', [this.zoom]);
+    this.draw();
   }
 
   getZoom() {
@@ -218,7 +209,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.drawing = true;
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if (!dry) {
         this.drawMiddleLine();
 
@@ -226,8 +217,8 @@ export class Visualizer extends Events<VisualizerEvents> {
           this.centerToCurrentTime();
         }
 
-        // Render all enabled channels
-        this.renderAvailableChannels();
+        // Render all available channels
+        await this.renderAvailableChannels();
       }
 
       this.renderCursor();
@@ -295,77 +286,125 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.playhead.updatePositionFromTime(time);
   }
 
-  private renderAvailableChannels() {
+  private async renderAvailableChannels() {
     if (!this.audio) return;
 
-    this.useLayer('waveform', (layer) => {
-      layer.clear();
-      this.enabledChannels.forEach((channel) => {
-        measure(`Render wave channel ${channel}`, () => {
-          this.renderWave(channel, layer);
-        });
-      });
+    const layer = this.getLayer('waveform');
+
+    if (!layer || !layer.isVisible) return;
+
+    this.renderId = performance.now();
+
+    return this.renderWave(0, layer);
+  }
+
+  private renderWave(channelNumber: number, layer: Layer): Promise<boolean> {
+    const renderId = this.renderId;
+    const fullHeight = this.height;
+    const waveHeight = fullHeight - this.reservedSpace;
+    const height = waveHeight / (this.splitChannels ? this.audio?.channelCount ?? 1 : 1);
+
+    const dataLength = this.dataLength;
+    const scrollLeftPx = this.getScrollLeftPx();
+
+    const zoom = this.zoom;
+    const amp = this.amp;
+    const iStart = clamp(scrollLeftPx * this.samplesPerPx, 0, dataLength);
+    const iEnd = clamp(iStart + (this.width * this.samplesPerPx), 0, dataLength);
+
+    let x = 0;
+
+    return new Promise(resolve => {
+      if (this.isDestroyed || !this.audio) return resolve(false);
+
+      const renderableData = iEnd - iStart;
+
+      if (this.width !== this.lastRenderedWidth || zoom !== this.lastRenderedZoom || amp !== this.lastRenderedAmp || renderableData < CACHE_RENDER_THRESHOLD) {
+        layer.clear();
+        const renderIterator = this.renderSlice(layer, height, iStart, iEnd, channelNumber, x);
+
+        // Render iterator, allowing it to be cancelled if a new render is requested
+        const render = () => {
+          if (this.renderId !== renderId) return resolve(false);
+
+          const next = renderIterator.next();
+
+          if (!next.done) {
+            requestAnimationFrame(render);
+          } else {
+            this.lastRenderedWidth = this.width;
+            this.lastRenderedZoom = zoom;
+            this.lastRenderedAmp = amp;
+            this.lastRenderedScrollLeftPx = scrollLeftPx;
+            resolve(true);
+          }
+        };
+
+        render();
+      } else {
+        let deltaX = this.lastRenderedScrollLeftPx - scrollLeftPx;
+
+        if (deltaX < 1 && deltaX > -1) return resolve(false);
+
+        deltaX = Math.round(deltaX);
+        const diff = deltaX * this.samplesPerPx;
+
+        this.lastRenderedScrollLeftPx = scrollLeftPx;
+
+        // Move the canvas to the left by deltaX
+        layer.shift(deltaX, 0);
+
+        let sStart = iStart;
+        let sEnd = iEnd;
+
+        // Waveform visually moving to the right
+        if (deltaX > 0) {
+        // Draw the new data on the left
+          sEnd = iStart + diff;
+          x = 0;
+
+          // Waveform visually moving to the left
+        } else {
+        // Draw the new data on the right
+          sStart = iEnd + diff;
+          x = clamp(this.width + deltaX - BUFFER_SAMPLES, 0, this.width);
+        }
+
+        sEnd = clamp(sEnd + (this.samplesPerPx * BUFFER_SAMPLES), 0, dataLength);
+
+        const renderIterator = this.renderSlice(layer, height, sStart, sEnd, channelNumber, x);
+
+        // Render iterator, allowing it to be cancelled if a new render is requested
+        const render = () => {
+          if (this.renderId !== renderId) return resolve(false);
+
+          const next = renderIterator.next();
+
+          if (!next.done) {
+            requestAnimationFrame(render);
+          } else {
+            resolve(true);
+          }
+        };
+
+        render();
+      }
     });
   }
 
-  private renderWave(channelNumber: number, layer: Layer) {
-    const channel = this.channels[channelNumber];
-   
-    if (!channel || channel.isDestroyed) return;
+  private *renderSlice(layer: Layer, height: number, iStart: number, iEnd: number, channelNumber: number, x = 0): Generator<any, void, any> {
+    const bufferChunks = this.audio?.chunks;
 
-    const fullHeight = this.height;
+    if (!bufferChunks) return;
+
+    const bufferChunkSize = bufferChunks.length;
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
-    const waveHeight = fullHeight - this.reservedSpace;
-    const zero = fullHeight * (this.splitChannels ? channelNumber : 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
-    const height = waveHeight / (this.splitChannels ? this.audio?.channelCount ?? 1 : 1);
+    const zero = this.height * (this.splitChannels ? channelNumber : 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
+    const y = zero + paddingTop +  height / 2;
+    let total = 0;
 
-    const dataLength = channel.data.length;
-    const scrollLeftPx = this.getScrollLeftPx();
-
-    const iStart = clamp(
-      roundToStep(
-        scrollLeftPx * this.samplesPerPx,
-        this.samplesPerPx,
-        'floor',
-      ), 0, dataLength);
-
-    const iEnd = clamp(
-      roundToStep(
-        iStart + (this.width * this.samplesPerPx),
-        this.samplesPerPx,
-        'ceil',
-      ), 0, dataLength);
-
-    const x = 0;
-    const y = zero + paddingTop + height / 2;
-
-    if (this.isDestroyed || channel.isDestroyed) return;
-
-    const renderable = channel.data.slice(iStart, iEnd);
-
-    this.renderAllChunks(
-      layer,
-      renderable,
-      x,
-      y,
-      height,
-      paddingLeft,
-      zero,
-    );
-  }
-
-  private renderAllChunks(
-    layer: Layer,
-    chunks: Float32Array,
-    x: number,
-    y: number,
-    height: number,
-    paddingLeft: number,
-    zero: number,
-  ) {
     layer.save();
-
     const waveColor = this.waveColor.toString();
 
     layer.strokeStyle = waveColor;
@@ -375,21 +414,44 @@ export class Visualizer extends Events<VisualizerEvents> {
     layer.beginPath();
     layer.moveTo(x, y);
 
-    const l = chunks.length - 1;
-    let i = l + 1;
+    // Find all chunks in buffer chunks that are between iStart and iEnd
 
-    while (i > 0) {
-      const index = l - i;
-      const chunk = chunks.slice(index, index + this.samplesPerPx);
+    const now = performance.now();
 
-      if (x >= 0 && chunk.length > 0) {
-        this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
+    for (let i = 0; i < bufferChunkSize; i++) { 
+      const slice = bufferChunks[i];
+      const sliceLength = slice.length;
+
+      const chunkStart = Math.floor(clamp(iStart - total, 0, sliceLength));
+      const chunkEnd = Math.ceil(clamp(iEnd - total, 0, sliceLength));
+
+      total += sliceLength;
+
+      try {
+        const chunks = slice.slice(chunkStart, chunkEnd);
+
+        const l = chunks.length - 1;
+        let i = l + 1;
+
+        while (i > 0) {
+          const index = l - i;
+          const chunk = chunks.slice(index, index + this.samplesPerPx);
+
+          if (now - performance.now() > 10) {
+            yield;
+          }
+
+          if (x >= 0 && chunk.length > 0) {
+            this.renderChunk(chunk, layer, height, x + paddingLeft, zero);
+          }
+
+          x += 1;
+          i = clamp(i - this.samplesPerPx, 0, l);
+        }
+      } catch {
+        // Ignore any out of bounds errors if they occur
       }
-
-      x += 1;
-      i = clamp(i - this.samplesPerPx, 0, l);
     }
-
     layer.stroke();
     layer.restore();
   }
@@ -399,12 +461,13 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     const renderable = averageMinMax(chunk);
 
-    renderable.forEach((v) => {
+    renderable.forEach((v: number) => {
       const H2 = height / 2;
       const H = (v * this.amp * H2);
 
       layer.lineTo(offset + 1, zero + H2 + H);
     });
+
     layer.restore();
   }
 
@@ -784,16 +847,16 @@ export class Visualizer extends Events<VisualizerEvents> {
   };
 
   private handleResize = () => {
-    if (!this.wf.loaded) return;
+    if (!this.wf.duration) return;
+
     requestAnimationFrame(() => {
       const newWidth = this.wrapper.clientWidth;
       const newHeight = this.height;
 
-      this.updateChannels(() => {
-        this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
-        this.getSamplesPerPx();
-        this.draw(false, this.zoom === 1);
-      });
+      this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
+      this.getSamplesPerPx();
+      this.wf.renderTimeline();
+      this.draw(false, this.zoom === 1);
     });
   };
 
