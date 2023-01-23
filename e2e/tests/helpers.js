@@ -419,6 +419,14 @@ const areEqualRGB = (a, b, tolerance) => {
   return true;
 };
 
+const setKonvaLayersOpacity = ([opacity]) => {
+  const stage = window.Konva.stages[0];
+
+  for (const layer of stage.getLayers()) {
+    layer.canvas._canvas.style.opacity = opacity;
+  }
+};
+
 const getKonvaPixelColorFromPoint = ([x, y]) => {
   const stage = window.Konva.stages[0];
   const colors = [];
@@ -660,6 +668,7 @@ module.exports = {
   getCanvasSize,
   getImageSize,
   getImageFrameSize,
+  setKonvaLayersOpacity,
   setZoom,
   whereIsPixel,
   countKonvaShapes,
