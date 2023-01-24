@@ -28,8 +28,8 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       backgroundColor: '#fafafa',
       autoCenter: true,
       zoomToCursor: true,
-      enabledChannels: [0],
-      height: 94,
+      height: item.height ? Number(item.height) : 94,
+      splitChannels: false, // item.splitchannels,
       volume: item.defaultvolume ? Number(item.defaultvolume) : 1,
       amp: item.defaultscale ? Number(item.defaultscale) : 1,
       zoom: item.defaultzoom ? Number(item.defaultzoom) : 1,
@@ -153,7 +153,10 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
           waveform.current?.seekForward(NORMALIZED_STEP);
           waveform.current?.syncCursor();
         }}
-        onPositionChange={pos => controls.setCurrentTime(pos)}
+        onPositionChange={pos => {
+          waveform.current?.seek(pos);
+          waveform.current?.syncCursor();
+        }}
         onSpeedChange={speed => controls.setRate(speed)}
         onZoom={zoom => controls.setZoom(zoom)}
         amp={controls.amp}
