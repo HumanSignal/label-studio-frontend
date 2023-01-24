@@ -144,6 +144,7 @@ export interface WaveformOptions {
 }
 interface WaveformEventTypes extends RegionsGlobalEvents, RegionGlobalEvents {
   'load': () => void;
+  'error': (error: Error) => void;
   'resize': (wf: Waveform, width: number, height: number) => void;
   'pause': () => void;
   'play': () => void;
@@ -334,8 +335,9 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.visualizer.setDecodingProgress(chunk, total);
   }
 
-  setError(error: string) {
-    this.visualizer.setError(error);
+  setError(errorMessage: string, error?: Error) {
+    this.invoke('error', [error || new Error(errorMessage)]);
+    this.visualizer.setError(errorMessage);
   }
 
   /**

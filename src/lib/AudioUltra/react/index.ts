@@ -7,6 +7,7 @@ export const useWaveform = (
   containter: MutableRefObject<HTMLElement | null | undefined>,
   options: Omit<WaveformOptions, 'container'> & {
     onLoad?: (wf: Waveform) => void,
+    onError?: (error: Error) => void,
     onSeek?: (time: number) => void,
     onPlaying?: (playing: boolean) => void,
     onRateChange?: (rate: number) => void,
@@ -44,6 +45,9 @@ export const useWaveform = (
     });
     wf.on('pause', () => {
       setPlaying(false);
+    });
+    wf.on('error', (error) => {
+      options?.onError?.(error);
     });
     wf.on('playing', (time: number) => {
       if (playing && !isTimeRelativelySimilar(time, currentTime, duration)) {

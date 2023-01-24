@@ -180,7 +180,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
   mediaReady = (e: any) => {
     if (e.type === 'error') {
-      this.mediaReject?.(e);
+      this.mediaReject?.(this.el?.error);
     } else {
       this.mediaResolve?.();
     }

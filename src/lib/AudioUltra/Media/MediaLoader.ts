@@ -92,9 +92,9 @@ export class MediaLoader extends Destructable {
         this.decoderResolve?.();
         return this.audio;
       }
-    } catch {
+    } catch (err: any) {
       // If the media element error event was triggered, we can't continue
-      this.wf.setError('An error occurred while loading the audio file. Please select another file or try again.');
+      this.wf.setError('An error occurred while loading the audio file. Please select another file or try again.', err);
       return null;
     }
 
@@ -121,8 +121,7 @@ export class MediaLoader extends Destructable {
 
         return this.audio ?? null;
       } catch (err) {
-        this.wf.setError('An error occurred while decoding the audio file. Please select another file or try again.');
-        console.error('An audio decoding error occurred', err);
+        this.wf.setError('An error occurred while decoding the audio file. Please select another file or try again.', err);
       }
     }
 
