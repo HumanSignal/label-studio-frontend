@@ -6,18 +6,15 @@ export type Options = {
   src: string,
 }
 
-type MediaResponse = ArrayBuffer|null;
-
 export class MediaLoader extends Destructable {
   private wf: Waveform;
   private audio?: WaveformAudio | null;
   private loaded = false;
   private options: Options;
   private cancel: () => void;
-  private decoderResolve?: () => void;
-  private _duration = 0;
-  
-  decoderPromise?: Promise<void>;
+
+  duration = 0;
+  sampleRate = 0;
   loadingProgressType: 'determinate' | 'indeterminate';
 
   constructor(wf: Waveform, options: Options) {
@@ -28,94 +25,53 @@ export class MediaLoader extends Destructable {
     this.loadingProgressType = 'determinate';
   }
 
-  get duration() {
-    return this._duration;
-  }
-
-  set duration(duration: number) {
-    const changed = this._duration !== duration;
-
-    this._duration = duration;
-    
-    if (changed) {
-      this.wf.invoke('durationChanged', [duration]);
-    }
-  }
-
-  get sampleRate() {
-    return this.audio?.sampleRate || 0;
-  }
-
   reset() {
     this.cancel();
     this.loaded = false;
     this.loadingProgressType = 'determinate';
-    this.decoderResolve = undefined;
-    this.decoderPromise = undefined;
   }
 
-  async decodeAudioData() {
-    if (!this.audio || this.isDestroyed) return null;
+  async decodeAudioData(arrayBuffer: ArrayBuffer) {
+    if (!this.audio?.context || this.isDestroyed) return null;
 
-    return await this.audio.decodeAudioData({
-      multiChannel: this.wf.params.splitChannels,
+    return await this.audio.decodeAudioData(arrayBuffer).then((buffer) => {
+      if (this.isDestroyed) return null;
+      return buffer;
     });
   }
 
   async load(options: WaveformAudioOptions): Promise<WaveformAudio| null> {
     if (this.isDestroyed || this.loaded) {
-      return null;
+      return Promise.resolve(null);
     }
 
-    // Create this as soon as possible so that we can
-    // update the loading progress from the waveform
-    this.decoderPromise = new Promise((resolve) => {
-      this.decoderResolve = resolve;
-    });
+    const audio = this.createAnalyzer(options);
+    const xhr = await this.performRequest(this.options.src);
 
-    this.createAnalyzer({
-      ...options,
-      src: this.options.src,
-    });
+    if (xhr.status === 200 && xhr.response) {
+      const playAudio = (buffer: AudioBuffer) => {
+        this.duration = buffer.duration;
+        this.sampleRate = audio.sampleRate ?? buffer.sampleRate;
+        this.loaded = true;
+        audio.buffer = buffer;
+        audio.connect();
+        return audio;
+      };
 
-    // If this failed to allocate an audio decoder, we can't continue
-    if (!this.audio) {
-      throw new Error('MediaLoader: Failed to allocate audio decoder');
-    }
-
-    // If there is an existing decoder promise,
-    // wait for it to resolve and use the existing
-    // audio decoder information
-    if (await this.audio.sourceDecoded()) {
-      this.duration = this.audio.duration;
-      this.decoderResolve?.();
-      return this.audio;
-    }
-
-    // Get the audio data from the url src
-    const req = await this.performRequest(this.options.src);
-
-    if (req) {
       try {
-        await this.audio.initDecoder(req);
+        if (!audio.context) {
+          return Promise.resolve(null);
+        }
 
-        // Notify the waveform that the audio decoder is ready
-        this.decoderResolve?.();
-
-        // The audio instance could be removed if it was destroyed
-        // while the decoder was being initialized.
-        // If this is the case, we can't continue
-        if (!this.audio) return null;
-
-        // Get the duration from the audio file as soon as it is ready
-        this.duration = this.audio.duration;
-
-        // Proceed with the rest of the decoding
-        await this.decodeAudioData();
-
-        return this.audio ?? null;
+        return this.decodeAudioData(xhr.response).then((buffer) => {
+          if (buffer) {
+            return playAudio(buffer);
+          }
+          return null;
+        });
       } catch (err) {
-        this.wf.setError('An error occurred while decoding the audio file. Please select another file or try again.');
+      // TODO: Handle properly (exiquio)
+      // NOTE: error is being received
         console.error('An audio decoding error occurred', err);
       }
     }
@@ -135,7 +91,7 @@ export class MediaLoader extends Destructable {
     }
   }
 
-  private async performRequest(url: string): Promise<MediaResponse> {
+  private async performRequest(url: string): Promise<XMLHttpRequest> {
     const xhr = new XMLHttpRequest();
 
     this.cancel = () => {
@@ -143,7 +99,7 @@ export class MediaLoader extends Destructable {
       this.cancel = () => {};
     };
 
-    return new Promise<MediaResponse>((resolve, reject) => {
+    return new Promise<XMLHttpRequest>((resolve, reject) => {
       xhr.responseType = 'arraybuffer';
 
       xhr.addEventListener('progress', (e) => {
@@ -158,11 +114,10 @@ export class MediaLoader extends Destructable {
 
       xhr.addEventListener('load', async () => {
         this.wf.setLoadingProgress(undefined, undefined, true);
-        resolve(xhr.response);
+        resolve(xhr);
       });
 
       xhr.addEventListener('error', () => {
-        this.wf.setError('An error occurred while loading the audio file. Please select another file or try again.');
         reject(xhr);
       });
 
@@ -174,12 +129,6 @@ export class MediaLoader extends Destructable {
   private createAnalyzer(options: WaveformAudioOptions): WaveformAudio {
     if (this.audio) return this.audio;
 
-    this.audio = new WaveformAudio(options);
-
-    this.audio.on('decodingProgress', (chunk, total) => {
-      this.wf.setDecodingProgress(chunk, total);
-    });
-
-    return this.audio;
+    return this.audio = new WaveformAudio(options);
   }
 }
