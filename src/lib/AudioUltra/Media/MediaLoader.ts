@@ -83,13 +83,19 @@ export class MediaLoader extends Destructable {
       throw new Error('MediaLoader: Failed to allocate audio decoder');
     }
 
+    try {
     // If there is an existing decoder promise,
     // wait for it to resolve and use the existing
     // audio decoder information
-    if (await this.audio.sourceDecoded()) {
-      this.duration = this.audio.duration;
-      this.decoderResolve?.();
-      return this.audio;
+      if (await this.audio.sourceDecoded()) {
+        this.duration = this.audio.duration;
+        this.decoderResolve?.();
+        return this.audio;
+      }
+    } catch {
+      // If the media element error event was triggered, we can't continue
+      this.wf.setError('An error occurred while loading the audio file. Please select another file or try again.');
+      return null;
     }
 
     // Get the audio data from the url src
@@ -164,6 +170,13 @@ export class MediaLoader extends Destructable {
       xhr.addEventListener('error', () => {
         this.wf.setError('An error occurred while loading the audio file. Please select another file or try again.');
         reject(xhr);
+      });
+
+      xhr.addEventListener('readystatechange', () => {
+        if (xhr.readyState === 4 && xhr.status !== 200) {
+          this.wf.setError('An error occurred while loading the audio file. Please select another file or try again.');
+          reject(xhr);
+        }
       });
 
       xhr.open('GET', url);

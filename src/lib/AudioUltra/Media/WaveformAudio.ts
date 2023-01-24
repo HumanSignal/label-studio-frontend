@@ -26,6 +26,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private _savedVolume = 1;
   private src?: string;
   private mediaResolve?: () => void;
+  private mediaReject?: (err: any) => void;
 
   constructor(options: WaveformAudioOptions) {
     super();
@@ -103,6 +104,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.disconnect();
 
     delete this.mediaResolve;
+    delete this.mediaReject;
     delete this.mediaPromise;
     delete this.decoderPromise;
     this.decoder?.destroy();
@@ -166,20 +168,28 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.el = document.createElement('audio');
     this.el.preload = 'auto';
 
-    this.mediaPromise = new Promise((resolve) => {
+    this.mediaPromise = new Promise((resolve, reject) => {
       this.mediaResolve = resolve;
+      this.mediaReject = reject;
     });
 
     this.el.addEventListener('canplay', this.mediaReady);
+    this.el.addEventListener('error', this.mediaReady);
     this.loadMedia();
   }
 
-  mediaReady = () => {
-    this.mediaResolve?.();
+  mediaReady = (e: any) => {
+    if (e.type === 'error') {
+      this.mediaReject?.(e);
+    } else {
+      this.mediaResolve?.();
+    }
     this.mediaResolve = undefined;
+    this.mediaReject = undefined;
 
     if (this.el) {
       this.el.removeEventListener('canplay', this.mediaReady);
+      this.el.removeEventListener('error', this.mediaReady);
     }
   };
 
