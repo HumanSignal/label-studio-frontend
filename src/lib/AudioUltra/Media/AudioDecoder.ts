@@ -229,7 +229,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
 
     const totalDuration = this.worker.duration;
 
-    let durationOffset = 0;
+    let durationOffset = -1;
 
     while (true) {
       yield new Promise((resolve, reject) => {

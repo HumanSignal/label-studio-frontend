@@ -56,80 +56,78 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   );
 
   useEffect(() => {
-    if (item.annotationStore.store.hydrated) {
-      const hotkeys = Hotkey('Audio', 'Audio Segmentation');
+    const hotkeys = Hotkey('Audio', 'Audio Segmentation');
 
-      waveform.current?.load();
+    waveform.current?.load();
 
-      const updateBeforeRegionDraw = (regions: Regions) => {
-        const regionColor = item.getRegionColor();
+    const updateBeforeRegionDraw = (regions: Regions) => {
+      const regionColor = item.getRegionColor();
 
-        if (regionColor) {
-          regions.regionDrawableTarget();
-          regions.setDrawingColor(regionColor);
-        }
-      };
+      if (regionColor) {
+        regions.regionDrawableTarget();
+        regions.setDrawingColor(regionColor);
+      }
+    };
 
-      const updateAfterRegionDraw = (regions: Regions) => {
-        regions.resetDrawableTarget();
-        regions.resetDrawingColor();
-      };
+    const updateAfterRegionDraw = (regions: Regions) => {
+      regions.resetDrawableTarget();
+      regions.resetDrawingColor();
+    };
 
-      const createRegion = (region: Region|Segment) => {
-        item.addRegion(region);
-      };
+    const createRegion = (region: Region|Segment) => {
+      item.addRegion(region);
+    };
 
-      const selectRegion = (region: Region|Segment, event: MouseEvent) => {
-        const growSelection = event.metaKey || event.ctrlKey;
+    const selectRegion = (region: Region|Segment, event: MouseEvent) => {
+      const growSelection = event.metaKey || event.ctrlKey;
 
-        if (!growSelection || (!region.selected && !region.isRegion))
-          item.annotation.regionStore.unselectAll();
+      if (!growSelection || (!region.selected && !region.isRegion))
+        item.annotation.regionStore.unselectAll();
 
-        // to select or unselect region
-        const itemRegion = item.regs.find((obj: any) => obj.id === region.id);
+      // to select or unselect region
+      const itemRegion = item.regs.find((obj: any) => obj.id === region.id);
 
-        itemRegion && item.annotation.regionStore.toggleSelection(itemRegion, region.selected);
+      itemRegion && item.annotation.regionStore.toggleSelection(itemRegion, region.selected);
 
-        // to select or unselect unlabeled segments
-        const targetInWave = item._ws.regions.findRegion(region.id);
+      // to select or unselect unlabeled segments
+      const targetInWave = item._ws.regions.findRegion(region.id);
 
-        if (targetInWave) {
-          targetInWave.handleSelected(region.selected);
-        }
+      if (targetInWave) {
+        targetInWave.handleSelected(region.selected);
+      }
 
-        // deselect all other segments if not changing multiselection
-        if (!growSelection) {
-          item._ws.regions.regions.forEach((obj: any) => {
-            if (obj.id !== region.id) {
-              obj.handleSelected(false);
-            }
-          });
-        }
-      };
+      // deselect all other segments if not changing multiselection
+      if (!growSelection) {
+        item._ws.regions.regions.forEach((obj: any) => {
+          if (obj.id !== region.id) {
+            obj.handleSelected(false);
+          }
+        });
+      }
+    };
 
-      const updateRegion = (region: Region|Segment) => {
-        item.updateRegion(region);
-      };
+    const updateRegion = (region: Region|Segment) => {
+      item.updateRegion(region);
+    };
 
-      waveform.current?.on('beforeRegionsDraw', updateBeforeRegionDraw);
-      waveform.current?.on('afterRegionsDraw', updateAfterRegionDraw);
-      waveform.current?.on('regionSelected', selectRegion);
-      waveform.current?.on('regionCreated', createRegion);
-      waveform.current?.on('regionUpdatedEnd', updateRegion);
+    waveform.current?.on('beforeRegionsDraw', updateBeforeRegionDraw);
+    waveform.current?.on('afterRegionsDraw', updateAfterRegionDraw);
+    waveform.current?.on('regionSelected', selectRegion);
+    waveform.current?.on('regionCreated', createRegion);
+    waveform.current?.on('regionUpdatedEnd', updateRegion);
 
-      hotkeys.addNamed('region:delete', () => {
-        waveform.current?.regions.clearSegments(false);
-      });
+    hotkeys.addNamed('region:delete', () => {
+      waveform.current?.regions.clearSegments(false);
+    });
 
-      hotkeys.addNamed('region:delete-all', () => {
-        waveform.current?.regions.clearSegments();
-      });
+    hotkeys.addNamed('region:delete-all', () => {
+      waveform.current?.regions.clearSegments();
+    });
 
-      return () => {
-        hotkeys.unbindAll();
-      };
-    }
-  }, [item.annotationStore.store.hydrated]);
+    return () => {
+      hotkeys.unbindAll();
+    };
+  }, []);
 
   return (
     <Block name="audio-tag">
