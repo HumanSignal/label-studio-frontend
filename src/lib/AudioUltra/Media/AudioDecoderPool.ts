@@ -4,7 +4,7 @@ import { AudioDecoder } from './AudioDecoder';
 export type DecoderCache = Map<string, AudioDecoder>;
 export type DecoderProxy = ReturnType<typeof decoderProxy>;
 
-const REMOVAL_GRACE_PERIOD = 1000; // 1s grace period for removal of the decoder from the cache
+const REMOVAL_GRACE_PERIOD = 5000; // 5s grace period for removal of the decoder from the cache
 
 function decoderProxy(cache: DecoderCache, src: string) {
   const decoder = cache.get(src) ?? new AudioDecoder(src);
