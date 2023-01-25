@@ -1,4 +1,3 @@
-import { FF_DEV_2480, isFF } from './feature-flags';
 import { clamp, isDefined } from './utilities';
 
 export const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
@@ -287,6 +286,8 @@ const textNodeLookup = (commonContainer, node, offset, direction = 'forward') =>
 
   const walker = commonContainer.ownerDocument.createTreeWalker(commonContainer, NodeFilter.SHOW_ALL);
   let currentNode = walker.nextNode();
+  // tree walker can't go backward, so we go forward to startNode and record every text node
+  // to find the last one before startNode
   let lastTextNode;
 
   while (currentNode && currentNode !== startNode) {
@@ -325,10 +326,10 @@ const fixRange = range => {
   // if user started selection from the end of the tag, start could be this tag,
   // so we should move it to more relevant one
   const selectionFromTheEnd = startContainer.wholeText.length === startOffset;
-  // we skip ephemeral whitespace only text nodes, like \n between tags in original html
+  // we skip ephemeral whitespace-only text nodes, like \n between tags in original html
   const isBasicallyEmpty = textNode => /^\s*$/.test(textNode.wholeText);
 
-  if (isFF(FF_DEV_2480) && (selectionFromTheEnd || isBasicallyEmpty(startContainer))) {
+  if (selectionFromTheEnd || isBasicallyEmpty(startContainer)) {
     do {
       startContainer = textNodeLookup(commonContainer, startContainer, startOffset, 'forward-next');
       if (!startContainer) return null;
@@ -339,23 +340,15 @@ const fixRange = range => {
   }
 
   if (!isTextNode(endContainer)) {
-    let isIncluded = false;
-
     endContainer = textNodeLookup(commonContainer, endContainer, endOffset, 'backward');
     if (!endContainer) return null;
 
-    if (isFF(FF_DEV_2480)) {
-      while (/^\s*$/.test(endContainer.wholeText)) {
-        endContainer = textNodeLookup(commonContainer, endContainer, endOffset, 'backward-next');
-        if (!endContainer) return null;
-      }
-      // we skip empty whitespace only text nodes, so we need the found one to be included
-      isIncluded = true;
-    } else {
-      isIncluded = range.toString().includes(endContainer.wholeText);
+    while (/^\s*$/.test(endContainer.wholeText)) {
+      endContainer = textNodeLookup(commonContainer, endContainer, endOffset, 'backward-next');
+      if (!endContainer) return null;
     }
-
-    range.setEnd(endContainer, isIncluded ? endContainer.length : 0);
+    // we skip empty whitespace-only text nodes, so we need the found one to be included
+    range.setEnd(endContainer, endContainer.length);
   }
 
   return range;
