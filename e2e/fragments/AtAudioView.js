@@ -33,6 +33,7 @@ module.exports = {
     I.pressMouseDown();
     I.moveMouse(this._stageAUltra.x + x + shiftX, this._stageAUltra.y + 40, 3);
     I.pressMouseUp();
+    I.wait(1);
   },
 
   clickAt(x) {

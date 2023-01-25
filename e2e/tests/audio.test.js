@@ -39,20 +39,6 @@ const annotations = [
   },
   {
     from_name: 'label',
-    id: 'SsGrpVgy_C',
-    to_name: 'audio',
-    original_length: 98.719925,
-    type: 'labels',
-    origin: 'manual',
-    value: {
-      channel: 0,
-      end: 48.50568583621215,
-      labels: ['Beat'],
-      start: 12.778410892095105,
-    },
-  },
-  {
-    from_name: 'label',
     id: 'JhxupEJWlW',
     to_name: 'audio',
     original_length: 98.719925,
@@ -83,11 +69,21 @@ Scenario('Check if regions is selected', async function({ I, LabelStudio, AtAudi
 
   await AtAudioView.lookForStage();
 
-  AtAudioView.clickAt(160);
-  AtSidebar.seeSelectedRegion();
-  AtAudioView.clickAt(160);
-  AtSidebar.dontSeeSelectedRegion();
+
+  AtSidebar.seeRegions(1);
+
+  // creating a new region
+  I.pressKey('1');
   AtAudioView.dragAudioRegion(160,80);
+  I.pressKey('u');
+
+  AtSidebar.seeRegions(2);
+
+  AtAudioView.clickAt(170);
+  AtSidebar.seeSelectedRegion();
+  AtAudioView.clickAt(170);
+  AtSidebar.dontSeeSelectedRegion();
+  AtAudioView.dragAudioRegion(170,40);
   AtSidebar.seeSelectedRegion();
   AtAudioView.clickAt(220);
   AtSidebar.dontSeeSelectedRegion();
