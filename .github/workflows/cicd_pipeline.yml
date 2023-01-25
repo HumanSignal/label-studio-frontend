@@ -48,7 +48,7 @@ jobs:
 
   run_lint:
     name: "Lint"
-    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/eslint.yml@master
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
