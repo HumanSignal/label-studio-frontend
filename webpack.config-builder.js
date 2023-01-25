@@ -286,11 +286,21 @@ module.exports = ({withDevServer = true} = {}) => ({
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
+    fallback: {
+      fs: false,
+      path: false,
+      crypto: false,
+      worker_threads: false,
+    }
   },
   plugins: withDevServer ? [
     ...plugins,
     // new webpack.HotModuleReplacementPlugin(),
   ] : plugins,
+  experiments: {
+    syncWebAssembly: true,
+    asyncWebAssembly: true,
+  },
   optimization: optimizer(),
   performance: {
     maxEntrypointSize: Infinity,
@@ -409,6 +419,15 @@ module.exports = ({withDevServer = true} = {}) => ({
         exclude: /node_modules/,
         loader: "url-loader",
       },
+      {
+        test: /\.wasm$/,
+        type: "javascript/auto",
+        loader: "file-loader",
+        options: {
+          name: "[name].[ext]",
+          outputPath: dirPrefix.js, // colocate wasm with js
+        }
+      }
     ],
   },
 });
