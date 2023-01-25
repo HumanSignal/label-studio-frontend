@@ -85,13 +85,11 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     return this.volume === 0;
   }
 
-  connect() {
-    if (this.el) this.disconnect();
-  }
-
   disconnect() {
     try {
-      this.el?.pause();
+      if (this.el && !this.el.paused) {
+        this.el.pause();
+      }
     } catch {
       // ignore
     }
@@ -186,10 +184,8 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private loadMedia() {
     if (!this.src || !this.el) return;
     
-    if (this.el.src !== this.src) {
-      this.el.src = this.src;
-      this.el.load();
-    }
+    this.el.src = this.src;
+    this.el.load();
   }
 
   private createAudioDecoder() {

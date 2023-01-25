@@ -189,7 +189,7 @@ export class Player extends Destructable {
   private playSource(start?: number, duration?: number) {
     this.stopWatch();
     this.timestamp = performance.now();
-    this.recreateSource();
+    this.connectSource();
 
     if (!this.audio) return;
 
@@ -237,17 +237,10 @@ export class Player extends Destructable {
     return { start, end };
   }
 
-  private recreateSource() {
-    if (this.connected) {
-      this.disconnectSource();
-    }
-    this.connectSource();
-  }
-
   private connectSource() {
     if (this.isDestroyed || !this.audio || this.connected) return;
     this.connected = true;
-    this.audio.connect();
+    this.audio.disconnect();
   }
 
   private disconnectSource() {
