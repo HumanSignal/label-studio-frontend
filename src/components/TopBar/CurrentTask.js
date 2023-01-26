@@ -10,7 +10,7 @@ import { reaction } from 'mobx';
 
 
 export const CurrentTask = observer(({ store }) => {
-  const [initialCommentLength, setInitialCommentLength] = useState(0);
+  const [initialCommentLength, setInitialCommentLength] = useState(null);
   const [visibleComments, setVisibleComments] = useState(0);
 
   useEffect(() => {
@@ -22,13 +22,17 @@ export const CurrentTask = observer(({ store }) => {
     );
 
     return () => {
+      setVisibleComments(null);
       reactionDisposer?.();
     };
   }, []);
 
   useEffect(() => {
-    if(initialCommentLength === 0) setInitialCommentLength(store.commentStore.comments.length);
-  }, [store.commentStore.comments.length]);
+    if (initialCommentLength === null && store.commentStore.loading !== 'list') {
+      setInitialCommentLength(visibleComments);
+    }
+
+  }, [visibleComments]);
 
   const currentIndex = useMemo(() => {
     return store.taskHistory.findIndex((x) => x.taskId === store.task.id) + 1;
@@ -43,6 +47,7 @@ export const CurrentTask = observer(({ store }) => {
     && !store.canGoNextTask
     && !store.hasInterface('review')
     && store.hasInterface('postpone');
+
 
   if (isFF(FF_DEV_4174)) {
     canPostpone = canPostpone && (visibleComments > initialCommentLength);
