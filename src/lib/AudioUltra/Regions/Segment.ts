@@ -217,11 +217,11 @@ export class Segment extends Events<SegmentEvents> {
     if (this.isDragging) {
       this.switchCursor(CursorSymbol.grab);
       this.handleUpdateEnd();
-    } else {
-      this.handleSelected();
-      this.waveform.invoke('regionSelected', [this, e]);
     }
-    
+
+    this.handleSelected();
+    this.waveform.invoke('regionSelected', [this, e]);
+
     this.isDragging = false;
     this.draggingStartPosition = null;
     this.isGrabbingEdge = { isRightEdge: false, isLeftEdge: false };
@@ -254,7 +254,7 @@ export class Segment extends Events<SegmentEvents> {
       const endTime = freezeEnd ? end : clamp(end + seconds, newStart + (isResizing ? 0 : timeDiff), this.duration);
 
       if (freezeStart || freezeEnd) this.switchCursor(CursorSymbol.colResize);
-      else  this.switchCursor(CursorSymbol.grabbing);
+      else this.switchCursor(CursorSymbol.grabbing);
 
       this.updatePosition(clamp(startTime, 0, duration), clamp(endTime, 0, duration));
     }
@@ -331,7 +331,7 @@ export class Segment extends Events<SegmentEvents> {
   }
 
   handleSelected = (selected?: boolean) => {
-    if (!this.updateable) return;
+    if (!this.updateable || (this.isDragging && this.selected)) return;
     if (this.waveform.playing) this.waveform.player.pause();
     this.selected = selected ?? !this.selected;
     if (selected) this.setColorDarken(0.5);
