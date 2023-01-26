@@ -114,7 +114,7 @@ Scenario('Seek view should be in sync with indicator position', async ({ I, Labe
     indicatorPosX = indicatorBbox.x;
 
     I.say('Click on the seek step forward button');
-    await AtVideoView.clickSeekStepForward(2);
+    await AtVideoView.clickSeekStepForward(3);
     indicatorBbox = await AtVideoView.grabIndicatorBoundingRect();
 
     I.say('Seeker should now have moved to the right');
@@ -122,7 +122,7 @@ Scenario('Seek view should be in sync with indicator position', async ({ I, Labe
     indicatorPosX = indicatorBbox.x;
 
     I.say('Click on the seek step backward button');
-    await AtVideoView.clickSeekStepBackward(2);
+    await AtVideoView.clickSeekStepBackward(1);
     indicatorBbox = await AtVideoView.grabIndicatorBoundingRect();
 
     I.say('Seeker should now have moved to the left');
