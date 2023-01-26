@@ -13,7 +13,7 @@ export const FF_DEV_1564_DEV_1565 = 'ff_front_dev_1564_dev_1565_shortcuts_focus_
 // Fix work of shortcuts in results
 // @requires FF_DEV_1564_DEV_1565
 export const FF_DEV_1566 = 'ff_front_dev_1566_shortcuts_in_results_010222_short';
- 
+
 // User labels for Taxonomy
 export const FF_DEV_1536 = 'ff_front_dev_1536_taxonomy_user_labels_150222_long';
 
@@ -129,6 +129,12 @@ export const FF_DEV_3617 = 'fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix';
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_1284_auto_detect_undo_281022_short
  */
 export const FF_DEV_1284 = 'fflag_fix_front_dev_1284_auto_detect_undo_281022_short';
+
+/**
+ * Allow shourtcuts button to work with visible main textarea when there is no focus
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short
+ */
+export const FF_DEV_3730 = 'fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short';
 
 /**
  * Fixing maxUsages prop of *labels on region creation.
