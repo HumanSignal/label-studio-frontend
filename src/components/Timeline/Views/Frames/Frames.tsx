@@ -81,7 +81,7 @@ export const Frames: FC<TimelineViewProps> = ({
   const setIndicatorOffset = useCallback((value) => {
     const frame = toSteps(roundToStep(value, step), step);
 
-    handlers.onPositionChange?.(clamp(frame, 1, length));
+    handlers.onPositionChange?.(clamp(frame + 1, 1, length));
   }, [step, length, position]);
 
   const scrollHandler = useCallback((e) => {
@@ -264,14 +264,14 @@ export const Frames: FC<TimelineViewProps> = ({
         <Elem
           name="indicator"
           onMouseDown={handleMovement}
-          style={{ left: seekerOffset }}
+          style={{ left: clamp(seekerOffset - step, timelineStartOffset, viewWidth) }}
         />
 
         {isDefined(hoverOffset) && hoverEnabled && (
           <Elem
             name="hover"
             style={{ left: roundToStep(hoverOffset, step), marginLeft: timelineStartOffset }}
-            data-frame={toSteps(currentOffsetX + hoverOffset, step)}
+            data-frame={toSteps(currentOffsetX + hoverOffset, step) + 1}
           />
         )}
       </Elem>
