@@ -53,7 +53,7 @@ import { FF_DEV_2394, FF_DEV_3377, FF_DEV_4081, isFF } from '../../utils/feature
  * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
  * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
  * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
- * @param {string} [crossOrigin="none"]         - Configures cross domain behavior for this image, either "none", "anonymous", or "use-credentials".
+ * @param {string} [crossOrigin="none"]         - Configures CORS cross domain behavior for this image, either "none", "anonymous", or "use-credentials".
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
