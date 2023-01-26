@@ -22,7 +22,6 @@ export const CurrentTask = observer(({ store }) => {
     );
 
     return () => {
-      setVisibleComments(null);
       reactionDisposer?.();
     };
   }, []);
