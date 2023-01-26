@@ -6,7 +6,6 @@
       <Label hotkey="4" value="Cloud" background="#1b32de"/>
       <Label hotkey="5" value="Exclude" background="#2C2C2B"/>
   </Labels>
-  <Brush name="brush_1" toName="image_1" />
   <MagicWand name="magicwand_1" toName="image_1" />
   <View style="width: 100%; margin-bottom: 20%; margin-side: 10%;">
     <Image name="image_1" value="$image" zoomControl="true" zoom="true" crossOrigin="anonymous" />

@@ -28,7 +28,7 @@ const Model = types
     },
   }))
   .volatile(() => ({
-    toolNames: ['MagicWand'],
+    toolNames: ['MagicWand', 'Brush', 'Erase'],
   }));
 
 const MagicWandModel = types.compose('MagicWandModel',
