@@ -10,7 +10,7 @@ import { reaction } from 'mobx';
 
 
 export const CurrentTask = observer(({ store }) => {
-  const [initialCommentLength, setInitialCommentLength] = useState(null);
+  const [initialCommentLength, setInitialCommentLength] = useState(0);
   const [visibleComments, setVisibleComments] = useState(0);
 
   useEffect(() => {
@@ -27,16 +27,15 @@ export const CurrentTask = observer(({ store }) => {
     };
   }, []);
 
-  useEffect(() => {
-    if (initialCommentLength === null && store.commentStore.loading !== 'list') {
-      setInitialCommentLength(visibleComments);
-    }
-
-  }, [visibleComments]);
-
   const currentIndex = useMemo(() => {
     return store.taskHistory.findIndex((x) => x.taskId === store.task.id) + 1;
   }, [store.taskHistory]);
+
+  useEffect(() => {
+    if (store.commentStore.addedCommentThisSession) {
+      setInitialCommentLength(visibleComments);
+    }
+  }, [store.commentStore.addedCommentThisSession]);
 
   const historyEnabled = store.hasInterface('topbar:prevnext');
   const showCounter = store.hasInterface('topbar:task-counter');
@@ -50,7 +49,7 @@ export const CurrentTask = observer(({ store }) => {
 
 
   if (isFF(FF_DEV_4174)) {
-    canPostpone = canPostpone && (visibleComments > initialCommentLength);
+    canPostpone = canPostpone && store.commentStore.addedCommentThisSession && (visibleComments >= initialCommentLength);
   }
 
   return (
