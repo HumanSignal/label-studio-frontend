@@ -244,9 +244,12 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [offset, step]);
 
   useEffect(() => {
-    const scrollTo = roundToStep(position, framesInView);
+    let scrollTo = roundToStep(position, framesInView);
 
-    if (lastScrollPosition.current !== scrollTo) {
+    if (position <= framesInView) {
+      setScroll({ left: 0 });
+      scrollTo = 0;
+    } else if (lastScrollPosition.current !== scrollTo) {
       setScroll({ left: scrollTo * step });
     }
     lastScrollPosition.current = scrollTo;
