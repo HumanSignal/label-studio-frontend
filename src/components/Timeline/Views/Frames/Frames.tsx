@@ -34,6 +34,7 @@ export const Frames: FC<TimelineViewProps> = ({
 
   const scrollable = useRef<HTMLDivElement>();
   const lastScrollPosition = useRef<number>(0);
+  const lastPosition = useRef<number>(position);
   const [hoverEnabled, setHoverEnabled] = useState(true);
   const [hoverOffset, setHoverOffset] = useState<number | null>(null);
   const [offsetX, setOffsetX] = useState(offset);
@@ -237,19 +238,49 @@ export const Frames: FC<TimelineViewProps> = ({
 
   useEffect(() => {
     const scroll = scrollable.current;
+    // Scrollable element is not available on first render
+    // so there is nothing to compute yet
 
-    if (isDefined(scroll)) {
-      setOffsetX(clamp(offset * step, 0, scroll.scrollWidth - scroll.clientWidth));
+    if (!isDefined(scroll) || framesInView < 1) return;
+
+    const firstFrame = toSteps(roundToStep(offsetX, step), step);
+    const lastFrame = firstFrame + framesInView;
+
+    const positionDelta = Math.abs(position - lastPosition.current);
+
+    lastPosition.current = position;
+
+    // Handle position change frame by frame within the same scroll
+    // this ensures the calculation of offset is kept correct.
+    // This is needed because the position is not always a multiple of the step
+    // and the offset used to calculate the position is always a multiple of the step.
+    if (positionDelta === 1 || (position >= firstFrame && position <= lastFrame)) {
+
+      // set to previous frame scroll
+      // if position is 0, then it will be set to 0
+      if (position <= firstFrame) {
+        const prevLeft = clamp((firstFrame - 1 - framesInView) * step, 0, scroll.scrollWidth - scroll.clientWidth);
+
+        setScroll({ left: prevLeft });
+
+      // set to next frame scroll
+      // if position is last frame, then it will be set to last frame scroll
+      } else if (position > lastFrame) {
+
+        const nextLeft = clamp(lastFrame * step, 0, scroll.scrollWidth - scroll.clientWidth);
+
+        setScroll({ left: nextLeft });
+      }
+
+      return;
     }
-  }, [offset, step]);
 
-  useEffect(() => {
-    let scrollTo = roundToStep(position, framesInView);
+    // Handle position change outside of the current scroll
+    // This updates when the user clicks within the track to change the position
+    // or when keyframe hops are used and the position is changed more than 1 frame
+    const scrollTo = roundToStep(position, framesInView);
 
-    if (position <= framesInView) {
-      setScroll({ left: 0 });
-      scrollTo = 0;
-    } else if (lastScrollPosition.current !== scrollTo) {
+    if (lastScrollPosition.current !== scrollTo) {
       setScroll({ left: scrollTo * step });
     }
     lastScrollPosition.current = scrollTo;
