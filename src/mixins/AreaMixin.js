@@ -23,7 +23,7 @@ export const AreaMixin = types
      * @return {Result[]} all results with labeling (created by *Labels control)
      */
     get labelings() {
-      return self.results.filter(r => r.type.endsWith('labels') && r.hasValue);
+      return self.results.filter(r => r.type.endsWith('labels'));
     },
 
     /**
