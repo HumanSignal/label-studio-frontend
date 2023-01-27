@@ -136,6 +136,12 @@ export const FF_DEV_1284 = 'fflag_fix_front_dev_1284_auto_detect_undo_281022_sho
  */
 export const FF_DEV_3730 = 'fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short';
 
+/**
+ * Label stream ablation experiment for solving overlap issue
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short
+ */
+export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
