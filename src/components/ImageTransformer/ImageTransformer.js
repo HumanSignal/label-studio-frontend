@@ -109,8 +109,9 @@ export default class TransformerComponent extends Component {
 
   getStageAbsoluteDimensions() {
     const stage = this.transformer.getStage();
+    const { stageWidth, stageHeight } = this.props.item;
 
-    const [scaledStageWidth, scaledStageHeight] = [stage.width() * stage.scaleX(), stage.height() * stage.scaleY()];
+    const [scaledStageWidth, scaledStageHeight] = [stageWidth * stage.scaleX(), stageHeight * stage.scaleY()];
     const [stageX, stageY] = [stage.x(), stage.y()];
 
     return {

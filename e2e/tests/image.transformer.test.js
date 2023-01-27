@@ -250,6 +250,11 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMoveToolTransfor
     const Shape = shapes[shapeName];
 
     I.amOnPage('/');
+
+    LabelStudio.setFeatureFlags({
+      'ff_front_dev_2394_zoomed_transforms_260522_short': true,
+    });
+
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
     AtSidebar.seeRegions(0);
@@ -276,13 +281,18 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMoveToolTransfor
 
     // Transform the shape
     AtImageView.drawByDrag(150, 150, -150, -150);
+    I.wait(1);
 
     AtImageView.drawByDrag(0, 0, -300, -100);
+    I.wait(1);
 
     AtImageView.drawByDrag(0, 0, 150, 150);
+    I.wait(1);
 
     // Check resulting sizes
     const rectangleResult = await LabelStudio.serialize();
+
+    I.wait(10);
 
     const exceptedResult = Shape.byBBox(50, 50, 300, 300).result;
 
