@@ -40,6 +40,7 @@ const TagAttrs = types.model({
 const Model = types
   .model({
     type: 'brush',
+    removeDuplicatesNamed: 'Erase',
   })
   .views(self => ({
     get hasStates() {

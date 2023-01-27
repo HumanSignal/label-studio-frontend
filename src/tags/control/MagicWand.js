@@ -19,6 +19,7 @@ const TagAttrs = types.model({
 const Model = types
   .model({
     type: 'magicwand',
+    removeDuplicatesNamed: 'Erase',
   })
   .views(self => ({
     get hasStates() {
@@ -28,7 +29,7 @@ const Model = types
     },
   }))
   .volatile(() => ({
-    toolNames: ['MagicWand', 'Brush', 'Erase'],
+    toolNames: ['MagicWand', 'Erase'],
   }));
 
 const MagicWandModel = types.compose('MagicWandModel',

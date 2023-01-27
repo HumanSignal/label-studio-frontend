@@ -25,6 +25,7 @@ const BaseTool = types
   .model('BaseTool', {
     smart: false,
     isDrawingTool: false,
+    removeDuplicatesNamed: types.maybeNull(types.string),
   })
   .volatile(() => ({
     dynamic: false,
@@ -91,7 +92,7 @@ const BaseTool = types
 
           smartCopy.makeDynamic();
 
-          getEnv(self).manager.addTool(`${toolType.name}-smart`, smartCopy);
+          getEnv(self).manager.addTool(`${toolType.name}-smart`, smartCopy, self.control.removeDuplicatesNamed);
         }
       },
 
