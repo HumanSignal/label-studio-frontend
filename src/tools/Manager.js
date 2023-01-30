@@ -1,5 +1,6 @@
 import { destroy } from 'mobx-state-tree';
 import { guidGenerator } from '../utils/unique';
+import { FF_DEV_4081, isFF } from '../../utils/feature-flags';
 
 /** @type {Map<any, ToolsManager>} */
 const INSTANCES = new Map();
@@ -56,7 +57,7 @@ class ToolsManager {
     const name = tool.toolName ?? toolName;
     const key = `${prefix}#${name}`;
 
-    if (removeDuplicatesNamed && toolName === removeDuplicatesNamed) {
+    if (isFF(FF_DEV_4081) && removeDuplicatesNamed && toolName === removeDuplicatesNamed) {
       const findme = new RegExp(`^.*?#${name}.*$`);
 
       if (Object.keys(this.tools).some(entry => findme.test(entry))) {
