@@ -1,6 +1,6 @@
 import { destroy } from 'mobx-state-tree';
 import { guidGenerator } from '../utils/unique';
-import { FF_DEV_4081, isFF } from '../../utils/feature-flags';
+import { FF_DEV_4081, isFF } from '../utils/feature-flags';
 
 /** @type {Map<any, ToolsManager>} */
 const INSTANCES = new Map();
