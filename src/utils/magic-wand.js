@@ -868,23 +868,20 @@ function paint(ctx, w, h, mask, color, alpha) {
   const [r, g, b] = chroma(color).rgb();
 
   alpha = Math.round(alpha * 255.0);
-  
-  let x,y,
-    data = mask.data,
-    bounds = mask.bounds,
-    maskW = mask.width,
-    imgData = ctx.createImageData(w, h),
-    res = imgData.data;
+
+  let x, y;
+  const { data, bounds, width: maskW } = mask;
+  const imgData = ctx.createImageData(w, h);
 
   for (y = bounds.minY; y <= bounds.maxY; y++) {
     for (x = bounds.minX; x <= bounds.maxX; x++) {
       if (data[y * maskW + x] === 0) continue;
       let k = (y * w + x) * 4;
 
-      res[k] = r;
-      res[k + 1] = g;
-      res[k + 2] = b;
-      res[k + 3] = alpha;
+      imgData.data[k] = r;
+      imgData.data[k + 1] = g;
+      imgData.data[k + 2] = b;
+      imgData.data[k + 3] = alpha;
     }
   }
   
