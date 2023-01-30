@@ -394,6 +394,7 @@ const Model = types
           value.rle = self.rle;
 
           if (self.touches.length) value.touches = self.touches;
+          if (self.maskDataURL) value.maskDataURL = self.maskDataURL;
         } else {
           const rle = Canvas.Region2RLE(self, object);
 
