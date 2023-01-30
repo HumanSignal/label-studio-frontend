@@ -868,6 +868,8 @@ const Model = types.model({
         // reinit zoom to calc stageW/H
         self.setZoom(self.currentZoom);
 
+        self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
+
         self._recalculateImageParams();
       }
 
