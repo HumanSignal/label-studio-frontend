@@ -92,9 +92,8 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
   I.say('Making sure magic wand button is present');
   I.seeElement('.lsf-toolbar__group button[aria-label="magicwand"]');
 
-  // TODO: Make sure the Eraser icon is also on the tools bar.
-  //I.say('Making sure Eraser button is present');
-  //I.seeElement('.lsf-toolbar__group button[aria-label="eraser"]');
+  I.say('Making sure Eraser button is present');
+  I.seeElement('.lsf-toolbar__group button[aria-label="eraser"]');
 
   I.say('Select magic wand & cloud class');
   I.pressKey('W');
