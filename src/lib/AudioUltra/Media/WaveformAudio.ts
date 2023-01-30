@@ -162,7 +162,10 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     if (!this.src || this.el) return;
 
     this.el = document.createElement('audio');
+    // Preload chunks
     this.el.preload = 'auto';
+    // Allow crossorigin requests for external source url
+    this.el.crossOrigin = 'anonymous'; 
 
     this.mediaPromise = new Promise((resolve) => {
       this.mediaResolve = resolve;
