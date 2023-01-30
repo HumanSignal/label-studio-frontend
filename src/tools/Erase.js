@@ -123,7 +123,7 @@ const _Tool = types
         brush.endPath();
       },
 
-      mousemoveEv(ev, [x, y]) {
+      mousemoveEv(ev, _, [x, y]) {
         if (self.mode !== 'drawing') return;
         if (
           !findClosestParent(
@@ -139,7 +139,7 @@ const _Tool = types
         }
       },
 
-      mousedownEv(ev, [x, y]) {
+      mousedownEv(ev, _, [x, y]) {
         if (
           !findClosestParent(
             ev.target,

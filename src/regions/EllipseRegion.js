@@ -92,9 +92,6 @@ const Model = types
     afterCreate() {
       self.startX = self.x;
       self.startY = self.y;
-
-      self.checkSizes();
-      self.updateAppearenceFromState();
     },
 
     // @todo not used
