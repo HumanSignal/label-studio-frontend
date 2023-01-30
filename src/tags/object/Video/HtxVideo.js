@@ -21,9 +21,88 @@ import { FF_DEV_2715, isFF } from '../../../utils/feature-flags';
 
 const isFFDev2715 = isFF(FF_DEV_2715);
 
+function useZoom(videoDimensions, canvasDimentions, shouldClampPan) {
+  const [zoomState, setZoomState] = useState({ zoom: 1, pan: { x: 0, y: 0 } });
+  const data = useRef({});
+
+  data.current.video = videoDimensions;
+  data.current.canvas = canvasDimentions;
+  data.current.shouldClampPan = shouldClampPan;
+
+  const clampPan = useCallback((pan, zoom) => {
+    if (!shouldClampPan) {
+      return pan;
+    }
+    const xMinMax = clamp((data.current.video.width * zoom - data.current.canvas.width) / 2, 0, Infinity);
+    const yMinMax = clamp((data.current.video.height * zoom - data.current.canvas.height) / 2, 0, Infinity);
+
+    return {
+      x: clamp(pan.x, -xMinMax, xMinMax),
+      y: clamp(pan.y, -yMinMax, yMinMax),
+    };
+  }, []);
+
+  const setZoomAndPan = useCallback((value) => {
+    return setZoomState((prevState) => {
+      const nextState = (value instanceof Function) ? value(prevState) : value;
+      const { zoom: prevZoom, pan: prevPan } = prevState;
+      const nextZoom = clampZoom(nextState.zoom);
+
+      if (nextZoom === prevZoom) {
+        return prevState;
+      }
+
+      if (nextZoom === nextState.zoom) {
+        return {
+          zoom: nextState.zoom,
+          pan: clampPan(nextState.pan, nextState.zoom),
+        };
+      }
+
+      const scale = (nextZoom - prevZoom) / (nextState.zoom - prevZoom);
+      const nextPan = {
+        x: prevPan.x + (nextState.pan.x - prevPan.x) * scale,
+        y: prevPan.y + (nextState.pan.y - prevPan.y) * scale,
+      };
+
+      return {
+        pan: clampPan(nextPan, nextZoom),
+        zoom: nextZoom,
+      };
+    });
+  }, []);
+
+  const setZoom = useCallback((value) => {
+    return setZoomState(({ zoom, pan }) => {
+      const nextZoom = clampZoom((value instanceof Function) ? value(zoom) : value);
+
+      return {
+        zoom: nextZoom,
+        pan: {
+          x: pan.x / zoom * nextZoom,
+          y: pan.y / zoom * nextZoom,
+        },
+      };
+    });
+  }, []);
+
+  const setPan = useCallback((pan) => {
+    return setZoomState((currentState) => {
+      pan = (pan instanceof Function) ? pan(currentState.pan) : pan;
+      return {
+        ...currentState,
+        pan,
+      };
+    });
+  }, []);
+
+  return [zoomState, { setZoomAndPan, setZoom, setPan }];
+}
+
 const HtxVideoView = ({ item, store }) => {
   if (!item._value) return null;
 
+  const limitCanvasDrawingBoundaries = !store.settings.videoDrawOutside;
   const videoBlockRef = useRef();
   const stageRef = useRef();
   const videoContainerRef = useRef();
@@ -35,15 +114,20 @@ const HtxVideoView = ({ item, store }) => {
 
   const [videoSize, setVideoSize] = useState(null);
   const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0, ratio: 1 });
-  const [zoom, _setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [{ zoom, pan }, { setZoomAndPan, setZoom, setPan }] = useZoom(
+    videoDimensions,
+    item.ref.current ? {
+      width: item.ref.current.width,
+      height: item.ref.current.height,
+    } : { width: 0, height: 0 },
+    limitCanvasDrawingBoundaries,
+  );
   const [panMode, setPanMode] = useState(false);
   const [isFullScreen, enterFullscreen, exitFullscren, handleFullscreenToggle] = useToggle(false);
   const fullscreen = useFullscreen({
     onEnterFullscreen() { enterFullscreen(); },
     onExitFullscreen() { exitFullscren(); },
   });
-  const limitCanvasDrawingBoundaries = !store.settings.videoDrawOutside;
 
   const setPosition = useCallback((value) => {
     if (value !== position) {
@@ -58,15 +142,6 @@ const HtxVideoView = ({ item, store }) => {
   const supportsRegions = useMemo(() => {
     return isDefined(item?.videoControl());
   }, [item]);
-
-  const setZoom = useCallback((value) => {
-    return _setZoom((currentZoom) => {
-      const newZoom = (value instanceof Function) ? value(currentZoom) : value;
-
-      return clampZoom(newZoom);
-    });
-  }, []);
-
 
   useEffect(() => {
     const container = videoContainerRef.current;
@@ -140,25 +215,32 @@ const HtxVideoView = ({ item, store }) => {
 
   const onZoomChange = useCallback((e) => {
     if (!e.shiftKey || !stageRef.current) return;
-    const { width: containerWidth, height: containerHeight } = stageRef.current.content.getBoundingClientRect();
     // because its possible the shiftKey is the modifier, we need to check the appropriate delta
     const wheelDelta = Math.abs(e.deltaY) === 0 ? e.deltaX : e.deltaY;
     const polarity = wheelDelta > 0 ? 1 : -1;
-    const padding = 50;
     const stepDelta = Math.abs(wheelDelta * ZOOM_STEP_WHEEL);
     const delta = polarity * clamp(stepDelta, MIN_ZOOM_WHEEL, MAX_ZOOM_WHEEL);
-    const zoomCenteredY = containerHeight + padding > videoDimensions.height * zoom;
-    const zoomCenteredX = containerWidth + padding > videoDimensions.width * zoom;
-    const panValues = item.ref.current.adjustPan(
-      zoomCenteredX ? 0 : pan.x,
-      zoomCenteredY ? 0 : pan.y,
-    );
 
     requestAnimationFrame(() => {
-      setZoom(prev => prev + delta);
-      if (zoomCenteredY || zoomCenteredX) setPan(panValues);
+      setZoomAndPan(({ zoom, pan }) => {
+        const nextZoom = zoom + delta;
+        const scale = nextZoom / zoom;
+
+        const pointerPos = {
+          x: stageRef.current.pointerPos.x - item.ref.current.width / 2,
+          y: stageRef.current.pointerPos.y - item.ref.current.height / 2,
+        };
+
+        return {
+          zoom: nextZoom,
+          pan: {
+            x: pan.x * scale + (pointerPos.x * (1 - scale)),
+            y: pan.y * scale + (pointerPos.y * (1 - scale)),
+          },
+        };
+      });
     });
-  }, [zoom]);
+  }, []);
 
   const handlePan = useCallback((e) => {
     if (!panMode) return;
@@ -187,30 +269,26 @@ const HtxVideoView = ({ item, store }) => {
   }, [panMode, pan]);
 
   const zoomIn = useCallback(() => {
-    setZoom(zoom + ZOOM_STEP);
-    setPan(prev => ({
-      x: prev.x + prev.x / zoom,
-      y: prev.y + prev.y / zoom,
-    }));
-  }, [zoom]);
+    setZoom(zoom => zoom + ZOOM_STEP);
+  }, []);
 
   const zoomOut = useCallback(() => {
-    setZoom(zoom - ZOOM_STEP);
-    setPan(prev => ({
-      x: prev.x - prev.x / zoom,
-      y: prev.y - prev.y / zoom,
-    }));
-  }, [zoom]);
+    setZoom(zoom => zoom - ZOOM_STEP);
+  }, []);
 
   const zoomToFit = useCallback(() => {
-    setZoom(item.ref.current.videoDimensions.ratio);
-    setPan({ x: 0, y: 0 });
+    setZoomAndPan({
+      zoom: item.ref.current.videoDimensions.ratio,
+      pan: { x: 0, y: 0 },
+    });
   }, []);
 
   const zoomReset = useCallback(() => {
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
-  });
+    setZoomAndPan({
+      zoom: 1,
+      pan: { x: 0, y: 0 },
+    });
+  }, []);
 
   // VIDEO EVENT HANDLERS
   const handleFrameChange = useCallback((position, length) => {

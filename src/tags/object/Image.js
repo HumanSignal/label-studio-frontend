@@ -17,7 +17,7 @@ import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import { clamp } from '../../utils/utilities';
 import { guidGenerator } from '../../utils/unique';
 import { IsReadyWithDepsMixin } from '../../mixins/IsReadyMixin';
-import { FF_DEV_2394, FF_DEV_3377, isFF } from '../../utils/feature-flags';
+import { FF_DEV_3377, isFF } from '../../utils/feature-flags';
 
 /**
  * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -127,7 +127,7 @@ const ImageSelectionPoint = types.model({
 const ImageSelection = types.model({
   start: types.maybeNull(ImageSelectionPoint),
   end: types.maybeNull(ImageSelectionPoint),
-}).views( self => {
+}).views(self => {
   return {
     get obj() {
       return getParent(self);
@@ -184,8 +184,8 @@ const ImageSelection = types.model({
         (Math.abs(selfCenterY - targetCenterY) * 2 < (selfHeight + targetHeight));
     },
     get selectionBorders() {
-      return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region)=>{
-        return  region.bboxCoords ? {
+      return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region) => {
+        return region.bboxCoords ? {
           left: Math.min(borders.left, region.bboxCoords.left),
           top: Math.min(borders.top,region.bboxCoords.top),
           right: Math.max(borders.right, region.bboxCoords.right),
@@ -868,9 +868,8 @@ const Model = types.model({
         // reinit zoom to calc stageW/H
         self.setZoom(self.currentZoom);
 
-        if (isFF(FF_DEV_2394)) {
-          self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
-        }
+        self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
+
         self._recalculateImageParams();
       }
 
@@ -900,7 +899,7 @@ const Model = types.model({
       setTimeout(self.annotation.history.unfreeze, 0);
 
       //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
-      if (_historyLength <= 1){
+      if (_historyLength <= 1) {
         // Don't force unselection of regions during the updateObjects callback from history reinit
         setTimeout(() => self.annotation.reinitHistory(false), 0);
       }
