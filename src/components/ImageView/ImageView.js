@@ -159,7 +159,7 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
 });
 
 const SelectionRect = observer(({ item }) => {
-  const { x, y, width, height } = item;
+  const { x, y, width, height } = item.onScreenRect;
 
   const positionProps = {
     x,

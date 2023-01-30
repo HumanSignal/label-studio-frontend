@@ -166,6 +166,30 @@ const ImageSelection = types.model({
         bottom: Math.max(start.y, end.y),
       } : null;
     },
+    get onScreenBbox() {
+      if (!self.isActive) return null;
+
+      const { start, end } = self;
+
+      return {
+        left: self.obj.internalToScreenX(Math.min(start.x, end.x)),
+        top: self.obj.internalToScreenY(Math.min(start.y, end.y)),
+        right: self.obj.internalToScreenX(Math.max(start.x, end.x)),
+        bottom: self.obj.internalToScreenY(Math.max(start.y, end.y)),
+      };
+    },
+    get onScreenRect() {
+      if (!self.isActive) return null;
+
+      const bbox = self.onScreenBbox;
+
+      return {
+        x: bbox.left,
+        y: bbox.top,
+        width: bbox.right - bbox.left,
+        height: bbox.bottom - bbox.top,
+      };
+    },
     includesBbox(bbox) {
       return self.isActive && bbox && self.bbox.left <= bbox.left && self.bbox.top <= bbox.top && self.bbox.right >= bbox.right && self.bbox.bottom >= bbox.bottom;
     },
@@ -184,19 +208,24 @@ const ImageSelection = types.model({
         (Math.abs(selfCenterY - targetCenterY) * 2 < (selfHeight + targetHeight));
     },
     get selectionBorders() {
-      return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region)=>{
-        return  region.bboxCoords ? {
+      if (self.isActive || !self.obj.selectedRegions.length) return null;
+
+      const initial = { left: 100, top: 100, right: 0, bottom: 0 };
+      const bbox = self.obj.selectedRegions.reduce((borders, region) => {
+        return region.bboxCoords ? {
           left: Math.min(borders.left, region.bboxCoords.left),
           top: Math.min(borders.top,region.bboxCoords.top),
           right: Math.max(borders.right, region.bboxCoords.right),
           bottom: Math.max(borders.bottom, region.bboxCoords.bottom),
         } : borders;
-      }, {
-        left: self.obj.stageWidth,
-        top: self.obj.stageHeight,
-        right: 0,
-        bottom: 0,
-      });
+      }, initial);
+
+      return {
+        left: self.obj.internalToScreenX(bbox.left),
+        top: self.obj.internalToScreenY(bbox.top),
+        right: self.obj.internalToScreenX(bbox.right),
+        bottom: self.obj.internalToScreenY(bbox.bottom),
+      };
     },
   };
 }).actions(self => {
