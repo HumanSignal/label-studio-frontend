@@ -75,7 +75,7 @@ async function assertMagicWandPixel(I, x, y, assertValue, rgbArray, msg) {
   assert.equal(hasPixel, assertValue, msg);
 }
 
-Scenario('Make sure the magic wand works in a variety of scenarios', async function({ I, AtImageView, AtSidebar }) {
+Scenario('Make sure the magic wand works in a variety of scenarios', async function({ I, LabelStudio, AtImageView, AtSidebar }) {
   const params = {
     config,
     data: data,
@@ -83,6 +83,11 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
   };
 
   I.amOnPage('/');
+
+  LabelStudio.setFeatureFlags({
+    'fflag_feat_front_dev_4081_magic_wand_tool': true,
+  });
+
   I.executeScript(initLabelStudio, params);
 
   AtImageView.waitForImage();

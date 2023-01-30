@@ -37,8 +37,8 @@ Note that in the gcp_cors_config.json example given in this directory that we ha
 
 # Start
 
-Magic Wand for image segmentation
+Magic Wand for image segmentation:
 
 ```bash
-python server.py -c config.json -l ../examples/magic_wand/config.xml -i ../examples/magic_wand/tasks.json -o output
+fflag_feat_front_dev_4081_magic_wand_tool=1 python server.py -c config.json -l ../examples/image_magic_wand/config.xml -i ../examples/image_magic_wand/tasks.json -o output
 ```
