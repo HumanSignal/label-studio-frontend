@@ -133,22 +133,23 @@ export function fixRectToFit(rect, stageWidth, stageHeight) {
 }
 
 
-export function createDragBoundFunc(item, offset = { x:0, y:0 }) {
-  const { parent: imageView } = item;
+export function createDragBoundFunc(item, offset = { x: 0, y: 0 }) {
+  const { parent: image } = item;
 
   return function(pos) {
-    return imageView.fixForZoomWrapper(pos, (pos) => {
-      let { x, y } = pos;
+    return image.fixForZoomWrapper(pos, (pos) => {
+      let x = image.screenToInternalX(pos.x);
+      let y = image.screenToInternalY(pos.y);
 
       x -= offset.x;
       y -= offset.y;
       const singleRegionDragging = item.selected || !item.inSelection;
       const { top, left, right, bottom } = item.bboxCoords;
-      const { top: srTop, left: srLeft, right: srRight, bottom: srBottom } = imageView?.selectedRegionsBBox || {};
+      const { top: srTop, left: srLeft, right: srRight, bottom: srBottom } = image?.selectedRegionsBBox || {};
       const bbox = singleRegionDragging
         ? { x, y, width: right - left, height: bottom - top }
         : { x: srLeft - left + x, y: srTop - top + y, width: srRight - srLeft, height: srBottom - srTop };
-      const fixed = fixRectToFit(bbox, imageView.stageWidth, imageView.stageHeight);
+      const fixed = fixRectToFit(bbox, 100, 100);
 
       if (fixed.width !== bbox.width) {
         x += (fixed.width - bbox.width) * (fixed.x !== bbox.x ? -1 : 1);
@@ -157,9 +158,11 @@ export function createDragBoundFunc(item, offset = { x:0, y:0 }) {
       if (fixed.height !== bbox.height) {
         y += (fixed.height - bbox.height) * (fixed.y !== bbox.y ? -1 : 1);
       }
+
       x += offset.x;
       y += offset.y;
-      return { x, y };
+
+      return { x: image.internalToScreenX(x), y: image.internalToScreenY(y) };
     });
   };
 }
