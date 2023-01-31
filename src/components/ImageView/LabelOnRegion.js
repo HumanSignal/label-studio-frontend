@@ -129,14 +129,15 @@ const LabelOnEllipse = observer(({ item, color, strokewidth }) => {
   const isLabeling = !!item.labeling;
   const isTexting = !!item.texting;
   const labelText = item.getLabelText(',');
+  const obj = item.parent;
 
   if (!isLabeling && !isTexting) return null;
   const zoomScale = item.parent.zoomScale || 1;
 
   return (
     <LabelOnBbox
-      x={item.x - item.radiusX - strokewidth / 2 / zoomScale}
-      y={item.y - item.radiusY - strokewidth / 2 / zoomScale}
+      x={obj.internalToScreenX(item.x - item.radiusX) - strokewidth / 2 / zoomScale}
+      y={obj.internalToScreenY(item.y - item.radiusY) - strokewidth / 2 / zoomScale}
       isTexting={isTexting}
       text={labelText}
       score={item.score}
@@ -153,14 +154,15 @@ const LabelOnRect = observer(({ item, color, strokewidth }) => {
   const isLabeling = !!item.labeling;
   const isTexting = !!item.texting;
   const labelText = item.getLabelText(',');
+  const obj = item.parent;
 
   if (!isLabeling && !isTexting) return null;
   const zoomScale = item.parent.zoomScale || 1;
 
   return (
     <LabelOnBbox
-      x={item.x - strokewidth / 2 / zoomScale}
-      y={item.y - strokewidth / 2 / zoomScale}
+      x={obj.internalToScreenX(item.x) - strokewidth / 2 / zoomScale}
+      y={obj.internalToScreenY(item.y) - strokewidth / 2 / zoomScale}
       isTexting={isTexting}
       text={labelText}
       score={item.score}
@@ -169,7 +171,7 @@ const LabelOnRect = observer(({ item, color, strokewidth }) => {
       zoomScale={item.parent.zoomScale}
       rotation={item.rotation}
       color={color}
-      maxWidth={item.width + strokewidth}
+      maxWidth={obj.internalToScreenX(item.width) + strokewidth}
       adjacent
       onClickLabel={item.onClickLabel}
     />
@@ -183,7 +185,7 @@ const LabelOnPolygon = observer(({ item, color }) => {
 
   if (!isLabeling && !isTexting) return null;
 
-  const bbox = item.bboxCoords;
+  const bbox = item.bboxCoordsScreen;
 
   if (!bbox) return null;
 
@@ -231,7 +233,7 @@ const LabelOnMask = observer(({ item, color }) => {
 
   if (!isLabeling && !isTexting) return null;
 
-  const bbox = item.bboxCoords;
+  const bbox = item.bboxCoordsScreen;
 
   if (!bbox) return null;
   return (

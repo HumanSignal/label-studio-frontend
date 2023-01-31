@@ -8,7 +8,7 @@ import { observer } from 'mobx-react';
 import { isDefined } from '../../utils/utilities';
 
 const getItemPosition = (item) => {
-  const { shapeRef: shape, bboxCoords: bbox } = item;
+  const { shapeRef: shape, bboxCoordsScreen: bbox } = item;
   let width, height, x, y;
 
   if (isDefined(bbox)) {
