@@ -4,36 +4,41 @@ const { I } = inject();
 const Helpers = require('../tests/helpers');
 
 module.exports = {
-  _waveCanvasSelector: "wave canvas",
-  _waveCanvasBBox: { x: 0, y: 0, width: 0, height: 0 },
+  _stageSelector: '#waveform-layer-main',
+  _stageBbox: { x: 0, y: 0, width: 0, height: 0 },
 
-  waitForAudio() {
-    I.executeScript(Helpers.waitForAudio);
+  async lookForStage() {
+    I.scrollPageToTop();
+    const bbox = await I.grabElementBoundingRect(this._stageSelector);
+
+    this._stageBbox = bbox;
+  },
+  async waitForAudio() {
+    await I.executeScript(Helpers.waitForAudio);
   },
   getCurrentAudioTime() {
     return I.executeScript(Helpers.getCurrentAudioTime);
   },
-
-  async lookForWaveCanvas() {
-    I.scrollPageToTop();
-    const bbox = await I.grabElementBoundingRect(this._waveCanvasSelector);
-
-    this._waveCanvasBBox = bbox;
-  },
-
   /**
-   * Mousedown - mousemove - mouseup drawing a region on the Audio wave. Works in conjunction with lookForWaveCanvas.
+   * Mousedown - mousemove - mouseup drawing on the AudioView. Works in couple of lookForStage.
    * @example
-   * await  AtAudioView.lookForWaveCanvas();
-   * AtAudioView.drawByDrag(50, 200);
+   * await AtAudioView.lookForStage();
+   * AtAudioView.dragAudioRegion(50, 200);
    * @param x {number}
    * @param shiftX {number}
    */
-  drawByDrag(x,shiftX) {
+  dragAudioRegion(x, shiftX) {
     I.scrollPageToTop();
-    I.moveMouse(this._waveCanvasBBox.x + x, this._waveCanvasBBox.y + this._waveCanvasBBox.height / 2);
+    I.moveMouse(this._stageBbox.x + x, this._stageBbox.y + this._stageBbox.height / 2);
     I.pressMouseDown();
-    I.moveMouse(this._waveCanvasBBox.x + x + shiftX, this._waveCanvasBBox.y + this._waveCanvasBBox.height / 2, 3);
+    I.moveMouse(this._stageBbox.x + x + shiftX, this._stageBbox.y + this._stageBbox.height / 2, 3);
     I.pressMouseUp();
+    I.wait(1);
+  },
+
+  clickAt(x) {
+    I.scrollPageToTop();
+    I.clickAt(this._stageBbox.x + x, this._stageBbox.y + this._stageBbox.height / 2);
+    I.wait(1); // We gotta  wait here because clicks on the canvas are not processed immediately
   },
 };
