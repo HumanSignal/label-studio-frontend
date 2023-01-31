@@ -172,9 +172,9 @@ const Model = types
         if (!self.imageData) {
           const points = { x: [], y:[] };
 
-          for(let i = 0; i in (self.touches?.[0]?.points ?? []); i += 2) {
+          for (let i = 0; i in (self.touches?.[0]?.points ?? []); i += 2) {
             const curX = (self.touches?.[0]?.points ?? [])[i];
-            const curY = (self.touches?.[0]?.points ?? [])[i+1];
+            const curY = (self.touches?.[0]?.points ?? [])[i + 1];
 
             points.x.push(curX);
             points.y.push(curY);
@@ -191,8 +191,8 @@ const Model = types
         if (!imageBBox) return null;
         const { stageScale: scale = 1, zoomingPositionX: offsetX = 0, zoomingPositionY: offsetY = 0 } = self.parent || {};
 
-        imageBBox.x = imageBBox.x/scale - offsetX/scale;
-        imageBBox.y = imageBBox.y/scale - offsetY/scale;
+        imageBBox.x = imageBBox.x / scale - offsetX / scale;
+        imageBBox.y = imageBBox.y / scale - offsetY / scale;
         imageBBox.width = imageBBox.width/scale;
         imageBBox.height = imageBBox.height/scale;
         return  {
@@ -651,10 +651,10 @@ const HtxBrushView = ({ item }) => {
             sceneFunc={highlightedRef.current.highlighted ? null : () => {}}
             hitFunc={() => {}}
             {...highlightedRef.current.highlight}
-            scaleX={1/item.parent.stageScale}
-            scaleY={1/item.parent.stageScale}
-            x={-item.parent.zoomingPositionX/item.parent.stageScale}
-            y={-item.parent.zoomingPositionY/item.parent.stageScale}
+            scaleX={1 / item.parent.stageScale}
+            scaleY={1 / item.parent.stageScale}
+            x={-item.parent.zoomingPositionX / item.parent.stageScale}
+            y={-item.parent.zoomingPositionY / item.parent.stageScale}
             width={item.parent.stageWidth}
             height={item.parent.stageHeight}
             listening={false}
