@@ -865,6 +865,7 @@ const Model = types.model({
         const prevWidth = self.canvasSize.width;
         const prevHeight = self.canvasSize.height;
         const prevStageZoom = self.stageZoom;
+        const prevZoomScale = self.zoomScale;
 
         self.containerWidth = width;
         self.containerHeight = height;
@@ -875,10 +876,13 @@ const Model = types.model({
         self._recalculateImageParams();
         if (isFF(FF_DEV_2394)) {
           const zoomChangeRatio = self.stageZoom / prevStageZoom;
+          const scaleChangeRatio = self.zoomScale / prevZoomScale;
+          const changeRatio = zoomChangeRatio * scaleChangeRatio;
+
 
           self.setZoomPosition(
-            self.zoomingPositionX * zoomChangeRatio + (self.canvasSize.width / 2 - prevWidth / 2 * zoomChangeRatio ),
-            self.zoomingPositionY * zoomChangeRatio + (self.canvasSize.height / 2 - prevHeight / 2 * zoomChangeRatio),
+            self.zoomingPositionX * changeRatio + (self.canvasSize.width / 2 - prevWidth / 2 * changeRatio),
+            self.zoomingPositionY * changeRatio + (self.canvasSize.height / 2 - prevHeight / 2 * changeRatio),
           );
         }
       }
