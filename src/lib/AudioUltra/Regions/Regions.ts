@@ -29,6 +29,7 @@ export class Regions {
   private hoveredRegions = new Set<Region | Segment>();
   private defaultColor = rgba('#787878');
   private drawingColor = rgba('#787878');
+  private labels: string[] | undefined;
   private createable = true;
   private updateable = true;
   private deleteable = true;
@@ -41,6 +42,7 @@ export class Regions {
     this.visualizer = visualizer;
     this.initialRegions = options?.regions ?? [];
     this.defaultColor = options?.defaultColor ? rgba(options.defaultColor) : this.defaultColor;
+    this.labels = undefined;
     this.createable = options?.createable ?? this.createable;
     this.updateable = options?.updateable ?? this.updateable;
     this.deleteable = options?.deleteable ?? this.deleteable;
@@ -174,6 +176,10 @@ export class Regions {
     this.drawingColor = rgba(color);
   }
 
+  setLabels(labels?: string[]) {
+    if(labels) this.labels = labels;
+  }
+
   resetDrawingColor() {
     this.drawingColor = this.defaultColor.clone();
   }
@@ -237,6 +243,7 @@ export class Regions {
         end,
         color: this.drawingColor.toString(),
         selected: false,
+        labels: this.labels,
       });
 
       if (autoPlayNewSegments && !region.isRegion) {

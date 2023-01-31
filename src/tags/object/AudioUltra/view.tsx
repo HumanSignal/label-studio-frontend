@@ -63,10 +63,12 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
 
       const updateBeforeRegionDraw = (regions: Regions) => {
         const regionColor = item.getRegionColor();
+        const regionLabels = item.activeState?.selectedValues();
 
-        if (regionColor) {
+        if (regionColor && regionLabels) {
           regions.regionDrawableTarget();
           regions.setDrawingColor(regionColor);
+          regions.setLabels(regionLabels);
         }
       };
 
@@ -107,7 +109,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
         }
       };
 
-      const updateRegion = (region: Region|Segment) => {
+      const updateRegion = (region: Region | Segment) => {
         item.updateRegion(region);
       };
 

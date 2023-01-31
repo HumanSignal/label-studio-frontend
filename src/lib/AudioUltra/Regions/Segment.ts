@@ -57,6 +57,7 @@ export class Segment extends Events<SegmentEvents> {
   private isDragging: boolean;
   private draggingStartPosition: null | { grabPosition: number, start: number, end: number };
   private isGrabbingEdge: { isRightEdge: boolean, isLeftEdge: boolean };
+  private labels: string[] | undefined;
 
   constructor(
     options: SegmentOptions,
@@ -83,6 +84,7 @@ export class Segment extends Events<SegmentEvents> {
     this.isDragging = false;
     this.draggingStartPosition = null;
     this.isGrabbingEdge = { isRightEdge: false, isLeftEdge: false };
+    this.labels = undefined;
 
     this.initialize();
   }
@@ -299,30 +301,28 @@ export class Segment extends Events<SegmentEvents> {
     const layer = this.controller.layerGroup;
 
     // @todo - this should account for timeline placement and start at the reservedSpace height
-    layer.fillStyle = color.toString();
+
+    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.5)`;
     layer.fillRect(this.xStart, top, this.width, height);
 
     // Render grab lines
-    layer.fillStyle = handleColor.toString();
+    layer.fillStyle = `rgba(${handleColor.r}, ${handleColor.g}, ${handleColor.b}, 0.5)`;
     layer.fillRect(this.xStart, top, this.handleWidth, height);
     layer.fillRect(this.xEnd - this.handleWidth, top, this.handleWidth, height);
 
     // Render label
-    // if (this.label) {
-    //   layer.font = "12px Arial";
-    //   const labelMeasure = layer.context.measureText(this.label);
+    if (this.labels?.[0]) {
+      const labelMeasures = this.labels.map((label) => layer.context.measureText(label));
 
-    //   layer.fillStyle = "#000";
-    //   layer.fillRect(
-    //     this.startX + 5,
-    //     5,
-    //     clamp(labelMeasure.width + 10, 0, this.width),
-    //     10
-    //   );
+      const height = labelMeasures[0].fontBoundingBoxAscent + labelMeasures[0].fontBoundingBoxDescent;
 
-    //   layer.fillStyle = "#fff";
-    //   layer.fitText(this.label, this.startX + 10, 12, this.width);
-    // }
+      layer.fillStyle = color.toString();
+      layer.fillRect(this.xStart + this.handleWidth, top, labelMeasures[0].width + 10, height + 5);
+
+      layer.font = '12px Arial';
+      layer.fillStyle = 'white';
+      layer.fillText(this.labels[0], this.xStart + 5, top + height);
+    }
   }
 
   handleUpdateEnd() {
