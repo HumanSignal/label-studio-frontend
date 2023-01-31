@@ -65,12 +65,7 @@ const Model = types
       // recalc on resize
       fixMobxObserve(self.parent.stageWidth, self.parent.stageHeight);
 
-      return {
-        left: self.parent.internalToScreenX(bbox.left),
-        top: self.parent.internalToScreenY(bbox.top),
-        right: self.parent.internalToScreenX(bbox.right),
-        bottom: self.parent.internalToScreenY(bbox.bottom),
-      };
+      return bbox;
     },
   }))
   .actions(self => {

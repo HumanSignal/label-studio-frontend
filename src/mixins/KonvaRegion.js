@@ -7,6 +7,16 @@ export const KonvaRegionMixin = types.model({})
         console.warn('KonvaRegionMixin needs to implement bboxCoords getter in regions');
         return null;
       },
+      get bboxCoordsScreen() {
+        const bbox = self.bboxCoords;
+
+        return {
+          left: self.parent.internalToScreenX(bbox.left),
+          top: self.parent.internalToScreenY(bbox.top),
+          right: self.parent.internalToScreenX(bbox.right),
+          bottom: self.parent.internalToScreenY(bbox.bottom),
+        };
+      },
       get control() {
         // that's a little bit tricky, but it seems that having a tools field is necessary for the region-creating control tag and it's might be a clue
         return self.results.find(result => result.from_name.tools)?.from_name;
