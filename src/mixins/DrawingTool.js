@@ -288,8 +288,8 @@ const TwoPointsDrawingTool = DrawingTool.named('TwoPointsDrawingTool')
         if (currentMode === DEFAULT_MODE) {
           self.startDrawing(x, y);
           if (!self.isDrawing) return;
-          x += self.defaultDimensions.width;
-          y += self.defaultDimensions.height;
+          x += self.obj.screenToInternalX(self.defaultDimensions.width);
+          y += self.obj.screenToInternalY(self.defaultDimensions.height);
           self.draw(x, y);
           self.finishDrawing(x, y);
         }
@@ -394,11 +394,13 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
 
       drawDefault() {
         const { x,y } = startPoint;
+        const dX = self.obj.screenToInternalX(self.defaultDimensions.length);
+        const dY = self.obj.screenToInternalY(self.defaultDimensions.length);
 
-        self.nextPoint(x + self.defaultDimensions.length, y);
+        self.nextPoint(x + dX, y);
         self.nextPoint(
-          x + self.defaultDimensions.length / 2,
-          y + Math.sin(Math.PI / 3) * self.defaultDimensions.length,
+          x + dX / 2,
+          y + Math.sin(Math.PI / 3) * dY,
         );
         self.finishDrawing();
       },
@@ -529,8 +531,8 @@ const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
         if (currentMode === DEFAULT_MODE) {
           self.startDrawing(x, y);
           if (!self.isDrawing) return;
-          x += self.defaultDimensions.width;
-          y += self.defaultDimensions.height;
+          x += self.obj.screenToInternalX(self.defaultDimensions.width);
+          y += self.obj.screenToInternalY(self.defaultDimensions.height);
           self.draw(x, y);
           self.finishDrawing(x, y);
         }
