@@ -159,7 +159,7 @@ export default observer(({ store, annotation }) => {
       {node?.isDrawing && (
         <Elem name="warning">
           <IconWarning />
-          <Elem name="warning-text">Incomplete polygon</Elem>
+          <Elem name="warning-text">Incomplete {node.type.replace('region', '')}</Elem>
         </Elem>
       )}
 
