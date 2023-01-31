@@ -29,7 +29,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       autoCenter: true,
       zoomToCursor: true,
       height: item.height ? Number(item.height) : 94,
-      splitChannels: false, // item.splitchannels,
+      splitChannels:  item.splitchannels,
       volume: item.defaultvolume ? Number(item.defaultvolume) : 1,
       amp: item.defaultscale ? Number(item.defaultscale) : 1,
       zoom: item.defaultzoom ? Number(item.defaultzoom) : 1,

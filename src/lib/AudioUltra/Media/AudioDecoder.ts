@@ -14,7 +14,7 @@ interface AudioDecoderEvents {
 }
 
 export class AudioDecoder extends Events<AudioDecoderEvents> {
-  chunks?: Float32Array[];
+  chunks?: Float32Array[][];
   private cancelled = false;
   private decodeId = 0; // if id=0, decode is not in progress
   private worker: AudioDecoderWorker | undefined;
@@ -50,14 +50,14 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
 
   get dataLength() {
     if (this.chunks && !this._dataLength) {
-      this._dataLength = this.chunks?.reduce((a, b) => a + b.length, 0) ?? 0;
+      this._dataLength = this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.length, 0), 0) ?? 0;
     }
     return this._dataLength;
   }
 
   get dataSize() {
     if (this.chunks && !this._dataSize) {
-      this._dataSize = this.chunks?.reduce((a, b) => a + b.byteLength, 0) ?? 0;
+      this._dataSize = this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.byteLength, 0), 0) ?? 0;
     }
     return this._dataSize;
   }
@@ -156,7 +156,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
 
     try {
       // Set the worker instance and resolve the decoder promise
-      this._channelCount = this.worker.channelCount;
+      this._channelCount = options?.multiChannel ? this.worker.channelCount : 1;
       this._sampleRate = this.worker.sampleRate;
       this._duration = this.worker.duration;
 
@@ -164,7 +164,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
       const totalChunks = this.getTotalChunks(this.worker.duration);
       const chunkIterator = this.chunkDecoder(options);
 
-      const chunks = Array.from({ length: totalChunks }) as Float32Array[];
+      const chunks = Array.from({ length: this._channelCount }).map(() => Array.from({ length: totalChunks }) as Float32Array[]);
 
       info('decode:chunk:start', this.src, chunkIndex, totalChunks);
 
@@ -183,7 +183,20 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
           if (this.sourceDecodeCancelled) return;
 
           if (value) {
-            chunks[chunkIndex] = value;
+            // Only 1 channel, just copy the data of the chunk directly
+            if (this._channelCount === 1) {
+              chunks[0][chunkIndex] = value;
+            } else {
+              // Create new Float32Array for each channel
+              for (let c = 0; c < this._channelCount; c++) {
+                chunks[c][chunkIndex] = new Float32Array(value.length / this._channelCount);
+              }
+              // Split the channels into separate Float32Array
+              // channel1, channel2, channel1, channel2, ...
+              for (let b = 0; b < value.length; b++) {
+                chunks[b % this._channelCount][chunkIndex][Math.floor(b / this._channelCount)] = value[b];
+              }
+            }
           }
 
           this.invoke('progress', [chunkIndex + 1, totalChunks]);

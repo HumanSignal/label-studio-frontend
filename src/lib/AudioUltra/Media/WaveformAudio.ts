@@ -7,6 +7,7 @@ export interface WaveformAudioOptions {
   volume?: number;
   muted?: boolean;
   rate?: number;
+  splitChannels?: boolean;
 }
 
 interface WaveformAudioEvents {
@@ -24,6 +25,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private _rate = 1;
   private _volume = 1;
   private _savedVolume = 1;
+  private splitChannels = false;
   private src?: string;
   private mediaResolve?: () => void;
 
@@ -32,6 +34,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this._rate = options.rate ?? this._rate;
     this._savedVolume = options.volume ?? this._volume;
     this._volume = options.muted ? 0 : this._savedVolume;
+    this.splitChannels = options.splitChannels ?? false;
     this.src = options.src;
     this.createAudioDecoder();
     this.createMediaElement();
@@ -124,7 +127,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     }
   }
 
-  get chunks(): Float32Array[]|undefined {
+  get chunks(): Float32Array[][]|undefined {
     if (!this.decoder) return;
 
     return this.decoder.chunks;
@@ -211,7 +214,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private createAudioDecoder() {
     if (!this.src || this.decoder) return;
 
-    this.decoder = audioDecoderPool.getDecoder(this.src);
+    this.decoder = audioDecoderPool.getDecoder(this.src, this.splitChannels);
 
     this.decoder.on('progress', (chunk, total) => {
       this.invoke('decodingProgress', [chunk, total]);

@@ -1,4 +1,3 @@
-import { ChannelData } from '../Media/ChannelData';
 import { WaveformAudio } from '../Media/WaveformAudio';
 import { averageMinMax, clamp, debounce, defaults, warn } from '../Common/Utils';
 import { Waveform, WaveformOptions } from '../Waveform';
@@ -59,7 +58,6 @@ export class Visualizer extends Events<VisualizerEvents> {
   private seekLocked = false;
   private wf: Waveform;
   private waveContainer!: HTMLElement | string;
-  private channels: ChannelData[] = [];
   private playheadPadding = 4;
   private zoomToCursor = false;
   private autoCenter = false;
@@ -118,7 +116,6 @@ export class Visualizer extends Events<VisualizerEvents> {
   init(audio: WaveformAudio) {
     this.init = () => warn('Visualizer is already initialized');
     this.audio = audio;
-    this.channels.length = this.audio.channelCount;
     this.setLoading(false);
     this.getSamplesPerPx();
     this.invoke('initialized', [this]);
@@ -234,11 +231,6 @@ export class Visualizer extends Events<VisualizerEvents> {
   destroy() {
     if (this.isDestroyed) return;
 
-    this.channels.forEach(channel => {
-      if (channel) {
-        channel.destroy();
-      }
-    });
     this.invoke('destroy', [this]);
     this.clear();
     this.playhead.destroy();
@@ -264,10 +256,6 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.draw();
   }
 
-  getChannelData(index: number) {
-    return this.channels[index].data;
-  }
-
   centerToCurrentTime() {
     if (this.zoom === 1) {
       this.scrollLeft = 0;
@@ -291,11 +279,16 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     const layer = this.getLayer('waveform');
 
-    if (!layer || !layer.isVisible) return;
+    if (!layer || !layer.isVisible) {
+      this.lastRenderedWidth = 0;
+      return;
+    }
 
     this.renderId = performance.now();
 
-    return this.renderWave(0, layer);
+    for (let i = 0; i < this.audio.channelCount; i++) {
+      await this.renderWave(i, layer);
+    }
   }
 
   private renderWave(channelNumber: number, layer: Layer): Promise<boolean> {
@@ -393,14 +386,14 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   private *renderSlice(layer: Layer, height: number, iStart: number, iEnd: number, channelNumber: number, x = 0): Generator<any, void, any> {
-    const bufferChunks = this.audio?.chunks;
+    const bufferChunks = this.audio?.chunks?.[channelNumber];
 
     if (!bufferChunks) return;
 
     const bufferChunkSize = bufferChunks.length;
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
-    const zero = this.height * (this.splitChannels ? channelNumber : 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
+    const zero = this.height * Math.max(channelNumber - 1, 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
     const y = zero + paddingTop +  height / 2;
     let total = 0;
 
