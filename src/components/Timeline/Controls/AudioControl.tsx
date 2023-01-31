@@ -6,7 +6,7 @@ import { IconSoundConfig, IconSoundMutedConfig } from '../../../assets/icons/tim
 import { ControlButton } from '../Controls';
 import { Slider } from './Slider';
 
-const MAX_VOL = 200;
+const MAX_VOL = 100;
 
 export interface AudioControlProps {
   volume: number;
@@ -38,7 +38,7 @@ export const AudioControl: FC<AudioControlProps> = ({
       onVolumeChange?.(0);
       return;
     }
-    if (_volumeValue > (MAX_VOL)) {
+    if (_volumeValue > MAX_VOL) {
       onVolumeChange?.(MAX_VOL / 100);
       return;
     } else if (_volumeValue < 0) {
@@ -46,7 +46,7 @@ export const AudioControl: FC<AudioControlProps> = ({
       return;
     }
 
-    onVolumeChange?.(_volumeValue / MAX_VOL * 2);
+    onVolumeChange?.(_volumeValue / MAX_VOL);
   };
 
   const handleSetMute = () => {
@@ -60,7 +60,7 @@ export const AudioControl: FC<AudioControlProps> = ({
         <Slider
           min={0}
           max={MAX_VOL}
-          value={Math.round(volume * MAX_VOL / 2)}
+          value={Math.round(volume * MAX_VOL)}
           onChange={handleSetVolume}
           description={'Volume'}
           info={'Increase or decrease the volume of the audio'}
