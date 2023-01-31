@@ -98,14 +98,11 @@ const SELECTION_COLOR = '#40A9FF';
 const SELECTION_SECOND_COLOR = 'white';
 const SELECTION_DASH = [3, 3];
 
+/**
+ * Multiple selected regions when transform is unavailable — just a box with anchors
+ */
 const SelectionBorders = observer(({ item, selectionArea }) => {
   const { selectionBorders: bbox } = selectionArea;
-
-  bbox.left = bbox.left * item.stageScale;
-  bbox.right = bbox.right * item.stageScale;
-  bbox.top = bbox.top * item.stageScale ;
-  bbox.bottom = bbox.bottom * item.stageScale ;
-
   const points = bbox ? [
     {
       x: bbox.left,
@@ -124,6 +121,7 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
       y: bbox.bottom,
     },
   ] : [];
+  const ANCHOR_SIZE = 6 / item.stageScale;
 
   return (
     <>
@@ -136,6 +134,7 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
           height={bbox.bottom - bbox.top}
           stroke={SELECTION_COLOR}
           strokeWidth={1}
+          strokeScaleEnabled={false}
           listening={false}
         />
       )}
@@ -143,13 +142,14 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
         return (
           <Rect
             key={idx}
-            x={point.x - 3}
-            y={point.y - 3}
-            width={6}
-            height={6}
+            x={point.x - ANCHOR_SIZE / 2}
+            y={point.y - ANCHOR_SIZE / 2}
+            width={ANCHOR_SIZE}
+            height={ANCHOR_SIZE}
             fill={SELECTION_COLOR}
             stroke={SELECTION_SECOND_COLOR}
             strokeWidth={2}
+            strokeScaleEnabled={false}
             listening={false}
           />
         );
@@ -158,6 +158,9 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
   );
 });
 
+/**
+ * Selection area during selection — dashed rect
+ */
 const SelectionRect = observer(({ item }) => {
   const { x, y, width, height } = item.onScreenRect;
 
@@ -176,12 +179,14 @@ const SelectionRect = observer(({ item }) => {
         {...positionProps}
         stroke={SELECTION_COLOR}
         dash={SELECTION_DASH}
+        strokeScaleEnabled={false}
       />
       <Rect
         {...positionProps}
         stroke={SELECTION_SECOND_COLOR}
         dash={SELECTION_DASH}
         dashOffset={SELECTION_DASH[0]}
+        strokeScaleEnabled={false}
       />
     </>
   );
@@ -285,9 +290,6 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
-
-  const scale = 1 / (item.zoomScale || 1);
-
   const [isMouseWheelClick, setIsMouseWheelClick] = useState(false);
   const [shift, setShift] = useState(false);
   const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
@@ -327,7 +329,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
       ((item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer));
 
   return (
-    <Layer scaleX={scale} scaleY={scale}>
+    <Layer>
       {selectionArea.isActive ? (
         <SelectionRect item={selectionArea} />
       ) : !supportsTransform && item.selectedRegions.length > 1 ? (
