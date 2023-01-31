@@ -201,11 +201,11 @@ Data(maxUsageImageToolsDataTable).Scenario('Max usages of labels in ImageView on
 Data(maxUsageDataTable).Scenario('Max usages of labels in Audio on region creation', async function({ I, LabelStudio, AtSidebar, AtAudioView, current }) {
   const { maxUsage } = current;
 
-  I.amOnPage('/');
   LabelStudio.setFeatureFlags({
     fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short: true,
     ff_front_dev_2715_audio_3_280722_short: true,
   });
+  I.amOnPage('/');
   LabelStudio.init({
     config: `
 <View>
@@ -232,6 +232,7 @@ Data(maxUsageDataTable).Scenario('Max usages of labels in Audio on region creati
   I.pressKey('1');
   AtAudioView.dragAudioRegion(10 + 40 * maxUsage,30);
 
+  AtSidebar.seeRegions(maxUsage);
   I.see(`You can't use Label_1 more than ${maxUsage} time(s)`);
 });
 

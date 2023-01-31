@@ -5,6 +5,7 @@ const Helpers = require('../tests/helpers');
 
 module.exports = {
   _stageSelector: '#waveform-layer-main',
+  _progressBarSelector: 'loading-progress-bar',
   _stageBbox: { x: 0, y: 0, width: 0, height: 0 },
 
   async lookForStage() {
@@ -15,6 +16,7 @@ module.exports = {
   },
   async waitForAudio() {
     await I.executeScript(Helpers.waitForAudio);
+    I.waitForInvisible(this._progressBarSelector);
   },
   getCurrentAudioTime() {
     return I.executeScript(Helpers.getCurrentAudioTime);
