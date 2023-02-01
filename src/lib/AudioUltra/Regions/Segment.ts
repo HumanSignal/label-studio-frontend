@@ -49,6 +49,8 @@ export class Segment extends Events<SegmentEvents> {
   updateable = true;
   deleteable = true;
   visible = true;
+  labels: string[] | undefined;
+
   private waveform: Waveform;
   private visualizer: Visualizer;
   private controller: Regions;
@@ -57,7 +59,6 @@ export class Segment extends Events<SegmentEvents> {
   private isDragging: boolean;
   private draggingStartPosition: null | { grabPosition: number, start: number, end: number };
   private isGrabbingEdge: { isRightEdge: boolean, isLeftEdge: boolean };
-  private labels: string[] | undefined;
 
   constructor(
     options: SegmentOptions,
@@ -302,26 +303,37 @@ export class Segment extends Events<SegmentEvents> {
 
     // @todo - this should account for timeline placement and start at the reservedSpace height
 
-    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.5)`;
+    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.3)`;
     layer.fillRect(this.xStart, top, this.width, height);
 
     // Render grab lines
-    layer.fillStyle = `rgba(${handleColor.r}, ${handleColor.g}, ${handleColor.b}, 0.5)`;
+    layer.fillStyle = `rgba(${handleColor.r}, ${handleColor.g}, ${handleColor.b}, 0.6)`;
     layer.fillRect(this.xStart, top, this.handleWidth, height);
     layer.fillRect(this.xEnd - this.handleWidth, top, this.handleWidth, height);
 
-    // Render label
-    if (this.labels?.[0]) {
+    // Render labels
+    if (this.labels?.length) {
+
       const labelMeasures = this.labels.map((label) => layer.context.measureText(label));
 
-      const height = labelMeasures[0].fontBoundingBoxAscent + labelMeasures[0].fontBoundingBoxDescent;
+      const height = labelMeasures.reduce((accumulator, currentValue) => {
+        return accumulator + currentValue.fontBoundingBoxAscent + currentValue.fontBoundingBoxDescent + 2;
+      }, 0);
 
+      const width = labelMeasures[0].width + 10;
+      const rangeWidth = this.xEnd - this.xStart - (this.handleWidth * 2);
+      const adjustedWidth = rangeWidth < width ? rangeWidth : width;
+      const selectedAdjustmentWidth = this.selected ? width : adjustedWidth;
+     
       layer.fillStyle = color.toString();
-      layer.fillRect(this.xStart + this.handleWidth, top, labelMeasures[0].width + 10, height + 5);
-
+      this.selected && layer.fillRect(this.xStart + this.handleWidth, top, selectedAdjustmentWidth, height + 5);
       layer.font = '12px Arial';
-      layer.fillStyle = 'white';
-      layer.fillText(this.labels[0], this.xStart + 5, top + height);
+      layer.fillStyle = this.selected ? 'white' : 'black';
+      this.labels.forEach((label, iterator) => {
+        const heightCalc = (height / labelMeasures.length) * (iterator + 1) - 1;
+
+        layer.fitText(label, this.xStart + 5, top + heightCalc, selectedAdjustmentWidth);
+      });
     }
   }
 
