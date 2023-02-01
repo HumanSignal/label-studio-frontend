@@ -41,7 +41,7 @@ Scenario('Hotkeys on re-initing lsf', async function({ I, LabelStudio, AtAudioVi
 
   await AtAudioView.lookForStage();
   I.pressKey('1');
-  AtAudioView.dragAudioRegion(50, 200);
+  AtAudioView.dragAudioRegion(50, 300);
   I.pressKey('u');
   AtSidebar.seeRegions(1);
 
