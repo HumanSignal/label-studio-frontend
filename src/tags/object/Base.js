@@ -77,7 +77,7 @@ const ObjectBase = types
         if (exceeded.length) {
           const label = exceeded[0];
 
-          if (label) InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
+          InfoModal.warning(`You can't use ${label.value} more than ${label.maxUsages} time(s)`);
         }
         self.annotation.unselectAll();
       }
