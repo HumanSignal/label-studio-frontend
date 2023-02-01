@@ -75,6 +75,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       const updateAfterRegionDraw = (regions: Regions) => {
         regions.resetDrawableTarget();
         regions.resetDrawingColor();
+        regions.resetLabels();
       };
 
       const createRegion = (region: Region|Segment) => {
