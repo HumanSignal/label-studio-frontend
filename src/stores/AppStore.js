@@ -517,7 +517,7 @@ export default types
       if (self.isSubmitting) return;
 
       if (self.taskHistory.findIndex((x) => x.taskId === self.task.id && parseInt(x.annotationId) === self.task.annotationId) !== self.taskHistory.length - 1) {
-        self.taskHistory = self.taskHistory.filter(a => a.taskId !== self.task.id  && parseInt(a.annotationId) === self.task.annotationId);
+        self.taskHistory = self.taskHistory.filter(a => a.taskId !== self.task.id && parseInt(a.annotationId) === self.task.annotationId);
 
         self.taskHistory.splice(self.taskHistory.length - 1, 0, {
           taskId: self.task.id,
@@ -725,8 +725,6 @@ export default types
       const taskIndex = self.taskHistory.findIndex((x) => {
         return x.taskId === self.task.id && !x.annotationId;
       });
-
-      console.log(taskIndex);
 
       if (taskIndex >= 0) {
         self.taskHistory[taskIndex].annotationId = annotationId;

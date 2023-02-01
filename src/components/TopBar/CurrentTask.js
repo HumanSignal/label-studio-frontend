@@ -75,11 +75,11 @@ export const CurrentTask = observer(({ store }) => {
               name="prevnext"
               mod={{
                 prev: true,
-                disabled: !store.canGoPrevTask && !canPrepone || !store.task.hasPrevTask,
+                disabled: !store.canGoPrevTask && (!canPrepone || !store.task.hasPrevTask),
                 postpone: !store.canGoPrevTask && canPrepone,
               }}
               type="link"
-              disabled={!historyEnabled || !store.canGoPrevTask && !canPrepone || !store.task.hasPrevTask}
+              disabled={(!historyEnabled || !store.canGoPrevTask) && (!canPrepone || !store.task.hasPrevTask)}
               onClick={store.canGoPrevTask ? store.prevTask : () => store.postponeTask('prevTask')}
               style={{ background: 'none', backgroundColor: 'none' }}
             />
