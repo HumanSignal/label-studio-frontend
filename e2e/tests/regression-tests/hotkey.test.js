@@ -1,10 +1,10 @@
 /* global Feature, Scenario */
 
-Feature('Backspace hotkey').tag('@regress');
+Feature('Hotkeys').tag('@regress');
 
 const AUDIO_URL = 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3';
 
-Scenario('Check if regions is selected', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+Scenario('Hotkeys on re-initing lsf', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
   const params = {
     annotations: [{ id: 'test', result: [] }],
     config: `<View>
