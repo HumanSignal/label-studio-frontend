@@ -21,6 +21,7 @@ Scenario('Hotkeys on re-initing lsf', async function({ I, LabelStudio, AtAudioVi
 
   LabelStudio.setFeatureFlags({
     ff_front_dev_2715_audio_3_280722_short: true,
+    fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short: true,
   });
   I.amOnPage('/');
 
@@ -49,10 +50,13 @@ Scenario('Hotkeys on re-initing lsf', async function({ I, LabelStudio, AtAudioVi
   I.pressKey('Backspace');
   AtSidebar.seeRegions(0);
 
+  I.say('Reset selected labels');
+  I.pressKey('u');
+
   I.say('Draw a couple of regions');
 
   for (let k = 0; k < 5; k++) {
-    I.pressKey('1');
+    I.pressKey('2');
     AtAudioView.dragAudioRegion(50 + 50 * k, 30);
     I.pressKey('u');
   }

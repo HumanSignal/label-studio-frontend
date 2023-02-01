@@ -5,6 +5,7 @@ import { createElement, Fragment } from 'react';
 import { Tooltip } from '../common/Tooltip/Tooltip';
 import Hint from '../components/Hint/Hint';
 import { Block, Elem } from '../utils/bem';
+import { FF_LSDV_1148, isFF } from '../utils/feature-flags';
 import { isDefined, isMacOS } from '../utils/utilities';
 import defaultKeymap from './settings/keymap.json';
 
@@ -101,7 +102,7 @@ export const Hotkey = (
   };
 
   // Saving handlers of current namespace to the global list for the further rebinding by necessity
-  // We need this since `keymaster.unbind` works with with all handlers at the same time but our logic is based on namespaces
+  // We need this since `keymaster.unbind` works with all handlers at the same time but our logic is based on namespaces
   const addKeyHandlerRef = (scopeName: string, keyName: string, func: keymaster.KeyHandler) => {
     if (!isDefined(_scopes[scopeName])) {
       _scopes[scopeName] = {};
@@ -141,9 +142,13 @@ export const Hotkey = (
   const unbind = () => {
     for (const scope of [DEFAULT_SCOPE, INPUT_SCOPE]) {
       for (const key of Object.keys(_hotkeys_map)) {
-        removeKeyHandlerRef(scope, key);
-        keymaster.unbind(key, scope);
-        rebindKeyHandlers(scope, key);
+        if (isFF(FF_LSDV_1148)) {
+          removeKeyHandlerRef(scope, key);
+          keymaster.unbind(key, scope);
+          rebindKeyHandlers(scope, key);
+        } else {
+          keymaster.unbind(key, scope);
+        }
         delete _hotkeys_desc[key];
       }
     }
@@ -183,7 +188,9 @@ export const Hotkey = (
             func(...args);
           };
 
-          addKeyHandlerRef(scope, keyName, handler);
+          if (isFF(FF_LSDV_1148)) {
+            addKeyHandlerRef(scope, keyName, handler);
+          }
           keymaster(keyName, scope, handler);
         });
     },
@@ -216,9 +223,13 @@ export const Hotkey = (
           .map(s => s.trim())
           .filter(Boolean)
           .forEach(scope => {
-            removeKeyHandlerRef(scope, key);
-            keymaster.unbind(keyName, scope);
-            rebindKeyHandlers(scope, key);
+            if (isFF(FF_LSDV_1148)) {
+              removeKeyHandlerRef(scope, key);
+              keymaster.unbind(keyName, scope);
+              rebindKeyHandlers(scope, key);
+            } else {
+              keymaster.unbind(keyName, scope);
+            }
           });
 
         delete _hotkeys_map[keyName];

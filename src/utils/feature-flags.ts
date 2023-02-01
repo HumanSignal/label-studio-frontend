@@ -140,6 +140,12 @@ export const FF_DEV_3730 = 'fflag_fix_front_dev_3730_shortcuts_initial_input_221
  */
 export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short';
 
+/**
+ * Fix logic of namespaces inside Hotkeys
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
+  */
+export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
