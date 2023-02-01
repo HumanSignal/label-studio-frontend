@@ -207,10 +207,10 @@ export class Player extends Destructable {
     if (this.audio.el) {
       this.audio.el.currentTime = this.currentTime;
       this.audio.el.addEventListener('ended', this.handleEnded);
-      this.audio.el.play();
+      this.audio.el.play().then(() => {
+        this.watch();
+      });
     }
-
-    this.watch();
   }
 
   private playSelection(from?: number, to?: number) {
