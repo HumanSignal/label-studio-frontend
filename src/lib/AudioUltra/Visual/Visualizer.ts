@@ -1,4 +1,3 @@
-import { ChannelData } from '../Media/ChannelData';
 import { WaveformAudio } from '../Media/WaveformAudio';
 import { averageMinMax, clamp, debounce, defaults, warn } from '../Common/Utils';
 import { Waveform, WaveformOptions } from '../Waveform';
@@ -59,7 +58,6 @@ export class Visualizer extends Events<VisualizerEvents> {
   private seekLocked = false;
   private wf: Waveform;
   private waveContainer!: HTMLElement | string;
-  private channels: ChannelData[] = [];
   private playheadPadding = 4;
   private zoomToCursor = false;
   private autoCenter = false;
@@ -118,7 +116,6 @@ export class Visualizer extends Events<VisualizerEvents> {
   init(audio: WaveformAudio) {
     this.init = () => warn('Visualizer is already initialized');
     this.audio = audio;
-    this.channels.length = this.audio.channelCount;
     this.setLoading(false);
     this.getSamplesPerPx();
     this.invoke('initialized', [this]);
@@ -234,11 +231,6 @@ export class Visualizer extends Events<VisualizerEvents> {
   destroy() {
     if (this.isDestroyed) return;
 
-    this.channels.forEach(channel => {
-      if (channel) {
-        channel.destroy();
-      }
-    });
     this.invoke('destroy', [this]);
     this.clear();
     this.playhead.destroy();
@@ -262,10 +254,6 @@ export class Visualizer extends Events<VisualizerEvents> {
   setAmp(amp: number) {
     this.amp = clamp(amp, 1, Infinity);
     this.draw();
-  }
-
-  getChannelData(index: number) {
-    return this.channels[index].data;
   }
 
   centerToCurrentTime() {
@@ -625,7 +613,6 @@ export class Visualizer extends Events<VisualizerEvents> {
       if (mainLayer) {
         mainLayer.height = this.height;
       }
-      this.draw();
       this.invokeLayersUpdated();
     });
 
@@ -651,7 +638,6 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.invoke('layerAdded', [layer]);
     layer.on('layerUpdated', () => {
-      this.draw();
       this.invokeLayersUpdated();
     });
     this.layers.set(name, layer);
@@ -856,9 +842,20 @@ export class Visualizer extends Events<VisualizerEvents> {
       this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
       this.getSamplesPerPx();
       this.wf.renderTimeline();
-      this.draw(false, this.zoom === 1);
+      this.resetWaveformRender();
+      this.draw();
     });
   };
+
+  // Reset the waveform values so it can be rendered again correctly
+  // This is needed when the waveform container is resized, or visibility
+  // or a layer is changed. Otherwise its possible to be blank.
+  private resetWaveformRender() {
+    this.lastRenderedAmp = 0;
+    this.lastRenderedWidth = 0;
+    this.lastRenderedZoom = 0;
+    this.lastRenderedScrollLeftPx = 0;
+  }
 
   private transferImage(layers: string[] = ['background', 'waveform', 'regions', 'controls']) {
     const main = this.layers.get('main')!;
