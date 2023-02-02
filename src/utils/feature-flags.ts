@@ -149,7 +149,7 @@ export const FF_DEV_3666 = 'fflag_fix_front_dev_3666_max_usages_on_region_creati
 /**
  * Multi-image segmentation support via `valueList`
  */
-export const FF_LSDV_4583 = 'feat-front-lsdv-4583-multi-image-segmentation-short';
+export const FF_LSDV_4583 = 'feat_front_lsdv_4583_multi_image_segmentation_short';
 
 function getFeatureFlags() {
   return {
