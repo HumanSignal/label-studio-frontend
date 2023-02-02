@@ -1,7 +1,7 @@
 import React, { Component, createRef, forwardRef, Fragment, memo, useEffect, useRef, useState } from 'react';
 import { Group, Layer, Line, Rect, Stage } from 'react-konva';
 import { observer } from 'mobx-react';
-import { getRoot, isAlive } from 'mobx-state-tree';
+import { getEnv, getRoot, isAlive } from 'mobx-state-tree';
 
 import ImageGrid from '../ImageGrid/ImageGrid';
 import ImageTransformer from '../ImageTransformer/ImageTransformer';
@@ -9,7 +9,6 @@ import ObjectTag from '../../components/Tags/Object';
 import Tree from '../../core/Tree';
 import styles from './ImageView.module.scss';
 import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
-import messages from '../../utils/messages';
 import { chunks, findClosestParent } from '../../utils/utilities';
 import Konva from 'konva';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -655,10 +654,10 @@ export default observer(
     handleError = () => {
       const { item, store } = this.props;
       const cs = store.annotationStore;
-      const message = messages.ERR_LOADING_HTTP({
+      const message = getEnv(store).messages.ERR_LOADING_HTTP({
         attr: item.value,
         error: '',
-        url: item.currentSrc,
+        url: item._value
       });
 
       cs.addErrors([errorBuilder.generalError(message)]);

@@ -7,7 +7,6 @@ import InfoModal from '../components/Infomodal/Infomodal';
 import { Hotkey } from '../core/Hotkey';
 import ToolsManager from '../tools/Manager';
 import Utils from '../utils';
-import messages from '../utils/messages';
 import { guidGenerator } from '../utils/unique';
 import { delay, isDefined } from '../utils/utilities';
 import AnnotationStore from './Annotation/store';
@@ -342,7 +341,7 @@ export default types
       hotkeys.addNamed('region:delete-all', () => {
         const { selected } = self.annotationStore;
 
-        if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
+        if (window.confirm(getEnv(self).messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
           selected.deleteAllRegions();
         }
       });
