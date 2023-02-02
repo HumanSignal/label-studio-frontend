@@ -33,6 +33,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       volume: item.defaultvolume ? Number(item.defaultvolume) : 1,
       amp: item.defaultscale ? Number(item.defaultscale) : 1,
       zoom: item.defaultzoom ? Number(item.defaultzoom) : 1,
+      showLabels: item.annotationStore.store.settings.showLabels,
       rate: item.defaultspeed ? Number(item.defaultspeed) : 1,
       muted: item.muted === 'true',
       onLoad: item.onLoad,

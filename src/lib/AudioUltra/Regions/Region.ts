@@ -19,7 +19,7 @@ export interface RegionOptions extends SegmentOptions {
 
 export class Region extends Segment {
 
-  labels: string[] = [];
+  labels: string[] | undefined = undefined;
 
   constructor(options: RegionOptions, waveform: Waveform, visualizer: Visualizer, controller: Regions) {
     super(options, waveform, visualizer, controller);
@@ -32,6 +32,43 @@ export class Region extends Segment {
     return true;
   }
 
+  renderLabels(): void {
+    const layer = this.controller.layerGroup;
+    const color = this.color;
+    const timelineTop = this.timelinePlacement;
+    const timelineLayer = this.visualizer.getLayer('timeline');
+    const timelineHeight = this.timelineHeight;
+    const top = timelineLayer?.isVisible && timelineTop ? timelineHeight : 0;
+
+    if (this.labels?.length && this.controller.showLabels) {
+
+      const labelMeasures = this.labels.map((label) => layer.context.measureText(label));
+
+      const height = labelMeasures.reduce((accumulator, currentValue) => {
+        return accumulator + currentValue.fontBoundingBoxAscent + currentValue.fontBoundingBoxDescent + 2;
+      }, 0);
+
+      const width = labelMeasures[0].width + 10;
+      const rangeWidth = this.xEnd - this.xStart - (this.handleWidth * 2);
+      const adjustedWidth = rangeWidth < width ? rangeWidth : width;
+      const selectedAdjustmentWidth = this.selected ? width : adjustedWidth;
+
+      layer.fillStyle = `rgba(${color.r + color.r}, ${color.g + color.g}, ${color.b + color.b})`;
+      this.selected && layer.fillRect(this.xStart + this.handleWidth, top, selectedAdjustmentWidth, height + 5);
+      layer.fillStyle = this.selected ? 'white' : 'black';
+      layer.font = '12px Arial';
+      this.labels.forEach((label, iterator) => {
+        const heightCalc = (height / labelMeasures.length) * (iterator + 1) - 1;
+
+        layer.fitText(label, this.xStart + 5, top + heightCalc, selectedAdjustmentWidth);
+      });
+    }
+  }
+  render(): void {
+    super.render();
+    this.renderLabels();
+  }
+  
   toJSON() {
     return {
       start: this.start,

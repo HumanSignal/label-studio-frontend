@@ -34,7 +34,7 @@ export class Regions {
   private updateable = true;
   private deleteable = true;
   private drawableTarget = Segment;
-
+  showLabels = false;
   layerGroup: LayerGroup;
 
   constructor(options: RegionsOptions, waveform: Waveform, visualizer: Visualizer) {
@@ -47,7 +47,7 @@ export class Regions {
     this.updateable = options?.updateable ?? this.updateable;
     this.deleteable = options?.deleteable ?? this.deleteable;
     this.layerGroup = this.visualizer.getLayer('regions') as LayerGroup;
-
+    this.showLabels = this.waveform.params.showLabels ?? false;
     this.init();
   }
 
@@ -176,12 +176,21 @@ export class Regions {
     this.drawingColor = rgba(color);
   }
 
+  updateLabelVisibility(visible: boolean) {
+    this.showLabels = visible;
+    this.redraw();
+  }
+
   setLabels(labels?: string[]) {
     if(labels) this.labels = labels;
   }
 
   resetDrawingColor() {
     this.drawingColor = this.defaultColor.clone();
+  }
+
+  resetLabels() {
+    this.labels = undefined;
   }
 
   get list() {
