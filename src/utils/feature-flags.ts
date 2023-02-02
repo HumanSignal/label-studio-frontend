@@ -146,6 +146,11 @@ export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10
  */
 export const FF_DEV_3666 = 'fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short';
 
+/**
+ * Multi-image segmentation support via `valueList`
+ */
+export const FF_LSDV_4583 = 'feat-front-lsdv-4583-multi-image-segmentation-short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),

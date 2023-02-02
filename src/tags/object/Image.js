@@ -1,23 +1,23 @@
-import { destroy, getParent, getRoot, getType, types } from 'mobx-state-tree';
 import { inject } from 'mobx-react';
+import { destroy, getParent, getRoot, getType, types } from 'mobx-state-tree';
 
-import * as Tools from '../../tools';
 import ImageView from '../../components/ImageView/ImageView';
-import ObjectBase from './Base';
+import { customTypes } from '../../core/CustomTypes';
 import Registry from '../../core/Registry';
-import ToolsManager from '../../tools/Manager';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import { IsReadyWithDepsMixin } from '../../mixins/IsReadyMixin';
 import { BrushRegionModel } from '../../regions/BrushRegion';
+import { EllipseRegionModel } from '../../regions/EllipseRegion';
 import { KeyPointRegionModel } from '../../regions/KeyPointRegion';
 import { PolygonRegionModel } from '../../regions/PolygonRegion';
 import { RectRegionModel } from '../../regions/RectRegion';
-import { EllipseRegionModel } from '../../regions/EllipseRegion';
-import { customTypes } from '../../core/CustomTypes';
+import * as Tools from '../../tools';
+import ToolsManager from '../../tools/Manager';
 import { parseValue } from '../../utils/data';
-import { AnnotationMixin } from '../../mixins/AnnotationMixin';
-import { clamp } from '../../utils/utilities';
+import { FF_DEV_3377, FF_DEV_3666, FF_LSDV_4583, isFF } from '../../utils/feature-flags';
 import { guidGenerator } from '../../utils/unique';
-import { IsReadyWithDepsMixin } from '../../mixins/IsReadyMixin';
-import { FF_DEV_3377, FF_DEV_3666, isFF } from '../../utils/feature-flags';
+import { clamp } from '../../utils/utilities';
+import ObjectBase from './Base';
 
 /**
  * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -53,9 +53,11 @@ import { FF_DEV_3377, FF_DEV_3666, isFF } from '../../utils/feature-flags';
  * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
  * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
  * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
+ * @param {string[]} [valuelist]              - List of image urls
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
+  valuelist: types.maybeNull(types.string),
   resize: types.maybeNull(types.number),
   width: types.optional(types.string, '100%'),
   height: types.maybeNull(types.string),
@@ -292,8 +294,16 @@ const Model = types.model({
     return parseValue(self.value, self.store.task.dataObj);
   },
 
-  // @todo the name is for backward compatibility; change the name later
-  get _value() {
+  get parsedValueList() {
+    if (!self.valuelist) return [];
+    return parseValue(self.valuelist, self.store.task.dataObj);
+  },
+
+  get currentSrc() {
+    if (isFF(FF_LSDV_4583) && self.valuelist) {
+      return self.parsedValueList[self.currentImage];
+    }
+
     const value = self.parsedValue;
 
     if (Array.isArray(value)) return value[self.currentImage];
