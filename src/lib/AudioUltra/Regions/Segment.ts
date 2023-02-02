@@ -170,6 +170,18 @@ export class Segment extends Events<SegmentEvents> {
     return this.visualizer.timelinePlacement || defaults.timelinePlacement;
   }
 
+  get options(): SegmentOptions {
+    return {
+      start: this.start,
+      end: this.end,
+      id: this.id,
+      selected: this.selected,
+      updateable: this.updateable,
+      deleteable: this.deleteable,
+      visible: this.visible,
+    };
+  }
+
   private get inViewport() {
     const { xStart: startX, xEnd: endX } = this;
     const width = this.visualizer.width * this.zoom;
@@ -373,6 +385,12 @@ export class Segment extends Events<SegmentEvents> {
 
   scrollToRegion() {
     this.waveform.scrollToRegion(this.start);
+  }
+
+  convertToRegion(labels: string[], render = false) {
+    if (!this.updateable) return;
+    
+    return this.controller.convertToRegion(this.id, labels, render);
   }
 
   remove() {

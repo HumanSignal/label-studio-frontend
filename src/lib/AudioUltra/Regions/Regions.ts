@@ -122,6 +122,22 @@ export class Regions {
     return this.regions.find(region => region.id === id);
   }
 
+  convertToRegion(id: string, labels: string[], render = true): Region {
+    let region = this.findRegion(id) as Region;
+
+    const regionIndex = this.regions.findIndex(region => region.id === id);
+
+    region = new Region({ ...region.options, labels }, this.waveform, this.visualizer, this);
+
+    this.regions[regionIndex] = region;
+
+    if (render) {
+      this.redraw();
+    }
+
+    return region;
+  }
+
   updateRegion(options: RegionOptions, render = true) {
     if (!this.updateable || !options.id) return;
 

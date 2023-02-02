@@ -32,16 +32,22 @@ export class Region extends Segment {
     return true;
   }
 
+  get options() {
+    return {
+      ...super.options,
+      labels: this.labels,
+      color: this.color.toString(),
+    };
+  }
+
   renderLabels(): void {
-    const layer = this.controller.layerGroup;
-    const color = this.color;
-    const timelineTop = this.timelinePlacement;
-    const timelineLayer = this.visualizer.getLayer('timeline');
-    const timelineHeight = this.timelineHeight;
-    const top = timelineLayer?.isVisible && timelineTop ? timelineHeight : 0;
-
     if (this.labels?.length && this.controller.showLabels) {
-
+      const layer = this.controller.layerGroup;
+      const color = this.color;
+      const timelineTop = this.timelinePlacement;
+      const timelineLayer = this.visualizer.getLayer('timeline');
+      const timelineHeight = this.timelineHeight;
+      const top = timelineLayer?.isVisible && timelineTop ? timelineHeight : 0;
       const labelMeasures = this.labels.map((label) => layer.context.measureText(label));
 
       const height = labelMeasures.reduce((accumulator, currentValue) => {
@@ -64,9 +70,17 @@ export class Region extends Segment {
       });
     }
   }
+
   render(): void {
     super.render();
     this.renderLabels();
+  }
+
+  update(options: Partial<RegionOptions>): void {
+    super.update(options);
+    this.labels = options.labels ?? this.labels;
+    this.color = options.color ? rgba(options.color) : this.color;
+    this.handleColor = this.color.clone().darken(0.6);
   }
   
   toJSON() {
