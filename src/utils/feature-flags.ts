@@ -52,8 +52,6 @@ export const FF_DEV_2100_A = 'ff_dev_2100_preselected_choices_250422_short';
 
 export const FF_DEV_2290 = 'ff_front_dev_2290_draft_in_annotation_history_short';
 
-export const FF_DEV_2394 = 'ff_front_dev_2394_zoomed_transforms_260522_short';
-
 // Make nested choices work according to the DES-107
 export const FF_DEV_2244 = 'ff_front_dev_2244_nested_choices_des_107_160522_short';
 
@@ -135,6 +133,18 @@ export const FF_DEV_1284 = 'fflag_fix_front_dev_1284_auto_detect_undo_281022_sho
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short
  */
 export const FF_DEV_3730 = 'fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short';
+
+/**
+ * Label stream ablation experiment for solving overlap issue
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short
+ */
+export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short';
+
+/**
+ * Fixing maxUsages prop of *labels on region creation.
+ * @link https://app.launchdarkly.com/default/test/features/fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short
+ */
+export const FF_DEV_3666 = 'fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short';
 
 function getFeatureFlags() {
   return {
