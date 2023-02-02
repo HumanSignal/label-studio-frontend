@@ -154,7 +154,6 @@ export const FF_LSDV_4583 = 'feat_front_lsdv_4583_multi_image_segmentation_short
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
-    [FF_LSDV_4583]: true,
   };
 }
 
