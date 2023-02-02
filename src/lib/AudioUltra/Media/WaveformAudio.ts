@@ -11,6 +11,7 @@ export interface WaveformAudioOptions {
 
 interface WaveformAudioEvents {
   decodingProgress: (chunk: number, total: number) => void;
+  canplay: () => void;
 }
 
 export class WaveformAudio extends Events<WaveformAudioEvents> {
@@ -105,7 +106,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     delete this.decoderPromise;
     this.decoder?.destroy();
     delete this.decoder;
-    this.el?.removeEventListener('canplay', this.mediaReady);
+    this.el?.removeEventListener('canplaythrough', this.mediaReady);
     delete this.el;
   }
 
@@ -174,14 +175,12 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   }
 
   mediaReady = async () => {
-    await this.forceBuffer();
-
-    this.mediaResolve?.();
-    this.mediaResolve = undefined;
-
-    if (this.el) {
-      this.el.removeEventListener('canplaythrough', this.mediaReady);
+    if (this.mediaResolve) {
+      this.mediaResolve?.();
+      this.mediaResolve = undefined;
+      await this.forceBuffer();
     }
+    this.invoke('canplay');
   };
 
   /**

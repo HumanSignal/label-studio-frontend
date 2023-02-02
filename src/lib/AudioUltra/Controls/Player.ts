@@ -11,6 +11,8 @@ export class Player extends Destructable {
   private timestamp = 0;
   private time = 0;
   private connected = false;
+  private bufferPromise?: Promise<void>;
+  private bufferResolve?: () => void;
   private ended = false;
   private _rate = 1;
 
@@ -115,6 +117,7 @@ export class Player extends Destructable {
 
   init(audio: WaveformAudio) {
     this.audio = audio;
+    this.audio.on('canplay', this.handleCanPlay);
   }
 
   seek(time: number) {
@@ -140,6 +143,10 @@ export class Player extends Destructable {
   handleEnded = () => {
     if (this.loop) return;
     this.updateCurrentTime(true);
+  };
+
+  handleCanPlay = () => {
+    this.bufferResolve?.();
   };
 
   private playEnded() {
@@ -169,6 +176,8 @@ export class Player extends Destructable {
   destroy() {
     this.stop();
     this.cleanupSource();
+    this.bufferPromise = undefined;
+    this.bufferResolve = undefined;
     super.destroy();
   }
 
@@ -207,8 +216,21 @@ export class Player extends Destructable {
     if (this.audio.el) {
       this.audio.el.currentTime = this.currentTime;
       this.audio.el.addEventListener('ended', this.handleEnded);
-      this.audio.el.play().then(() => {
-        this.watch();
+      this.bufferPromise = new Promise(resolve => {
+        this.bufferResolve = resolve;
+      });
+
+      const promise = this.audio.el.play();
+
+      // Ensure that the audio can play before invoking the timer updates
+      promise.then(() => {
+        if (this.bufferPromise) {
+          this.bufferPromise.then(() => {
+            this.watch();
+          });
+        } else {
+          this.watch();
+        }
       });
     }
   }
@@ -256,6 +278,7 @@ export class Player extends Destructable {
   private cleanupSource() {
     if (this.isDestroyed || !this.audio) return;
     this.disconnectSource();
+    this.audio.destroy();
     delete this.audio;
   }
 
