@@ -340,7 +340,6 @@ export const AudioModel = types.compose(
         // area id is assigned to WS region during deserealization
           const find_r = self.annotation.areas.get(wsRegion.id);
 
-          console.log('addRegion', wsRegion, find_r);
 
           if (find_r) {
             find_r._ws_region = wsRegion;
