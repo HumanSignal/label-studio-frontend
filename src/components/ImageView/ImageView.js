@@ -21,7 +21,8 @@ import ResizeObserver from '../../utils/resize-observer';
 import { debounce } from '../../utils/debounce';
 import Constants from '../../core/Constants';
 import { fixRectToFit } from '../../utils/image';
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, isFF } from '../../utils/feature-flags';
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_LSDV_4583, isFF } from '../../utils/feature-flags';
+import { Pagination } from '../../common/Pagination/Pagination';
 
 Konva.showWarnings = false;
 
@@ -819,6 +820,8 @@ export default observer(
 
       const containerClassName = styles.container;
 
+      const paginationEnabled = isFF(FF_LSDV_4583) && item.valuelist;
+
       if (getRoot(item).settings.fullscreen === false) {
         containerStyle['maxWidth'] = item.maxwidth;
         containerStyle['maxHeight'] = item.maxheight;
@@ -840,6 +843,8 @@ export default observer(
         styles.wrapperComponent,
         item.images.length > 1 ? styles.withGallery : styles.wrapper,
       ];
+
+      if (paginationEnabled) wrapperClasses.push(styles.withPagination);
 
       const {
         brushRegions,
@@ -863,6 +868,22 @@ export default observer(
           item={item}
           className={wrapperClasses.join(' ')}
         >
+          {paginationEnabled ? (
+            <div className={styles.pagination}>
+              <Pagination
+                size='small'
+                outline={false}
+                align="left"
+                noPadding
+
+                currentPage={item.currentImage + 1}
+                totalPages={item.parsedValueList.length}
+                onChange={n => item.setCurrentImage(n - 1)}
+                pageSizeSelectable={false}
+              />
+            </div>
+          ) : null}
+
           <div
             ref={node => {
               item.setContainerRef(node);
@@ -985,6 +1006,7 @@ export default observer(
               </Stage>
             )}
           </div>
+
           {this.renderTools()}
           {item.images.length > 1 && (
             <div className={styles.gallery}>

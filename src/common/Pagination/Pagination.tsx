@@ -14,7 +14,10 @@ interface PaginationProps {
   totalPages: number;
   pageSizeOptions?: [];
   pageSizeSelectable: boolean;
+  outline?: boolean;
+  align?: 'left' | 'right';
   size?: 'small' | 'medium' | 'large';
+  noPadding?: boolean;
   onChange?: (pageNumber: number, maxPerPage?: number | string) => void;
 }
 
@@ -32,6 +35,9 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
   currentPage,
   pageSize,
   totalPages,
+  outline = true,
+  align = 'right',
+  noPadding = false,
   pageSizeSelectable = true,
   onChange,
 }) => {
@@ -48,7 +54,7 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
   };
 
   return (
-    <Block name="pagination" mod={{ size }}>
+    <Block name="pagination" mod={{ size, outline, align, noPadding }}>
       <Elem name="navigation">
         <>
           <NavigationButton
