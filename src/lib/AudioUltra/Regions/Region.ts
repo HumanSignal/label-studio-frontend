@@ -25,7 +25,6 @@ export class Region extends Segment {
     super(options, waveform, visualizer, controller);
     this.labels = options.labels ?? this.labels;
     this.color = options.color ? rgba(options.color) : this.color;
-    this.handleColor = this.color.clone().darken(0.6);
   }
 
   get isRegion() {
@@ -47,26 +46,26 @@ export class Region extends Segment {
       const timelineTop = this.timelinePlacement;
       const timelineLayer = this.visualizer.getLayer('timeline');
       const timelineHeight = this.timelineHeight;
-      const top = timelineLayer?.isVisible && timelineTop ? timelineHeight : 0;
+      const top = (timelineLayer?.isVisible && timelineTop ? timelineHeight : 0) + 4;
       const labelMeasures = this.labels.map((label) => layer.context.measureText(label));
 
-      const height = labelMeasures.reduce((accumulator, currentValue) => {
+      const allVerticalStackedLabelsHeight = labelMeasures.reduce((accumulator, currentValue) => {
         return accumulator + currentValue.fontBoundingBoxAscent + currentValue.fontBoundingBoxDescent + 2;
       }, 0);
-
+      const start = this.xStart + this.handleWidth + 2;
       const width = labelMeasures[0].width + 10;
       const rangeWidth = this.xEnd - this.xStart - (this.handleWidth * 2);
       const adjustedWidth = rangeWidth < width ? rangeWidth : width;
       const selectedAdjustmentWidth = this.selected ? width : adjustedWidth;
 
       layer.fillStyle = `rgba(${color.r + color.r}, ${color.g + color.g}, ${color.b + color.b})`;
-      this.selected && layer.fillRect(this.xStart + this.handleWidth, top, selectedAdjustmentWidth, height + 5);
+      this.selected && layer.roundRect(start, top, selectedAdjustmentWidth, allVerticalStackedLabelsHeight + 5, 4);
       layer.fillStyle = this.selected ? 'white' : 'black';
       layer.font = '12px Arial';
       this.labels.forEach((label, iterator) => {
-        const heightCalc = (height / labelMeasures.length) * (iterator + 1) - 1;
+        const stackedLabelHeight = (allVerticalStackedLabelsHeight / labelMeasures.length) * (iterator + 1) - 1;
 
-        layer.fitText(label, this.xStart + 5, top + heightCalc, selectedAdjustmentWidth);
+        layer.fitText(label, start + 6, top + stackedLabelHeight, selectedAdjustmentWidth - this.handleWidth - 6);
       });
     }
   }
@@ -80,7 +79,6 @@ export class Region extends Segment {
     super.update(options);
     this.labels = options.labels ?? this.labels;
     this.color = options.color ? rgba(options.color) : this.color;
-    this.handleColor = this.color.clone().darken(0.6);
   }
   
   toJSON() {

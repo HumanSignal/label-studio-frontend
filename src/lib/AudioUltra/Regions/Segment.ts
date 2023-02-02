@@ -43,7 +43,6 @@ export class Segment extends Events<SegmentEvents> {
   start = 0;
   end = 0;
   color: RgbaColorArray = rgba('#ccc');
-  handleColor: RgbaColorArray;
   selected = false;
   highlighted = false;
   updateable = true;
@@ -76,7 +75,6 @@ export class Segment extends Events<SegmentEvents> {
     this.selected = !!options.selected;
     this.updateable = options.updateable ?? this.updateable;
     this.visible = options.visible ?? this.visible;
-    this.handleColor = this.color.clone().darken(0.6);
     this.waveform = waveform;
     this.visualizer = visualizer;
     this.controller = controller;
@@ -304,7 +302,7 @@ export class Segment extends Events<SegmentEvents> {
     // this is here because when the selected region is from a different label from before, it was deselecting everything
     if (this.selected) this.setColorDarken(0.5);
 
-    const { color, handleColor, timelinePlacement, timelineHeight } = this;
+    const { color, timelinePlacement, timelineHeight } = this;
     const { height } = this.visualizer;
     const timelineLayer = this.visualizer.getLayer('timeline');
     const timelineTop = timelinePlacement === defaults.timelinePlacement;
@@ -313,11 +311,11 @@ export class Segment extends Events<SegmentEvents> {
 
     // @todo - this should account for timeline placement and start at the reservedSpace height
 
-    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.3)`;
+    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.08)`;
     layer.fillRect(this.xStart, top, this.width, height);
 
     // Render grab lines
-    layer.fillStyle = `rgba(${handleColor.r}, ${handleColor.g}, ${handleColor.b}, 0.6)`;
+    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 1)`;
     layer.fillRect(this.xStart, top, this.handleWidth, height);
     layer.fillRect(this.xEnd - this.handleWidth, top, this.handleWidth, height);
   }
@@ -352,7 +350,6 @@ export class Segment extends Events<SegmentEvents> {
 
   setColor(color: string|RgbaColorArray) {
     this.color.update(color);
-    this.handleColor.update(color).darken(0.6);
   }
 
   setColorDarken(value: number) {
