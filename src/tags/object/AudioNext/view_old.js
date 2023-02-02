@@ -5,9 +5,11 @@ import { ErrorMessage } from '../../../components/ErrorMessage/ErrorMessage';
 import ObjectTag from '../../../components/Tags/Object';
 import Waveform from '../../../components/Waveform/Waveform';
 import AudioControls from '../Audio/Controls';
+import { getEnv } from 'mobx-state-tree';
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
+  const messages = getEnv(store).messages;
 
   return (
     <ObjectTag item={item}>
@@ -38,6 +40,7 @@ const HtxAudioView = ({ store, item }) => {
           height={item.height}
           cursorColor={item.cursorcolor}
           cursorWidth={item.cursorwidth}
+          messages={messages}
         />
 
         <AudioControls item={item} store={store} />
