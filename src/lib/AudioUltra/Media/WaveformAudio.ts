@@ -12,6 +12,7 @@ export interface WaveformAudioOptions {
 
 interface WaveformAudioEvents {
   decodingProgress: (chunk: number, total: number) => void;
+  canplay: () => void;
 }
 
 export class WaveformAudio extends Events<WaveformAudioEvents> {
@@ -108,7 +109,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     delete this.decoderPromise;
     this.decoder?.destroy();
     delete this.decoder;
-    this.el?.removeEventListener('canplay', this.mediaReady);
+    this.el?.removeEventListener('canplaythrough', this.mediaReady);
     delete this.el;
   }
 
@@ -166,6 +167,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
     this.el = document.createElement('audio');
     this.el.preload = 'auto';
+    this.el.muted = true;
 
     this.mediaPromise = new Promise((resolve) => {
       this.mediaResolve = resolve;
@@ -175,13 +177,13 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.loadMedia();
   }
 
-  mediaReady = () => {
-    this.mediaResolve?.();
-    this.mediaResolve = undefined;
-
-    if (this.el) {
-      this.el.removeEventListener('canplaythrough', this.mediaReady);
+  mediaReady = async () => {
+    if (this.mediaResolve) {
+      this.mediaResolve?.();
+      this.mediaResolve = undefined;
+      await this.forceBuffer();
     }
+    this.invoke('canplay');
   };
 
   /**
@@ -192,23 +194,27 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     
     this.el.src = this.src;
     this.el.load();
-    this.forceBuffer();
   }
 
   /**
    * In order for the audio to playback sound immediately, we need to force the browser to buffer the audio.
    * This works by just playing the audio and then immediately pausing it.
    */
-  private forceBuffer() {
+  private async forceBuffer() {
     if (!this.el) return;
 
-    this.el.muted = true;
-    this.el.play().then(() => {
-      if (!this.el) return;
+    try {
+      await this.el.play();
       this.el.pause();
-      this.el.currentTime = 0;
-      this.el.muted = false;
-    });
+    } catch {
+      // ignore
+    } finally {
+      if (this.el) {
+        this.el.currentTime = 0;
+        this.el.muted = false;
+      }
+    }
+
   }
 
   private createAudioDecoder() {

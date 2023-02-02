@@ -618,7 +618,6 @@ export class Visualizer extends Events<VisualizerEvents> {
       if (mainLayer) {
         mainLayer.height = this.height;
       }
-      this.draw();
       this.invokeLayersUpdated();
     });
 
@@ -644,7 +643,6 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.invoke('layerAdded', [layer]);
     layer.on('layerUpdated', () => {
-      this.draw();
       this.invokeLayersUpdated();
     });
     this.layers.set(name, layer);
@@ -849,9 +847,20 @@ export class Visualizer extends Events<VisualizerEvents> {
       this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
       this.getSamplesPerPx();
       this.wf.renderTimeline();
-      this.draw(false, this.zoom === 1);
+      this.resetWaveformRender();
+      this.draw();
     });
   };
+
+  // Reset the waveform values so it can be rendered again correctly
+  // This is needed when the waveform container is resized, or visibility
+  // or a layer is changed. Otherwise its possible to be blank.
+  private resetWaveformRender() {
+    this.lastRenderedAmp = 0;
+    this.lastRenderedWidth = 0;
+    this.lastRenderedZoom = 0;
+    this.lastRenderedScrollLeftPx = 0;
+  }
 
   private transferImage(layers: string[] = ['background', 'waveform', 'regions', 'controls']) {
     const main = this.layers.get('main')!;
