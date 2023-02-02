@@ -1,19 +1,22 @@
 import { ReviewState } from '@atoms/Models/AnnotationsAtom/Types';
-import { Result } from '@atoms/Models/ResultAtom/Types';
+import { ResultInput } from './ResultInput';
 
 export type AnnotationInput = {
-  id: string,
-  skipped: boolean,
+  id: string | number,
+  result: ResultInput[],
+  skipped?: boolean,
   acceptedState?: ReviewState,
   readonly?: boolean,
-  result: Result[],
-  createdBy: string,
-  createdDate: number | string | Date,
-  unresolvedCommentCount: number,
-  commentCount: number,
+  createdBy?: string,
+  createdDate?: number | string | Date,
+  createdAgo?: number | string | Date,
+  unresolvedCommentCount?: number,
+  commentCount?: number,
   groundTruth?: boolean,
 }
 
 export type PredictionInput = AnnotationInput & {
   score?: number,
+  modelVersion?: string,
+  modelId?: string,
 }

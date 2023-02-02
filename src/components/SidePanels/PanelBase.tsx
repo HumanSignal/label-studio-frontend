@@ -3,7 +3,8 @@ import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand
 import { Block, Elem } from '../../utils/bem';
 
 import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
-import { Results } from '@atoms/Models/ResultAtom/Types';
+import { Region } from '@atoms/Models/RegionsAtom/Types';
+import { PrimitiveAtom } from 'jotai';
 import { useDrag } from '../../hooks/useDrag';
 import { clamp, isDefined } from '../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
@@ -33,7 +34,7 @@ const resizers = [
 
 interface PanelBaseProps {
   root: MutableRefObject<HTMLDivElement | undefined>;
-  selection: Results['selection'];
+  selection: PrimitiveAtom<Region>[];
   name: PanelType;
   title: string;
   tooltip: string;

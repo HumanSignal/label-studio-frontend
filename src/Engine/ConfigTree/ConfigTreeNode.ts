@@ -12,10 +12,10 @@ export class ConfigTreeNode {
   id: string;
   name: string;
   type: TagType;
-  parent: ParentNode | null;
+  parent: Element | null;
   element: Element;
   tree: ConfigTree;
-  children: Set<ChildNode>;
+  children: Set<Element>;
 
   constructor(params: ConfigTreeNodeParams) {
     this.id = guidGenerator();
@@ -24,11 +24,23 @@ export class ConfigTreeNode {
     this.name = params.name;
     this.type = this.name.toLowerCase() as TagType;
     this.parent = this.findParent();
-    this.children = new Set(params.node.childNodes);
+    this.children = new Set(Array.from(params.node.children) as Element[]);
+  }
+
+  destroy() {
+    this.children.clear();
   }
 
   getAttribute(name: string) {
     return this.element.getAttribute(name);
+  }
+
+  get parentConfigNode(): ConfigTreeNode | null {
+    if (!this.parent) return null;
+
+    const node = this.tree.getNode(this.parent);
+
+    return node ? node : null;
   }
 
   private findParent() {
@@ -36,6 +48,6 @@ export class ConfigTreeNode {
     const parent = node.parentNode ?? null;
     const root = node.ownerDocument;
 
-    return (parent && parent !== root) ? parent : null;
+    return (parent && parent !== root) ? parent as Element : null;
   }
 }

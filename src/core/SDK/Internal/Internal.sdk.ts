@@ -1,15 +1,13 @@
+import { AnnotationsController } from '@atoms/Models/AnnotationsAtom/AnnotationsController';
 import { TagController } from '@tags/Base/TagController';
 import { CommunicationBus, RegisteredController } from 'src/core/CommunicationBus/CommunicationBus';
 import { RootStoreInput } from 'src/Engine/Atoms/Inputs/RootStore';
 import { TaskInput } from 'src/Engine/Atoms/Inputs/TaskInput';
-import { AnnotationController } from '@atoms/Models/AnnotationsAtom/AnnotationsController';
 import { RootController } from 'src/Engine/Atoms/Models/RootAtom/Controller';
 import { taskAtom } from 'src/Engine/Atoms/Models/RootAtom/RootAtom';
 import { Store } from 'src/Engine/Atoms/Store';
-import { StoreAccess } from 'src/Engine/Atoms/StoreAccess';
 import { ConfigTree } from 'src/Engine/ConfigTree/ConfigTree';
 import { ConfigTreeNode } from 'src/Engine/ConfigTree/ConfigTreeNode';
-import { Registry } from 'src/Engine/Tags/Registry';
 import { Events } from 'src/utils/events';
 
 type InternalSDKParams = {
@@ -18,29 +16,29 @@ type InternalSDKParams = {
   communicationBus: CommunicationBus<TagController>,
 }
 
-class InternalSDK extends StoreAccess {
-  private events: Events;
+const EVENTS_KEY = Symbol('internal.events');
+
+class InternalSDK extends Store {
+  private [EVENTS_KEY]: Events;
   private communicationBus: CommunicationBus<TagController>;
   private controllers = new WeakMap<ConfigTreeNode, TagController>();
-  root: RootController;
-  annotations: AnnotationController;
-  tagRegistry: Registry;
+  root!: RootController;
+  annotations!: AnnotationsController;
   tree!: ConfigTree;
 
   constructor(params: InternalSDKParams) {
-    super(params.store);
-    this.events = params.events;
+    super();
+
+    this[EVENTS_KEY] = params.events;
     this.communicationBus = params.communicationBus;
-
-    this.root = new RootController(params.store);
-    this.tagRegistry = Registry.getInstance();
-    this.annotations = new AnnotationController(params.store);
-
-    console.log(this.communicationBus);
   }
 
   hydrate(data: RootStoreInput) {
     this.parseConfig(data.config ?? '');
+
+    this.root = new RootController();
+    this.annotations = new AnnotationsController(this);
+
     this.initCB();
     this.hydrateRoot(data);
     this.hydrateAnnotations(data.task);
@@ -80,12 +78,20 @@ class InternalSDK extends StoreAccess {
     this.communicationBus.invoke(controller, eventName, data);
   }
 
+  get events() {
+    return this[EVENTS_KEY];
+  }
+
   get task() {
-    return this.store.get(taskAtom);
+    return this.get(taskAtom);
   }
 
   get data() {
     return JSON.parse(this.task?.data ?? '{}');
+  }
+
+  get annotationController() {
+    return this.annotations.selectedController;
   }
 
   findControllerByNode(node: ConfigTreeNode) {
@@ -103,6 +109,18 @@ class InternalSDK extends StoreAccess {
     this.controllers.set(node, instance);
 
     return instance;
+  }
+
+  destroy() {
+    this.tree.walkTree((node) => {
+      const configNode = this.tree.getNode(node);
+
+      if (configNode) this.controllers.delete(configNode);
+    });
+
+    this.tree.destroy();
+    this.annotations.destroy();
+    this.communicationBus.destroy();
   }
 
   private initCB() {

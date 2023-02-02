@@ -2,10 +2,10 @@
   <Header>
     Hello world!
   </Header>
-  <HyperTextLabels name="ner1" toName="text">
-    <Label value="Jimmy"></Label>
+  <HyperTextLabels name="ner1" toName="text" allowEmpty="true">
+    <Label value="Jimmy" background="#f00"></Label>
     <Label value="Oliver"></Label>
-    <Label value="Megan"></Label>
+    <Label value="Megan" background="#00f"></Label>
   </HyperTextLabels>
 
   <HyperTextLabels name="ner" toName="text" choice="multiple">

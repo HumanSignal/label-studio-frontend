@@ -19,19 +19,19 @@ class LabelsTagAttributes extends ControlController {
    * How many times the label can be applied in a scope of single annotation
    * @default {number} Infinity
    */
-  maxusages = attr.number();
+  maxUsages = attr.number();
 
   /**
    * Show labels in a single line
    * @default {boolean} true
    */
-  showinline = attr.boolean(true);
+  showInline = attr.boolean(true);
 
   /**
    * How deeply labels can be nested
    * @default {number} Infinity
    */
-  groupdepth = attr.number();
+  groupDepth = attr.number();
 
   /**
    * Visual opacity of the label
@@ -43,31 +43,31 @@ class LabelsTagAttributes extends ControlController {
    * Background color of a label
    * @default {string} '#f48a42'
    */
-  fillcolor = attr.string('#f48a42');
+  fillColor = attr.string('#f48a42');
 
   /**
    * Opacity of the label's background
    * @default {number} 1
    */
-  fillopacity = attr.number(1, 0, 1);
+  fillOpacity = attr.number(1, 0, 1);
 
   /**
    * Border thickness of a label
    * @default {number} 1
    */
-  strokewidth = attr.number(1);
+  strokeWidth = attr.number(1);
 
   /**
    * Border color of a label
    * @default {string} '#f48a42'
    */
-  strokecolor = attr.string('#f48a42');
+  strokeColor = attr.string('#f48a42');
 
   /**
    * Allow label to be empty
    * @default {boolean} false
    */
-  allowempty = attr.boolean(false);
+  allowEmpty = attr.boolean(false);
 
   /**
    * Visibility of the label
@@ -78,4 +78,14 @@ class LabelsTagAttributes extends ControlController {
 
 export class LabelsController extends LabelsTagAttributes {
   selectedLabelsAtom = atom<LabelController[]>([]);
+
+  toggleSelection(label: LabelController) {
+    this.sdk.set(this.selectedLabelsAtom, (selected) => {
+      if (selected.includes(label)) {
+        return selected.filter((item) => item !== label);
+      }
+
+      return this.choice.value === 'single' ? [label] : [...selected, label];
+    });
+  }
 }

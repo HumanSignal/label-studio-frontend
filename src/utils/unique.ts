@@ -3,6 +3,6 @@ import { nanoid } from 'nanoid';
 
 /**
  * Unique hash generator
- * @param {number} lgth
+ * @param length length of a generated ID
  */
 export const guidGenerator = (length = 10) => nanoid(length);

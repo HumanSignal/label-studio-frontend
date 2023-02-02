@@ -12,7 +12,7 @@ import { SubmissionControls } from './SubmissionControls/SubmissionControls';
 import './TopBar.styl';
 
 type TopBarProps = {
-  annotationAtom?: AnnotationAtom,
+  annotationAtom: AnnotationAtom,
 }
 
 export const TopBar: FC<TopBarProps> = ({
@@ -32,7 +32,7 @@ export const TopBar: FC<TopBarProps> = ({
   return (
     <Block name="topbar">
       <Elem name="group">
-        <CurrentTask selectedEntityId={selectedEntity?.id}/>
+        <CurrentTask selectedEntityId={selectedEntity.id}/>
         {!viewingAll && (
           <AnnotationsList
             selectedAnnotation={selectedEntityAtom}

@@ -1,7 +1,7 @@
 import { ResultInput } from '@atoms/Inputs/ResultInput';
 import { PrimitiveAtom } from 'jotai';
 import { guidGenerator } from 'src/utils/unique';
-import { RegionController } from './RegionController';
+import { RegionController } from '../../../Regions/RegionController';
 import { Region } from './Types';
 
 /**

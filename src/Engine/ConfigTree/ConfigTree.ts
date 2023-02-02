@@ -8,32 +8,27 @@ import { guidGenerator } from 'src/utils/unique';
 import { isDefined } from 'src/utils/utilities';
 import { ConfigTreeNode } from './ConfigTreeNode';
 
-const SUPPORTED_TAGS = Object
-  .keys(Tags)
-  .map(name => name.replace('Controller', ''));
+const SUPPORTED_TAGS = Object.keys(Tags).map(name => name.replace('Controller', ''));
 
 type RenderProps = {
   annotationAtom: AnnotationAtom,
   node?: Element,
-}
+};
 
 type ConfigParams = {
   config: string,
   sdk: InternalSDK,
-}
+};
 
 export class ConfigTree {
   private config: string;
   private root!: Element;
-  private nodes: Node[] = [];
+  private nodes = new Set<Element>();
   private structure: WeakMap<Node, ConfigTreeNode> = new WeakMap();
   private renderable: WeakMap<Node, ReactElement | null> = new WeakMap();
   sdk: InternalSDK;
 
-  constructor({
-    config,
-    sdk,
-  }: ConfigParams) {
+  constructor({ config, sdk }: ConfigParams) {
     this.config = config;
     this.sdk = sdk;
   }
@@ -42,10 +37,7 @@ export class ConfigTree {
     return this.structure.get(node);
   }
 
-  render({
-    node,
-    annotationAtom,
-  }: RenderProps) {
+  render({ node, annotationAtom }: RenderProps) {
     const element = node ?? this.root;
 
     if (this.renderable.has(element)) return this.renderable.get(element) ?? null;
@@ -70,27 +62,30 @@ export class ConfigTree {
     return result;
   }
 
-  renderChildren({
-    node,
-    annotationAtom,
-  }: RenderProps) {
+  renderChildren({ node, annotationAtom }: RenderProps) {
     if (!node) return null;
 
     const childList = Array.from(node.children);
 
-    return childList.map((child) => {
+    return childList.map(child => {
       if (child.nodeType === Node.TEXT_NODE) {
         return child.textContent;
       }
 
       const configNode = this.getNode(child);
 
-      return configNode ? createElement(Fragment, {
-        key: configNode.id,
-      }, this.render({
-        node: child,
-        annotationAtom,
-      })) : null;
+      return configNode
+        ? createElement(
+          Fragment,
+          {
+            key: configNode.id,
+          },
+          this.render({
+            node: child,
+            annotationAtom,
+          }),
+        )
+        : null;
     });
   }
 
@@ -101,7 +96,7 @@ export class ConfigTree {
     this.root = xml.documentElement;
 
     this.walkTree(node => {
-      this.nodes.push(node);
+      this.nodes.add(node);
 
       if (!this.validateControllerForNode(node)) return;
 
@@ -123,10 +118,7 @@ export class ConfigTree {
     callback(this.root, this.structure.get(this.root));
 
     while (treeWalker.nextNode()) {
-      callback(
-        treeWalker.currentNode as Element,
-        this.structure.get(treeWalker.currentNode),
-      );
+      callback(treeWalker.currentNode as Element, this.structure.get(treeWalker.currentNode));
     }
   }
 
@@ -148,14 +140,48 @@ export class ConfigTree {
     return configNode;
   }
 
-  findNodeByName(name: string) {
-    const node = this.nodes.find(node => node.nodeName === name);
+  findNodeByNodeName(name: string) {
+    const node = Array.from(this.nodes).find(node => node.nodeName === name);
 
     if (!node) return null;
 
     const configNode = this.getNode(node);
 
     return configNode;
+  }
+
+  findNodeByName(name: string) {
+    const node = Array.from(this.nodes).find(node => node.getAttribute('name') === name);
+
+    if (!node) return null;
+
+    const configNode = this.getNode(node);
+
+    return configNode;
+  }
+
+  findNodes(selector: string) {
+    const nodes = Array.from(this.nodes).filter(node => node.matches(selector));
+
+    return nodes.map(node => this.getNode(node)).filter(isDefined);
+  }
+
+  destroy() {
+    this.nodes.forEach(node => {
+      const configNode = this.getNode(node);
+
+      if (!configNode) return;
+
+      configNode.destroy();
+
+      const controller = this.findActiveController(configNode);
+
+      if (!controller) return;
+
+      controller.destroy();
+    });
+
+    this.nodes.clear();
   }
 
   private validateControllerForNode(node: Element) {
@@ -172,7 +198,7 @@ export class ConfigTree {
     const attrs = Array.from(element.attributes);
 
     // Lowercase all attributes
-    attrs.forEach((attribute) => {
+    attrs.forEach(attribute => {
       element.removeAttribute(attribute.name);
       element.setAttribute(attribute.name.toLowerCase(), attribute.value);
     });
@@ -188,7 +214,7 @@ export class ConfigTree {
   }
 
   private registerNodes() {
-    this.nodes.forEach((node) => {
+    this.nodes.forEach(node => {
       const configNode = this.getNode(node);
 
       if (!configNode) return;
@@ -197,7 +223,6 @@ export class ConfigTree {
 
       if (!controller) return;
 
-      console.log(`Register ${controller}`);
       this.sdk.registerWithCB(controller);
     });
   }
@@ -216,16 +241,20 @@ export class ConfigTree {
     return isDefined(TagTypes[tagName.toLowerCase() as TagType]);
   }
 
-  private getControllerClass(tagNameRaw: string): {
-    name: TagType,
-    class: typeof TagTypes[TagType],
-  } | null {
+  private getControllerClass(
+    tagNameRaw: string,
+  ): {
+      name: TagType,
+      class: typeof TagTypes[TagType],
+    } | null {
     const tagName = tagNameRaw.toLowerCase() as TagType;
     const controller = TagTypes[tagName];
 
-    return controller ? {
-      name: tagName,
-      class: controller,
-    } : null;
+    return controller
+      ? {
+        name: tagName,
+        class: controller,
+      }
+      : null;
   }
 }

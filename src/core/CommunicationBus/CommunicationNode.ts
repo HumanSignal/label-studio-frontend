@@ -53,13 +53,10 @@ class CommunicationNode<Controller extends TagController> {
    */
   get connections() {
     // if (this.useCachedConnections) this._connections;
-
     const tree = this.configNode.tree;
     const currentConfigNode = this.configNode;
     const connections = this._connections ?? new Set<Controller>();
     const [currentNodeName, currentNodeToName] = [this.name, this.toName];
-
-    console.log({ currentNodeName, currentNodeToName });
 
     connections.clear();
 
@@ -87,6 +84,10 @@ class CommunicationNode<Controller extends TagController> {
     this.connectedControllers = this.bus.registrySize;
 
     return this._connections = connections;
+  }
+
+  destroy() {
+    this.events.clear();
   }
 
   toString() {

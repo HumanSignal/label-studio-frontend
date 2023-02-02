@@ -8,6 +8,8 @@ export type AnnotationEntity = {
 
 export type EntityType = keyof AnnotationEntity;
 
+export type AnnotationType = AnnotationEntity[keyof AnnotationEntity]
+
 export type ReviewState =
   | 'accepted'
   | 'rejected'
@@ -24,7 +26,6 @@ export type ReviewState =
 export type Annotation = {
   id: string | number,
   type: EntityType | 'history' | 'draft',
-  onlyTextObjects: boolean,
   unresolvedCommentCount: number,
   commentCount: number,
   groundTruth?: boolean,
@@ -53,8 +54,8 @@ export type AnnotationAtom = PrimitiveAtom<Annotation>
 export type AnnotationsStore = {
   current?: AnnotationAtom,
   currentHistory?: AnnotationAtom,
-  annotations: Annotation[],
-  predictions: Annotation[],
+  annotations: AnnotationAtom[],
+  predictions: AnnotationAtom[],
   annotationHistory: Annotation[],
   viewingAllAnnotations: boolean,
   viewingAllPredictions: boolean,

@@ -1,9 +1,11 @@
+import { atomWithStoredList } from '@atoms/Custom/atomWithStoredList';
 import { AnnotationAtom } from '@atoms/Models/AnnotationsAtom/Types';
-import { useRegionsTree } from '@atoms/Models/ResultAtom/Hooks/useRegionsTree';
-import { Result, Results } from '@atoms/Models/ResultAtom/Types';
+import { RegionTreeItem, useRegionsTree } from '@atoms/Models/RegionsAtom/Hooks/useRegionsTree';
+import { Region, RegionOrder } from '@atoms/Models/RegionsAtom/Types';
 import chroma from 'chroma-js';
-import { Atom } from 'jotai';
+import { atom, PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from 'jotai';
 import Tree, { TreeProps } from 'rc-tree';
+import { EventDataNode } from 'rc-tree/lib/interface';
 import { createContext, FC, MouseEvent, useCallback, useContext, useMemo, useState } from 'react';
 import { IconLockLocked, IconLockUnlocked, IconWarning, LsSparks } from '../../../assets/icons';
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
@@ -17,7 +19,6 @@ import { FF_DEV_2755, isFF } from '../../../utils/feature-flags';
 import { flatten, isDefined, isMacOS } from '../../../utils/utilities';
 import './TreeView.styl';
 
-const { localStorage } = window;
 const localStoreName = 'collapsed-label-pos';
 
 interface OutlinerContextProps {
@@ -28,14 +29,28 @@ const OutlinerContext = createContext<OutlinerContextProps>({
   regions: null,
 });
 
-type DragOptions = TreeProps<any>['onDrop'];
+type ReverseExtract<T, U> = T extends U ? never : T;
+
+type DragOptions = ReverseExtract<TreeProps<any>['onDrop'], undefined>;
+
+type ExtendDataNode<T> = T extends EventDataNode ? EventDataNode & {
+  classification: boolean,
+  props: RegionTreeItem,
+} : T;
+
+type DragHandler = DragOptions extends (info: infer T) => void ? ((info: T & {
+  [key in keyof T]: ExtendDataNode<T[key]>;
+}) => void) | undefined : never;
 
 interface OutlinerTreeProps {
-  regions: Atom<Result>[];
-  group: Results['group'];
+  regions: PrimitiveAtom<Region>[];
+  group: RegionOrder['group'];
   selectedKeys: string[];
   annotationAtom: AnnotationAtom;
 }
+
+const hoveredAtom = atom<string | null>(null);
+const collapsedItemsAtom = atomWithStoredList(localStoreName, []);
 
 export const OutlinerTree: FC<OutlinerTreeProps> = ({
   regions,
@@ -44,128 +59,82 @@ export const OutlinerTree: FC<OutlinerTreeProps> = ({
   annotationAtom,
 }) => {
   const rootClass = cn('tree');
-  const [hovered, setHovered] = useState<string | null>(null);
-  const onHover = (hovered: boolean, id: string) => setHovered(hovered ? id : null);
+  const setHovered = useSetAtom(hoveredAtom);
+  const onHover = useCallback((hovered: boolean, id: string) => setHovered(hovered ? id : null), []);
 
-  const eventHandlers = useEventHandlers({ regions, onHover });
-  const regionsTree = useDataTree({ annotationAtom, hovered, rootClass, selectedKeys });
+  const regionsTree = useDataTree({ annotationAtom, rootClass, selectedKeys });
+  const eventHandlers = useEventHandlers({ regions, regionsTree, onHover });
 
-  if (isFF(FF_DEV_2755)) {
-    const [collapsedPos, setCollapsedPos] = useState(localStorage.getItem(localStoreName)?.split?.(',')?.filter(pos => !!pos) ?? []);
-
-    const updateLocalStorage = (collapsedPos: Array<string>) => {
-      localStorage.setItem(localStoreName, collapsedPos.join(','));
-    };
-
-    const collapse = (pos: string) => {
-      const newCollapsedPos = [...collapsedPos, pos];
-
-      setCollapsedPos(newCollapsedPos);
-      updateLocalStorage(newCollapsedPos);
-    };
-
-    const expand = (pos: string) => {
-      const newCollapsedPos = collapsedPos.filter(cPos => cPos !== pos);
-
-      setCollapsedPos(newCollapsedPos);
-      updateLocalStorage(newCollapsedPos);
-    };
-    const expandedKeys = regionsTree.filter((item: any) => !collapsedPos.includes(item.pos)).map((item: any) => item.key) ?? [];
-
-    return (
-      <OutlinerContext.Provider value={{ regions }}>
-        <Block name="outliner-tree">
-          <Tree
-            draggable={group === 'manual'}
-            multiple
-            defaultExpandAll={true}
-            defaultExpandParent={false}
-            autoExpandParent
-            checkable={false}
-            prefixCls="lsf-tree"
-            className={rootClass.toClassName()}
-            treeData={regionsTree}
-            selectedKeys={selectedKeys}
-            // icon={({ entity }: any) => <NodeIcon node={entity}/>}
-            switcherIcon={({ isLeaf }: any) => isLeaf ? null : <IconArrow/>}
-            expandedKeys={expandedKeys}
-            onExpand={(internalExpandedKeys, { node }) => {
-              const region = regionsTree.find((region: any) => region.key === node.key);
-              const pos = region.pos;
-
-              collapsedPos.includes(pos) ? expand(pos) : collapse(pos);
-            }}
-            {...eventHandlers}
-          />
-        </Block>
-      </OutlinerContext.Provider>
-    );
-  } else {
-    return (
-      <OutlinerContext.Provider value={{ regions }}>
-        <Block name="outliner-tree">
-          <Tree
-            draggable={group === 'manual'}
-            multiple
-            defaultExpandAll
-            defaultExpandParent
-            autoExpandParent
-            checkable={false}
-            prefixCls="lsf-tree"
-            className={rootClass.toClassName()}
-            treeData={regionsTree}
-            selectedKeys={selectedKeys}
-            // icon={({ entity }: any) => <NodeIcon node={entity}/>}
-            switcherIcon={({ isLeaf }: any) => isLeaf ? null : <IconArrow/>}
-            {...eventHandlers}
-          />
-        </Block>
-      </OutlinerContext.Provider>
-    );
-  }
+  return (
+    <OutlinerContext.Provider value={{ regions }}>
+      <Block name="outliner-tree">
+        <Tree
+          draggable={group === 'manual'}
+          multiple
+          defaultExpandAll
+          defaultExpandParent
+          autoExpandParent
+          checkable={false}
+          prefixCls="lsf-tree"
+          className={rootClass.toClassName()}
+          treeData={regionsTree}
+          selectedKeys={selectedKeys}
+          // icon={({ entity }: any) => <NodeIcon node={entity}/>}
+          switcherIcon={({ isLeaf }: any) => isLeaf ? null : <IconArrow/>}
+          {...eventHandlers}
+        />
+      </Block>
+    </OutlinerContext.Provider>
+  );
 };
 
 const useDataTree = ({
   annotationAtom,
-  hovered,
   rootClass,
   selectedKeys,
 }: {
   annotationAtom: AnnotationAtom,
-  hovered: string | null,
   rootClass: CN,
   selectedKeys: string[],
 }) => {
   const tree = useRegionsTree(annotationAtom, (
     item,
-    idx,
+    index,
+    controller,
   ) => {
-    const { id, type, hidden, isDrawing } = item ?? {};
-    const style = item?.background ?? item?.getOneColor?.();
+    const {
+      type = undefined,
+      hidden = false,
+      isDrawing = false,
+      singleResult,
+      oneColor,
+    } = controller ?? {};
+
+    const { id } = item ?? {};
+    const style = singleResult?.backgroundColor ?? oneColor;
     const color = chroma(style ?? '#666').alpha(1);
     const mods: Record<string, any> = { hidden, type, isDrawing };
+
     const label = (() => {
       if (!type) {
         return 'No Label';
-      } else if (type.includes('label')) {
-        return item.value;
-      } else if (type.includes('region') || type.includes('range')) {
-        return (item?.labels ?? []).join(', ') || 'No label';
-      } else if (type.includes('tool')) {
+      } else if (controller) {
+        return (controller.selectedLabels ?? []).join(', ') || 'No label';
+      } else if (/labels|tool/.test(type)) {
         return item.value;
       }
     })();
 
-    console.log({ label });
+    console.log('render');
 
     return {
-      idx,
+      ...item,
+      idx: index,
       key: id,
       type,
       label,
       hidden,
       entity: item,
-      hovered: id === hovered,
       selected: selectedKeys.includes(id),
       color: color.css(),
       style: {
@@ -183,9 +152,11 @@ const useDataTree = ({
 
 const useEventHandlers = ({
   regions,
+  regionsTree,
   onHover,
 }: {
-  regions: any,
+  regions: PrimitiveAtom<Region>[],
+  regionsTree: RegionTreeItem[],
   onHover: (hovered: boolean, id: string) => void,
 }) => {
   const onSelect = useCallback((_, evt) => {
@@ -239,11 +210,16 @@ const useEventHandlers = ({
     return 1 + Math.max(...childrenHeight);
   }, []);
 
-  const onDrop = useCallback<DragOptions>(({ node, dragNode, dropPosition, dropToGap }) => {
+  const onDrop = useCallback<DragHandler>(({
+    node,
+    dragNode,
+    dropPosition,
+    dropToGap,
+  }) => {
     if (node.classification) return false;
-    const dropKey = node.props.eventKey;
-    const dragKey = dragNode.props.eventKey;
-    const dropPos = node.props.pos.split('-');
+    const dropKey = node.key;
+    const dragKey = dragNode.key;
+    const dropPos = node.pos.split('-');
 
     dropPosition = dropPosition - parseInt(dropPos[dropPos.length - 1]);
     const treeDepth = dropPos.length;
@@ -290,27 +266,70 @@ const useEventHandlers = ({
     }
   }, []);
 
+  const onExpand = useCollapseEventHandler(regionsTree);
+
   return {
     onSelect,
     onMouseEnter,
     onMouseLeave,
     onDrop,
+    ...onExpand,
   };
 };
 
-const RootTitle: FC<any> = ({
-  item,
-  hovered,
+const useCollapseEventHandler = (regionsTree: RegionTreeItem[]) => {
+  const [collapsedPos, setCollapsedPos] = useAtom(collapsedItemsAtom);
+
+  const collapse = (pos: string) => {
+    const newCollapsedPos = [...collapsedPos, pos];
+
+    setCollapsedPos(newCollapsedPos);
+  };
+
+  const expand = (pos: string) => {
+    const newCollapsedPos = collapsedPos.filter(cPos => cPos !== pos);
+
+    setCollapsedPos(newCollapsedPos);
+  };
+
+  const onExpand = useCallback((_, { node }) => {
+    const region = regionsTree.find((region: any) => region.key === node.key);
+
+    if (!region) return;
+
+    const pos = region.position;
+
+    collapsedPos.includes(pos)
+      ? expand(pos)
+      : collapse(pos);
+  }, []);
+
+  const expandedKeys = regionsTree
+    .filter((item) => !collapsedPos.includes(item.position))
+    .map((item) => item.key) ?? [];
+
+  return isFF(FF_DEV_2755) ? {
+    onExpand,
+    expandedKeys,
+    defaultExpandAll: true,
+    defaultExpandParent: false,
+  } : {};
+};
+
+const RootTitle: FC<RegionTreeItem> = ({
+  entity,
   label,
-  isArea,
+  isRegion,
   ...props
 }) => {
+  const hovered = useAtomValue(hoveredAtom);
+
   const [collapsed, setCollapsed] = useState(false);
 
   const controls = useMemo(() => {
-    if (!isArea) return [];
-    return item.perRegionDescControls ?? [];
-  }, [item?.perRegionDescControls, isArea]);
+    if (!isRegion) return [];
+    return entity.perRegionDescControls ?? [];
+  }, [entity?.perRegionDescControls, isRegion]);
 
   const hasControls = useMemo(() => {
     return controls.length > 0;
@@ -322,21 +341,13 @@ const RootTitle: FC<any> = ({
     setCollapsed(!collapsed);
   }, [collapsed]);
 
-  console.log('render title', {
-    item,
-    hovered,
-    label,
-    isArea,
-    props,
-  });
-
   return (
     <Block name="outliner-item">
       <Elem name="content">
         {!props.isGroup && <Elem name="index">{props.idx + 1}</Elem>}
         <Elem name="title">
           {label}
-          {item?.isDrawing && (
+          {entity?.isDrawing && (
             <Elem tag="span" name="incomplete">
               <Tooltip title="Incomplete polygon">
                 <IconWarning />
@@ -345,20 +356,20 @@ const RootTitle: FC<any> = ({
           )}
         </Elem>
         <RegionControls
-          hovered={hovered}
-          item={item}
-          entity={props.entity}
+          hovered={hovered === props.id}
+          item={entity}
+          entity={entity}
           regions={props.children}
           type={props.type}
           collapsed={collapsed}
-          hasControls={hasControls && isArea}
+          hasControls={hasControls && isRegion}
           toggleCollapsed={toggleCollapsed}
         />
       </Elem>
-      {(hasControls && isArea) && (
+      {(hasControls && isRegion) && (
         <Elem name="ocr">
           <RegionItemDesc
-            item={item}
+            item={entity}
             controls={controls}
             collapsed={collapsed}
             setCollapsed={setCollapsed}

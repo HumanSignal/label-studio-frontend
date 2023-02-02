@@ -1,7 +1,7 @@
-import { useAnnotationRegions } from '@atoms/Models/AnnotationsAtom/Hooks/useAnnotationRegions';
-import { useRegionsOrder } from '@atoms/Models/ResultAtom/Hooks/useRegionsOrder';
-import { useAtomValue } from 'jotai';
-import { FC } from 'react';
+import { useRegionOrder } from '@atoms/Models/RegionsAtom/Hooks/useRegionOrder';
+import { useRegions } from '@atoms/Models/RegionsAtom/Hooks/useRegions';
+import { useRegionsController } from '@atoms/Models/RegionsAtom/Hooks/useRegionsController';
+import { FC, useMemo } from 'react';
 import { Elem } from '../../../utils/bem';
 import { PanelBase, PanelProps } from '../PanelBase';
 import './OutlinerPanel.styl';
@@ -9,11 +9,15 @@ import { OutlinerTree } from './OutlinerTree';
 import { ViewControls } from './ViewControls';
 
 export const OutlinerPanel: FC<PanelProps> = (props) => {
-  const regions = useAnnotationRegions(props.annotationAtom);
-  const regionsOrder = useRegionsOrder(regions.resultAtom);
+  const regions = useRegions(props.annotationAtom);
+  const resultController = useRegionsController(props.annotationAtom);
+  const regionsOrder = useRegionOrder(props.annotationAtom);
 
-  const { selection } = useAtomValue(regions.resultAtom);
-  const regionsData = useAtomValue(regions.resultListAtom);
+  const selectedRegions = useMemo(() => {
+    if (props.selection.length === 0) return [];
+
+    return props.selection.map(reg => reg.toString());
+  }, [props.selection]);
 
   return (
     <PanelBase {...props} name="outliner" title="Outliner">
@@ -21,15 +25,15 @@ export const OutlinerPanel: FC<PanelProps> = (props) => {
         grouping={regionsOrder.group}
         ordering={regionsOrder.orderBy}
         orderingDirection={regionsOrder.order}
-        onOrderingChange={regionsOrder.setOrderBy}
-        onGroupingChange={regionsOrder.setGroup}
+        onOrderingChange={resultController.setOrderBy}
+        onGroupingChange={resultController.setGroup}
       />
-      {regionsData?.length > 0 ? (
+      {regions?.length > 0 ? (
         <OutlinerTree
-          regions={regionsData}
+          regions={regions}
           group={regionsOrder.group}
           annotationAtom={props.annotationAtom}
-          selectedKeys={Array.from(selection)}
+          selectedKeys={selectedRegions}
         />
       ) : (
         <Elem name="empty">

@@ -1,10 +1,10 @@
-import { Results } from '@atoms/Models/ResultAtom/Types';
 import { Annotation } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
 // import { useInterfaces } from '@atoms/Models/RootAtom/Hooks';
-import { Atom } from 'jotai';
+import { Atom, PrimitiveAtom } from 'jotai';
 import { FC } from 'react';
 import { Elem } from '../../../utils/bem';
 // import { FF_DEV_2290, isFF } from '../../../utils/feature-flags';
+import { Region } from '@atoms/Models/RegionsAtom/Types';
 import { PanelBase, PanelProps } from '../PanelBase';
 import './DetailsPanel.styl';
 import { RegionDetailsMain, RegionDetailsMeta } from './RegionDetails';
@@ -19,7 +19,7 @@ const DetailsPanelComponent: FC<PanelProps> = (props) => {
 };
 
 type ContentProps = {
-  selection: Results['selection'],
+  selection: PrimitiveAtom<Region>[],
   currentEntity: Atom<Annotation>,
 }
 
@@ -29,7 +29,7 @@ const Content: FC<ContentProps> = ({
 }) => {
   return (
     <>
-      {(selection.size) ? (
+      {(selection.length) ? (
         <RegionsPanel regions={selection}/>
       ) : (
         <GeneralPanel currentEntity={currentEntity}/>

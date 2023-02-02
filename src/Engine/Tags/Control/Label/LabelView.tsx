@@ -1,10 +1,9 @@
 import { Label } from '@components/Label/Label';
 import { defineTagView } from '@tags/Base/TagController';
-import { Tooltip } from 'antd';
+import { Tooltip } from '@UI/Tooltip/Tooltip';
 import { useAtomValue } from 'jotai';
 import { useSettings } from 'src/Engine/Atoms/Models/SettingsAtom/Hooks';
 import * as StyleUtils from 'src/utils/styles';
-import { useLabelsContext } from '../Labels/LabelsContext';
 import { LabelController } from './LabelController';
 
 export const LabelView = defineTagView(LabelController, ({
@@ -18,30 +17,25 @@ export const LabelView = defineTagView(LabelController, ({
   const hotkey = (settings.enableTooltips || settings.enableLabelTooltips) && settings.enableHotkeys && controller.hotkey.value;
 
   const content = node.element.innerHTML;
-  const labels = useLabelsContext();
-  const selection = useAtomValue(labels.selected);
+  const selection = useAtomValue(controller.selectedLabelsAtom);
   const selected = selection.includes(controller);
 
   const label = (
     <Label
-      color={controller.backgroundColor}
+      color={controller.background.value}
       margins
       empty={item.isEmpty}
       hotkey={hotkey}
       hidden={!item.visible}
       selected={selected}
-      onClick={() => {
-        controller.emit('label-selected', {
-          value: controller,
-        });
-      }}
+      onClick={() => controller.toggleSelected()}
     >
       {content ? (
         <div title={item._value} dangerouslySetInnerHTML={{ __html: content }}/>
       ) : controller.value.value }
 
-      {controller.showalias.value === true && controller.alias.value && (
-        <span style={StyleUtils.styleToProp(controller.aliasstyle.value ?? '')}>
+      {controller.showAlias.value === true && controller.alias.value && (
+        <span style={StyleUtils.styleToProp(controller.aliasStyle.value ?? '')}>
           &nbsp;{controller.alias.value}
         </span>
       )}

@@ -1,8 +1,8 @@
+import { Store } from '@atoms/Store';
 import { RootStoreInput } from 'src/Engine/Atoms/Inputs/RootStore';
-import { StoreAccess } from 'src/Engine/Atoms/StoreAccess';
 import { RootAtom } from './RootAtom';
 
-export class RootController extends StoreAccess {
+export class RootController extends Store {
   hydrate(input: RootStoreInput): void {
     const { interfaces, description, taskHistory, task: taskRaw, user, users } = input;
 
@@ -16,7 +16,7 @@ export class RootController extends StoreAccess {
       data: taskData,
     };
 
-    this.store.patch(RootAtom, {
+    this.patch(RootAtom, {
       ...input,
       task,
       config: input.config ?? '',

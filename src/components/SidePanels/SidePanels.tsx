@@ -3,8 +3,7 @@ import { Block, Elem } from '../../utils/bem';
 import { DetailsPanel } from './DetailsPanel/DetailsPanel';
 import { OutlinerPanel } from './OutlinerPanel/OutlinerPanel';
 
-import { useAtomValue } from 'jotai';
-import { useAnnotationRegions } from 'src/Engine/Atoms/Models/AnnotationsAtom/Hooks/useAnnotationRegions';
+import { useRegionsSelection } from '@atoms/Models/RegionsAtom/Hooks/useRegionsSelection';
 import { AnnotationAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
 import { IconDetails, IconHamburger } from '../../assets/icons';
 import { useMedia } from '../../hooks/useMedia';
@@ -81,8 +80,7 @@ export const SidePanels: FC<SidePanelsProps> = ({
   children,
 }) => {
   const snapTreshold = 5;
-  const { resultAtom } = useAnnotationRegions(currentEntity);
-  const regions = useAtomValue(resultAtom);
+  const selectedRegions = useRegionsSelection(currentEntity);
   const viewportSize = useRef({ width: 0, height: 0 });
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [panelMaxWidth, setPanelMaxWidth] = useState(DEFAULT_PANEL_MAX_WIDTH);
@@ -283,10 +281,10 @@ export const SidePanels: FC<SidePanelsProps> = ({
     return {
       ...eventHandlers,
       root: rootRef,
-      selection: regions.selection,
+      selection: selectedRegions,
       annotationAtom: currentEntity,
     };
-  }, [eventHandlers, rootRef, regions, regions.selection, currentEntity]);
+  }, [eventHandlers, rootRef, selectedRegions, currentEntity]);
 
   const padding = useMemo(() => {
     const result = {

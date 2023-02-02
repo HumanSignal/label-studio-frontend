@@ -10,7 +10,7 @@ import { isDefined } from '../../utils/utilities';
 import './CurrentTask.styl';
 
 type CurrentTaskProps = {
-  selectedEntityId?: string,
+  selectedEntityId?: string | number,
 }
 
 export const CurrentTask: FC<CurrentTaskProps> = ({ selectedEntityId }) => {

@@ -2,7 +2,6 @@ import { createRoot } from 'react-dom/client';
 import { configureStore } from './configureStore';
 // import { LabelStudio as LabelStudioReact } from './Component';
 import { configure } from 'mobx';
-import { destroy } from 'mobx-state-tree';
 import { toCamelCase } from 'strman';
 import legacyEvents from './core/External';
 import { Hotkey } from './core/Hotkey';
@@ -10,8 +9,9 @@ import defaultOptions from './defaultOptions';
 import { Events } from './utils/events';
 import { isDefined } from './utils/utilities';
 // import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
+import { createElement } from 'react';
 import { Store } from 'src/Engine/Atoms/Store';
-import { App } from './App';
+import { Root } from './App';
 import { CommunicationBus } from './core/CommunicationBus/CommunicationBus';
 import { InternalSDK } from './core/SDK/Internal/Internal.sdk';
 import { LSOptions } from './Types/LabelStudio/LabelStudio';
@@ -21,34 +21,32 @@ configure({
 });
 
 const INTERNAL_SDK = Symbol('INTERNAL_SDK');
+const APP_ROOT = Symbol('APP_ROOT');
+const STORE = Symbol('STORE');
+
+const ROOTS = new Set<HTMLElement>();
+
+const INSTANCES = new WeakMap<HTMLElement, LabelStudio>();
+
+const SDK = new WeakMap<LabelStudio, InternalSDK>();
 
 export class LabelStudio {
-  // static Component = LabelStudioReact;
-
-  static instances = new Set<LabelStudio>();
-
-  static get onlyInstance() {
-    return Array.from(this.instances)[0];
-  }
-
-  static getInstance(root: HTMLElement | string) {
-    return Array.from(this.instances).find(inst => inst.root === root);
-  }
-
-  static destroyAll() {
-    this.instances.forEach(inst => inst.destroy?.());
-    this.instances.clear();
-  }
-
-  private root: HTMLElement | string;
   private events: Events;
   private options: LSOptions;
   private [INTERNAL_SDK]!: InternalSDK;
+  private [APP_ROOT]!: ReturnType<typeof createRoot>;
+  private [STORE]!: Store;
 
-  store!: Store;
-  destroy: (() => void) | null;
+  root: HTMLElement | string;
 
-  constructor(root: string | HTMLElement, userOptions: LSOptions = {}) {
+  get internalSDK() { return this[INTERNAL_SDK]; }
+
+  get store() { return this[STORE]; }
+
+  constructor(
+    root: string | HTMLElement,
+    userOptions: LSOptions = {},
+  ) {
     const options: LSOptions = {};
 
     Object.assign(
@@ -68,8 +66,6 @@ export class LabelStudio {
 
     this.supportLgacyEvents();
     this.createApp();
-
-    LabelStudio.instances.add(this);
   }
 
   on(eventName: string, callback: () => void) {
@@ -84,10 +80,16 @@ export class LabelStudio {
     }
   }
 
+  destroy() {
+    this.destroy = (() => {});
+    this[INTERNAL_SDK].destroy();
+    this[APP_ROOT].unmount();
+  }
+
   private async createApp() {
     const { getRoot, params } = await configureStore(this.options);
     const rootElement = getRoot(this.root) as unknown as HTMLElement;
-    const appRoot = createRoot(rootElement);
+    const appRoot = this.initAppRoot(rootElement);
     const CB = new CommunicationBus();
 
     const store = new Store();
@@ -109,19 +111,24 @@ export class LabelStudio {
       });
     };
 
-    appRoot.render(<App store={store} sdk={internalSDK} afterInit={hydrateStore}/>);
+    const app = createElement(Root, {
+      store,
+      sdk: internalSDK,
+      afterInit: hydrateStore,
+    });
+
+    appRoot.render(app);
+
+    ROOTS.add(rootElement);
+    INSTANCES.set(rootElement, this);
 
     this[INTERNAL_SDK] = internalSDK;
+    this[APP_ROOT] = appRoot;
+    this[STORE] = store;
+  }
 
-    const destructor = () => {
-      appRoot.unmount();
-      // TODO: fix this
-      // destroySharedStore();
-      destroy(this.store);
-    };
-
-    this.store = store;
-    this.destroy = destructor;
+  private initAppRoot(rootElement: HTMLElement) {
+    return createRoot(rootElement);
   }
 
   private supportLgacyEvents() {
@@ -137,8 +144,32 @@ export class LabelStudio {
       }
     });
   }
-
-  get internalSDK() {
-    return this[INTERNAL_SDK];
-  }
 }
+
+export const onlyInstance = () => {
+  return INSTANCES.get(ROOTS.values().next().value);
+};
+
+export const getSDK = (ls: LabelStudio) => {
+  return SDK.get(ls);
+};
+
+export const getInstance = (root: HTMLElement) => {
+  return INSTANCES.get(root);
+};
+
+export const destroyAll = () => {
+  ROOTS.forEach(root => {
+    const instance = getInstance(root);
+
+    instance?.destroy();
+
+    INSTANCES.delete(root);
+  });
+
+  ROOTS.clear();
+};
+
+export const create = function(...args: ConstructorParameters<typeof LabelStudio>) {
+  return new LabelStudio(...args);
+};

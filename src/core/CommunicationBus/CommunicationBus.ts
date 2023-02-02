@@ -21,9 +21,8 @@ const REGISTRY_SIZE = Symbol('registry-size');
 
 type AnyController = unknown extends TagController ? TagController : TagController;
 
-class CommunicationBus<
-  Controller extends AnyController
-> {
+class CommunicationBus<Controller extends AnyController> {
+  private controllers = new Set<Controller>();
   private registry = new WeakMap<Controller, CommunicationNode<Controller>>();
   private postponedSubscriptions = new WeakMap<Controller, Set<PostponedListener>>();
   private [REGISTRY_SIZE] = 0;
@@ -44,7 +43,7 @@ class CommunicationBus<
     });
 
     this.registry.set(controller, communicationNode);
-
+    this.controllers.add(controller);
     this.releasePostponedListeners(controller);
     this[REGISTRY_SIZE] += 1;
   }
@@ -77,8 +76,6 @@ class CommunicationBus<
       this.subscribeLater(controller, eventName, callback);
       return;
     }
-
-    console.log('subscribed', eventName, controller);
 
     registeredController.connections.forEach(ctrl => {
       const registree = this.registry.get(ctrl);
@@ -124,6 +121,25 @@ class CommunicationBus<
 
   get registrySize() {
     return this[REGISTRY_SIZE];
+  }
+
+  destroy() {
+    this.controllers.forEach(controller => {
+      const node = this.registry.get(controller);
+
+      node?.connections.forEach(conn => {
+        const connNode = this.registry.get(conn);
+
+        connNode?.destroy();
+      });
+      node?.destroy();
+
+      this.unregister(controller);
+      this.controllers.delete(controller);
+      this.postponedSubscriptions.delete(controller);
+    });
+
+    this.controllers.clear();
   }
 
   private subscribeLater<DataType extends {}>(

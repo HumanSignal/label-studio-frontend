@@ -4,7 +4,7 @@ import { createContext, FC, StrictMode, useContext } from 'react';
 import { Store } from 'src/Engine/Atoms/Store';
 import { InternalSDK } from './core/SDK/Internal/Internal.sdk';
 
-type AppProps = {
+export type RootProps = {
   store: Store,
   sdk: InternalSDK,
   afterInit: () => void,
@@ -12,7 +12,7 @@ type AppProps = {
 
 const SDKContext = createContext<InternalSDK | null>(null);
 
-export const App: FC<AppProps> = ({
+export const Root: FC<RootProps> = ({
   store,
   sdk,
   afterInit,

@@ -1,9 +1,11 @@
+import { ResultValueType } from 'src/Engine/Regions/RegionValue';
+
 export type ResultInput = {
   id: string,
-  type: string,
+  type: ResultValueType,
   from_name: string,
   to_name: string,
   score: number,
-  value: Record<string, any>,
   origin: 'prediction' | 'prediction-changed' | 'manual',
+  value: Record<string, any>,
 }

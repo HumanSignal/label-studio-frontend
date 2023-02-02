@@ -30,7 +30,10 @@ export const SubmissionControls: FC<SubmissionControlsProps> = ({
     return annotation.type === 'history';
   }, [annotation.type]);
 
-  const { userGenerate, sentUserGenerate, versions, results, editable: annotationEditable } = annotation;
+  const { userCreated, saved, editable: annotationEditable } = annotation;
+
+  const versions: unknown[] = [];
+  const results: unknown[] = [];
 
   const buttonControl = useButtonControl();
 
@@ -53,8 +56,8 @@ export const SubmissionControls: FC<SubmissionControlsProps> = ({
       ) : (
         <DefaultControls
           disabled={disabled}
-          userGenerate={userGenerate}
-          sentUserGenerate={sentUserGenerate}
+          userGenerate={userCreated}
+          sentUserGenerate={saved}
           explore={explore}
           submitDisabled={submitDisabled}
           versions={versions}

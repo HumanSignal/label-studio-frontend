@@ -1,9 +1,7 @@
 import { useAtomValue } from 'jotai';
-import { useCallback, useRef, useState } from 'react';
-import { useControllerEvent } from 'src/core/CommunicationBus/Hooks';
+import { useCallback, useRef } from 'react';
 import { AnnotationAtom } from 'src/Engine/Atoms/Models/AnnotationsAtom/Types';
 import { useAutoAnnotation } from 'src/Engine/Atoms/Models/RootAtom/Hooks';
-import { LabelController } from 'src/Engine/Tags/AllTags';
 import Utils from 'src/utils';
 import { cn } from 'src/utils/bem';
 import { htmlEscape } from 'src/utils/html';
@@ -48,16 +46,11 @@ export const useTextHandlers = (
   item: null,
   controller: TextViewController,
   annotationAtom: AnnotationAtom,
-): TextHandlers => {
+) => {
   const annotation = useAtomValue(annotationAtom);
   const [autoAnnotation] = useAutoAnnotation();
   const doubleClickSelection = useRef<DoubleClickSelection | null>(null);
   const selectionMode = useRef<boolean>(false);
-  const [selectedLabels, setSelectedLabels] = useState<LabelController[]>([]);
-
-  useControllerEvent(controller, 'labels-selection-changed', (tag, data) => {
-    setSelectedLabels(data.labels);
-  });
 
   /**
    * Helper method to find regions in the text
@@ -73,23 +66,26 @@ export const useTextHandlers = (
   };
 
   const onMouseUp = useCallback((ev: MouseEvent) => {
-    console.log({ selectedLabels });
     const rootEl = controller.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
+    const selectedLabels = controller.selectedLabels[0];
+
+    console.log(selectedLabels);
 
     if (selectedLabels.length === 0 || ev.ctrlKey || ev.metaKey) {
       return controller.selectRegions(ev.ctrlKey || ev.metaKey);
     }
 
-    if (controller.selectionenabled.value === false || !annotation.editable) return;
+    if (controller.selectionEnabled.value === false || !annotation.editable) return;
+
     const label = selectedLabels[0];
     const value = selectedLabels.map(l => l.value.value);
 
-    console.log({ label, value });
-
     Utils.Selection.captureSelection(({ selectionText, range }) => {
-      const rangeDoesntExists = !range || !range.collapsed;
+      const rangeDoesntExists = !range || range.collapsed;
       const rangeIsOutsideRoot = !root.contains(range.startContainer) || !root.contains(range.endContainer);
+
+      console.log({ rangeDoesntExists, rangeIsOutsideRoot });
 
       if (rangeDoesntExists || rangeIsOutsideRoot) return;
 
@@ -131,7 +127,7 @@ export const useTextHandlers = (
       x: ev.pageX,
       y: ev.pageY,
     };
-  }, [autoAnnotation, selectedLabels]);
+  }, [autoAnnotation]);
 
   const onRegionClick = useCallback((event: MouseEvent) => {
     if (selectionMode.current) {
@@ -142,7 +138,7 @@ export const useTextHandlers = (
     const target = event.target as HTMLElement;
 
     if (
-      !controller.clickablelinks.value
+      !controller.clickableLinks.value
       && Utils.HTML.matchesSelector(target, 'a[href]')
     ) {
       event.preventDefault();
@@ -212,8 +208,6 @@ export const useIFrameHandler = (
       mouseup: [handlers.onMouseUp, false],
       mouseover: [handlers.onRegionMouseOver, true],
     };
-
-    console.log('iframe loaded', iframe, doc, body, htmlEl);
 
     if (!body) return;
 

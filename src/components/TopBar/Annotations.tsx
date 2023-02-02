@@ -137,9 +137,9 @@ const CommentIcon: FC<CommentIconProps> = ({
 
   if (!entity) return null;
 
-  if (entity.unresolved_comment_count > 0) {
+  if (entity.unresolvedCommentCount > 0) {
     return <LsCommentRed />;
-  } else if (entity.comment_count > 0) {
+  } else if (entity.commentCount > 0) {
     return <LsComment />;
   }
 

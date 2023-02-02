@@ -15,7 +15,7 @@ const defaultStyles = {
   defaultSuggestionWidth: Constants.SUGGESTION_STROKE_WIDTH,
 };
 
-type StyleOptions = (typeof defaultStyles) & {
+type StyleOptions = typeof defaultStyles & {
   region: any,
   highlighted?: boolean,
   shouldFill?: boolean,
@@ -23,7 +23,7 @@ type StyleOptions = (typeof defaultStyles) & {
   includeFill?: boolean,
   useStrokeAsFill?: boolean,
   sameStrokeWidthForSelected?: boolean,
-}
+};
 
 export const getRegionStyles = ({
   region,
@@ -47,16 +47,14 @@ export const getRegionStyles = ({
   const fillopacity = style?.fillopacity;
   const opacity = isDefined(fillopacity) ? fillopacity : style?.opacity;
 
-  const fillColor = shouldFill ? (
-    chroma((useStrokeAsFill ? style?.strokecolor : style?.fillcolor) ?? defaultFillColor)
+  const fillColor = shouldFill
+    ? chroma((useStrokeAsFill ? style?.strokecolor : style?.fillcolor) ?? defaultFillColor)
       .darken(0.3)
       .alpha(+(opacity ?? defaultOpacity ?? 0.5))
       .css()
-  ) : null;
+    : null;
 
-  const strokeColor = selected
-    ? defaultStrokeColorHighlighted
-    : chroma(style?.strokecolor ?? defaultStrokeColor).css();
+  const strokeColor = selected ? defaultStrokeColorHighlighted : chroma(style?.strokecolor ?? defaultStrokeColor).css();
 
   const strokeWidth = (() => {
     if (suggestion) {
@@ -75,7 +73,6 @@ export const getRegionStyles = ({
   };
 };
 
-
 export const useRegionStyles = (region: any, options: Partial<StyleOptions> = {}) => {
   const { suggestion } = useContext(ImageViewContext) ?? {};
   const [highlighted, setHighlighted] = useState(region.highlighted);
@@ -93,17 +90,21 @@ export const useRegionStyles = (region: any, options: Partial<StyleOptions> = {}
   }, [region, suggestion, options, highlighted, shouldFill]);
 
   useEffect(() => {
-    const disposeObserver = [
-      'highlighted',
-      'fill',
-    ].map(prop => {
+    const disposeObserver = ['highlighted', 'fill'].map(prop => {
       try {
-        return observe(region, prop, ({ newValue }) => {
-          switch(prop) {
-            case 'highlighted': return setHighlighted(newValue);
-            case 'fill': return setShouldFill(newValue);
-          }
-        }, true);
+        return observe(
+          region,
+          prop,
+          ({ newValue }) => {
+            switch (prop) {
+              case 'highlighted':
+                return setHighlighted(newValue);
+              case 'fill':
+                return setShouldFill(newValue);
+            }
+          },
+          true,
+        );
       } catch (e) {
         return () => {};
       }

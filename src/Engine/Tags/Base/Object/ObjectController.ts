@@ -1,5 +1,6 @@
 import { attr } from 'src/Engine/ConfigTree/Attributes/AttributeCreators';
 import { Awaiter } from 'src/utils/Awaiter';
+import { isDefined } from 'src/utils/utilities';
 import { TagController, TagType } from '../TagController';
 
 class ObjectAttributes extends TagController {
@@ -18,10 +19,17 @@ class ObjectController extends ObjectAttributes {
 
   isReady = Awaiter<boolean>();
 
+  get controls() {
+    const name = this.name.value;
+    const configNodes = this.sdk.tree.findNodes(`[toname="${name}"]`);
+
+    return configNodes
+      .map(configNode => this.sdk.tree.findActiveController(configNode))
+      .filter(isDefined);
+  }
+
   markAsReady() {
     this.isReady.resolve(true);
-
-    console.log(this.isReady);
   }
 }
 

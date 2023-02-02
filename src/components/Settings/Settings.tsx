@@ -162,7 +162,6 @@ export const SettingsView: FC = () => {
   const names = useAnnotationNames();
   const [settingsVisible, _, setSettingsVisibility] = useSettingsVisibility();
 
-  console.log({ settingsVisible });
   const availableSettings = useMemo(() => {
     const availableTags = Object.values(names);
     const settingsScreens = Object.values(TagSettings);

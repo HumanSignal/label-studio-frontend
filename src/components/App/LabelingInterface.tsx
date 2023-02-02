@@ -39,7 +39,7 @@ export const LabelingInterface = () => {
   const viewingAll = useAtomValue(viewingAllAtom);
   const instructions = useAtomValue(InstructionsAtom);
   const validation = useAtomValue(configValidationAtom);
-  const currentEntity = useMemo(() => {
+  const currentEntityAtom = useMemo(() => {
     return selectedHistoryAtom ?? selectedAnnotationAtom;
   }, [selectedHistoryAtom, selectedAnnotationAtom]);
   const hasInterface = useInterfaces();
@@ -68,12 +68,12 @@ export const LabelingInterface = () => {
       )}
 
       {/* TODO: implement topbar */}
-      {hasInterface('topbar') && (
-        <TopBar annotationAtom={currentEntity}/>
+      {hasInterface('topbar') && currentEntityAtom && (
+        <TopBar annotationAtom={currentEntityAtom}/>
       )}
       <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: bottomSidePanel, outliner: true }}>
-        {currentEntity ? (
-          <SidePanels panelsHidden={viewingAll} currentEntity={currentEntity}>
+        {currentEntityAtom ? (
+          <SidePanels panelsHidden={viewingAll} currentEntity={currentEntityAtom}>
             <Block name="main-content">
               {validation === null ? (
                 <MainView

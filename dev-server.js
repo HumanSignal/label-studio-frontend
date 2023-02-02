@@ -1,13 +1,13 @@
-const WebpackDevServer = require("webpack-dev-server");
-const webpack = require("webpack");
+const WebpackDevServer = require('webpack-dev-server');
+const webpack = require('webpack');
 
-const config = require("./webpack.config-builder")({
+const config = require('./webpack.config-builder')({
   withDevServer: true,
 });
 
 config.entry.main.unshift(
   `webpack-dev-server/client?http://localhost:${config.devServer.port}/`,
-  `webpack/hot/dev-server`,
+  'webpack/hot/dev-server',
 );
 
 const compiler = webpack(config);

@@ -32,6 +32,10 @@ export class Store {
     atomSet = set;
   }
 
+  get<T>(atom: Atom<T>) {
+    return atomGet(atom);
+  }
+
   set<
     Value,
     Update,
@@ -48,9 +52,5 @@ export class Store {
     Update extends InputValue<AtomValue>,
   >(atom: AtomValue, patch: Partial<Update>) {
     this.set(atom, (state: Update) => ({ ...state, ...patch }));
-  }
-
-  get<T>(atom: Atom<T>) {
-    return atomGet(atom);
   }
 }

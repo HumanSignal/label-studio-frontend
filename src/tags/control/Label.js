@@ -63,7 +63,7 @@ const TagAttrs = types.model({
   granularity: types.maybeNull(types.enumeration(['symbol', 'word', 'sentence', 'paragraph'])),
   groupcancontain: types.maybeNull(types.string),
   // childrencheck: types.optional(types.enumeration(["any", "all"]), "any")
-  ...(isFF(FF_DEV_2128) ? { html: types.maybeNull(types.string) } : {} ),
+  ...(isFF(FF_DEV_2128) ? { html: types.maybeNull(types.string) } : {}),
 });
 
 const Model = types.model({
@@ -118,7 +118,7 @@ const Model = types.model({
     // connected to the region on the same object tag that is
     // right now highlighted, and if that region is readonly
 
-    if(self.annotation.selectedDrawingRegions.length > 0){
+    if (self.annotation.selectedDrawingRegions.length > 0) {
       /*  here we are validating if we are drawing a new region or if region is already closed
           the way that new drawing region and a finished regions work is similar, but new drawing region
           doesn't visualy select the polygons when you are drawing.
@@ -126,7 +126,7 @@ const Model = types.model({
       sameObjectSelectedRegions = self.annotation.selectedDrawingRegions.filter(region => {
         return region.parent?.name === self.parent?.toname;
       });
-    } else if(self.annotation.selectedRegions.length > 0) {
+    } else if (self.annotation.selectedRegions.length > 0) {
       sameObjectSelectedRegions = self.annotation.selectedRegions.filter(region => {
         return region.parent?.name === self.parent?.toname;
       });
@@ -153,7 +153,7 @@ const Model = types.model({
     // check if there is a region selected and if it is and user
     // is changing the label we need to make sure that region is
     // not going to endup without results at all
-    const applicableRegions =  affectedRegions.filter(region => {
+    const applicableRegions = affectedRegions.filter(region => {
       if (
         labels.selectedLabels.length === 1 &&
         self.selected &&
@@ -285,7 +285,7 @@ const HtxLabelView = inject('store')(
       <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={() => {
         return item.onClick();
       }}>
-        {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
+        {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> : item._value }
         {item.showalias === true && item.alias && (
           <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
         )}

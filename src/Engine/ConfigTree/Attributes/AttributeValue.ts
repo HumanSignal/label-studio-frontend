@@ -61,6 +61,11 @@ class AttributeValue<Options extends (
     this.controller = controller;
   }
 
+  destroy() {
+    this.controller = null;
+    this.node = null;
+  }
+
   private get parsedValue() {
     if (!('parser' in this.options)) return;
 

@@ -112,21 +112,10 @@ export const configValidationAtom = focusAtom(annotationsAtom, (optic) => {
   return optic.prop('validation');
 });
 
-/**
- * Gives access to the regions of the currently selected annotation.
- */
-export const annotationRegionsAtom = atom(get => {
-  const annotation = get(selectedAnnotationPropertyAtom);
-  const regionsStore = annotation && get(annotation).result;
-
-  return regionsStore;
-});
-
 export const createAnnotationAtom = (
   input: Partial<AnnotationInput & {
     saved: boolean,
     userCreated: boolean,
-    onlyTextObjects: boolean,
   }>,
   type: EntityType,
 ): AnnotationAtom => {
@@ -137,7 +126,6 @@ export const createAnnotationAtom = (
     userCreated: input.userCreated ?? false,
     commentCount: 0,
     unresolvedCommentCount: 0,
-    onlyTextObjects: input.onlyTextObjects ?? false,
     groundTruth: input.groundTruth,
     skipped: input.skipped ?? false,
     acceptedState: input.acceptedState,

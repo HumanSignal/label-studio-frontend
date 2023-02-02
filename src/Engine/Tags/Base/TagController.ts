@@ -25,7 +25,23 @@ export class TagController {
 
   private static view: TagView<typeof TagController, any>;
 
-  sdk: InternalSDK;
+  private attributes: Map<string, AttributeValue<any>> = new Map();
+
+  #sdk: InternalSDK;
+
+  get sdk() {
+    return this.#sdk;
+  }
+
+  get parent(): TagController | null {
+    const parentNode = this.configNode.parentConfigNode;
+
+    if (!parentNode) return null;
+
+    const controller = this.sdk.tree.findActiveController(parentNode);
+
+    return controller ? controller : null;
+  }
 
   static defineView<
     Controller extends typeof TagController,
@@ -42,8 +58,8 @@ export class TagController {
     sdk: InternalSDK,
   ) {
     this.configNode = configNode;
-    this.sdk = sdk;
-    this.sdk.registerWithCB(this);
+    this.#sdk = sdk;
+    this.#sdk.registerWithCB(this);
   }
 
   get type() {
@@ -62,6 +78,16 @@ export class TagController {
     return (this.constructor as typeof TagController).view;
   }
 
+  getAttribute(name: string) {
+    const attr = this[name as keyof this];
+
+    if (attr && typeof attr === 'object' && 'value' in attr) {
+      return attr.value;
+    }
+
+    return null;
+  }
+
   setAttributes() {
     const { element } = this.configNode;
 
@@ -70,7 +96,7 @@ export class TagController {
 
       if (!(attributeReader instanceof AttributeValue)) continue;
 
-      const attributeValue = element.getAttribute(attrName);
+      const attributeValue = element.getAttribute(attrName.toLowerCase());
 
       attributeReader.configure({
         name: attrName,
@@ -84,6 +110,8 @@ export class TagController {
       Object.defineProperty(this, attrName, {
         get: () => attributeReader,
       });
+
+      this.attributes.set(attrName, attributeReader);
     }
   }
 
@@ -111,6 +139,14 @@ export class TagController {
 
   toString() {
     return `Tag<${(this.constructor as typeof TagController).name}#${this.configNode.element.getAttribute('name')}>`;
+  }
+
+  destroy() {
+    this.attributes.forEach((attribute) => {
+      attribute.destroy();
+    });
+
+    this.attributes.clear();
   }
 }
 

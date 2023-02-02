@@ -1,4 +1,4 @@
-import { useTagRegions } from '@atoms/Models/AnnotationsAtom/Hooks/useAnnotationRegions';
+import { useRegionsForTag } from '@atoms/Models/RegionsAtom/Hooks/useRegionsForTag';
 import { defineTagView } from '@tags/Base/TagController';
 import { TagView } from '@tags/Base/TagView';
 import { LoadingIndicator } from '@UI/LoadingIndicator/LoadingIndicator';
@@ -14,7 +14,7 @@ import { TextViewController, TextViewControllerClass } from './TextTypes';
 export const CreateTextView = function <T extends TextViewControllerClass>(): TagView<T> {
   return ({ controller, annotationAtom }) => {
     const [settings] = useSettings();
-    const regions = useTagRegions(annotationAtom, controller.name.value);
+    const regions = useRegionsForTag(annotationAtom, controller.name.value);
     const isText = controller.type === 'text';
     const inline = controller.inline.value ?? true;
     const value = useTextValue(controller.value.value, isText);
