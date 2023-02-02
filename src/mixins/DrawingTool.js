@@ -11,7 +11,7 @@ const DrawingTool = types
     mode: types.optional(types.enumeration(['drawing', 'viewing']), 'viewing'),
   })
   .volatile(() => {
-    return { 
+    return {
       currentArea: null,
     };
   })
@@ -119,14 +119,20 @@ const DrawingTool = types
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
 
-        if(!currentArea) return;
+        if (!currentArea) return;
         const source = currentArea.toJSON();
         const value = Object.keys(currentArea.serialize().value).reduce((value, key) => {
           value[key] = source[key];
           return value;
-        }, { coordstype: 'px', dynamic: self.dynamic  });
+        }, { coordstype: 'px', dynamic: self.dynamic });
 
-        const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
+        const areaValue = currentArea.results[0].value.toJSON();
+
+        console.log({ value, areaValue });
+
+        const newArea = self.annotation.createResult(value, areaValue, control, obj);
+
+        console.log({ newArea });
 
         currentArea.setDrawing(false);
         self.applyActiveStates(newArea);
@@ -183,7 +189,7 @@ const DrawingTool = types
         self.commitDrawingRegion();
         self._resetState();
       },
-      _resetState(){
+      _resetState() {
         self.annotation.setIsDrawing(false);
         self.annotation.history.unfreeze();
         self.mode = 'viewing';
@@ -342,7 +348,7 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
 
         pointsCount = 0;
         self.closeCurrent();
-        setTimeout(()=>{
+        setTimeout(() => {
           self._finishDrawing();
         });
       },
@@ -474,15 +480,15 @@ const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
           startPoint = null;
           currentMode = DEFAULT_MODE;
           Super.finishDrawing(x, y);
-          setTimeout(()=>{
+          setTimeout(() => {
             self._finishDrawing();
           });
         } else return;
       },
 
       mousemoveEv(_, [x, y]) {
-        if(self.isDrawing){
-          if(lastEvent === MOUSE_DOWN_EVENT) {
+        if (self.isDrawing) {
+          if (lastEvent === MOUSE_DOWN_EVENT) {
             currentMode = DRAG_MODE;
           }
 
@@ -502,7 +508,7 @@ const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
       },
       mouseupEv(ev, [x, y]) {
         if (!self.canStartDrawing()) return;
-        if(self.isDrawing) {
+        if (self.isDrawing) {
           if (currentMode === DRAG_MODE) {
             self.draw(x, y);
             self.finishDrawing(x, y);

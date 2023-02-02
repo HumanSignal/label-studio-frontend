@@ -329,7 +329,13 @@ const Model = types.model({
   },
 
   get regs() {
-    return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
+    const regions = self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
+
+    if (isFF(FF_LSDV_4583) && self.valuelist) {
+      return regions.filter(r => r.item_index === self.currentImage);
+    }
+
+    return regions;
   },
 
   get selectedRegions() {
@@ -953,6 +959,7 @@ const Model = types.model({
     },
 
     addShape(shape) {
+      console.log('addShape', shape);
       self.regions.push(shape);
 
       self.annotation.addRegion(shape);

@@ -878,7 +878,7 @@ export const Annotation = types
       const prevSize = self.regionStore.regions.length;
 
       // Generate new ids to prevent collisions
-      results.forEach((result)=>{
+      results.forEach((result) => {
         const regionId = result.id;
 
         if (!regionIdMap[regionId]) {
@@ -1061,7 +1061,7 @@ export const Annotation = types
         objAnnotation.forEach(obj => {
           const { readonly } = obj;
 
-          if(readonly) {
+          if (readonly) {
             self.setReadonly(true);
           }
 
@@ -1149,6 +1149,8 @@ export const Annotation = types
             ...omitValueFields(value),
             value,
           };
+
+          console.log('create new area', areaSnapshot);
 
           area = createArea(areaSnapshot);
         }

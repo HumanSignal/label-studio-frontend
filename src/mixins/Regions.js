@@ -26,6 +26,8 @@ const RegionsMixin = types
       'prediction-changed',
       'manual',
     ]), 'manual'),
+
+    item_index: types.maybeNull(types.number),
   })
   .volatile(() => ({
     // selected: false,
@@ -180,6 +182,7 @@ const RegionsMixin = types
       },
 
       toStateJSON() {
+        console.log('toStateJSON', self);
         const parent = self.parent;
         const buildTree = control => {
           const tree = {

@@ -4,7 +4,7 @@ import Registry from '../core/Registry';
 import Tree from '../core/Tree';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { isDefined } from '../utils/utilities';
-import { FF_DEV_1170, FF_DEV_1372, isFF } from '../utils/feature-flags';
+import { FF_DEV_1170, FF_DEV_1372, FF_LSDV_4583, isFF } from '../utils/feature-flags';
 
 const Result = types
   .model('Result', {
@@ -61,6 +61,7 @@ const Result = types
       datetime: types.maybe(types.string),
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
+      item_index: types.maybeNull(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
       choices: types.maybe(types.array(types.union(types.string, types.array(types.string)))),
       // pairwise
@@ -102,7 +103,7 @@ const Result = types
     },
 
     mergeMainValue(value) {
-      value =  value?.toJSON ? value.toJSON() : value;
+      value = value?.toJSON ? value.toJSON() : value;
       const mainValue = self.mainValue?.toJSON?.() ? self.mainValue?.toJSON?.() : self.mainValue;
 
       if (typeof value !== typeof mainValue) return null;
@@ -297,6 +298,10 @@ const Result = types
       if (typeof score === 'number') data.score = score;
 
       if (!self.editable) data.readonly = true;
+
+      if (isFF(FF_LSDV_4583) && isDefined(self.area.item_index)) {
+        data.item_index = self.area.item_index;
+      }
 
       return data;
     },
