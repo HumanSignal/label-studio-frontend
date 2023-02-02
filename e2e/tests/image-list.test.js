@@ -84,3 +84,42 @@ Scenario('Image list with page navigation', async ({ I, LabelStudio, AtImageView
   I.seeElement(`img[src="${data.images[0]}"]`);
   I.see('1 of 4');
 });
+
+Scenario('Image list with hotkey navigation', async ({ I, LabelStudio, AtImageView }) => {
+  LabelStudio.setFeatureFlags({
+    feat_front_lsdv_4583_multi_image_segmentation_short: true,
+  });
+
+  const params = {
+    config,
+    data,
+    annotations: [{ id: 1, result: [] }],
+  };
+
+  I.amOnPage('/');
+  I.executeScript(initLabelStudio, params);
+
+  await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
+
+  I.say('Loading first image');
+  I.seeElement(`img[src="${data.images[0]}"]`);
+
+  I.say('Pagination is visible');
+  I.seeElement('.lsf-pagination');
+
+  I.say('The number of pages is correct');
+  I.see('1 of 4');
+
+  I.say('Clicking on the next page');
+  I.pressKey('Ctrl+]');
+
+  I.say('Loading second image');
+  I.seeElement(`img[src="${data.images[1]}"]`);
+  I.see('2 of 4');
+
+  I.say('Clicking on the previous page');
+  I.pressKey('Ctrl+[');
+  I.seeElement(`img[src="${data.images[0]}"]`);
+  I.see('1 of 4');
+});

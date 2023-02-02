@@ -875,7 +875,10 @@ export default observer(
                 outline={false}
                 align="left"
                 noPadding
-
+                hotkey={{
+                  prev: 'image:prev',
+                  next: 'image:next',
+                }}
                 currentPage={item.currentImage + 1}
                 totalPages={item.parsedValueList.length}
                 onChange={n => item.setCurrentImage(n - 1)}

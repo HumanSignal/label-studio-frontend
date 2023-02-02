@@ -355,7 +355,7 @@ Hotkey.Tooltip = inject('store')(observer(({ store, name, children, ...props }: 
 }));
 
 /**
- * @param {{name: keyof defaultKeymap}} param0
+ * @param {{name: keyof typeof defaultKeymap}} param0
  */
 Hotkey.Hint = inject('store')(observer(({ store, name }: any) => {
   const hotkey = Hotkey.keymap[name];

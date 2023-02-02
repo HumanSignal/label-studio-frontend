@@ -2,7 +2,10 @@
     {
         "data": {
             "images": [
-                "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg"
+                "https://data.heartex.net/open-images/train_0/mini/00133643bbf063a9.jpg",
+                "https://data.heartex.net/open-images/train_0/mini/00155094b7acc33b.jpg",
+                "https://data.heartex.net/open-images/train_0/mini/000e842c55ab7d14.jpg",
+                "https://data.heartex.net/open-images/train_0/mini/00766c7816e51125.jpg",
             ]
         },
         "predictions": [

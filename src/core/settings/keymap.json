@@ -162,5 +162,13 @@
   "repeater:previous-page": {
     "key": "alt+left",
     "description": "Previous Page"
+  },
+  "image:prev": {
+    "key": "ctrl+[",
+    "description": "Next Image"
+  },
+  "image:next": {
+    "key": "ctrl+]",
+    "description": "Next Image"
   }
 }
