@@ -120,6 +120,12 @@ initLabelStudio(linkFunctions(params));
 `);
 };
 
+const setFeatureFlagsDefaultValue = (value) => {
+  if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
+  window.APP_SETTINGS.feature_flags_default_value = value;
+  return window.APP_SETTINGS.feature_flags_default_value;
+};
+
 const setFeatureFlags = (featureFlags) => {
   if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
   if (!window.APP_SETTINGS.feature_flags) window.APP_SETTINGS.feature_flags = {};
@@ -671,6 +677,7 @@ function hasSelectedRegion() {
 module.exports = {
   initLabelStudio,
   createLabelStudioInitFunction,
+  setFeatureFlagsDefaultValue,
   setFeatureFlags,
   hasFF,
   createAddEventListenerScript,
