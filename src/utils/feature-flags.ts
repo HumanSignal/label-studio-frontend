@@ -140,6 +140,12 @@ export const FF_DEV_3730 = 'fflag_fix_front_dev_3730_shortcuts_initial_input_221
  */
 export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short';
 
+/**
+ * Fixing maxUsages prop of *labels on region creation.
+ * @link https://app.launchdarkly.com/default/test/features/fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short
+ */
+export const FF_DEV_3666 = 'fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
