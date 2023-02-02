@@ -9,7 +9,7 @@ import styles from './Waveform.module.scss';
 import globalStyles from '../../styles/global.module.scss';
 import { Col, Row, Select, Slider } from 'antd';
 import { SoundOutlined } from '@ant-design/icons';
-import messages from '../../utils/messages';
+import defaultMessages from '../../utils/messages';
 import { Hotkey } from '../../core/Hotkey';
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
@@ -276,6 +276,8 @@ export default class Waveform extends React.Component {
   };
 
   componentDidMount() {
+    const messages = this.props.messages || defaultMessages;
+
     /**
      * @type {import("wavesurfer.js/types/params").WaveSurferParams}
      */
