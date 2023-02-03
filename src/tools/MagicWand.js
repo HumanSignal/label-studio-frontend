@@ -14,57 +14,57 @@ import { guidGenerator } from '../core/Helpers';
 import { IconMagicWandTool } from '../assets/icons';
 import { Tool } from '../components/Toolbar/Tool';
 
- /**
-  * Technical Overview:
-  *
-  * First, the image we want to do the Magic Wand on can actually be displayed larger or smaller than
-  * the actual size of the image, whether due to the user zooming, panning, or the image being shrunken
-  * down to fit within the available screen real estate, so we will need to be aware of this
-  * discrepancy in terms of our coordinates and image data.
-  *
-  * Some terms you might see in the code:
-  * - `naturalWidth`/`naturalHeight`: The actual, intrinsic size of the image, if loaded into an image
-  *  viewer.
-  * - `imageDisplayedInBrowserWidth`/`imageDisplayedInBrowserHeight`: The size of the image shown in
-  *  the browser.
-  * - `viewportWidth`/`viewportHeight`: Even if the image is `imageDisplayedInBrowser` size, parts of
-  *  it might be clipped and overflow hidden by a viewport lying over it and constraining it.
-  *  `viewportWidth`/`viewportHeight` relates the size of the viewport.
-  *
-  * Users might be working with very large images, and if we are not careful the Magic Wand thresholding
-  * operation done while the user is dragging the mouse can get very slow. In addition, when the user
-  * releases the mouse to apply a final mask, if we are not careful the final masking operation can be
-  * very slow. We are therefore quite conscious about performance in the Magic Wand implementation.
-  *
-  * When the user first presses down on the mouse button (`mousedownEv`), we first have to re-apply
-  * any CSS transforms the image might be under (zooming, panning, etc.) in `initCanvas`. There is no way
-  * to get pixel-level image data that has CSS transforms applied to it, so we recreate these transforms
-  * on top of an offscreen canvas (`getTransformedImageData`), efficiently blitting just the area in the
-  * viewport to the offscreen buffer.
-  *
-  * During mouse movement (`mousemoveEv`), we `threshold()` based on how far the mouse is from the
-  * initial `anchorX`/`anchorY` seeds, updating the mask with `drawMask`.
-  * 
-  * When the user is finished with the dynamic thresholding and releases the mouse button (`mouseupEv`),
-  * we setup the final mask (`setupFinalMask`) by taking the existing Magic Wanded result, which might
-  * be zoomed, panned, or scaled down, and correctly upscale or downscale the mask into the full natural
-  * sized image wherever it would actually be (`copyTransformedMaskToNaturalSize`). This has the benefit of
-  * being very fast vs. attempting to do Magic Wand thresholding against the entire, naturally sized
-  * image, which could be very large.
-  *
-  * Experiments also showed that thresholding can be very different if the image is scaled larger or smaller
-  * for final results, which can be confusing for the user if when they release the mouse button if what
-  * they see is very different then what was shown during dynamic thresholding. If we are zoomed in, the final
-  * mask will end at the edges of the current zoom level, which can also help to reduce surprise at the final
-  * results.
-  * 
-  * Once we have the final mask, we need to turn it into a final BrushRegion with results (`finalMaskToRegion`).
-  * This is a performance bottleneck, so we directly turn it into an image URL that can be passed into the
-  * BrushRegion. The BrushRegion can then apply the correct class color to the image URL results to draw
-  * onto it's canvas quickly, which also makes it possible for the user to dynamically
-  * change the class color later on. We keep a cachedNaturalCanvas around from previous masking sessions on
-  * the same class in order to collapse multiple Magic Wand additions into the same class.
-  */
+/**
+ * Technical Overview:
+ *
+ * First, the image we want to do the Magic Wand on can actually be displayed larger or smaller than
+ * the actual size of the image, whether due to the user zooming, panning, or the image being shrunken
+ * down to fit within the available screen real estate, so we will need to be aware of this
+ * discrepancy in terms of our coordinates and image data.
+ *
+ * Some terms you might see in the code:
+ * - `naturalWidth`/`naturalHeight`: The actual, intrinsic size of the image, if loaded into an image
+ *  viewer.
+ * - `imageDisplayedInBrowserWidth`/`imageDisplayedInBrowserHeight`: The size of the image shown in
+ *  the browser.
+ * - `viewportWidth`/`viewportHeight`: Even if the image is `imageDisplayedInBrowser` size, parts of
+ *  it might be clipped and overflow hidden by a viewport lying over it and constraining it.
+ *  `viewportWidth`/`viewportHeight` relates the size of the viewport.
+ *
+ * Users might be working with very large images, and if we are not careful the Magic Wand thresholding
+ * operation done while the user is dragging the mouse can get very slow. In addition, when the user
+ * releases the mouse to apply a final mask, if we are not careful the final masking operation can be
+ * very slow. We are therefore quite conscious about performance in the Magic Wand implementation.
+ *
+ * When the user first presses down on the mouse button (`mousedownEv`), we first have to re-apply
+ * any CSS transforms the image might be under (zooming, panning, etc.) in `initCanvas`. There is no way
+ * to get pixel-level image data that has CSS transforms applied to it, so we recreate these transforms
+ * on top of an offscreen canvas (`getTransformedImageData`), efficiently blitting just the area in the
+ * viewport to the offscreen buffer.
+ *
+ * During mouse movement (`mousemoveEv`), we `threshold()` based on how far the mouse is from the
+ * initial `anchorX`/`anchorY` seeds, updating the mask with `drawMask`.
+ * 
+ * When the user is finished with the dynamic thresholding and releases the mouse button (`mouseupEv`),
+ * we setup the final mask (`setupFinalMask`) by taking the existing Magic Wanded result, which might
+ * be zoomed, panned, or scaled down, and correctly upscale or downscale the mask into the full natural
+ * sized image wherever it would actually be (`copyTransformedMaskToNaturalSize`). This has the benefit of
+ * being very fast vs. attempting to do Magic Wand thresholding against the entire, naturally sized
+ * image, which could be very large.
+ *
+ * Experiments also showed that thresholding can be very different if the image is scaled larger or smaller
+ * for final results, which can be confusing for the user if when they release the mouse button if what
+ * they see is very different then what was shown during dynamic thresholding. If we are zoomed in, the final
+ * mask will end at the edges of the current zoom level, which can also help to reduce surprise at the final
+ * results.
+ * 
+ * Once we have the final mask, we need to turn it into a final BrushRegion with results (`finalMaskToRegion`).
+ * This is a performance bottleneck, so we directly turn it into an image URL that can be passed into the
+ * BrushRegion. The BrushRegion can then apply the correct class color to the image URL results to draw
+ * onto it's canvas quickly, which also makes it possible for the user to dynamically
+ * change the class color later on. We keep a cachedNaturalCanvas around from previous masking sessions on
+ * the same class in order to collapse multiple Magic Wand additions into the same class.
+ */
 
 const ToolView = observer(({ item }) => {
   return (
