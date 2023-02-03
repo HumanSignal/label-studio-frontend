@@ -189,7 +189,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private loadMedia() {
     if (!this.src || !this.el) return;
     
-    this.el.src = this.src;
+    this.el.src = 'https://sandbox2-test-bucket.s3.amazonaws.com/RAT/Audio/fb02a9a0-6725-11ed-a529-e5e897fa9c27.wav'; //this.src;
     this.el.load();
   }
 
