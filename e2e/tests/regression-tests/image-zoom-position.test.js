@@ -1,5 +1,6 @@
 /* global Feature, Scenario */
 const assert = require('assert');
+const Helpers = require('../helpers');
 
 Feature('Image zoom position').tag('@regress');
 
@@ -10,6 +11,12 @@ const config = `
     <Image name="img" value="$image" zoomby="2"/>
     <Rectangle name="rect" toName="img"/>
   </View>`;
+
+async function getStrokeColor() {
+  const circle = window.Konva.stages[0].findOne('Circle');
+
+  return circle.attrs.stroke;
+}
 
 Scenario('Zoomed image should keep center image in center of canvas on resizes', async ({ I, LabelStudio, AtImageView, AtOutliner, AtPanels }) => {
   const AtDetailsPanel = AtPanels.usePanel(AtPanels.PANEL.DETAILS);
@@ -171,4 +178,82 @@ Scenario('Zoomed image should keep center image in center of canvas on resizes',
   AtImageView.clickAt(AtImageView.percToX(50), AtImageView.percToY(50));
   AtOutliner.seeSelectedRegion();
   I.pressKey('U');
+});
+
+Scenario('Keeping the zoom center for different image sizes and scaling algorithms', async ({ I, LabelStudio, AtImageView, AtPanels }) => {
+  const AtDetailsPanel = AtPanels.usePanel(AtPanels.PANEL.DETAILS);
+  const AtOutlinerPanel = AtPanels.usePanel(AtPanels.PANEL.OUTLINER);
+  const strokecolor = 'rgb(0,111,222)';
+
+  const keyPointBeSelected = async () => {
+    const currentStokeColor = await I.executeScript(getStrokeColor);
+    const colorIsChanged = currentStokeColor !== strokecolor;
+
+    assert.strictEqual(colorIsChanged, true, 'Stroke color must be changed if we are able to select keypoint');
+  };
+
+  const params = {
+    config: `
+  <View>
+    <Image name="img" value="$image" zoomby="8"/>
+    <KeyPoint name="point" toName="img" strokecolor="${strokecolor}" />
+    <Rectangle name="rect" toName="img"/>
+  </View>`,
+    annotations: [{
+      id: '1000',
+      result: [],
+    }],
+  };
+
+  LabelStudio.setFeatureFlags({
+    ff_front_dev_2394_zoomed_transforms_260522_short: true,
+    ff_front_1170_outliner_030222_short: true,
+    fflag_fix_front_dev_3377_image_regions_shift_on_resize_280922_short: true,
+  });
+
+  for (const [width, height] of [[2242, 2802],[768, 576]]) {
+    I.amOnPage('/');
+    const imageUrl = await I.executeScript(Helpers.generateImageUrl, { width, height });
+
+    LabelStudio.init({
+      ...params,
+      data: { image: imageUrl },
+    });
+    await AtImageView.waitForImage();
+
+    AtImageView.selectPanTool();
+    I.click('[aria-label=\'zoom-in\']');
+    await AtImageView.lookForStage();
+    AtImageView.drawByDrag(
+      AtImageView.percToX(75),
+      AtImageView.percToY(25),
+      -AtImageView.percToX(25),
+      AtImageView.percToY(25),
+    );
+
+    I.say('Draw a point at the center of visible area');
+    I.pressKey('K');
+    AtImageView.drawByClick(AtImageView.percToX(50), AtImageView.percToY(50));
+
+    I.say('Collapse the details panel');
+    AtDetailsPanel.collapsePanel();
+    await AtImageView.lookForStage();
+
+    I.say('Check that the region is still at the center of visible area');
+    AtImageView.clickAt(AtImageView.percToX(50), AtImageView.percToY(50));
+    await keyPointBeSelected();
+    I.pressKey('U');
+
+    I.say('Collapse the outliner panel');
+    AtOutlinerPanel.collapsePanel();
+    await AtImageView.lookForStage();
+
+    I.say('Check that the region is still at the center of visible area');
+    AtImageView.clickAt(AtImageView.percToX(50), AtImageView.percToY(50));
+    await keyPointBeSelected();
+    I.pressKey('U');
+
+    AtDetailsPanel.expandPanel();
+    AtOutlinerPanel.expandPanel();
+  }
 });
