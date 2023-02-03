@@ -40,7 +40,7 @@ export class Region extends Segment {
   }
 
   renderLabels(): void {
-    if (this.labels?.length && this.controller.showLabels) {
+    if (this.labels?.length && this.controller.showLabels && this.visible) {
       const layer = this.controller.layerGroup;
       const color = this.color;
       const timelineTop = this.timelinePlacement;
