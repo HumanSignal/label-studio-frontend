@@ -672,8 +672,10 @@ export class Visualizer extends Events<VisualizerEvents> {
     }
   }
 
-  private invokeLayersUpdated = debounce(() => {
+  private invokeLayersUpdated = debounce(async () => {
     this.invoke('layersUpdated', [this.layers]);
+
+    await this.renderAvailableChannels();
   }, 150);
 
   private attachEvents() {
