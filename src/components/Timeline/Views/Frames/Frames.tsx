@@ -261,6 +261,9 @@ export const Frames: FC<TimelineViewProps> = ({
       if (position <= firstFrame) {
         const prevLeft = clamp((firstFrame - 1 - framesInView) * step, 0, scroll.scrollWidth - scroll.clientWidth);
 
+
+        lastScrollPosition.current = prevLeft / step;
+
         setScroll({ left: prevLeft });
 
       // set to next frame scroll
@@ -268,6 +271,8 @@ export const Frames: FC<TimelineViewProps> = ({
       } else if (position > lastFrame) {
 
         const nextLeft = clamp(lastFrame * step, 0, scroll.scrollWidth - scroll.clientWidth);
+
+        lastScrollPosition.current = nextLeft / step;
 
         setScroll({ left: nextLeft });
       }
