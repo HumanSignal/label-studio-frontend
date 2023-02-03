@@ -4,27 +4,40 @@ import Constants from '../core/Constants';
 
 import * as Colors from './colors';
 
-// given a single channel UInt8 image data mask with non-zero values indicating the
-// mask, turn it into a 4 channgel RGBA image data URL filled in with the given
-// color for pixels turned on in the mask.
-function mask2DataURL(singleChannelData, nw, nh, color) {
+/**
+ * Given a single channel UInt8 image data mask with non-zero values indicating the
+ * mask, turn it into a 4 channgel RGBA image data URL filled in with the given
+ * color for pixels turned on in the mask.
+ * @param {ImageData} Single channel image mask data.
+ * @param {number} w Width of the resulting image data URL.
+ * @param {number} h Height of the resulting image data URL.
+ * @param {string} color Hex color of the resulting mask image.
+ * @returns {string} Data URL containing the mask as an image.
+ */
+function mask2DataURL(singleChannelData, w, h, color) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
-  canvas.width = nw;
-  canvas.height = nh;
+  canvas.width = w;
+  canvas.height = h;
 
   const numChannels = 1;
 
-  setMaskPixelColors(ctx, singleChannelData, nw, nh, color, numChannels);
+  setMaskPixelColors(ctx, singleChannelData, w, h, color, numChannels);
   
   const url = canvas.toDataURL();
 
   return url;
 }
 
-// given an RGBA image data URL, turn it into an actual DOM Image filled in with the current
-// class color.
+/**
+ * Given an RGBA image data URL, turn it into an actual DOM Image filled in with the current
+ * class color.
+ * @param {string} maskDataURL Data URL, such as returned from mask2DataURL, containing
+ *  an image.
+ * @param {string} color The fill color of the image produced from the Data URL.
+ * @returns {Image} DOM Image filled out with the resulting mask data URL.
+ */
 function maskDataURL2Image(maskDataURL, { color = Constants.FILL_COLOR } = {}) {
   return new Promise((resolve, _reject) => {
     const img = document.createElement('img');
@@ -55,9 +68,18 @@ function maskDataURL2Image(maskDataURL, { color = Constants.FILL_COLOR } = {}) {
   });
 }
 
-// Given some RGBA mask pixel array, efficiently sets the colors. Note that we assume that the same value is set
-// throughout the channels of the mask, so that no channel will be set to 0 if there is a valid mask
-// position there (i.e. all channels might be 255 if a mask is present).
+/**
+ * Given some RGBA mask pixel array, efficiently sets the colors. Note that we assume that the same value is set
+ * throughout the channels of the mask, so that no channel will be set to 0 if there is a valid mask
+ * position there (i.e. all channels might be 255 if a mask is present).
+ * @param {CanvasRenderingContext2D} ctx DOM canvas surface to draw on.
+ * @param {ImageData} Raw canvas.getImageData() to work with.
+ * @param {number} nw The natural width (i.e. the true width of the canvas independent of how its being displayed).
+ * @param {number} nh Similar, but the natural height.
+ * @param {string} color Hex string color to use for mask, such as '#ff8800'.
+ * @param {number} numChannels The source image could either be a 1-channel mask, or
+ *  a full color 4-channel RGBA image.
+ */
 function setMaskPixelColors(ctx, data, nw, nh, color, numChannels) {
   const [red, green, blue] = chroma(color).rgb();
   const alpha = 255;
@@ -80,7 +102,9 @@ function setMaskPixelColors(ctx, data, nw, nh, color, numChannels) {
   } else if (endian === 'big endian') {
     finalColor = (red << 24) | (green << 16) | (blue << 8) | alpha;
   } else {
-    throw new Error(`Unknown platform endianness: ${endian}`);
+    // The most common architectures (x86 and ARM) are both little endian, so just assume that.
+    console.error(`Unknown platform endianness (${endian}), assuming little endian`);
+    finalColor = (alpha << 24) | (blue << 16) | (green << 8) | red;
   }
 
   let x, y;
@@ -104,7 +128,13 @@ function setMaskPixelColors(ctx, data, nw, nh, color, numChannels) {
   ctx.putImageData(resultsData, 0, 0);
 }
 
-// given the RLE array returns the DOM Image element with loaded image
+/**
+ * Given the RLE array returns the DOM Image element with loaded image.
+ * @param {string} rle RLE encoded image to be turned into a Region object.
+ * @param {tags.object.Image} image Image the region will be interacting with.
+ * @param {string} color Fill color for the region that will be produced.
+ * @returns @returns {Image} DOM image filled in with RLE contents.
+ */
 function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
@@ -135,7 +165,12 @@ function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
   return new_image;
 }
 
-// given the brush region return the RLE encoded array
+/**
+ * Given a brush region return the RLE encoded array.
+ * @param {BrushRegion} region BrushRegtion to turn into RLE array.
+ * @param {tags.object.Image} image Image the region will be interacting with.
+ * @returns {string} RLE encoded contents.
+ */
 function Region2RLE(region, image) {
   const nw = image.naturalWidth,
     nh = image.naturalHeight;
@@ -405,7 +440,8 @@ const trim = (canvas) => {
 
 /**
  * JavaScript clamped arrays will follow the byte ordering of their platform (either little-
- * or big endian). This method returns "little endian" if byte ordering starts to the right, or
+ * or big endian).
+ * @returns {string} "little endian" if byte ordering starts to the right, or
  * "big endian" if byte ordering starts from the left.
  */
 function checkEndian() {
@@ -415,9 +451,16 @@ function checkEndian() {
 
   uint8Array[0] = 0xAA; // set first byte
   uint8Array[1] = 0xBB; // set second byte
-  if (uint16array[0] === 0xBBAA) return 'little endian';
-  if (uint16array[0] === 0xAABB) return 'big endian';
-  else throw new Error('Can not determine platform endianness');
+
+  if (uint16array[0] === 0xBBAA) {
+    return 'little endian';
+  } else if (uint16array[0] === 0xAABB) {
+    return 'big endian';
+  } else {
+    // The most common architectures (x86 and ARM) are both little endian, so just assume that.
+    console.error('Can not determine platform endianness, assuming little endian');
+    return 'little endian';
+  }
 }
 
 export default {

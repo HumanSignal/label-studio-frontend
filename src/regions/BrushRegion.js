@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Group, Image, Layer, Shape } from 'react-konva';
 import { observer } from 'mobx-react';
 import { getParent, getRoot, hasParent, types } from 'mobx-state-tree';
@@ -480,7 +480,7 @@ const HtxBrushView = ({ item }) => {
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
   // Prepare brush stroke from RLE with current stroke color
-  useMemo(async function() {
+  useEffect(async function() {
 
     // Two possible ways to draw an image from precreated data:
     // - rle - An RLE encoded RGBA image

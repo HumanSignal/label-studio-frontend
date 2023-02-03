@@ -78,7 +78,7 @@ class _Registry {
     const model = this.tools[name];
 
     if (name === 'magicwand' && !isFF(FF_DEV_4081)) {
-      throw new Error('magicwand feature flag (fflag_fix_front_dev_3391_interactive_view_all) is not on');
+      throw new Error('The magicwand feature flag is not on');
     }
 
     if (!model) {
