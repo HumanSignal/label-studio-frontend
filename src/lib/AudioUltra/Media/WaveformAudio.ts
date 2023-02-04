@@ -166,6 +166,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     if (!this.src || this.el) return;
 
     this.el = document.createElement('audio');
+    this.el.crossOrigin = 'anonymous';
     this.el.preload = 'auto';
     this.el.muted = true;
 
