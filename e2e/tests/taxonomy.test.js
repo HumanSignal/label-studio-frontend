@@ -256,6 +256,7 @@ Scenario('Taxonomy read only in history', async ({ I, LabelStudio, AtTaxonomy })
   const annotationHistory = [
     {
       'id':19,
+      'annotation_id': 2,
       'created_by':1,
       'action_type': 'submitted',
       'created_at': (new Date()).toISOString(),
@@ -300,6 +301,7 @@ Scenario('Taxonomy read only in history', async ({ I, LabelStudio, AtTaxonomy })
     params: {
       history: annotationHistory,
     },
+    annotations: [{ id: 2, result: [] }],
   });
   I.click('.lsf-history-item');
   AtTaxonomy.clickTaxonomy();
