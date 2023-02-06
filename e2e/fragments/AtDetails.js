@@ -3,7 +3,7 @@ const { I } = inject();
 
 module.exports = {
   _rootSelector: '.lsf-details',
-  _labelSelector: '.lsf-region-meta__content .lsf-tag',
+  _labelSelector: '.lsf-detailed-region .lsf-labels-list span',
   _textSelector: '.lsf-region-meta__content_type_text',
   _editMetaSelector: '[aria-label="Edit region\'s meta"]',
   _metaField: '.lsf-detailed-region__meta-text',
@@ -89,4 +89,4 @@ module.exports = {
   seeResultChoices(value) {
     I.seeElement(this.locateResultChoices(value));
   },
-};
+};
