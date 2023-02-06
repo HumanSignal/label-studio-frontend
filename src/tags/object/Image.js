@@ -862,15 +862,28 @@ const Model = types.model({
         return;
       }
       if (width > 1 && height > 1) {
+        const prevWidth = self.canvasSize.width;
+        const prevHeight = self.canvasSize.height;
+        const prevStageZoom = self.stageZoom;
+        const prevZoomScale = self.zoomScale;
+
         self.containerWidth = width;
         self.containerHeight = height;
 
         // reinit zoom to calc stageW/H
         self.setZoom(self.currentZoom);
 
-        self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
-
         self._recalculateImageParams();
+
+        const zoomChangeRatio = self.stageZoom / prevStageZoom;
+        const scaleChangeRatio = self.zoomScale / prevZoomScale;
+        const changeRatio = zoomChangeRatio * scaleChangeRatio;
+
+
+        self.setZoomPosition(
+          self.zoomingPositionX * changeRatio + (self.canvasSize.width / 2 - prevWidth / 2 * changeRatio),
+          self.zoomingPositionY * changeRatio + (self.canvasSize.height / 2 - prevHeight / 2 * changeRatio),
+        );
       }
 
       self.sizeUpdated = true;

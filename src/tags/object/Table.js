@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table } from 'antd';
 import { inject, observer } from 'mobx-react';
-import { flow, types } from 'mobx-state-tree';
+import { flow, getEnv, types } from 'mobx-state-tree';
 import Papa from 'papaparse';
 
 import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
@@ -10,7 +10,6 @@ import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import ProcessAttrsMixin from '../../mixins/ProcessAttrs';
 import Base from './Base';
 import { parseTypeAndOption, parseValue } from '../../utils/data';
-import messages from '../../utils/messages';
 
 /**
  * The `Table` tag is used to display object keys and values in a table.
@@ -72,7 +71,7 @@ const Model = types
 
           originData = yield response.text();
         } catch (error) {
-          const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(error), url: originData });
+          const message = getEnv(self).messages.ERR_LOADING_HTTP({ attr: self.value, error: String(error), url: originData });
 
           self.annotationStore.addErrors([errorBuilder.generalError(message)]);
         }

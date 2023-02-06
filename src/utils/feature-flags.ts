@@ -146,6 +146,18 @@ export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10
  */
 export const FF_DEV_3666 = 'fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short';
 
+/**
+ * Fixing issue with overlapping taxonomy items during searching
+ * @link https://app.launchdarkly.com/default/community/features/fflag_fix_front_dev_4075_taxonomy_overlap_281222_short
+ */
+export const FF_DEV_4075 = 'fflag_fix_front_dev_4075_taxonomy_overlap_281222_short';
+
+/**
+ * Fix logic of namespaces inside Hotkeys
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
+  */
+export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),

@@ -1,6 +1,6 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import { types } from 'mobx-state-tree';
+import { getEnv, types } from 'mobx-state-tree';
 
 import AudioControls from './Audio/Controls';
 import ObjectBase from './Base';
@@ -109,6 +109,7 @@ const AudioModel = types.compose('AudioModel', Model, TagAttrs, ProcessAttrsMixi
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
+  const messages = getEnv(store).messages;
 
   return (
     <ObjectTag item={item}>
@@ -129,6 +130,7 @@ const HtxAudioView = ({ store, item }) => {
         height={item.height}
         cursorColor={item.cursorcolor}
         cursorWidth={item.cursorwidth}
+        messages={messages}
       />
       <AudioControls item={item} store={store} />
     </ObjectTag>

@@ -1,10 +1,8 @@
 /* global inject */
 const { I } = inject();
 
-const Helpers = require("../tests/helpers");
-
 module.exports = {
-  _rootSelector: ".htx-timeseries",
+  _rootSelector: '.htx-timeseries',
   get _channelStageSelector() {
     return `${this._rootSelector} .htx-timeseries-channel .new_brush`;
   },
