@@ -1,10 +1,25 @@
 /* global inject, locate */
 
 const { I } = inject();
+const Helpers = require('../tests/helpers');
 
 module.exports = {
   _rootSelector: '.lsf-paragraphs',
   _filterSelector: '.lsf-select__value',
+  _phraseSelector: '[class^=\'phrase--\']',
+  _phraseDialoguetextSelector: '[class^=\'dialoguetext--\']',
+ 
+  getParagraphTextSelector(idx) {
+    return `${this._rootSelector} ${this._phraseSelector}:nth-child(${idx}) ${this._phraseDialoguetextSelector}`;
+  },
+
+  selectTextByOffset(paragraphIdx, startOffset, endOffset) {
+    I.executeScript(Helpers.selectText, {
+      selector: this.getParagraphTextSelector(paragraphIdx),
+      rangeStart: startOffset,
+      rangeEnd: endOffset,
+    });
+  },
   setSelection(startLocator, startOffset, endLocator, endOffset) {
     I.setSelection(startLocator, startOffset, endLocator, endOffset);
   },
