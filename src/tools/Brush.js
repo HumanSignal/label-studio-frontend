@@ -8,8 +8,9 @@ import Canvas from '../utils/canvas';
 import { clamp, findClosestParent } from '../utils/utilities';
 import { DrawingTool } from '../mixins/DrawingTool';
 import { Tool } from '../components/Toolbar/Tool';
-import { Range } from '../common/Range/Range';
+import { Range } from '../common/Range/Range'; 
 import { NodeViews } from '../components/Node/Node';
+import { FF_DEV_3666, isFF } from '../utils/feature-flags';
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 50;
@@ -213,6 +214,7 @@ const _Tool = types
 
           self.addPoint(x, y);
         } else {
+          if (isFF(FF_DEV_3666) && !self.canStartDrawing()) return;
           if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
           self.annotation.history.freeze();
           self.mode = 'drawing';
