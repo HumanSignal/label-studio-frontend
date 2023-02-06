@@ -183,6 +183,12 @@ export class Layer extends Events<LayerEvents> {
     this.context?.fillRect(x * this.pixelRatio, y * this.pixelRatio, width * this.pixelRatio, height * this.pixelRatio);
   }
 
+  roundRect(x: number, y: number, width: number, height: number, radius: number) {
+    this.context?.beginPath();
+    this.context?.roundRect(x * this.pixelRatio, y * this.pixelRatio, width * this.pixelRatio, height * this.pixelRatio, radius);
+    this.context?.fill();
+  }
+
   fillText(text: string, x: number, y: number, maxWidth?: number) {
     this.context?.fillText(text, x * this.pixelRatio, y * this.pixelRatio, maxWidth);
   }
