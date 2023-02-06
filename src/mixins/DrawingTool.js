@@ -3,6 +3,7 @@ import { types } from 'mobx-state-tree';
 import Utils from '../utils';
 import throttle from 'lodash.throttle';
 import { MIN_SIZE } from '../tools/Base';
+import { FF_DEV_3666, isFF } from '../utils/feature-flags';
 
 const DrawingTool = types
   .model('DrawingTool', {
@@ -10,7 +11,7 @@ const DrawingTool = types
     mode: types.optional(types.enumeration(['drawing', 'viewing']), 'viewing'),
   })
   .volatile(() => {
-    return {
+    return { 
       currentArea: null,
     };
   })
@@ -158,7 +159,10 @@ const DrawingTool = types
       },
 
       canStartDrawing() {
-        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart() && !self.annotation.isDrawing;
+        return !self.isIncorrectControl()
+          && (!isFF(FF_DEV_3666) || !self.isIncorrectLabel())
+          && self.canStart()
+          && !self.annotation.isDrawing;
       },
 
       startDrawing(x, y) {
