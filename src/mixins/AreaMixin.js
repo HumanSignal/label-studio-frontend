@@ -19,6 +19,16 @@ export const AreaMixin = types
       return self.id.replace(/#.*/, '');
     },
 
+    /**
+     * @return {Result[]} all results with labeling (created by *Labels control)
+     */
+    get labelings() {
+      return self.results.filter(r => r.type.endsWith('labels'));
+    },
+
+    /**
+     * @return {Result?} first result with labels (usually it's the only one, but not always)
+     */
     get labeling() {
       return self.results.find(r => r.type.endsWith('labels') && r.hasValue);
     },
