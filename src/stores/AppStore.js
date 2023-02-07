@@ -7,7 +7,6 @@ import InfoModal from '../components/Infomodal/Infomodal';
 import { Hotkey } from '../core/Hotkey';
 import ToolsManager from '../tools/Manager';
 import Utils from '../utils';
-import messages from '../utils/messages';
 import { guidGenerator } from '../utils/unique';
 import { delay, isDefined } from '../utils/utilities';
 import AnnotationStore from './Annotation/store';
@@ -16,10 +15,12 @@ import Settings from './SettingsStore';
 import Task from './TaskStore';
 import { UserExtended } from './UserStore';
 import { UserLabels } from './UserLabels';
-import { FF_DEV_1536, isFF } from '../utils/feature-flags';
+import { FF_DEV_1536, FF_DEV_2715, isFF } from '../utils/feature-flags';
 import { CommentStore } from './Comment/CommentStore';
 
 const hotkeys = Hotkey('AppStore', 'Global Hotkeys');
+
+const isFFDev2715 = isFF(FF_DEV_2715);
 
 export default types
   .model('AppStore', {
@@ -170,6 +171,7 @@ export default types
   .volatile(() => ({
     version: typeof LSF_VERSION === 'string' ? LSF_VERSION : '0.0.0',
     initialized: false,
+    hydrated: false,
     suggestionsRequest: null,
   }))
   .views(self => ({
@@ -339,7 +341,7 @@ export default types
       hotkeys.addNamed('region:delete-all', () => {
         const { selected } = self.annotationStore;
 
-        if (window.confirm(messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
+        if (window.confirm(getEnv(self).messages.CONFIRM_TO_DELETE_ALL_REGIONS)) {
           selected.deleteAllRegions();
         }
       });
@@ -617,12 +619,19 @@ export default types
      * Given annotations and predictions
      * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
      */
-    function initializeStore({ annotations, completions, predictions, annotationHistory }) {
+    function initializeStore({ hydrated, annotations, completions, predictions, annotationHistory }) {
       const as = self.annotationStore;
 
       as.afterReset?.();
+
       if (!as.initialized) {
         as.initRoot(self.config);
+      }
+
+      // Allow tags to decide whether to load individual data (audio, video, etc)
+      // based on the task+annotation being hydrated
+      if (isFFDev2715) {
+        self.setHydrated(hydrated);
       }
 
       // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
@@ -661,6 +670,10 @@ export default types
       const as = self.annotationStore;
 
       as.clearHistory();
+
+      // always check that history is for correct and submitted annotation
+      if (!history.length || !as.selected?.pk) return;
+      if (Number(as.selected.pk) !== Number(history[0].annotation_id)) return;
 
       (history ?? []).forEach(item => {
         const obj = as.addHistory(item);
@@ -737,8 +750,13 @@ export default types
       self.setUsers(uniqBy([...getSnapshot(self.users), ...users], 'id'));
     }
 
+    function setHydrated(value) {
+      self.hydrated = value;
+    }
+
     return {
       setFlags,
+      setHydrated,
       addInterface,
       hasInterface,
       toggleInterface,

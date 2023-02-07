@@ -1,7 +1,7 @@
 import React from 'react';
 import * as d3 from 'd3';
 import { inject, observer } from 'mobx-react';
-import { getRoot, getType, types } from 'mobx-state-tree';
+import { getEnv, getRoot, getType, types } from 'mobx-state-tree';
 import throttle from 'lodash.throttle';
 import { Spin } from 'antd';
 
@@ -21,7 +21,6 @@ import {
   sparseValues
 } from './TimeSeries/helpers';
 import { parseCSV, tryToParseJSON } from '../../utils/data';
-import messages from '../../utils/messages';
 import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
 import PersistentStateMixin from '../../mixins/PersistentState';
 
@@ -174,7 +173,7 @@ const Model = types
           `Looks like your <b>timeColumn</b> (${self.timecolumn}) contains non-numbers.`,
           'You have to use <b>timeFormat</b> parameter if your values are datetimes.',
           `First wrong values: ${data[self.keyColumn].slice(0, 3).join(', ')}`,
-          '<a href="https://labelstud.io/tags/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.',
+          `<a href="${getEnv(self).messages.URL_TAGS_DOCS}/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.`,
         ];
 
         throw new Error(message.join('<br/>'));
@@ -198,7 +197,7 @@ const Model = types
             throw new Error([
               `<b>timeColumn</b> (${self.timecolumn}) must be incremental and sequentially ordered.`,
               `First wrong values: ${nonSeqValues.join(', ')}`,
-              '<br/><a href="https://labelstud.io/tags/timeseries.html" target="_blank">Read Documentation</a> for details.',
+              `<br/><a href="${getEnv(self).messages.URL_TAGS_DOCS}/timeseries.html" target="_blank">Read Documentation</a> for details.`,
             ].join('<br/>'));
           }
 
@@ -217,7 +216,7 @@ const Model = types
             message.push('You have to use <b>timeFormat</b> parameter if your values are datetimes.');
           }
           message.push(
-            '<br/><a href="https://labelstud.io/tags/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.',
+            `<br/><a href="${getEnv(self).messages.URL_TAGS_DOCS}/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.`,
           );
           throw new Error(message.join('<br/>'));
         }
@@ -466,7 +465,7 @@ const Model = types
         if (!res.ok) {
           if (res.status === 400) {
             store.annotationStore.addErrors([
-              errorBuilder.loadingError(`${res.status} ${res.statusText}`, url, self.value, messages.ERR_LOADING_S3),
+              errorBuilder.loadingError(`${res.status} ${res.statusText}`, url, self.value, getEnv(store).messages.ERR_LOADING_S3),
             ]);
             return;
           }
@@ -485,7 +484,7 @@ const Model = types
           }
         }
         store.annotationStore.addErrors([
-          errorBuilder.loadingError(error, url, self.value, cors ? messages.ERR_LOADING_CORS : undefined),
+          errorBuilder.loadingError(error, url, self.value, cors ? getEnv(store).messages.ERR_LOADING_CORS : undefined),
         ]);
         return;
       }

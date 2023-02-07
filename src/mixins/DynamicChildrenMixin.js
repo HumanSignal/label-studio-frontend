@@ -64,7 +64,10 @@ const DynamicChildrenMixin = types.model({
           if (!valueFromTask) return;
 
           self.updateWithDynamicChildren(valueFromTask, store);
-          if (self.annotation) self.needsUpdate?.();
+          if (self.annotation) {
+            self.annotation.setupHotKeys();
+            self.needsUpdate?.();
+          }
         }
       },
 

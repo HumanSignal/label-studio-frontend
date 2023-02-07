@@ -7,7 +7,6 @@ import Constants from '../core/Constants';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import Registry from '../core/Registry';
-import WithStatesMixin from '../mixins/WithStates';
 import { ImageModel } from '../tags/object/Image';
 import { LabelOnPolygon } from '../components/ImageView/LabelOnRegion';
 import { PolygonPoint, PolygonPointView } from './PolygonPoint';
@@ -293,7 +292,6 @@ const Model = types
 
 const PolygonRegionModel = types.compose(
   'PolygonRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,

@@ -3,7 +3,7 @@ import { MIN_SIZE } from '../../tools/Base';
 import { getBoundingBoxAfterChanges } from '../../utils/image';
 import LSTransformer from './LSTransformer';
 import LSTransformerOld from './LSTransformerOld';
-import { FF_DEV_2394, FF_DEV_2671, isFF } from '../../utils/feature-flags';
+import { FF_DEV_2671, isFF } from '../../utils/feature-flags';
 
 const EPSILON = 0.001;
 
@@ -109,25 +109,17 @@ export default class TransformerComponent extends Component {
 
   getStageAbsoluteDimensions() {
     const stage = this.transformer.getStage();
+    const { stageWidth, stageHeight } = this.props.item;
 
-    if (isFF(FF_DEV_2394)) {
-      return {
-        width: stage.width(),
-        height: stage.height(),
-        x: 0,
-        y: 0,
-      };
-    } else {
-      const [scaledStageWidth, scaledStageHeight] = [stage.width() * stage.scaleX(), stage.height() * stage.scaleY()];
-      const [stageX, stageY] = [stage.x(), stage.y()];
+    const [scaledStageWidth, scaledStageHeight] = [stageWidth * stage.scaleX(), stageHeight * stage.scaleY()];
+    const [stageX, stageY] = [stage.x(), stage.y()];
 
-      return {
-        width: scaledStageWidth,
-        height: scaledStageHeight,
-        x: stageX,
-        y: stageY,
-      };
-    }
+    return {
+      width: scaledStageWidth,
+      height: scaledStageHeight,
+      x: stageX,
+      y: stageY,
+    };
   }
 
   constrainSizes = (oldBox, newBox) => {
@@ -176,7 +168,7 @@ export default class TransformerComponent extends Component {
     });
   };
 
-  renderLSTransformer(){
+  renderLSTransformer() {
     return (
       <>
         <LSTransformer
@@ -222,7 +214,7 @@ export default class TransformerComponent extends Component {
     );
   }
 
-  renderOldLSTransformer(){
+  renderOldLSTransformer() {
     return (
       <>
         <LSTransformerOld

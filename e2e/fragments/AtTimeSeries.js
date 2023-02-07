@@ -2,13 +2,25 @@
 const { I } = inject();
 
 module.exports = {
+  _rootSelector: '.htx-timeseries',
   _channelSelector: '.htx-timeseries-channel .overlay',
   _overviewSelector: '.htx-timeseries-overview .overlay',
   _westHandleSelector: '.htx-timeseries-overview .handle--w',
   _eastHandleSelector: '.htx-timeseries-overview .handle--e',
+  get _channelStageSelector() {
+    return `${this._rootSelector} .htx-timeseries-channel .new_brush`;
+  },
+  _stageBBox: { x: 0, y: 0, width: 0, height: 0 },
 
   WEST: 'west',
   EAST: 'east',
+
+  async lookForStage() {
+    I.scrollPageToTop();
+    const bbox = await I.grabElementBoundingRect(this._channelStageSelector);
+
+    this._stageBBox = bbox;
+  },
 
   /**
    * Select range on overview to zoom in
@@ -83,5 +95,21 @@ module.exports = {
 
     I.moveMouse(channelBBox.x + channelBBox.width * x, channelBBox.y + channelBBox.height* y);
     I.mouseWheel({ deltaY });
+  },
+
+  /**
+   * Mousedown - mousemove - mouseup drawing a region on the first Channel. Works in conjunction with lookForStage.
+   * @example
+   * await AtTimeSeries.lookForStage();
+   * AtTimeseries.drawByDrag(50, 200);
+   * @param x
+   * @param shiftX
+   */
+  drawByDrag(x,shiftX) {
+    I.scrollPageToTop();
+    I.moveMouse(this._stageBBox.x + x, this._stageBBox.y + this._stageBBox.height / 2);
+    I.pressMouseDown();
+    I.moveMouse(this._stageBBox.x + x + shiftX, this._stageBBox.y + this._stageBBox.height / 2, 3);
+    I.pressMouseUp();
   },
 };
