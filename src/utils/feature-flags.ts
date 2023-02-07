@@ -52,14 +52,10 @@ export const FF_DEV_2100_A = 'ff_dev_2100_preselected_choices_250422_short';
 
 export const FF_DEV_2290 = 'ff_front_dev_2290_draft_in_annotation_history_short';
 
-export const FF_DEV_2394 = 'ff_front_dev_2394_zoomed_transforms_260522_short';
-
 // Make nested choices work according to the DES-107
 export const FF_DEV_2244 = 'ff_front_dev_2244_nested_choices_des_107_160522_short';
 
 export const FF_DEV_2132 = 'ff_front_dev_2132_rotating_bounding_box';
-
-export const FF_DEV_2480 = 'ff_dev_2480_convenient_offsets_270522_short';
 
 export const FF_DEV_1442 = 'ff_front_dev_1442_unselect_shape_on_click_outside_080622_short';
 
@@ -141,6 +137,24 @@ export const FF_DEV_3730 = 'fflag_fix_front_dev_3730_shortcuts_initial_input_221
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short
  */
 export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short';
+
+/**
+ * Fixing maxUsages prop of *labels on region creation.
+ * @link https://app.launchdarkly.com/default/test/features/fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short
+ */
+export const FF_DEV_3666 = 'fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short';
+
+/**
+ * Fixing issue with overlapping taxonomy items during searching
+ * @link https://app.launchdarkly.com/default/community/features/fflag_fix_front_dev_4075_taxonomy_overlap_281222_short
+ */
+export const FF_DEV_4075 = 'fflag_fix_front_dev_4075_taxonomy_overlap_281222_short';
+
+/**
+ * Fix logic of namespaces inside Hotkeys
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
+  */
+export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short';
 
 function getFeatureFlags() {
   return {

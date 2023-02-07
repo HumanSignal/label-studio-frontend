@@ -33,6 +33,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       volume: item.defaultvolume ? Number(item.defaultvolume) : 1,
       amp: item.defaultscale ? Number(item.defaultscale) : 1,
       zoom: item.defaultzoom ? Number(item.defaultzoom) : 1,
+      showLabels: item.annotationStore.store.settings.showLabels,
       rate: item.defaultspeed ? Number(item.defaultspeed) : 1,
       muted: item.muted === 'true',
       onLoad: item.onLoad,
@@ -62,16 +63,19 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
 
     const updateBeforeRegionDraw = (regions: Regions) => {
       const regionColor = item.getRegionColor();
+      const regionLabels = item.activeState?.selectedValues();
 
-      if (regionColor) {
+      if (regionColor && regionLabels) {
         regions.regionDrawableTarget();
         regions.setDrawingColor(regionColor);
+        regions.setLabels(regionLabels);
       }
     };
 
     const updateAfterRegionDraw = (regions: Regions) => {
       regions.resetDrawableTarget();
       regions.resetDrawingColor();
+      regions.resetLabels();
     };
 
     const createRegion = (region: Region|Segment) => {

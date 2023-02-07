@@ -369,6 +369,10 @@ export class Waveform extends Events<WaveformEventTypes> {
     return this.regions.updateRegion(options, render);
   }
 
+  updateLabelVisibility(visible: boolean){
+    this.regions.updateLabelVisibility(visible);
+  }
+
   removeRegion(regionId: string, render = true) {
     this.regions.removeRegion(regionId, render);
   }
