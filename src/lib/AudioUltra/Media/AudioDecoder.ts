@@ -1,7 +1,7 @@
-import { AudioDecoderWorker, getAudioDecoderWorker } from 'audio-file-decoder';
+import { AudioDecoderWorker, getAudioDecoderWorker } from '@martel/audio-file-decoder';
 // eslint-disable-next-line
 // @ts-ignore
-import DecodeAudioWasm from 'audio-file-decoder/decode-audio.wasm';
+import DecodeAudioWasm from '@martel/audio-file-decoder/decode-audio.wasm';
 import { Events } from '../Common/Events';
 import { clamp, info } from '../Common/Utils';
 
@@ -50,14 +50,14 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
 
   get dataLength() {
     if (this.chunks && !this._dataLength) {
-      this._dataLength = this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.length, 0), 0) ?? 0;
+      this._dataLength = (this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.length, 0), 0) ?? 0) / this._channelCount;
     }
     return this._dataLength;
   }
 
   get dataSize() {
     if (this.chunks && !this._dataSize) {
-      this._dataSize = this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.byteLength, 0), 0) ?? 0;
+      this._dataSize = (this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.byteLength, 0), 0) ?? 0) / this._channelCount;
     }
     return this._dataSize;
   }
@@ -191,10 +191,22 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
               for (let c = 0; c < this._channelCount; c++) {
                 chunks[c][chunkIndex] = new Float32Array(value.length / this._channelCount);
               }
-              // Split the channels into separate Float32Array
-              // channel1, channel2, channel1, channel2, ...
-              for (let b = 0; b < value.length; b++) {
-                chunks[b % this._channelCount][chunkIndex][Math.floor(b / this._channelCount)] = value[b];
+
+              // Split the channels into separate Float32Array samples
+              for (let sample = 0; sample < value.length; sample++) {
+                // interleaved channels
+                // ie. 2 channels
+                // [channel1, channel2, channel1, channel2, ...]
+                const channel = sample % this._channelCount;
+                // index of the channel sample
+                // ie. 2 channels
+                // sample = 8, channel = 0, channelIndex = 4
+                // sample = 9, channel = 1, channelIndex = 4
+                // sample = 10, channel = 0, channelIndex = 5
+                // sample = 11, channel = 1, channelIndex = 5
+                const channelIndex = Math.floor(sample / this._channelCount);
+
+                chunks[channel][chunkIndex][channelIndex] = value[sample];
               }
             }
           }

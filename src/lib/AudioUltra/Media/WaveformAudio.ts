@@ -215,7 +215,6 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
         this.el.muted = false;
       }
     }
-
   }
 
   private createAudioDecoder() {

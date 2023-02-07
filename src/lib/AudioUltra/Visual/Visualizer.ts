@@ -68,6 +68,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private backgroundColor = rgba('#fff');
   private waveColor = rgba('#000');
   private waveHeight = 100;
+  private lastRenderedChannel = -1;
   private lastRenderedZoom = 0;
   private lastRenderedWidth = 0;
   private lastRenderedAmp = 0;
@@ -280,6 +281,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const layer = this.getLayer('waveform');
 
     if (!layer || !layer.isVisible) {
+      this.lastRenderedChannel = -1;
       this.lastRenderedWidth = 0;
       return;
     }
@@ -312,8 +314,12 @@ export class Visualizer extends Events<VisualizerEvents> {
 
       const renderableData = iEnd - iStart;
 
-      if (this.width !== this.lastRenderedWidth || zoom !== this.lastRenderedZoom || amp !== this.lastRenderedAmp || renderableData < CACHE_RENDER_THRESHOLD) {
-        layer.clear();
+      if (this.lastRenderedChannel < channelNumber || this.width !== this.lastRenderedWidth || zoom !== this.lastRenderedZoom || amp !== this.lastRenderedAmp || renderableData < CACHE_RENDER_THRESHOLD) {
+        // The waveform layer should be cleared during the render of the first channel, and not subsequent channels in a
+        // given render cycle
+        if (channelNumber === 0) {
+          layer.clear();
+        }
         const renderIterator = this.renderSlice(layer, height, iStart, iEnd, channelNumber, x);
 
         // Render iterator, allowing it to be cancelled if a new render is requested
@@ -329,6 +335,7 @@ export class Visualizer extends Events<VisualizerEvents> {
             this.lastRenderedZoom = zoom;
             this.lastRenderedAmp = amp;
             this.lastRenderedScrollLeftPx = scrollLeftPx;
+            this.lastRenderedChannel = channelNumber;
             resolve(true);
           }
         };
@@ -393,7 +400,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const bufferChunkSize = bufferChunks.length;
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
-    const zero = this.height * Math.max(channelNumber - 1, 0) + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
+    const zero = height * channelNumber + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
     const y = zero + paddingTop +  height / 2;
     let total = 0;
 
@@ -858,6 +865,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   // This is needed when the waveform container is resized, or visibility
   // or a layer is changed. Otherwise its possible to be blank.
   private resetWaveformRender() {
+    this.lastRenderedChannel = -1;
     this.lastRenderedAmp = 0;
     this.lastRenderedWidth = 0;
     this.lastRenderedZoom = 0;
