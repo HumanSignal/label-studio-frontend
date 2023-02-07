@@ -102,6 +102,10 @@
     "key": "backspace",
     "description": "Delete selected region"
   },
+  "region:remove": {
+    "key": "delete",
+    "description": "Delete selected region"
+  },
   "region:cycle": {
     "key": "alt+.",
     "description": "Cycle through regions"
