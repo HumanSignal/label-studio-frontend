@@ -43,7 +43,7 @@ import { Tool } from '../components/Toolbar/Tool';
  * viewport to the offscreen buffer.
  *
  * During mouse movement (`mousemoveEv`), we `threshold()` based on how far the mouse is from the
- * initial `anchorX`/`anchorY` seeds, updating the mask with `drawMask`.
+ * initial `anchorScreenX`/`anchorScreenY` seeds, updating the mask with `drawMask`.
  * 
  * When the user is finished with the dynamic thresholding and releases the mouse button (`mouseupEv`),
  * we setup the final mask (`setupFinalMask`) by taking the existing Magic Wanded result, which might
@@ -95,8 +95,13 @@ const _Tool = types
     currentThreshold: null,
     mask: null,
 
-    anchorX: null,
-    anchorY: null,
+    // Where to anchor calculating the Magic Wand threshold for relative to the entire screen.
+    anchorScreenX: null,
+    anchorScreenY: null,
+
+    // Where to start flood filling for the Magic Wand, anchored to the image's coordinates.
+    anchorImgX: null,
+    anchorImgY: null,
 
     overlay: null,
     overlayCtx: null,
@@ -267,7 +272,7 @@ const _Tool = types
       // as otherwise the escape key gets eaten by other keyboard listeners.
       window.addEventListener('keydown', self.keydownEv, true /* useCapture */);
 
-      [self.anchorX, self.anchorY] = self.getEventCoords(ev);
+      [self.anchorImgX, self.anchorImgY, self.anchorScreenX, self.anchorScreenY] = self.getEventCoords(ev);
       self.initCache();
       self.initCanvas();
       self.initCurrentRegion();
@@ -277,9 +282,9 @@ const _Tool = types
       // If we are in magic wand mode, change the threshold based on the mouse movement.
       if (self.mode !== 'drawing') return;
 
-      const [newX, newY] = self.getEventCoords(ev);
+      const [_newImgX, _newImgY, newScreenX, newScreenY] = self.getEventCoords(ev);
 
-      self.threshold(newX, newY, self.fillcolor, self.opacity);
+      self.threshold(newScreenX, newScreenY, self.fillcolor, self.opacity);
     },
 
     mouseupEv: flow(function* mouseupEv() {
@@ -312,15 +317,22 @@ const _Tool = types
     },
 
     getEventCoords(ev) {
-      // Mouse click x, y coordinates should be relative to the offsetX/offsetY of the actual
-      // fragment of image being displayed in the viewport. If the image is zoomed and
-      // panned, offsetX/offsetY will still stay relative to what is actually being
-      // displayed (i.e. it will change if we pan around).
+      // In terms of getting pixel data for magic wanding, mouse click x, y coordinates
+      // should be relative to the offsetX/offsetY of the actual fragment of image being
+      // displayed in the viewport. If the image is zoomed and panned, offsetX/offsetY
+      // will still stay relative to what is actually being displayed (i.e. it will
+      // change if we pan around).
+      //
+      // Note that when we calculate the offset for thresholding, we want instead to do
+      // it relative to the entire screen coordinates, as this results in a better user
+      // experience.
 
-      const x = ev.offsetX,
-        y = ev.offsetY;
+      const imgX = ev.offsetX,
+        imgY = ev.offsetY,
+        screenX = ev.screenX,
+        screenY = ev.screenY;
 
-      return [x, y];
+      return [imgX, imgY, screenX, screenY];
     },
 
     /**
@@ -416,7 +428,7 @@ const _Tool = types
       // location given.
       self.mask = drawMask(self.transformedData, self.overlayCtx,
         self.transformedCanvas.width, self.transformedCanvas.height,
-        self.anchorX, self.anchorY,
+        self.anchorImgX, self.anchorImgY,
         self.currentThreshold, self.fillcolor, self.opacity, self.blurradius,
         true /* doPaint */);
     },
@@ -446,14 +458,14 @@ const _Tool = types
     /**
      * As the user drags their mouse, we should calculate a new threshold value
      * by using the displacement of the mouse from the anchor point.
-     * @param {int} newX New position of the mouse.
-     * @param {int} newY Same, but for Y direction.
+     * @param {int} newScreenX New position of the mouse relative to the entire screen.
+     * @param {int} newScreenY Same, but for Y direction.
      */
-    threshold(newX, newY) {
-      if (newX !== self.anchorX || newY !== self.anchorY) {
+    threshold(newScreenX, newScreenY) {
+      if (newScreenX !== self.anchorScreenX || newScreenY !== self.anchorScreenY) {
         // Get the offset of where we've dragged the mouse to update the threshold.
-        const dx = newX - self.anchorX,
-          dy = newY - self.anchorY,
+        const dx = Math.abs(newScreenX - self.anchorScreenX),
+          dy = Math.abs(newScreenY - self.anchorScreenY),
           len = Math.sqrt(dx * dx + dy * dy),
           adx = Math.abs(dx),
           ady = Math.abs(dy);
@@ -467,7 +479,7 @@ const _Tool = types
           self.currentThreshold = newThreshold;
           self.mask = drawMask(self.transformedData, self.overlayCtx,
             self.transformedCanvas.width, self.transformedCanvas.height,
-            self.anchorX, self.anchorY, self.currentThreshold, self.fillcolor,
+            self.anchorImgX, self.anchorImgY, self.currentThreshold, self.fillcolor,
             self.opacity, self.blurradius, true /* doPaint */);
         }
       }
