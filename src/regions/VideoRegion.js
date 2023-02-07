@@ -4,7 +4,6 @@ import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import { VideoModel } from '../tags/object/Video';
 import { guidGenerator } from '../core/Helpers';
-import WithStatesMixin from '../mixins/WithStates';
 import { AreaMixin } from '../mixins/AreaMixin';
 
 export const interpolateProp = (start, end, frame, prop) => {
@@ -144,7 +143,6 @@ const Model = types
 
 const VideoRegion = types.compose(
   'VideoRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,

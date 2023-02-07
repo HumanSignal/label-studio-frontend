@@ -17,7 +17,7 @@ import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import { clamp } from '../../utils/utilities';
 import { guidGenerator } from '../../utils/unique';
 import { IsReadyWithDepsMixin } from '../../mixins/IsReadyMixin';
-import { FF_DEV_3377, isFF } from '../../utils/feature-flags';
+import { FF_DEV_3377, FF_DEV_3666, isFF } from '../../utils/feature-flags';
 
 /**
  * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -862,15 +862,28 @@ const Model = types.model({
         return;
       }
       if (width > 1 && height > 1) {
+        const prevWidth = self.canvasSize.width;
+        const prevHeight = self.canvasSize.height;
+        const prevStageZoom = self.stageZoom;
+        const prevZoomScale = self.zoomScale;
+
         self.containerWidth = width;
         self.containerHeight = height;
 
         // reinit zoom to calc stageW/H
         self.setZoom(self.currentZoom);
 
-        self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
-
         self._recalculateImageParams();
+
+        const zoomChangeRatio = self.stageZoom / prevStageZoom;
+        const scaleChangeRatio = self.zoomScale / prevZoomScale;
+        const changeRatio = zoomChangeRatio * scaleChangeRatio;
+
+
+        self.setZoomPosition(
+          self.zoomingPositionX * changeRatio + (self.canvasSize.width / 2 - prevWidth / 2 * changeRatio),
+          self.zoomingPositionY * changeRatio + (self.canvasSize.height / 2 - prevHeight / 2 * changeRatio),
+        );
       }
 
       self.sizeUpdated = true;
@@ -927,8 +940,15 @@ const Model = types.model({
     },
 
     checkLabels() {
-      // there is should be at least one state selected for *labels object
-      const labelStates = (self.states() || []).filter(s => s.type.includes('labels'));
+      let labelStates;
+
+      if (isFF(FF_DEV_3666)) {
+        // there should be at least one available label or none of them should be selected
+        labelStates = self.activeStates() || [];
+      } else {
+        // there is should be at least one state selected for *labels object
+        labelStates = (self.states() || []).filter(s => s.type.includes('labels'));
+      }
       const selectedStates = self.getAvailableStates();
 
       return selectedStates.length !== 0 || labelStates.length === 0;
