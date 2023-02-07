@@ -89,7 +89,7 @@ Scenario('Check if regions is selected', async function({ I, LabelStudio, AtAudi
   AtSidebar.dontSeeSelectedRegion();
 });
 
-Scenario('Delete region with delete hotkey', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+Scenario('Delete region by pressing delete hotkey', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
   LabelStudio.setFeatureFlags({
     ff_front_dev_2715_audio_3_280722_short: true,
   });

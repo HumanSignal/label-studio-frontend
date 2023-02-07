@@ -102,10 +102,6 @@
     "key": "backspace",
     "description": "Delete selected region"
   },
-  "region:remove": {
-    "key": "delete",
-    "description": "Delete selected region"
-  },
   "region:cycle": {
     "key": "alt+.",
     "description": "Cycle through regions"
@@ -114,6 +110,10 @@
     "key": "ctrl+d",
     "mac": "command+d",
     "description": "Duplicate selected region"
+  },
+  "segment:delete": {
+    "key": "delete",
+    "description": "Delete selected region"
   },
   "media:playpause": {
     "key": "alt+space",
