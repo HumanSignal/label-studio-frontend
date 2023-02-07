@@ -491,6 +491,34 @@ const centerOfBbox = (bbox) => {
   };
 };
 
+/**
+ * Generate the URL of the image of the specified size
+ * @param {object} size
+ * @param {number} size.width
+ * @param {number} size.height
+ * @returns {Promise<string>}
+ */
+async function generateImageUrl({ width, height }) {
+  const canvas = document.createElement('canvas');
+
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext('2d');
+
+  const centerX = width / 2;
+  const centerY = height / 2;
+
+  for (let k = 0; k < centerX; k += 50) {
+    ctx.strokeRect(centerX - k, 0, k * 2, height);
+  }
+  for (let k = 0; k < centerY; k += 50) {
+    ctx.strokeRect(0, centerY - k, width, k * 2);
+  }
+
+  return canvas.toDataURL();
+}
+
 const getCanvasSize = () => {
   const stage = window.Konva.stages[0];
 
@@ -721,6 +749,7 @@ module.exports = {
   hasSelectedRegion,
   clearModalIfPresent,
   centerOfBbox,
+  generateImageUrl,
 
   serialize,
   selectText,

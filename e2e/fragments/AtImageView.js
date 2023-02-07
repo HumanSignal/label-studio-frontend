@@ -7,6 +7,17 @@ module.exports = {
   _stageSelector: '.konvajs-content',
   _stageBBox: { x: 0, y: 0, width: 0, height: 0 },
 
+  _toolBarSelector: '.lsf-toolbar',
+  _zoomPresetsSelector: '[title^="Zoom presets"]',
+
+  percToX(xPerc) {
+    return this._stageBBox.width * xPerc / 100;
+  },
+
+  percToY(yPerc) {
+    return this._stageBBox.height * yPerc / 100;
+  },
+
   async grabStageBBox() {
     const bbox = await I.grabElementBoundingRect(this._stageSelector);
 
@@ -201,5 +212,15 @@ module.exports = {
   drawByClick(x, y) {
     I.scrollPageToTop();
     this.clickAt(x, y);
+  },
+
+  selectPanTool() {
+    I.say('Select pan tool');
+    I.pressKey('H');
+  },
+
+  selectMoveTool() {
+    I.say('Select move tool');
+    I.pressKey('V');
   },
 };

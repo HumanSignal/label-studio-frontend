@@ -7,7 +7,6 @@ import Canvas from '../utils/canvas';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import Registry from '../core/Registry';
-import WithStatesMixin from '../mixins/WithStates';
 import { ImageModel } from '../tags/object/Image';
 import { LabelOnMask } from '../components/ImageView/LabelOnRegion';
 import { guidGenerator } from '../core/Helpers';
@@ -418,7 +417,6 @@ const Model = types
 
 const BrushRegionModel = types.compose(
   'BrushRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   NormalizationMixin,
   AreaMixin,

@@ -159,14 +159,14 @@ Scenario('Add custom items', async ({ I, LabelStudio, AtTaxonomy }) => {
   const userLabels = await LabelStudio.grabUserLabels();
 
   I.say('Check significant content of the custom items');
-  assert.strictEqual(userLabels.taxonomy.length,2);
-  assert.deepStrictEqual(userLabels.taxonomy[0],['c']);
-  assert.deepStrictEqual(userLabels.taxonomy[1],['b', 'ba', 'baa']);
+  assert.strictEqual(userLabels.taxonomy.length, 2);
+  assert.deepStrictEqual(userLabels.taxonomy[0], ['c']);
+  assert.deepStrictEqual(userLabels.taxonomy[1], ['b', 'ba', 'baa']);
 
   I.say('Serialize and check the result');
   const result = await LabelStudio.serialize();
 
-  assert.deepStrictEqual(result[0].value.taxonomy, [['a'],['b', 'ba', 'baa'],['c']]);
+  assert.deepStrictEqual(result[0].value.taxonomy, [['a'], ['b', 'ba', 'baa'], ['c']]);
 
 
   await session('Deserialization', async () => {
@@ -212,7 +212,7 @@ Scenario('Add custom items', async ({ I, LabelStudio, AtTaxonomy }) => {
 
   const userLabels2 = await LabelStudio.grabUserLabels();
 
-  assert.strictEqual(userLabels2.taxonomy.length,0);
+  assert.strictEqual(userLabels2.taxonomy.length, 0);
 
   // todo: That may be another problem (see: DEV-1967)
   // I.say('Try to make duplicates');
@@ -255,18 +255,19 @@ Scenario('Non unique values filtering', async ({ I, LabelStudio, AtTaxonomy }) =
 Scenario('Taxonomy read only in history', async ({ I, LabelStudio, AtTaxonomy }) => {
   const annotationHistory = [
     {
-      'id':19,
-      'created_by':1,
+      'id': 19,
+      'annotation_id': 2,
+      'created_by': 1,
       'action_type': 'submitted',
       'created_at': (new Date()).toISOString(),
-      'accepted':true,
-      'annotation':24,
-      'fixed_annotation_history':35,
-      'previous_annotation_history':34,
-      'result':[
+      'accepted': true,
+      'annotation': 24,
+      'fixed_annotation_history': 35,
+      'previous_annotation_history': 34,
+      'result': [
         {
           'value': {
-            'taxonomy': [['a','ab'],['c']],
+            'taxonomy': [['a', 'ab'], ['c']],
           },
           'id': 'text_id_1',
           'from_name': 'taxonomy',
@@ -300,10 +301,11 @@ Scenario('Taxonomy read only in history', async ({ I, LabelStudio, AtTaxonomy })
     params: {
       history: annotationHistory,
     },
+    annotations: [{ id: 2, result: [] }],
   });
   I.click('.lsf-history-item');
   AtTaxonomy.clickTaxonomy();
-  AtTaxonomy.seeSelectedValues(['ab','c']);
+  AtTaxonomy.seeSelectedValues(['ab', 'c']);
   AtTaxonomy.toggleGroupWithText('a');
   AtTaxonomy.seeCheckedItemByText('ab');
   AtTaxonomy.seeCheckedItemByText('c');
@@ -313,7 +315,7 @@ Scenario('Taxonomy read only in history', async ({ I, LabelStudio, AtTaxonomy })
   AtTaxonomy.clickItemByText('ab');
   AtTaxonomy.clickItemByText('c');
   I.say('Check that item was not unchecked');
-  AtTaxonomy.seeSelectedValues(['ab','c']);
+  AtTaxonomy.seeSelectedValues(['ab', 'c']);
   AtTaxonomy.seeCheckedItemByText('ab');
   AtTaxonomy.seeCheckedItemByText('c');
 });
@@ -338,11 +340,11 @@ xScenario('Taxonomy readonly result', async ({ I, LabelStudio, AtTaxonomy }) => 
       text: 'Text',
     },
     annotations: [{
-      'id':19,
-      'result':[
+      'id': 19,
+      'result': [
         {
           'value': {
-            'taxonomy': [['a','ab'],['c']],
+            'taxonomy': [['a', 'ab'], ['c']],
           },
           'id': 'text_id_1',
           'from_name': 'taxonomy',
@@ -355,7 +357,7 @@ xScenario('Taxonomy readonly result', async ({ I, LabelStudio, AtTaxonomy }) => 
     }],
   });
   AtTaxonomy.clickTaxonomy();
-  AtTaxonomy.seeSelectedValues(['ab','c']);
+  AtTaxonomy.seeSelectedValues(['ab', 'c']);
   AtTaxonomy.toggleGroupWithText('a');
   AtTaxonomy.seeCheckedItemByText('ab');
   AtTaxonomy.seeCheckedItemByText('c');
@@ -365,7 +367,7 @@ xScenario('Taxonomy readonly result', async ({ I, LabelStudio, AtTaxonomy }) => 
   AtTaxonomy.clickItemByText('ab');
   AtTaxonomy.clickItemByText('c');
   I.say('Check that item was not unchecked');
-  AtTaxonomy.seeSelectedValues(['ab','c']);
+  AtTaxonomy.seeSelectedValues(['ab', 'c']);
   AtTaxonomy.seeCheckedItemByText('ab');
   AtTaxonomy.seeCheckedItemByText('c');
 });
@@ -458,7 +460,7 @@ Scenario('Taxonomy per region', async ({ I, LabelStudio, AtTaxonomy, AtOutliner 
   AtTaxonomy.toggleGroupWithText('a');
   AtTaxonomy.clickItemByText('ab');
   AtTaxonomy.clickItemByText('c');
-  AtTaxonomy.seeSelectedValues(['ab','c']);
+  AtTaxonomy.seeSelectedValues(['ab', 'c']);
   I.say('For the other correct region there should not be selected items');
   AtOutliner.clickRegion(3);
   AtTaxonomy.clickTaxonomy();
@@ -494,7 +496,7 @@ Scenario('Taxonomy per region', async ({ I, LabelStudio, AtTaxonomy, AtOutliner 
     AtOutliner.clickRegion(2);
     AtTaxonomy.seeTaxonomy();
     AtTaxonomy.clickTaxonomy();
-    AtTaxonomy.seeSelectedValues(['ab','c']);
+    AtTaxonomy.seeSelectedValues(['ab', 'c']);
     AtTaxonomy.seeCheckedItemByText('ab');
     AtTaxonomy.seeCheckedItemByText('c');
   });
@@ -535,7 +537,7 @@ Scenario('Aliases in Taxonomy', async ({ I, LabelStudio, AtTaxonomy }) => {
   AtTaxonomy.seeItemByText('Five');
   AtTaxonomy.clickItemByText('Three');
   AtTaxonomy.clickItemByText('Seven');
-  AtTaxonomy.seeSelectedValues(['Three','Seven']);
+  AtTaxonomy.seeSelectedValues(['Three', 'Seven']);
   I.say('Should get aliases as results');
 
   const result = await LabelStudio.serialize();
@@ -560,7 +562,7 @@ Scenario('Aliases in Taxonomy', async ({ I, LabelStudio, AtTaxonomy }) => {
     AtTaxonomy.toggleGroupWithText('Four to seven');
     AtTaxonomy.seeCheckedItemByText('Three');
     AtTaxonomy.seeCheckedItemByText('Seven');
-    AtTaxonomy.seeSelectedValues(['Three','Seven']);
+    AtTaxonomy.seeSelectedValues(['Three', 'Seven']);
   });
 
   await session('ShowFullPath', async () => {
@@ -578,7 +580,7 @@ Scenario('Aliases in Taxonomy', async ({ I, LabelStudio, AtTaxonomy }) => {
     });
     I.say('Should see the full paths');
     AtTaxonomy.clickTaxonomy();
-    AtTaxonomy.seeSelectedValues(['One to three / Three','Four to seven / Seven']);
+    AtTaxonomy.seeSelectedValues(['One to three / Three', 'Four to seven / Seven']);
   });
 });
 
@@ -634,7 +636,7 @@ Scenario('Taxonomy dynamic items', async ({ I, LabelStudio, AtTaxonomy }) => {
   I.say('Check result');
   AtTaxonomy.seeCheckedItemByText('Item 1');
   AtTaxonomy.seeCheckedItemByText('Option 3');
-  AtTaxonomy.seeSelectedValues(['Item 1','Option 3']);
+  AtTaxonomy.seeSelectedValues(['Item 1', 'Option 3']);
 
   const result = await LabelStudio.serialize();
 
@@ -665,7 +667,7 @@ Scenario('Taxonomy dynamic items', async ({ I, LabelStudio, AtTaxonomy }) => {
     AtTaxonomy.seeItemByText('Option 2');
     AtTaxonomy.seeCheckedItemByText('Item 1');
     AtTaxonomy.seeCheckedItemByText('Option 3');
-    AtTaxonomy.seeSelectedValues(['Item 1','Option 3']);
+    AtTaxonomy.seeSelectedValues(['Item 1', 'Option 3']);
     I.say('And the static one');
     AtTaxonomy.seeItemByText('Static element');
   });
@@ -711,7 +713,7 @@ Scenario('Taxonomy maxUsages', async ({ I, LabelStudio, AtTaxonomy }) => {
   AtTaxonomy.dontSeeCheckedItemByText('Two');
   AtTaxonomy.dontSeeCheckedItemByText('a');
   AtTaxonomy.dontSeeCheckedItemByText('b');
-  AtTaxonomy.dontSeeSelectedValues(['Two','a','b']);
+  AtTaxonomy.dontSeeSelectedValues(['Two', 'a', 'b']);
   I.say('Check that we can change our decision');
   AtTaxonomy.clickItemByText('One');
   AtTaxonomy.clickItemByText('Two');

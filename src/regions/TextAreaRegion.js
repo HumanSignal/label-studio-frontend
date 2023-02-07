@@ -2,7 +2,6 @@ import React from 'react';
 import { observer } from 'mobx-react';
 import { getParentOfType, types } from 'mobx-state-tree';
 
-import WithStatesMixin from '../mixins/WithStates';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import Registry from '../core/Registry';
@@ -35,6 +34,9 @@ const Model = types
     getRegionElement() {
       return document.querySelector(`#TextAreaRegion-${self.id}`);
     },
+    getOneColor() {
+      return null;
+    },
   }))
   .actions(self => ({
     setValue(val) {
@@ -57,7 +59,6 @@ const Model = types
 
 const TextAreaRegionModel = types.compose(
   'TextAreaRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   NormalizationMixin,
   Model,
