@@ -12,7 +12,7 @@ const _Tool = types
     group: 'segmentation',
     shortcut: 'K',
     smart: true,
-    isDrawingTool: true,
+    allowRegionUnselectionOnToolChange: true,
   })
   .views(() => ({
     get tagTypes() {

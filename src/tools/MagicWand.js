@@ -89,7 +89,7 @@ const _Tool = types
     group: 'segmentation',
     shortcut: 'W',
     smart: true,
-    isDrawingTool: true,
+    allowRegionUnselectionOnToolChange: false,
   })
   .volatile(() => ({
     currentThreshold: null,
@@ -205,17 +205,6 @@ const _Tool = types
      */
     shouldInvalidateCache() {
       return self.existingRegion && self.existingRegion.id !== self.cachedRegionId;
-    },
-
-    /**
-     * Helps with handling an edge case related to panning that results in a better user experience when
-     * dealing with our cached natural canvas: If the user has a region selected, then zooms and pans,
-     * Label Studio loses the current selection. If the user then wants to continue Magic Wanding with
-     * the same label & region, self.getSelectedShape will return null. This method helps detect this
-     * situation, and if it applies find the cached region and continue from there.
-     */
-    detectPanningLostSelection() {
-      return self.cachedRegionId && self.getSelectedShape === null && self.cachedLabel === self.selectedLabel;
     },
 
   }))
@@ -343,25 +332,6 @@ const _Tool = types
       // Has the user previously used the Magic Wand for the current class setting? 
       self.isFirstWand = (self.existingRegion === null) || (self.existingRegion.id !== self.cachedRegionId);
 
-      // Did panning break the current selection? If so, get the correct region to continue working
-      // from.
-      if (self.detectPanningLostSelection()) {
-        const regionStore =
-          self.annotationStore.annotations.length ? self.annotationStore.annotations[0].regionStore : null;
-
-        if (regionStore) {
-          const region = regionStore.findRegionID(self.cachedRegionId);
-
-          if (region) {
-            self.obj.annotation.selectArea(region);
-            self.isFirstWand = false;
-
-            // Initialize our work moving forward to use the correct region.
-            self.currentRegion = region;
-          }
-        }
-      }
-
       if (self.isFirstWand) {
         self.cachedNaturalCanvas = document.createElement('canvas');
         self.cachedNaturalCanvas.width = self.naturalWidth;
@@ -450,7 +420,7 @@ const _Tool = types
         };
 
         self.currentRegion = self.createDrawingRegion(regionOpts);
-      } else if (!self.detectPanningLostSelection()) {
+      } else {
         self.currentRegion = self.existingRegion;
       }
     },

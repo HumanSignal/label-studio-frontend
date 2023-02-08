@@ -11,7 +11,7 @@ const _Tool = types
   .model('PolygonTool', {
     group: 'segmentation',
     shortcut: 'P',
-    isDrawingTool: true,
+    allowRegionUnselectionOnToolChange: true,
   })
   .views(self => {
     const Super = {

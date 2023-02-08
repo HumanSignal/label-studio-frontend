@@ -71,7 +71,7 @@ export const Tool = ({
     if (shortcut && !hotkeys.hasKey(shortcut)) {
       hotkeys.addKey(shortcut, () => {
         if(!tool?.disabled && !tool?.annotation?.isDrawing) {
-          if (tool?.isDrawingTool){
+          if (tool?.allowRegionUnselectionOnToolChange){
             tool.annotation.unselectAreas();
           }
           onClick?.();
@@ -124,7 +124,7 @@ export const Tool = ({
     }} onClick={(e) => {
       if(!disabled && !isAnnotationDrawing) {
         e.preventDefault();
-        if(tool?.isDrawingTool) {
+        if(tool?.allowRegionUnselectionOnToolChange) {
           tool?.annotation?.unselectAreas?.();
         }
         onClick?.(e);
