@@ -1,23 +1,26 @@
 import { inject } from 'mobx-react';
-import { destroy, getParent, getRoot, getType, types } from 'mobx-state-tree';
+import { destroy, getRoot, getType, types } from 'mobx-state-tree';
 
-import ImageView from '../../components/ImageView/ImageView';
-import { customTypes } from '../../core/CustomTypes';
-import Registry from '../../core/Registry';
-import { AnnotationMixin } from '../../mixins/AnnotationMixin';
-import { IsReadyWithDepsMixin } from '../../mixins/IsReadyMixin';
-import { BrushRegionModel } from '../../regions/BrushRegion';
-import { EllipseRegionModel } from '../../regions/EllipseRegion';
-import { KeyPointRegionModel } from '../../regions/KeyPointRegion';
-import { PolygonRegionModel } from '../../regions/PolygonRegion';
-import { RectRegionModel } from '../../regions/RectRegion';
-import * as Tools from '../../tools';
-import ToolsManager from '../../tools/Manager';
-import { parseValue } from '../../utils/data';
-import { FF_DEV_3377, FF_DEV_3666, FF_LSDV_4583, isFF } from '../../utils/feature-flags';
-import { guidGenerator } from '../../utils/unique';
-import { clamp } from '../../utils/utilities';
-import ObjectBase from './Base';
+import ImageView from '../../../components/ImageView/ImageView';
+import { customTypes } from '../../../core/CustomTypes';
+import Registry from '../../../core/Registry';
+import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
+import { IsReadyWithDepsMixin } from '../../../mixins/IsReadyMixin';
+import { BrushRegionModel } from '../../../regions/BrushRegion';
+import { EllipseRegionModel } from '../../../regions/EllipseRegion';
+import { KeyPointRegionModel } from '../../../regions/KeyPointRegion';
+import { PolygonRegionModel } from '../../../regions/PolygonRegion';
+import { RectRegionModel } from '../../../regions/RectRegion';
+import * as Tools from '../../../tools';
+import ToolsManager from '../../../tools/Manager';
+import { parseValue } from '../../../utils/data';
+import { FF_DEV_3377, FF_DEV_3666, FF_LSDV_4583, isFF } from '../../../utils/feature-flags';
+import { guidGenerator } from '../../../utils/unique';
+import { clamp, isDefined } from '../../../utils/utilities';
+import ObjectBase from '../Base';
+import { DrawingRegion } from './DrawingRegion';
+import { ImageEntityMixin } from './ImageEntityMixin';
+import { ImageSelection } from './ImageSelection';
 
 /**
  * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -105,150 +108,12 @@ const IMAGE_CONSTANTS = {
   ellipselabels: 'ellipselabels',
 };
 
-const DrawingRegion = types.union(
-  {
-    dispatcher(sn) {
-      if (!sn) return types.null;
-      // may be a tag itself or just its name
-      const objectName = sn.object.name || sn.object;
-      // we have to use current config to detect Object tag by name
-      const tag = window.Htx.annotationStore.names.get(objectName);
-      // provide value to detect Area by data
-      const available = Registry.getAvailableAreas(tag.type, sn);
-      // union of all available Areas for this Object type
-
-      return types.union(...available, types.null);
-    },
-  },
-);
-
-const ImageSelectionPoint = types.model({
-  x: types.number,
-  y: types.number,
-});
-const ImageSelection = types.model({
-  start: types.maybeNull(ImageSelectionPoint),
-  end: types.maybeNull(ImageSelectionPoint),
-}).views(self => {
-  return {
-    get obj() {
-      return getParent(self);
-    },
-    get annotation() {
-      return self.obj.annotation;
-    },
-    get highlightedNodeExists() {
-      return !!self.annotation.highlightedNode;
-    },
-    get isActive() {
-      return self.start && self.end;
-    },
-    get x() {
-      return Math.min((self.start.x * self.scale), (self.end.x * self.scale));
-    },
-    get y() {
-      return Math.min((self.start.y * self.scale), (self.end.y * self.scale));
-    },
-    get width() {
-      return Math.abs((self.end.x * self.scale) - (self.start.x * self.scale));
-    },
-    get height() {
-      return Math.abs((self.end.y * self.scale) - (self.start.y * self.scale));
-    },
-    get scale() {
-      return self.obj.zoomScale;
-    },
-    get bbox() {
-      const { start, end } = self;
-
-      return self.isActive ? {
-        left: Math.min(start.x, end.x),
-        top: Math.min(start.y, end.y),
-        right: Math.max(start.x, end.x),
-        bottom: Math.max(start.y, end.y),
-      } : null;
-    },
-    includesBbox(bbox) {
-      return self.isActive && bbox && self.bbox.left <= bbox.left && self.bbox.top <= bbox.top && self.bbox.right >= bbox.right && self.bbox.bottom >= bbox.bottom;
-    },
-    intersectsBbox(bbox) {
-      if (!self.isActive || !bbox) return false;
-      const selfCenterX = (self.bbox.left + self.bbox.right) / 2;
-      const selfCenterY = (self.bbox.top + self.bbox.bottom) / 2;
-      const selfWidth = self.bbox.right - self.bbox.left;
-      const selfHeight = self.bbox.bottom - self.bbox.top;
-      const targetCenterX = (bbox.left + bbox.right) / 2;
-      const targetCenterY = (bbox.top + bbox.bottom) / 2;
-      const targetWidth = bbox.right - bbox.left;
-      const targetHeight = bbox.bottom - bbox.top;
-
-      return (Math.abs(selfCenterX - targetCenterX) * 2 < (selfWidth + targetWidth)) &&
-        (Math.abs(selfCenterY - targetCenterY) * 2 < (selfHeight + targetHeight));
-    },
-    get selectionBorders() {
-      return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region) => {
-        return region.bboxCoords ? {
-          left: Math.min(borders.left, region.bboxCoords.left),
-          top: Math.min(borders.top,region.bboxCoords.top),
-          right: Math.max(borders.right, region.bboxCoords.right),
-          bottom: Math.max(borders.bottom, region.bboxCoords.bottom),
-        } : borders;
-      }, {
-        left: self.obj.stageWidth,
-        top: self.obj.stageHeight,
-        right: 0,
-        bottom: 0,
-      });
-    },
-  };
-}).actions(self => {
-  return {
-    setStart(point) {
-      self.start = point;
-    },
-    setEnd(point) {
-      self.end = point;
-    },
-  };
-});
-
 const Model = types.model({
   type: 'image',
 
   // tools: types.array(BaseTool),
 
-  rotation: types.optional(types.number, 0),
-
   sizeUpdated: types.optional(types.boolean, false),
-
-  /**
-   * Natural sizes of Image
-   * Constants
-   */
-  naturalWidth: types.optional(types.integer, 1),
-  naturalHeight: types.optional(types.integer, 1),
-
-  stageWidth: types.optional(types.number, 1),
-  stageHeight: types.optional(types.number, 1),
-
-  /**
-   * Zoom Scale
-   */
-  zoomScale: types.optional(types.number, 1),
-
-  /**
-   * Coordinates of left top corner
-   * Default: { x: 0, y: 0 }
-   */
-  zoomingPositionX: types.optional(types.number, 0),
-  zoomingPositionY: types.optional(types.number, 0),
-
-  /**
-   * Brightness of Canvas
-   */
-  brightnessGrade: types.optional(types.number, 100),
-
-  contrastGrade: types.optional(types.number, 100),
 
   /**
    * Cursor coordinates
@@ -276,18 +141,13 @@ const Model = types.model({
   selectionArea: types.optional(ImageSelection, { start: null, end: null }),
 }).volatile(() => ({
   currentImage: 0,
-  stageRatio: 1,
-  // Container's sizes causing limits to calculate a scale factor
-  containerWidth: 1,
-  containerHeight: 1,
-
-  stageZoom: 1,
-  stageZoomX: 1,
-  stageZoomY: 1,
-  currentZoom: 1,
 })).views(self => ({
   get store() {
     return getRoot(self);
+  },
+
+  get multiImage() {
+    return isFF(FF_LSDV_4583) && isDefined(self.valuelist);
   },
 
   get parsedValue() {
@@ -377,11 +237,16 @@ const Model = types.model({
   },
 
   get stageTranslate() {
+    const {
+      stageWidth: width,
+      stageHeight: height,
+    } = self;
+
     return {
       0: { x: 0, y: 0 },
-      90: { x: 0, y: self.stageHeight },
-      180: { x: self.stageWidth, y: self.stageHeight },
-      270: { x: self.stageWidth, y: 0 },
+      90: { x: 0, y: height },
+      180: { x: width, y: height },
+      270: { x: width, y: 0 },
     }[self.rotation];
   },
 
@@ -394,11 +259,28 @@ const Model = types.model({
   },
 
   get fillerHeight() {
-    if (self.isSideways) {
-      return `${self.naturalWidth / self.naturalHeight * 100}%`;
-    } else {
-      return `${self.naturalHeight / self.naturalWidth * 100}%`;
-    }
+    const { naturalWidth, naturalHeight } = self;
+
+    return self.isSideways
+      ? `${naturalWidth / naturalHeight * 100}%`
+      : `${naturalHeight / naturalWidth * 100}%`;
+  },
+
+  serializableValues(index) {
+    const imageEntity = self.multiImage
+      ? self.findImageEntity(index)
+      : self;
+
+    const value = {
+      original_width: imageEntity.naturalWidth,
+      original_height: imageEntity.naturalHeight,
+      rotation: imageEntity.rotation,
+    };
+
+    return {
+      item_index: index,
+      ...value,
+    };
   },
 
   /**
@@ -460,14 +342,22 @@ const Model = types.model({
   get canvasSize() {
     if (self.isSideways) {
       return {
-        width: isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoomX : Math.round(self.naturalHeight * self.stageZoomX),
-        height: isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoomY : Math.round(self.naturalWidth * self.stageZoomY),
+        width: isFF(FF_DEV_3377)
+          ? self.naturalHeight * self.stageZoomX
+          : Math.round(self.naturalHeight * self.stageZoomX),
+        height: isFF(FF_DEV_3377)
+          ? self.naturalWidth * self.stageZoomY
+          : Math.round(self.naturalWidth * self.stageZoomY),
       };
     }
 
     return {
-      width: isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoomX : Math.round(self.naturalWidth * self.stageZoomX),
-      height: isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoomY : Math.round(self.naturalHeight * self.stageZoomY),
+      width: isFF(FF_DEV_3377)
+        ? self.naturalWidth * self.stageZoomX
+        : Math.round(self.naturalWidth * self.stageZoomX),
+      height: isFF(FF_DEV_3377)
+        ? self.naturalHeight * self.stageZoomY
+        : Math.round(self.naturalHeight * self.stageZoomY),
     };
   },
 
@@ -533,6 +423,20 @@ const Model = types.model({
     const manager = ToolsManager.getInstance({ name: self.name });
     const env = { manager, control: self, object: self };
 
+    function afterCreate() {
+      if (self.multiImage) {
+        self.parsedValueList.forEach((src, index) => {
+          self.imageEntities.push({
+            id: `${self.name}#${index}`,
+            src,
+            index,
+          });
+        });
+
+        self.imageEntity = self.imageEntities.at(0);
+      }
+    }
+
     function afterAttach() {
       if (self.selectioncontrol)
         manager.addTool('MoveTool', Tools.Selection.create({}, env));
@@ -554,7 +458,11 @@ const Model = types.model({
       return manager;
     }
 
-    return { afterAttach, getToolsManager };
+    return {
+      afterAttach,
+      afterCreate,
+      getToolsManager,
+    };
   }).extend((self) => {
     let skipInteractions = false;
 
@@ -603,9 +511,11 @@ const Model = types.model({
         ...areaValue,
         results: [result],
         dynamic,
+        item_index: self.currentImage,
       };
 
       self.drawingRegion = areaRaw;
+      console.log(self.drawingRegion);
       return self.drawingRegion;
     },
 
@@ -654,6 +564,7 @@ const Model = types.model({
 
     setCurrentImage(i) {
       self.currentImage = i;
+      self.imageEntity = self.findImageEntity(i);
     },
 
     /**
@@ -669,7 +580,10 @@ const Model = types.model({
      * Set zoom
      */
     setZoom(scale) {
-      self.currentZoom = clamp(scale, 1, Infinity);
+      scale = clamp(scale, 1, Infinity);
+      self.currentZoom = scale;
+
+      console.log({ scale });
 
       // cool comment about all this stuff
       const maxScale = self.maxScale;
@@ -726,18 +640,26 @@ const Model = types.model({
     },
 
     setZoomPosition(x, y) {
-      const min = {
-        x: (isFF(FF_DEV_3377) ? self.canvasSize.width : self.containerWidth) - self.stageComponentSize.width * self.zoomScale,
-        y: (isFF(FF_DEV_3377) ? self.canvasSize.height : self.containerHeight) - self.stageComponentSize.height * self.zoomScale,
-      };
+      const [width, height] = isFF(FF_DEV_3377)
+        ? [self.canvasSize.width, self.canvasSize.height]
+        : [self.containerWidth, self.containerHeight];
 
-      self.zoomingPositionX = clamp(x, min.x, 0);
-      self.zoomingPositionY = clamp(y, min.y, 0);
+      const [minX, minY] = [
+        width - self.stageComponentSize.width * self.zoomScale,
+        height - self.stageComponentSize.height * self.zoomScale,
+      ];
+
+      self.zoomingPositionX = clamp(x, minX, 0);
+      self.zoomingPositionY = clamp(y, minY, 0);
     },
 
     resetZoomPositionToCenter() {
-      const { containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
+      const { stageComponentSize, zoomScale } = self;
       const { width, height } = stageComponentSize;
+
+      const [containerWidth, containerHeight] = isFF(FF_DEV_3377)
+        ? [self.canvasSize.width, self.canvasSize.height]
+        : [self.containerWidth, self.containerHeight];
 
       self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
     },
@@ -838,6 +760,7 @@ const Model = types.model({
 
     rotate(degree = -90) {
       self.rotation = (self.rotation + degree + 360) % 360;
+
       let ratioK = 1 / self.stageRatio;
 
       if (self.isSideways) {
@@ -923,11 +846,12 @@ const Model = types.model({
     },
 
     updateImageSize(ev) {
-      const { naturalWidth, naturalHeight } = ev.target;
+      const { naturalWidth, naturalHeight } = self.imageRef ?? ev.target;
       const { offsetWidth, offsetHeight } = self.containerRef;
 
       self.naturalWidth = naturalWidth;
       self.naturalHeight = naturalHeight;
+
       self._updateImageSize({ width: offsetWidth, height: offsetHeight });
       // after regions' sizes adjustment we have to reset all saved history changes
       // mobx do some batch update here, so we have to reset it asynchronously
@@ -1045,7 +969,15 @@ const Model = types.model({
     },
   }));
 
-const ImageModel = types.compose('ImageModel', TagAttrs, ObjectBase, AnnotationMixin, IsReadyWithDepsMixin, Model);
+const ImageModel = types.compose(
+  'ImageModel',
+  TagAttrs,
+  ObjectBase,
+  AnnotationMixin,
+  IsReadyWithDepsMixin,
+  ImageEntityMixin,
+  Model,
+);
 
 const HtxImage = inject('store')(ImageView);
 

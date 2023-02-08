@@ -128,11 +128,9 @@ const DrawingTool = types
 
         const areaValue = currentArea.results[0].value.toJSON();
 
-        console.log({ value, areaValue });
-
         const newArea = self.annotation.createResult(value, areaValue, control, obj);
 
-        console.log({ newArea });
+        if (obj.multiImage) newArea.setItemIndex?.(currentArea.item_index);
 
         currentArea.setDrawing(false);
         self.applyActiveStates(newArea);

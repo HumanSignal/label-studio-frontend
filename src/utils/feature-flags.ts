@@ -155,6 +155,7 @@ function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
     [FF_LSDV_4583]: true,
+    [FF_DEV_3377]: true,
   };
 }
 

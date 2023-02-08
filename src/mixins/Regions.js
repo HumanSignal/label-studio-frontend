@@ -74,6 +74,10 @@ const RegionsMixin = types
       return true;
     },
 
+    get imageEntity() {
+      return self.parent.findImageEntity(self.item_index);
+    },
+
     getConnectedDynamicRegions(selfExcluding) {
       const { regions = [] } = getRoot(self).annotationStore?.selected || {};
 
@@ -96,6 +100,10 @@ const RegionsMixin = types
 
       setShapeRef(ref) {
         self.shapeRef = ref;
+      },
+
+      setItemIndex(index) {
+        self.item_index = index;
       },
 
       beforeDestroy() {
@@ -136,8 +144,8 @@ const RegionsMixin = types
         degree = (360 + degree) % 360;
         // transform origin is (w/2, w/2) for ccw rotation
         // (h/2, h/2) for cw rotation
-        const w = self.parent.stageWidth;
-        const h = self.parent.stageHeight;
+        const w = self.imageEntity.stageWidth;
+        const h = self.imageEntity.stageHeight;
         // actions: translate to fit origin, rotate, translate back
         //   const shift = size / 2;
         //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
@@ -157,19 +165,19 @@ const RegionsMixin = types
       },
 
       convertXToPerc(x) {
-        return (x * 100) / self.parent.stageWidth;
+        return (x * 100) / self.imageEntity.stageWidth;
       },
 
       convertYToPerc(y) {
-        return (y * 100) / self.parent.stageHeight;
+        return (y * 100) / self.imageEntity.stageHeight;
       },
 
       convertHDimensionToPerc(hd) {
-        return (hd * (self.scaleX || 1) * 100) / self.parent.stageWidth;
+        return (hd * (self.scaleX || 1) * 100) / self.imageEntity.stageWidth;
       },
 
       convertVDimensionToPerc(vd) {
-        return (vd * (self.scaleY || 1) * 100) / self.parent.stageHeight;
+        return (vd * (self.scaleY || 1) * 100) / self.imageEntity.stageHeight;
       },
 
       // update region appearence based on it's current states, for

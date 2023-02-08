@@ -10,6 +10,7 @@
                     "source": "$image",
                     "to_name": "img",
                     "type": "rectanglelabels",
+                    "item_index": 0,
                     "value": {
                         "height": 10.458911419423693,
                         "rectanglelabels": [

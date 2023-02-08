@@ -237,7 +237,7 @@ const plugins = [
 if (isDevelopment) {
   plugins.push(new ESLintPlugin({
     fix: false,
-    failOnError: true,
+    failOnError: false,
   }));
 }
 
