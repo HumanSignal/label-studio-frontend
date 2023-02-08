@@ -75,7 +75,7 @@ const RegionsMixin = types
     },
 
     get imageEntity() {
-      return self.parent.findImageEntity(self.item_index);
+      return self.parent.findImageEntity(self.item_index ?? 0);
     },
 
     getConnectedDynamicRegions(selfExcluding) {

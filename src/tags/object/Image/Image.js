@@ -161,14 +161,7 @@ const Model = types.model({
   },
 
   get currentSrc() {
-    if (isFF(FF_LSDV_4583) && self.valuelist) {
-      return self.parsedValueList[self.currentImage];
-    }
-
-    const value = self.parsedValue;
-
-    if (Array.isArray(value)) return value[self.currentImage];
-    return value;
+    return self.imageEntity.src;
   },
 
   get images() {
@@ -424,17 +417,27 @@ const Model = types.model({
     const env = { manager, control: self, object: self };
 
     function afterCreate() {
-      if (self.multiImage) {
-        self.parsedValueList.forEach((src, index) => {
+      const parsedValue = self.multiImage
+        ? self.parsedValueList
+        : self.parsedValue;
+
+      if (Array.isArray(parsedValue)) {
+        parsedValue.forEach((src, index) => {
           self.imageEntities.push({
             id: `${self.name}#${index}`,
             src,
             index,
           });
         });
-
-        self.imageEntity = self.imageEntities.at(0);
+      } else {
+        self.imageEntities.push({
+          id: `${self.name}#0`,
+          src: parsedValue,
+          index: 0,
+        });
       }
+
+      self.imageEntity = self.imageEntities.at(0);
     }
 
     function afterAttach() {

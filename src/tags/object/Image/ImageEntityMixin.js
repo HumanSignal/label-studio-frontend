@@ -127,7 +127,6 @@ export const ImageEntityMixin = types
       self.imageEntity.setContrastGrade(value);
     },
 
-
     findImageEntity(index) {
       return self.imageEntities.find(imageEntity => imageEntity.index === index);
     },
