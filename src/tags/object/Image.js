@@ -313,13 +313,11 @@ const Model = types.model({
   },
 
   get parsedValue() {
-    return self._parsedValue = self._parsedValue ?? parseValue(self.value, self.store.task.dataObj);
+    return parseValue(self.value, self.store.task.dataObj);
   },
 
   get parsedValueList() {
-    return self._parsedValueList = self.valuelist
-      ? self._parsedValueList ?? parseValue(self.valuelist, self.store.task.dataObj)
-      : [];
+    return parseValue(self.valuelist, self.store.task.dataObj);
   },
 
   get currentSrc() {
