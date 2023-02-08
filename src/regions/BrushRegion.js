@@ -386,9 +386,7 @@ const Model = types
         }
 
         const res = {
-          original_width: object.naturalWidth,
-          original_height: object.naturalHeight,
-          image_rotation: object.rotation,
+          ...self.parent.serializableValues(self.item_index),
           value,
         };
 

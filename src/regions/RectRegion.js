@@ -294,7 +294,6 @@ const Model = types
      * @return {RectRegionResult}
      */
     serialize() {
-      console.log({ self });
       return {
         ...self.parent.serializableValues(self.item_index),
         value: {

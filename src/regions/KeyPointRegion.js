@@ -131,9 +131,7 @@ const Model = types
      */
     serialize() {
       const result = {
-        original_width: self.parent.naturalWidth,
-        original_height: self.parent.naturalHeight,
-        image_rotation: self.parent.rotation,
+        ...self.parent.serializableValues(self.item_index),
         value: {
           x: self.convertXToPerc(self.x),
           y: self.convertYToPerc(self.y),

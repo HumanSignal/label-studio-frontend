@@ -267,7 +267,7 @@ const Model = types.model({
     const value = {
       original_width: imageEntity.naturalWidth,
       original_height: imageEntity.naturalHeight,
-      rotation: imageEntity.rotation,
+      image_rotation: imageEntity.rotation,
     };
 
     if (self.multiImage && isDefined(index)) {
