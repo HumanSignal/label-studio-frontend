@@ -671,6 +671,10 @@ export default types
 
       as.clearHistory();
 
+      // always check that history is for correct and submitted annotation
+      if (!history.length || !as.selected?.pk) return;
+      if (Number(as.selected.pk) !== Number(history[0].annotation_id)) return;
+
       (history ?? []).forEach(item => {
         const obj = as.addHistory(item);
 
