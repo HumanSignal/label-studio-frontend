@@ -657,7 +657,7 @@ export default observer(
       const message = getEnv(store).messages.ERR_LOADING_HTTP({
         attr: item.value,
         error: '',
-        url: item._value,
+        url: item.currentSrc,
       });
 
       cs.addErrors([errorBuilder.generalError(message)]);
