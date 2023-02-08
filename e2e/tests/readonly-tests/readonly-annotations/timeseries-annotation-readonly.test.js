@@ -10,7 +10,7 @@ Data(imageExamples).Scenario('Timeseries Readonly Annotations', async ({
   LabelStudio,
   AtSidebar,
   AtLabels,
-  LSFTools,
+  Tools,
 }) => {
   I.amOnPage('/');
   const { config, result, data } = current.example;
@@ -42,7 +42,7 @@ Data(imageExamples).Scenario('Timeseries Readonly Annotations', async ({
   I.pressKey('Backspace');
   await LabelStudio.resultsNotChanged(result);
 
-  const wrapperPosition = await LSFTools.getElementPosition('.htx-timeseries-channel');
+  const wrapperPosition = await Tools.getElementPosition('.htx-timeseries-channel');
 
   AtLabels.clickLabel('Run');
 
