@@ -270,8 +270,11 @@ const Model = types.model({
       rotation: imageEntity.rotation,
     };
 
+    if (self.multiImage && isDefined(index)) {
+      value.item_index = index;
+    }
+
     return {
-      item_index: index,
       ...value,
     };
   },
