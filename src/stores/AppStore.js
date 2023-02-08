@@ -738,7 +738,7 @@ export default types
     }
 
     function prevTask(e, shouldGoBack = false) {
-      const length = !shouldGoBack ? self.taskHistory.findIndex((x) => x.taskId === self.task.id) - 1 : self.taskHistory.length - 1;
+      const length = shouldGoBack ? self.taskHistory.length - 1 : self.taskHistory.findIndex((x) => x.taskId === self.task.id) - 1;
 
       if (self.canGoPrevTask || shouldGoBack) {
         const { taskId, annotationId } = self.taskHistory[length];
