@@ -34,6 +34,28 @@ import { ImageSelection } from './ImageSelection';
  *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
  *   <Image name="image" value="$url" rotateControl="true" zoomControl="true"></Image>
  * </View>
+ *  * @example
+ * <!--Labeling configuration to perform multi-image segmentation-->
+ *
+ * Config:
+ * ```xml
+ * <View>
+ *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
+ *   <Image name="image" valueList="$images" rotateControl="true" zoomControl="true"></Image>
+ * </View>
+ * ```
+ *
+ * Data:
+ * ```json
+ * {
+ *   "data": {
+ *     "images": [
+ *       "https://images.unsplash.com/photo-1556740734-7f3a7d7f0f9c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
+ *       "https://images.unsplash.com/photo-1556740734-7f3a7d7f0f9c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
+ *     ]
+ *   }
+ * }
+ * ```
  * @name Image
  * @meta_title Image Tags for Images
  * @meta_description Customize Label Studio with the Image tag to annotate images for computer vision machine learning and data science projects.
@@ -56,7 +78,7 @@ import { ImageSelection } from './ImageSelection';
  * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
  * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
  * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
- * @param {string[]} [valuelist]              - List of image urls
+ * @param {string} [valuelist]                  - References a variable that holds a list of image URLs
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
@@ -151,13 +173,11 @@ const Model = types.model({
   },
 
   get parsedValue() {
-    return self._parsedValue = self._parsedValue ?? parseValue(self.value, self.store.task.dataObj);
+    return parseValue(self.value, self.store.task.dataObj);
   },
 
   get parsedValueList() {
-    return self._parsedValueList = self.valuelist
-      ? self._parsedValueList ?? parseValue(self.valuelist, self.store.task.dataObj)
-      : [];
+    return parseValue(self.valuelist, self.store.task.dataObj);
   },
 
   get currentSrc() {
