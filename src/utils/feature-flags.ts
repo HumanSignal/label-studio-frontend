@@ -158,7 +158,7 @@ export const FF_DEV_4075 = 'fflag_fix_front_dev_4075_taxonomy_overlap_281222_sho
 /**
  * Fix logic of namespaces inside Hotkeys
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
-  */
+ */
 export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short';
 
 function getFeatureFlags() {
