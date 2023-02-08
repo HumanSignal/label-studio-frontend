@@ -7,6 +7,7 @@ import { LsChevron } from '../../assets/icons';
 import TreeStructure from '../TreeStructure/TreeStructure';
 
 import styles from './Taxonomy.module.scss';
+import { FF_DEV_4075, isFF } from '../../utils/feature-flags';
 
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
@@ -213,8 +214,13 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth, is
     <div ref={itemContainer} style={{ paddingLeft: padding, maxWidth, ...style, width: 'fit-content' }}>
       {!isAddingItem ? (
         <>
-          <div className={styles.taxonomy__measure}>
+          <div className={[styles.taxonomy__measure, isFF(FF_DEV_4075) ? styles.taxonomy__measure_ff_dev4075 : false].filter(Boolean).join(' ')}>
             <label>{name}</label>
+            {isFF(FF_DEV_4075) && !isFiltering && (
+              <div className={styles.taxonomy__extra}>
+                <span className={styles.taxonomy__extra_count}>{childCount}</span>
+              </div>
+            )}
           </div>
           <div className={[styles.taxonomy__item, customClassname].join(' ')}>
             <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
@@ -235,7 +241,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth, is
             />
             <label
               htmlFor={id}
-              style={{ maxWidth: `${labelMaxWidth}px` }}
+              style={isFF(FF_DEV_4075) ? {} : { maxWidth: `${labelMaxWidth}px` }}
               onClick={isEditable ? onClick : undefined}
               title={title}
               className={disabled ? styles.taxonomy__collapsable : undefined}
