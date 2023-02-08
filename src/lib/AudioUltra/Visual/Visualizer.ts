@@ -158,7 +158,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   async updateChannels(callback?: () => void) {
-    for(const channel of this.channels) {
+    for (const channel of this.channels) {
       if (!channel) continue;
       await channel.recalculate();
     }
@@ -469,7 +469,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     return this.width * this.zoom;
   }
 
-  get container(){
+  get container() {
     if (this._container) return this._container;
 
     let result: HTMLElement | null = null;
@@ -510,7 +510,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.createLayer({ name: 'main' });
     this.createLayer({ name: 'background', offscreen: true, zIndex: 0, isVisible: false });
     this.createLayer({ name: 'waveform', offscreen: true, zIndex: 100 });
-    this.createLayerGroup({ name: 'regions', offscreen: true, zIndex: 101, opacity: 0.5, compositeOperation: 'source-over' });
+    this.createLayerGroup({ name: 'regions', offscreen: true, zIndex: 101, compositeOperation: 'source-over' });
     const controlsLayer = this.createLayer({ name: 'controls', offscreen: true, zIndex: 1000 });
 
     this.playhead.setLayer(controlsLayer);
@@ -599,7 +599,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     if (!this.layers.has(name)) throw new Error(`Layer ${name} does not exist.`);
     const layer = this.layers.get(name);
 
-    if(layer) {
+    if (layer) {
       this.invoke('layerRemoved', [layer]);
       layer.off('layerUpdated', this.invokeLayersUpdated);
       layer.remove();
@@ -684,7 +684,7 @@ export class Visualizer extends Events<VisualizerEvents> {
         x <= (playhead.x + playhead.width + playheadPadding) &&
           y >= playHeadTop &&
           y <= height) {
-        if(!playhead.isHovered) {
+        if (!playhead.isHovered) {
           playhead.invoke('mouseEnter', [e]);
         }
         this.draw(true);

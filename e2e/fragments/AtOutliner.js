@@ -5,6 +5,7 @@ module.exports = {
   _rootSelector: '.lsf-outliner',
   _regionListSelector: '.lsf-outliner-tree',
   _regionListItemSelector: '.lsf-tree__node',
+  _regionListItemSelectedSelector: '.lsf-tree-node-selected',
   _regionListItemIndex: '.lsf-outliner-item__index',
   locateOutliner() {
     return locate(this._rootSelector);
@@ -27,5 +28,11 @@ module.exports = {
   },
   clickRegion(idx) {
     I.click(this.locateRegionItemIndex(idx));
+  },
+  seeSelectedRegion() {
+    I.seeElement(locate(this._regionListItemSelectedSelector).inside(this.locateRegionList()));
+  },
+  dontSeeSelectedRegion() {
+    I.dontSeeElement(locate(this._regionListItemSelectedSelector).inside(this.locateRegionList()));
   },
 };

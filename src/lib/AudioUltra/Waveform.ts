@@ -277,7 +277,7 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   scrollToRegion(time: number) {
-    if(this.zoom === 1) return;
+    if (this.zoom === 1) return;
 
     const offset = (this.visualizer.width / 2) / this.visualizer.zoomedWidth;
 
@@ -347,6 +347,10 @@ export class Waveform extends Events<WaveformEventTypes> {
 
   updateRegion(options: RegionOptions, render = true) {
     return this.regions.updateRegion(options, render);
+  }
+
+  updateLabelVisibility(visible: boolean) {
+    this.regions.updateLabelVisibility(visible);
   }
 
   removeRegion(regionId: string, render = true) {

@@ -168,7 +168,7 @@ const Model = types
         data = { ...data, [self.keyColumn]: indices };
 
         // Require a timeformat for non numeric values
-      } else if(!self.timeformat && isNaN(data[self.keyColumn][0])) {
+      } else if (!self.timeformat && isNaN(data[self.keyColumn][0])) {
         const message = [
           `Looks like your <b>timeColumn</b> (${self.timecolumn}) contains non-numbers.`,
           'You have to use <b>timeFormat</b> parameter if your values are datetimes.',
@@ -614,6 +614,17 @@ const Overview = observer(({ item, data, series }) => {
   const defaultSelection = [0, width >> 2];
   const prevBrush = React.useRef(defaultSelection);
   const MIN_OVERVIEW = 10;
+  let startX;
+
+  function brushstarted() {
+    const [x1, x2] = d3.event.selection;
+
+    if (x1 === x2) {
+      startX = x1;
+    } else {
+      startX = null;
+    }
+  }
 
   function brushed() {
     if (d3.event.selection && !checkD3EventLoop('brush') && !checkD3EventLoop('wheel')) {
@@ -636,11 +647,31 @@ const Overview = observer(({ item, data, series }) => {
         end = mid + item.zoomedRange / 2;
         // if overview was resized
       } else if (overviewWidth < MIN_OVERVIEW) {
+        if (prev[0] !== x1 && prev[1] !== x2) {
+          if (prev[0] === x2 || prev[1] === x1) {
+            // This may happen after sides swap
+            // so we swap prev as well
+            [prev[0], prev[1]] = [prev[1], prev[0]];
+          } else {
+            // This may happen at begining when range was not enough wide yet
+            if (x1 === startX) {
+              x2 = Math.min(width, x1 + MIN_OVERVIEW);
+              x1 = Math.max(0, x2 - MIN_OVERVIEW);
+            } else {
+              x1 = Math.max(0, x2 - MIN_OVERVIEW);
+              x2 = Math.min(width, x1 + MIN_OVERVIEW);
+            }
+          }
+        }
         if (prev[0] === x1) {
           x2 = Math.min(width, x1 + MIN_OVERVIEW);
+          x1 = Math.max(0, x2 - MIN_OVERVIEW);
         } else if (prev[1] === x2) {
           x1 = Math.max(0, x2 - MIN_OVERVIEW);
+          x2 = Math.min(width, x1 + MIN_OVERVIEW);
         }
+        start = +x.invert(x1);
+        end = +x.invert(x2);
         // change the data range, but keep min-width for overview
         gb.current.call(brush.move, [x1, x2]);
       }
@@ -669,6 +700,7 @@ const Overview = observer(({ item, data, series }) => {
       [0, 0],
       [width, focusHeight],
     ])
+    .on('start', brushstarted)
     .on('brush', brushed)
     .on('end', brushended);
 

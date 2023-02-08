@@ -7,6 +7,7 @@ import { LsChevron } from '../../assets/icons';
 import TreeStructure from '../TreeStructure/TreeStructure';
 
 import styles from './Taxonomy.module.scss';
+import { FF_DEV_4075, isFF } from '../../utils/feature-flags';
 
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
@@ -134,7 +135,7 @@ const SelectedList = ({ isEditable, flatItems } : { isEditable: boolean, flatIte
           <span>{showFullPath ? path.join(pathSeparator) : path[path.length - 1]}</span>
           {isEditable ? (
             <input type="button" onClick={() => setSelected(selected[index], false)} value="×" />
-          ): null}
+          ) : null}
         </div>
       ))}
     </div>
@@ -213,8 +214,13 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth, is
     <div ref={itemContainer} style={{ paddingLeft: padding, maxWidth, ...style, width: 'fit-content' }}>
       {!isAddingItem ? (
         <>
-          <div className={styles.taxonomy__measure}>
+          <div className={[styles.taxonomy__measure, isFF(FF_DEV_4075) ? styles.taxonomy__measure_ff_dev4075 : false].filter(Boolean).join(' ')}>
             <label>{name}</label>
+            {isFF(FF_DEV_4075) && !isFiltering && (
+              <div className={styles.taxonomy__extra}>
+                <span className={styles.taxonomy__extra_count}>{childCount}</span>
+              </div>
+            )}
           </div>
           <div className={[styles.taxonomy__item, customClassname].join(' ')}>
             <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
@@ -235,7 +241,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth, is
             />
             <label
               htmlFor={id}
-              style={{ maxWidth: `${labelMaxWidth}px` }}
+              style={isFF(FF_DEV_4075) ? {} : { maxWidth: `${labelMaxWidth}px` }}
               onClick={isEditable ? onClick : undefined}
               title={title}
               className={disabled ? styles.taxonomy__collapsable : undefined}
@@ -297,7 +303,7 @@ const filterTreeByPredicate = (flatten: TaxonomyItem[], predicate: (item: Taxono
   const childs: TaxonomyItem[][] = [];
   let d = -1;
 
-  for (let i = flatten.length; i--; ) {
+  for (let i = flatten.length; i--;) {
     const item = flatten[i];
 
     if (item.depth === d) {
@@ -406,7 +412,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef, isEditable }: Tax
             <div className={styles.taxonomy__add}>
               <button onClick={addInside}>Add</button>
             </div>
-          ): null}
+          ) : null}
         </div>
       )}
     </div>
@@ -469,7 +475,7 @@ const Taxonomy = ({
   const onKeyDown = useCallback(e => {
     const taxonomyList: NodeListOf<HTMLElement> | undefined = taxonomyRef.current?.querySelectorAll('.item');
     const searchInput = taxonomyRef.current?.querySelector('input');
-    const focusedElement: HTMLInputElement | Element | any  = document.activeElement || undefined;
+    const focusedElement: HTMLInputElement | Element | any = document.activeElement || undefined;
     const taxonomyHasItems = taxonomyList && taxonomyList.length > 0;
     const index = (taxonomyList && focusedElement)
       ? Array.from(taxonomyList).findIndex((taxonomyItem => taxonomyItem.id === focusedElement.id))

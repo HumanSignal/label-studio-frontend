@@ -5,7 +5,6 @@ import { AreaMixin } from '../mixins/AreaMixin';
 import { HighlightMixin } from '../mixins/HighlightMixin';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import WithStatesMixin from '../mixins/WithStates';
 import { RichTextModel } from '../tags/object/RichText/model';
 import { findRangeNative, rangeToGlobalOffset } from '../utils/selection-tools';
 import { isDefined } from '../utils/utilities';
@@ -54,9 +53,9 @@ const Model = types
   }))
   .actions(self => ({
     beforeDestroy() {
-      try{
+      try {
         self.removeHighlight();
-      } catch(e) {
+      } catch (e) {
         console.warn(e);
       }
     },
@@ -89,7 +88,7 @@ const Model = types
             ...xpathRange,
             globalOffsets: self.globalOffsets.serialized,
           });
-        } catch(e) {
+        } catch (e) {
           // regions may be broken, so they don't have globalOffsets
           // or they can't be applied on current html, so just keep them untouched
           const { start, end, startOffset, endOffset } = self;
@@ -273,7 +272,6 @@ const Model = types
 
 const RichTextRegionModel = types.compose(
   'RichTextRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
