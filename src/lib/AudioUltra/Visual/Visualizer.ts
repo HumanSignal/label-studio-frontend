@@ -510,7 +510,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.createLayer({ name: 'main' });
     this.createLayer({ name: 'background', offscreen: true, zIndex: 0, isVisible: false });
     this.createLayer({ name: 'waveform', offscreen: true, zIndex: 100 });
-    this.createLayerGroup({ name: 'regions', offscreen: true, zIndex: 101, opacity: 0.5, compositeOperation: 'source-over' });
+    this.createLayerGroup({ name: 'regions', offscreen: true, zIndex: 101, compositeOperation: 'source-over' });
     const controlsLayer = this.createLayer({ name: 'controls', offscreen: true, zIndex: 1000 });
 
     this.playhead.setLayer(controlsLayer);
