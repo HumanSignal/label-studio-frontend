@@ -501,6 +501,12 @@ const Model = types.model({
       //self.annotation.history.freeze();
     },
 
+    afterRegionSelected(region) {
+      if (self.multiImage) {
+        self.setCurrentImage(region.item_index);
+      }
+    },
+
     createDrawingRegion(areaValue, resultValue, control, dynamic) {
       const controlTag = self.annotation.names.get(control.name);
 
