@@ -7,6 +7,17 @@ module.exports = {
   _stageSelector: '.konvajs-content',
   _stageBBox: null,
 
+  _toolBarSelector: '.lsf-toolbar',
+  _zoomPresetsSelector: '[title^="Zoom presets"]',
+
+  percToX(xPerc) {
+    return this._stageBBox.width * xPerc / 100;
+  },
+
+  percToY(yPerc) {
+    return this._stageBBox.height * yPerc / 100;
+  },
+
   async grabStageBBox() {
     const bbox = await I.grabElementBoundingRect(this._stageSelector);
 
@@ -171,7 +182,7 @@ module.exports = {
   /**
    * Mousedown - mousemove - mouseup drawing on the ImageView. Works in couple of lookForStage.
    * @example
-   * async AtImageView.lookForStage();
+   * await  AtImageView.lookForStage();
    * AtImageView.drawByDrag(50, 30, 200, 200);
    * @param x
    * @param y
@@ -188,7 +199,7 @@ module.exports = {
   /**
    * Click through the list of points on the ImageView. Works in couple of lookForStage.
    * @example
-   * async AtImageView.loolookkForStage();
+   * await  AtImageView.loolookkForStage();
    * AtImageView.drawByClickingPoints([[50,50],[100,50],[100,100],[50,100],[50,50]]);
    * @param {number[][]} points
    */
@@ -210,7 +221,7 @@ module.exports = {
   /**
    * Mousedown - mousemove - mouseup drawing through the list of points on the ImageView. Works in couple of lookForStage.
    * @example
-   * async AtImageView.lookForStage();
+   * await  AtImageView.lookForStage();
    * AtImageView.drawThroughPoints([[50,50],[200,100],[50,200],[300,300]]);
    * @param {number[][]} points - list of pairs of coords
    * @param {"steps"|"rate"} mode - mode of firing mousemove event
@@ -260,5 +271,15 @@ module.exports = {
       x: position.x + shiftX,
       y: position.y + shiftY,
     });
+  },
+
+  selectPanTool() {
+    I.say('Select pan tool');
+    I.pressKey('H');
+  },
+
+  selectMoveTool() {
+    I.say('Select move tool');
+    I.pressKey('V');
   },
 };

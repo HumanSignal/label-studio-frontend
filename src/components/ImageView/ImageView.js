@@ -1,7 +1,7 @@
 import React, { Component, createRef, forwardRef, Fragment, memo, useEffect, useRef, useState } from 'react';
 import { Group, Layer, Line, Rect, Stage } from 'react-konva';
 import { observer } from 'mobx-react';
-import { getRoot, isAlive } from 'mobx-state-tree';
+import { getEnv, getRoot, isAlive } from 'mobx-state-tree';
 
 import ImageGrid from '../ImageGrid/ImageGrid';
 import ImageTransformer from '../ImageTransformer/ImageTransformer';
@@ -9,7 +9,6 @@ import ObjectTag from '../../components/Tags/Object';
 import Tree from '../../core/Tree';
 import styles from './ImageView.module.scss';
 import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
-import messages from '../../utils/messages';
 import { chunks, findClosestParent } from '../../utils/utilities';
 import Konva from 'konva';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -201,7 +200,7 @@ const TransformerBack = observer(({ item }) => {
           id={TRANSFORMER_BACK_ID}
           fill="rgba(0,0,0,0)"
           draggable
-          onClick={()=>{
+          onClick={() => {
             item.annotation.unselectAreas();
           }}
           onMouseOver={(ev) => {
@@ -212,7 +211,7 @@ const TransformerBack = observer(({ item }) => {
           onMouseOut={(ev) => {
             ev.target.getStage().container().style.cursor = Constants.DEFAULT_CURSOR;
           }}
-          onDragStart={e=>{
+          onDragStart={e => {
             dragStartPointRef.current = {
               x: e.target.getAttr('x'),
               y: e.target.getAttr('y'),
@@ -220,18 +219,18 @@ const TransformerBack = observer(({ item }) => {
           }}
           dragBoundFunc={(pos) => {
             let { x, y } = pos;
-            const { top, left, right, bottom } =  item.selectedRegionsBBox;
+            const { top, left, right, bottom } = item.selectedRegionsBBox;
             const { stageHeight, stageWidth } = item;
 
             const offset = {
-              x: dragStartPointRef.current.x-left,
-              y: dragStartPointRef.current.y-top,
+              x: dragStartPointRef.current.x - left,
+              y: dragStartPointRef.current.y - top,
             };
 
-            x -=offset.x;
-            y -=offset.y;
+            x -= offset.x;
+            y -= offset.y;
 
-            const bbox = { x, y, width: right - left, height: bottom  - top };
+            const bbox = { x, y, width: right - left, height: bottom - top };
 
             const fixed = fixRectToFit(bbox, stageWidth, stageHeight);
 
@@ -243,8 +242,8 @@ const TransformerBack = observer(({ item }) => {
               y += (fixed.height - bbox.height) * (fixed.y !== bbox.y ? -1 : 1);
             }
 
-            x +=offset.x;
-            y +=offset.y;
+            x += offset.x;
+            y += offset.y;
             return { x, y };
           }}
         />
@@ -296,7 +295,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
 
   const handleKey = (e) => setShift(e.shiftKey);
 
-  useEffect(()=>{
+  useEffect(() => {
     window.addEventListener('keydown', handleKey);
     window.addEventListener('keyup', handleKey);
     window.addEventListener('mousedown', dragHandler);
@@ -656,7 +655,7 @@ export default observer(
     handleError = () => {
       const { item, store } = this.props;
       const cs = store.annotationStore;
-      const message = messages.ERR_LOADING_HTTP({ attr: item.value, error: '', url: item._value });
+      const message = getEnv(store).messages.ERR_LOADING_HTTP({ attr: item.value, error: '', url: item._value });
 
       cs.addErrors([errorBuilder.generalError(message)]);
     };
@@ -823,11 +822,11 @@ export default observer(
         containerStyle['height'] = item.height;
       }
 
-      if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1){
+      if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1) {
         containerStyle['imageRendering'] = 'pixelated';
       }
 
-      const imagePositionClassnames =  [
+      const imagePositionClassnames = [
         styles['image_position'],
         styles[`image_position__${item.verticalalignment === 'center' ? 'middle' : item.verticalalignment}`],
         styles[`image_position__${item.horizontalalignment}`],

@@ -11,7 +11,6 @@ import { AreaMixin } from '../mixins/AreaMixin';
 import { KonvaRegionMixin } from '../mixins/KonvaRegion';
 import { default as DisabledMixin, default as NormalizationMixin } from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import WithStatesMixin from '../mixins/WithStates';
 import { ImageModel } from '../tags/object/Image';
 import { rotateBboxCoords } from '../utils/bboxCoords';
 import { createDragBoundFunc } from '../utils/image';
@@ -92,7 +91,7 @@ const Model = types
       return self.object;
     },
     get bboxCoords() {
-      const bboxCoords= {
+      const bboxCoords = {
         left: self.x,
         top: self.y,
         right: self.x + self.width,
@@ -108,7 +107,7 @@ const Model = types
       self.startX = self.x;
       self.startY = self.y;
 
-      switch (self.coordstype)  {
+      switch (self.coordstype) {
         case 'perc': {
           self.relativeX = self.x;
           self.relativeY = self.y;
@@ -151,8 +150,8 @@ const Model = types
       return Math.abs(h);
     },
 
-    isAboveTheLine(a, b, c){
-      return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) < 0;
+    isAboveTheLine(a, b, c) {
+      return ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) < 0;
     },
 
     draw(x, y, points) {
@@ -160,7 +159,7 @@ const Model = types
 
       if (points.length === 1) {
         self.width = self.getDistanceBetweenPoints({ x, y }, self);
-        self.rotation = self.rotationAtCreation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
+        self.rotation = self.rotationAtCreation = Math.atan2(y - self.y, x - self.x) * (180 / Math.PI);
       } else if (points.length === 2) {
         const { y: firstPointY, x: firstPointX } = points[0];
         const { y: secondPointY, x: secondPointX } = points[1];
@@ -312,7 +311,6 @@ const Model = types
 
 const RectRegionModel = types.compose(
   'RectRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   NormalizationMixin,
   DisabledMixin,

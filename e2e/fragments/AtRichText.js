@@ -3,24 +3,12 @@ const Helpers = require('../tests/helpers');
 
 module.exports = {
   _rootSelector: '.lsf-htx-richtext',
-  async selectTextByGlobalOffset(startOffset, endOffset) {
-    const coords = await I.executeScript(Helpers.getSelectionCoordinates, {
-      selector: '.lsf-htx-richtext',
+  selectTextByGlobalOffset(startOffset, endOffset) {
+    I.executeScript(Helpers.selectText, {
+      selector: this._rootSelector,
       rangeStart: startOffset,
       rangeEnd: endOffset,
     });
-
-    const start = {
-      x: coords[0].x,
-      y: coords[0].y + coords[0].height / 2,
-    };
-
-    const end = {
-      x: coords[1].x,
-      y: coords[1].y + coords[1].height / 2,
-    };
-
-    await I.dragAndDropMouse(start, end);
   },
   setSelection(startLocator, startOffset, endLocator, endOffset) {
     I.setSelection(startLocator, startOffset, endLocator, endOffset);

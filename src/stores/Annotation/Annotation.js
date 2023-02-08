@@ -313,7 +313,7 @@ export const Annotation = types
 
     updatePersonalKey(value) {
       self.pk = value;
-      getRoot(self).addAnnotationToTaskHistory(self.pk);
+      getRoot(self).addAnnotationToTaskHistory?.(self.pk);
     },
 
     toggleVisibility(visible) {
@@ -871,7 +871,7 @@ export const Annotation = types
       const prevSize = self.regionStore.regions.length;
 
       // Generate new ids to prevent collisions
-      results.forEach((result)=>{
+      results.forEach((result) => {
         const regionId = result.id;
 
         if (!regionIdMap[regionId]) {

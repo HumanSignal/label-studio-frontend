@@ -115,6 +115,11 @@
   display: flex;
   padding-left: 43px;
   padding-right: 60px;
+
+  &.taxonomy__measure_ff_dev4075 {
+    padding-right: 8px;
+    line-height: 2em;
+  }
 };
 
 .taxonomy__item {

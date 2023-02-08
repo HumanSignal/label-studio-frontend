@@ -7,7 +7,6 @@ import Constants from '../core/Constants';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import Registry from '../core/Registry';
-import WithStatesMixin from '../mixins/WithStates';
 import { ImageModel } from '../tags/object/Image';
 import { LabelOnPolygon } from '../components/ImageView/LabelOnRegion';
 import { PolygonPoint, PolygonPointView } from './PolygonPoint';
@@ -282,7 +281,7 @@ const Model = types
           value: {
             points: self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
             ...(isFF(FF_DEV_2432)
-              ? { closed : self.closed }
+              ? { closed: self.closed }
               : {}
             ),
           },
@@ -293,7 +292,6 @@ const Model = types
 
 const PolygonRegionModel = types.compose(
   'PolygonRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
@@ -498,7 +496,7 @@ const HtxPolygonView = ({ item }) => {
   }
 
 
-  const dragProps = useMemo(()=>{
+  const dragProps = useMemo(() => {
     let isDragging = false;
 
     return {
@@ -513,7 +511,7 @@ const HtxPolygonView = ({ item }) => {
 
         item.annotation.history.freeze(item.id);
       },
-      dragBoundFunc: createDragBoundFunc(item, { x:-item.bboxCoords.left , y: -item.bboxCoords.top }),
+      dragBoundFunc: createDragBoundFunc(item, { x: -item.bboxCoords.left , y: -item.bboxCoords.top }),
       onDragEnd: e => {
         if (!isDragging) return;
         const t = e.target;
