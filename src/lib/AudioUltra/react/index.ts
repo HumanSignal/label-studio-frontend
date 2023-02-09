@@ -38,7 +38,6 @@ export const useWaveform = (
     }
 
     wf.on('load', () => {
-      setDuration(wf.duration);
       options?.onLoad?.(wf);
     });
     wf.on('play', () => {
@@ -61,7 +60,8 @@ export const useWaveform = (
     });
     wf.on('zoom', setZoom);
     wf.on('muted', setMuted);
-    wf.on('volumeChange', setVolume);
+    wf.on('durationChanged', setDuration);
+    wf.on('volumeChanged', setVolume);
     wf.on('rateChanged', (newRate) => {
       if (newRate !== rate) {
         options?.onRateChange?.(newRate);

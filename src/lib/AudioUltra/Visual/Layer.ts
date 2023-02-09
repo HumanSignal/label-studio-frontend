@@ -70,6 +70,8 @@ export class Layer extends Events<LayerEvents> {
 
   private options: RendererOptions;
   private _context!: RenderingContext;
+  private _bufferContext!: RenderingContext;
+  private _bufferCanvas!: HTMLCanvasElement | OffscreenCanvas;
   private compositeOperation: CanvasCompositeOperation = 'source-over';
   private compositeAsGroup = false;
 
@@ -254,6 +256,29 @@ export class Layer extends Events<LayerEvents> {
     this.context?.fill();
   }
 
+  copyToBuffer() {
+    this.createBufferCanvas();
+
+    // Copy the current canvas to the buffer
+    this._bufferContext.imageSmoothingEnabled = false;
+    this._bufferContext.clearRect(0, 0, this._bufferCanvas.width, this._bufferCanvas.height);
+    this._bufferContext.drawImage(this.canvas, 0, 0);
+  }
+
+  restoreFromBuffer(x = 0, y = 0) {
+    // Clear the current canvas
+    this.clear();
+
+    // Draw the buffer canvas to the current canvas shifted by x and y
+    this.context.drawImage(this._bufferCanvas, x * this.pixelRatio, y * this.pixelRatio);
+  }
+
+  shift(x: number, y: number) {
+    this.copyToBuffer();
+
+    this.restoreFromBuffer(x, y);
+  }
+
   set strokeStyle(color: string | CanvasGradient | CanvasPattern) {
     if (!this.context) return;
     this.context.strokeStyle = color;
@@ -298,6 +323,7 @@ export class Layer extends Events<LayerEvents> {
     if (this.context) {
       this.context.globalAlpha = this.compositeAsGroup ? clamp(this.opacity * 1.5, 0, 1) : this.opacity;
       this.context.globalCompositeOperation = this.compositeOperation;
+      this.context.imageSmoothingEnabled = false;
       this.context.clearRect(0, 0, this.width, this.height);
     }
   }
@@ -387,9 +413,6 @@ export class Layer extends Events<LayerEvents> {
 
     this._context = canvas.getContext('2d')!;
 
-    // @todo - review this as it appears removing it corrects the scaling issues on high dpi displays
-    // this._context.scale(pixelRatio, pixelRatio);
-
     this._context.globalAlpha = this.compositeAsGroup ? clamp(this.opacity * 1.5, 0, 1) : this.opacity;
     this._context.globalCompositeOperation = this.compositeOperation;
     this._context.imageSmoothingEnabled = false;
@@ -411,11 +434,9 @@ export class Layer extends Events<LayerEvents> {
 
       this._context = canvas.getContext('2d')!;
 
-      // @todo - review this as it appears removing it corrects the scaling issues on high dpi displays
-      // this._context.scale(pixelRatio, pixelRatio);
       const globalAlpha = this.compositeAsGroup ? clamp(this.opacity * 1.5, 0, 1) : this.opacity;
 
-      this._context.globalAlpha = this.isVisible ? globalAlpha : 0;
+      this._context.globalAlpha = globalAlpha;
       this._context.globalCompositeOperation = this.compositeOperation;
       this._context.imageSmoothingEnabled = false;
     } else {
@@ -431,5 +452,41 @@ export class Layer extends Events<LayerEvents> {
     }
 
     return canvas;
+  }
+
+  private createBufferCanvas() {
+    if (this._bufferCanvas) return;
+
+    let canvas: HTMLCanvasElement | OffscreenCanvas;
+
+    if (OFFSCREEN_CANVAS_SUPPORTED && !USE_FALLBACK) {
+      const { pixelRatio } = this;
+      const width = this.container.clientWidth;
+      const height = (this.options.height ?? 100);
+
+      // For better performance we're using experimental
+      // OffscreenCanvas as a rendering backend
+      canvas = new OffscreenCanvas(width * pixelRatio, height * pixelRatio);
+
+      this._bufferContext = canvas.getContext('2d')!;
+
+      const globalAlpha = this.compositeAsGroup ? clamp(this.opacity * 1.5, 0, 1) : this.opacity;
+
+      this._bufferContext.globalAlpha = globalAlpha;
+      this._bufferContext.globalCompositeOperation = this.compositeOperation;
+      this._bufferContext.imageSmoothingEnabled = false;
+    } else {
+      canvas = this.createVisibleCanvas();
+
+      Object.assign(canvas.style, {
+        right: '100%',
+        bottom: '100%',
+        opacity: 0,
+        position: 'absolute',
+        visibility: 'hidden',
+      });
+    }
+
+    this._bufferCanvas = canvas;
   }
 }
