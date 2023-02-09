@@ -47,7 +47,7 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform
  * @param {boolean} [autocenter=true] – Always place cursor in the middle of the view
  * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
- * @param {boolean} [splitchannels=false] – Display stereo channels separately
+ * @param {boolean} [splitchannels=true] – Display stereo channels separately
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -68,7 +68,7 @@ const TagAttrs = types.model({
   defaultscale: types.optional(types.string, '1'),
   autocenter: types.optional(types.boolean, true),
   scrollparent: types.optional(types.boolean, true),
-  splitchannels: types.optional(types.boolean, false),
+  splitchannels: types.optional(types.boolean, true),
 });
 
 export const AudioModel = types.compose(
