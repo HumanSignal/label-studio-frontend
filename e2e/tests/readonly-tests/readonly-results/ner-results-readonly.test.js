@@ -9,7 +9,6 @@ Data(imageExamples).Scenario('NER Readonly Results', async ({
   current,
   LabelStudio,
   AtSidebar,
-  AtRichText,
 }) => {
   I.amOnPage('/');
   const { config, result: r, data } = current.example;
@@ -49,6 +48,5 @@ Data(imageExamples).Scenario('NER Readonly Results', async ({
   I.say('Can draw new shape');
   I.pressKey('1');
 
-  await AtRichText.selectTextByGlobalOffset(0, 4);
   AtSidebar.seeRegions(regions.length);
 });
