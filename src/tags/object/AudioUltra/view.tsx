@@ -110,7 +110,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       }
     };
 
-    const updateRegion = (region: Region|Segment) => {
+    const updateRegion = (region: Region | Segment) => {
       item.updateRegion(region);
     };
 
@@ -124,6 +124,10 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       waveform.current?.regions.clearSegments(false);
     });
     
+    hotkeys.addNamed('segment:delete', () => {
+      waveform.current?.regions.clearSegments(false);
+    });
+
     hotkeys.addNamed('segment:delete', () => {
       waveform.current?.regions.clearSegments(false);
     });

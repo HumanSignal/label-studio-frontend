@@ -55,7 +55,7 @@ const annotations = [
 
 const params = { annotations: [{ id: 'test', result: annotations }], config, data };
 
-Scenario('Check if regions is selected', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+Scenario('Check if regions are selected', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
   LabelStudio.setFeatureFlags({
     ff_front_dev_2715_audio_3_280722_short: true,
   });
@@ -68,7 +68,6 @@ Scenario('Check if regions is selected', async function({ I, LabelStudio, AtAudi
   I.waitForDetached('loading-progress-bar', 10);
 
   await AtAudioView.lookForStage();
-
 
   AtSidebar.seeRegions(1);
 

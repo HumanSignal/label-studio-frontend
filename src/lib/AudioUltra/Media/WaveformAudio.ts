@@ -1,4 +1,5 @@
 import { Events } from '../Common/Events';
+import { __DEBUG__ } from '../Common/Utils';
 import { AudioDecoder, DEFAULT_FREQUENCY_HZ } from './AudioDecoder';
 import { audioDecoderPool } from './AudioDecoderPool';
 
@@ -78,11 +79,11 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   }
 
   set speed(value: number) {
+    this._rate = value;
+
     if (this.el) {
       this.el.playbackRate = this._rate;
     }
-
-    this._rate = value;
   }
 
   get muted() {
@@ -110,6 +111,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.decoder?.destroy();
     delete this.decoder;
     this.el?.removeEventListener('canplaythrough', this.mediaReady);
+    this.el?.remove();
     delete this.el;
   }
 
@@ -166,9 +168,13 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     if (!this.src || this.el) return;
 
     this.el = document.createElement('audio');
-    this.el.crossOrigin = 'anonymous';
     this.el.preload = 'auto';
     this.el.muted = true;
+    if (__DEBUG__) {
+      this.el.setAttribute('data-testid', 'waveform-audio');
+    }
+    this.el.style.display = 'none';
+    document.body.appendChild(this.el);
 
     this.mediaPromise = new Promise((resolve) => {
       this.mediaResolve = resolve;
