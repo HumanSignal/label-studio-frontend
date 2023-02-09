@@ -307,7 +307,14 @@ export const AudioModel = types.compose(
       },
 
       createWsRegion(region) {
-        const r = self._ws.addRegion({ ...region.wsRegionOptions, drag: !region.annotation.isReadOnly(), resize: !region.annotation.isReadOnly() });
+        const _regionOptions = region.wsRegionOptions;
+
+        if (region.annotation.isReadOnly()) {
+          _regionOptions.drag = false;
+          _regionOptions.resize = false;
+        }
+
+        const r = self._ws.addRegion(region.wsRegionOptions);
 
         region._ws_region = r;
         region.updateAppearenceFromState();
