@@ -165,7 +165,7 @@
   },
   "image:prev": {
     "key": "ctrl+[",
-    "description": "Next Image"
+    "description": "Previous Image"
   },
   "image:next": {
     "key": "ctrl+]",
