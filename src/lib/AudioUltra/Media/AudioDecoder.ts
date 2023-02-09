@@ -111,10 +111,18 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   }
 
   /**
-   * Total number of chunks to decode
+   * Total number of chunks to decode.
+   *
+   * This is used to allocate the number of chunks to decode and to calculate the progress.
+   * Influenced by the number of channels and the duration of the audio file, as this will cause errors
+   * if the decoder tries to decode and return too much data at once.
+   *
+   * @example
+   * 1hour 44.1kHz 2ch = 1 * 60 * 60 * 44100 * 2 = 158760000 samples -> 4 chunks (39690000 samples/chunk)
+   * 1hour 44.1kHz 1ch = 1 * 60 * 60 * 44100 * 1 = 79380000 samples -> 2 chunks (39690000 samples/chunk)
    */
-  getTotalChunks(duration: number) {
-    return Math.ceil(duration / DURATION_CHUNK_SIZE);
+  getTotalChunks() {
+    return Math.ceil((this._duration  * this._channelCount) / DURATION_CHUNK_SIZE);
   }
 
   /**
@@ -161,7 +169,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
       this._duration = this.worker.duration;
 
       let chunkIndex = 0;
-      const totalChunks = this.getTotalChunks(this.worker.duration);
+      const totalChunks = this.getTotalChunks();
       const chunkIterator = this.chunkDecoder(options);
 
       const chunks = Array.from({ length: this._channelCount }).map(() => Array.from({ length: totalChunks }) as Float32Array[]);
