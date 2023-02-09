@@ -1,10 +1,7 @@
-/* global Feature, Scenario, locate */
+/* global Feature, Scenario */
 
 const {
-  convertToFixed,
   initLabelStudio,
-  getKonvaPixelColorFromPoint,
-  getSizeConvertor,
   hasKonvaPixelColorAtPoint,
   setKonvaLayersOpacity,
   serialize,
