@@ -42,7 +42,6 @@ const TagAttrs = types.model({
 const Model = types
   .model({
     type: 'keypoint',
-    allowRegionUnselectionOnToolChange: true,
     // tools: types.array(BaseTool)
   })
   .views(self => ({

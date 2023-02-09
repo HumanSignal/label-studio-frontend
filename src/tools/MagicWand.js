@@ -89,7 +89,7 @@ const _Tool = types
     group: 'segmentation',
     shortcut: 'W',
     smart: true,
-    allowRegionUnselectionOnToolChange: false,
+    unselectRegionOnToolChange: false,
   })
   .volatile(() => ({
     currentThreshold: null,

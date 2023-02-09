@@ -53,7 +53,7 @@ const _Tool = types
     group: 'segmentation',
     shortcut: 'B',
     smart: true,
-    allowRegionUnselectionOnToolChange: false,
+    unselectRegionOnToolChange: false,
   })
   .views(self => ({
     get viewClass() {

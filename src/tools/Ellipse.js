@@ -9,7 +9,6 @@ const _Tool = types
   .model('EllipseTool', {
     group: 'segmentation',
     shortcut: 'O',
-    allowRegionUnselectionOnToolChange: true,
   })
   .views(self => {
     const Super = {

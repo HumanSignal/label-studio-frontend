@@ -21,7 +21,6 @@ const ToolView = observer(({ item }) => {
 
 const _Tool = types
   .model('LiveWireTool', {
-    isDrawallowRegionUnselectionOnToolChangeingTool: true,
   })
   .views(self => ({
     get viewClass() {
