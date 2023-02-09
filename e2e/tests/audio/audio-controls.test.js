@@ -1,6 +1,7 @@
+
 /* global Feature, Scenario */
 
-Feature('Audio Regions');
+Feature('Audio Controls');
 
 const config = `
 <View>
@@ -55,7 +56,7 @@ const annotations = [
 
 const params = { annotations: [{ id: 'test', result: annotations }], config, data };
 
-Scenario('Check if regions is selected', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+Scenario('Check the audio controls work', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
   LabelStudio.setFeatureFlags({
     ff_front_dev_2715_audio_3_280722_short: true,
   });
@@ -69,22 +70,49 @@ Scenario('Check if regions is selected', async function({ I, LabelStudio, AtAudi
 
   await AtAudioView.lookForStage();
 
-
   AtSidebar.seeRegions(1);
 
-  // creating a new region
-  I.pressKey('1');
-  AtAudioView.dragAudioRegion(160,80);
-  I.pressKey('u');
+  I.say('Check the volume updates');
 
-  AtSidebar.seeRegions(2);
+  await AtAudioView.seeVolume(100);
 
-  AtAudioView.clickAt(170);
-  AtSidebar.seeSelectedRegion();
-  AtAudioView.clickAt(170);
-  AtSidebar.dontSeeSelectedRegion();
-  AtAudioView.dragAudioRegion(170,40);
-  AtSidebar.seeSelectedRegion();
-  AtAudioView.clickAt(220);
-  AtSidebar.dontSeeSelectedRegion();
+  AtAudioView.setVolumeInput(50);
+
+  await AtAudioView.seeVolume(50);
+
+  I.say('Check can be muted');
+
+  AtAudioView.clickMuteButton();
+
+  await AtAudioView.seeVolume(0);
+
+  I.say('Check the playback speed updates');
+
+  await AtAudioView.seePlaybackSpeed(1);
+
+  AtAudioView.setPlaybackSpeedInput(2);
+ 
+  await AtAudioView.seePlaybackSpeed(2);
+
+  I.say('Check the amplitude updates');
+
+  await AtAudioView.seeAmplitude(1);
+
+  AtAudioView.setAmplitudeInput(2);
+
+  await AtAudioView.seeAmplitude(2);
+
+  I.say('Check can be played');
+
+  await AtAudioView.seeIsPlaying(false);
+
+  AtAudioView.clickPlayButton();
+
+  await AtAudioView.seeIsPlaying(true);
+
+  I.say('Check can be paused');
+
+  AtAudioView.clickPauseButton();
+
+  await AtAudioView.seeIsPlaying(false);
 });

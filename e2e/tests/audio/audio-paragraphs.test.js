@@ -93,29 +93,28 @@ const annotations = [
 
 const params = {  annotations: [{ id: 'test', result: annotations }], config, data };
 
-Scenario('Check audio clip is played when using the new sync option', async function({ I, LabelStudio, AtAudioView }) {
+Scenario('Check audio clip is played when using the new sync option', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+  LabelStudio.setFeatureFlags({
+    fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
+    ff_front_dev_2715_audio_3_280722_short: true,
+  });
 
   I.amOnPage('/');
-
-  const hasFFDev1713 = await LabelStudio.hasFF('ff_front_DEV_1713_audio_ui_150222_short');
-  const hasFFDev2461 = await LabelStudio.hasFF('fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short');
-
-  if  (!hasFFDev1713) {
-    return;
-  }
 
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
 
-  I.wait(1);
+  I.waitForDetached('loading-progress-bar', 10);
+
+  await AtAudioView.lookForStage();
+
+  AtSidebar.seeRegions(2);
 
   const [startingAudioPlusTime, startingParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
 
-  if (hasFFDev2461) {
-    assert.equal(startingAudioPlusTime, startingParagraphAudioTime);
-    assert.equal(startingParagraphAudioTime, 0);
-  }
+  assert.equal(startingAudioPlusTime, startingParagraphAudioTime);
+  assert.equal(startingParagraphAudioTime, 0);
 
   I.click('[aria-label="play-circle"]');
 
@@ -125,10 +124,6 @@ Scenario('Check audio clip is played when using the new sync option', async func
 
   const expectedSeekTime = Math.round(seekAudioPlusTime);
 
-  if (hasFFDev2461) {
-    assert.equal(expectedSeekTime, Math.round(seekParagraphAudioTime), `Expected seek time to be ${expectedSeekTime} but was ${Math.round(seekParagraphAudioTime)}`);
-  } else {
-    assert(expectedSeekTime > 0, 'Expected seek time to be greater than 0');
-  }
+  assert.equal(expectedSeekTime, Math.round(seekParagraphAudioTime), `Expected seek time to be ${expectedSeekTime} but was ${Math.round(seekParagraphAudioTime)}`);
 });
 
