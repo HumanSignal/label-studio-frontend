@@ -44,7 +44,13 @@ export const ImageSelection = types.model({
       } : null;
     },
     includesBbox(bbox) {
-      return self.isActive && bbox && self.bbox.left <= bbox.left && self.bbox.top <= bbox.top && self.bbox.right >= bbox.right && self.bbox.bottom >= bbox.bottom;
+      if (!self.isActive || !bbox) return false;
+      const isLeftOf = self.bbox.left <= bbox.left;
+      const isAbove = self.bbox.top <= bbox.top;
+      const isRightOf = self.bbox.right >= bbox.right;
+      const isBelow = self.bbox.bottom >= bbox.bottom;
+      
+      return isLeftOf && isAbove && isRightOf && isBelow;
     },
     intersectsBbox(bbox) {
       if (!self.isActive || !bbox) return false;
