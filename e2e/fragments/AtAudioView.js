@@ -34,6 +34,7 @@ module.exports = {
   async waitForAudio() {
     await I.executeScript(Helpers.waitForAudio);
     I.waitForInvisible(this._progressBarSelector);
+    I.waitForElement(this._audioElementSelector);
   },
   getCurrentAudioTime() {
     return I.executeScript(Helpers.getCurrentAudioTime);
