@@ -247,7 +247,7 @@ export const AudioModel = types.compose(
       },
 
       selectRange(ev, ws_region) {
-        const selectedRegions = self.regs.filter(r=>r.start >= ws_region.start && r.end <= ws_region.end);
+        const selectedRegions = self.regs.filter(r => r.start >= ws_region.start && r.end <= ws_region.end);
 
         ws_region.remove && ws_region.remove();
         if (!selectedRegions.length) return;
@@ -273,7 +273,7 @@ export const AudioModel = types.compose(
         const states = self.getAvailableStates();
 
         if (states.length === 0) {
-          wsRegion.on('update-end', ev=>self.selectRange(ev,wsRegion));
+          wsRegion.on('update-end', ev => self.selectRange(ev,wsRegion));
           return;
         }
 
@@ -307,7 +307,7 @@ export const AudioModel = types.compose(
       },
 
       createWsRegion(region) {
-        const r = self._ws.addRegion(region.wsRegionOptions);
+        const r = self._ws.addRegion({ ...region.wsRegionOptions, drag: !region.annotation.isReadOnly(), resize: !region.annotation.isReadOnly() });
 
         region._ws_region = r;
         region.updateAppearenceFromState();
