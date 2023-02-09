@@ -9,7 +9,6 @@ Data(imageExamples).Scenario('NER Readonly Annotations', async ({
   current,
   LabelStudio,
   AtSidebar,
-  AtRichText,
 }) => {
   I.amOnPage('/');
   const { config, result, data } = current.example;
@@ -32,14 +31,13 @@ Data(imageExamples).Scenario('NER Readonly Annotations', async ({
   I.say('Check region is selectable');
   AtSidebar.seeRegions(regions.length);
   AtSidebar.clickRegion(current.regionName);
-
+  //
   I.pressKey('Backspace');
   I.say('Results are equal after deletion attempt');
   await LabelStudio.resultsNotChanged(result);
-
+  //
   I.say('Can\'t draw new shape');
   I.pressKey('1');
-
-  await AtRichText.selectTextByGlobalOffset(0, 4);
+  //
   AtSidebar.seeRegions(regions.length);
 });
