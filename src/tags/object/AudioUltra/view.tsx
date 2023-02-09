@@ -128,10 +128,6 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       waveform.current?.regions.clearSegments(false);
     });
 
-    hotkeys.addNamed('segment:delete', () => {
-      waveform.current?.regions.clearSegments(false);
-    });
-
     hotkeys.addNamed('region:delete-all', () => {
       waveform.current?.regions.clearSegments();
     });
