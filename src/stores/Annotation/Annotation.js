@@ -1150,8 +1150,6 @@ export const Annotation = types
             value,
           };
 
-          console.log('create new area', areaSnapshot);
-
           area = createArea(areaSnapshot);
         }
 
