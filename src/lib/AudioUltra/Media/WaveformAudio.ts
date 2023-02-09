@@ -1,5 +1,4 @@
 import { Events } from '../Common/Events';
-import { __DEBUG__ } from '../Common/Utils';
 import { AudioDecoder, DEFAULT_FREQUENCY_HZ } from './AudioDecoder';
 import { audioDecoderPool } from './AudioDecoderPool';
 
@@ -167,9 +166,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.el = document.createElement('audio');
     this.el.preload = 'auto';
     this.el.muted = true;
-    if (__DEBUG__) {
-      this.el.setAttribute('data-testid', 'waveform-audio');
-    }
+    this.el.setAttribute('data-testid', 'waveform-audio');
     this.el.style.display = 'none';
     document.body.appendChild(this.el);
 
