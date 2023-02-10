@@ -152,12 +152,12 @@ const Model = types.model({
 
     // check if there is a region selected and if it is and user
     // is changing the label we need to make sure that region is
-    // not going to endup without results at all
+    // not going to end up without labels at all
     const applicableRegions =  affectedRegions.filter(region => {
       if (
         labels.selectedLabels.length === 1 &&
         self.selected &&
-        region.results.length === 1 &&
+        region.labelings.length === 1 &&
         (!self.parent?.allowempty || self.isEmpty)
       )
         return false;
@@ -282,9 +282,15 @@ const HtxLabelView = inject('store')(
     const hotkey = (store.settings.enableTooltips || store.settings.enableLabelTooltips) && store.settings.enableHotkeys && item.hotkey;
 
     const label = (
-      <Label color={item.background} margins empty={item.isEmpty} hotkey={hotkey} hidden={!item.visible} selected={item.selected} onClick={() => {
-        return item.onClick();
-      }}>
+      <Label
+        color={item.background}
+        margins
+        empty={item.isEmpty}
+        hotkey={hotkey}
+        hidden={!item.visible}
+        selected={item.selected}
+        onClick={item.onClick}
+      >
         {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
         {item.showalias === true && item.alias && (
           <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>

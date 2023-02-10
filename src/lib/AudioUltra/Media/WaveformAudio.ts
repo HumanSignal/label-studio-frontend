@@ -1,38 +1,61 @@
+import { Events } from '../Common/Events';
+import { AudioDecoder, DEFAULT_FREQUENCY_HZ } from './AudioDecoder';
+import { audioDecoderPool } from './AudioDecoderPool';
+
 export interface WaveformAudioOptions {
-  volume: number;
-  muted: boolean;
-  rate: number;
+  src?: string;
+  volume?: number;
+  muted?: boolean;
+  rate?: number;
 }
 
-export class WaveformAudio {
-  context?: AudioContext;
-  offline?: OfflineAudioContext;
-  analyzer?: AnalyserNode;
-  source?: AudioBufferSourceNode;
-  gain?: GainNode;
-  buffer?: AudioBuffer;
+interface WaveformAudioEvents {
+  decodingProgress: (chunk: number, total: number) => void;
+  canplay: () => void;
+}
 
+export class WaveformAudio extends Events<WaveformAudioEvents> {
+  decoder?: AudioDecoder;
+  decoderPromise?: Promise<void>;
+  mediaPromise?: Promise<void>;
+  el?: HTMLAudioElement;
+
+  // private backed by audio element and getters/setters
+  // underscored to keep the public API clean
   private _rate = 1;
   private _volume = 1;
-  private _muted = false;
   private _savedVolume = 1;
-  private _channelCount = 1;
+  private src?: string;
+  private mediaResolve?: () => void;
 
   constructor(options: WaveformAudioOptions) {
-    this.context = this.createAudioContext();
-    this.offline = this.createOfflineAudioContext();
-
-    this._rate = options.rate;
-    this._savedVolume = options.volume;
-    this._volume = options.muted ? 0 : options.volume;
+    super();
+    this._rate = options.rate ?? this._rate;
+    this._savedVolume = options.volume ?? this._volume;
+    this._volume = options.muted ? 0 : this._savedVolume;
+    this.src = options.src;
+    this.createAudioDecoder();
+    this.createMediaElement();
   }
 
   get channelCount() {
-    return this._channelCount;
+    return this.decoder?.channelCount || 1;
+  }
+
+  get duration() {
+    return this.el?.duration ?? 0;
   }
 
   get sampleRate() {
-    return this.context?.sampleRate ?? 44100;
+    return this.decoder?.sampleRate || DEFAULT_FREQUENCY_HZ;
+  }
+
+  get dataLength() {
+    return this.decoder?.dataLength || 0;
+  }
+
+  get dataSize() {
+    return this.decoder?.dataSize || 0;
   }
 
   get volume() {
@@ -41,8 +64,9 @@ export class WaveformAudio {
 
   set volume(value: number) {
     this._volume = value;
-    if (this.gain) {
-      this.gain.gain.value = this._volume;
+
+    if (this.el) {
+      this.el.volume = value;
     }
   }
 
@@ -52,8 +76,9 @@ export class WaveformAudio {
 
   set speed(value: number) {
     this._rate = value;
-    if (this.source) {
-      this.source.playbackRate.value = this._rate;
+
+    if (this.el) {
+      this.el.playbackRate = this._rate;
     }
   }
 
@@ -61,131 +86,145 @@ export class WaveformAudio {
     return this.volume === 0;
   }
 
-  connect() {
-    if (this.source) this.disconnect();
-    if (!this.context || !this.buffer) return;
-
-    const source = this.context?.createBufferSource();
-
-    if (!source) return;
-
-    source.buffer = this.buffer;
-
-    const analyzer = this.context?.createAnalyser();
-
-    if (!analyzer) return;
-
-    analyzer.fftSize = 2048;
-
-    const gain = this.context?.createGain();
-
-    if (!gain) return;
-
-    source.connect(gain);
-
-    gain.connect(analyzer);
-
-    analyzer.connect(this.context.destination);
-
-    this.source = source;
-    this.analyzer = analyzer;
-    this.gain = gain;
-
-    this.source.playbackRate.value = this.speed;
-    this.gain.gain.value = this.volume;
-    this._channelCount = source.channelCount;
-  }
-
   disconnect() {
-    if (this.gain) {
-      this.gain.disconnect();
-      delete this.gain;
+    try {
+      if (this.el && !this.el.paused) {
+        this.el.pause();
+      }
+    } catch {
+      // ignore
     }
-    if (this.analyzer) {
-      this.analyzer.disconnect();
-      delete this.analyzer;
-    }
-    if (this.source) {
-      this.source.disconnect();
-      delete this.source;
-    }
+    this.decoder?.cancel();
   }
   
   destroy() {
+    super.destroy();
     this.disconnect();
-    delete this.buffer;
+
+    delete this.mediaResolve;
+    delete this.mediaPromise;
+    delete this.decoderPromise;
+    this.decoder?.destroy();
+    delete this.decoder;
+    this.el?.removeEventListener('canplaythrough', this.mediaReady);
+    this.el?.remove();
+    delete this.el;
   }
 
   mute() {
-    this._savedVolume = this.volume;
+    this._savedVolume = this.volume || 1;
     this.volume = 0;
+    if (this.el) {
+      this.el.muted = true;
+    }
   }
 
   unmute() {
-    this.volume = this._savedVolume;
+    this.volume = this._savedVolume || 1; // 1 is the default volume, if manually muted this will be 0 and we want to restore to 1
+    if (this.el) {
+      this.el.muted = false;
+    }
   }
 
-  get length() {
-    return this.analyzer?.frequencyBinCount ?? 0;
+  get chunks(): Float32Array[]|undefined {
+    if (!this.decoder) return;
+
+    return this.decoder.chunks;
   }
 
-  get dataLength() {
-    return this.buffer?.length ?? 0;
-  }
-
-  get data() {
-    this.connect();
-
-    const data = new Uint8Array(this.length);
-
-    if (this.analyzer) {
-      this.analyzer.getByteTimeDomainData(data);
+  async sourceDecoded() {
+    if (!this.decoder) return false;
+    if (this.mediaPromise) {
+      await this.mediaPromise;
+    }
+    if (this.decoderPromise) {
+      await this.decoderPromise;
     }
 
-    return data;
+    return this.decoder.sourceDecoded;
   }
 
-  async decodeAudioData(arraybuffer: ArrayBuffer): Promise<AudioBuffer | null | undefined> {
-    return new Promise((resolve, reject) => {
-      if (!this.offline) {
-        this.offline = this.createOfflineAudioContext();
-      }
-      // Safari doesn't support promise based decodeAudioData by default
-      if ('webkitAudioContext' in window) {
-        this.offline?.decodeAudioData(
-          arraybuffer,
-          data => resolve(data),
-          err => reject(err),
-        );
-      } else {
-        this.offline?.decodeAudioData(arraybuffer).then(
-          resolve,
-        ).catch(
-          reject,
-        );
-      }
+  async initDecoder(arraybuffer?: ArrayBuffer) {
+    if (!this.decoder) return;
+
+    if (!this.decoderPromise && arraybuffer) {
+      this.decoderPromise = this.decoder.init(arraybuffer);
+    }
+
+    return this.decoderPromise;
+  }
+
+  async decodeAudioData(options?: {multiChannel?: boolean}) {
+    if (!this.decoder) return;
+
+    return this.decoder.decode(options);
+  }
+
+  private createMediaElement() {
+    if (!this.src || this.el) return;
+
+    this.el = document.createElement('audio');
+    this.el.preload = 'auto';
+    this.el.muted = true;
+    this.el.setAttribute('data-testid', 'waveform-audio');
+    this.el.style.display = 'none';
+    document.body.appendChild(this.el);
+
+    this.mediaPromise = new Promise((resolve) => {
+      this.mediaResolve = resolve;
     });
+
+    this.el.addEventListener('canplaythrough', this.mediaReady);
+    this.loadMedia();
   }
 
-  private createOfflineAudioContext(sampleRate?: number) {
-    if (!(window as any).WebAudioOfflineAudioContext) {
-      (window as any).WebAudioOfflineAudioContext = new (window.OfflineAudioContext ||
-                (window as any).webkitOfflineAudioContext)(1, 2, sampleRate ?? this.sampleRate);
+  mediaReady = async () => {
+    if (this.mediaResolve) {
+      this.mediaResolve?.();
+      this.mediaResolve = undefined;
+      await this.forceBuffer();
     }
-    return (window as any).WebAudioOfflineAudioContext;
+    this.invoke('canplay');
+  };
+
+  /**
+   * Load the media element with the audio source and begin an initial playback buffer
+   */
+  private loadMedia() {
+    if (!this.src || !this.el) return;
+    
+    this.el.src = this.src;
+    this.el.load();
   }
 
-  private createAudioContext() {
-    if (!window.AudioContext) {
-      return;
+  /**
+   * In order for the audio to playback sound immediately, we need to force the browser to buffer the audio.
+   * This works by just playing the audio and then immediately pausing it.
+   */
+  private async forceBuffer() {
+    if (!this.el) return;
+
+    try {
+      await this.el.play();
+      this.el.pause();
+    } catch {
+      // ignore
+    } finally {
+      if (this.el) {
+        this.el.currentTime = 0;
+        this.el.muted = false;
+      }
     }
 
-    if ((window as any).WebAudioContext) {
-      return (window as any).WebAudioContext as AudioContext;
-    }
+  }
 
-    (window as any).WebAudioContext = new AudioContext();
+  private createAudioDecoder() {
+    if (!this.src || this.decoder) return;
 
-    return (window as any).WebAudioContext as AudioContext;
+    this.decoder = audioDecoderPool.getDecoder(this.src);
+
+    this.decoder.on('progress', (chunk, total) => {
+      this.invoke('decodingProgress', [chunk, total]);
+    });
   }
 }
