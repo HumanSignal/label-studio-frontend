@@ -1,6 +1,5 @@
 import { types } from 'mobx-state-tree';
 
-import WithStatesMixin from '../mixins/WithStates';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import { AreaMixin } from '../mixins/AreaMixin';
@@ -42,7 +41,6 @@ const EditableAudioModel = types
 
 const AudioRegionModel = types.compose(
   'AudioRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
@@ -53,7 +51,6 @@ const AudioRegionModel = types.compose(
 
 const AudioUltraRegionModel = types.compose(
   'AudioRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,

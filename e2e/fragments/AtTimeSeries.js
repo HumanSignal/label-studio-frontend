@@ -3,16 +3,98 @@ const { I } = inject();
 
 module.exports = {
   _rootSelector: '.htx-timeseries',
+  _channelSelector: '.htx-timeseries-channel .overlay',
+  _overviewSelector: '.htx-timeseries-overview .overlay',
+  _westHandleSelector: '.htx-timeseries-overview .handle--w',
+  _eastHandleSelector: '.htx-timeseries-overview .handle--e',
   get _channelStageSelector() {
     return `${this._rootSelector} .htx-timeseries-channel .new_brush`;
   },
   _stageBBox: { x: 0, y: 0, width: 0, height: 0 },
+
+  WEST: 'west',
+  EAST: 'east',
 
   async lookForStage() {
     I.scrollPageToTop();
     const bbox = await I.grabElementBoundingRect(this._channelStageSelector);
 
     this._stageBBox = bbox;
+  },
+
+  /**
+   * Select range on overview to zoom in
+   * @param {number} from - relative position of start between 0 and 1
+   * @param {number} to - relative position of finish between 0 and 1
+   * @returns {Promise<void>}
+   *
+   * @example
+   * await AtTimeSeries.selectOverviewRange(.25, .75);
+   */
+  async selectOverviewRange(from, to) {
+    I.scrollPageToTop();
+    const overviewBBox = await I.grabElementBoundingRect(this._overviewSelector);
+
+    I.moveMouse(overviewBBox.x + overviewBBox.width * from, overviewBBox.y + overviewBBox.height / 2);
+    I.pressMouseDown();
+    I.moveMouse(overviewBBox.x + overviewBBox.width * to, overviewBBox.y + overviewBBox.height / 2, 3);
+    I.pressMouseUp();
+  },
+
+  /**
+   * Move range on overview to another position
+   * @param {number} where - position between 0 and 1
+   * @returns {Promise<void>}
+   */
+  async clickOverview(where) {
+    I.scrollPageToTop();
+    const overviewBBox = await I.grabElementBoundingRect(this._overviewSelector);
+
+    I.clickAt(overviewBBox.x + overviewBBox.width * where, overviewBBox.y + overviewBBox.height / 2);
+  },
+
+  /**
+   * Move overview handle by mouse drag
+   * @param {number} where - position between 0 and 1
+   * @param {"west"|"east"} [which="west"] - handler name
+   * @returns {Promise<void>}
+   *
+   * @example
+   * await AtTimeSeries.moveHandle(.5, AtTimeSeries.WEST);
+   */
+  async moveHandle(where, which = this.WEST) {
+    I.scrollPageToTop();
+    const handlerBBox = await I.grabElementBoundingRect(this[`_${which}HandleSelector`]);
+    const overviewBBox = await I.grabElementBoundingRect(this._overviewSelector);
+
+    I.moveMouse(handlerBBox.x + handlerBBox.width / 2, handlerBBox.y + handlerBBox.height / 2);
+    I.pressMouseDown();
+    I.moveMouse(overviewBBox.x + overviewBBox.width * where, overviewBBox.y + overviewBBox.height / 2, 3);
+    I.pressMouseUp();
+  },
+
+  /**
+   *  Zoom by mouse wheel over the channel
+   * @param {number} deltaY
+   * @param {Object} [atPoint] - Point where will be called wheel action
+   * @param {number} [atPoint.x=0.5] - relative X coordinate
+   * @param {number} [atPoint.y=0.5] - relative Y coordinate
+   * @returns {Promise<void>}
+   *
+   * @example
+   * // zoom in
+   * await AtTimeSeries.zoomByMouse(-100, { x: .01 });
+   * // zoom out
+   * await AtTimeSeries.zoomByMouse(100);
+   */
+  async zoomByMouse(deltaY, atPoint) {
+    const { x = 0.5, y = 0.5 } = atPoint;
+
+    I.scrollPageToTop();
+    const channelBBox = await I.grabElementBoundingRect(this._channelSelector);
+
+    I.moveMouse(channelBBox.x + channelBBox.width * x, channelBBox.y + channelBBox.height* y);
+    I.mouseWheel({ deltaY });
   },
 
   /**
