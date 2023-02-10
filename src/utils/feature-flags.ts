@@ -136,6 +136,8 @@ export const FF_DEV_1284 = 'fflag_fix_front_dev_1284_auto_detect_undo_281022_sho
  */
 export const FF_DEV_3730 = 'fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short';
 
+export const FF_DEV_3793 = 'fflag_fix_front_dev_3793_relative_coords_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),

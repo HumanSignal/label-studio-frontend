@@ -17,7 +17,7 @@ import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import { clamp } from '../../utils/utilities';
 import { guidGenerator } from '../../utils/unique';
 import { IsReadyWithDepsMixin } from '../../mixins/IsReadyMixin';
-import { FF_DEV_2394, FF_DEV_3377, isFF } from '../../utils/feature-flags';
+import { FF_DEV_2394, FF_DEV_3377, FF_DEV_3793, isFF } from '../../utils/feature-flags';
 
 /**
  * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -179,6 +179,8 @@ const ImageSelection = types.model({
       };
     },
     get onScreenRect() {
+      if (!isFF(FF_DEV_3793)) return self;
+
       if (!self.isActive) return null;
 
       const bbox = self.onScreenBbox;
@@ -210,7 +212,9 @@ const ImageSelection = types.model({
     get selectionBorders() {
       if (self.isActive || !self.obj.selectedRegions.length) return null;
 
-      const initial = { left: 100, top: 100, right: 0, bottom: 0 };
+      const initial = isFF(FF_DEV_3793)
+        ? { left: 100, top: 100, right: 0, bottom: 0 }
+        : { left: self.obj.stageWidth, top: self.obj.stageHeight, right: 0, bottom: 0 };
       const bbox = self.obj.selectedRegions.reduce((borders, region) => {
         return region.bboxCoords ? {
           left: Math.min(borders.left, region.bboxCoords.left),
@@ -219,6 +223,8 @@ const ImageSelection = types.model({
           bottom: Math.max(borders.bottom, region.bboxCoords.bottom),
         } : borders;
       }, initial);
+
+      if (!isFF(FF_DEV_3793)) return bbox;
 
       return {
         left: self.obj.internalToScreenX(bbox.left),
@@ -1047,11 +1053,10 @@ const Model = types.model({
     },
 
     event(name, ev, screenX, screenY) {
-      // if (name === 'mousemove') return;
       [screenX, screenY] = self.fixZoomedCoords([screenX, screenY]);
 
-      const x = self.screenToInternalX(screenX);
-      const y = self.screenToInternalY(screenY);
+      const x = isFF(FF_DEV_3793) ? self.screenToInternalX(screenX) : screenX;
+      const y = isFF(FF_DEV_3793) ? self.screenToInternalY(screenY) : screenY;
 
       self.getToolsManager().event(name, ev.evt || ev, x, y, screenX, screenY);
     },

@@ -112,6 +112,23 @@ const RegionsMixin = types
         self.dynamic = true;
       },
 
+      // @todo this conversion methods should be removed after removing FF_DEV_3793
+      convertXToPerc(x) {
+        return (x * 100) / self.parent.stageWidth;
+      },
+
+      convertYToPerc(y) {
+        return (y * 100) / self.parent.stageHeight;
+      },
+
+      convertHDimensionToPerc(hd) {
+        return (hd * (self.scaleX || 1) * 100) / self.parent.stageWidth;
+      },
+
+      convertVDimensionToPerc(vd) {
+        return (vd * (self.scaleY || 1) * 100) / self.parent.stageHeight;
+      },
+
       // update region appearence based on it's current states, for
       // example bbox needs to update its colors when you change the
       // label, becuase it takes color from the label

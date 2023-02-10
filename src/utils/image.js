@@ -1,4 +1,5 @@
 import Konva from 'konva';
+import { FF_DEV_3793, isFF } from './feature-flags';
 
 export function reverseCoordinates(r1, r2) {
   let r1X = r1.x,
@@ -141,6 +142,11 @@ export function createDragBoundFunc(item, offset = { x: 0, y: 0 }) {
       let x = image.screenToInternalX(pos.x);
       let y = image.screenToInternalY(pos.y);
 
+      if (!isFF(FF_DEV_3793)) {
+        x = pos.x;
+        y = pos.y;
+      }
+
       x -= offset.x;
       y -= offset.y;
       const singleRegionDragging = item.selected || !item.inSelection;
@@ -149,7 +155,9 @@ export function createDragBoundFunc(item, offset = { x: 0, y: 0 }) {
       const bbox = singleRegionDragging
         ? { x, y, width: right - left, height: bottom - top }
         : { x: srLeft - left + x, y: srTop - top + y, width: srRight - srLeft, height: srBottom - srTop };
-      const fixed = fixRectToFit(bbox, 100, 100);
+      const fixed = isFF(FF_DEV_3793)
+        ? fixRectToFit(bbox, 100, 100)
+        : fixRectToFit(bbox, image.stageWidth, image.stageHeight);
 
       if (fixed.width !== bbox.width) {
         x += (fixed.width - bbox.width) * (fixed.x !== bbox.x ? -1 : 1);
@@ -161,6 +169,8 @@ export function createDragBoundFunc(item, offset = { x: 0, y: 0 }) {
 
       x += offset.x;
       y += offset.y;
+
+      if (!isFF(FF_DEV_3793)) return { x, y };
 
       return { x: image.internalToScreenX(x), y: image.internalToScreenY(y) };
     });

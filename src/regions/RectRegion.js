@@ -14,11 +14,74 @@ import RegionsMixin from '../mixins/Regions';
 import WithStatesMixin from '../mixins/WithStates';
 import { ImageModel } from '../tags/object/Image';
 import { rotateBboxCoords } from '../utils/bboxCoords';
+import { FF_DEV_3793, isFF } from '../utils/feature-flags';
 import { createDragBoundFunc } from '../utils/image';
 import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
 import { RegionWrapper } from './RegionWrapper';
 
+const RectRegionAbsoluteCoordsDEV3793 = types
+  .model({
+    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
+  })
+  .volatile(() => ({
+    relativeX: 0,
+    relativeY: 0,
+
+    relativeWidth: 0,
+    relativeHeight: 0,
+  }))
+  .actions(self => ({
+    afterCreate() {
+      switch (self.coordstype)  {
+        case 'perc': {
+          self.relativeX = self.x;
+          self.relativeY = self.y;
+          self.relativeWidth = self.width;
+          self.relativeHeight = self.height;
+          break;
+        }
+        case 'px': {
+          const { stageWidth, stageHeight } = self.parent;
+
+          if (stageWidth && stageHeight) {
+            self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+          }
+          break;
+        }
+      }
+      self.checkSizes();
+      self.updateAppearenceFromState();
+    },
+    setPosition(x, y, width, height, rotation) {
+      self.x = x;
+      self.y = y;
+      self.width = width;
+      self.height = height;
+
+      self.relativeX = (x / self.parent?.stageWidth) * 100;
+      self.relativeY = (y / self.parent?.stageHeight) * 100;
+
+      self.relativeWidth = (width / self.parent?.stageWidth) * 100;
+      self.relativeHeight = (height / self.parent?.stageHeight) * 100;
+
+      self.rotation = (rotation + 360) % 360;
+    },
+    updateImageSize(wp, hp, sw, sh) {
+      if (self.coordstype === 'px') {
+        self.x = (sw * self.relativeX) / 100;
+        self.y = (sh * self.relativeY) / 100;
+        self.width = (sw * self.relativeWidth) / 100;
+        self.height = (sh * self.relativeHeight) / 100;
+      } else if (self.coordstype === 'perc') {
+        self.x = (sw * self.x) / 100;
+        self.y = (sh * self.y) / 100;
+        self.width = (sw * self.width) / 100;
+        self.height = (sh * self.height) / 100;
+        self.coordstype = 'px';
+      }
+    },
+  }));
 
 /**
  * Rectangle object for Bounding Box
@@ -252,10 +315,10 @@ const Model = types
         original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: self.x,
-          y: self.y,
-          width: self.width,
-          height: self.height,
+          x: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertXToPerc(self.x) : self.x,
+          y: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertYToPerc(self.y) : self.y,
+          width: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertHDimensionToPerc(self.width) : self.width,
+          height: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertVDimensionToPerc(self.height) : self.height,
           rotation: self.rotation,
         },
       };
@@ -272,6 +335,7 @@ const RectRegionModel = types.compose(
   KonvaRegionMixin,
   EditableRegion,
   Model,
+  ...(isFF(FF_DEV_3793) ? [] : [RectRegionAbsoluteCoordsDEV3793]),
 );
 
 const HtxRectangleView = ({ item }) => {
@@ -336,11 +400,11 @@ const HtxRectangleView = ({ item }) => {
   return (
     <RegionWrapper item={item}>
       <Rect
-        x={item.parent.internalToScreenX(item.x)}
-        y={item.parent.internalToScreenY(item.y)}
+        x={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.x) : item.x}
+        y={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.y) : item.y}
         ref={node => item.setShapeRef(node)}
-        width={item.parent.internalToScreenX(item.width)}
-        height={item.parent.internalToScreenY(item.height)}
+        width={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.width) : item.width}
+        height={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.height) : item.height}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}

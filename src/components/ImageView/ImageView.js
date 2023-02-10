@@ -21,7 +21,7 @@ import ResizeObserver from '../../utils/resize-observer';
 import { debounce } from '../../utils/debounce';
 import Constants from '../../core/Constants';
 import { fixRectToFit } from '../../utils/image';
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, isFF } from '../../utils/feature-flags';
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_3793, isFF } from '../../utils/feature-flags';
 
 Konva.showWarnings = false;
 
@@ -103,6 +103,14 @@ const SELECTION_DASH = [3, 3];
  */
 const SelectionBorders = observer(({ item, selectionArea }) => {
   const { selectionBorders: bbox } = selectionArea;
+
+  if (!isFF(FF_DEV_3793)) {
+    bbox.left = bbox.left * item.stageScale;
+    bbox.right = bbox.right * item.stageScale;
+    bbox.top = bbox.top * item.stageScale;
+    bbox.bottom = bbox.bottom * item.stageScale;
+  }
+
   const points = bbox ? [
     {
       x: bbox.left,
@@ -121,7 +129,7 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
       y: bbox.bottom,
     },
   ] : [];
-  const ANCHOR_SIZE = 6 / item.stageScale;
+  const ANCHOR_SIZE = isFF(FF_DEV_3793) ? 6 / item.stageScale : 6;
 
   return (
     <>
@@ -290,6 +298,7 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
+  const scale = 1 / (item.zoomScale || 1);
   const [isMouseWheelClick, setIsMouseWheelClick] = useState(false);
   const [shift, setShift] = useState(false);
   const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
@@ -329,7 +338,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
       ((item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer));
 
   return (
-    <Layer>
+    <Layer scaleX={scale} scaleY={scale}>
       {selectionArea.isActive ? (
         <SelectionRect item={selectionArea} />
       ) : !supportsTransform && item.selectedRegions.length > 1 ? (
