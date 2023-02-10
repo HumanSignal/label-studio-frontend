@@ -126,6 +126,16 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
   }
 
   /**
+   * Total size in duration seconds per chunk to decode.
+   *
+   * This is used to work out the number of samples to decode per chunk, as the decoder will
+   * return an error if too much data is requested at once. This is influenced by the number of channels.
+   */
+  getChunkDuration() {
+    return DURATION_CHUNK_SIZE / this._channelCount;
+  }
+
+  /**
    * Initialize the decoder if it has not already been initialized.
    */
   async init(arraybuffer: ArrayBuffer) {
@@ -271,7 +281,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
       yield new Promise((resolve, reject) => {
         if (!this.worker || this.sourceDecodeCancelled) return resolve(null);
 
-        const nextChunkDuration = clamp(totalDuration - durationOffset, 0, DURATION_CHUNK_SIZE);
+        const nextChunkDuration = clamp(totalDuration - durationOffset, 0, this.getChunkDuration());
         const currentOffset = durationOffset;
 
         durationOffset += nextChunkDuration;
