@@ -1,4 +1,10 @@
 import { types } from 'mobx-state-tree';
+import { FileLoader } from '../../../utils/FileLoader';
+import { clamp } from '../../../utils/utilities';
+
+const fileLoader = new FileLoader();
+
+window.fl = fileLoader;
 
 export const ImageEntity = types.model({
   id: types.identifier,
@@ -45,6 +51,75 @@ export const ImageEntity = types.model({
   stageZoomX: 1,
   stageZoomY: 1,
   currentZoom: 1,
+
+  /** Is image downloaded to local cache */
+  downloaded: false,
+  /** Is image being downloaded */
+  downloading: false,
+  /** If error happened during download */
+  error: false,
+  /** Download progress 0..1 */
+  progress: 0,
+  /** Local image src created with URL.createURLObject */
+  currentSrc: undefined,
+  /** Is image loaded using `<img/>` tag and cached by the browser */
+  imageLoaded: false,
+})).actions((self) => ({
+  preload() {
+    if (self.ensurePreloaded()) return;
+
+    self.setDownloading(true);
+
+    fileLoader.download(self.src, (_t, _l, progress) => {
+      self.setProgress(progress);
+    }).then((url) => {
+      self.setDownloaded(true);
+      self.setDownloading(false);
+      self.setCurrentSrc(url);
+    }).catch(() => {
+      self.setDownloading(false);
+      self.setError(true);
+    });
+  },
+
+  ensurePreloaded() {
+    if (fileLoader.isError(self.src)) {
+      self.setDownloading(false);
+      self.setError(true);
+      return true;
+    } else if (fileLoader.isPreloaded(self.src)) {
+      self.setDownloading(false);
+      self.setDownloaded(true);
+      self.setProgress(1);
+      self.setCurrentSrc(fileLoader.getPreloadedURL(self.src));
+      return true;
+    }
+    return false;
+  },
+
+  setImageLoaded(value) {
+    self.imageLoaded = value;
+  },
+
+  setProgress(progress) {
+    self.progress = clamp(progress, 0, 100);
+  },
+
+  setDownloading(downloading) {
+    self.downloading = downloading;
+  },
+
+  setDownloaded(downloaded) {
+    self.downloaded = downloaded;
+  },
+
+  setCurrentSrc(src) {
+    self.currentSrc = src;
+  },
+
+  setError() {
+    self.error = true;
+  },
 })).actions(self => ({
   setRotation(angle) {
     self.rotation = angle;

@@ -74,7 +74,7 @@ const RegionsMixin = types
       return true;
     },
 
-    get imageEntity() {
+    get currentImageEntity() {
       return self.parent.findImageEntity(self.item_index ?? 0);
     },
 
@@ -144,8 +144,8 @@ const RegionsMixin = types
         degree = (360 + degree) % 360;
         // transform origin is (w/2, w/2) for ccw rotation
         // (h/2, h/2) for cw rotation
-        const w = self.imageEntity.stageWidth;
-        const h = self.imageEntity.stageHeight;
+        const w = self.currentImageEntity.stageWidth;
+        const h = self.currentImageEntity.stageHeight;
         // actions: translate to fit origin, rotate, translate back
         //   const shift = size / 2;
         //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
@@ -165,19 +165,19 @@ const RegionsMixin = types
       },
 
       convertXToPerc(x) {
-        return (x * 100) / self.imageEntity.stageWidth;
+        return (x * 100) / self.currentImageEntity.stageWidth;
       },
 
       convertYToPerc(y) {
-        return (y * 100) / self.imageEntity.stageHeight;
+        return (y * 100) / self.currentImageEntity.stageHeight;
       },
 
       convertHDimensionToPerc(hd) {
-        return (hd * (self.scaleX || 1) * 100) / self.imageEntity.stageWidth;
+        return (hd * (self.scaleX || 1) * 100) / self.currentImageEntity.stageWidth;
       },
 
       convertVDimensionToPerc(vd) {
-        return (vd * (self.scaleY || 1) * 100) / self.imageEntity.stageHeight;
+        return (vd * (self.scaleY || 1) * 100) / self.currentImageEntity.stageHeight;
       },
 
       // update region appearence based on it's current states, for

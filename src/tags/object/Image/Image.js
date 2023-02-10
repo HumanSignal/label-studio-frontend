@@ -14,13 +14,15 @@ import { RectRegionModel } from '../../../regions/RectRegion';
 import * as Tools from '../../../tools';
 import ToolsManager from '../../../tools/Manager';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_3377, FF_DEV_3666, FF_LSDV_4583, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_3377, FF_DEV_3666, FF_LSDV_4583, FF_LSDV_4583_6, isFF } from '../../../utils/feature-flags';
 import { guidGenerator } from '../../../utils/unique';
 import { clamp, isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import { DrawingRegion } from './DrawingRegion';
 import { ImageEntityMixin } from './ImageEntityMixin';
 import { ImageSelection } from './ImageSelection';
+
+const IMAGE_PRELOAD_COUNT = 3;
 
 /**
  * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -181,7 +183,11 @@ const Model = types.model({
   },
 
   get currentSrc() {
-    return self.imageEntity.src;
+    return self.currentImageEntity.src;
+  },
+
+  get usedValue() {
+    return self.multiImage ? self.valuelist : self.value;
   },
 
   get images() {
@@ -280,14 +286,14 @@ const Model = types.model({
   },
 
   serializableValues(index) {
-    const imageEntity = self.multiImage
+    const currentImageEntity = self.multiImage
       ? self.findImageEntity(index)
       : self;
 
     const value = {
-      original_width: imageEntity.naturalWidth,
-      original_height: imageEntity.naturalHeight,
-      image_rotation: imageEntity.rotation,
+      original_width: currentImageEntity.naturalWidth,
+      original_height: currentImageEntity.naturalHeight,
+      image_rotation: currentImageEntity.rotation,
     };
 
     if (self.multiImage && isDefined(index)) {
@@ -460,7 +466,7 @@ const Model = types.model({
         });
       }
 
-      self.imageEntity = self.imageEntities.at(0);
+      self.setCurrentImage(0);
     }
 
     function afterAttach() {
@@ -547,7 +553,6 @@ const Model = types.model({
       };
 
       self.drawingRegion = areaRaw;
-      console.log(self.drawingRegion);
       return self.drawingRegion;
     },
 
@@ -596,7 +601,28 @@ const Model = types.model({
 
     setCurrentImage(i) {
       self.currentImage = i;
-      self.imageEntity = self.findImageEntity(i);
+      self.currentImageEntity = self.findImageEntity(i);
+      if (isFF(FF_LSDV_4583_6)) self.preloadImages();
+    },
+
+    preloadImages() {
+      self.currentImageEntity.setImageLoaded(false);
+      self.currentImageEntity.preload();
+
+      if (self.multiImage) {
+        const [currentIndex, length] = [self.currentImage, self.imageEntities.length];
+        const prevSliceIndex = clamp(currentIndex - IMAGE_PRELOAD_COUNT, 0, currentIndex);
+        const nextSliceIndex = clamp(currentIndex + 1 + IMAGE_PRELOAD_COUNT, currentIndex, length - 1);
+
+        const images = [
+          ...self.imageEntities.slice(prevSliceIndex, currentIndex),
+          ...self.imageEntities.slice(currentIndex + 1, nextSliceIndex),
+        ];
+
+        images.forEach((imageEntity) => {
+          imageEntity.preload();
+        });
+      }
     },
 
     /**

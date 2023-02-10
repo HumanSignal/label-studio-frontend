@@ -161,9 +161,17 @@ export const FF_DEV_4075 = 'fflag_fix_front_dev_4075_taxonomy_overlap_281222_sho
  */
 export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short';
 
+/**
+ * Enables new way of preloading/cacheing images
+ */
+export const FF_LSDV_4583_6 = 'fflag_feat_front_lsdv_4583_6_images_preloading_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
+    [FF_LSDV_4583]: true,
+    [FF_DEV_3377]: true,
+    [FF_LSDV_4583_6]: true,
   };
 }
 
