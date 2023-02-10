@@ -10,7 +10,6 @@ import { DrawingTool } from '../mixins/DrawingTool';
 import { IconEraserTool } from '../assets/icons';
 import { Tool } from '../components/Toolbar/Tool';
 import { Range } from '../common/Range/Range';
-import { FF_DEV_4081, isFF } from '../utils/feature-flags';
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 50;
@@ -52,7 +51,7 @@ const _Tool = types
   .model('EraserTool', {
     strokeWidth: types.optional(types.number, 10),
     group: 'segmentation',
-    unselectRegionOnToolChange: isFF(FF_DEV_4081) ? false : true,
+    unselectRegionOnToolChange: false,
   })
   .volatile(() => ({
     index: 9999,

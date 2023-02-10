@@ -24,7 +24,7 @@ const ToolView = observer(({ item }) => {
 const BaseTool = types
   .model('BaseTool', {
     smart: false,
-    unselectRegionOnToolChange: true,
+    unselectRegionOnToolChange: false,
     removeDuplicatesNamed: types.maybeNull(types.string),
   })
   .volatile(() => ({
