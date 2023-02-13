@@ -23,6 +23,7 @@ export { ReactComponent as LsDate } from './date.svg';
 export { ReactComponent as IconPlusCircle } from './plus_circle.svg';
 export { ReactComponent as IconSlow } from './slow.svg';
 export { ReactComponent as IconFast } from './fast.svg';
+export { ReactComponent as IconDuplicate } from './duplicate.svg';
 export { ReactComponent as IconEllipsis } from './ellipsis.svg';
 export { ReactComponent as IconWarning } from './warning.svg';
 
@@ -69,6 +70,7 @@ export { ReactComponent as IconViewAll } from './view_all.svg';
 export { ReactComponent as IconLink } from './link.svg';
 export { ReactComponent as IconPlusAlt } from './plus-alt.svg';
 export { ReactComponent as IconTrash } from './trash.svg';
+export { ReactComponent as IconTrashRect } from './trash-rect.svg';
 export { ReactComponent as IconMenu } from './menu.svg';
 export { ReactComponent as IconHamburger } from './hamburger.svg';
 export { ReactComponent as IconDetails } from './details.svg';

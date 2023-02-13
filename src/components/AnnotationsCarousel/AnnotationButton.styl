@@ -10,6 +10,10 @@
   align-items center
   gap 8px
   cursor pointer
+  &__mainSection
+    display flex
+    align-items center
+    gap 8px
   &_selected
     background-color #FFFFFF
   &:hover
@@ -17,3 +21,44 @@
   &__icons
     display inline-flex
     align-items center
+  &__ellipsisIcon
+    transform rotate(90deg)
+    display flex
+
+.AnnotationButtonContextMenu
+  border-radius 4px
+  box-shadow: 0px 1px 3px 1px #26262626, 0px 1px 2px 0px #2626264D;
+  &__seperator
+    height 1px
+    background-color rgba(137, 128, 152, 0.12)
+  &__option
+    display flex
+    margin 8px
+    align-items center
+    white-space nowrap
+    gap 2px
+    cursor pointer
+    font-size 16px
+    font-weight 400
+    line-height 24px
+    letter-spacing 0.5px
+    border-radius 4px
+    padding-right 32px
+    &:hover
+      background-color rgba(65, 60, 74, 0.08)
+    &_duplicate
+      padding-top 6px
+      padding-bottom 6px
+      .AnnotationButtonContextMenu__icon
+        display flex
+        padding 0 8px 0 9px
+        align-items center
+    &_delete
+      padding-top 6px
+      padding-bottom 6px
+      color #CF1322
+      .AnnotationButtonContextMenu__icon
+        display flex
+        padding 4px 11px 4px 12px
+        align-items center
+    
