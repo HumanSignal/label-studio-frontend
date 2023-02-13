@@ -49,8 +49,8 @@ Scenario('Seek view should be in sync with indicator position', async ({ I, Labe
     assert.equal(0.5, delta);
 
     I.say('Check the video position indicator is within the seek indicator');
-    assert.ok(indicatorBbox.x <= positionBbox.x);
-    assert.ok(indicatorBbox.x + indicatorBbox.width >= positionBbox.x + positionBbox.width);
+    assert.ok(indicatorBbox.x <= positionBbox.x,  'Video position indicator not within the seek indicator when dragged near the midway point');
+    assert.ok(indicatorBbox.x + indicatorBbox.width >= positionBbox.x + positionBbox.width, 'Video position indicator not within the seek indicator when dragged near the midway point');
   }
 
   {
@@ -65,8 +65,8 @@ Scenario('Seek view should be in sync with indicator position', async ({ I, Labe
     assert.equal(1, delta);
 
     I.say('Check the video position indicator is within the seek indicator');
-    assert.ok(indicatorBbox.x <= positionBbox.x);
-    assert.ok(indicatorBbox.x + indicatorBbox.width >= positionBbox.x + positionBbox.width);
+    assert.ok(indicatorBbox.x <= positionBbox.x, 'Video position indicator not within the seek indicator when dragged to the end');
+    assert.ok(indicatorBbox.x + indicatorBbox.width >= positionBbox.x + positionBbox.width, 'Video position indicator not within the seek indicator when dragged to the end');
   }
 
   {
@@ -81,8 +81,8 @@ Scenario('Seek view should be in sync with indicator position', async ({ I, Labe
     assert.equal(0.5, delta);
 
     I.say('Check the video position indicator is within the seek indicator');
-    assert.ok(indicatorBbox.x <= positionBbox.x);
-    assert.ok(indicatorBbox.x + indicatorBbox.width >= positionBbox.x + positionBbox.width);
+    assert.ok(indicatorBbox.x <= positionBbox.x, 'Video position indicator not within the seek indicator when dragged back to the midway point');
+    assert.ok(indicatorBbox.x + indicatorBbox.width >= positionBbox.x + positionBbox.width, 'Video position indicator not within the seek indicator when dragged back to the midway point');
   }
   
   {
@@ -97,8 +97,8 @@ Scenario('Seek view should be in sync with indicator position', async ({ I, Labe
     assert.equal(0, delta);
 
     I.say('Check the video position indicator is within the seek indicator');
-    assert.ok(indicatorBbox.x <= positionBbox.x);
-    assert.ok(indicatorBbox.x + indicatorBbox.width >= positionBbox.x + positionBbox.width);
+    assert.ok(indicatorBbox.x <= positionBbox.x, 'Video position indicator not within the seek indicator when dragged back to the starting point');
+    assert.ok(indicatorBbox.x + indicatorBbox.width >= positionBbox.x + positionBbox.width,'Video position indicator not within the seek indicator when dragged back to the starting point');
   }
 
   {
@@ -106,19 +106,21 @@ Scenario('Seek view should be in sync with indicator position', async ({ I, Labe
     let indicatorPosX = indicatorBbox.x;
 
     I.say('Move the video position indicator to the end of the seek indicator');
-    await AtVideoView.drag(positionBbox, indicatorBbox.width, 0);
+    const endOfSeeker = indicatorBbox.width - 1.5; // The indicator width is set wider by 1.5, to account for the pixel sizing of the position indicator width and placement rounding, so subtract this
+
+    await AtVideoView.drag(positionBbox, endOfSeeker, 0);
     indicatorBbox = await AtVideoView.grabIndicatorBoundingRect();
 
     I.say('Seeker should not have moved');
-    assert.equal(indicatorBbox.x, indicatorPosX);
+    assert.equal(indicatorBbox.x, indicatorPosX, 'Seeker should not have moved from this one step movement');
     indicatorPosX = indicatorBbox.x;
 
     I.say('Click on the seek step forward button');
-    await AtVideoView.clickSeekStepForward(1);
+    await AtVideoView.clickSeekStepForward(2);
     indicatorBbox = await AtVideoView.grabIndicatorBoundingRect();
 
     I.say('Seeker should now have moved to the right');
-    assert.ok(indicatorBbox.x > indicatorPosX);
+    assert.ok(indicatorBbox.x > indicatorPosX, 'Seeker should have moved from this one step movement');
     indicatorPosX = indicatorBbox.x;
 
     I.say('Click on the seek step backward button');
@@ -126,7 +128,7 @@ Scenario('Seek view should be in sync with indicator position', async ({ I, Labe
     indicatorBbox = await AtVideoView.grabIndicatorBoundingRect();
 
     I.say('Seeker should now have moved to the left');
-    assert.ok(indicatorBbox.x < indicatorPosX);
+    assert.ok(indicatorBbox.x < indicatorPosX, 'Seeker should have moved to the left from this one step movement');
   }
 });
 

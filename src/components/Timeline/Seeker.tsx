@@ -35,6 +35,8 @@ export const Seeker: FC<SeekerProps> = ({
 
   const showIndicator = seekVisible > 0;
 
+  // The indicator width is set wider by 1.5, to account for the pixel sizing of the position indicator width and placement
+  // to align better with the viewable timeline scroll.
   const width = `${(Math.ceil(seekVisible) - Math.floor(leftOffset) + 1.5) / length * 100}%`;
   const offsetLimit = length - (seekVisible - leftOffset);
   const windowOffset = `${Math.min(seekOffset, offsetLimit) / length * 100}%`;
