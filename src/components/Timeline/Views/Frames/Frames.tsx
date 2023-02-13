@@ -38,8 +38,14 @@ export const Frames: FC<TimelineViewProps> = ({
   const [hoverEnabled, setHoverEnabled] = useState(true);
   const [hoverOffset, setHoverOffset] = useState<number | null>(null);
   const [offsetX, setOffsetX] = useState(offset);
+  const lastOffsetX = useRef(offsetX);
   const [offsetY, setOffsetY] = useState(0);
   const [regionSelectionDisabled, setRegionSelectionDisabled] = useState(false);
+
+  // Ensure offsetX is not stale in the main useEffect that syncs position updates with the offsetX, without triggering
+  // near infinite loops.
+  lastOffsetX.current = offsetX;
+
   const viewWidth = useMemo(() => {
     return length * step;
   }, [length, step]);
@@ -240,7 +246,11 @@ export const Frames: FC<TimelineViewProps> = ({
     const scroll = scrollable.current;
 
     if (isDefined(scroll)) {
-      setOffsetX(clamp(offset * step, 0, scroll.scrollWidth - scroll.clientWidth));
+      const nextScrollOffset = clamp(offset * step, 0, scroll.scrollWidth - scroll.clientWidth);
+
+      lastScrollPosition.current = roundToStep(nextScrollOffset, step);
+
+      setOffsetX(nextScrollOffset);
     }
   }, [offset, step]);
 
@@ -251,7 +261,7 @@ export const Frames: FC<TimelineViewProps> = ({
 
     if (!isDefined(scroll) || framesInView < 1) return;
 
-    const firstFrame = toSteps(roundToStep(offsetX, step), step);
+    const firstFrame = toSteps(roundToStep(lastOffsetX.current, step), step);
     const lastFrame = firstFrame + framesInView;
 
     const positionDelta = Math.abs(position - lastPosition.current);
@@ -262,14 +272,14 @@ export const Frames: FC<TimelineViewProps> = ({
     // this ensures the calculation of offset is kept correct.
     // This is needed because the position is not always a multiple of the step
     // and the offset used to calculate the position is always a multiple of the step.
-    if (positionDelta === 1 || (position >= firstFrame && position <= lastFrame)) {
+    if (positionDelta === 1 && (position >= firstFrame && position <= lastFrame)) {
 
       // set to previous frame scroll
       // if position is 0, then it will be set to 0
       if (position <= firstFrame) {
         const prevLeft = clamp((firstFrame - 1 - framesInView) * step, 0, scroll.scrollWidth - scroll.clientWidth);
 
-        lastScrollPosition.current = prevLeft / step;
+        lastScrollPosition.current = roundToStep(prevLeft, step);
 
         setScroll({ left: prevLeft });
 
@@ -278,7 +288,7 @@ export const Frames: FC<TimelineViewProps> = ({
       } else if (position > lastFrame) {
         const nextLeft = clamp(lastFrame * step, 0, scroll.scrollWidth - scroll.clientWidth);
 
-        lastScrollPosition.current = nextLeft / step;
+        lastScrollPosition.current = roundToStep(nextLeft, step);
 
         setScroll({ left: nextLeft });
       }
