@@ -137,6 +137,10 @@ module.exports = {
     I.click(this._playButtonSelector);
   },
 
+  seeErrorHandler(value) {
+    I.see(value);
+  },
+
   async seeIsPlaying(playing) {
     const isPaused = await I.grabAttributeFrom(this._audioElementSelector, 'paused');
 

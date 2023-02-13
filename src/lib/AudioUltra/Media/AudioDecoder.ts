@@ -1,7 +1,7 @@
-import { AudioDecoderWorker, getAudioDecoderWorker } from 'audio-file-decoder';
+import { AudioDecoderWorker, getAudioDecoderWorker } from '@martel/audio-file-decoder';
 // eslint-disable-next-line
 // @ts-ignore
-import DecodeAudioWasm from 'audio-file-decoder/decode-audio.wasm';
+import DecodeAudioWasm from '@martel/audio-file-decoder/decode-audio.wasm';
 import { Events } from '../Common/Events';
 import { clamp, info } from '../Common/Utils';
 
@@ -122,7 +122,6 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
    */
   async init(arraybuffer: ArrayBuffer) {
     if (this.worker) return;
-
     this.worker = await getAudioDecoderWorker(DecodeAudioWasm, arraybuffer);
 
     info('decode:worker:ready', this.src);

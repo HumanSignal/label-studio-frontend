@@ -54,13 +54,11 @@ export default {
 
   ERR_LOADING_AUDIO({ attr, url, error }) {
     return (
-      <p>
-        Error while loading audio. Check <code>{attr}</code> field in task.
-        <br />
-        Technical description: {error}
-        <br />
-        URL: {url}
-      </p>
+      <div>
+        <p>Error while loading audio. Check <code>{attr}</code> field in task.</p>
+        <p>Technical description: {error}</p>
+        <p>URL: {url}</p>
+      </div>
     );
   },
 

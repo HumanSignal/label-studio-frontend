@@ -1,5 +1,5 @@
 import { observe } from 'mobx';
-import { getRoot, getType, types } from 'mobx-state-tree';
+import { getEnv, getRoot, getType, types } from 'mobx-state-tree';
 import { customTypes } from '../../../core/CustomTypes';
 import { guidGenerator, restoreNewsnapshot } from '../../../core/Helpers.ts';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
@@ -440,7 +440,9 @@ export const AudioModel = types.compose(
         },
 
         onError(error) {
-          self.errors = [error];
+          const message = getEnv(self.store).messages.ERR_LOADING_AUDIO({ attr: self.value, url: self._value, error:error.message });
+
+          self.errors = [message];
         },
 
         beforeDestroy() {
