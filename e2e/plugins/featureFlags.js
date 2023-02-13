@@ -23,7 +23,7 @@ module.exports = function(config) {
   }
 
   if (!helper) {
-    console.error('Feature flags is only supported in Playwright');
+    console.error(`Feature flags is only supported in ${supportedHelpers.join(', ')}`);
     return;
   }
 

@@ -120,6 +120,12 @@ initLabelStudio(linkFunctions(params));
 `);
 };
 
+const setFeatureFlagsDefaultValue = (value) => {
+  if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
+  window.APP_SETTINGS.feature_flags_default_value = value;
+  return window.APP_SETTINGS.feature_flags_default_value;
+};
+
 const setFeatureFlags = (featureFlags) => {
   if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
   if (!window.APP_SETTINGS.feature_flags) window.APP_SETTINGS.feature_flags = {};
@@ -281,6 +287,25 @@ const emulateClick = source => {
   source.dispatchEvent(event);
 };
 
+const emulateKeypress = (params) => {
+  document.activeElement.dispatchEvent(
+    new KeyboardEvent( 'keydown', {
+      bubbles: true,
+      cancelable: true,
+      ...params,
+    } ),
+  );
+  document.activeElement.dispatchEvent(
+    new KeyboardEvent( 'keyup', {
+      bubbles: true,
+      cancelable: true,
+      ...params,
+    } ),
+  );
+};
+
+
+
 // click the Rect on the Konva canvas
 const clickRect = () => {
   const rect = window.Konva.stages[0].findOne('Rect');
@@ -441,6 +466,50 @@ const clearModalIfPresent = () => {
     modal.remove();
   }
 };
+
+/**
+ *
+ * @param {object} bbox
+ * @param {number} bbox.x
+ * @param {number} bbox.y
+ * @param {number} bbox.width
+ * @param {number} bbox.height
+ * @returns {{x: number, y: number}}
+ */
+const centerOfBbox = (bbox) => {
+  return {
+    x: bbox.x + bbox.width / 2,
+    y: bbox.y + bbox.height / 2,
+  };
+};
+
+/**
+ * Generate the URL of the image of the specified size
+ * @param {object} size
+ * @param {number} size.width
+ * @param {number} size.height
+ * @returns {Promise<string>}
+ */
+async function generateImageUrl({ width, height }) {
+  const canvas = document.createElement('canvas');
+
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext('2d');
+
+  const centerX = width / 2;
+  const centerY = height / 2;
+
+  for (let k = 0; k < centerX; k += 50) {
+    ctx.strokeRect(centerX - k, 0, k * 2, height);
+  }
+  for (let k = 0; k < centerY; k += 50) {
+    ctx.strokeRect(0, centerY - k, width, k * 2);
+  }
+
+  return canvas.toDataURL();
+}
 
 const getCanvasSize = () => {
   const stage = window.Konva.stages[0];
@@ -636,6 +705,7 @@ function hasSelectedRegion() {
 module.exports = {
   initLabelStudio,
   createLabelStudioInitFunction,
+  setFeatureFlagsDefaultValue,
   setFeatureFlags,
   hasFF,
   createAddEventListenerScript,
@@ -649,6 +719,7 @@ module.exports = {
   convertToFixed,
 
   emulateClick,
+  emulateKeypress,
   clickRect,
   clickKonva,
   clickMultipleKonva,
@@ -668,6 +739,8 @@ module.exports = {
   switchRegionTreeView,
   hasSelectedRegion,
   clearModalIfPresent,
+  centerOfBbox,
+  generateImageUrl,
 
   serialize,
   selectText,
