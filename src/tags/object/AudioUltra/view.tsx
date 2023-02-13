@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import React, { FC, useEffect, useRef } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import { Hotkey } from '../../../core/Hotkey';
 import { useWaveform } from '../../../lib/AudioUltra/react';
 import { Controls } from '../../../components/Timeline/Controls';
