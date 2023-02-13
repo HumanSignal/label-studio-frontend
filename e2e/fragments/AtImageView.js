@@ -95,7 +95,7 @@ module.exports = {
   },
 
   /**
-   * Get  pixel color at point
+   * Get pixel color at point
    * @param {number} x
    * @param {number} y
    * @param {number[]} rgbArray
