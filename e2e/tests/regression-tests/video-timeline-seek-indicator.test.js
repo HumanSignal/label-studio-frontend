@@ -106,7 +106,7 @@ Scenario('Seek view should be in sync with indicator position', async ({ I, Labe
     let indicatorPosX = indicatorBbox.x;
 
     I.say('Move the video position indicator to the end of the seek indicator');
-    const endOfSeeker = indicatorBbox.width - 1.5; // The indicator width is set wider by 1.5, to account for the pixel sizing of the position indicator width and placement rounding, so subtract this
+    const endOfSeeker = indicatorBbox.width - 2; // The indicator width is set wider by 1.5, to account for the pixel sizing of the position indicator width and placement rounding, so subtract this
 
     await AtVideoView.drag(positionBbox, endOfSeeker, 0);
     indicatorBbox = await AtVideoView.grabIndicatorBoundingRect();
