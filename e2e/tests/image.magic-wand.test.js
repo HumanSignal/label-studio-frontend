@@ -158,10 +158,9 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
   I.say('Unselecting last magic wand region');
   I.pressKey('Escape');
 
-  // @todo currently gallery doesn't work well with CORS, so this is not covered by test
   // Change to the false color view, zoom in, and magic wand with a new class.
-  // I.say('Changing to false-color view');
-  // I.click('[class*="gallery--"] img[src*="false_color"]');
+  I.say('Changing to false-color view');
+  I.click('[class*="gallery--"] img[src*="false_color"]');
 
   I.say('Zooming in');
   I.click('button[aria-label="zoom-in"]');
