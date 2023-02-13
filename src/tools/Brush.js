@@ -53,7 +53,10 @@ const _Tool = types
     group: 'segmentation',
     shortcut: 'B',
     smart: true,
-    unselectRegionOnToolChange: isFF(FF_DEV_4081) ? false : true,
+
+    // Support the existing unselect behavior until the Magic Wand feature flag is on by default.
+    // @todo change to false once the Magic Wand is on by default.
+    unselectRegionOnToolChange: true,
   })
   .views(self => ({
     get viewClass() {
@@ -116,6 +119,13 @@ const _Tool = types
         }
 
         return region;
+      },
+
+      afterCreate() {
+        // Dynamically update unselection behavior based on feature flags; do this dynamically
+        // rather than on import so that e2e tests which turn on and off feature flags work
+        // correctly.
+        self.unselectRegionOnToolChange = isFF(FF_DEV_4081) ? false : true;
       },
 
       commitDrawingRegion() {
