@@ -32,6 +32,7 @@ const Model = types.model({
     'polygon',
     'keypoint',
     'brush',
+    'magicwand',
     'rectanglelabels',
     'ellipselabels',
     'polygonlabels',

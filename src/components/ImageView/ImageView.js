@@ -1,7 +1,7 @@
 import React, { Component, createRef, forwardRef, Fragment, memo, useEffect, useRef, useState } from 'react';
 import { Group, Layer, Line, Rect, Stage } from 'react-konva';
 import { observer } from 'mobx-react';
-import { getRoot, isAlive } from 'mobx-state-tree';
+import { getEnv, getRoot, isAlive } from 'mobx-state-tree';
 
 import ImageGrid from '../ImageGrid/ImageGrid';
 import ImageTransformer from '../ImageTransformer/ImageTransformer';
@@ -9,7 +9,6 @@ import ObjectTag from '../../components/Tags/Object';
 import Tree from '../../core/Tree';
 import styles from './ImageView.module.scss';
 import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
-import messages from '../../utils/messages';
 import { chunks, findClosestParent } from '../../utils/utilities';
 import Konva from 'konva';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -21,7 +20,7 @@ import ResizeObserver from '../../utils/resize-observer';
 import { debounce } from '../../utils/debounce';
 import Constants from '../../core/Constants';
 import { fixRectToFit } from '../../utils/image';
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_3793, isFF } from '../../utils/feature-flags';
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_3793, FF_DEV_4081, isFF } from '../../utils/feature-flags';
 
 Konva.showWarnings = false;
 
@@ -670,7 +669,7 @@ export default observer(
     handleError = () => {
       const { item, store } = this.props;
       const cs = store.annotationStore;
-      const message = messages.ERR_LOADING_HTTP({ attr: item.value, error: '', url: item._value });
+      const message = getEnv(store).messages.ERR_LOADING_HTTP({ attr: item.value, error: '', url: item._value });
 
       cs.addErrors([errorBuilder.generalError(message)]);
     };
@@ -906,8 +905,20 @@ export default observer(
                 src={item._value}
                 onLoad={item.updateImageSize}
                 onError={this.handleError}
+                crossOrigin={item.imageCrossOrigin}
                 alt="LS"
               />
+              {isFF(FF_DEV_4081)
+                ? (
+                  <canvas
+                    className={styles.overlay}
+                    ref={ref => {
+                      item.setOverlayRef(ref);
+                    }}
+                    style={item.imageTransform}
+                  />
+                )
+                : null}
             </div>
             {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
             {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (

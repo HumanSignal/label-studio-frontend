@@ -17,7 +17,7 @@ import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import { clamp } from '../../utils/utilities';
 import { guidGenerator } from '../../utils/unique';
 import { IsReadyWithDepsMixin } from '../../mixins/IsReadyMixin';
-import { FF_DEV_2394, FF_DEV_3377, FF_DEV_3793, isFF } from '../../utils/feature-flags';
+import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, isFF } from '../../utils/feature-flags';
 
 /**
  * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -53,6 +53,7 @@ import { FF_DEV_2394, FF_DEV_3377, FF_DEV_3793, isFF } from '../../utils/feature
  * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
  * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
  * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
+ * @param {string} [crossOrigin="none"]         - Configures CORS cross domain behavior for this image, either "none", "anonymous", or "use-credentials", similar to [DOM `img` crossOrigin property](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/crossOrigin).
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
@@ -87,6 +88,8 @@ const TagAttrs = types.model({
   horizontalalignment: types.optional(types.enumeration(['left', 'center', 'right']), 'left'),
   verticalalignment: types.optional(types.enumeration(['top', 'center', 'bottom']), 'top'),
   defaultzoom: types.optional(types.enumeration(['auto', 'original', 'fit']), 'fit'),
+
+  crossorigin: types.optional(types.enumeration(['none', 'anonymous', 'use-credentials']), 'none'),
 });
 
 const IMAGE_CONSTANTS = {
@@ -127,7 +130,7 @@ const ImageSelectionPoint = types.model({
 const ImageSelection = types.model({
   start: types.maybeNull(ImageSelectionPoint),
   end: types.maybeNull(ImageSelectionPoint),
-}).views( self => {
+}).views(self => {
   return {
     get obj() {
       return getParent(self);
@@ -409,6 +412,18 @@ const Model = types.model({
 
   get hasTools() {
     return !!self.getToolsManager().allTools()?.length;
+  },
+
+  get imageCrossOrigin() {
+    const value = self.crossorigin.toLowerCase();
+
+    if (!isFF(FF_DEV_4081)) {
+      return null;
+    } else if (!value || value === 'none') {
+      return null;
+    } else {
+      return value;
+    }
   },
 
   get fillerHeight() {
@@ -849,6 +864,10 @@ const Model = types.model({
       currentTool?.updateCursor?.();
     },
 
+    setOverlayRef(ref) {
+      self.overlayRef = ref;
+    },
+
     // @todo remove
     setSelected() {
       // self.selectedShape = shape;
@@ -897,16 +916,28 @@ const Model = types.model({
         return;
       }
       if (width > 1 && height > 1) {
+        const prevWidth = self.canvasSize.width;
+        const prevHeight = self.canvasSize.height;
+        const prevStageZoom = self.stageZoom;
+        const prevZoomScale = self.zoomScale;
+
         self.containerWidth = width;
         self.containerHeight = height;
 
         // reinit zoom to calc stageW/H
         self.setZoom(self.currentZoom);
 
-        if (isFF(FF_DEV_2394)) {
-          self.setZoomPosition(self.zoomingPositionX, self.zoomingPositionY);
-        }
         self._recalculateImageParams();
+
+        const zoomChangeRatio = self.stageZoom / prevStageZoom;
+        const scaleChangeRatio = self.zoomScale / prevZoomScale;
+        const changeRatio = zoomChangeRatio * scaleChangeRatio;
+
+
+        self.setZoomPosition(
+          self.zoomingPositionX * changeRatio + (self.canvasSize.width / 2 - prevWidth / 2 * changeRatio),
+          self.zoomingPositionY * changeRatio + (self.canvasSize.height / 2 - prevHeight / 2 * changeRatio),
+        );
       }
 
       self.sizeUpdated = true;
@@ -935,7 +966,7 @@ const Model = types.model({
       setTimeout(self.annotation.history.unfreeze, 0);
 
       //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
-      if (_historyLength <= 1){
+      if (_historyLength <= 1) {
         // Don't force unselection of regions during the updateObjects callback from history reinit
         setTimeout(() => self.annotation.reinitHistory(false), 0);
       }
@@ -963,8 +994,15 @@ const Model = types.model({
     },
 
     checkLabels() {
-      // there is should be at least one state selected for *labels object
-      const labelStates = (self.states() || []).filter(s => s.type.includes('labels'));
+      let labelStates;
+
+      if (isFF(FF_DEV_3666)) {
+        // there should be at least one available label or none of them should be selected
+        labelStates = self.activeStates() || [];
+      } else {
+        // there is should be at least one state selected for *labels object
+        labelStates = (self.states() || []).filter(s => s.type.includes('labels'));
+      }
       const selectedStates = self.getAvailableStates();
 
       return selectedStates.length !== 0 || labelStates.length === 0;

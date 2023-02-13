@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Group, Image, Layer, Shape } from 'react-konva';
 import { observer } from 'mobx-react';
 import { getParent, getRoot, hasParent, types } from 'mobx-state-tree';
@@ -7,7 +7,6 @@ import Canvas from '../utils/canvas';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import Registry from '../core/Registry';
-import WithStatesMixin from '../mixins/WithStates';
 import { ImageModel } from '../tags/object/Image';
 import { LabelOnMask } from '../components/ImageView/LabelOnRegion';
 import { guidGenerator } from '../core/Helpers';
@@ -20,6 +19,7 @@ import { RegionWrapper } from './RegionWrapper';
 import { Geometry } from '../components/RelationsOverlay/Geometry';
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
 import IsReadyMixin from '../mixins/IsReadyMixin';
+import { FF_DEV_4081, isFF } from '../utils/feature-flags';
 
 const highlightOptions = {
   shadowColor: 'red',
@@ -121,6 +121,8 @@ const Model = types
     coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
 
     rle: types.frozen(),
+
+    maskDataURL: types.frozen(),
 
     touches: types.array(Points),
     currentTouch: types.maybeNull(types.reference(Points)),
@@ -324,6 +326,20 @@ const Model = types
         annotation.autosave && setTimeout(() => annotation.autosave());
       },
 
+      endUpdatedMaskDataURL(maskDataURL) {
+        const { annotation } = self.object;
+
+        // will resume in the next tick...
+        annotation.startAutosave();
+
+        self.maskDataURL = maskDataURL;
+
+        self.notifyDrawingFinished();
+
+        // ...so we run this toggled function also delayed
+        annotation.autosave && setTimeout(() => annotation.autosave());
+      },
+
       convertPointsToMask() {},
 
       setScale(x, y) {
@@ -389,6 +405,7 @@ const Model = types
           value.rle = self.rle;
 
           if (self.touches.length) value.touches = self.touches;
+          if (self.maskDataURL) value.maskDataURL = self.maskDataURL;
         } else {
           const rle = Canvas.Region2RLE(self, object);
 
@@ -412,7 +429,6 @@ const Model = types
 
 const BrushRegionModel = types.compose(
   'BrushRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   NormalizationMixin,
   AreaMixin,
@@ -474,20 +490,43 @@ const HtxBrushView = ({ item }) => {
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
   // Prepare brush stroke from RLE with current stroke color
-  useMemo(() => {
-    if (!item.rle || !item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
-    const img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
+  useEffect(async function() {
 
-    img.onload = () => {
-      setImage(img);
-      item.setReady(true);
-    };
+    // Two possible ways to draw an image from precreated data:
+    // - rle - An RLE encoded RGBA image
+    // - maskDataURL - an RGBA mask encoded as an image data URL that can be directly placed into
+    //  an image without having to go through an RLE encode/decode loop to save performance for tools
+    //  that dynamically produce image masks.
+
+    if (!item.rle && !item.maskDataURL) return;
+    if (!item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
+
+    let img;
+
+    if (item.maskDataURL && isFF(FF_DEV_4081)) {
+      img = await Canvas.maskDataURL2Image(item.maskDataURL, { color: item.strokeColor });
+    } else if (item.rle) {
+      img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
+    }
+
+    if (img) {
+      img.onload = () => {
+        setImage(img);
+        item.setReady(true);
+      };
+    }
   }, [
     item.rle,
+    item.maskDataURL,
+    item.maskBoundsMinX,
+    item.maskBoundsMinY,
+    item.maskBoundsMaxX,
+    item.maskBoundsMaxY,
     item.parent,
     item.parent?.naturalWidth,
     item.parent?.naturalHeight,
     item.strokeColor,
+    item.opacity,
   ]);
 
   // Drawing hit area by shape color to detect interactions inside the Konva
@@ -527,7 +566,7 @@ const HtxBrushView = ({ item }) => {
   const drawCallback = useMemo(()=>{
     let done = false;
 
-    return () => {
+    return async function() {
       const { highlighted } = highlightedRef.current;
       const layer = layerRef.current;
       const isDrawing = item.parent?.drawingRegion === item;
@@ -562,6 +601,7 @@ const HtxBrushView = ({ item }) => {
     item.parent?.zoomingPositionY,
     item.parent?.stageWidth,
     item.parent?.stageHeight,
+    item.maskDataURL,
     item.rle,
     image,
   ]);
@@ -681,6 +721,6 @@ const HtxBrushView = ({ item }) => {
 const HtxBrush = AliveRegion(HtxBrushView, { renderHidden: true });
 
 Registry.addTag('brushregion', BrushRegionModel, HtxBrush);
-Registry.addRegionType(BrushRegionModel, 'image', value => value.rle || value.touches);
+Registry.addRegionType(BrushRegionModel, 'image', value => value.rle || value.touches || value.maskDataURL);
 
 export { BrushRegionModel, HtxBrush };

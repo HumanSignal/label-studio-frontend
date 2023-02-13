@@ -1,7 +1,6 @@
 import React, { Fragment, useContext } from 'react';
 import { Ellipse } from 'react-konva';
 import { getRoot, types } from 'mobx-state-tree';
-import WithStatesMixin from '../mixins/WithStates';
 import Constants  from '../core/Constants';
 import DisabledMixin from '../mixins/Normalization';
 import NormalizationMixin from '../mixins/Normalization';
@@ -207,7 +206,6 @@ const Model = types
 
 const EllipseRegionModel = types.compose(
   'EllipseRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,

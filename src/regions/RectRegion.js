@@ -11,7 +11,6 @@ import { AreaMixin } from '../mixins/AreaMixin';
 import { KonvaRegionMixin } from '../mixins/KonvaRegion';
 import { default as DisabledMixin, default as NormalizationMixin } from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import WithStatesMixin from '../mixins/WithStates';
 import { ImageModel } from '../tags/object/Image';
 import { rotateBboxCoords } from '../utils/bboxCoords';
 import { FF_DEV_3793, isFF } from '../utils/feature-flags';
@@ -327,7 +326,6 @@ const Model = types
 
 const RectRegionModel = types.compose(
   'RectRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   NormalizationMixin,
   DisabledMixin,

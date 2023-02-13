@@ -12,7 +12,7 @@ import styles from './Paragraphs.module.scss';
 import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import { isValidObjectURL } from '../../../utils/utilities';
-import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, FF_DEV_3666, isFF } from '../../../utils/feature-flags';
 import { SyncMixin } from '../../../mixins/SyncMixin';
 
 
@@ -406,7 +406,7 @@ const Model = types
 
     addRegions(ranges) {
       const areas = [];
-      const states = self.activeStates();
+      const states = isFF(FF_DEV_3666) ? self.getAvailableStates() : self.activeStates();
 
       if (states.length === 0) return;
 
@@ -434,7 +434,7 @@ const Model = types
       if (isFF(FF_DEV_2918)) {
         return self.addRegions([range])[0];
       } else {
-        const states = self.activeStates();
+        const states = isFF(FF_DEV_3666) ? self.getAvailableStates() : self.activeStates();
 
         if (states.length === 0) return;
 
