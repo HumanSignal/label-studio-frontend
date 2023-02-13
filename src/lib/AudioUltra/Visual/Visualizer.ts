@@ -37,6 +37,7 @@ export type VisualizerOptions = Pick<WaveformOptions,
 | 'playhead'
 | 'timeline'
 | 'height'
+| 'minWaveHeight'
 | 'gridWidth'
 | 'gridColor'
 | 'waveColor'
@@ -67,7 +68,8 @@ export class Visualizer extends Events<VisualizerEvents> {
   private gridColor = rgba('rgba(0, 0, 0, 0.1)');
   private backgroundColor = rgba('#fff');
   private waveColor = rgba('#000');
-  private waveHeight = 100;
+  private waveHeight = 96;
+  private minWaveHeight = 32;
   private lastRenderedChannel = -1;
   private lastRenderedZoom = 0;
   private lastRenderedWidth = 0;
@@ -88,14 +90,15 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.wf = waveform;
     this.waveContainer = options.container;
-    this.waveHeight = options.height ?? this.waveHeight;
     this.waveColor = options.waveColor ? rgba(options.waveColor) : this.waveColor;
     this.padding = { ...this.padding, ...options.padding };
     this.playheadPadding = options.playhead?.padding ?? this.playheadPadding;
     this.zoomToCursor = options.zoomToCursor ?? this.zoomToCursor;
     this.autoCenter = options.autoCenter ?? this.autoCenter;
     this.splitChannels = options.splitChannels ?? this.splitChannels;
+    this.waveHeight = options.height ?? this.waveHeight;
     this.timelineHeight = options.timeline?.height ?? this.timelineHeight;
+    this.minWaveHeight = options.minWaveHeight ?? this.minWaveHeight;
     this.timelinePlacement = options?.timeline?.placement ?? this.timelinePlacement;
     this.gridColor = options.gridColor ? rgba(options.gridColor) : this.gridColor;
     this.gridWidth = options.gridWidth ?? this.gridWidth;
@@ -117,8 +120,9 @@ export class Visualizer extends Events<VisualizerEvents> {
   init(audio: WaveformAudio) {
     this.init = () => warn('Visualizer is already initialized');
     this.audio = audio;
-    this.setLoading(false);
+    this.setContainerHeight();
     this.getSamplesPerPx();
+    this.setLoading(false);
     this.invoke('initialized', [this]);
     this.draw(false, true);
   }
@@ -295,10 +299,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   private renderWave(channelNumber: number, layer: Layer): Promise<boolean> {
     const renderId = this.renderId;
-    const fullHeight = this.height;
-    const waveHeight = fullHeight - this.reservedSpace;
-    const height = waveHeight / (this.splitChannels ? this.audio?.channelCount ?? 1 : 1);
-
+    const height = (this.waveHeight - this.reservedSpace) / (this.audio?.channelCount ?? 1);
     const dataLength = this.dataLength;
     const scrollLeftPx = this.getScrollLeftPx();
 
@@ -514,9 +515,14 @@ export class Visualizer extends Events<VisualizerEvents> {
     let height = 0;
     const timelineLayer = this.getLayer('timeline');
     const waveformLayer = this.getLayer('waveform');
+    const waveformHeight = Math.max(this.waveHeight, this.minWaveHeight * (this.splitChannels ? this.audio?.channelCount ?? 1 : 1) + this.timelineHeight);
+
+    if (this.waveHeight !== waveformHeight) {
+      this.waveHeight = waveformHeight;
+    }
 
     height += timelineLayer?.isVisible ? this.timelineHeight : 0;
-    height += waveformLayer?.isVisible ? (this?.wf?.params?.height ?? 0) - this.timelineHeight : 0;
+    height += waveformLayer?.isVisible ? waveformHeight - this.timelineHeight : 0;
     return height;
   }
 
@@ -621,7 +627,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     layer.on('layerUpdated', () => {
       const mainLayer = this.getLayer('main');
 
-      this.container.style.height = `${this.height}px`;
+      this.setContainerHeight();
       if (mainLayer) {
         mainLayer.height = this.height;
       }
@@ -846,15 +852,23 @@ export class Visualizer extends Events<VisualizerEvents> {
     }
   };
 
+  private setContainerHeight() {
+    this.container.style.height = `${this.height}px`;
+  }
+
+  private updateSize() {
+    const newWidth = this.wrapper.clientWidth;
+    const newHeight = this.height;
+
+    this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
+    this.getSamplesPerPx();
+  }
+
   private handleResize = () => {
     if (!this.wf.duration) return;
 
     requestAnimationFrame(() => {
-      const newWidth = this.wrapper.clientWidth;
-      const newHeight = this.height;
-
-      this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
-      this.getSamplesPerPx();
+      this.updateSize();
       this.wf.renderTimeline();
       this.resetWaveformRender();
       this.draw();

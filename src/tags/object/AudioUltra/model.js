@@ -41,7 +41,8 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  * @param {string} [defaultzoom=1] - Default zoom level (from 1 to 1500)
  * @param {string} [hotkey] - Hotkey used to play or pause audio
  * @param {string} [sync] object name to sync with
- * @param {string} [height=94] - Total height of the audio player
+ * @param {string} [height=96] - Total height of the audio player
+ * @param {string} [minwaveheight=32] - Minimum height of a waveform when in splitchannel mode with multiple channels
  * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
  * @param {string} [cursorcolor=#333] - Audio pane cursor color. Color should be specify in hex decimal string
  * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform
@@ -62,7 +63,8 @@ const TagAttrs = types.model({
   hotkey: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
-  height: types.optional(types.string, '94'),
+  height: types.optional(types.string, '96'),
+  minwaveheight: types.optional(types.string, '32'),
   cursorwidth: types.optional(types.string, '2'),
   cursorcolor: types.optional(customTypes.color, '#333'),
   defaultscale: types.optional(types.string, '1'),
