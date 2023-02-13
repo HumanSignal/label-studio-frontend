@@ -5,7 +5,7 @@ const {
   hasKonvaPixelColorAtPoint,
   setKonvaLayersOpacity,
   serialize,
-  waitForImage
+  waitForImage,
 } = require('./helpers');
 const assert = require('assert');
 
@@ -47,17 +47,17 @@ const annotationEmpty = {
 // TODO: Change these URLs to heartex URLs, and ensure the heartex bucket allows CORS access
 // for these to work.
 const data = {
-  "image": [
-    "http://htx-pub.s3.amazonaws.com/samples/magicwand/magic_wand_scale_1_20200902_015806_26_2235_1B_AnalyticMS_00750_00750.jpg",
-    "http://htx-pub.s3.amazonaws.com/samples/magicwand/magic_wand_scale_2_20200902_015806_26_2235_1B_AnalyticMS_00750_00750.jpg",
-    "http://htx-pub.s3.amazonaws.com/samples/magicwand/magic_wand_scale_3_20200902_015806_26_2235_1B_AnalyticMS_00750_00750.jpg",
-    "http://htx-pub.s3.amazonaws.com/samples/magicwand/magic_wand_false_color_20200902_015806_26_2235_1B_AnalyticMS_00750_00750.jpg"
+  'image': [
+    'http://htx-pub.s3.amazonaws.com/samples/magicwand/magic_wand_scale_1_20200902_015806_26_2235_1B_AnalyticMS_00750_00750.jpg',
+    'http://htx-pub.s3.amazonaws.com/samples/magicwand/magic_wand_scale_2_20200902_015806_26_2235_1B_AnalyticMS_00750_00750.jpg',
+    'http://htx-pub.s3.amazonaws.com/samples/magicwand/magic_wand_scale_3_20200902_015806_26_2235_1B_AnalyticMS_00750_00750.jpg',
+    'http://htx-pub.s3.amazonaws.com/samples/magicwand/magic_wand_false_color_20200902_015806_26_2235_1B_AnalyticMS_00750_00750.jpg',
   ],
-  "thumb": "http://htx-pub.s3.amazonaws.com/samples/magicwand/magic_wand_thumbnail_20200902_015806_26_2235_1B_AnalyticMS_00750_00750.jpg"
-}
+  'thumb': 'http://htx-pub.s3.amazonaws.com/samples/magicwand/magic_wand_thumbnail_20200902_015806_26_2235_1B_AnalyticMS_00750_00750.jpg',
+};
 
-async function magicWand(I, {msg, fromX, fromY, toX, toY}) {
-  I.usePlaywrightTo(msg, async ({ browser, browserContext, page }) => {
+async function magicWand(I, { msg, fromX, fromY, toX, toY }) {
+  I.usePlaywrightTo(msg, async ({ page }) => {
     await page.mouse.move(fromX, fromY);
     await page.mouse.down();
     await page.mouse.move(toX, toY);
@@ -75,7 +75,7 @@ async function assertMagicWandPixel(I, x, y, assertValue, rgbArray, msg) {
 Scenario('Make sure the magic wand works in a variety of scenarios', async function({ I, LabelStudio, AtImageView, AtSidebar }) {
   const params = {
     config,
-    data: data,
+    data,
     annotations: [annotationEmpty],
   };
 
@@ -104,8 +104,8 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
   AtSidebar.seeRegions(0);
 
   I.say('Magic wanding clouds with cloud class in upper left of image');
-  await magicWand(I, {msg: 'Fill in clouds upper left', fromX: 258, fromY: 214, toX: 650, toY: 650});
-  await magicWand(I, {msg: 'Fill in clouds lower left', fromX: 337, fromY: 777, toX: 650, toY: 650});
+  await magicWand(I, { msg: 'Fill in clouds upper left', fromX: 258, fromY: 214, toX: 650, toY: 650 });
+  await magicWand(I, { msg: 'Fill in clouds lower left', fromX: 337, fromY: 777, toX: 650, toY: 650 });
 
   I.say('Ensuring repeated magic wands back to back with same class collapsed into single region');
   AtSidebar.seeRegions(1);
@@ -128,9 +128,11 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
   I.say('Ensuring magic wand brushregion was created correctly');
   const result = await I.executeScript(serialize);
   const entry = result[1];
+
   assert.equal(entry['from_name'], 'labels_1');
   assert.equal(entry['type'], 'labels');
   const labels = entry['value']['labels'];
+
   assert.equal(labels.length, 1);
   assert.equal(labels[0], 'Cloud');
   assert.equal(entry['value']['rle'].length > 0, true);
@@ -156,9 +158,10 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
   I.say('Unselecting last magic wand region');
   I.pressKey('Escape');
 
+  // @todo currently gallery doesn't work well with CORS, so this is not covered by test
   // Change to the false color view, zoom in, and magic wand with a new class.
-  I.say('Changing to false-color view');
-  I.click('[class*="gallery--"] img[src*="false_color"]');
+  // I.say('Changing to false-color view');
+  // I.click('[class*="gallery--"] img[src*="false_color"]');
 
   I.say('Zooming in');
   I.click('button[aria-label="zoom-in"]');
@@ -171,7 +174,7 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
   I.pressKey('2');
 
   I.say('Magic wanding cloud shadows with cloud shadow class in center of zoomed image');
-  await magicWand(I, {msg: 'Cloud shadow in middle of image', fromX: 390, fromY: 500, toX: 500, toY: 500});
+  await magicWand(I, { msg: 'Cloud shadow in middle of image', fromX: 390, fromY: 500, toX: 500, toY: 500 });
 
   I.say('Ensuring new cloud shadow magic wand region gets added to sidebar');
   AtSidebar.seeRegions(2);
