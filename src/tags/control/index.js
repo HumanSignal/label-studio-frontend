@@ -28,6 +28,8 @@ import { EllipseModel } from './Ellipse';
 import { RelationsModel } from './Relations';
 import { RelationModel } from './Relation';
 
+import { MagicWandModel } from './MagicWand';
+
 export {
   LabelsModel,
   BrushLabelsModel,
@@ -54,6 +56,7 @@ export {
   EllipseModel,
   RelationsModel,
   RelationModel,
+  MagicWandModel,
   VideoRectangleModel,
   ParagraphLabelsModel
 };
