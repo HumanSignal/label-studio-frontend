@@ -440,7 +440,7 @@ export const AudioModel = types.compose(
         },
 
         onError(error) {
-          const message = getEnv(self.store).messages.ERR_LOADING_AUDIO({ attr: self.value, url: self._value, error:error.message });
+          const message = getEnv(self.store).messages.ERR_LOADING_AUDIO({ attr: self.value, url: self._value, error: error.message });
 
           self.errors = [message];
         },
