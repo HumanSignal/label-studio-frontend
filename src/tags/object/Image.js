@@ -34,22 +34,22 @@ import { FF_DEV_3377, FF_DEV_3666, FF_DEV_4081, isFF } from '../../utils/feature
  * @name Image
  * @meta_title Image Tags for Images
  * @meta_description Customize Label Studio with the Image tag to annotate images for computer vision machine learning and data science projects.
- * @param {string} name                       - Name of the element
- * @param {string} value                      - Data field containing a path or URL to the image
- * @param {boolean} [smoothing]               - Enable smoothing, by default it uses user settings
- * @param {string=} [width=100%]              - Image width
- * @param {string=} [maxWidth=750px]          - Maximum image width
- * @param {boolean=} [zoom=false]             - Enable zooming an image with the mouse wheel
- * @param {boolean=} [negativeZoom=false]     - Enable zooming out an image
- * @param {float=} [zoomBy=1.1]               - Scale factor
- * @param {boolean=} [grid=false]             - Whether to show a grid
- * @param {number=} [gridSize=30]             - Specify size of the grid
- * @param {string=} [gridColor="#EEEEF4"]     - Color of the grid in hex, opacity is 0.15
- * @param {boolean} [zoomControl=false]       - Show zoom controls in toolbar
- * @param {boolean} [brightnessControl=false] - Show brightness control in toolbar
- * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
- * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
- * @param {boolean} [crosshair=false]         - Show crosshair cursor
+ * @param {string} name                         - Name of the element
+ * @param {string} value                        - Data field containing a path or URL to the image
+ * @param {boolean} [smoothing]                 - Enable smoothing, by default it uses user settings
+ * @param {string=} [width=100%]                - Image width
+ * @param {string=} [maxWidth=750px]            - Maximum image width
+ * @param {boolean=} [zoom=false]               - Enable zooming an image with the mouse wheel
+ * @param {boolean=} [negativeZoom=false]       - Enable zooming out an image
+ * @param {float=} [zoomBy=1.1]                 - Scale factor
+ * @param {boolean=} [grid=false]               - Whether to show a grid
+ * @param {number=} [gridSize=30]               - Specify size of the grid
+ * @param {string=} [gridColor="#EEEEF4"]       - Color of the grid in hex, opacity is 0.15
+ * @param {boolean} [zoomControl=false]         - Show zoom controls in toolbar
+ * @param {boolean} [brightnessControl=false]   - Show brightness control in toolbar
+ * @param {boolean} [contrastControl=false]     - Show contrast control in toolbar
+ * @param {boolean} [rotateControl=false]       - Show rotate control in toolbar
+ * @param {boolean} [crosshair=false]           - Show crosshair cursor
  * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
  * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
  * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
