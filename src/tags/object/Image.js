@@ -286,6 +286,8 @@ const Model = types.model({
   stageZoomX: 1,
   stageZoomY: 1,
   currentZoom: 1,
+
+  ts: Date.now(),
 })).views(self => ({
   get store() {
     return getRoot(self);
@@ -297,10 +299,23 @@ const Model = types.model({
 
   // @todo the name is for backward compatibility; change the name later
   get _value() {
-    const value = self.parsedValue;
+    let value = self.parsedValue;
 
-    if (Array.isArray(value)) return value[self.currentImage];
-    return value;
+    if (Array.isArray(value)) value = value[self.currentImage];
+
+    if (!self.imageCrossOrigin) {
+      return value;
+    } else if (isFF(FF_DEV_4081) && /^https?:.*?s3\.amazonaws\.com\//g.test(value)){
+      // AWS S3 inconsistently sends back the Origin HTTP header, between images in an <img>
+      // tag and a JavaScript CORS request, breaking cross domain images.
+      // Details: https://bugs.chromium.org/p/chromium/issues/detail?id=409090
+      // Fix is to break the cache for this image only if its cross origin and on
+      // S3.
+      value = `${value}?ts=${self.ts}`;
+      return value;
+    } else {
+      return value;
+    }
   },
 
   get images() {
