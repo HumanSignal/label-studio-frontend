@@ -238,6 +238,14 @@ export const Frames: FC<TimelineViewProps> = ({
 
   useEffect(() => {
     const scroll = scrollable.current;
+
+    if (isDefined(scroll)) {
+      setOffsetX(clamp(offset * step, 0, scroll.scrollWidth - scroll.clientWidth));
+    }
+  }, [offset, step]);
+
+  useEffect(() => {
+    const scroll = scrollable.current;
     // Scrollable element is not available on first render
     // so there is nothing to compute yet
 
@@ -261,7 +269,6 @@ export const Frames: FC<TimelineViewProps> = ({
       if (position <= firstFrame) {
         const prevLeft = clamp((firstFrame - 1 - framesInView) * step, 0, scroll.scrollWidth - scroll.clientWidth);
 
-
         lastScrollPosition.current = prevLeft / step;
 
         setScroll({ left: prevLeft });
@@ -269,7 +276,6 @@ export const Frames: FC<TimelineViewProps> = ({
       // set to next frame scroll
       // if position is last frame, then it will be set to last frame scroll
       } else if (position > lastFrame) {
-
         const nextLeft = clamp(lastFrame * step, 0, scroll.scrollWidth - scroll.clientWidth);
 
         lastScrollPosition.current = nextLeft / step;
@@ -303,7 +309,7 @@ export const Frames: FC<TimelineViewProps> = ({
         <Elem
           name="indicator"
           onMouseDown={handleMovement}
-          style={{ left: clamp(seekerOffset - step, timelineStartOffset, viewWidth) }}
+          style={{ left: clamp(seekerOffset - step, timelineStartOffset - step, viewWidth) }}
         />
 
         {isDefined(hoverOffset) && hoverEnabled && (
