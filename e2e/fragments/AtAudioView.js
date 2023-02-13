@@ -22,6 +22,7 @@ module.exports = {
   _seekBackwardButtonSelector: '.lsf-audio-tag .lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(1)',
   _playButtonSelector: '.lsf-audio-tag .lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(2)',
   _seekForwardButtonSelector: '.lsf-audio-tag .lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(3)',
+  _errorSelector: '[data-testid="error:audio"]',
 
   _stageBbox: { x: 0, y: 0, width: 0, height: 0 },
 
@@ -137,8 +138,10 @@ module.exports = {
     I.click(this._playButtonSelector);
   },
 
-  seeErrorHandler(value) {
-    I.see(value);
+  async seeErrorHandler(value) {
+    const error = await I.grabTextFrom(this._errorSelector);
+
+    assert.equal(error, value);
   },
 
   async seeIsPlaying(playing) {
