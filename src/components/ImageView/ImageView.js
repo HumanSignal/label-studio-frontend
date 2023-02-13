@@ -868,11 +868,10 @@ export default observer(
       ];
 
       const imageIsLoaded = (
-        !item.currentImageEntity.downloading &&
-        !item.currentImageEntity.error &&
-        item.currentImageEntity.downloaded &&
-        item.currentImageEntity.imageLoaded
+        item.imageIsLoaded
       ) || !isFF(FF_LSDV_4583_6);
+
+      console.log({ toolsReady, imageIsLoaded });
 
       return (
         <ObjectTag

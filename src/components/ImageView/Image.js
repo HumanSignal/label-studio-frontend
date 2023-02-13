@@ -22,7 +22,7 @@ export const Image = observer(forwardRef(({
   const onLoad = useCallback((event) => {
     updateImageSize(event);
     imageEntity.setImageLoaded(true);
-  }, [updateImageSize]);
+  }, [updateImageSize, imageEntity]);
 
   return (
     <Block name="image" style={imageSize}>
@@ -63,20 +63,21 @@ const ImageProgress = observer(({
   ) : null;
 });
 
-const ImageRenderer = observer(({
+const ImageRenderer = observer(forwardRef(({
   src,
   onLoad,
   imageTransform,
-}) => {
+}, ref) => {
   return (
     <img
+      ref={ref}
       alt="image"
       src={src}
       onLoad={onLoad}
       style={imageTransform}
     />
   );
-});
+}));
 
 const ImageLoadingError = ({ src, value }) => {
   const error = useMemo(() => {

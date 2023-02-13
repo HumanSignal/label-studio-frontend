@@ -8,6 +8,23 @@ export const ImageEntityMixin = types
     imageEntities: types.optional(types.array(ImageEntity), []),
   })
   .views(self => ({
+    get imageIsLoaded() {
+      const imageEntity = self.currentImageEntity;
+
+      console.log({
+        downlaoded: imageEntity.downloaded,
+        downloading: imageEntity.downloading,
+        loaded: imageEntity.imageLoaded,
+        error: imageEntity.error,
+      });
+
+      return (
+        !imageEntity.downloading &&
+        !imageEntity.error &&
+        imageEntity.downloaded &&
+        imageEntity.imageLoaded
+      );
+    },
     get rotation() {
       return self.currentImageEntity.rotation;
     },
