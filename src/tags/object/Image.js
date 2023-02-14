@@ -1016,6 +1016,27 @@ const Model = types.model({
       shape.selectRegion();
     },
 
+    /**
+     * Resize of image canvas
+     * @param {*} width
+     * @param {*} height
+     */
+    onResize(width, height, userResize) {
+      self._updateImageSize({ width, height, userResize });
+    },
+
+    event(name, ev, screenX, screenY) {
+      [screenX, screenY] = self.fixZoomedCoords([screenX, screenY]);
+
+      const x = self.screenToInternalX(screenX);
+      const y = self.screenToInternalY(screenY);
+
+      self.getToolsManager().event(name, ev.evt || ev, x, y, screenX, screenY);
+    },
+  }));
+
+const CoordsCalculations = types.model()
+  .actions(self => ({
     // convert screen coords to image coords considering zoom
     fixZoomedCoords([x, y]) {
       if (!self.stageRef) {
@@ -1080,27 +1101,34 @@ const Model = types.model({
     internalToScreenY(n) {
       return n / 100 * self.stageHeight;
     },
+  }));
 
-    /**
-     * Resize of image canvas
-     * @param {*} width
-     * @param {*} height
-     */
-    onResize(width, height, userResize) {
-      self._updateImageSize({ width, height, userResize });
+// mock coords calculations to transparently pass coords with FF 3793 off
+const AbsoluteCoordsCalculations = CoordsCalculations
+  .actions(() => ({
+    screenToInternalX(n) {
+      return n;
     },
-
-    event(name, ev, screenX, screenY) {
-      [screenX, screenY] = self.fixZoomedCoords([screenX, screenY]);
-
-      const x = isFF(FF_DEV_3793) ? self.screenToInternalX(screenX) : screenX;
-      const y = isFF(FF_DEV_3793) ? self.screenToInternalY(screenY) : screenY;
-
-      self.getToolsManager().event(name, ev.evt || ev, x, y, screenX, screenY);
+    screenToInternalY(n) {
+      return n;
+    },
+    internalToScreenX(n) {
+      return n;
+    },
+    internalToScreenY(n) {
+      return n;
     },
   }));
 
-const ImageModel = types.compose('ImageModel', TagAttrs, ObjectBase, AnnotationMixin, IsReadyWithDepsMixin, Model);
+const ImageModel = types.compose(
+  'ImageModel',
+  TagAttrs,
+  ObjectBase,
+  AnnotationMixin,
+  IsReadyWithDepsMixin,
+  Model,
+  isFF(FF_DEV_3793) ? CoordsCalculations : AbsoluteCoordsCalculations,
+);
 
 const HtxImage = inject('store')(ImageView);
 
