@@ -78,11 +78,9 @@ class App extends Component {
       >
         <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />
         <Block name="sub__result">You have completed all tasks in the queue!</Block>
-        {store.canGoPrevTask && (
-          <Button onClick={() => store.prevTask()} look="outlined" style={{ margin: '16px 0' }}>
-            Go to Previous Task
-          </Button>
-        )}
+        <Button onClick={e => store.prevTask(e, true)} look="outlined" style={{ margin: '16px 0' }}>
+          Go to Previous Task
+        </Button>
       </Block>
     );
   }

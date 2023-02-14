@@ -12,6 +12,7 @@ import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH
 import { PanelProps } from './PanelBase';
 import './SidePanels.styl';
 import { SidePanelsContext } from './SidePanelsContext';
+import { useRegionsCopyPaste } from '../../hooks/useRegionsCopyPaste';
 
 const maxWindowWidth = 980;
 
@@ -118,6 +119,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
     }),
   });
+
+  useRegionsCopyPaste(currentEntity);
 
   const sidepanelsCollapsed = useMemo(() => {
     return viewportSizeMatch || screenSizeMatch.matches;
