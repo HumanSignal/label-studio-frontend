@@ -138,6 +138,9 @@ export const FF_DEV_3873 = 'fflag_feat_front_dev_3873_labeling_ui_improvements_s
  */
 export const FF_DEV_3730 = 'fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short';
 
+// Enable a Magic Wand to be used for quickly thresholding images with segmentation labels.
+export const FF_DEV_4081 = 'fflag_feat_front_dev_4081_magic_wand_tool';
+
 /**
  * Label stream ablation experiment for solving overlap issue
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short
