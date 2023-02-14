@@ -1,5 +1,3 @@
-import { FF_DEV_4081, isFF } from '../utils/feature-flags';
-
 /**
  * Class for register View
  */
@@ -77,10 +75,6 @@ class _Registry {
   getTool(name: string) {
     const model = this.tools[name];
 
-    if (name === 'magicwand' && !isFF(FF_DEV_4081)) {
-      throw new Error('The magicwand feature flag is not on');
-    }
-
     if (!model) {
       const models = Object.keys(this.tools);
 
@@ -97,10 +91,6 @@ class _Registry {
    */
   getModelByTag(tag: string) {
     const model = this.models[tag];
-
-    if (tag === 'magicwand' && !isFF(FF_DEV_4081)) {
-      throw new Error('magicwand feature flag (fflag_fix_front_dev_3391_interactive_view_all) is not on');
-    }
 
     if (!model) {
       const models = Object.keys(this.models);
