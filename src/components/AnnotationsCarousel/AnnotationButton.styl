@@ -14,6 +14,31 @@
     display flex
     align-items center
     gap 8px
+    .annotation-button__userpic_prediction
+      background-color #EFDBFF
+      color #7735D6
+  &__name
+    font-size 12px
+    font-weight 400
+    line-height 16px
+    letter-spacing 0.4px
+    text-align left
+  &__entity-id
+    font-size 10px
+    font-weight 400
+    line-height 16px
+    letter-spacing 0.4px
+    text-align left
+    color #898098
+    margin-left 8px
+  &__created
+    font-size 10px
+    font-weight 400
+    line-height 16px
+    letter-spacing 0.4px
+    text-align left
+    color #413C4A
+
   &_selected
     background-color #FFFFFF
   &:hover
@@ -21,6 +46,13 @@
   &__icons
     display inline-flex
     align-items center
+  &__icon
+    display flex
+    border-radius 4px
+    &_groundTruth
+      background-color #FFF1B8
+      color #FFC53D
+
   &__ellipsisIcon
     transform rotate(90deg)
     display flex
