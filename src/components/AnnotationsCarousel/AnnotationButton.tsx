@@ -1,7 +1,7 @@
 // import { createRef, useCallback, useEffect, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
 import { Userpic } from '../../common/Userpic/Userpic';
-import { IconAnnotationSkipped, IconDraftCreated, IconDuplicate, IconEllipsis, IconTrashRect, LsComment, LsCommentRed, LsSparks, LsStar, LsStarOutline } from '../../assets/icons';
+import { IconAnnotationGroundTruth, IconAnnotationSkipped2, IconDraftCreated2, IconDuplicate, IconEllipsis, IconTrashRect, LsComment, LsCommentRed, LsSparks, LsStar, LsStarOutline } from '../../assets/icons';
 import { userDisplayName } from '../../utils/utilities'; 
 import { TimeAgo }  from '../../common/TimeAgo/TimeAgo';
 // import { IconArrowLeft, IconArrowRight } from '../../assets/icons';
@@ -16,6 +16,7 @@ interface AnnotationButtonInterface {
   entity?: any;
   capabilities?: any;
   annotationStore?: any;
+  onAnnotationChange?: () => void;
 }
 
 const renderCommentIcon = (ent : any) => {
@@ -28,9 +29,7 @@ const renderCommentIcon = (ent : any) => {
   return null;
 };
 
-export const AnnotationButton = ({ entity, capabilities, annotationStore }: AnnotationButtonInterface) => {
-
-  console.log('AnnotationButton', entity, capabilities, annotationStore);
+export const AnnotationButton = ({ entity, capabilities, annotationStore, onAnnotationChange }: AnnotationButtonInterface) => {
   const iconSize = 37;
   const isPrediction = entity.type === 'prediction';
   const username = userDisplayName(entity.user ?? {
@@ -58,7 +57,10 @@ export const AnnotationButton = ({ entity, capabilities, annotationStore }: Anno
   }, [entity]);
   const ContextMenu = ({ entity, capabilities }: AnnotationButtonInterface) => {
     const dropdown = useDropdown();
-    const clickHandler = () => dropdown?.close();
+    const clickHandler = () => {
+      onAnnotationChange?.();
+      dropdown?.close();
+    };
     const setGroundTruth = useCallback(() => {
       entity.setGroundTruth(!isGroundTruth);
       clickHandler();
@@ -66,8 +68,13 @@ export const AnnotationButton = ({ entity, capabilities, annotationStore }: Anno
     const duplicateAnnotation = useCallback(() => {
       const c = annotationStore.createAnnotation();
 
-      console.log('duplicateAnnotation', c, entity);
-  
+      console.log('duplicateAnnotation', entity.areas.toJSON());
+      Object.values(entity.areas.toJSON()).forEach((area:any) => {
+        const firstResult = area?.results?.[0];
+        
+        console.log('whats happening', firstResult);
+        c.createResult(firstResult, firstResult?.value, { name: firstResult?.from_name, resultType: firstResult?.type }, entity.objects[0], true);
+      });
       annotationStore.selectAnnotation(c.id);
       clickHandler();
     }, []);
@@ -139,9 +146,9 @@ export const AnnotationButton = ({ entity, capabilities, annotationStore }: Anno
         </Elem>
         {!isPrediction && (
           <Elem name='icons'>
-            <Elem name='icon' mod={{ draft: true }}><IconDraftCreated color='#0099FF'/></Elem>
-            <Elem name='icon' mod={{ skipped: true }}><IconAnnotationSkipped color='#DD0000' /></Elem>
-            {isGroundTruth && <Elem name='icon' mod={{ groundTruth: true }}><LsStar width={22} height={22} /></Elem>}
+            {entity.draftId > 0 && <Elem name='icon' mod={{ draft: true }}><IconDraftCreated2 color='#0099FF'/></Elem>}
+            {entity.skipped && <Elem name='icon' mod={{ skipped: true }}><IconAnnotationSkipped2 color='#DD0000' /></Elem>}
+            {isGroundTruth && <Elem name='icon' mod={{ groundTruth: true }}><IconAnnotationGroundTruth /></Elem>}
             {CommentIcon && <Elem name='icon' mod={{ comments: true }}><CommentIcon /></Elem>}
           </Elem>
         )}
