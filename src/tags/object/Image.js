@@ -286,8 +286,6 @@ const Model = types.model({
   stageZoomX: 1,
   stageZoomY: 1,
   currentZoom: 1,
-
-  ts: Date.now(),
 })).views(self => ({
   get store() {
     return getRoot(self);
@@ -311,8 +309,7 @@ const Model = types.model({
       // Details: https://bugs.chromium.org/p/chromium/issues/detail?id=409090
       // Fix is to break the cache for this image only if its cross origin and on
       // S3.
-      value = `${value}?ts=${self.ts}`;
-      return value;
+      return value + '?v=1';
     } else {
       return value;
     }
