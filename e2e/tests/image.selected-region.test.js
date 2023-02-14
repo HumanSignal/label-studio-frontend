@@ -3,7 +3,7 @@
 const {
   doDrawingAction,
   initLabelStudio,
-  waitForImage
+  waitForImage,
 } = require('./helpers');
 const assert = require('assert');
 
@@ -42,7 +42,7 @@ const data = {
 async function testRegion(testType, toolAccelerator, I, LabelStudio, AtImageView, AtSidebar) {
   const params = {
     config,
-    data: data,
+    data,
     annotations: [annotationEmpty],
   };
 

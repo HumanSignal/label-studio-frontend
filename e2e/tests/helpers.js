@@ -712,7 +712,7 @@ function hasSelectedRegion() {
   return !!Htx.annotationStore.selected.highlightedNode;
 }
 
-async function doDrawingAction(I, {msg, fromX, fromY, toX, toY}) {
+async function doDrawingAction(I, { msg, fromX, fromY, toX, toY }) {
   I.usePlaywrightTo(msg, async ({ browser, browserContext, page }) => {
     await page.mouse.move(fromX, fromY);
     await page.mouse.down();
