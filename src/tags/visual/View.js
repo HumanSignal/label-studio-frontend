@@ -62,6 +62,7 @@ const Model = types
       'polygon',
       'keypoint',
       'brush',
+      'magicwand',
       'rectanglelabels',
       'ellipselabels',
       'polygonlabels',

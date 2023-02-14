@@ -17,7 +17,7 @@ import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import { clamp } from '../../utils/utilities';
 import { guidGenerator } from '../../utils/unique';
 import { IsReadyWithDepsMixin } from '../../mixins/IsReadyMixin';
-import { FF_DEV_3377, FF_DEV_3666, isFF } from '../../utils/feature-flags';
+import { FF_DEV_3377, FF_DEV_3666, FF_DEV_4081, isFF } from '../../utils/feature-flags';
 
 /**
  * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -53,6 +53,7 @@ import { FF_DEV_3377, FF_DEV_3666, isFF } from '../../utils/feature-flags';
  * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
  * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
  * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
+ * @param {string} [crossOrigin="none"]         - Configures CORS cross domain behavior for this image, either "none", "anonymous", or "use-credentials", similar to [DOM `img` crossOrigin property](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/crossOrigin).
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
@@ -87,6 +88,8 @@ const TagAttrs = types.model({
   horizontalalignment: types.optional(types.enumeration(['left', 'center', 'right']), 'left'),
   verticalalignment: types.optional(types.enumeration(['top', 'center', 'bottom']), 'top'),
   defaultzoom: types.optional(types.enumeration(['auto', 'original', 'fit']), 'fit'),
+
+  crossorigin: types.optional(types.enumeration(['none', 'anonymous', 'use-credentials']), 'none'),
 });
 
 const IMAGE_CONSTANTS = {
@@ -374,6 +377,18 @@ const Model = types.model({
 
   get hasTools() {
     return !!self.getToolsManager().allTools()?.length;
+  },
+
+  get imageCrossOrigin() {
+    const value = self.crossorigin.toLowerCase();
+
+    if (!isFF(FF_DEV_4081)) {
+      return null;
+    } else if (!value || value === 'none') {
+      return null;
+    } else {
+      return value;
+    }
   },
 
   get fillerHeight() {
@@ -812,6 +827,10 @@ const Model = types.model({
       const currentTool = self.getToolsManager().findSelectedTool();
 
       currentTool?.updateCursor?.();
+    },
+
+    setOverlayRef(ref) {
+      self.overlayRef = ref;
     },
 
     // @todo remove
