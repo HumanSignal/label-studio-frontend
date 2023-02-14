@@ -12,6 +12,7 @@ import { useDropdown } from '../../common/Dropdown/DropdownTrigger';
 // eslint-disable-next-line
 // @ts-ignore
 import { confirm } from '../../common/Modal/Modal';
+import { observer } from 'mobx-react';
 interface AnnotationButtonInterface {
   entity?: any;
   capabilities?: any;
@@ -29,7 +30,7 @@ const renderCommentIcon = (ent : any) => {
   return null;
 };
 
-export const AnnotationButton = ({ entity, capabilities, annotationStore, onAnnotationChange }: AnnotationButtonInterface) => {
+export const AnnotationButton = observer(({ entity, capabilities, annotationStore, onAnnotationChange }: AnnotationButtonInterface) => {
   const iconSize = 37;
   const isPrediction = entity.type === 'prediction';
   const username = userDisplayName(entity.user ?? {
@@ -79,14 +80,19 @@ export const AnnotationButton = ({ entity, capabilities, annotationStore, onAnno
       clickHandler();
     }, []);
     const deleteAnnotation = useCallback(() => {
+      clickHandler();
       confirm({
-        title: 'Delete annotation',
-        body: 'This action cannot be undone',
+        title: 'Delete annotation?',
+        body: (
+          <>
+            This will <strong>delete all existing regions</strong>. Are you sure you want to delete them?<br/>
+            This action cannot be undone.
+          </>
+        ),
         buttonLook: 'destructive',
-        okText: 'Proceed',
+        okText: 'Delete',
         onOk: () => {
           entity.list.deleteAnnotation(entity);
-          clickHandler();
         },
       });
     }, []);
@@ -165,4 +171,4 @@ export const AnnotationButton = ({ entity, capabilities, annotationStore, onAnno
       </Elem>
     </Block>
   );
-};
+});
