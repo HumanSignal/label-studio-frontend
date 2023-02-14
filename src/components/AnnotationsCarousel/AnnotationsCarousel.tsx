@@ -5,6 +5,7 @@ import { Button } from '../../common/Button/Button';
 import './AnnotationsCarousel.styl';
 import { AnnotationButton } from './AnnotationButton';
 import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react';
 
 interface AnnotationsCarouselInterface {
   store: any;
@@ -12,7 +13,7 @@ interface AnnotationsCarouselInterface {
   commentStore?: any;
 }
 
-export const AnnotationsCarousel = ({ store, annotationStore, commentStore }: AnnotationsCarouselInterface) => {
+export const AnnotationsCarousel = observer(({ store, annotationStore, commentStore }: AnnotationsCarouselInterface) => {
   const [entities, setEntities] = useState<any[]>([]);
   const enableAnnotations = store.hasInterface('annotations:tabs');
   const enablePredictions = store.hasInterface('predictions:tabs');
@@ -57,4 +58,4 @@ export const AnnotationsCarousel = ({ store, annotationStore, commentStore }: An
       </Elem>
     </Block>
   ): null;
-};
+});
