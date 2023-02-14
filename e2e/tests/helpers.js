@@ -1,5 +1,7 @@
 /* eslint-disable no-undef */
 
+const assert = require('assert');
+
 /**
  * Load custom example
  * @param {object} params
@@ -710,6 +712,16 @@ function hasSelectedRegion() {
   return !!Htx.annotationStore.selected.highlightedNode;
 }
 
+async function doDrawingAction(I, {msg, fromX, fromY, toX, toY}) {
+  I.usePlaywrightTo(msg, async ({ browser, browserContext, page }) => {
+    await page.mouse.move(fromX, fromY);
+    await page.mouse.down();
+    await page.mouse.move(toX, toY);
+    await page.mouse.up();
+  });
+  I.wait(1); // Ensure that the tool is fully finished being created.
+}
+
 module.exports = {
   initLabelStudio,
   createLabelStudioInitFunction,
@@ -759,4 +771,6 @@ module.exports = {
 
   omitBy,
   dumpJSON,
+
+  doDrawingAction,
 };
