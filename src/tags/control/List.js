@@ -42,6 +42,21 @@ const ListItemModel = types
  *  <HyperText name="page" value="$markup"></HyperText>
  *  <List name="ranker" value="$replies" elementValue="$text" elementTag="Text" ranked="true" sortedHighlightColor="#fcfff5"></List>
  * </View>
+ *
+ * <!-- {
+ *  "data": {
+ *    "markup": "<div style=\"max-width: 750px\"><div style=\"clear: both\"><div style=\"float: right; display: inline-block; border: 1px solid #F2F3F4; background-color: #F8F9F9; border-radius: 5px; padding: 7px; margin: 10px 0;\"><p><b>Jules</b>: No no, Mr. Wolfe, it's not like that. Your help is definitely appreciated.</p></div></div><div style=\"clear: both\"><div style=\"float: right; display: inline-block; border: 1px solid #F2F3F4; background-color: #F8F9F9; border-radius: 5px; padding: 7px; margin: 10px 0;\"><p><b>Vincent</b>: Look, Mr. Wolfe, I respect you. I just don't like people barking orders at me, that's all.</p></div></div><div style=\"clear: both\"><div style=\"display: inline-block; border: 1px solid #D5F5E3; background-color: #EAFAF1; border-radius: 5px; padding: 7px; margin: 10px 0;\"><p><b>The Wolf</b>: If I'm curt with you, it's because time is a factor. I think fast, I talk fast, and I need you two guys to act fast if you want to get out of this. So pretty please, with sugar on top, clean the car.</p></div></div></div>",
+ *    "replies": [
+ *        {
+ *            "text": "Hello world"
+ *        },
+ *        {
+ *            "text": "Goodbye world"
+ *        }
+ *    ]
+ *  }
+ *} -->
+ *
  * @name List
  * @meta_title List Tag for Lists
  * @meta_description Customize Label Studio with lists for machine learning and data science projects.
