@@ -34,7 +34,10 @@ export const Seeker: FC<SeekerProps> = ({
   const viewRef = useRef<HTMLDivElement>();
 
   const showIndicator = seekVisible > 0;
-  const width = `${(seekVisible - leftOffset) / length * 100}%`;
+
+  // The indicator width is set wider by 1.5, to account for the pixel sizing of the position indicator width and placement
+  // to align better with the viewable timeline scroll.
+  const width = `${(Math.ceil(seekVisible) - Math.floor(leftOffset) + 1.5) / length * 100}%`;
   const offsetLimit = length - (seekVisible - leftOffset);
   const windowOffset = `${Math.min(seekOffset, offsetLimit) / length * 100}%`;
   const seekerOffset = position / length * 100;
