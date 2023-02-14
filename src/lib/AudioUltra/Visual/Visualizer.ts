@@ -69,6 +69,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private backgroundColor = rgba('#fff');
   private waveColor = rgba('#000');
   private waveHeight = 96;
+  private originalWaveHeight = 0;
   private minWaveHeight = 32;
   private lastRenderedChannel = -1;
   private lastRenderedZoom = 0;
@@ -97,6 +98,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.autoCenter = options.autoCenter ?? this.autoCenter;
     this.splitChannels = options.splitChannels ?? this.splitChannels;
     this.waveHeight = options.height ?? this.waveHeight;
+    this.originalWaveHeight = this.waveHeight;
     this.timelineHeight = options.timeline?.height ?? this.timelineHeight;
     this.minWaveHeight = options.minWaveHeight ?? this.minWaveHeight;
     this.timelinePlacement = options?.timeline?.placement ?? this.timelinePlacement;
@@ -120,9 +122,11 @@ export class Visualizer extends Events<VisualizerEvents> {
   init(audio: WaveformAudio) {
     this.init = () => warn('Visualizer is already initialized');
     this.audio = audio;
-    this.setContainerHeight();
-    this.getSamplesPerPx();
     this.setLoading(false);
+    this.setContainerHeight();
+    this.updateSize();
+    this.resetWaveformRender();
+    this.getSamplesPerPx();
     this.invoke('initialized', [this]);
     this.draw(false, true);
   }
@@ -299,7 +303,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   private renderWave(channelNumber: number, layer: Layer): Promise<boolean> {
     const renderId = this.renderId;
-    const height = (this.waveHeight - this.reservedSpace) / (this.audio?.channelCount ?? 1);
+    const height = this.waveHeight / (this.audio?.channelCount ?? 1);
     const dataLength = this.dataLength;
     const scrollLeftPx = this.getScrollLeftPx();
 
@@ -515,14 +519,14 @@ export class Visualizer extends Events<VisualizerEvents> {
     let height = 0;
     const timelineLayer = this.getLayer('timeline');
     const waveformLayer = this.getLayer('waveform');
-    const waveformHeight = Math.max(this.waveHeight, this.minWaveHeight * (this.splitChannels ? this.audio?.channelCount ?? 1 : 1) + this.timelineHeight);
+    const waveformHeight = Math.max(this.originalWaveHeight, this.minWaveHeight * (this.splitChannels ? this.audio?.channelCount ?? 1 : 1) + this.timelineHeight) - this.timelineHeight;
 
     if (this.waveHeight !== waveformHeight) {
       this.waveHeight = waveformHeight;
     }
 
     height += timelineLayer?.isVisible ? this.timelineHeight : 0;
-    height += waveformLayer?.isVisible ? waveformHeight - this.timelineHeight : 0;
+    height += waveformLayer?.isVisible ? waveformHeight : 0;
     return height;
   }
 
@@ -860,8 +864,9 @@ export class Visualizer extends Events<VisualizerEvents> {
     const newWidth = this.wrapper.clientWidth;
     const newHeight = this.height;
 
-    this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
     this.getSamplesPerPx();
+
+    this.layers.forEach(layer => layer.setSize(newWidth, newHeight));
   }
 
   private handleResize = () => {
@@ -871,7 +876,7 @@ export class Visualizer extends Events<VisualizerEvents> {
       this.updateSize();
       this.wf.renderTimeline();
       this.resetWaveformRender();
-      this.draw();
+      this.draw(false, true);
     });
   };
 
