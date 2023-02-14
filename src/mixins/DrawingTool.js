@@ -3,7 +3,7 @@ import { types } from 'mobx-state-tree';
 import Utils from '../utils';
 import throttle from 'lodash.throttle';
 import { MIN_SIZE } from '../tools/Base';
-import { FF_DEV_3666, isFF } from '../utils/feature-flags';
+import { FF_DEV_3666, FF_DEV_3793, isFF } from '../utils/feature-flags';
 
 const DrawingTool = types
   .model('DrawingTool', {
@@ -290,11 +290,20 @@ const TwoPointsDrawingTool = DrawingTool.named('TwoPointsDrawingTool')
 
       dblclickEv(_, [x, y]) {
         if (!self.canStartDrawing()) return;
+
+        let dX = self.defaultDimensions.width;
+        let dY = self.defaultDimensions.height;
+
+        if (isFF(FF_DEV_3793)) {
+          dX = self.obj.screenToInternalX(dX);
+          dY = self.obj.screenToInternalY(dY);
+        }
+
         if (currentMode === DEFAULT_MODE) {
           self.startDrawing(x, y);
           if (!self.isDrawing) return;
-          x += self.obj.screenToInternalX(self.defaultDimensions.width);
-          y += self.obj.screenToInternalY(self.defaultDimensions.height);
+          x += dX;
+          y += dY;
           self.draw(x, y);
           self.finishDrawing(x, y);
         }
@@ -399,8 +408,13 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
 
       drawDefault() {
         const { x,y } = startPoint;
-        const dX = self.obj.screenToInternalX(self.defaultDimensions.length);
-        const dY = self.obj.screenToInternalY(self.defaultDimensions.length);
+        let dX = self.defaultDimensions.length;
+        let dY = self.defaultDimensions.length;
+
+        if (isFF(FF_DEV_3793)) {
+          dX = self.obj.screenToInternalX(dX);
+          dY = self.obj.screenToInternalY(dY);
+        }
 
         self.nextPoint(x + dX, y);
         self.nextPoint(
@@ -533,11 +547,20 @@ const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
       dblclickEv(_, [x, y]) {
         lastEvent = DBL_CLICK_EVENT;
         if (!self.canStartDrawing()) return;
+
+        let dX = self.defaultDimensions.width;
+        let dY = self.defaultDimensions.height;
+
+        if (isFF(FF_DEV_3793)) {
+          dX = self.obj.screenToInternalX(dX);
+          dY = self.obj.screenToInternalY(dY);
+        }
+
         if (currentMode === DEFAULT_MODE) {
           self.startDrawing(x, y);
           if (!self.isDrawing) return;
-          x += self.obj.screenToInternalX(self.defaultDimensions.width);
-          y += self.obj.screenToInternalY(self.defaultDimensions.height);
+          x += dX;
+          y += dY;
           self.draw(x, y);
           self.finishDrawing(x, y);
         }

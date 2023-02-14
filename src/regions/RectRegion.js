@@ -9,7 +9,7 @@ import Registry from '../core/Registry';
 import { useRegionStyles } from '../hooks/useRegionColor';
 import { AreaMixin } from '../mixins/AreaMixin';
 import { KonvaRegionMixin } from '../mixins/KonvaRegion';
-import { default as DisabledMixin, default as NormalizationMixin } from '../mixins/Normalization';
+import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import { ImageModel } from '../tags/object/Image';
 import { rotateBboxCoords } from '../utils/bboxCoords';
@@ -65,6 +65,9 @@ const RectRegionAbsoluteCoordsDEV3793 = types
       self.relativeHeight = (height / self.parent?.stageHeight) * 100;
 
       self.rotation = (rotation + 360) % 360;
+    },
+    setPositionInternal(x, y, width, height, rotation) {
+      return self.setPosition(x, y, width, height, rotation);
     },
     updateImageSize(wp, hp, sw, sh) {
       if (self.coordstype === 'px') {
@@ -328,7 +331,6 @@ const RectRegionModel = types.compose(
   'RectRegionModel',
   RegionsMixin,
   NormalizationMixin,
-  DisabledMixin,
   AreaMixin,
   KonvaRegionMixin,
   EditableRegion,

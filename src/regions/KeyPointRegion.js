@@ -2,19 +2,70 @@ import React, { Fragment, useContext } from 'react';
 import { Circle } from 'react-konva';
 import { getRoot, types } from 'mobx-state-tree';
 
+import Registry from '../core/Registry';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import Registry from '../core/Registry';
-import { ImageModel } from '../tags/object/Image';
-import { guidGenerator } from '../core/Helpers';
-import { LabelOnKP } from '../components/ImageView/LabelOnRegion';
-import { AreaMixin } from '../mixins/AreaMixin';
-import { useRegionStyles } from '../hooks/useRegionColor';
-import { AliveRegion } from './AliveRegion';
-import { KonvaRegionMixin } from '../mixins/KonvaRegion';
-import { createDragBoundFunc } from '../utils/image';
+
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
+import { LabelOnKP } from '../components/ImageView/LabelOnRegion';
+import { guidGenerator } from '../core/Helpers';
+import { useRegionStyles } from '../hooks/useRegionColor';
+import { AreaMixin } from '../mixins/AreaMixin';
+import { KonvaRegionMixin } from '../mixins/KonvaRegion';
+import { ImageModel } from '../tags/object/Image';
+import { FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { createDragBoundFunc } from '../utils/image';
+import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
+
+const KeyPointRegionAbsoluteCoordsDEV3793 = types
+  .model({
+    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
+  })
+  .volatile(() => ({
+    relativeX: 0,
+    relativeY: 0,
+  }))
+  .actions(self => ({
+    afterCreate() {
+      if (self.coordstype === 'perc') {
+        // deserialization
+        self.relativeX = self.x;
+        self.relativeY = self.y;
+        self.checkSizes();
+      } else {
+        // creation
+        const { stageWidth: width, stageHeight: height } = self.parent;
+
+        if (width && height) {
+          self.relativeX = (self.x / width) * 100;
+          self.relativeY = (self.y / height) * 100;
+        }
+      }
+    },
+
+    setPosition(x, y) {
+      self.x = x;
+      self.y = y;
+
+      self.relativeX = (x / self.parent.stageWidth) * 100;
+      self.relativeY = (y / self.parent.stageHeight) * 100;
+    },
+
+    updateImageSize(wp, hp, sw, sh) {
+      if (self.coordstype === 'px') {
+        self.x = (sw * self.relativeX) / 100;
+        self.y = (sh * self.relativeY) / 100;
+      }
+
+      if (self.coordstype === 'perc') {
+        self.x = (sw * self.x) / 100;
+        self.y = (sh * self.y) / 100;
+        self.width = (sw * self.width) / 100;
+        self.coordstype = 'px';
+      }
+    },
+  }));
 
 const Model = types
   .model({
@@ -93,9 +144,9 @@ const Model = types
         original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: self.x,
-          y: self.y,
-          width: self.width,
+          x: isFF(FF_DEV_3793) ? self.x : self.convertXToPerc(self.x),
+          y: isFF(FF_DEV_3793) ? self.y : self.convertYToPerc(self.y),
+          width: isFF(FF_DEV_3793) ? self.width : self.convertHDimensionToPerc(self.width),
         },
       };
 
@@ -116,15 +167,16 @@ const KeyPointRegionModel = types.compose(
   KonvaRegionMixin,
   EditableRegion,
   Model,
+  ...(isFF(FF_DEV_3793) ? [] : [KeyPointRegionAbsoluteCoordsDEV3793]),
 );
 
 const HtxKeyPointView = ({ item }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
-  const x = item.parent.internalToScreenX(item.x);
-  const y = item.parent.internalToScreenY(item.y);
-  const width = item.parent.internalToScreenX(item.width);
+  const x = isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.x) : item.x;
+  const y = isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.y) : item.y;
+  const width = isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.width) : item.width;
 
   const regionStyles = useRegionStyles(item, {
     includeFill: true,

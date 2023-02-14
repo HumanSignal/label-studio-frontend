@@ -19,8 +19,35 @@ import { KonvaRegionMixin } from '../mixins/KonvaRegion';
 import { observer } from 'mobx-react';
 import { createDragBoundFunc } from '../utils/image';
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
-import { FF_DEV_2432, isFF } from '../utils/feature-flags';
+import { FF_DEV_2432, FF_DEV_3793, isFF } from '../utils/feature-flags';
 import { fixMobxObserve } from '../utils/utilities';
+
+const PolygonRegionAbsoluteCoordsDEV3793 = types
+  .model({
+    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
+  })
+  .actions(self => ({
+    updateImageSize(wp, hp, sw, sh) {
+      if (self.coordstype === 'px') {
+        self.points.forEach(p => {
+          const x = (sw * p.relativeX) / 100;
+          const y = (sh * p.relativeY) / 100;
+
+          p._movePoint(x, y);
+        });
+      }
+
+      if (!self.annotation.sentUserGenerate && self.coordstype === 'perc') {
+        self.points.forEach(p => {
+          const x = (sw * p.x) / 100;
+          const y = (sh * p.y) / 100;
+
+          self.coordstype = 'px';
+          p._movePoint(x, y);
+        });
+      }
+    },
+  }));
 
 const Model = types
   .model({
@@ -159,8 +186,8 @@ const Model = types
       insertPoint(insertIdx, x, y) {
         const p = {
           id: guidGenerator(),
-          x: self.parent.screenToInternalX(x),
-          y: self.parent.screenToInternalY(y),
+          x: isFF(FF_DEV_3793) ? self.parent.screenToInternalX(x) : x,
+          y: isFF(FF_DEV_3793) ? self.parent.screenToInternalY(y) : y,
           size: self.pointSize,
           style: self.pointStyle,
           index: self.points.length,
@@ -249,7 +276,9 @@ const Model = types
           original_height: self.parent.naturalHeight,
           image_rotation: self.parent.rotation,
           value: {
-            points: self.points.map(p => [p.x, p.y]),
+            points: isFF(FF_DEV_3793)
+              ? self.points.map(p => [p.x, p.y])
+              : self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
             ...(isFF(FF_DEV_2432)
               ? { closed : self.closed }
               : {}
@@ -267,6 +296,7 @@ const PolygonRegionModel = types.compose(
   NormalizationMixin,
   KonvaRegionMixin,
   Model,
+  ...(isFF(FF_DEV_3793) ? [] : [PolygonRegionAbsoluteCoordsDEV3793]),
 );
 
 /**
@@ -294,10 +324,9 @@ function getAnchorPoint({ flattenedPoints, cursorX, cursorY }) {
 function getFlattenedPoints(points) {
   const stage = points[0]?.stage;
 
-  const p = points.map(p => [
-    stage.internalToScreenX(p.x),
-    stage.internalToScreenY(p.y),
-  ]);
+  const p = isFF(FF_DEV_3793)
+    ? points.map(p => [stage.internalToScreenX(p.x), stage.internalToScreenY(p.y)])
+    : points.map(p => [p.x, p.y]);
 
   return p.reduce(function(flattenedPoints, point) {
     return flattenedPoints.concat(point);
@@ -370,10 +399,14 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
           const d = [t.getAttr('x', 0), t.getAttr('y', 0)];
           const scale = [t.getAttr('scaleX', 1), t.getAttr('scaleY', 1)];
 
-          item.setPoints(t.getAttr('points').map((p, idx) => idx % 2
-            ? item.parent.screenToInternalY(p * scale[1] + d[1])
-            : item.parent.screenToInternalX(p * scale[0] + d[0]),
-          ));
+          if (isFF(FF_DEV_3793)) {
+            item.setPoints(t.getAttr('points').map((p, idx) => idx % 2
+              ? item.parent.screenToInternalY(p * scale[1] + d[1])
+              : item.parent.screenToInternalX(p * scale[0] + d[0]),
+            ));
+          } else {
+            item.setPoints(t.getAttr('points').map((c, idx) => c * scale[idx % 2] + d[idx % 2]));
+          }
 
           t.setAttr('x', 0);
           t.setAttr('y', 0);

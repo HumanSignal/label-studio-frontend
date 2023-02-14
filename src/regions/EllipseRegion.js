@@ -1,22 +1,99 @@
 import React, { Fragment, useContext } from 'react';
 import { Ellipse } from 'react-konva';
 import { getRoot, types } from 'mobx-state-tree';
-import Constants  from '../core/Constants';
-import DisabledMixin from '../mixins/Normalization';
+
+import Constants from '../core/Constants';
+import Registry from '../core/Registry';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import Registry from '../core/Registry';
-import { ImageModel } from '../tags/object/Image';
-import { guidGenerator } from '../core/Helpers';
-import { LabelOnEllipse } from '../components/ImageView/LabelOnRegion';
-import { AreaMixin } from '../mixins/AreaMixin';
-import { createDragBoundFunc } from '../utils/image';
-import { useRegionStyles } from '../hooks/useRegionColor';
-import { AliveRegion } from './AliveRegion';
-import { KonvaRegionMixin } from '../mixins/KonvaRegion';
-import { rotateBboxCoords } from '../utils/bboxCoords';
+
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
+import { LabelOnEllipse } from '../components/ImageView/LabelOnRegion';
+import { guidGenerator } from '../core/Helpers';
+import { useRegionStyles } from '../hooks/useRegionColor';
+import { AreaMixin } from '../mixins/AreaMixin';
+import { KonvaRegionMixin } from '../mixins/KonvaRegion';
+import { ImageModel } from '../tags/object/Image';
+import { rotateBboxCoords } from '../utils/bboxCoords';
+import { FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { createDragBoundFunc } from '../utils/image';
+import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
+
+const EllipseRegionAbsoluteCoordsDEV3793 = types
+  .model({
+    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
+  })
+  .volatile(() => ({
+    relativeX: 0,
+    relativeY: 0,
+    relativeWidth: 0,
+    relativeHeight: 0,
+    relativeRadiusX: 0,
+    relativeRadiusY: 0,
+  }))
+  .actions(self => ({
+    afterCreate() {
+      self.startX = self.x;
+      self.startY = self.y;
+
+      switch (self.coordstype)  {
+        case 'perc': {
+          self.relativeX = self.x;
+          self.relativeY = self.y;
+          self.relativeRadiusX = self.radiusX;
+          self.relativeRadiusY = self.radiusY;
+          self.relativeWidth = self.width;
+          self.relativeHeight = self.height;
+          break;
+        }
+        case 'px': {
+          const { stageWidth, stageHeight } = self.parent;
+
+          if (stageWidth && stageHeight) {
+            self.setPosition(self.x, self.y, self.radiusX, self.radiusY, self.rotation);
+          }
+          break;
+        }
+      }
+      self.checkSizes();
+      self.updateAppearenceFromState();
+    },
+    setPosition(x, y, radiusX, radiusY, rotation) {
+      self.x = x;
+      self.y = y;
+      self.radiusX = radiusX;
+      self.radiusY = radiusY;
+
+      self.relativeX = (x / self.parent?.stageWidth) * 100;
+      self.relativeY = (y / self.parent?.stageHeight) * 100;
+
+      self.relativeRadiusX = (radiusX / self.parent?.stageWidth) * 100;
+      self.relativeRadiusY = (radiusY / self.parent?.stageHeight) * 100;
+
+      self.rotation = (rotation + 360) % 360;
+    },
+    setPositionInternal(x, y, radiusX, radiusY, rotation) {
+      return self.setPosition(x, y, radiusX, radiusY, rotation);
+    },
+    updateImageSize(wp, hp, sw, sh) {
+      self.sw = sw;
+      self.sh = sh;
+
+      if (self.coordstype === 'px') {
+        self.x = (sw * self.relativeX) / 100;
+        self.y = (sh * self.relativeY) / 100;
+        self.radiusX = (sw * self.relativeRadiusX) / 100;
+        self.radiusY = (sh * self.relativeRadiusY) / 100;
+      } else if (self.coordstype === 'perc') {
+        self.x = (sw * self.x) / 100;
+        self.y = (sh * self.y) / 100;
+        self.radiusX = (sw * self.radiusX) / 100;
+        self.radiusY = (sh * self.radiusY) / 100;
+        self.coordstype = 'px';
+      }
+    },
+  }));
 
 /**
  * Ellipse object for Bounding Box
@@ -192,10 +269,10 @@ const Model = types
         original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: self.x,
-          y: self.y,
-          radiusX: self.radiusX,
-          radiusY: self.radiusY,
+          x: isFF(FF_DEV_3793) ? self.x : self.convertXToPerc(self.x),
+          y: isFF(FF_DEV_3793) ? self.y : self.convertYToPerc(self.y),
+          radiusX: isFF(FF_DEV_3793) ? self.radiusX : self.convertHDimensionToPerc(self.radiusX),
+          radiusY: isFF(FF_DEV_3793) ? self.radiusY : self.convertVDimensionToPerc(self.radiusY),
           rotation: self.rotation,
         },
       };
@@ -209,10 +286,10 @@ const EllipseRegionModel = types.compose(
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
-  DisabledMixin,
   KonvaRegionMixin,
   EditableRegion,
   Model,
+  ...(isFF(FF_DEV_3793) ? [] : [EllipseRegionAbsoluteCoordsDEV3793]),
 );
 
 const HtxEllipseView = ({ item }) => {
@@ -225,10 +302,10 @@ const HtxEllipseView = ({ item }) => {
   return (
     <Fragment>
       <Ellipse
-        x={item.parent.internalToScreenX(item.x)}
-        y={item.parent.internalToScreenY(item.y)}
-        radiusX={item.parent.internalToScreenX(item.radiusX)}
-        radiusY={item.parent.internalToScreenY(item.radiusY)}
+        x={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.x) : item.x}
+        y={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.y) : item.y}
+        radiusX={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.radiusX) : item.radiusX}
+        radiusY={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.radiusY) : item.radiusY}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}

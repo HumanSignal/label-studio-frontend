@@ -1,4 +1,5 @@
 import { types } from 'mobx-state-tree';
+import { FF_DEV_3793, isFF } from '../utils/feature-flags';
 
 export const KonvaRegionMixin = types.model({})
   .views((self) => {
@@ -9,6 +10,8 @@ export const KonvaRegionMixin = types.model({})
       },
       get bboxCoordsScreen() {
         const bbox = self.bboxCoords;
+
+        if (!isFF(FF_DEV_3793)) return bbox;
 
         return {
           left: self.parent.internalToScreenX(bbox.left),

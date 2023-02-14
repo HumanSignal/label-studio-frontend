@@ -139,12 +139,11 @@ export function createDragBoundFunc(item, offset = { x: 0, y: 0 }) {
 
   return function(pos) {
     return image.fixForZoomWrapper(pos, (pos) => {
-      let x = image.screenToInternalX(pos.x);
-      let y = image.screenToInternalY(pos.y);
+      let { x, y } = pos;
 
-      if (!isFF(FF_DEV_3793)) {
-        x = pos.x;
-        y = pos.y;
+      if (isFF(FF_DEV_3793)) {
+        x = image.screenToInternalX(x);
+        y = image.screenToInternalY(y);
       }
 
       x -= offset.x;
