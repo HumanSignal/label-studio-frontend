@@ -266,8 +266,8 @@ const PolygonPointView = observer(({ item, name }) => {
       <Circle
         key={name}
         name={name}
-        x={isFF(FF_DEV_3793) ? item.stage.internalToScreenX(item.x) : item.x}
-        y={isFF(FF_DEV_3793) ? item.stage.internalToScreenY(item.y) : item.y}
+        x={item.stage.internalToScreenX(item.x)}
+        y={item.stage.internalToScreenY(item.y)}
         radius={w}
         fill={fill}
         stroke="black"

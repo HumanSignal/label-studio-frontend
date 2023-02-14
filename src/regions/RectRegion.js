@@ -400,11 +400,11 @@ const HtxRectangleView = ({ item }) => {
   return (
     <RegionWrapper item={item}>
       <Rect
-        x={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.x) : item.x}
-        y={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.y) : item.y}
+        x={item.parent.internalToScreenX(item.x)}
+        y={item.parent.internalToScreenY(item.y)}
         ref={node => item.setShapeRef(node)}
-        width={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.width) : item.width}
-        height={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.height) : item.height}
+        width={item.parent.internalToScreenX(item.width)}
+        height={item.parent.internalToScreenY(item.height)}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}

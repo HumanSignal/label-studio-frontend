@@ -174,9 +174,9 @@ const HtxKeyPointView = ({ item }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
-  const x = isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.x) : item.x;
-  const y = isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.y) : item.y;
-  const width = isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.width) : item.width;
+  const x = item.parent.internalToScreenX(item.x);
+  const y = item.parent.internalToScreenY(item.y);
+  const width = item.parent.internalToScreenX(item.width);
 
   const regionStyles = useRegionStyles(item, {
     includeFill: true,

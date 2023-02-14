@@ -302,10 +302,10 @@ const HtxEllipseView = ({ item }) => {
   return (
     <Fragment>
       <Ellipse
-        x={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.x) : item.x}
-        y={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.y) : item.y}
-        radiusX={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.radiusX) : item.radiusX}
-        radiusY={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.radiusY) : item.radiusY}
+        x={item.parent.internalToScreenX(item.x)}
+        y={item.parent.internalToScreenY(item.y)}
+        radiusX={item.parent.internalToScreenX(item.radiusX)}
+        radiusY={item.parent.internalToScreenY(item.radiusY)}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}

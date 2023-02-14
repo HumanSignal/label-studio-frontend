@@ -186,8 +186,8 @@ const Model = types
       insertPoint(insertIdx, x, y) {
         const p = {
           id: guidGenerator(),
-          x: isFF(FF_DEV_3793) ? self.parent.screenToInternalX(x) : x,
-          y: isFF(FF_DEV_3793) ? self.parent.screenToInternalY(y) : y,
+          x: self.parent.screenToInternalX(x),
+          y: self.parent.screenToInternalY(y),
           size: self.pointSize,
           style: self.pointStyle,
           index: self.points.length,
@@ -324,9 +324,7 @@ function getAnchorPoint({ flattenedPoints, cursorX, cursorY }) {
 function getFlattenedPoints(points) {
   const stage = points[0]?.stage;
 
-  const p = isFF(FF_DEV_3793)
-    ? points.map(p => [stage.internalToScreenX(p.x), stage.internalToScreenY(p.y)])
-    : points.map(p => [p.x, p.y]);
+  const p = points.map(p => [stage.internalToScreenX(p.x), stage.internalToScreenY(p.y)]);
 
   return p.reduce(function(flattenedPoints, point) {
     return flattenedPoints.concat(point);
