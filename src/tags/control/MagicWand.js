@@ -96,7 +96,6 @@ import { ToolManagerMixin } from '../../mixins/ToolManagerMixin';
  */
 
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
   opacity: types.optional(customTypes.range(), '0.6'),
   blurradius: types.optional(types.string, '5'),
