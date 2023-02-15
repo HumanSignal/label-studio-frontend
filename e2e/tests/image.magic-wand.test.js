@@ -79,11 +79,11 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
     annotations: [annotationEmpty],
   };
 
-  I.amOnPage('/');
-
   LabelStudio.setFeatureFlags({
     'fflag_feat_front_dev_4081_magic_wand_tool': true,
   });
+
+  I.amOnPage('/');
 
   I.executeScript(initLabelStudio, params);
 
