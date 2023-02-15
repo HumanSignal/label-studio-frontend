@@ -41,6 +41,7 @@ const Result = types
       'polygon',
       'brush',
       'ellipse',
+      'magicwand',
       'rectanglelabels',
       'keypointlabels',
       'polygonlabels',
@@ -102,7 +103,7 @@ const Result = types
     },
 
     mergeMainValue(value) {
-      value =  value?.toJSON ? value.toJSON() : value;
+      value = value?.toJSON ? value.toJSON() : value;
       const mainValue = self.mainValue?.toJSON?.() ? self.mainValue?.toJSON?.() : self.mainValue;
 
       if (typeof value !== typeof mainValue) return null;

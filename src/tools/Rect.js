@@ -11,7 +11,6 @@ const _BaseNPointTool = types
     group: 'segmentation',
     smart: true,
     shortcut: 'R',
-    isDrawingTool: true,
   })
   .views(self => {
     const Super = {
@@ -68,7 +67,7 @@ const _BaseNPointTool = types
     beforeCommitDrawing() {
       const s = self.getActiveShape;
 
-      return s.width > self.MIN_SIZE.X  && s.height * self.MIN_SIZE.Y;
+      return s.width > self.MIN_SIZE.X && s.height * self.MIN_SIZE.Y;
     },
   }));
 

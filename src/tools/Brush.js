@@ -10,7 +10,7 @@ import { DrawingTool } from '../mixins/DrawingTool';
 import { Tool } from '../components/Toolbar/Tool';
 import { Range } from '../common/Range/Range'; 
 import { NodeViews } from '../components/Node/Node';
-import { FF_DEV_3666, isFF } from '../utils/feature-flags';
+import { FF_DEV_3666, FF_DEV_4081, isFF } from '../utils/feature-flags';
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 50;
@@ -53,7 +53,7 @@ const _Tool = types
     group: 'segmentation',
     shortcut: 'B',
     smart: true,
-    isDrawingTool: true,
+    unselectRegionOnToolChange: isFF(FF_DEV_4081) ? false : true,
   })
   .views(self => ({
     get viewClass() {
@@ -161,7 +161,7 @@ const _Tool = types
         brush.setDrawing(false);
         brush.endPath();
         if (isFirstBrushStroke) {
-          setTimeout(()=>{
+          setTimeout(() => {
             const newBrush = self.commitDrawingRegion();
 
             self.obj.annotation.selectArea(newBrush);

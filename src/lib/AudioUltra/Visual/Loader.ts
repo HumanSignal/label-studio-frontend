@@ -1,6 +1,8 @@
 export class Loader extends HTMLElement {
   _loaded: number;
   _total: number;
+  _initializing = false;
+  _error = '';
 
   constructor() {
     super();
@@ -76,6 +78,9 @@ export class Loader extends HTMLElement {
           font-weight: 500;
           margin: 0;
         }
+        .error {
+          color: var(--ls-loader-error-color, rgba(207, 19, 34, 1));
+        }
         @keyframes shimmer {
           50% {
             opacity: 0.5;
@@ -96,6 +101,13 @@ export class Loader extends HTMLElement {
     `;
   }
 
+  get error() {
+    return this._error;
+  }
+
+  set error(value: string) {
+    this._error = value;
+  }
 
   get loaded() {
     return this._loaded;
@@ -110,7 +122,7 @@ export class Loader extends HTMLElement {
   }
 
   set total(value: number) {
-    this._total= value;
+    this._total = value;
   }
 
   get value() {
@@ -135,6 +147,22 @@ export class Loader extends HTMLElement {
     const total = this.total;
 
     requestAnimationFrame(() => {
+      // If an error occurred, show the error message and hide the progress bar
+      if (this._error) {
+        if (!text.classList.contains('error')) {
+          text.classList.add('error');
+        }
+        text.innerText = this._error;
+        return;
+      }
+      // Update the progress bar for decoding of chunks
+      if (this._initializing) {
+        loadedText.innerText = `${this.loaded}`;
+        totalText.innerText = `${this.total} chunks`;
+        percentageText.innerText = `(${this.value}%)`;
+        return;
+      }
+
       // Indeterminate progress bar is given if no calculable total available.
       if (total < 0) {
         if (!bar.classList.contains('progress-bar-indeterminate')) 
@@ -150,9 +178,11 @@ export class Loader extends HTMLElement {
 
       // Finished loading, starting initialization
       if (value === 100) {
+        this._initializing = true;
         if (this.total > 0) {
-          percentageText.innerText = `(${value}%)`;
+          loadedText.innerText = `${this.convertBytesToMegabytes(this.loaded)} MB`;
           totalText.innerText = `${this.convertBytesToMegabytes(this.total)} MB`;
+          percentageText.innerText = `(${value}%)`;
         }
         text.innerText = 'Initializing...';
         bar.classList.add('progress-bar-indeterminate');
