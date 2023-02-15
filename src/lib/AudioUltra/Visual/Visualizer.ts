@@ -127,6 +127,9 @@ export class Visualizer extends Events<VisualizerEvents> {
     // This triggers the resize observer when loading in differing heights
     // as a result of multichannel or differently configured minWaveHeight
     this.setContainerHeight();
+    if (this.height === this.originalWaveHeight) {
+      this.handleResize();
+    }
 
     this.invoke('initialized', [this]);
   }
@@ -650,7 +653,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const layer = new LayerGroup({
       name,
       container: this.container,
-      height: this.height,
+      height: this.waveHeight,
       pixelRatio: this.pixelRatio,
       index: zIndex,
       offscreen,
