@@ -28,7 +28,9 @@ export { ReactComponent as IconEllipsis } from './ellipsis.svg';
 export { ReactComponent as IconWarning } from './warning.svg';
 
 export { ReactComponent as IconCheck } from './check.svg';
+export { ReactComponent as IconCheckBold } from './check-bold.svg';
 export { ReactComponent as IconCross } from './cross.svg';
+export { ReactComponent as IconCrossBold } from './cross-bold.svg';
 
 export { ReactComponent as IconPlayerPause } from './player/pause.svg';
 export { ReactComponent as IconPlayerPlay } from './player/play.svg';

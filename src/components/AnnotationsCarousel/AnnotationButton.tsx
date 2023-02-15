@@ -1,7 +1,7 @@
 // import { createRef, useCallback, useEffect, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
 import { Userpic } from '../../common/Userpic/Userpic';
-import { IconAnnotationGroundTruth, IconAnnotationSkipped2, IconDraftCreated2, IconDuplicate, IconEllipsis, IconTrashRect, LsComment, LsCommentRed, LsSparks, LsStar, LsStarOutline } from '../../assets/icons';
+import { IconAnnotationGroundTruth, IconAnnotationSkipped2, IconCheckBold, IconCrossBold, IconDraftCreated2, IconDuplicate, IconEllipsis, IconTrashRect, LsComment, LsCommentRed, LsSparks, LsStar, LsStarOutline } from '../../assets/icons';
 import { userDisplayName } from '../../utils/utilities'; 
 import { TimeAgo }  from '../../common/TimeAgo/TimeAgo';
 // import { IconArrowLeft, IconArrowRight } from '../../assets/icons';
@@ -136,6 +136,9 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
           size={24}
         >
           {isPrediction && <LsSparks style={{ width: 18, height: 18 }}/>}
+          <Elem name='status' mod={{ approved: true }}><IconCheckBold /></Elem>
+          <Elem name='status' mod={{ skipped: true }}><IconCrossBold /></Elem>
+          <Elem name='status' mod={{ approved: true }}><IconCheckBold /></Elem>
         </Elem>
         <Elem name='main'>
           <Elem name="user">

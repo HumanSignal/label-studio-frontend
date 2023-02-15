@@ -13,7 +13,7 @@ interface AnnotationsCarouselInterface {
   commentStore?: any;
 }
 
-export const AnnotationsCarousel = observer(({ store, annotationStore, commentStore }: AnnotationsCarouselInterface) => {
+export const AnnotationsCarousel = observer(({ store, annotationStore }: AnnotationsCarouselInterface) => {
   const [entities, setEntities] = useState<any[]>([]);
   const enableAnnotations = store.hasInterface('annotations:tabs');
   const enablePredictions = store.hasInterface('predictions:tabs');
@@ -21,8 +21,6 @@ export const AnnotationsCarousel = observer(({ store, annotationStore, commentSt
   const groundTruthEnabled = store.hasInterface('ground-truth');
   const enableAnnotationDelete = store.hasInterface('annotations:delete');
   
-  console.log('AnnotationsCarousel', store, annotationStore, commentStore);
-
   useEffect(() => {
     const newEntities = [];
 
