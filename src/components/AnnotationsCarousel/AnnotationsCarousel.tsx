@@ -1,6 +1,6 @@
 // import { createRef, useCallback, useEffect, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
-import { IconArrowLeft, IconArrowRight } from '../../assets/icons';
+import { LsChevron } from '../../assets/icons';
 import { Button } from '../../common/Button/Button';
 import './AnnotationsCarousel.styl';
 import { AnnotationButton } from './AnnotationButton';
@@ -51,8 +51,12 @@ export const AnnotationsCarousel = observer(({ store, annotationStore }: Annotat
         </Elem>
       </Elem>
       <Elem name='carousel-controls'>
-        <Elem tag={Button} name='nav' mod={{ left: true }} aria-label="Carousel left" onClick={(e: MouseEvent) => console.log('left', e.type)}><IconArrowLeft /></Elem>
-        <Elem tag={Button} name='nav' mod={{ right: true }} aria-label="Carousel right" onClick={(e: MouseEvent) => console.log('right', e.type)}><IconArrowRight /></Elem>
+        <Elem tag={Button} name='nav' mod={{ left: true }} aria-label="Carousel left" onClick={(e: MouseEvent) => console.log('left', e.type)}>
+          <Elem name='arrow' mod={{ left: true }} tag={LsChevron} />
+        </Elem>
+        <Elem tag={Button} name='nav' mod={{ right: true }} aria-label="Carousel right" onClick={(e: MouseEvent) => console.log('right', e.type)}>
+          <Elem name='arrow' mod={{ right: true }} tag={LsChevron} />
+        </Elem>
       </Elem>
     </Block>
   ): null;

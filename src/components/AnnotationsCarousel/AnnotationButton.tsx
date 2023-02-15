@@ -41,6 +41,8 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
 
   const CommentIcon = renderCommentIcon(entity);
 
+  console.log('entity', entity, entity.selected);
+
   useEffect(() => {
     setIsGroundTruth(entity.ground_truth);
   }, [entity, entity.ground_truth]);
@@ -126,19 +128,29 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
   return (
     <Block name='annotation-button' mod={{ selected: entity.selected, contextMenuOpen: isContextMenuOpen }}>
       <Elem name='mainSection' onClick={clickHandler}>
-        <Elem
-          name="userpic"
-          tag={Userpic}
-          showUsername
-          username={isPrediction ? entity.createdBy : null}
-          user={entity.user ?? { email: entity.createdBy }}
-          mod={{ prediction: isPrediction }}
-          size={24}
-        >
-          {isPrediction && <LsSparks style={{ width: 18, height: 18 }}/>}
-          <Elem name='status' mod={{ approved: true }}><IconCheckBold /></Elem>
-          <Elem name='status' mod={{ skipped: true }}><IconCrossBold /></Elem>
-          <Elem name='status' mod={{ approved: true }}><IconCheckBold /></Elem>
+        <Elem name='picSection'>
+          <Elem
+            name="userpic"
+            tag={Userpic}
+            showUsername
+            username={isPrediction ? entity.createdBy : null}
+            user={entity.user ?? { email: entity.createdBy }}
+            mod={{ prediction: isPrediction }}
+            size={24}
+          >
+            {isPrediction && <LsSparks style={{ width: 18, height: 18 }}/>}
+          </Elem>
+          {entity.history.hasChanges && <Elem name='status' mod={{ approved: true }}><IconCheckBold /></Elem>}
+          {entity.skipped && (
+            <Elem name='status' mod={{ skipped: true }}>
+              <IconCrossBold />
+            </Elem>
+          )}
+          {((entity.userGenerate && !entity.sentUserGenerate) || entity.draftSelected) && (
+            <Elem name='status' mod={{ updated: true }}>
+              <IconCheckBold />
+            </Elem>
+          )}
         </Elem>
         <Elem name='main'>
           <Elem name="user">

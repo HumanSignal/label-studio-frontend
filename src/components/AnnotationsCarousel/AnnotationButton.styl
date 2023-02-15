@@ -58,10 +58,29 @@
   &__ellipsisIcon
     transform rotate(90deg)
     display flex
-  &__userpic
+  &__picSection
     position relative
   &__status
     position absolute
+    top: 15px;
+    left: calc(50% + 5px);
+    border-radius 4px
+    color #FAFAFA
+    border 2px solid #FAFAFA
+    display flex
+    width 10px
+    height 10px
+    box-sizing content-box
+    align-items center
+    justify-content center
+    &_approved
+      background-color #389E0D
+    &_skipped
+      background-color #CF1322
+    &_updated
+      background-color #1D39C4
+      svg
+        display block
 
 
 .AnnotationButtonContextMenu
