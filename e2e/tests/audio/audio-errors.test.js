@@ -46,17 +46,38 @@ const annotations = [
   },
 ];
 
-const params = { annotations: [{ id: 'test', result: annotations }], config, data };
-
-Scenario('Check if audio error handler is showing', async function({ I, LabelStudio, AtAudioView }) {
+Scenario('Check if audio decoder error handler is showing', async function({ I, LabelStudio, AtAudioView }) {
   LabelStudio.setFeatureFlags({
     ff_front_dev_2715_audio_3_280722_short: true,
   });
   I.amOnPage('/');
 
-  LabelStudio.init(params);
+  LabelStudio.init({
+    annotations: [{ id: 'test', result: annotations }],
+    config,
+    data,
+  });
 
   await AtAudioView.lookForStage();
 
-  AtAudioView.seeErrorHandler('Error while loading audio');
+  AtAudioView.seeErrorHandler('An error occurred while decoding the audio file');
+});
+
+Scenario('Check if audio http error handler is showing', async function({ I, LabelStudio, AtAudioView }) {
+  LabelStudio.setFeatureFlags({
+    ff_front_dev_2715_audio_3_280722_short: true,
+  });
+  I.amOnPage('/');
+
+  LabelStudio.init({
+    annotations: [{ id: 'test', result: annotations }],
+    config,
+    data: {
+      url: '/files/doesnt_exist.mp3',
+    },
+  });
+
+  await AtAudioView.lookForStage();
+
+  AtAudioView.seeErrorHandler('HTTP error status: 404');
 });

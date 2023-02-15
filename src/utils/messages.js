@@ -95,7 +95,7 @@ export default {
 
   ERR_LOADING_HTTP({ attr, url, error }) {
     return `
-    <div>
+    <div data-testid="error:audio">
       <p>
         There was an issue loading URL from <code>${attr}</code> value
       </p>

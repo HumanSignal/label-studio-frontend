@@ -18,6 +18,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   decoder?: AudioDecoder;
   decoderPromise?: Promise<void>;
   mediaPromise?: Promise<void>;
+  mediaReject?: (err: any) => void;
   el?: HTMLAudioElement;
 
   // private backed by audio element and getters/setters
@@ -102,6 +103,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.disconnect();
 
     delete this.mediaResolve;
+    delete this.mediaReject;
     delete this.mediaPromise;
     delete this.decoderPromise;
     this.decoder?.destroy();
@@ -134,14 +136,19 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
   async sourceDecoded() {
     if (!this.decoder) return false;
-    if (this.mediaPromise) {
-      await this.mediaPromise;
-    }
-    if (this.decoderPromise) {
-      await this.decoderPromise;
-    }
+    try {
+      if (this.mediaPromise) {
+        await this.mediaPromise;
+      }
+      if (this.decoderPromise) {
+        await this.decoderPromise;
+      }
 
-    return this.decoder.sourceDecoded;
+      return this.decoder.sourceDecoded;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
   }
 
   async initDecoder(arraybuffer?: ArrayBuffer) {
@@ -170,21 +177,27 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.el.style.display = 'none';
     document.body.appendChild(this.el);
 
-    this.mediaPromise = new Promise((resolve) => {
+    this.mediaPromise = new Promise((resolve, reject) => {
       this.mediaResolve = resolve;
+      this.mediaReject = reject;
     });
 
     this.el.addEventListener('canplaythrough', this.mediaReady);
+    this.el.addEventListener('error', this.mediaReady);
     this.loadMedia();
   }
 
-  mediaReady = async () => {
-    if (this.mediaResolve) {
-      this.mediaResolve?.();
-      this.mediaResolve = undefined;
-      await this.forceBuffer();
+  mediaReady = async (e: any) => {
+    if (e.type === 'error') {
+      this.mediaReject?.(this.el?.error);
+    } else {
+      if (this.mediaResolve) {
+        this.mediaResolve?.();
+        this.mediaResolve = undefined;
+        await this.forceBuffer();
+        this.invoke('canplay');
+      }
     }
-    this.invoke('canplay');
   };
 
   /**
