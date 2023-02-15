@@ -871,8 +871,6 @@ export default observer(
         item.imageIsLoaded
       ) || !isFF(FF_LSDV_4583_6);
 
-      console.log({ toolsReady, imageIsLoaded });
-
       return (
         <ObjectTag
           item={item}

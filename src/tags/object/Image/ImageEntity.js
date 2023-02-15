@@ -4,8 +4,6 @@ import { clamp } from '../../../utils/utilities';
 
 const fileLoader = new FileLoader();
 
-window.fl = fileLoader;
-
 export const ImageEntity = types.model({
   id: types.identifier,
   src: types.string,

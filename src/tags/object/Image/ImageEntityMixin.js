@@ -11,13 +11,6 @@ export const ImageEntityMixin = types
     get imageIsLoaded() {
       const imageEntity = self.currentImageEntity;
 
-      console.log({
-        downlaoded: imageEntity.downloaded,
-        downloading: imageEntity.downloading,
-        loaded: imageEntity.imageLoaded,
-        error: imageEntity.error,
-      });
-
       return (
         !imageEntity.downloading &&
         !imageEntity.error &&

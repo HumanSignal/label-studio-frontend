@@ -641,8 +641,6 @@ const Model = types.model({
       scale = clamp(scale, 1, Infinity);
       self.currentZoom = scale;
 
-      console.log({ scale });
-
       // cool comment about all this stuff
       const maxScale = self.maxScale;
       const coverScale = self.coverScale;
@@ -954,9 +952,7 @@ const Model = types.model({
     },
 
     addShape(shape) {
-      console.log('addShape', shape);
       self.regions.push(shape);
-
       self.annotation.addRegion(shape);
       self.setSelected(shape.id);
       shape.selectRegion();

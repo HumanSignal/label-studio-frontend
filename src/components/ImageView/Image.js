@@ -39,6 +39,7 @@ export const Image = observer(forwardRef(({
           ref={ref}
           src={imageEntity.currentSrc}
           onLoad={onLoad}
+          isLoaded={imageEntity.imageLoaded}
           imageTransform={imageTransform}
         />
       ) : null}
@@ -67,14 +68,22 @@ const ImageRenderer = observer(forwardRef(({
   src,
   onLoad,
   imageTransform,
+  isLoaded,
 }, ref) => {
+  const imageStyles = useMemo(() => {
+    const style = imageTransform ?? {};
+
+    return { ...style, visibility: isLoaded ? 'visible' : 'hidden' };
+  }, [imageTransform, isLoaded]);
+
   return (
     <img
       ref={ref}
       alt="image"
       src={src}
+      hidden={!isLoaded}
       onLoad={onLoad}
-      style={imageTransform}
+      style={imageStyles}
     />
   );
 }));
