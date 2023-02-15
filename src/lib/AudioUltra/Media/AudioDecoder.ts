@@ -4,6 +4,8 @@ import { AudioDecoderWorker, getAudioDecoderWorker } from '@martel/audio-file-de
 import DecodeAudioWasm from '@martel/audio-file-decoder/decode-audio.wasm';
 import { Events } from '../Common/Events';
 import { clamp, info } from '../Common/Utils';
+import { SplitChannel } from './SplitChannel';
+
 
 const DURATION_CHUNK_SIZE = 60 * 30; // 30 minutes
 
@@ -172,15 +174,20 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     // This is a shared promise which will be observed by all instances of the same source
     this.decodingPromise =  new Promise(resolve => (this.decodingResolve = resolve as any));
 
+    let splitChannels: SplitChannel | undefined = undefined;
+
     try {
       // Set the worker instance and resolve the decoder promise
       this._channelCount = options?.multiChannel ? this.worker.channelCount : 1;
       this._sampleRate = this.worker.sampleRate;
       this._duration = this.worker.duration;
 
+
       let chunkIndex = 0;
       const totalChunks = this.getTotalChunks();
       const chunkIterator = this.chunkDecoder(options);
+
+      splitChannels = this._channelCount > 1 ? new SplitChannel(this._channelCount) : undefined;
 
       const chunks = Array.from({ length: this._channelCount }).map(() => Array.from({ length: totalChunks }) as Float32Array[]);
 
@@ -205,27 +212,18 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
             if (this._channelCount === 1) {
               chunks[0][chunkIndex] = value;
             } else {
-              // Create new Float32Array for each channel
-              for (let c = 0; c < this._channelCount; c++) {
-                chunks[c][chunkIndex] = new Float32Array(value.length / this._channelCount);
-              }
 
-              // Split the channels into separate Float32Array samples
-              for (let sample = 0; sample < value.length; sample++) {
-                // interleaved channels
-                // ie. 2 channels
-                // [channel1, channel2, channel1, channel2, ...]
-                const channel = sample % this._channelCount;
-                // index of the channel sample
-                // ie. 2 channels
-                // sample = 8, channel = 0, channelIndex = 4
-                // sample = 9, channel = 1, channelIndex = 4
-                // sample = 10, channel = 0, channelIndex = 5
-                // sample = 11, channel = 1, channelIndex = 5
-                const channelIndex = Math.floor(sample / this._channelCount);
+              if (!splitChannels) throw new Error('AudioDecoder: splitChannels not initialized');
 
-                chunks[channel][chunkIndex][channelIndex] = value[sample];
-              }
+              // Multiple channels, split the data into separate channels within a web worker
+              // This is done to avoid blocking the UI thread
+              const channels = await splitChannels.split(value);
+
+              if (this.sourceDecodeCancelled) return;
+
+              channels.forEach((channel, index) => {
+                chunks[index][chunkIndex] = channel;
+              });
             }
           }
 
@@ -245,6 +243,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
 
       info('decode:complete', this.src);
     } finally {
+      splitChannels?.destroy();
       this.disposeWorker();
     }
   }
