@@ -425,8 +425,8 @@ export const AudioModel = types.compose(
           self._ws = ws;
 
           self.setSyncedDuration(self._ws.duration);
-          self.needsUpdate();
           self.onReady();
+          self.needsUpdate();
         },
 
         onSeek(time) {

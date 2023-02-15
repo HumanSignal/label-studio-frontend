@@ -123,12 +123,12 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.init = () => warn('Visualizer is already initialized');
     this.audio = audio;
     this.setLoading(false);
+
+    // This triggers the resize observer when loading in differing heights
+    // as a result of multichannel or differently configured minWaveHeight
     this.setContainerHeight();
-    this.updateSize();
-    this.resetWaveformRender();
-    this.getSamplesPerPx();
+
     this.invoke('initialized', [this]);
-    this.draw(false, true);
   }
 
   setLoading(loading: boolean) {
@@ -632,6 +632,7 @@ export class Visualizer extends Events<VisualizerEvents> {
       const mainLayer = this.getLayer('main');
 
       this.setContainerHeight();
+
       if (mainLayer) {
         mainLayer.height = this.height;
       }
@@ -649,7 +650,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const layer = new LayerGroup({
       name,
       container: this.container,
-      height: this.waveHeight,
+      height: this.height,
       pixelRatio: this.pixelRatio,
       index: zIndex,
       offscreen,
@@ -696,8 +697,6 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   private invokeLayersUpdated = debounce(async () => {
     this.invoke('layersUpdated', [this.layers]);
-
-    await this.renderAvailableChannels();
   }, 150);
 
   private attachEvents() {
@@ -882,7 +881,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   // Reset the waveform values so it can be rendered again correctly
   // This is needed when the waveform container is resized, or visibility
-  // or a layer is changed. Otherwise its possible to be blank.
+  // of a layer is changed. Otherwise its possible to be blank.
   private resetWaveformRender() {
     this.lastRenderedChannel = -1;
     this.lastRenderedAmp = 0;
