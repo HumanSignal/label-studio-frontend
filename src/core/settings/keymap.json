@@ -168,11 +168,11 @@
     "description": "Previous Page"
   },
   "image:prev": {
-    "key": "ctrl+[",
+    "key": "ctrl+a",
     "description": "Previous Image"
   },
   "image:next": {
-    "key": "ctrl+]",
+    "key": "ctrl+d",
     "description": "Next Image"
   }
 }
