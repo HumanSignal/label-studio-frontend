@@ -131,9 +131,11 @@ const HtxVideoView = ({ item, store }) => {
 
   const setPosition = useCallback((value) => {
     if (value !== position) {
-      _setPosition(clamp(value, 1, videoLength));
+      const nextPosition = clamp(value, 1, videoLength);
+
+      _setPosition(nextPosition);
     }
-  }, [position, videoLength, playing]);
+  }, [position, videoLength]);
 
   const setVideoLength = useCallback((value) => {
     if (value !== videoLength) _setVideoLength(value);
@@ -378,7 +380,7 @@ const HtxVideoView = ({ item, store }) => {
     const regions = item.regs.filter(reg => reg.selected || reg.inSelection);
 
     regions.forEach(region => {
-      switch(action) {
+      switch (action) {
         case 'lifespan_add':
         case 'lifespan_remove':
           region.toggleLifespan(data.frame);

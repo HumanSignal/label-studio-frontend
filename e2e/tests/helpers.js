@@ -164,7 +164,7 @@ const waitForImage = () => {
 
     if (!img || img.complete) return resolve();
     // this should be rewritten to isReady when it is ready
-    img.onload = ()=>{
+    img.onload = () => {
       setTimeout(resolve, 100);
     };
   });
@@ -289,18 +289,18 @@ const emulateClick = source => {
 
 const emulateKeypress = (params) => {
   document.activeElement.dispatchEvent(
-    new KeyboardEvent( 'keydown', {
+    new KeyboardEvent('keydown', {
       bubbles: true,
       cancelable: true,
       ...params,
-    } ),
+    }),
   );
   document.activeElement.dispatchEvent(
-    new KeyboardEvent( 'keyup', {
+    new KeyboardEvent('keyup', {
       bubbles: true,
       cancelable: true,
       ...params,
-    } ),
+    }),
   );
 };
 
@@ -416,7 +416,7 @@ const hasKonvaPixelColorAtPoint = ([x, y, rgbArray, tolerance]) => {
   let result = false;
 
   const areEqualRGB = (a, b) => {
-    for (let i = 3; i--; ) {
+    for (let i = 3; i--;) {
       if (Math.abs(a[i] - b[i]) > tolerance) {
         return false;
       }
@@ -436,12 +436,20 @@ const hasKonvaPixelColorAtPoint = ([x, y, rgbArray, tolerance]) => {
 };
 
 const areEqualRGB = (a, b, tolerance) => {
-  for (let i = 3; i--; ) {
+  for (let i = 3; i--;) {
     if (Math.abs(a[i] - b[i]) > tolerance) {
       return false;
     }
   }
   return true;
+};
+
+const setKonvaLayersOpacity = ([opacity]) => {
+  const stage = window.Konva.stages[0];
+
+  for (const layer of stage.getLayers()) {
+    layer.canvas._canvas.style.opacity = opacity;
+  }
 };
 
 const getKonvaPixelColorFromPoint = ([x, y]) => {
@@ -554,7 +562,7 @@ const countKonvaShapes = async () => {
   let count = 0;
 
   regions.forEach(region => {
-    count +=  stage.find('.'+region.id).filter(node => node.isVisible()).length;
+    count += stage.find('.' + region.id).filter(node => node.isVisible()).length;
   });
 
   return count;
@@ -633,7 +641,7 @@ const selectText = async ({ selector, rangeStart, rangeEnd }) => {
 const whereIsPixel = ([rgbArray, tolerance]) => {
   const stage = window.Konva.stages[0];
   const areEqualRGB = (a, b) => {
-    for (let i = 3; i--; ) {
+    for (let i = 3; i--;) {
       if (Math.abs(a[i] - b[i]) > tolerance) {
         return false;
       }
@@ -731,6 +739,7 @@ module.exports = {
   getCanvasSize,
   getImageSize,
   getImageFrameSize,
+  setKonvaLayersOpacity,
   setZoom,
   whereIsPixel,
   countKonvaShapes,

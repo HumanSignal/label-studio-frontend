@@ -20,7 +20,7 @@ import ResizeObserver from '../../utils/resize-observer';
 import { debounce } from '../../utils/debounce';
 import Constants from '../../core/Constants';
 import { fixRectToFit } from '../../utils/image';
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, isFF } from '../../utils/feature-flags';
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_4081, isFF } from '../../utils/feature-flags';
 
 Konva.showWarnings = false;
 
@@ -894,8 +894,20 @@ export default observer(
                 src={item.currentSrc}
                 onLoad={item.updateImageSize}
                 onError={this.handleError}
+                crossOrigin={item.imageCrossOrigin}
                 alt="LS"
               />
+              {isFF(FF_DEV_4081)
+                ? (
+                  <canvas
+                    className={styles.overlay}
+                    ref={ref => {
+                      item.setOverlayRef(ref);
+                    }}
+                    style={item.imageTransform}
+                  />
+                )
+                : null}
             </div>
             {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
             {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (
