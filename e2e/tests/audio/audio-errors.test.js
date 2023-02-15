@@ -15,10 +15,6 @@ const config = `
 </View>
 `;
 
-const data = {
-  url: '/files/opossum_intro.webm',
-};
-
 const annotations = [
   {
     from_name: 'choice',
@@ -55,7 +51,9 @@ Scenario('Check if audio decoder error handler is showing', async function({ I, 
   LabelStudio.init({
     annotations: [{ id: 'test', result: annotations }],
     config,
-    data,
+    data: {
+      url: '/files/opossum_intro.webm', // webm is not supported by audio decoder
+    },
   });
 
   await AtAudioView.lookForStage();
