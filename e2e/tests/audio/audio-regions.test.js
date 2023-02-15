@@ -22,6 +22,25 @@ const config = `
 </View>
 `;
 
+const configSpeech = `
+<View>
+    <AudioPlus name="audio" value="$url"></AudioPlus>
+    <Labels name="label" toName="audio">
+      <Label value="Speech"/>
+      <Label value="Noise" background="grey"/>
+    </Labels>
+    <TextArea name="transcription" toName="audio"
+              perRegion="true" whenTagName="label" whenLabelValue="Speech"
+              displayMode="region-list"/>
+    <Choices name="sentiment" toName="audio" showInline="true"
+             perRegion="true" whenTagName="label" whenLabelValue="Speech">
+        <Choice value="Positive" html="&lt;span style='font-size: 45px; vertical-align: middle;'&gt; &#128512; &lt;/span&gt;"/>
+        <Choice value="Neutral" html="&lt;span style='font-size: 45px; vertical-align: middle;'&gt; &#128528; &lt;/span&gt;"/>
+        <Choice value="Negative" html="&lt;span style='font-size: 45px; vertical-align: middle;'&gt; &#128577; &lt;/span&gt;"/>
+    </Choices>                               
+  </View>
+`;
+
 const data = {
   url: 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3',
 };
@@ -54,6 +73,7 @@ const annotations = [
 ];
 
 const params = { annotations: [{ id: 'test', result: annotations }], config, data };
+const paramsSpeech = { annotations: [{ id: 'test', result: [] }], config: configSpeech, data };
 
 Scenario('Check if regions are selected', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
   LabelStudio.setFeatureFlags({
@@ -85,6 +105,47 @@ Scenario('Check if regions are selected', async function({ I, LabelStudio, AtAud
   AtAudioView.dragAudioRegion(170,40);
   AtSidebar.seeSelectedRegion();
   AtAudioView.clickAt(220);
+  AtSidebar.dontSeeSelectedRegion();
+});
+
+Scenario('Check if there are ghost regions', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+  LabelStudio.setFeatureFlags({
+    ff_front_dev_2715_audio_3_280722_short: true,
+  });
+  I.amOnPage('/');
+
+  LabelStudio.init(paramsSpeech);
+
+  await AtAudioView.waitForAudio();
+
+  I.waitForDetached('loading-progress-bar', 10);
+
+  await AtAudioView.lookForStage();
+
+  for (let i = 0; i < 20; i++) {
+    // creating a new region
+    I.pressKey('1');
+    AtAudioView.dragAudioRegion((40 * i) + 10,30);
+    AtAudioView.clickAt((40 * i) + 20);
+    I.pressKey('2');
+    I.pressKey('1');
+    I.pressKey('u');
+  }
+
+  AtSidebar.seeRegions(20);
+
+  for (let i = 0; i < 20; i++) {
+    // creating a new region
+    AtAudioView.clickAt((40 * i) + 20);
+    AtSidebar.seeSelectedRegion();
+    AtAudioView.dontSeeGhostRegion();
+    I.pressKey('u');
+  }
+
+  AtSidebar.seeRegions(20);
+
+  I.pressKey('u');
+
   AtSidebar.dontSeeSelectedRegion();
 });
 

@@ -1,5 +1,3 @@
-import { FF_DEV_4081, isFF } from '../utils/feature-flags';
-
 /**
  * Class for register View
  */

@@ -97,7 +97,6 @@ import { FF_DEV_4081, isFF } from '../../utils/feature-flags';
  */
 
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
   opacity: types.optional(customTypes.range(), '0.6'),
   blurradius: types.optional(types.string, '5'),
@@ -133,8 +132,6 @@ const HtxView = () => {
   return null;
 };
 
-if (isFF(FF_DEV_4081)) {
-  Registry.addTag('magicwand', MagicWandModel, HtxView);
-}
+isFF(FF_DEV_4081) && Registry.addTag('magicwand', MagicWandModel, HtxView);
 
 export { HtxView, MagicWandModel };
