@@ -144,7 +144,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         onStepForward={increasePosition}
         onRewind={(steps) => setInternalPosition(isDefined(steps) ? currentPosition - steps : 0)}
         onForward={(steps) => setInternalPosition(isDefined(steps) ? currentPosition + steps : length)}
-        onPositionChange={setInternalPosition}
+        onPositionChange={setInternalPosition} 
         onToggleCollapsed={setViewCollapsed}
         formatPosition={formatPosition}
         extraControls={View.Controls && !disableView ? (
@@ -169,7 +169,7 @@ const TimelineComponent: FC<TimelineProps> = ({
           onSeek={setInternalPosition}
           minimap={View.Minimap ? (
             <View.Minimap/>
-          ): null}
+          ) : null}
         />
       )}
     </Elem>

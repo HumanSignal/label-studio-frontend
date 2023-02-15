@@ -1,6 +1,6 @@
 import * as Checkers from './utilities';
 import * as Colors from './colors';
-import * as Floodfill from './floodfill';
+import * as Magicwand from './magic-wand';
 import * as Image from './image';
 import * as UDate from './date';
 import * as HTML from './html';
@@ -18,6 +18,6 @@ export default {
   guidGenerator,
   debounce,
   styleToProp,
-  Floodfill,
+  Magicwand,
   Selection,
 };
