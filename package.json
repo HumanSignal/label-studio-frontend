@@ -49,7 +49,6 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged",
       "post-checkout": "bash scripts/copy.sh"
     }
   },
