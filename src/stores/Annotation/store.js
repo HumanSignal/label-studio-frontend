@@ -1,4 +1,5 @@
 import { destroy, getEnv, getParent, getRoot, types } from 'mobx-state-tree';
+
 import Registry from '../../core/Registry';
 import Tree from '../../core/Tree';
 import Types from '../../core/Types';
@@ -189,7 +190,7 @@ const AnnotationStoreModel = types
       if (self.root) return;
 
       if (!config) {
-        return (self.root = ViewModel.create({ id: 'empty' }));
+        return (self.root = ViewModel.create({ id:'empty' }));
       }
 
       // convert config to mst model

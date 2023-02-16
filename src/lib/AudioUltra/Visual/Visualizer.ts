@@ -142,7 +142,7 @@ export class Visualizer extends Events<VisualizerEvents> {
       (this._loader as any).update();
     }
   }
-  
+
   setDecodingProgress(chunk?: number, total?: number) {
     if (this._loader) {
       if (chunk !== undefined) (this._loader as any).loaded = chunk;

@@ -12,7 +12,7 @@ const DrawingTool = types
     unselectRegionOnToolChange: true,
   })
   .volatile(() => {
-    return {
+    return { 
       currentArea: null,
     };
   })
@@ -127,11 +127,7 @@ const DrawingTool = types
           return value;
         }, { coordstype: 'px', dynamic: self.dynamic  });
 
-        const areaValue = currentArea.results[0].value.toJSON();
-
-        const newArea = self.annotation.createResult(value, areaValue, control, obj);
-
-        if (obj.multiImage) newArea.setItemIndex?.(currentArea.item_index);
+        const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
 
         currentArea.setDrawing(false);
         self.applyActiveStates(newArea);

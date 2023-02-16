@@ -26,8 +26,6 @@ const RegionsMixin = types
       'prediction-changed',
       'manual',
     ]), 'manual'),
-
-    item_index: types.maybeNull(types.number),
   })
   .volatile(() => ({
     // selected: false,
@@ -74,10 +72,6 @@ const RegionsMixin = types
       return true;
     },
 
-    get imageEntity() {
-      return self.parent.findImageEntity(self.item_index ?? 0);
-    },
-
     getConnectedDynamicRegions(selfExcluding) {
       const { regions = [] } = getRoot(self).annotationStore?.selected || {};
 
@@ -100,10 +94,6 @@ const RegionsMixin = types
 
       setShapeRef(ref) {
         self.shapeRef = ref;
-      },
-
-      setItemIndex(index) {
-        self.item_index = index;
       },
 
       beforeDestroy() {
@@ -144,8 +134,8 @@ const RegionsMixin = types
         degree = (360 + degree) % 360;
         // transform origin is (w/2, w/2) for ccw rotation
         // (h/2, h/2) for cw rotation
-        const w = self.imageEntity.stageWidth;
-        const h = self.imageEntity.stageHeight;
+        const w = self.parent.stageWidth;
+        const h = self.parent.stageHeight;
         // actions: translate to fit origin, rotate, translate back
         //   const shift = size / 2;
         //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
@@ -165,19 +155,19 @@ const RegionsMixin = types
       },
 
       convertXToPerc(x) {
-        return (x * 100) / self.imageEntity.stageWidth;
+        return (x * 100) / self.parent.stageWidth;
       },
 
       convertYToPerc(y) {
-        return (y * 100) / self.imageEntity.stageHeight;
+        return (y * 100) / self.parent.stageHeight;
       },
 
       convertHDimensionToPerc(hd) {
-        return (hd * (self.scaleX || 1) * 100) / self.imageEntity.stageWidth;
+        return (hd * (self.scaleX || 1) * 100) / self.parent.stageWidth;
       },
 
       convertVDimensionToPerc(vd) {
-        return (vd * (self.scaleY || 1) * 100) / self.imageEntity.stageHeight;
+        return (vd * (self.scaleY || 1) * 100) / self.parent.stageHeight;
       },
 
       // update region appearence based on it's current states, for
@@ -190,7 +180,6 @@ const RegionsMixin = types
       },
 
       toStateJSON() {
-        console.log('toStateJSON', self);
         const parent = self.parent;
         const buildTree = control => {
           const tree = {
