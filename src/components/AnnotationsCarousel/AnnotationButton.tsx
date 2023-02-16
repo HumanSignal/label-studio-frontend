@@ -41,8 +41,6 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
 
   const CommentIcon = renderCommentIcon(entity);
 
-  console.log('entity', entity, entity.selected);
-
   useEffect(() => {
     setIsGroundTruth(entity.ground_truth);
   }, [entity, entity.ground_truth]);

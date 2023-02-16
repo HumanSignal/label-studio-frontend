@@ -1,11 +1,11 @@
-// import { createRef, useCallback, useEffect, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
 import { LsChevron } from '../../assets/icons';
 import { Button } from '../../common/Button/Button';
 import './AnnotationsCarousel.styl';
 import { AnnotationButton } from './AnnotationButton';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react';
+import { clamp } from '../../utils/utilities';
 
 interface AnnotationsCarouselInterface {
   store: any;
@@ -20,7 +20,27 @@ export const AnnotationsCarousel = observer(({ store, annotationStore }: Annotat
   const enableCreateAnnotation = store.hasInterface('annotations:add-new');
   const groundTruthEnabled = store.hasInterface('ground-truth');
   const enableAnnotationDelete = store.hasInterface('annotations:delete');
+  const carouselRef = useRef<HTMLElement>();
+  const containerRef = useRef<HTMLElement>();
+  const [currentPosition, setCurrentPosition] = useState(0);
+  const [isLeftDisabled, setIsLeftDisabled] = useState(false);
+  const [isRightDisabled, setIsRightDisabled] = useState(false);
+
+  const updatePosition = useCallback((e: MouseEvent, goLeft = true) => {
+    if (containerRef.current && carouselRef.current) {
+      const step = containerRef.current.clientWidth;
+      const carouselWidth = carouselRef.current.clientWidth;
+      const newPos = clamp(goLeft ? currentPosition - step : currentPosition + step, 0, carouselWidth - step);
+
+      setCurrentPosition(newPos);
+    }
+  }, [containerRef, carouselRef, currentPosition]);
   
+  useEffect(() => {
+    setIsLeftDisabled(currentPosition <= 0);
+    setIsRightDisabled(currentPosition >= ((carouselRef.current?.clientWidth ?? 0) - (containerRef.current?.clientWidth ?? 0)));
+  }, [containerRef.current, carouselRef.current, currentPosition]);
+
   useEffect(() => {
     const newEntities = [];
 
@@ -31,9 +51,9 @@ export const AnnotationsCarousel = observer(({ store, annotationStore }: Annotat
   }, [annotationStore, JSON.stringify(annotationStore.predictions), JSON.stringify(annotationStore.annotations)]);
   
   return (enableAnnotations || enablePredictions || enableCreateAnnotation) ? (
-    <Block name='annotations-carousel'>
-      <Elem name='container'>
-        <Elem name='carosel'>
+    <Block name='annotations-carousel' style={{ '--carousel-left': `${currentPosition}px` }}>
+      <Elem ref={containerRef} name='container'>
+        <Elem ref={carouselRef} name='carosel'>
           {entities.map(entity => (
             <AnnotationButton 
               key={entity?.id} 
@@ -50,14 +70,16 @@ export const AnnotationsCarousel = observer(({ store, annotationStore }: Annotat
           ))}
         </Elem>
       </Elem>
-      <Elem name='carousel-controls'>
-        <Elem tag={Button} name='nav' mod={{ left: true }} aria-label="Carousel left" onClick={(e: MouseEvent) => console.log('left', e.type)}>
-          <Elem name='arrow' mod={{ left: true }} tag={LsChevron} />
+      {(!isLeftDisabled || !isRightDisabled) && (
+        <Elem name='carousel-controls'>
+          <Elem tag={Button} name='nav' mod={{ left: true, disabled: isLeftDisabled }} aria-label="Carousel left" onClick={(e: MouseEvent) => !isLeftDisabled && updatePosition(e, true)}>
+            <Elem name='arrow' mod={{ left: true }} tag={LsChevron} />
+          </Elem>
+          <Elem tag={Button} name='nav' mod={{ right: true, disabled: isRightDisabled }} aria-label="Carousel right" onClick={(e: MouseEvent) => !isRightDisabled && updatePosition(e, false)}>
+            <Elem name='arrow' mod={{ right: true }} tag={LsChevron} />
+          </Elem>
         </Elem>
-        <Elem tag={Button} name='nav' mod={{ right: true }} aria-label="Carousel right" onClick={(e: MouseEvent) => console.log('right', e.type)}>
-          <Elem name='arrow' mod={{ right: true }} tag={LsChevron} />
-        </Elem>
-      </Elem>
+      )}
     </Block>
   ): null;
 });

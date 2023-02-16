@@ -1,21 +1,25 @@
 .annotations-carousel
-  width 100%
+  --carousel-left 0px
   position relative
   height 100%
   align-items center
-  flex auto
-  align-items center
+  min-width 0
+  flex 1
   &__container
     display flex
     width 100%
     justify-content space-between
-    overflow auto
+    overflow hidden
     height 100%
   &__carosel
     flex 1
     display flex
     gap 2px
     white-space nowrap
+    padding-right 70px
+    position relative
+    transform translateX(calc(-1 * var(--carousel-left)))
+    transition all 0.15s ease-in-out 0.0s
   &__carousel-controls
     position absolute
     right 0
@@ -24,10 +28,13 @@
     transform translateY(-50%)
     display flex
     gap 4px
+    padding-right 4px
   &__nav
     padding 0
     height 28px
     width 28px
+    &_disabled
+      opacity 0.08
     .button  
       &__arrow
         &_left
