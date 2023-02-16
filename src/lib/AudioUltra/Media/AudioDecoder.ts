@@ -152,7 +152,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     // Generate a unique id for this decode operation
     this.decodeId = Date.now();
     // This is a shared promise which will be observed by all instances of the same source
-    this.decodingPromise = new Promise(resolve => (this.decodingResolve = resolve as any));
+    this.decodingPromise =  new Promise(resolve => (this.decodingResolve = resolve as any));
 
     try {
       // Set the worker instance and resolve the decoder promise
