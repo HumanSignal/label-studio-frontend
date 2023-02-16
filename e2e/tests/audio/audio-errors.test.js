@@ -77,5 +77,5 @@ Scenario('Check if audio http error handler is showing', async function({ I, Lab
 
   await AtAudioView.lookForStage();
 
-  AtAudioView.seeErrorHandler('HTTP error status: 404');
+  AtAudioView.seeErrorHandler('HTTP error status: 404', '_httpErrorSelector');
 });
