@@ -22,7 +22,6 @@ export const Frames: FC<TimelineViewProps> = ({
   position = 1,
   length = 1024,
   step,
-  playing,
   regions,
   onScroll,
   onPositionChange,
@@ -34,14 +33,26 @@ export const Frames: FC<TimelineViewProps> = ({
   const timelineStartOffset = props.leftOffset ?? 150;
 
   const scrollable = useRef<HTMLDivElement>();
+  const lastScrollPosition = useRef<number>(0);
+  const lastPosition = useRef<number>(position);
   const [hoverEnabled, setHoverEnabled] = useState(true);
   const [hoverOffset, setHoverOffset] = useState<number | null>(null);
   const [offsetX, setOffsetX] = useState(offset);
+  const lastOffsetX = useRef(offsetX);
   const [offsetY, setOffsetY] = useState(0);
   const [regionSelectionDisabled, setRegionSelectionDisabled] = useState(false);
+
+  // Ensure offsetX is not stale in the main useEffect that syncs position updates with the offsetX, without triggering
+  // near infinite loops.
+  lastOffsetX.current = offsetX;
+
   const viewWidth = useMemo(() => {
     return length * step;
   }, [length, step]);
+
+  const framesInView = useMemo(() => toSteps(roundToStep((scrollable.current?.clientWidth ?? 0) - timelineStartOffset, step), step), [
+    scrollable.current, step, timelineStartOffset,
+  ]);
 
   const handlers = useMemoizedHandlers({
     onPositionChange,
@@ -57,6 +68,8 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [step]);
 
   const setScroll = useCallback(({ left, top }) => {
+    if (!length) return;
+
     setHoverOffset(null);
 
     if (isDefined(top) && offsetY !== top) {
@@ -68,9 +81,9 @@ export const Frames: FC<TimelineViewProps> = ({
 
       const frame = toSteps(roundToStep(left, step), step);
 
-      onScroll?.(clamp(frame + 1, 1, length));
+      onScroll?.(clamp(frame, 1, length));
     }
-  }, [offsetX, offsetY, step]);
+  }, [offsetX, offsetY, step, length]);
 
   const setIndicatorOffset = useCallback((value) => {
     const frame = toSteps(roundToStep(value, step), step);
@@ -85,7 +98,7 @@ export const Frames: FC<TimelineViewProps> = ({
       const limit = scroll.scrollWidth - scroll.clientWidth;
       const newOffsetX = clamp(offsetX + (e.deltaX * scrollMultiplier), 0, limit);
 
-      setScroll({ left :newOffsetX });
+      setScroll({ left: newOffsetX });
     } else {
       const limit = scroll.scrollHeight - scroll.clientHeight;
       const newOffsetY = clamp(offsetY + (e.deltaY * scrollMultiplier), 0, limit);
@@ -104,16 +117,6 @@ export const Frames: FC<TimelineViewProps> = ({
   const currentOffsetY = useMemo(() => {
     return offsetY;
   }, [offsetY]);
-
-  const firstVisibleFrame = useMemo(() => {
-    return Math.ceil(currentOffsetX / step);
-  }, [currentOffsetX, step]);
-
-  const lastVisibleFrame = useMemo(() => {
-    const framesInView = toSteps(scrollable.current?.clientWidth ?? 0, step) - 1;
-
-    return firstVisibleFrame + framesInView;
-  }, [scrollable.current, firstVisibleFrame, step]);
 
   const handleMovement = useCallback((e) => {
     setHoverEnabled(false);
@@ -165,10 +168,10 @@ export const Frames: FC<TimelineViewProps> = ({
   }, [hoverOffset, currentOffsetX, step, setIndicatorOffset]);
 
   const seekerOffset = useMemo(() => {
-    const pixelOffset = clamp(position-1, 0, length - 1) * step;
-    const value = roundToStep(pixelOffset, step);
+    const pixelOffset = clamp(position, 0, length) * step;
+    const value = roundToStep(pixelOffset - currentOffsetX, step);
 
-    return value - currentOffsetX + timelineStartOffset;
+    return value + timelineStartOffset;
   }, [position, currentOffsetX, step, length]);
 
   const onFrameScrub = useCallback((e: MouseEvent) => {
@@ -243,15 +246,66 @@ export const Frames: FC<TimelineViewProps> = ({
     const scroll = scrollable.current;
 
     if (isDefined(scroll)) {
-      setOffsetX(clamp(offset * step, 0, scroll.scrollWidth - scroll.clientWidth));
+      const nextScrollOffset = clamp(offset * step, 0, scroll.scrollWidth - scroll.clientWidth);
+
+      lastScrollPosition.current = roundToStep(nextScrollOffset, step);
+
+      setOffsetX(nextScrollOffset);
     }
   }, [offset, step]);
 
   useEffect(() => {
-    if (playing && position > lastVisibleFrame) {
-      setScroll({ left: lastVisibleFrame * step });
+    const scroll = scrollable.current;
+    // Scrollable element is not available on first render
+    // so there is nothing to compute yet
+
+    if (!isDefined(scroll) || framesInView < 1) return;
+
+    const firstFrame = toSteps(roundToStep(lastOffsetX.current, step), step);
+    const lastFrame = firstFrame + framesInView;
+
+    const positionDelta = Math.abs(position - lastPosition.current);
+
+    lastPosition.current = position;
+
+    // Handle position change frame by frame within the same scroll
+    // this ensures the calculation of offset is kept correct.
+    // This is needed because the position is not always a multiple of the step
+    // and the offset used to calculate the position is always a multiple of the step.
+    if (positionDelta === 1 && (position >= firstFrame && position <= lastFrame)) {
+
+      // set to previous frame scroll
+      // if position is 0, then it will be set to 0
+      if (position <= firstFrame) {
+        const prevLeft = clamp((firstFrame - 1 - framesInView) * step, 0, scroll.scrollWidth - scroll.clientWidth);
+
+        lastScrollPosition.current = roundToStep(prevLeft, step);
+
+        setScroll({ left: prevLeft });
+
+      // set to next frame scroll
+      // if position is last frame, then it will be set to last frame scroll
+      } else if (position > lastFrame) {
+        const nextLeft = clamp(lastFrame * step, 0, scroll.scrollWidth - scroll.clientWidth);
+
+        lastScrollPosition.current = roundToStep(nextLeft, step);
+
+        setScroll({ left: nextLeft });
+      }
+
+      return;
     }
-  }, [playing, position]);
+
+    // Handle position change outside of the current scroll
+    // This updates when the user clicks within the track to change the position
+    // or when keyframe hops are used and the position is changed more than 1 frame
+    const scrollTo = roundToStep(position, framesInView);
+
+    if (lastScrollPosition.current !== scrollTo) {
+      setScroll({ left: scrollTo * step });
+    }
+    lastScrollPosition.current = scrollTo;
+  }, [position, framesInView, step]);
 
   const styles = {
     '--frame-size': `${step}px`,
@@ -265,7 +319,7 @@ export const Frames: FC<TimelineViewProps> = ({
         <Elem
           name="indicator"
           onMouseDown={handleMovement}
-          style={{ left: seekerOffset }}
+          style={{ left: clamp(seekerOffset - step, timelineStartOffset - step, viewWidth) }}
         />
 
         {isDefined(hoverOffset) && hoverEnabled && (

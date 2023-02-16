@@ -25,7 +25,7 @@ export const TimeDurationControl: FC<TimerProps> = ({
   maxTime = 0,
   currentTime,
   startTimeReadonly = false,
-  endTimeReadonly = true,
+  endTimeReadonly = false,
   onChangeStartTime,
   onChangeEndTime,
 }) => {
