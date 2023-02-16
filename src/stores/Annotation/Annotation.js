@@ -268,7 +268,6 @@ export const Annotation = types
     },
 
     setReadonly(val) {
-      console.trace('set to readonly');
       self.readonly = val;
     },
 
