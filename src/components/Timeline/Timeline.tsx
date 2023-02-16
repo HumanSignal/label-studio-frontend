@@ -169,7 +169,7 @@ const TimelineComponent: FC<TimelineProps> = ({
           onSeek={setInternalPosition}
           minimap={View.Minimap ? (
             <View.Minimap/>
-          ) : null}
+          ): null}
         />
       )}
     </Elem>
