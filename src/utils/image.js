@@ -133,7 +133,7 @@ export function fixRectToFit(rect, stageWidth, stageHeight) {
 }
 
 
-export function createDragBoundFunc(item, offset = { x: 0, y: 0 }) {
+export function createDragBoundFunc(item, offset = { x:0, y:0 }) {
   const { parent: imageView } = item;
 
   return function(pos) {
@@ -285,7 +285,7 @@ export function getTransformedImageData(img,
 
     alert(msg);
     console.error(msg);
-    throw (msg);
+    throw(msg);
   }
 
   return [transformedData, canvas];

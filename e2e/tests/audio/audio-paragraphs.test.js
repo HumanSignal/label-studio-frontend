@@ -91,7 +91,7 @@ const annotations = [
   },
 ];
 
-const params = { annotations: [{ id: 'test', result: annotations }], config, data };
+const params = {  annotations: [{ id: 'test', result: annotations }], config, data };
 
 Scenario('Check audio clip is played when using the new sync option', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
   LabelStudio.setFeatureFlags({

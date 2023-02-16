@@ -150,7 +150,7 @@ function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
   newdata.data.set(decode(rle));
   const rgb = chroma(color).rgb();
 
-  for (let i = newdata.data.length / 4; i--;) {
+  for (let i = newdata.data.length / 4; i--; ) {
     if (newdata.data[i * 4 + 3]) {
       newdata.data[i * 4] = rgb[0];
       newdata.data[i * 4 + 1] = rgb[1];
@@ -221,7 +221,7 @@ function Region2RLE(region, image) {
   // get the resulting raw data and encode into RLE format
   const data = ctx.getImageData(0, 0, nw, nh);
 
-  for (let i = data.data.length / 4; i--;) {
+  for (let i = data.data.length / 4; i--; ) {
     data.data[i * 4] = data.data[i * 4 + 1] = data.data[i * 4 + 2] = data.data[i * 4 + 3];
   }
   layer.findOne('.highlight').show();
@@ -388,7 +388,7 @@ const trim = (canvas) => {
     let i, x, y;
 
     for (i = 0; i < l; i += 4) {
-      if (pixels.data[i + 3] !== 0) {
+      if (pixels.data[i+3] !== 0) {
         x = (i / 4) % canvas.width;
         y = ~ ~ ((i / 4) / canvas.width);
 
