@@ -7,7 +7,7 @@ export class Player extends Destructable {
   private audio?: WaveformAudio;
   private wf: Waveform;
   private timer!: number;
-  private loop: {start: number, end: number}|null = null;
+  private loop:  {start: number, end: number}|null = null;
   private timestamp = 0;
   private time = 0;
   private connected = false;
@@ -71,7 +71,7 @@ export class Player extends Destructable {
       if (volumeChanged) {
         if (value === 0) {
           this.muted = true;
-        } else if (this.muted) {
+        } else if(this.muted) {
           this.muted = false;
         } else {
           this.audio.volume = value;
