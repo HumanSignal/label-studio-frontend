@@ -114,7 +114,7 @@ const TimeTraveller = types
 
         if (!targetStore)
           throw new Error(
-            'Failed to find target store for TimeTraveller. Please provide `targetPath`  property, or a `targetStore` in the environment',
+            'Failed to find target store for TimeTraveller. Please provide `targetPath` property, or a `targetStore` in the environment',
           );
         // start listening to changes
         snapshotDisposer = onSnapshot(targetStore, snapshot => this.addUndoState(snapshot));

@@ -120,6 +120,12 @@ initLabelStudio(linkFunctions(params));
 `);
 };
 
+const setFeatureFlagsDefaultValue = (value) => {
+  if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
+  window.APP_SETTINGS.feature_flags_default_value = value;
+  return window.APP_SETTINGS.feature_flags_default_value;
+};
+
 const setFeatureFlags = (featureFlags) => {
   if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
   if (!window.APP_SETTINGS.feature_flags) window.APP_SETTINGS.feature_flags = {};
@@ -438,6 +444,14 @@ const areEqualRGB = (a, b, tolerance) => {
   return true;
 };
 
+const setKonvaLayersOpacity = ([opacity]) => {
+  const stage = window.Konva.stages[0];
+
+  for (const layer of stage.getLayers()) {
+    layer.canvas._canvas.style.opacity = opacity;
+  }
+};
+
 const getKonvaPixelColorFromPoint = ([x, y]) => {
   const stage = window.Konva.stages[0];
   const colors = [];
@@ -476,6 +490,34 @@ const centerOfBbox = (bbox) => {
     y: bbox.y + bbox.height / 2,
   };
 };
+
+/**
+ * Generate the URL of the image of the specified size
+ * @param {object} size
+ * @param {number} size.width
+ * @param {number} size.height
+ * @returns {Promise<string>}
+ */
+async function generateImageUrl({ width, height }) {
+  const canvas = document.createElement('canvas');
+
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext('2d');
+
+  const centerX = width / 2;
+  const centerY = height / 2;
+
+  for (let k = 0; k < centerX; k += 50) {
+    ctx.strokeRect(centerX - k, 0, k * 2, height);
+  }
+  for (let k = 0; k < centerY; k += 50) {
+    ctx.strokeRect(0, centerY - k, width, k * 2);
+  }
+
+  return canvas.toDataURL();
+}
 
 const getCanvasSize = () => {
   const stage = window.Konva.stages[0];
@@ -671,6 +713,7 @@ function hasSelectedRegion() {
 module.exports = {
   initLabelStudio,
   createLabelStudioInitFunction,
+  setFeatureFlagsDefaultValue,
   setFeatureFlags,
   hasFF,
   createAddEventListenerScript,
@@ -696,6 +739,7 @@ module.exports = {
   getCanvasSize,
   getImageSize,
   getImageFrameSize,
+  setKonvaLayersOpacity,
   setZoom,
   whereIsPixel,
   countKonvaShapes,
@@ -705,6 +749,7 @@ module.exports = {
   hasSelectedRegion,
   clearModalIfPresent,
   centerOfBbox,
+  generateImageUrl,
 
   serialize,
   selectText,

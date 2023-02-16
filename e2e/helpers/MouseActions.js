@@ -27,6 +27,16 @@ class MouseActions extends Helper {
   }
 
   /**
+   * Mouse wheel action
+   * @param {{deltaY: number, deltaX: number}} deltas
+   */
+  mouseWheel({ deltaX = 0, deltaY = 0 }) {
+    const page = getPage(this.helpers);
+
+    return page.mouse.wheel(deltaX, deltaY);
+  }
+
+  /**
    * Drag action from point to point
    * @param {object} from
    * @param {number} from.x
