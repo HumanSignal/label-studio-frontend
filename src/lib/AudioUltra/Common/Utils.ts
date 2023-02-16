@@ -1,6 +1,6 @@
 import { Visualizer } from '../Visual/Visualizer';
 
-export const __DEV__ = process.env.NODE_ENV === 'development';
+export const __DEBUG__ = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
 export const OFFSCREEN_CANVAS_SUPPORTED = 'OffscreenCanvas' in globalThis;
 
 const TIME_TOLERANCE = 0.000001;
@@ -13,7 +13,7 @@ export enum defaults {
 type LogLevel = 'log' | 'warn' | 'error' | 'info';
 
 export const logger = (level: LogLevel = 'log') => (...args: any[]) => {
-  if (__DEV__) {
+  if (__DEBUG__) {
     // eslint-disable-next-line no-console
     console[level](...args);
   }
@@ -79,7 +79,7 @@ export const roundToStep = (
   step: number,
   roundFunction: 'floor' | 'ceil' | 'round' = 'round',
 ) => {
-  switch(roundFunction) {
+  switch (roundFunction) {
     case 'floor': return Math.floor(value / step) * step;
     case 'ceil': return Math.ceil(value / step) * step;
     case 'round': return Math.round(value / step) * step;
@@ -99,7 +99,7 @@ export const minmax = (array: ArrayLike<number>) => {
       const value = array[i];
 
       if (value > max) max = value;
-      else if(value < min) min = value;
+      else if (value < min) min = value;
 
       i++;
     }
@@ -138,13 +138,13 @@ export const average = (array: ArrayLike<number>) => {
 export const measure = (message: string, callback: () => void) => {
   let start = 0;
 
-  if (__DEV__) {
+  if (__DEBUG__) {
     start = performance.now();
   }
 
   callback();
 
-  if (__DEV__) {
+  if (__DEBUG__) {
     info(`[MEASURE]: ${message} took ${performance.now() - start}ms`);
   }
 };
@@ -211,5 +211,5 @@ export const getCursorTime = (e: MouseEvent, visualizer: Visualizer, duration: n
 
 export const isTimeSimilar = (a: number, b: number) => Math.abs(a - b) < TIME_TOLERANCE;
 export const isTimeRelativelySimilar = (a: number, b: number, observedDuration: number) =>
-  isTimeSimilar(a/observedDuration, b/observedDuration);
+  isTimeSimilar(a / observedDuration, b / observedDuration);
 

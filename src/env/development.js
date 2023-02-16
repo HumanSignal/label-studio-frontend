@@ -38,6 +38,7 @@ import { ImageOCR } from '../examples/image_ocr';
 import { ImagePolygons } from '../examples/image_polygons';
 import { ImageSegmentation } from '../examples/image_segmentation';
 import { ImageTools } from '../examples/image_tools';
+import { ImageMagicWand } from '../examples/image_magic_wand';
 
 /**
  * HTML
