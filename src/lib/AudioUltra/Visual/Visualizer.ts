@@ -37,7 +37,7 @@ export type VisualizerOptions = Pick<WaveformOptions,
 | 'playhead'
 | 'timeline'
 | 'height'
-| 'minWaveHeight'
+| 'waveHeight'
 | 'gridWidth'
 | 'gridColor'
 | 'waveColor'
@@ -68,10 +68,9 @@ export class Visualizer extends Events<VisualizerEvents> {
   private gridColor = rgba('rgba(0, 0, 0, 0.1)');
   private backgroundColor = rgba('#fff');
   private waveColor = rgba('#000');
-  private waveHeight = 96;
+  private baseWaveHeight = 96;
   private originalWaveHeight = 0;
-  private minWaveHeight = 32;
-  private lastRenderedChannel = -1;
+  private waveHeight = 32;
   private lastRenderedZoom = 0;
   private lastRenderedWidth = 0;
   private lastRenderedAmp = 0;
@@ -97,10 +96,10 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.zoomToCursor = options.zoomToCursor ?? this.zoomToCursor;
     this.autoCenter = options.autoCenter ?? this.autoCenter;
     this.splitChannels = options.splitChannels ?? this.splitChannels;
-    this.waveHeight = options.height ?? this.waveHeight;
-    this.originalWaveHeight = this.waveHeight;
+    this.baseWaveHeight = options.height ?? this.baseWaveHeight;
+    this.originalWaveHeight = this.baseWaveHeight;
     this.timelineHeight = options.timeline?.height ?? this.timelineHeight;
-    this.minWaveHeight = options.minWaveHeight ?? this.minWaveHeight;
+    this.waveHeight = options.waveHeight ?? this.waveHeight;
     this.timelinePlacement = options?.timeline?.placement ?? this.timelinePlacement;
     this.gridColor = options.gridColor ? rgba(options.gridColor) : this.gridColor;
     this.gridWidth = options.gridWidth ?? this.gridWidth;
@@ -125,7 +124,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.setLoading(false);
 
     // This triggers the resize observer when loading in differing heights
-    // as a result of multichannel or differently configured minWaveHeight
+    // as a result of multichannel or differently configured waveHeight
     this.setContainerHeight();
     if (this.height === this.originalWaveHeight) {
       this.handleResize();
@@ -295,7 +294,6 @@ export class Visualizer extends Events<VisualizerEvents> {
     const layer = this.getLayer('waveform');
 
     if (!layer || !layer.isVisible) {
-      this.lastRenderedChannel = -1;
       this.lastRenderedWidth = 0;
       return;
     }
@@ -329,7 +327,7 @@ export class Visualizer extends Events<VisualizerEvents> {
    */
   private renderWave(channelNumber: number, layer: Layer, iStart: number, iEnd: number): Promise<boolean> {
     const renderId = this.renderId;
-    const height = this.waveHeight / (this.audio?.channelCount ?? 1);
+    const height = this.baseWaveHeight / (this.audio?.channelCount ?? 1);
     const scrollLeftPx = this.getScrollLeftPx();
 
     const zoom = this.zoom;
@@ -360,7 +358,6 @@ export class Visualizer extends Events<VisualizerEvents> {
           this.lastRenderedZoom = zoom;
           this.lastRenderedAmp = amp;
           this.lastRenderedScrollLeftPx = scrollLeftPx;
-          this.lastRenderedChannel = channelNumber;
           resolve(true);
         }
       };
@@ -377,7 +374,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const renderId = this.renderId;
     let x = 0;
     const channelCount = (this.audio?.channelCount ?? 1);
-    const height = this.waveHeight / channelCount;
+    const height = this.baseWaveHeight / channelCount;
     const scrollLeftPx = this.getScrollLeftPx();
     const dataLength = this.dataLength;
     let deltaX = this.lastRenderedScrollLeftPx - scrollLeftPx;
@@ -563,10 +560,10 @@ export class Visualizer extends Events<VisualizerEvents> {
     let height = 0;
     const timelineLayer = this.getLayer('timeline');
     const waveformLayer = this.getLayer('waveform');
-    const waveformHeight = Math.max(this.originalWaveHeight, this.minWaveHeight * (this.splitChannels ? this.audio?.channelCount ?? 1 : 1) + this.timelineHeight) - this.timelineHeight;
+    const waveformHeight = Math.max(this.originalWaveHeight, this.waveHeight * (this.splitChannels ? this.audio?.channelCount ?? 1 : 1) + this.timelineHeight) - this.timelineHeight;
 
-    if (this.waveHeight !== waveformHeight) {
-      this.waveHeight = waveformHeight;
+    if (this.baseWaveHeight !== waveformHeight) {
+      this.baseWaveHeight = waveformHeight;
     }
 
     height += timelineLayer?.isVisible ? this.timelineHeight : 0;
@@ -608,7 +605,7 @@ export class Visualizer extends Events<VisualizerEvents> {
 
   private initialRender() {
     if (this.container) {
-      this.container.style.height = `${this.waveHeight}px`;
+      this.container.style.height = `${this.baseWaveHeight}px`;
       this.createLayers();
     } else {
       // TBD
@@ -648,7 +645,7 @@ export class Visualizer extends Events<VisualizerEvents> {
       groupName: options.groupName,
       name,
       container: this.container,
-      height: this.waveHeight,
+      height: this.baseWaveHeight,
       pixelRatio: this.pixelRatio,
       index: zIndex,
       offscreen,
@@ -694,7 +691,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const layer = new LayerGroup({
       name,
       container: this.container,
-      height: this.waveHeight,
+      height: this.baseWaveHeight,
       pixelRatio: this.pixelRatio,
       index: zIndex,
       offscreen,
@@ -927,7 +924,6 @@ export class Visualizer extends Events<VisualizerEvents> {
   // This is needed when the waveform container is resized, or visibility
   // of a layer is changed. Otherwise its possible to be blank.
   private resetWaveformRender() {
-    this.lastRenderedChannel = -1;
     this.lastRenderedAmp = 0;
     this.lastRenderedWidth = 0;
     this.lastRenderedZoom = 0;
