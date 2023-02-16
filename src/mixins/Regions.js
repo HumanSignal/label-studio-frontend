@@ -26,8 +26,6 @@ const RegionsMixin = types
       'prediction-changed',
       'manual',
     ]), 'manual'),
-
-    item_index: types.maybeNull(types.number),
   })
   .volatile(() => ({
     // selected: false,
@@ -102,10 +100,6 @@ const RegionsMixin = types
         self.shapeRef = ref;
       },
 
-      setItemIndex(index) {
-        self.item_index = index;
-      },
-
       beforeDestroy() {
         self.notifyDrawingFinished({ destroy: true });
       },
@@ -169,7 +163,7 @@ const RegionsMixin = types
       },
 
       convertYToPerc(y) {
-        return (y * 100) / self.currentImageEntity.stageHeight;
+        return (y * 100) / self.parent.stageHeight;
       },
 
       convertHDimensionToPerc(hd) {
@@ -190,7 +184,6 @@ const RegionsMixin = types
       },
 
       toStateJSON() {
-        console.log('toStateJSON', self);
         const parent = self.parent;
         const buildTree = control => {
           const tree = {

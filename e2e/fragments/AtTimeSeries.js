@@ -93,7 +93,7 @@ module.exports = {
     I.scrollPageToTop();
     const channelBBox = await I.grabElementBoundingRect(this._channelSelector);
 
-    I.moveMouse(channelBBox.x + channelBBox.width * x, channelBBox.y + channelBBox.height * y);
+    I.moveMouse(channelBBox.x + channelBBox.width * x, channelBBox.y + channelBBox.height* y);
     I.mouseWheel({ deltaY });
   },
 

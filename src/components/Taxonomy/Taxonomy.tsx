@@ -135,7 +135,7 @@ const SelectedList = ({ isEditable, flatItems } : { isEditable: boolean, flatIte
           <span>{showFullPath ? path.join(pathSeparator) : path[path.length - 1]}</span>
           {isEditable ? (
             <input type="button" onClick={() => setSelected(selected[index], false)} value="×" />
-          ) : null}
+          ): null}
         </div>
       ))}
     </div>
@@ -303,7 +303,7 @@ const filterTreeByPredicate = (flatten: TaxonomyItem[], predicate: (item: Taxono
   const childs: TaxonomyItem[][] = [];
   let d = -1;
 
-  for (let i = flatten.length; i--;) {
+  for (let i = flatten.length; i--; ) {
     const item = flatten[i];
 
     if (item.depth === d) {
@@ -412,7 +412,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef, isEditable }: Tax
             <div className={styles.taxonomy__add}>
               <button onClick={addInside}>Add</button>
             </div>
-          ) : null}
+          ): null}
         </div>
       )}
     </div>
@@ -475,7 +475,7 @@ const Taxonomy = ({
   const onKeyDown = useCallback(e => {
     const taxonomyList: NodeListOf<HTMLElement> | undefined = taxonomyRef.current?.querySelectorAll('.item');
     const searchInput = taxonomyRef.current?.querySelector('input');
-    const focusedElement: HTMLInputElement | Element | any = document.activeElement || undefined;
+    const focusedElement: HTMLInputElement | Element | any  = document.activeElement || undefined;
     const taxonomyHasItems = taxonomyList && taxonomyList.length > 0;
     const index = (taxonomyList && focusedElement)
       ? Array.from(taxonomyList).findIndex((taxonomyItem => taxonomyItem.id === focusedElement.id))

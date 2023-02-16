@@ -49,7 +49,7 @@ Scenario('Seek view should be in sync with indicator position', async ({ I, Labe
     assert.equal(0.5, delta);
 
     I.say('Check the video position indicator is within the seek indicator');
-    assert.ok(indicatorBbox.x <= positionBbox.x, 'Video position indicator not within the seek indicator when dragged near the midway point');
+    assert.ok(indicatorBbox.x <= positionBbox.x,  'Video position indicator not within the seek indicator when dragged near the midway point');
     assert.ok(indicatorBbox.x + indicatorBbox.width >= positionBbox.x + positionBbox.width, 'Video position indicator not within the seek indicator when dragged near the midway point');
   }
 

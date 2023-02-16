@@ -112,14 +112,15 @@ Scenario('Image list with hotkey navigation', async ({ I, LabelStudio, AtImageVi
   I.see('1 of 4');
 
   I.say('Clicking on the next page');
-  I.pressKey('Ctrl+]');
+  I.pressKey('Ctrl+d');
 
   I.say('Loading second image');
   I.seeElement(`img[src="${data.images[1]}"]`);
   I.see('2 of 4');
 
   I.say('Clicking on the previous page');
-  I.pressKey('Ctrl+[');
+  I.pressKey('Ctrl+a');
   I.seeElement(`img[src="${data.images[0]}"]`);
   I.see('1 of 4');
 });
+

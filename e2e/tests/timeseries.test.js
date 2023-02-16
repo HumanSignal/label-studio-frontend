@@ -230,7 +230,7 @@ Scenario('TimeSeries with optimized data', async ({ I, LabelStudio, ErrorsCollec
 
   const SLICES_COUNT = 10;
   const BAD_MULTIPLIER = 1.9;
-  const screenWidth = await I.executeScript(() => {
+  const screenWidth = await I.executeScript(()=>{
     return window.screen.width * window.devicePixelRatio;
   });
   const stepsToGenerate = screenWidth * SLICES_COUNT * BAD_MULTIPLIER;

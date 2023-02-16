@@ -53,9 +53,9 @@ const Model = types
   }))
   .actions(self => ({
     beforeDestroy() {
-      try {
+      try{
         self.removeHighlight();
-      } catch (e) {
+      } catch(e) {
         console.warn(e);
       }
     },
@@ -88,7 +88,7 @@ const Model = types
             ...xpathRange,
             globalOffsets: self.globalOffsets.serialized,
           });
-        } catch (e) {
+        } catch(e) {
           // regions may be broken, so they don't have globalOffsets
           // or they can't be applied on current html, so just keep them untouched
           const { start, end, startOffset, endOffset } = self;

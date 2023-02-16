@@ -108,7 +108,7 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
     };
   }
 
-  const name = `${parent?.name ?? ''}:${item.id}`;
+  const name = `${parent?.name?? ''}:${item.id}`;
 
   return (
     <div {...divAttrs} className={styles.row} data-testid="textarea-region">
