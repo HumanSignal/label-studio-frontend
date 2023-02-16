@@ -286,6 +286,9 @@ export class Visualizer extends Events<VisualizerEvents> {
     this.playhead.updatePositionFromTime(time);
   }
 
+  /**
+   * Render the visible range of waveform channels to the canvas
+   */
   private async renderAvailableChannels() {
     if (!this.audio) return;
 
@@ -299,81 +302,111 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     this.renderId = performance.now();
 
-    for (let i = 0; i < this.audio.channelCount; i++) {
-      await this.renderWave(i, layer);
+    const dataLength = this.dataLength;
+    const scrollLeftPx = this.getScrollLeftPx();
+    const iStart = clamp(scrollLeftPx * this.samplesPerPx, 0, dataLength);
+    const iEnd = clamp(iStart + (this.width * this.samplesPerPx), 0, dataLength);
+
+    const renderableData = iEnd - iStart;
+    const zoom = this.zoom;
+    const amp = this.amp;
+
+    // Render all channels, full waveform
+    if (this.width !== this.lastRenderedWidth || zoom !== this.lastRenderedZoom || amp !== this.lastRenderedAmp || renderableData < CACHE_RENDER_THRESHOLD) {
+      for (let i = 0; i < this.audio.channelCount; i++) {
+        await this.renderWave(i, layer, iStart, iEnd);
+      }
+    }
+    // Render partial waveform, only the change in scroll position's channel data.
+    else {
+      await this.renderPartialWave(layer, iStart, iEnd);
     }
   }
 
-  private renderWave(channelNumber: number, layer: Layer): Promise<boolean> {
+
+  /**
+   * Render the waveform for a single channel
+   */
+  private renderWave(channelNumber: number, layer: Layer, iStart: number, iEnd: number): Promise<boolean> {
     const renderId = this.renderId;
     const height = this.waveHeight / (this.audio?.channelCount ?? 1);
-    const dataLength = this.dataLength;
     const scrollLeftPx = this.getScrollLeftPx();
 
     const zoom = this.zoom;
     const amp = this.amp;
-    const iStart = clamp(scrollLeftPx * this.samplesPerPx, 0, dataLength);
-    const iEnd = clamp(iStart + (this.width * this.samplesPerPx), 0, dataLength);
 
-    let x = 0;
+    const x = 0;
 
     return new Promise(resolve => {
       if (this.isDestroyed || !this.audio) return resolve(false);
 
-      const renderableData = iEnd - iStart;
+      // The waveform layer should be cleared during the render of the first channel, and not subsequent channels in a
+      // given render cycle
+      if (channelNumber === 0) {
+        layer.clear();
+      }
+      const renderIterator = this.renderSlice(layer, height, iStart, iEnd, channelNumber, x);
 
-      if (this.lastRenderedChannel < channelNumber || this.width !== this.lastRenderedWidth || zoom !== this.lastRenderedZoom || amp !== this.lastRenderedAmp || renderableData < CACHE_RENDER_THRESHOLD) {
-        // The waveform layer should be cleared during the render of the first channel, and not subsequent channels in a
-        // given render cycle
-        if (channelNumber === 0) {
-          layer.clear();
+      // Render iterator, allowing it to be cancelled if a new render is requested
+      const render = () => {
+        if (this.renderId !== renderId) return resolve(false);
+
+        const next = renderIterator.next();
+
+        if (!next.done) {
+          requestAnimationFrame(render);
+        } else {
+          this.lastRenderedWidth = this.width;
+          this.lastRenderedZoom = zoom;
+          this.lastRenderedAmp = amp;
+          this.lastRenderedScrollLeftPx = scrollLeftPx;
+          this.lastRenderedChannel = channelNumber;
+          resolve(true);
         }
-        const renderIterator = this.renderSlice(layer, height, iStart, iEnd, channelNumber, x);
+      };
 
-        // Render iterator, allowing it to be cancelled if a new render is requested
-        const render = () => {
-          if (this.renderId !== renderId) return resolve(false);
+      render();
+    });
+  }
 
-          const next = renderIterator.next();
+  /**
+   * Render a partial wave for all available channels, reusing the last rendered channel(s) wave as a starting point
+   * only drawing the new data on the left or right side of the waveform.
+   */
+  private async renderPartialWave(layer: Layer, iStart: number, iEnd: number) {
+    const renderId = this.renderId;
+    let x = 0;
+    const channelCount = (this.audio?.channelCount ?? 1);
+    const height = this.waveHeight / channelCount;
+    const scrollLeftPx = this.getScrollLeftPx();
+    const dataLength = this.dataLength;
+    let deltaX = this.lastRenderedScrollLeftPx - scrollLeftPx;
 
-          if (!next.done) {
-            requestAnimationFrame(render);
-          } else {
-            this.lastRenderedWidth = this.width;
-            this.lastRenderedZoom = zoom;
-            this.lastRenderedAmp = amp;
-            this.lastRenderedScrollLeftPx = scrollLeftPx;
-            this.lastRenderedChannel = channelNumber;
-            resolve(true);
-          }
-        };
+    if (deltaX < 1 && deltaX > -1 || !this.audio) return false;
 
-        render();
-      } else {
-        let deltaX = this.lastRenderedScrollLeftPx - scrollLeftPx;
+    deltaX = Math.round(deltaX);
+    const diff = deltaX * this.samplesPerPx;
 
-        if (deltaX < 1 && deltaX > -1) return resolve(false);
+    this.lastRenderedScrollLeftPx = scrollLeftPx;
 
-        deltaX = Math.round(deltaX);
-        const diff = deltaX * this.samplesPerPx;
+    // Move the canvas to the left by deltaX
+    layer.shift(deltaX, 0);
 
-        this.lastRenderedScrollLeftPx = scrollLeftPx;
-
-        // Move the canvas to the left by deltaX
-        layer.shift(deltaX, 0);
+    for (let channelNumber = 0; channelNumber < channelCount; channelNumber++) {
+      await new Promise(resolve => {
 
         let sStart = iStart;
         let sEnd = iEnd;
 
         // Waveform visually moving to the right
         if (deltaX > 0) {
-        // Draw the new data on the left
+          // Draw the new data on the left
           sEnd = iStart + diff;
           x = 0;
 
           // Waveform visually moving to the left
         } else {
-        // Draw the new data on the right
+          // Draw the new data on the right
           sStart = iEnd + diff;
           x = clamp(this.width + deltaX - BUFFER_SAMPLES, 0, this.width);
         }
@@ -396,15 +429,20 @@ export class Visualizer extends Events<VisualizerEvents> {
         };
 
         render();
-      }
-    });
+      });
+    }
   }
 
+  /**
+   * Render a slice of the waveform for a single channel between iStart and iEnd timestamps,
+   * returning an iterator that can be used to render the slice.
+   */
   private *renderSlice(layer: Layer, height: number, iStart: number, iEnd: number, channelNumber: number, x = 0): Generator<any, void, any> {
     const bufferChunks = this.audio?.chunks?.[channelNumber];
 
     if (!bufferChunks) return;
 
+    console.log('Rendering slice', iStart, iEnd, channelNumber, x);
     const bufferChunkSize = bufferChunks.length;
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
@@ -423,7 +461,6 @@ export class Visualizer extends Events<VisualizerEvents> {
     layer.moveTo(x, y);
 
     // Find all chunks in buffer chunks that are between iStart and iEnd
-
     const now = performance.now();
 
     for (let i = 0; i < bufferChunkSize; i++) { 
@@ -464,6 +501,10 @@ export class Visualizer extends Events<VisualizerEvents> {
     layer.restore();
   }
 
+  /**
+   * Render a single chunk of waveform data, which is a small set of contiguous samples.
+   * This takes an average min and max value for the chunk and draws a line between them.
+   */
   private renderChunk(chunk: Float32Array, layer: Layer, height: number, offset: number, zero: number) {
     layer.save();
 
