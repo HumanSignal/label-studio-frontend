@@ -149,27 +149,34 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
   );
 });
 
-const NavigationButton: FC<{
+type NavigationButtonProps = {
   onClick: () => void,
   mod: string[],
   disabled?: boolean,
   hotkey?: string,
-}> = (props) => {
-  const mod = Object.fromEntries(props.mod.map(m => [m, true]));
+};
+
+const NavigationButton: FC<NavigationButtonProps> = ({
+  mod,
+  disabled,
+  hotkey,
+  onClick,
+}) => {
+  const buttonMod = Object.fromEntries(mod.map(m => [m, true]));
 
   const actionHandler = useCallback(() => {
-    if (!props.disabled) props.onClick();
-  }, [props.disabled, props.onClick]);
+    if (!disabled) onClick();
+  }, [disabled, onClick]);
 
-  mod.disabled = props.disabled === true;
+  buttonMod.disabled = disabled === true;
 
-  useHotkey(props.hotkey, actionHandler);
+  useHotkey(hotkey, actionHandler);
 
-  return props.hotkey ? (
-    <Hotkey.Tooltip name={props.hotkey}>
-      <Elem name="btn" mod={mod} onClick={actionHandler}/>
+  return hotkey ? (
+    <Hotkey.Tooltip name={hotkey}>
+      <Elem name="btn" mod={buttonMod} onClick={actionHandler}/>
     </Hotkey.Tooltip>
   ) : (
-    <Elem name="btn" mod={mod} onClick={actionHandler}/>
+    <Elem name="btn" mod={buttonMod} onClick={actionHandler}/>
   );
 };

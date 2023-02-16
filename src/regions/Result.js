@@ -41,6 +41,7 @@ const Result = types
       'polygon',
       'brush',
       'ellipse',
+      'magicwand',
       'rectanglelabels',
       'keypointlabels',
       'polygonlabels',
