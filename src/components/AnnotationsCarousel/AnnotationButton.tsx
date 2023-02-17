@@ -1,10 +1,8 @@
-// import { createRef, useCallback, useEffect, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
 import { Userpic } from '../../common/Userpic/Userpic';
 import { IconAnnotationGroundTruth, IconAnnotationSkipped2, IconCheckBold, IconCrossBold, IconDraftCreated2, IconDuplicate, IconEllipsis, IconTrashRect, LsComment, LsCommentRed, LsSparks, LsStar, LsStarOutline } from '../../assets/icons';
 import { userDisplayName } from '../../utils/utilities'; 
 import { TimeAgo }  from '../../common/TimeAgo/TimeAgo';
-// import { IconArrowLeft, IconArrowRight } from '../../assets/icons';
 import './AnnotationButton.styl';
 import { useCallback, useEffect, useState } from 'react';
 import { Dropdown } from '../../common/Dropdown/Dropdown';
