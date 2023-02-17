@@ -172,9 +172,6 @@ export const FF_LSDV_4583_6 = 'fflag_feat_front_lsdv_4583_6_images_preloading_sh
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
-    [FF_LSDV_4583]: true,
-    [FF_DEV_3377]: true,
-    [FF_LSDV_4583_6]: true,
   };
 }
 
