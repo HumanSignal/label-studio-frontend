@@ -159,6 +159,13 @@ export const FF_DEV_4075 = 'fflag_fix_front_dev_4075_taxonomy_overlap_281222_sho
   */
 export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short';
 
+/**
+ * Default Audio v3 to use multichannel mode if the track has 2 or more channels.
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short
+ *
+ */
+export const FF_LSDV_3028 = 'fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
