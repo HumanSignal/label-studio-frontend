@@ -26,6 +26,12 @@ export interface WaveformOptions {
   height?: number;
 
   /**
+   * Height of a single waveform per channel.
+   * @default 30
+   * */
+  waveHeight?: number;
+
+  /**
    * Zoom factor. 1 – no zoom
    * @default 1
    * */
