@@ -11,10 +11,11 @@ export const useWaveform = (
     onPlaying?: (playing: boolean) => void,
     onRateChange?: (rate: number) => void,
     autoLoad?: boolean,
+    showLabels?: boolean,
   },
 ) => {
   const waveform = useRef<Waveform>();
-
+  const { showLabels = true } = options;
   const [zoom, setZoom] = useState(1);
   const [volume, setVolume] = useState(options?.volume ?? 1);
   const [playing, setPlaying] = useState(false);
@@ -37,7 +38,6 @@ export const useWaveform = (
     }
 
     wf.on('load', () => {
-      setDuration(wf.duration);
       options?.onLoad?.(wf);
     });
     wf.on('play', () => {
@@ -60,7 +60,8 @@ export const useWaveform = (
     });
     wf.on('zoom', setZoom);
     wf.on('muted', setMuted);
-    wf.on('volumeChange', setVolume);
+    wf.on('durationChanged', setDuration);
+    wf.on('volumeChanged', setVolume);
     wf.on('rateChanged', (newRate) => {
       if (newRate !== rate) {
         options?.onRateChange?.(newRate);
@@ -127,6 +128,10 @@ export const useWaveform = (
       waveform.current.muted = muted;
     }
   }, [muted]);
+
+  useEffect(() => {
+    waveform.current?.updateLabelVisibility(showLabels);
+  }, [showLabels]);
 
   return {
     waveform,

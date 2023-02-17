@@ -3,16 +3,18 @@
     width 24px
     height 24px
     margin-right 8px
+    flex-shrink 0
 
   &__head
-    height 32px
     display flex
     margin 8px 0
     padding 0 8px
     align-items center
     justify-content space-between
+    gap 8px
 
-    span
+  &__title
+    & + span
       color #000
 
       &:before
@@ -21,7 +23,8 @@
 
   &__title
     display flex
-    align-items center
+    align-items flex-start
+    word-break break-word
 
   &__result
     padding 0 8px

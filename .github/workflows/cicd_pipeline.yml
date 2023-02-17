@@ -21,15 +21,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
-permissions: read-all
-
 jobs:
   build_bundle:
     name: "Build JS Bundle"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/build_bundle.yml@master
-    permissions:
-      contents: write
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
 
@@ -37,8 +33,6 @@ jobs:
     name: "Tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/e2e_tests.yml@master
-    permissions:
-      contents: write
     needs:
       - build_bundle
     with:

@@ -43,20 +43,20 @@ export class Segment extends Events<SegmentEvents> {
   start = 0;
   end = 0;
   color: RgbaColorArray = rgba('#ccc');
-  handleColor: RgbaColorArray;
   selected = false;
   highlighted = false;
   updateable = true;
   deleteable = true;
   visible = true;
-  private waveform: Waveform;
-  private visualizer: Visualizer;
-  private controller: Regions;
-  private layer!: Layer;
-  private handleWidth: number;
-  private isDragging: boolean;
-  private draggingStartPosition: null | { grabPosition: number, start: number, end: number };
-  private isGrabbingEdge: { isRightEdge: boolean, isLeftEdge: boolean };
+
+  protected waveform: Waveform;
+  protected visualizer: Visualizer;
+  protected controller: Regions;
+  protected layer!: Layer;
+  protected handleWidth: number;
+  protected isDragging: boolean;
+  protected draggingStartPosition: null | { grabPosition: number, start: number, end: number };
+  protected isGrabbingEdge: { isRightEdge: boolean, isLeftEdge: boolean };
 
   constructor(
     options: SegmentOptions,
@@ -75,7 +75,6 @@ export class Segment extends Events<SegmentEvents> {
     this.selected = !!options.selected;
     this.updateable = options.updateable ?? this.updateable;
     this.visible = options.visible ?? this.visible;
-    this.handleColor = this.color.clone().darken(0.6);
     this.waveform = waveform;
     this.visualizer = visualizer;
     this.controller = controller;
@@ -169,6 +168,18 @@ export class Segment extends Events<SegmentEvents> {
     return this.visualizer.timelinePlacement || defaults.timelinePlacement;
   }
 
+  get options(): SegmentOptions {
+    return {
+      start: this.start,
+      end: this.end,
+      id: this.id,
+      selected: this.selected,
+      updateable: this.updateable,
+      deleteable: this.deleteable,
+      visible: this.visible,
+    };
+  }
+
   private get inViewport() {
     const { xStart: startX, xEnd: endX } = this;
     const width = this.visualizer.width * this.zoom;
@@ -217,11 +228,11 @@ export class Segment extends Events<SegmentEvents> {
     if (this.isDragging) {
       this.switchCursor(CursorSymbol.grab);
       this.handleUpdateEnd();
-    } else {
-      this.handleSelected();
-      this.waveform.invoke('regionSelected', [this, e]);
     }
-    
+
+    this.handleSelected();
+    this.waveform.invoke('regionSelected', [this, e]);
+
     this.isDragging = false;
     this.draggingStartPosition = null;
     this.isGrabbingEdge = { isRightEdge: false, isLeftEdge: false };
@@ -254,7 +265,7 @@ export class Segment extends Events<SegmentEvents> {
       const endTime = freezeEnd ? end : clamp(end + seconds, newStart + (isResizing ? 0 : timeDiff), this.duration);
 
       if (freezeStart || freezeEnd) this.switchCursor(CursorSymbol.colResize);
-      else  this.switchCursor(CursorSymbol.grabbing);
+      else this.switchCursor(CursorSymbol.grabbing);
 
       this.updatePosition(clamp(startTime, 0, duration), clamp(endTime, 0, duration));
     }
@@ -291,7 +302,7 @@ export class Segment extends Events<SegmentEvents> {
     // this is here because when the selected region is from a different label from before, it was deselecting everything
     if (this.selected) this.setColorDarken(0.5);
 
-    const { color, handleColor, timelinePlacement, timelineHeight } = this;
+    const { color, timelinePlacement, timelineHeight } = this;
     const { height } = this.visualizer;
     const timelineLayer = this.visualizer.getLayer('timeline');
     const timelineTop = timelinePlacement === defaults.timelinePlacement;
@@ -299,30 +310,14 @@ export class Segment extends Events<SegmentEvents> {
     const layer = this.controller.layerGroup;
 
     // @todo - this should account for timeline placement and start at the reservedSpace height
-    layer.fillStyle = color.toString();
+
+    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.08)`;
     layer.fillRect(this.xStart, top, this.width, height);
 
     // Render grab lines
-    layer.fillStyle = handleColor.toString();
+    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 1)`;
     layer.fillRect(this.xStart, top, this.handleWidth, height);
     layer.fillRect(this.xEnd - this.handleWidth, top, this.handleWidth, height);
-
-    // Render label
-    // if (this.label) {
-    //   layer.font = "12px Arial";
-    //   const labelMeasure = layer.context.measureText(this.label);
-
-    //   layer.fillStyle = "#000";
-    //   layer.fillRect(
-    //     this.startX + 5,
-    //     5,
-    //     clamp(labelMeasure.width + 10, 0, this.width),
-    //     10
-    //   );
-
-    //   layer.fillStyle = "#fff";
-    //   layer.fitText(this.label, this.startX + 10, 12, this.width);
-    // }
   }
 
   handleUpdateEnd() {
@@ -331,7 +326,7 @@ export class Segment extends Events<SegmentEvents> {
   }
 
   handleSelected = (selected?: boolean) => {
-    if (!this.updateable) return;
+    if (!this.updateable || (this.isDragging && this.selected)) return;
     if (this.waveform.playing) this.waveform.player.pause();
     this.selected = selected ?? !this.selected;
     if (selected) this.setColorDarken(0.5);
@@ -355,7 +350,6 @@ export class Segment extends Events<SegmentEvents> {
 
   setColor(color: string|RgbaColorArray) {
     this.color.update(color);
-    this.handleColor.update(color).darken(0.6);
   }
 
   setColorDarken(value: number) {
@@ -388,6 +382,12 @@ export class Segment extends Events<SegmentEvents> {
 
   scrollToRegion() {
     this.waveform.scrollToRegion(this.start);
+  }
+
+  convertToRegion(labels: string[], render = false) {
+    if (!this.updateable) return;
+    
+    return this.controller.convertToRegion(this.id, labels, render);
   }
 
   remove() {

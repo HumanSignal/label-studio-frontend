@@ -144,7 +144,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         onStepForward={increasePosition}
         onRewind={(steps) => setInternalPosition(isDefined(steps) ? currentPosition - steps : 0)}
         onForward={(steps) => setInternalPosition(isDefined(steps) ? currentPosition + steps : length)}
-        onPositionChange={setInternalPosition}
+        onPositionChange={setInternalPosition} 
         onToggleCollapsed={setViewCollapsed}
         formatPosition={formatPosition}
         extraControls={View.Controls && !disableView ? (

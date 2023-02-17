@@ -2,7 +2,6 @@ import React, { Fragment, useContext } from 'react';
 import { Circle } from 'react-konva';
 import { getRoot, types } from 'mobx-state-tree';
 
-import WithStatesMixin from '../mixins/WithStates';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import Registry from '../core/Registry';
@@ -153,7 +152,6 @@ const Model = types
 
 const KeyPointRegionModel = types.compose(
   'KeyPointRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,

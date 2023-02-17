@@ -37,6 +37,7 @@ import { ImageOCR } from '../examples/image_ocr';
 import { ImagePolygons } from '../examples/image_polygons';
 import { ImageSegmentation } from '../examples/image_segmentation';
 import { ImageTools } from '../examples/image_tools';
+import { ImageMagicWand } from '../examples/image_magic_wand';
 
 /**
  * HTML
@@ -70,7 +71,7 @@ import { TimeSeriesSingle } from '../examples/timeseries_single';
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ImageBbox;
+const data = VideoRectangles;
 
 function getData(task) {
   if (task && task.data) {

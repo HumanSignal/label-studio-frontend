@@ -259,7 +259,6 @@ export const Annotation = types
     },
 
     setReadonly(val) {
-      console.trace('set to readonly');
       self.readonly = val;
     },
 
@@ -309,7 +308,7 @@ export const Annotation = types
 
     updatePersonalKey(value) {
       self.pk = value;
-      getRoot(self).addAnnotationToTaskHistory(self.pk);
+      getRoot(self).addAnnotationToTaskHistory?.(self.pk);
     },
 
     toggleVisibility(visible) {

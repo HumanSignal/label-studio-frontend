@@ -67,11 +67,6 @@ export interface WaveformOptions {
   splitChannels?: boolean;
 
   /**
-   * What channels to show
-   */
-  enabledChannels?: number[];
-
-  /**
    * Center the view to the cursor when zoomin
    * @default false
    */
@@ -157,8 +152,9 @@ interface WaveformEventTypes extends RegionsGlobalEvents, RegionGlobalEvents {
   'playend': () => void;
   'zoom': (zoom: number) => void;
   'muted': (muted: boolean) => void;
-  'volumeChange': (value: number) => void;
+  'volumeChanged': (value: number) => void;
   'rateChanged': (value: number) => void;
+  'durationChanged': (duration: number) => void;
   'scroll': (scroll: number) => void;
   'layersUpdated': (layers: Map<string, Layer>) => void;
 }
@@ -227,23 +223,39 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.loadingState();
   }
 
+  renderTimeline() {
+    this.timeline.render();
+  }
+
   loadingState() {
     this.visualizer.setLoading(true);
-    this.timeline.render();
+    this.renderTimeline();
     this.visualizer.draw(true);
   }
 
   async load() {
     if (this.isDestroyed) return;
 
-    const audio = await this.media.load({
+    const loader = this.media.load({
       muted: this.params.muted ?? false,
       volume: this.params.volume ?? 1,
       rate: this.params.rate ?? 1,
     });
 
+    // Draw the timeline as soon as possible
+    if (this.media.decoderPromise) {
+      await this.media.decoderPromise;
+
+      this.renderTimeline();
+      this.visualizer.draw(true);
+    }
+
+    // Wait for the file to be decoded
+    const audio = await loader;
+
     if (this.isDestroyed) return;
 
+    // Initialize the visualizer and player
     if (audio) {
       this.player.init(audio);
       this.visualizer.init(audio);
@@ -318,6 +330,14 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.visualizer.setLoadingProgress(loaded, total, complete);
   }
 
+  setDecodingProgress(chunk?: number, total?: number) {
+    this.visualizer.setDecodingProgress(chunk, total);
+  }
+
+  setError(error: string) {
+    this.visualizer.setError(error);
+  }
+
   /**
    * Stop playback
    */
@@ -347,6 +367,10 @@ export class Waveform extends Events<WaveformEventTypes> {
 
   updateRegion(options: RegionOptions, render = true) {
     return this.regions.updateRegion(options, render);
+  }
+
+  updateLabelVisibility(visible: boolean){
+    this.regions.updateLabelVisibility(visible);
   }
 
   removeRegion(regionId: string, render = true) {
@@ -381,7 +405,7 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   /**
-   * Current gain 0..2, 0 is muted
+   * Current volume 0..1, 0 is muted
    * @default 1
    */
   get volume() {

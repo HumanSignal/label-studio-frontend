@@ -4,7 +4,6 @@ import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import SpanTextMixin from '../mixins/SpanText';
 import Utils from '../utils';
-import WithStatesMixin from '../mixins/WithStates';
 import { ParagraphLabelsModel } from '../tags/control/ParagraphLabels';
 import { TextAreaModel } from '../tags/control/TextArea/TextArea';
 import { ChoicesModel } from '../tags/control/Choices';
@@ -96,7 +95,6 @@ const Model = types
 
 const ParagraphsRegionModel = types.compose(
   'ParagraphsRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
