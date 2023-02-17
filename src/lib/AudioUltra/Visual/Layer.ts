@@ -461,8 +461,12 @@ export class Layer extends Events<LayerEvents> {
 
     if (OFFSCREEN_CANVAS_SUPPORTED && !USE_FALLBACK) {
       const { pixelRatio } = this;
-      const width = this.container.clientWidth;
-      const height = (this.options.height ?? 100);
+
+      // Base this on the existing canvas size
+      // Otherwise we will get possibly a missing portion of buffer content
+      // if the canvas is resized while the buffer is not
+      const width = this.canvas.width;
+      const height = this.canvas.height;
 
       // For better performance we're using experimental
       // OffscreenCanvas as a rendering backend
