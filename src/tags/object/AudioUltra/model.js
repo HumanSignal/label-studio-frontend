@@ -5,7 +5,8 @@ import { guidGenerator, restoreNewsnapshot } from '../../../core/Helpers.ts';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
-import { SyncMixin } from '../../../mixins/SyncMixin';
+// import { SyncMixin } from '../../../mixins/SyncMixin';
+import { SyncableMixin } from '../../../mixins/Syncable';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
 import { FF_DEV_2461, isFF } from '../../../utils/feature-flags';
@@ -74,7 +75,7 @@ const TagAttrs = types.model({
 export const AudioModel = types.compose(
   'AudioModel',
   TagAttrs,
-  SyncMixin,
+  SyncableMixin,
   ProcessAttrsMixin,
   ObjectBase,
   AnnotationMixin,
@@ -128,10 +129,10 @@ export const AudioModel = types.compose(
       let dispose;
       let updateTimeout = null;
 
-      const Super = {
-        triggerSyncPlay: self.triggerSyncPlay,
-        triggerSyncPause: self.triggerSyncPause,
-      };
+      // const Super = {
+      //   triggerSyncPlay: self.triggerSyncPlay,
+      //   triggerSyncPause: self.triggerSyncPause,
+      // };
 
       return {
         afterCreate() {
@@ -182,20 +183,38 @@ export const AudioModel = types.compose(
           self.triggerSyncSpeed(rate);
         },
 
-        triggerSyncPlay() {
-          if (self.syncedObject) {
-            Super.triggerSyncPlay();
-          } else {
-            self.handleSyncPlay();
-          }
+        triggerSyncSpeed(speed) {
+          self.syncSend('speed', { speed });
         },
 
+        triggerSyncPlay() {
+          // console.log('PLAY', self.time, self._ws.currentTime);
+          self.syncSend('play', { playing: true, time: self._ws.currentTime });
+          self.handleSyncPlay();
+        },
+
+        // @todo make play and pause at the same frame
         triggerSyncPause() {
-          if (self.syncedObject) {
-            Super.triggerSyncPause();
-          } else {
-            self.handleSyncPause();
-          }
+          self.syncSend('pause', { playing: false });
+          self.handleSyncPause();
+        },
+
+        triggerSyncSeek(time) {
+          self.syncSend('seek', { time });
+          // self.currentTime = time;
+          // self.timeSync?.seek(time);
+        },
+
+        registerSyncHandlers() {
+          ['play', 'pause', 'seek'].forEach(event => {
+            self.syncHandlers.set(event, self.handleSync);
+          });
+          self.syncHandlers.set('speed', self.handleSyncSpeed);
+        },
+
+        handleSync(_, data) {
+          self.handleSyncSeek(data);
+          data.playing ? self.handleSyncPlay() : self.handleSyncPause();
         },
 
         handleSyncPlay() {
@@ -214,11 +233,16 @@ export const AudioModel = types.compose(
           self._ws?.pause();
         },
 
-        handleSyncSpeed() {},
+        // @todo should be some way to call setRate from model
+        handleSyncSpeed(event, { speed }) {
+          if (!self._ws) return;
+          // currently it doesn't update visual control state, just an internal speed
+          self._ws.rate = speed;
+        },
         handleSyncDuration() {},
 
-        handleSyncSeek(time) {
-          if (!self._ws?.loaded || isTimeSimilar(time, self._ws.currentTime)) return;
+        handleSyncSeek({ time }) {
+          if (!self._ws?.loaded || !time || isTimeSimilar(time, self._ws.currentTime)) return;
 
           try {
             self._ws.currentTime = time;
@@ -375,15 +399,6 @@ export const AudioModel = types.compose(
           return r;
         },
 
-        /**
-         * Play and stop
-         */
-        handlePlay() {
-          if (self._ws) {
-            self.isCurrentlyPlaying ? self.triggerSyncPlay() : self.triggerSyncPause();
-          }
-        },
-
         handleSeek() {
           if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === 'paragraphs')) return;
 
@@ -422,7 +437,7 @@ export const AudioModel = types.compose(
           self.clearRegionMappings();
           self._ws = ws;
 
-          self.setSyncedDuration(self._ws.duration);
+          // self.setSyncedDuration(self._ws.duration);
           self.needsUpdate();
           self.onReady();
         },
@@ -433,8 +448,10 @@ export const AudioModel = types.compose(
 
         onPlaying(playing) {
           if (playing) {
+            // @todo self.play();
             self.triggerSyncPlay();
           } else {
+            // @todo self.pause();
             self.triggerSyncPause();
           }
         },
