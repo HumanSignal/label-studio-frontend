@@ -435,12 +435,16 @@ export default types
       });
     }
 
+    function setTaskHistory(taskHistory) {
+      self.taskHistory = taskHistory;
+    }
+
     /**
      *
      * @param {*} taskObject
      * @param {*[]} taskHistory
      */
-    function assignTask(taskObject, taskHistory) {
+    function assignTask(taskObject) {
       if (taskObject && !Utils.Checkers.isString(taskObject.data)) {
         taskObject = {
           ...taskObject,
@@ -448,9 +452,8 @@ export default types
         };
       }
       self.task = Task.create(taskObject);
-      if (taskHistory) {
-        self.taskHistory = taskHistory;
-      } else if (!self.taskHistory.some((x) => x.taskId === self.task.id)) {
+
+      if (!self.taskHistory.some((x) => x.taskId === self.task.id)) {
         self.taskHistory.push({
           taskId: self.task.id,
           annotationId: null,
@@ -734,9 +737,11 @@ export default types
       }
     }
 
-    function prevTask() {
-      if (self.canGoPrevTask) {
-        const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) - 1];
+    function prevTask(e, shouldGoBack = false) {
+      const length = shouldGoBack ? self.taskHistory.length - 1 : self.taskHistory.findIndex((x) => x.taskId === self.task.id) - 1;
+
+      if (self.canGoPrevTask || shouldGoBack) {
+        const { taskId, annotationId } = self.taskHistory[length];
 
         getEnv(self).events.invoke('prevTask', taskId, annotationId);
       }
@@ -772,6 +777,7 @@ export default types
 
       skipTask,
       unskipTask,
+      setTaskHistory,
       submitDraft,
       submitAnnotation,
       updateAnnotation,

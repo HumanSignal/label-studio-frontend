@@ -139,10 +139,10 @@ module.exports = {
     I.click(this._playButtonSelector);
   },
 
-  async seeIsGhostRegion() {
-    const error = await I.grabTextFrom(this._choiceSelector);
+  async dontSeeGhostRegion() {
+    const selectedChoice = await I.grabTextFrom(this._choiceSelector);
 
-    assert.equal(error, 'Positive');
+    assert.equal(selectedChoice, 'Positive');
   },
 
   async seeIsPlaying(playing) {
