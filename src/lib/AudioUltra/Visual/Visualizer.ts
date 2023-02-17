@@ -439,7 +439,6 @@ export class Visualizer extends Events<VisualizerEvents> {
 
     if (!bufferChunks) return;
 
-    console.log('Rendering slice', iStart, iEnd, channelNumber, x);
     const bufferChunkSize = bufferChunks.length;
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
