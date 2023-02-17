@@ -70,7 +70,6 @@ jobs:
       # upload this build as artifact to current Action
       - name: Upload bundle
         uses: actions/upload-artifact@v3
-        if: "inputs.build_for_coverage !== true" 
         with:
-          name: LSF-${{ if(inputs.build_for_coverage) }}coverage${{ endif }}${{ inputs.sha }}
+          name: LSF-${{ if(inputs.build_for_coverage) }}coverage-${{ endif }}${{ inputs.sha }}
           path: build/
