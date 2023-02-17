@@ -47,11 +47,12 @@ module.exports = {
    * @param x {number}
    * @param shiftX {number}
    */
-  dragAudioRegion(x, shiftX) {
+  dragAudioRegion(x, shiftX, shouldRelease = true) {
     I.scrollPageToTop();
     I.moveMouse(this._stageBbox.x + x, this._stageBbox.y + this._stageBbox.height / 2);
     I.pressMouseDown();
     I.moveMouse(this._stageBbox.x + x + shiftX, this._stageBbox.y + this._stageBbox.height / 2, 3);
+    if (shouldRelease === false) return;
     I.pressMouseUp();
     I.wait(1);
   },
