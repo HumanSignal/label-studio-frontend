@@ -138,7 +138,6 @@ Scenario('Check if multiple regions are working changing labels', async function
     // creating a new region
     AtAudioView.clickAt((40 * i) + 20);
     AtSidebar.seeSelectedRegion();
-    AtAudioView.seeIsGhostRegion();
     I.pressKey('u');
   }
 
@@ -181,7 +180,7 @@ Scenario('Check if there are ghost regions', async function({ I, LabelStudio, At
   });
   I.amOnPage('/');
 
-  LabelStudio.init(params);
+  LabelStudio.init(paramsSpeech);
 
   await AtAudioView.waitForAudio();
 
