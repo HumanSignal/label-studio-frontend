@@ -504,6 +504,7 @@ const HtxVideoView = ({ item, store }) => {
                 component: () => {
                   return (
                     <Dropdown.Trigger
+                      key="dd"
                       inline={isFullScreen}
                       content={(
                         <Menu size="auto" closeDropdownOnItemClick={false}>
