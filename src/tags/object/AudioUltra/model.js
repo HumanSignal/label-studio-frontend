@@ -8,7 +8,7 @@ import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import { SyncMixin } from '../../../mixins/SyncMixin';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_DEV_2461, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2461, FF_LSDV_3028, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
 import { isTimeSimilar } from '../../../lib/AudioUltra';
 import ObjectBase from '../Base';
@@ -70,7 +70,7 @@ const TagAttrs = types.model({
   defaultscale: types.optional(types.string, '1'),
   autocenter: types.optional(types.boolean, true),
   scrollparent: types.optional(types.boolean, true),
-  splitchannels: types.optional(types.boolean, true),
+  splitchannels: types.optional(types.boolean, isFF(FF_LSDV_3028)), // FF_LSDV_3028: true by default when on
 });
 
 export const AudioModel = types.compose(
