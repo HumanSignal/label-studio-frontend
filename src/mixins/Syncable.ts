@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree';
+import { Instance, types } from 'mobx-state-tree';
 
 export type SyncEvent = string // ex. "play" | "pause" | "seek" | "speed" | "volume" | "mute"
 
@@ -20,10 +20,10 @@ export interface SyncDataFull {
 export type SyncData = Partial<SyncDataFull>;
 
 export class SyncManager {
-  syncTargets = new Map<string, typeof SyncableMixin>();
+  syncTargets = new Map<string, Instance<typeof SyncableMixin>>();
   locked = false;
 
-  register(syncTarget: typeof SyncableMixin) {
+  register(syncTarget: Instance<typeof SyncableMixin>) {
     this.syncTargets.set(syncTarget.name, syncTarget);
   }
 
@@ -84,8 +84,8 @@ const SyncableMixin = types
   .actions(self => ({
     afterCreate() {
       self.syncManager = SyncManagerFactory.get(self.sync);
-      self.syncManager!.register(self);
-      self.registerSyncHandlers();
+      self.syncManager!.register(self as Instance<typeof SyncableMixin>);
+      (self as Instance<typeof SyncableMixin>).registerSyncHandlers();
     },
 
     /**
@@ -114,7 +114,7 @@ const SyncableMixin = types
     },
 
     destroy() {
-      self.syncManager!.unregister(self);
+      self.syncManager!.unregister(self as Instance<typeof SyncableMixin>);
     },
   }));
 
