@@ -363,12 +363,17 @@ const Model = types.model({
     let bboxCoords;
 
     self.selectedRegions.forEach((region) => {
+      const regionBBox = region.bboxCoords;
+
+      if (!bboxCoords && !region.bboxCoords) return;
+
       if (bboxCoords) {
+
         bboxCoords = {
-          left: Math.min(region.bboxCoords.left, bboxCoords.left),
-          top: Math.min(region.bboxCoords.top, bboxCoords.top),
-          right: Math.max(region.bboxCoords.right, bboxCoords.right),
-          bottom: Math.max(region.bboxCoords.bottom, bboxCoords.bottom),
+          left: Math.min(regionBBox?.left, bboxCoords.left),
+          top: Math.min(regionBBox?.top, bboxCoords.top),
+          right: Math.max(regionBBox?.right, bboxCoords.right),
+          bottom: Math.max(regionBBox?.bottom, bboxCoords.bottom),
         };
       } else {
         bboxCoords = region.bboxCoords;
