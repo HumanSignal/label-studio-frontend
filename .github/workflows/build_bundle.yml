@@ -6,6 +6,9 @@ on:
       sha:
         required: true
         type: string
+      build_for_coverage:
+        required: false
+        type: boolean
 
 env:
   # increment it in case if you need to reset cache
@@ -62,10 +65,12 @@ jobs:
         env:
           CI: false # on true webpack breaks on warnings, and we have them a lot
           NODE_ENV: 'production'
+          TEST_ENV: ${{ inputs.build_for_coverage }}
 
       # upload this build as artifact to current Action
       - name: Upload bundle
         uses: actions/upload-artifact@v3
+        if: "inputs.build_for_coverage !== true" 
         with:
-          name: LSF-${{ inputs.sha }}
+          name: LSF-${{ inputs.build_for_coverage ? 'coverage' : '' }}${{ inputs.sha }}
           path: build/
