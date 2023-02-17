@@ -25,16 +25,24 @@ jobs:
   build_bundle:
     name: "Build JS Bundle"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
-    uses: heartexlabs/label-studio-frontend/.github/workflows/build_bundle.yml@master
+    uses: heartexlabs/label-studio-frontend/.github/workflows/build_bundle.yml@dev-3947/e2e-coverage
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
+
+  build_for_coverage:
+    name: "Build JS Bundle"
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    uses: heartexlabs/label-studio-frontend/.github/workflows/build_bundle.yml@dev-3947/e2e-coverage
+    with:
+      sha: ${{ github.event.pull_request.head.sha || github.event.after }}
+      build_for_coverage: true
 
   run_e2e:
     name: "Tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: heartexlabs/label-studio-frontend/.github/workflows/e2e_tests.yml@dev-3947/e2e-coverage
     needs:
-      - build_bundle
+      - build_for_coverage
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
 

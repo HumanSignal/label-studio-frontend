@@ -56,7 +56,8 @@ jobs:
       - name: "Download bundle"
         uses: actions/download-artifact@v3
         with:
-          name: LSF-${{ inputs.sha }}
+          name: LSF-coverage-${{ inputs.sha }}
+
           path: build/
 
       # run http-server with build in background (will be killed after job ends)

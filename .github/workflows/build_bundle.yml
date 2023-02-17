@@ -6,6 +6,9 @@ on:
       sha:
         required: true
         type: string
+      build_for_coverage:
+        required: false
+        type: boolean
 
 env:
   # increment it in case if you need to reset cache
@@ -14,7 +17,7 @@ env:
 
 jobs:
   build:
-    name: "Build"
+    name: "Build${{ inputs.build_for_coverage && ' Coverage' || '' }}"
     runs-on: ubuntu-latest
     # ci can be skipped with `[skip ci]` prefix in message
     if: "!contains(github.event.head_commit.message, 'skip ci')"
@@ -62,10 +65,11 @@ jobs:
         env:
           CI: false # on true webpack breaks on warnings, and we have them a lot
           NODE_ENV: 'production'
+          TEST_ENV: ${{ inputs.build_for_coverage }} # needed to create a separate build with the counters for the coverage report
 
       # upload this build as artifact to current Action
       - name: Upload bundle
         uses: actions/upload-artifact@v3
         with:
-          name: LSF-${{ inputs.sha }}
+          name: LSF-${{ inputs.build_for_coverage && 'coverage-' }}${{ inputs.sha }}
           path: build/
