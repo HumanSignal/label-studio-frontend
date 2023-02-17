@@ -86,7 +86,7 @@
   ],
   "dependencies": {
     "@thi.ng/rle-pack": "^2.1.6",
-    "audio-file-decoder": "^2.3.0",
+    "@martel/audio-file-decoder": "2.3.15",
     "babel-preset-react-app": "^9.1.1",
     "d3": "^5.16.0",
     "magic-wand-js": "^1.0.0",
