@@ -93,7 +93,10 @@ export class MediaLoader extends Destructable {
     }
 
     // Get the audio data from the url src
-    const req = await this.performRequest(this.options.src);
+    const req = await this.performRequest(this.options.src).catch((err: any) => {
+      console.error('An audio loading error occurred', err);
+      return null;
+    });
 
     if (req) {
       try {
