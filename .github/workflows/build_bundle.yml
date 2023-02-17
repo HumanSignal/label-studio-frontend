@@ -65,7 +65,7 @@ jobs:
         env:
           CI: false # on true webpack breaks on warnings, and we have them a lot
           NODE_ENV: 'production'
-          TEST_ENV: ${{ inputs.build_for_coverage }}
+          TEST_ENV: ${{ inputs.build_for_coverage }} # needed to create a separate build with the counters for the coverage report
 
       # upload this build as artifact to current Action
       - name: Upload bundle

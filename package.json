@@ -28,7 +28,7 @@
   "scripts": {
     "build-bundle": "yarn run build:final",
     "build-notsourcemap": "GENERATE_SOURCEMAP=false yarn run build",
-    "build:final": "BUILD_NO_CHUNKS=true yarn run build",
+    "build:final": "BUILD_NO_SERVER=true BUILD_NO_CHUNKS=true yarn run build",
     "build:no-hash": "BUILD_NO_HASH=true BUILD_NO_CHUNKS=true yarn run build",
     "build:module": "BUILD_MODULE=true yarn run build:no-hash",
     "build": "webpack",
