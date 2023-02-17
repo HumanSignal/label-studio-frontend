@@ -59,6 +59,7 @@
   &__ellipsisIcon
     transform rotate(90deg)
     display flex
+    border-radius 4px
   &__picSection
     position relative
   &__status
@@ -82,7 +83,11 @@
       background-color #1D39C4
       svg
         display block
-
+  &_contextMenuOpen
+    .annotation-button
+      &__ellipsisIcon
+        color #096DD9
+        background #096DD91F
 
 .AnnotationButtonContextMenu
   border-radius 4px
