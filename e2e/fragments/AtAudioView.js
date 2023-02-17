@@ -142,7 +142,7 @@ module.exports = {
   async dontSeeGhostRegion() {
     const selectedChoice = await I.grabTextFrom(this._choiceSelector);
 
-    assert.equal(selectedChoice, 'Positive');
+    assert.equal(selectedChoice, 'Positive[3]Neutral[4]Negative[5]');
   },
 
   async seeIsPlaying(playing) {

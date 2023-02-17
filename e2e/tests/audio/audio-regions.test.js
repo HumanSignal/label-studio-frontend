@@ -188,8 +188,6 @@ Scenario('Check if there are ghost regions', async function({ I, LabelStudio, At
 
   await AtAudioView.lookForStage();
 
-  AtSidebar.seeRegions(1);
-
   // creating a new region
   I.pressKey('1');
   AtAudioView.dragAudioRegion(300,80);
@@ -212,5 +210,7 @@ Scenario('Check if there are ghost regions', async function({ I, LabelStudio, At
   AtAudioView.clickAt(170);
   AtSidebar.seeSelectedRegion();
 
-  AtSidebar.seeRegions(2);
+  await AtAudioView.dontSeeGhostRegion();
+
+  AtSidebar.seeRegions(1);
 });
