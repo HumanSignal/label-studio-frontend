@@ -38,21 +38,29 @@ export const KonvaRegionMixin = types.model({})
 
         if (e) e.cancelBubble = true;
 
+        const selectAction = () => {
+          self._selectArea(additiveMode);
+          deferredSelectId = null;
+        };
+
         if (annotation.editable && annotation.relationMode) {
           annotation.addRelation(self);
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
         } else {
+          // Skip double click emulation when there is nothing to focus
+          if (!self.perRegionFocusTarget) {
+            selectAction();
+            return;
+          }
+          // Double click emulation
           if (deferredSelectId) {
             clearTimeout(deferredSelectId);
             self.requestPerRegionFocus();
             deferredSelectId = null;
             annotation.selectArea(self);
           } else {
-            deferredSelectId = setTimeout(() => {
-              self._selectArea(additiveMode);
-              deferredSelectId = null;
-            }, 300);
+            deferredSelectId = setTimeout(selectAction, 300);
           }
         }
       },
