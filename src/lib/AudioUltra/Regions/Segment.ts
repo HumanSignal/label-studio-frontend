@@ -304,6 +304,7 @@ export class Segment extends Events<SegmentEvents> {
 
     const { color, timelinePlacement, timelineHeight } = this;
     const { height } = this.visualizer;
+
     const timelineLayer = this.visualizer.getLayer('timeline');
     const timelineTop = timelinePlacement === defaults.timelinePlacement;
     const top = timelineLayer?.isVisible && timelineTop ? timelineHeight : 0;
