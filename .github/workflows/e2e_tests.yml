@@ -105,8 +105,9 @@ jobs:
       - name: Merge coverage reports
         if: ${{ success() }}
         run: |
-          nyc merge coverage/ coverage/coverage.json;
-          rm -f coverage/*.coverage.json
+          set -euo pipefail
+          cd e2e
+          yarn coverage:merge 
 
       - name: Upload coverage to Artifact
         uses: actions/upload-artifact@v3
