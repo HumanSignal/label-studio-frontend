@@ -87,19 +87,30 @@ jobs:
 
       - name: Run e2e test suite
         timeout-minutes: 20 # 8-10 minutes is enough to pass tests
+        env:
+          NODE_ENV: 'production'
+          TEST_ENV: true
         run: |
           set -euo pipefail
           cd e2e
           yarn run test:ci ${{ steps.cpu-info.outputs.cores-count }}
 
-      - uses: actions/upload-artifact@v3
+      - name: "Upload e2e output" 
+        uses: actions/upload-artifact@v3
         if: ${{ failure() }}
         with:
           name: e2e output
           path: e2e/output/
 
+      - name: Merge coverage reports
+        if: ${{ success() }}
+        run: |
+          nyc merge coverage/ coverage/coverage.json;
+          rm -f coverage/*.coverage.json
+
       - name: Upload coverage to Artifact
         uses: actions/upload-artifact@v3
+        if: ${{ success() }}
         with:
           name: e2e-tests-coverage
           path: coverage/
