@@ -10,7 +10,6 @@
     "test:parallel": "codeceptjs run-workers",
     "test:ci": "HEADLESS=true yarn run test:parallel",
     "test:ci:no-worker": "HEADLESS=true codeceptjs run",
-    "coverage:merge": "nyc merge ../coverage/ ../coverage/coverage.json && rm -f ../coverage/*.coverage.json",
     "coverage:istanbul": "node ./coverage-to-istanbul.js",
     "coverage:report": "nyc report --reporter=html --include=../src/**/* --report-dir=./coverage --temp-dir=./output/coverage",
     "codeceptjs": "codeceptjs run --steps",

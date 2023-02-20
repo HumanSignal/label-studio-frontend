@@ -45,6 +45,7 @@
     "test:coverage": "yarn test -- --coverage",
     "test:watch": "react-scripts test",
     "test": "yarn jest src",
+    "coverage:merge": "npx nyc merge coverage/ coverage/coverage.json && rm -f coverage/*.coverage.json",
     "postinstall": "sh scripts/postinstall.sh"
   },
   "husky": {
