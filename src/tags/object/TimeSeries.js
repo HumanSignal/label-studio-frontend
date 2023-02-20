@@ -66,6 +66,7 @@ import { AnnotationMixin } from '../../mixins/AnnotationMixin';
  * @param {string} [durationDisplayFormat] Format used to display temporal duration value for brush range. If the temporal column is a date, use strftime to format it. If it's a number, use [d3 number](https://github.com/d3/d3-format#locale_format) formatting.
  * @param {string} [sep=,] Separator for your CSV file.
  * @param {string} [overviewChannels] Comma-separated list of channel names or indexes displayed in overview.
+ * @param {string} [ylim] Comma-separated list of y axis limits.
  * @param {string} [overviewWidth=25%] Default width of overview window in percents
  * @param {boolean} [fixedScale=false] Whether to scale y-axis to the maximum to fit all the values. If false, current view scales to fit only the displayed values.
  */
@@ -80,6 +81,7 @@ const TagAttrs = types.model({
   durationdisplayformat: '.0f',
   overviewchannels: '', // comma-separated list of channels to show
   overviewwidth: '25%',
+  ylim: '-5,5', // comma-separated list of y axis limits
 
   fixedscale: false,
 

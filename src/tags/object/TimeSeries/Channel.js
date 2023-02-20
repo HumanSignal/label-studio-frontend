@@ -35,6 +35,7 @@ import { FF_DEV_3391, isFF } from '../../../utils/feature-flags';
  * @param {number=} [markerSymbol=circle] plot stroke width
  * @param {string=} [timeRange] data range of x-axis / time axis
  * @param {string=} [dataRange] data range of y-axis / data axis
+ * @param {string=} [ylim] custom data range of y-axis / data axis
  * @param {string=} [showAxis] show or bide both axis 
  * @param {boolean} [fixedScale] if false current view scales to fit only displayed values; if given overwrites TimeSeries' fixedScale
  */
@@ -74,6 +75,7 @@ const TagAttrs = types.model({
   markersymbol: types.optional(types.string, 'circle'),
 
   datarange: types.maybe(types.string),
+  ylim: types.maybe(types.string),
   timerange: types.maybe(types.string),
 
   showaxis: types.optional(types.boolean, true),
@@ -745,21 +747,33 @@ class ChannelD3 extends React.Component {
       }
 
       if (item.datarange) {
+        console.log('OUTPUT')
+        console.log(item.datarange)
         const datarange = item.datarange.split(',');
   
         if (datarange[0] !== '') min = new Number(datarange[0]);
         if (datarange[1] !== '') max = new Number(datarange[1]);
       }
 
-      // calc scale and shift
-      const diffY = d3.extent(values).reduce((a, b) => b - a); // max - min
+      if (item.ylim) {
+        // use custom range
+        const datarange = item.ylim.split(',');
 
-      scaleY = diffY / (max - min);
-      translateY = min / diffY;
+        if (datarange[0] !== '') min = new Number(datarange[0]);
+        if (datarange[1] !== '') max = new Number(datarange[1]);
 
-      this.y.domain([min, max]);
+        this.y.domain([min, max]);
+
+      } else {
+        // calc scale and shift
+        const diffY = d3.extent(values).reduce((a, b) => b - a); // max - min
+
+        scaleY = diffY / (max - min);
+        translateY = min / diffY;
+
+        this.y.domain([min, max]);
+      }
     }
-
     // zoomStep - zoom level when we need to switch between optimized and original data
     const strongZoom = scale > this.zoomStep;
     const haveToSwitchData = strongZoom === this.useOptimizedData;
