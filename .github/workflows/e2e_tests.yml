@@ -106,7 +106,6 @@ jobs:
         if: ${{ success() }}
         run: |
           set -euo pipefail
-          cd e2e
           yarn coverage:merge 
 
       - name: Upload coverage to Artifact
