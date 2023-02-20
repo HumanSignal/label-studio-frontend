@@ -8,8 +8,8 @@ on:
         type: string
 
 jobs:
-  run:
-    name: "Coverage"
+  run_unit_coverage_upload:
+    name: "Upload unit coverage"
     runs-on: ubuntu-latest
 
     # ci can be skipped with `[skip ci]` prefix in message
@@ -19,13 +19,30 @@ jobs:
       - name: "Checkout codebase"
         uses: actions/checkout@v3
 
-      - name: "Download unit coverage artifacts"
+      - name: "Download Unit coverage from Artifact"
         uses: actions/download-artifact@v3
         with:
           name: unit-tests-coverage
           path: coverage/
-          
-      - name: "Download e2e coverage artifacts"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3.1.1
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        with:
+          fail_ci_if_error: true
+          token: ${{ secrets.codecov_token }}
+
+  run_e2e_coverage_upload:
+    name: Upload E2E coverage
+    runs-on: ubuntu-latest
+
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+
+    steps:
+      - name: "Checkout codebase"
+        uses: actions/checkout@v3
+
+      - name: "Download E2E coverage from Artifact"
         uses: actions/download-artifact@v3
         with:
           name: e2e-tests-coverage
@@ -36,5 +53,5 @@ jobs:
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.codecov_token }}
 

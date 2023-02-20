@@ -25,7 +25,7 @@ const isDevelopment = DEFAULT_NODE_ENV !== "production";
 const isTest = process.env.TEST_ENV === "true";
 
 const BUILD = {
-  NO_SERVER: !!process.env.BUILD_NO_MINIMIZATION,
+  NO_SERVER: !!process.env.BUILD_NO_MINIMIZATION || !!process.env.BUILD_NO_SERVER,
   NO_MINIMIZE: isDevelopment || !!process.env.BUILD_NO_MINIMIZATION,
   NO_CHUNKS: isDevelopment || !!process.env.BUILD_NO_CHUNKS,
   NO_HASH: isDevelopment || process.env.BUILD_NO_HASH,
@@ -43,6 +43,8 @@ const LOCAL_ENV = {
   CSS_PREFIX: "lsf-",
   BUILD_NO_SERVER: BUILD.NO_SERVER,
 };
+
+console.log(LOCAL_ENV);
 
 const babelOptimizeOptions = () => {
   return BUILD.NO_MINIMIZE

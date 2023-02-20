@@ -52,18 +52,17 @@ jobs:
     uses: heartexlabs/label-studio-frontend/.github/workflows/unit_tests.yml@dev-3947/e2e-coverage 
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
-    secrets: inherit
 
-  #run_coverage:
-    #name: "Coverage"
-    #if: github.event_name == 'push' || github.event.pull_request.draft == false
-    #uses: heartexlabs/label-studio-frontend/.github/workflows/tests_coverage.yml@dev-3947/e2e-coverage
-    #needs:
-      #- run_unit
-      #- run_e2e
-    #with:
-      #sha: ${{ github.event.pull_request.head.sha || github.event.after }}
-    #secrets: inherit
+  run_coverage:
+    name: "Coverage"
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    uses: heartexlabs/label-studio-frontend/.github/workflows/tests_coverage.yml@dev-3947/e2e-coverage
+    needs:
+      - run_unit
+      - run_e2e
+    with:
+      sha: ${{ github.event.pull_request.head.sha || github.event.after }}
+    secrets: inherit
 
   run_lint:
     name: "Lint"
