@@ -8,16 +8,16 @@ export const KonvaRegionMixin = types.model({})
         console.warn('KonvaRegionMixin needs to implement bboxCoords getter in regions');
         return null;
       },
-      get bboxCoordsScreen() {
+      get bboxCoordsCanvas() {
         const bbox = self.bboxCoords;
 
         if (!isFF(FF_DEV_3793)) return bbox;
 
         return {
-          left: self.parent.internalToScreenX(bbox.left),
-          top: self.parent.internalToScreenY(bbox.top),
-          right: self.parent.internalToScreenX(bbox.right),
-          bottom: self.parent.internalToScreenY(bbox.bottom),
+          left: self.parent.internalToCanvasX(bbox.left),
+          top: self.parent.internalToCanvasY(bbox.top),
+          right: self.parent.internalToCanvasX(bbox.right),
+          bottom: self.parent.internalToCanvasY(bbox.bottom),
         };
       },
       get control() {

@@ -160,16 +160,16 @@ const Model = types
       return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation) : bboxCoords;
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToScreenX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToScreenY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
     },
     get canvasWidth() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToScreenX(self.width) : self.width;
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.width) : self.width;
     },
     get canvasHeight() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToScreenY(self.height) : self.height;
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.height) : self.height;
     },
   }))
   .actions(self => ({
@@ -271,10 +271,10 @@ const Model = types
      */
     setPosition(x, y, width, height, rotation) {
       self.setPositionInternal(
-        self.parent.screenToInternalX(x),
-        self.parent.screenToInternalY(y),
-        self.parent.screenToInternalX(width),
-        self.parent.screenToInternalY(height),
+        self.parent.canvasToInternalX(x),
+        self.parent.canvasToInternalY(y),
+        self.parent.canvasToInternalX(width),
+        self.parent.canvasToInternalY(height),
         rotation,
       );
     },

@@ -186,8 +186,8 @@ const Model = types
       insertPoint(insertIdx, x, y) {
         const p = {
           id: guidGenerator(),
-          x: isFF(FF_DEV_3793) ? self.parent.screenToInternalX(x) : x,
-          y: isFF(FF_DEV_3793) ? self.parent.screenToInternalY(y) : y,
+          x: isFF(FF_DEV_3793) ? self.parent.canvasToInternalX(x) : x,
+          y: isFF(FF_DEV_3793) ? self.parent.canvasToInternalY(y) : y,
           size: self.pointSize,
           style: self.pointStyle,
           index: self.points.length,
@@ -397,8 +397,8 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
 
           if (isFF(FF_DEV_3793)) {
             item.setPoints(t.getAttr('points').map((p, idx) => idx % 2
-              ? item.parent.screenToInternalY(p * scale[1] + d[1])
-              : item.parent.screenToInternalX(p * scale[0] + d[0]),
+              ? item.parent.canvasToInternalY(p * scale[1] + d[1])
+              : item.parent.canvasToInternalX(p * scale[0] + d[0]),
             ));
           } else {
             item.setPoints(t.getAttr('points').map((c, idx) => c * scale[idx % 2] + d[idx % 2]));

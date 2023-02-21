@@ -169,24 +169,24 @@ const ImageSelection = types.model({
         bottom: Math.max(start.y, end.y),
       } : null;
     },
-    get onScreenBbox() {
+    get onCanvasBbox() {
       if (!self.isActive) return null;
 
       const { start, end } = self;
 
       return {
-        left: self.obj.internalToScreenX(Math.min(start.x, end.x)),
-        top: self.obj.internalToScreenY(Math.min(start.y, end.y)),
-        right: self.obj.internalToScreenX(Math.max(start.x, end.x)),
-        bottom: self.obj.internalToScreenY(Math.max(start.y, end.y)),
+        left: self.obj.internalToCanvasX(Math.min(start.x, end.x)),
+        top: self.obj.internalToCanvasY(Math.min(start.y, end.y)),
+        right: self.obj.internalToCanvasX(Math.max(start.x, end.x)),
+        bottom: self.obj.internalToCanvasY(Math.max(start.y, end.y)),
       };
     },
-    get onScreenRect() {
+    get onCanvasRect() {
       if (!isFF(FF_DEV_3793)) return self;
 
       if (!self.isActive) return null;
 
-      const bbox = self.onScreenBbox;
+      const bbox = self.onCanvasBbox;
 
       return {
         x: bbox.left,
@@ -230,10 +230,10 @@ const ImageSelection = types.model({
       if (!isFF(FF_DEV_3793)) return bbox;
 
       return {
-        left: self.obj.internalToScreenX(bbox.left),
-        top: self.obj.internalToScreenY(bbox.top),
-        right: self.obj.internalToScreenX(bbox.right),
-        bottom: self.obj.internalToScreenY(bbox.bottom),
+        left: self.obj.internalToCanvasX(bbox.left),
+        top: self.obj.internalToCanvasY(bbox.top),
+        right: self.obj.internalToCanvasX(bbox.right),
+        bottom: self.obj.internalToCanvasY(bbox.bottom),
       };
     },
   };
@@ -1026,12 +1026,12 @@ const Model = types.model({
     },
 
     event(name, ev, screenX, screenY) {
-      [screenX, screenY] = self.fixZoomedCoords([screenX, screenY]);
+      const [canvasX, canvasY] = self.fixZoomedCoords([screenX, screenY]);
 
-      const x = self.screenToInternalX(screenX);
-      const y = self.screenToInternalY(screenY);
+      const x = self.canvasToInternalX(canvasX);
+      const y = self.canvasToInternalY(canvasY);
 
-      self.getToolsManager().event(name, ev.evt || ev, x, y, screenX, screenY);
+      self.getToolsManager().event(name, ev.evt || ev, x, y, canvasX, canvasY);
     },
   }));
 
@@ -1088,19 +1088,19 @@ const CoordsCalculations = types.model()
   // putting this transforms to views forces other getters to be recalculated on resize
   .views(self => ({
     // @todo scale?
-    screenToInternalX(n) {
+    canvasToInternalX(n) {
       return n / self.stageWidth * 100;
     },
 
-    screenToInternalY(n) {
+    canvasToInternalY(n) {
       return n / self.stageHeight * 100;
     },
 
-    internalToScreenX(n) {
+    internalToCanvasX(n) {
       return n / 100 * self.stageWidth;
     },
 
-    internalToScreenY(n) {
+    internalToCanvasY(n) {
       return n / 100 * self.stageHeight;
     },
   }));
@@ -1108,16 +1108,16 @@ const CoordsCalculations = types.model()
 // mock coords calculations to transparently pass coords with FF 3793 off
 const AbsoluteCoordsCalculations = CoordsCalculations
   .views(() => ({
-    screenToInternalX(n) {
+    canvasToInternalX(n) {
       return n;
     },
-    screenToInternalY(n) {
+    canvasToInternalY(n) {
       return n;
     },
-    internalToScreenX(n) {
+    internalToCanvasX(n) {
       return n;
     },
-    internalToScreenY(n) {
+    internalToCanvasY(n) {
       return n;
     },
   }));

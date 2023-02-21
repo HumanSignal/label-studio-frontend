@@ -142,8 +142,8 @@ export function createDragBoundFunc(item, offset = { x: 0, y: 0 }) {
       let { x, y } = pos;
 
       if (isFF(FF_DEV_3793)) {
-        x = image.screenToInternalX(x);
-        y = image.screenToInternalY(y);
+        x = image.canvasToInternalX(x);
+        y = image.canvasToInternalY(y);
       }
 
       x -= offset.x;
@@ -171,7 +171,7 @@ export function createDragBoundFunc(item, offset = { x: 0, y: 0 }) {
 
       if (!isFF(FF_DEV_3793)) return { x, y };
 
-      return { x: image.internalToScreenX(x), y: image.internalToScreenY(y) };
+      return { x: image.internalToCanvasX(x), y: image.internalToCanvasY(y) };
     });
   };
 }

@@ -151,8 +151,8 @@ const LabelOnEllipse = observer(({ item, color, strokewidth }) => {
 
   return (
     <LabelOnBbox
-      x={obj.internalToScreenX(item.x - item.radiusX) - strokewidth / 2 / zoomScale}
-      y={obj.internalToScreenY(item.y - item.radiusY) - strokewidth / 2 / zoomScale}
+      x={obj.internalToCanvasX(item.x - item.radiusX) - strokewidth / 2 / zoomScale}
+      y={obj.internalToCanvasY(item.y - item.radiusY) - strokewidth / 2 / zoomScale}
       isTexting={isTexting}
       text={labelText}
       score={item.score}
@@ -176,8 +176,8 @@ const LabelOnRect = observer(({ item, color, strokewidth }) => {
 
   return (
     <LabelOnBbox
-      x={obj.internalToScreenX(item.x) - strokewidth / 2 / zoomScale}
-      y={obj.internalToScreenY(item.y) - strokewidth / 2 / zoomScale}
+      x={obj.internalToCanvasX(item.x) - strokewidth / 2 / zoomScale}
+      y={obj.internalToCanvasY(item.y) - strokewidth / 2 / zoomScale}
       isTexting={isTexting}
       text={labelText}
       score={item.score}
@@ -186,7 +186,7 @@ const LabelOnRect = observer(({ item, color, strokewidth }) => {
       zoomScale={item.parent.zoomScale}
       rotation={item.rotation}
       color={color}
-      maxWidth={obj.internalToScreenX(item.width) + strokewidth}
+      maxWidth={obj.internalToCanvasX(item.width) + strokewidth}
       adjacent
       onClickLabel={item.onClickLabel}
     />
@@ -200,7 +200,7 @@ const LabelOnPolygon = observer(({ item, color }) => {
 
   if (!isLabeling && !isTexting) return null;
 
-  const bbox = item.bboxCoordsScreen;
+  const bbox = item.bboxCoordsCanvas;
 
   if (!bbox) return null;
 
@@ -248,7 +248,7 @@ const LabelOnMask = observer(({ item, color }) => {
 
   if (!isLabeling && !isTexting) return null;
 
-  const bbox = item.bboxCoordsScreen;
+  const bbox = item.bboxCoordsCanvas;
 
   if (!bbox) return null;
   return (

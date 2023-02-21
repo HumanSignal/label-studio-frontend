@@ -171,7 +171,7 @@ const Model = types
       get touchesLength() {
         return self.touches.length;
       },
-      get bboxCoordsScreen() {
+      get bboxCoordsCanvas() {
         if (!self.imageData) {
           const points = { x: [], y:[] };
 
@@ -210,16 +210,16 @@ const Model = types
        * unlike for other tools.
        */
       get bboxCoords() {
-        const bbox = self.bboxCoordsScreen;
+        const bbox = self.bboxCoordsCanvas;
 
         if (!bbox) return null;
         if (!isFF(FF_DEV_3793)) return bbox;
 
         return {
-          left: self.parent.screenToInternalX(bbox.left),
-          top: self.parent.screenToInternalY(bbox.top),
-          right: self.parent.screenToInternalX(bbox.right),
-          bottom: self.parent.screenToInternalY(bbox.bottom),
+          left: self.parent.canvasToInternalX(bbox.left),
+          top: self.parent.canvasToInternalY(bbox.top),
+          right: self.parent.canvasToInternalX(bbox.right),
+          bottom: self.parent.canvasToInternalY(bbox.bottom),
         };
       },
     };

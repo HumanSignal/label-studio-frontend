@@ -101,7 +101,7 @@ const _detect = region => {
     case 'polygonregion':
     case 'keypointregion':
     case 'brushregion': {
-      const bbox = region.bboxCoordsScreen;
+      const bbox = region.bboxCoordsCanvas;
 
       return bbox ? stageRelatedBBox(
         region,

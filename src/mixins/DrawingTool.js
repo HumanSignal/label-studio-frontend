@@ -69,12 +69,12 @@ const DrawingTool = types
     };
 
     return {
-      event(name, ev, [x, y, screenX, screenY]) {
+      event(name, ev, [x, y, canvasX, canvasY]) {
         // filter right clicks and middle clicks and shift pressed
         if (ev.button > 0 || ev.shiftKey) return;
         let fn = name + 'Ev';
 
-        if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, [x, y], [screenX, screenY]);
+        if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, [x, y], [canvasX, canvasY]);
 
         // Emulating of dblclick event, 'cause redrawing will crush the the original one
         if (name === 'click') {
@@ -82,7 +82,7 @@ const DrawingTool = types
 
           if (ts - lastClick.ts < 300 && self.comparePointsWithThreshold(lastClick, { x, y })) {
             fn = 'dbl' + fn;
-            if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, [x, y], [screenX, screenY]);
+            if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, [x, y], [canvasX, canvasY]);
           }
           lastClick = { ts, x, y };
         }
@@ -295,8 +295,8 @@ const TwoPointsDrawingTool = DrawingTool.named('TwoPointsDrawingTool')
         let dY = self.defaultDimensions.height;
 
         if (isFF(FF_DEV_3793)) {
-          dX = self.obj.screenToInternalX(dX);
-          dY = self.obj.screenToInternalY(dY);
+          dX = self.obj.canvasToInternalX(dX);
+          dY = self.obj.canvasToInternalY(dY);
         }
 
         if (currentMode === DEFAULT_MODE) {
@@ -412,8 +412,8 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
         let dY = self.defaultDimensions.length;
 
         if (isFF(FF_DEV_3793)) {
-          dX = self.obj.screenToInternalX(dX);
-          dY = self.obj.screenToInternalY(dY);
+          dX = self.obj.canvasToInternalX(dX);
+          dY = self.obj.canvasToInternalY(dY);
         }
 
         self.nextPoint(x + dX, y);
@@ -552,8 +552,8 @@ const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
         let dY = self.defaultDimensions.height;
 
         if (isFF(FF_DEV_3793)) {
-          dX = self.obj.screenToInternalX(dX);
-          dY = self.obj.screenToInternalY(dY);
+          dX = self.obj.canvasToInternalX(dX);
+          dY = self.obj.canvasToInternalY(dY);
         }
 
         if (currentMode === DEFAULT_MODE) {

@@ -169,7 +169,7 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
  * Selection area during selection — dashed rect
  */
 const SelectionRect = observer(({ item }) => {
-  const { x, y, width, height } = item.onScreenRect;
+  const { x, y, width, height } = item.onCanvasRect;
 
   const positionProps = {
     x,

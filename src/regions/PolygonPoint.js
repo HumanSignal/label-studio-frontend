@@ -77,10 +77,10 @@ const PolygonPointRelativeCoords = types
       return getRoot(self).annotationStore.selected;
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.stage.internalToScreenX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.stage.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.stage.internalToScreenY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.stage.internalToCanvasY(self.y) : self.y;
     },
   }))
   .actions(self => ({
@@ -91,16 +91,16 @@ const PolygonPointRelativeCoords = types
      */
 
     movePoint(offsetX, offsetY) {
-      const dx = self.stage.screenToInternalX(offsetX);
-      const dy = self.stage.screenToInternalY(offsetY);
+      const dx = self.stage.canvasToInternalX(offsetX);
+      const dy = self.stage.canvasToInternalY(offsetY);
 
       self.x = self.x + dx;
       self.y = self.y + dy;
     },
 
-    _movePoint(screenX, screenY) {
-      self.x = self.stage.screenToInternalX(screenX);
-      self.y = self.stage.screenToInternalY(screenY);
+    _movePoint(canvasX, canvasY) {
+      self.x = self.stage.canvasToInternalX(canvasX);
+      self.y = self.stage.canvasToInternalY(canvasY);
     },
 
     /**

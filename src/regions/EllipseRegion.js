@@ -164,16 +164,16 @@ const Model = types
       return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y:self.y }) : bboxCoords;
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToScreenX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToScreenY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
     },
     get canvasRadiusX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToScreenX(self.radiusX) : self.radiusX;
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.radiusX) : self.radiusX;
     },
     get canvasRadiusY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToScreenY(self.radiusY) : self.radiusY;
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.radiusY) : self.radiusY;
     },
   }))
   .actions(self => ({
@@ -227,10 +227,10 @@ const Model = types
      */
     setPosition(x, y, radiusX, radiusY, rotation) {
       self.setPositionInternal(
-        self.parent.screenToInternalX(x),
-        self.parent.screenToInternalY(y),
-        self.parent.screenToInternalX(radiusX),
-        self.parent.screenToInternalY(radiusY),
+        self.parent.canvasToInternalX(x),
+        self.parent.canvasToInternalY(y),
+        self.parent.canvasToInternalX(radiusX),
+        self.parent.canvasToInternalY(radiusY),
         rotation,
       );
     },

@@ -43,7 +43,7 @@ const _Tool = types
         ...(isFF(FF_DEV_3793)
           ? {
             // strokeWidth is visual only, so it's in screen dimensions in config
-            width: self.obj.screenToInternalX(Number(c.strokewidth)),
+            width: self.obj.canvasToInternalX(Number(c.strokewidth)),
           }
           : {
             width: Number(c.strokewidth),
