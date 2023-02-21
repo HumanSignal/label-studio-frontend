@@ -159,6 +159,18 @@ const Model = types
 
       return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation) : bboxCoords;
     },
+    get canvasX() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToScreenX(self.x) : self.x;
+    },
+    get canvasY() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToScreenY(self.y) : self.y;
+    },
+    get canvasWidth() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToScreenX(self.width) : self.width;
+    },
+    get canvasHeight() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToScreenY(self.height) : self.height;
+    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -400,11 +412,11 @@ const HtxRectangleView = ({ item }) => {
   return (
     <RegionWrapper item={item}>
       <Rect
-        x={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.x) : item.x}
-        y={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.y) : item.y}
+        x={item.canvasX}
+        y={item.canvasY}
         ref={node => item.setShapeRef(node)}
-        width={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.width) : item.width}
-        height={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.height) : item.height}
+        width={item.canvasWidth}
+        height={item.canvasHeight}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}

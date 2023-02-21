@@ -76,6 +76,12 @@ const PolygonPointRelativeCoords = types
     get annotation() {
       return getRoot(self).annotationStore.selected;
     },
+    get canvasX() {
+      return isFF(FF_DEV_3793) ? self.stage.internalToScreenX(self.x) : self.x;
+    },
+    get canvasY() {
+      return isFF(FF_DEV_3793) ? self.stage.internalToScreenY(self.y) : self.y;
+    },
   }))
   .actions(self => ({
     /**
@@ -266,8 +272,8 @@ const PolygonPointView = observer(({ item, name }) => {
       <Circle
         key={name}
         name={name}
-        x={isFF(FF_DEV_3793) ? item.stage.internalToScreenX(item.x) : item.x}
-        y={isFF(FF_DEV_3793) ? item.stage.internalToScreenY(item.y) : item.y}
+        x={item.canvasX}
+        y={item.canvasY}
         radius={w}
         fill={fill}
         stroke="black"

@@ -103,6 +103,15 @@ const Model = types
         bottom: self.y + self.width,
       };
     },
+    get canvasX() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToScreenX(self.x) : self.x;
+    },
+    get canvasY() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToScreenY(self.y) : self.y;
+    },
+    get canvasWidth() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToScreenX(self.width) : self.width;
+    },
   }))
   .actions(self => ({
     setPosition(x, y) {
@@ -174,10 +183,6 @@ const HtxKeyPointView = ({ item }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
-  const x = isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.x) : item.x;
-  const y = isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.y) : item.y;
-  const width = isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.width) : item.width;
-
   const regionStyles = useRegionStyles(item, {
     includeFill: true,
     defaultFillColor: '#000',
@@ -191,7 +196,7 @@ const HtxKeyPointView = ({ item }) => {
     opacity: 1,
     fill: regionStyles.fillColor,
     stroke: regionStyles.strokeColor,
-    strokeWidth: Math.max(2, regionStyles.strokeWidth),
+    strokeWidth: Math.max(1, regionStyles.strokeWidth),
     strokeScaleEnabled: false,
     shadowBlur: 0,
   };
@@ -201,10 +206,10 @@ const HtxKeyPointView = ({ item }) => {
   return (
     <Fragment>
       <Circle
-        x={x}
-        y={y}
+        x={item.canvasX}
+        y={item.canvasY}
         // keypoint should always be the same visual size
-        radius={Math.max(width, 2) / item.parent.zoomScale}
+        radius={Math.max(item.canvasWidth, 2) / item.parent.zoomScale}
         // fixes performance, but opactity+borders might look not so good
         perfectDrawEnabled={false}
         // for some reason this scaling doesn't work, so moved this to radius

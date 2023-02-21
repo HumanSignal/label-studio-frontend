@@ -205,6 +205,10 @@ const Model = types
           bottom: imageBBox.y + imageBBox.height,
         };
       },
+      /**
+       * Brushes are processed in pixels, so percentages are derived values for them,
+       * unlike for other tools.
+       */
       get bboxCoords() {
         const bbox = self.bboxCoordsScreen;
 

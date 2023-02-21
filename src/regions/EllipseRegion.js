@@ -163,6 +163,18 @@ const Model = types
 
       return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y:self.y }) : bboxCoords;
     },
+    get canvasX() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToScreenX(self.x) : self.x;
+    },
+    get canvasY() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToScreenY(self.y) : self.y;
+    },
+    get canvasRadiusX() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToScreenX(self.radiusX) : self.radiusX;
+    },
+    get canvasRadiusY() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToScreenY(self.radiusY) : self.radiusY;
+    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -302,10 +314,10 @@ const HtxEllipseView = ({ item }) => {
   return (
     <Fragment>
       <Ellipse
-        x={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.x) : item.x}
-        y={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.y) : item.y}
-        radiusX={isFF(FF_DEV_3793) ? item.parent.internalToScreenX(item.radiusX) : item.radiusX}
-        radiusY={isFF(FF_DEV_3793) ? item.parent.internalToScreenY(item.radiusY) : item.radiusY}
+        x={item.canvasX}
+        y={item.canvasY}
+        radiusX={item.canvasRadiusX}
+        radiusY={item.canvasRadiusY}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}
