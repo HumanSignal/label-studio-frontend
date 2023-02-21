@@ -1084,7 +1084,9 @@ const CoordsCalculations = types.model()
 
       return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
     },
-
+  }))
+  // putting this transforms to views forces other getters to be recalculated on resize
+  .views(self => ({
     // @todo scale?
     screenToInternalX(n) {
       return n / self.stageWidth * 100;
@@ -1105,7 +1107,7 @@ const CoordsCalculations = types.model()
 
 // mock coords calculations to transparently pass coords with FF 3793 off
 const AbsoluteCoordsCalculations = CoordsCalculations
-  .actions(() => ({
+  .views(() => ({
     screenToInternalX(n) {
       return n;
     },
