@@ -290,8 +290,8 @@ const LabelOnKP = observer(({ item, color }) => {
   return (
     <LabelOnBbox
       // keypoints' width scaled back to stay always small, so scale it here too
-      x={item.x + (item.width + 2) / item.parent.zoomScale}
-      y={item.y + (item.width + 2) / item.parent.zoomScale}
+      x={item.canvasX + (item.canvasWidth + 2) / item.parent.zoomScale}
+      y={item.canvasY + (item.canvasWidth + 2) / item.parent.zoomScale}
       isTexting={isTexting}
       text={labelText}
       score={item.score}
