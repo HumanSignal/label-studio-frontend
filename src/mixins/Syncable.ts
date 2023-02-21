@@ -72,7 +72,7 @@ interface SyncableProps {
 const SyncableMixin = types
   .model('SyncableMixin', {
     name: types.string,
-    sync: types.string,
+    sync: types.optional(types.string, ''),
   })
   .volatile<SyncableProps>(() => ({
   syncHandlers: new Map<string, SyncHandler>(),
