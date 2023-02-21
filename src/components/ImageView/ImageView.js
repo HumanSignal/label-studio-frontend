@@ -297,7 +297,7 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
-  const scale = 1 / (item.zoomScale || 1);
+  const scale = isFF(FF_DEV_3793) ? 1 : 1 / (item.zoomScale || 1);
   const [isMouseWheelClick, setIsMouseWheelClick] = useState(false);
   const [shift, setShift] = useState(false);
   const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';

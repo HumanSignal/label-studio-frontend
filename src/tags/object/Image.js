@@ -367,7 +367,7 @@ const Model = types.model({
     let bboxCoords;
 
     self.selectedRegions.forEach((region) => {
-      if (bboxCoords) {
+      if (bboxCoords && region.bboxCoords) {
         bboxCoords = {
           left: Math.min(region.bboxCoords.left, bboxCoords.left),
           top: Math.min(region.bboxCoords.top, bboxCoords.top),
