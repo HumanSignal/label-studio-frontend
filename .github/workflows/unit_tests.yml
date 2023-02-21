@@ -50,12 +50,15 @@ jobs:
       - name: Run unit tests
         run: yarn install --frozen-lockfile && yarn test:coverage
 
-      - name: Upload coverage to Codecov
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v3.1.1
+      #   if: ${{ !github.event.pull_request.head.repo.fork }}
+      #   with:
+      #     fail_ci_if_error: true
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload coverage to Artifacts
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: codecov/codecov-action@v3.1.1
+        uses: actions/upload-artifact@v3
         with:
-          fail_ci_if_error: true
-          # files: ./label-studio-frontend/coverage/coverage.xml
-          # verbose: true
-          # name: codecov-lsf-${{ matrix.python-version }}
-          token: ${{ secrets.CODECOV_TOKEN }}
+          name: unit-tests-coverage
+          path: coverage/
