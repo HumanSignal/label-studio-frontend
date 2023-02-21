@@ -1,5 +1,7 @@
 import React, { createRef, forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Button, Form, Input } from 'antd';
+import Button from 'antd/lib/button/index';
+import Form from 'antd/lib/form/index';
+import Input from 'antd/lib/input/index';
 import { observer } from 'mobx-react';
 import { destroy, isAlive, types } from 'mobx-state-tree';
 
