@@ -103,7 +103,7 @@ module.exports = function(config) {
 
   if (!helper) {
     console.error('Coverage is only supported in Puppeteer, Playwright');
-    return; // no helpers for screenshot
+    return;
   }
 
   const options = Object.assign(defaultConfig, helper.options, config);
