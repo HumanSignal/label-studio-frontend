@@ -35,7 +35,6 @@ Scenario('Play/pause of multiple synced audio stay in sync', async function({ I,
 
   await AtAudioView.lookForStage();
 
-  I.wait(10000);
   {
     const [{ currentTime: audioTime1 }, { currentTime: audioTime2 }] = await AtAudioView.getCurrentAudio();
 
