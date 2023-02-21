@@ -23,9 +23,10 @@ const relativeCoordsFF = new DataTable(['enabled']);
 relativeCoordsFF.add([true]);
 relativeCoordsFF.add([false]);
 
-Data(relativeCoordsFF).Scenario('Zoomed image should keep center image in center of canvas on resizes', async ({ I, LabelStudio, AtImageView, AtOutliner, AtDetails, AtPanels, current: FF3793 }) => {
+Data(relativeCoordsFF).Scenario('Zoomed image should keep center image in center of canvas on resizes', async ({ I, LabelStudio, AtImageView, AtOutliner, AtDetails, AtPanels, current }) => {
   const AtDetailsPanel = AtPanels.usePanel(AtPanels.PANEL.DETAILS);
   const AtOutlinerPanel = AtPanels.usePanel(AtPanels.PANEL.OUTLINER);
+  const FF3793 = current;
 
   const params = {
     config,
