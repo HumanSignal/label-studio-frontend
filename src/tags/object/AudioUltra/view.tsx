@@ -28,8 +28,9 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       backgroundColor: '#fafafa',
       autoCenter: true,
       zoomToCursor: true,
-      height: item.height ? Number(item.height) : 94,
-      splitChannels: false, // item.splitchannels,
+      height: item.height && !isNaN(Number(item.height)) ? Number(item.height) : 96,
+      waveHeight: item.waveheight && !isNaN(Number(item.waveheight)) ? Number(item.waveheight) : 32,
+      splitChannels: item.splitchannels,
       volume: item.defaultvolume ? Number(item.defaultvolume) : 1,
       amp: item.defaultscale ? Number(item.defaultscale) : 1,
       zoom: item.defaultzoom ? Number(item.defaultzoom) : 1,
@@ -123,7 +124,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     hotkeys.addNamed('region:delete', () => {
       waveform.current?.regions.clearSegments(false);
     });
-
+    
     hotkeys.addNamed('segment:delete', () => {
       waveform.current?.regions.clearSegments(false);
     });
