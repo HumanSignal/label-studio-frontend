@@ -92,8 +92,15 @@ export class Player extends Destructable {
   }
 
   setCurrentTime(value: number, notify = false) {
+    const timeChanged = this.time !== value;
+
     this.time = value;
-    if (notify) {
+
+    if (timeChanged && this.audio?.el) {
+      this.audio.el.currentTime = this.time;
+    }
+
+    if (notify && timeChanged) {
       this.wf.invoke('seek', [this.time]);
     }
   }
@@ -124,6 +131,17 @@ export class Player extends Destructable {
     const newTime = clamp(time, 0, this.duration);
 
     this.currentTime = newTime;
+
+    if (this.playing) {
+      this.updatePlayback();
+    }
+  }
+
+  seekSilent(time: number) {
+    const newTime = clamp(time, 0, this.duration);
+
+    this.ended = false;
+    this.setCurrentTime(newTime);
 
     if (this.playing) {
       this.updatePlayback();

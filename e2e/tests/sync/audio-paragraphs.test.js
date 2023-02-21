@@ -2,7 +2,7 @@
 
 const assert = require('assert');
 
-Feature('Audio Paragraphs');
+Feature('Sync: Audio Paragraphs');
 
 const config = `
 <View>
@@ -111,19 +111,22 @@ Scenario('Check audio clip is played when using the new sync option', async func
 
   AtSidebar.seeRegions(2);
 
-  const [startingAudioPlusTime, startingParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
+  const [{ currentTime: startingAudioPlusTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
 
   assert.equal(startingAudioPlusTime, startingParagraphAudioTime);
   assert.equal(startingParagraphAudioTime, 0);
 
   I.click('[aria-label="play-circle"]');
+  I.wait(1);
 
   I.click('[aria-label="pause-circle"]');
+  I.wait(1);
 
-  const [seekAudioPlusTime, seekParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
+  const [{ currentTime: seekAudioPlusTime }, { currentTime: seekParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
 
   const expectedSeekTime = Math.round(seekAudioPlusTime);
 
+  assert.notEqual(seekAudioPlusTime, 0);
   assert.equal(expectedSeekTime, Math.round(seekParagraphAudioTime), `Expected seek time to be ${expectedSeekTime} but was ${Math.round(seekParagraphAudioTime)}`);
 });
 

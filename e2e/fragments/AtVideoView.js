@@ -2,6 +2,8 @@
 /* global locate */
 const { I } = inject();
 
+const Helpers = require('../tests/helpers');
+
 /**
  * @typedef BoundingClientRect
  * @property {number} x
@@ -25,6 +27,10 @@ module.exports = {
 
   videoLocate(locator) {
     return locator ? locate(locator).inside(this.locateVideoContainer()) : this.locateVideoContainer();
+  },
+
+  getCurrentVideo() {
+    return I.executeScript(Helpers.getCurrentMedia, 'video');
   },
 
   /**
@@ -81,7 +87,7 @@ module.exports = {
    * @param {number} steps
    * @returns {Promise<void>}
    */
-  async clickSeekStepBackward(steps= 1) {
+  async clickSeekStepBackward(steps= 2) {
     for (let i = 0; i < steps; i++) {
       I.click(this._seekStepBackwardSelector);
     }

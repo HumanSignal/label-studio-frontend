@@ -36,18 +36,18 @@ module.exports = {
     await I.executeScript(Helpers.waitForAudio);
     I.waitForInvisible(this._progressBarSelector);
   },
-  getCurrentAudioTime() {
-    return I.executeScript(Helpers.getCurrentAudioTime);
+  getCurrentAudio() {
+    return I.executeScript(Helpers.getCurrentMedia, 'audio');
   },
   /**
    * Mousedown - mousemove - mouseup drawing on the AudioView. Works in couple of lookForStage.
    * @example
    * await AtAudioView.lookForStage();
-   * AtAudioView.dragAudioRegion(50, 200);
+   * AtAudioView.dragAudioElement(50, 200);
    * @param x {number}
    * @param shiftX {number}
    */
-  dragAudioRegion(x, shiftX) {
+  dragAudioElement(x, shiftX) {
     I.scrollPageToTop();
     I.moveMouse(this._stageBbox.x + x, this._stageBbox.y + this._stageBbox.height / 2);
     I.pressMouseDown();
@@ -60,6 +60,17 @@ module.exports = {
     I.scrollPageToTop();
     I.clickAt(this._stageBbox.x + x, this._stageBbox.y + this._stageBbox.height / 2);
     I.wait(1); // We gotta  wait here because clicks on the canvas are not processed immediately
+  },
+
+  clickAtBeginning() {
+    this.clickAt(0);
+  },
+
+  clickAtEnd() {
+    // Clicking on the end of the canvas doesn't quite work, so we click a bit before the end
+    // to make sure we're it is not clicking outside the canvas, and move the cursor over.
+    this.clickAt(this._stageBbox.width - 1);
+    this.dragAudioElement(this._stageBbox.width - 1, 1);
   },
 
   toggleControlsMenu() {

@@ -93,7 +93,7 @@ Scenario('Check if regions are selected', async function({ I, LabelStudio, AtAud
 
   // creating a new region
   I.pressKey('1');
-  AtAudioView.dragAudioRegion(160,80);
+  AtAudioView.dragAudioElement(160,80);
   I.pressKey('u');
 
   AtSidebar.seeRegions(2);
@@ -102,7 +102,7 @@ Scenario('Check if regions are selected', async function({ I, LabelStudio, AtAud
   AtSidebar.seeSelectedRegion();
   AtAudioView.clickAt(170);
   AtSidebar.dontSeeSelectedRegion();
-  AtAudioView.dragAudioRegion(170,40);
+  AtAudioView.dragAudioElement(170,40);
   AtSidebar.seeSelectedRegion();
   AtAudioView.clickAt(220);
   AtSidebar.dontSeeSelectedRegion();
@@ -125,7 +125,7 @@ Scenario('Check if there are ghost regions', async function({ I, LabelStudio, At
   for (let i = 0; i < 20; i++) {
     // creating a new region
     I.pressKey('1');
-    AtAudioView.dragAudioRegion((40 * i) + 10,30);
+    AtAudioView.dragAudioElement((40 * i) + 10,30);
     AtAudioView.clickAt((40 * i) + 20);
     I.pressKey('2');
     I.pressKey('1');
@@ -166,7 +166,7 @@ Scenario('Delete region by pressing delete hotkey', async function({ I, LabelStu
   AtSidebar.seeRegions(1);
 
   // creating a new region
-  AtAudioView.dragAudioRegion(160,80);
+  AtAudioView.dragAudioElement(160,80);
 
   I.pressKey('Delete');
 

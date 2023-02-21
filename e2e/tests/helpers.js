@@ -209,12 +209,20 @@ const waitForObjectsReady = async () => {
 };
 
 /**
- * Get the currentTime of the audio element(s)
+ * Get the metadata of media type element(s)
  */
-const getCurrentAudioTime = () => {
-  const audios = document.querySelectorAll('audio');
+const getCurrentMedia = (type) => {
+  const media = document.querySelectorAll(type);
 
-  return [...audios].map(audio => audio.currentTime);
+  return [...media].map(m => ({
+    currentTime: m.currentTime,
+    duration: m.duration,
+    playbackRate: m.playbackRate,
+    paused: m.paused,
+    muted: m.muted,
+    volume: m.volume,
+    src: m.src,
+  }));
 };
 
 /**
@@ -719,7 +727,7 @@ module.exports = {
   createAddEventListenerScript,
   waitForImage,
   waitForAudio,
-  getCurrentAudioTime,
+  getCurrentMedia,
   waitForObjectsReady,
   delay,
 

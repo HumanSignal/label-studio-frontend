@@ -9,9 +9,7 @@ import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import { SyncableMixin } from '../../../mixins/Syncable';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_DEV_2461, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
-import { isTimeSimilar } from '../../../lib/AudioUltra';
 import ObjectBase from '../Base';
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
 
@@ -188,21 +186,17 @@ export const AudioModel = types.compose(
         },
 
         triggerSyncPlay() {
-          // console.log('PLAY', self.time, self._ws.currentTime);
-          self.syncSend('play', { playing: true, time: self._ws.currentTime });
+          self.syncSend('play', { playing: true, time: self._ws?.currentTime });
           self.handleSyncPlay();
         },
 
-        // @todo make play and pause at the same frame
         triggerSyncPause() {
-          self.syncSend('pause', { playing: false });
+          self.syncSend('pause', { playing: false, time: self._ws?.currentTime });
           self.handleSyncPause();
         },
 
         triggerSyncSeek(time) {
           self.syncSend('seek', { time });
-          // self.currentTime = time;
-          // self.timeSync?.seek(time);
         },
 
         registerSyncHandlers() {
@@ -219,17 +213,15 @@ export const AudioModel = types.compose(
 
         handleSyncPlay() {
           if (!self._ws) return;
-          if (self._ws.playing && self.isCurrentlyPlaying) return;
+          if (self._ws.playing) return;
 
-          self.isCurrentlyPlaying = true;
           self._ws?.play();
         },
 
         handleSyncPause() {
           if (!self._ws) return;
-          if (!self._ws.playing && !self.isCurrentlyPlaying) return;
+          if (!self._ws.playing) return;
 
-          self.isCurrentlyPlaying = false;
           self._ws?.pause();
         },
 
@@ -242,10 +234,10 @@ export const AudioModel = types.compose(
         handleSyncDuration() {},
 
         handleSyncSeek({ time }) {
-          if (!self._ws?.loaded || !time || isTimeSimilar(time, self._ws.currentTime)) return;
+          if (!self._ws?.loaded || !isDefined(time) && time !== self._ws.currentTime) return;
 
           try {
-            self._ws.currentTime = time;
+            self._ws.setCurrentTime(time);
             self._ws.syncCursor(); // sync cursor with other tags
           } catch (err) {
             console.log(err);
@@ -397,12 +389,6 @@ export const AudioModel = types.compose(
 
           r.onUpdateEnd();
           return r;
-        },
-
-        handleSeek() {
-          if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === 'paragraphs')) return;
-
-          self.triggerSyncSeek(self._ws.currentTime);
         },
 
         createWsRegion(region) {

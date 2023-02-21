@@ -21,7 +21,7 @@ export type SyncData = Partial<SyncDataFull>;
 
 export class SyncManager {
   syncTargets = new Map<string, Instance<typeof SyncableMixin>>();
-  locked = false;
+  locks = new Map<string, boolean>();
 
   register(syncTarget: Instance<typeof SyncableMixin>) {
     this.syncTargets.set(syncTarget.name, syncTarget);
@@ -33,12 +33,14 @@ export class SyncManager {
   }
 
   sync(event: SyncEvent, data: SyncData, ignore: string[] = []) {
-    console.log('SYNC', { event, locked: this.locked, data, origin: ignore.join('/') });
+    const locked = this.locks.get(event);
+
+    console.log('SYNC', { event, locked, data, origin: ignore.join('/') });
 
     // locking mechanism
-    if (this.locked) return;
-    this.locked = true;
-    window.requestAnimationFrame(() => this.locked = false);
+    if (locked) return;
+    this.locks.set(event, true);
+    window.requestAnimationFrame(() => this.locks.delete(event));
 
     for (const target of this.syncTargets.values()) {
       if (!ignore.includes(target.name)) { // && target.syncEvents.includes(event)) {
