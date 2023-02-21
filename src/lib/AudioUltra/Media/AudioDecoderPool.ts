@@ -6,26 +6,27 @@ export type DecoderProxy = ReturnType<typeof decoderProxy>;
 
 const REMOVAL_GRACE_PERIOD = 5000; // 5s grace period for removal of the decoder from the cache
 
-function decoderProxy(cache: DecoderCache, src: string) {
-  const decoder = cache.get(src) ?? new AudioDecoder(src);
+function decoderProxy(cache: DecoderCache, src: string, splitChannels: boolean) {
+  const key = `${src}:${splitChannels}`;
+  const decoder = cache.get(key) ?? new AudioDecoder(key);
 
   decoder.renew();
-  cache.set(src, decoder);
+  cache.set(key, decoder);
 
   return new Proxy(decoder, {
     get(target, prop) {
       if (prop in target) {
         // Operate on the instance, and cache it
-        const instance = cache.get(src) as AudioDecoder;
+        const instance = cache.get(key) as AudioDecoder;
 
         // Cancel the removal of the decoder from the cache
         // It is still in use
         if (instance.removalId) {
           clearTimeout(instance.removalId);
-          info('decode:renew', src);
+          info('decode:renew', key);
           instance.removalId = null;
           instance.renew();
-          cache.set(src, instance);
+          cache.set(key, instance);
         }
 
         const val = instance[prop as keyof AudioDecoder];
@@ -35,10 +36,10 @@ function decoderProxy(cache: DecoderCache, src: string) {
         if (prop === 'destroy' && typeof val === 'function') {
           return (...args: any[]) => {
             instance.removalId = setTimeout(() => {
-              info('decodepool:destroy', src);
-              cache.delete(src);
+              info('decodepool:destroy', key);
+              cache.delete(key);
             }, REMOVAL_GRACE_PERIOD);
-            cache.set(src, instance);
+            cache.set(key, instance);
             return (val.bind(instance) as any)(...args);
           };
         }
@@ -53,8 +54,8 @@ function decoderProxy(cache: DecoderCache, src: string) {
 export class AudioDecoderPool {
   static cache: DecoderCache = new Map();
 
-  getDecoder(src: string): DecoderProxy {
-    const decoder = decoderProxy(AudioDecoderPool.cache, src);
+  getDecoder(src: string, splitChannels: boolean): DecoderProxy {
+    const decoder = decoderProxy(AudioDecoderPool.cache, src, splitChannels);
 
     return decoder;
   }
