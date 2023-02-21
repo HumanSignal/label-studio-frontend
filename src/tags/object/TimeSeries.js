@@ -81,7 +81,7 @@ const TagAttrs = types.model({
   durationdisplayformat: '.0f',
   overviewchannels: '', // comma-separated list of channels to show
   overviewwidth: '25%',
-  ylim: '-5,5', // comma-separated list of y axis limits
+  ylim: '', // comma-separated list of y axis limits
 
   fixedscale: false,
 
