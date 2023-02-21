@@ -226,7 +226,7 @@ class App extends Component {
           )}
 
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
-          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled }}>
+          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled, showingBottomBar: isFF(FF_DEV_3873) }}>
             {newUIEnabled ? (
               <SidePanels
                 panelsHidden={viewingAll}
