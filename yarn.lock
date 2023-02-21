@@ -2408,6 +2408,13 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
+"@martel/audio-file-decoder@2.3.15":
+  version "2.3.15"
+  resolved "https://registry.yarnpkg.com/@martel/audio-file-decoder/-/audio-file-decoder-2.3.15.tgz#7d9ada5211de65cc9e02e2f41ab86497bf7b3885"
+  integrity sha512-tqfmxy2RohqFzOPq/2Kdskt3PvjJ7UzraAtOOwXbhV13XoeMIP/y7YybvfzluyFz9jQUSU94PCiN2IsUAKaOAg==
+  dependencies:
+    "@babel/runtime" "^7.13.10"
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
