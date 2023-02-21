@@ -570,16 +570,16 @@ const countKonvaShapes = async () => {
 
 const isTransformerExist = async () => {
   const stage = window.Konva.stages[0];
-  const achors = stage.find('._anchor').filter(shape => shape.getAttr('visible') !== false);
+  const anchors = stage.find('._anchor').filter(shape => shape.getAttr('visible') !== false);
 
-  return !!achors.length;
+  return !!anchors.length;
 };
 
 const isRotaterExist = async () => {
   const stage = window.Konva.stages[0];
-  const achors = stage.find('.rotater').filter(shape => shape.getAttr('visible') !== false);
+  const anchors = stage.find('.rotater').filter(shape => shape.getAttr('visible') !== false);
 
-  return !!achors.length;
+  return !!anchors.length;
 };
 
 const switchRegionTreeView = (viewName) => {

@@ -190,6 +190,9 @@ Scenario('Basic details', async ({ I, LabelStudio, AtOutliner, AtDetails }) => {
   I.say('Select image region');
   AtOutliner.clickRegion(3);
 
+  AtDetails.seeFieldWithValue('X', '25');
+  AtDetails.seeFieldWithValue('H', '50');
+
   I.say('Check perregions displaying');
 
   AtDetails.seeResultRating(4);
@@ -507,4 +510,4 @@ Scenario('Panels manipulations', async ({ I, LabelStudio, AtPanels }) => {
     AtDetailsPanel.seeСollapseButton();
     AtDetailsPanel.dontSeeExpandButton();
   }
-});
+});
