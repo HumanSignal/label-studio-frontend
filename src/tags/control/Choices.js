@@ -56,6 +56,9 @@ const { Option } = Select;
  *     ]
  *   }
  * } -->
+ * 
+ * <!-- html attribute has the higher priority and it will replace value, however value will be used in annotation.result -->
+ * 
  * @example <caption>is equivalent to this config</caption>
  * <View>
  *   <Audio name="audio" value="$audio" />
