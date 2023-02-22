@@ -49,8 +49,8 @@ const { Option } = Select;
  * <!-- {
  *   "data": {
  *     "variants": [
- *       { "value": "Do or doughnut. There is no try." },
- *       { "value": "Do or do not. There is no trial." },
+ *       { "value": "Do or doughnut. There is no try.", "html": "<img src='https://labelstud.io/images/logo.png'>" },
+ *       { "value": "Do or do not. There is no trial.", "html": "<h1>You can use hypertext here</h2>" },
  *       { "value": "Do or do not. There is no try." },
  *       { "value": "Duo do not. There is no try." }
  *     ]
