@@ -71,5 +71,5 @@ jobs:
       - name: Upload bundle
         uses: actions/upload-artifact@v3
         with:
-          name: LSF-${{ inputs.build_for_coverage && 'coverage-' }}${{ inputs.sha }}
+          name: LSF-${{ inputs.build_for_coverage && 'coverage-' || '' }}${{ inputs.sha }}
           path: build/
