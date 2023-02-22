@@ -16,10 +16,8 @@ const canPlayUrl = async (url: string) => {
   });
 
   const fileType = fileMeta.headers.get('content-type');
-  const supported =  !!fileType && video.canPlayType(fileType) !== '';
+  const supported = !!fileType && video.canPlayType(fileType) !== '';
   const modalExists = document.querySelector('.ant-modal');
-
-  console.log('heartex', fileType, video.canPlayType(fileType));
 
   if (!supported && !modalExists) InfoModal.error('There has been an error rendering your video, please check the format is supported');
   return supported;
