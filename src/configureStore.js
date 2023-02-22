@@ -1,6 +1,7 @@
 import AppStore from './stores/AppStore';
 
 const getEnvironment = async () => {
+  /* istanbul ignore next */
   if (process.env.NODE_ENV === 'development' && !process.env.BUILD_NO_SERVER) {
     return (await import('./env/development')).default;
   }

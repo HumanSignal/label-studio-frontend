@@ -46,7 +46,8 @@ export class ComputeWorker {
       };
 
       self.addEventListener('message', (e) => {
-        if (e.data) return;
+        if (!e.data) return;
+
         const { data, type, eventId } = e.data;
 
         switch(type) {
@@ -69,7 +70,7 @@ export class ComputeWorker {
       type: 'compute',
     }, true);
 
-    return result?.data;
+    return result?.data?.result?.data;
   }
 
   async precompute(data: Record<string, any>) {
@@ -105,6 +106,7 @@ export class ComputeWorker {
       if (waitResponse) {
         const resolver = (e: MessageEvent) => {
           if (eventId === e.data.eventId) {
+            worker.removeEventListener('message', resolver);
             resolve(e);
           }
         };
