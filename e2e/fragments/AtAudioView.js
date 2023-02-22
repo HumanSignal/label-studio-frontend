@@ -22,6 +22,8 @@ module.exports = {
   _seekBackwardButtonSelector: '.lsf-audio-tag .lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(1)',
   _playButtonSelector: '.lsf-audio-tag .lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(2)',
   _seekForwardButtonSelector: '.lsf-audio-tag .lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(3)',
+  _errorSelector: '[data-testid="error:audio"]',
+  _httpErrorSelector: '[data-testid="error:http"]',
   _choiceSelector: '.lsf-choices.lsf-choices_layout_inline',
 
   _stageBbox: { x: 0, y: 0, width: 0, height: 0 },
@@ -224,6 +226,13 @@ module.exports = {
 
   clickPauseButton() {
     I.click(this._playButtonSelector);
+  },
+
+  async seeErrorHandler(value, selector = null) {
+    selector = selector ? this[selector] : this._errorSelector;
+    const error = await I.grabTextFrom(selector);
+
+    assert.equal(error, value);
   },
 
   async dontSeeGhostRegion() {

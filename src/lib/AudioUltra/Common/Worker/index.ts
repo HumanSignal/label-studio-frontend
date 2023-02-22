@@ -50,7 +50,7 @@ export class ComputeWorker {
 
         const { data, type, eventId } = e.data;
 
-        switch(type) {
+        switch (type) {
           case 'compute': compute(data, eventId); break;
           case 'precompute': precompute(data); break;
           case 'store': storeData(e); break;
