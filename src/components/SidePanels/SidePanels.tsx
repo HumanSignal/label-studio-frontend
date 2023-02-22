@@ -13,6 +13,7 @@ import { PanelProps } from './PanelBase';
 import './SidePanels.styl';
 import { SidePanelsContext } from './SidePanelsContext';
 import { useRegionsCopyPaste } from '../../hooks/useRegionsCopyPaste';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 const maxWindowWidth = 980;
 
@@ -154,7 +155,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [updatePanel]);
 
   const spaceFree = useCallback((alignment: 'left' | 'right') => {
-    return Object.values(panelData).find(p => p.alignment === alignment && !p.detached) === undefined;
+    return isFF(FF_DEV_3873) ? Object.values(panelData).find(p => p.alignment === alignment && !p.detached) === undefined : true;
   }, [panelData]);
 
   const checkSnap = useCallback((left: number, parentWidth: number, panelWidth: number) => {
