@@ -7,6 +7,7 @@ import { PanelType } from './SidePanels';
 import { useDrag } from '../../hooks/useDrag';
 import { clamp, isDefined } from '../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 export type PanelBaseExclusiveProps = 'name' | 'title'
 
@@ -112,7 +113,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
 
   const style = useMemo(() => {
     const dynamicStyle = visible ? {
-      height: detached ? height ?? '100%' : '100%',
+      height: detached ? (height ?? '100%' ): (isFF(FF_DEV_3873) ? '' : '100%'),
       width: expanded ? '100%' : width ?? DEFAULT_PANEL_WIDTH,
     } : {
       width: detached ? width ?? DEFAULT_PANEL_WIDTH : '100%',

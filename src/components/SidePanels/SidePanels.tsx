@@ -155,7 +155,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [updatePanel]);
 
   const spaceFree = useCallback((alignment: 'left' | 'right') => {
-    return isFF(FF_DEV_3873) ? Object.values(panelData).find(p => p.alignment === alignment && !p.detached) === undefined : true;
+    return isFF(FF_DEV_3873) ? true : Object.values(panelData).find(p => p.alignment === alignment && !p.detached) === undefined;
   }, [panelData]);
 
   const checkSnap = useCallback((left: number, parentWidth: number, panelWidth: number) => {
@@ -251,7 +251,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         storedTop: undefined,
         maxHeight,
         width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
-        height: clamp(h, DEFAULT_PANEL_WIDTH, maxHeight),
+        height: clamp(h, DEFAULT_PANEL_HEIGHT, maxHeight),
       });
     });
   }, [updatePanel, panelMaxWidth]);
@@ -355,6 +355,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       else if (alignment === 'left') result.left.push(panel);
       else if (alignment === 'right') result.right.push(panel);
     }
+    
+    console.log('result', result);
 
     return result;
   }, [panelData, commonProps, panelsHidden, sidepanelsCollapsed, positioning, panelMaxWidth]);

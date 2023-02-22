@@ -9,6 +9,8 @@ import './DetailsPanel.styl';
 import { RegionDetailsMain, RegionDetailsMeta } from './RegionDetails';
 import { RegionItem } from './RegionItem';
 import { Relations } from './Relations';
+// eslint-disable-next-line
+// @ts-ignore
 import { DraftPanel } from '../../DraftPanel/DraftPanel';
 interface DetailsPanelProps extends PanelProps {
   regions: any;
