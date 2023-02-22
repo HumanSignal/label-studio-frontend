@@ -1,3 +1,4 @@
+import { guidGenerator } from '../../../utils/unique';
 import { Events } from '../Common/Events';
 import { __DEBUG__ } from '../Common/Utils';
 import { AudioDecoder, DEFAULT_FREQUENCY_HZ } from './AudioDecoder';
@@ -197,7 +198,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private loadMedia() {
     if (!this.src || !this.el) return;
     
-    this.el.src = this.src;
+    this.el.src = `${this.src}?lsv=${guidGenerator()}`;
     this.el.load();
   }
 

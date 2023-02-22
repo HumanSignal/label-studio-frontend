@@ -1,3 +1,4 @@
+import { guidGenerator } from '../../../utils/unique';
 import { Destructable } from '../Common/Destructable';
 import { Waveform } from '../Waveform';
 import { WaveformAudio, WaveformAudioOptions } from './WaveformAudio';
@@ -167,7 +168,7 @@ export class MediaLoader extends Destructable {
         reject(xhr);
       });
 
-      xhr.open('GET', url);
+      xhr.open('GET', `${url}?lsv=${guidGenerator()}`);
       xhr.send();
     });
   }
