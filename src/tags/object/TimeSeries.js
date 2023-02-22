@@ -27,6 +27,8 @@ import PersistentStateMixin from '../../mixins/PersistentState';
 import './TimeSeries/Channel';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 
+import MultiRangeSlider from "../../components/multiRangeSlider/MultiRangeSlider";
+
 /**
  * The `TimeSeries` tag can be used to label time series data. Read more about Time Series Labeling on [the time series template page](../templates/time_series.html).
  *
@@ -82,7 +84,6 @@ const TagAttrs = types.model({
   overviewchannels: '', // comma-separated list of channels to show
   overviewwidth: '25%',
   ylim: '', // comma-separated list of y axis limits
-
   fixedscale: false,
 
   multiaxis: types.optional(types.boolean, false), // show channels in the same view
@@ -821,6 +822,7 @@ const Overview = observer(({ item, data, series }) => {
   return <div className="htx-timeseries-overview" ref={ref} />;
 });
 
+
 const HtxTimeSeriesViewRTS = ({ item }) => {
   const ref = React.createRef();
 
@@ -838,12 +840,26 @@ const HtxTimeSeriesViewRTS = ({ item }) => {
       </div>
     );
 
+  const ylim = item.ylim;
+  const datarange = ylim.split(',');
+
   return (
-    <div ref={ref} className="htx-timeseries">
+    <div className="htx-timeseries" ref={ref}>
       <ObjectTag item={item}>
         {Tree.renderChildren(item, item.annotation)}
         <Overview data={item.dataObj} series={item.dataHash} item={item} range={item.brushRange} />
       </ObjectTag>
+      {item.ylim && (
+        <div className="ylim-slider">
+          <MultiRangeSlider
+            min={Number(datarange[0])}
+            max={Number(datarange[1])}
+            onChange={({ min, max }) => {
+              item.updatedYLim = [ min, max ];
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

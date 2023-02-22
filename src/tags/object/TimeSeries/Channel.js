@@ -764,15 +764,22 @@ class ChannelD3 extends React.Component {
 
       if (ylim !== '') {
         // use custom range
-        const datarange = ylim.split(',');
+        const updatedylim = item.parent?.updatedYLim
 
-        let min = 0
-        let max = 1
+        if (updatedylim == null) {
+          const datarange = ylim.split(',');
 
-        if (datarange[0] !== '') min = Number(datarange[0]);
-        if (datarange[1] !== '') max = Number(datarange[1]);
+          let min = 0
+          let max = 1
 
-        this.y.domain([min, max]);
+          if (datarange[0] !== '') min = Number(datarange[0]);
+          if (datarange[1] !== '') max = Number(datarange[1]);
+
+          this.y.domain([min, max]);
+          
+        } else {
+          this.y.domain([updatedylim[0], updatedylim[1]]);
+        }
       }
     }
 
