@@ -26,6 +26,12 @@ export interface WaveformOptions {
   height?: number;
 
   /**
+   * Height of a single waveform per channel.
+   * @default 30
+   * */
+  waveHeight?: number;
+
+  /**
    * Zoom factor. 1 – no zoom
    * @default 1
    * */
@@ -290,7 +296,7 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   scrollToRegion(time: number) {
-    if(this.zoom === 1) return;
+    if (this.zoom === 1) return;
 
     const offset = (this.visualizer.width / 2) / this.visualizer.zoomedWidth;
 
@@ -371,7 +377,7 @@ export class Waveform extends Events<WaveformEventTypes> {
     return this.regions.updateRegion(options, render);
   }
 
-  updateLabelVisibility(visible: boolean){
+  updateLabelVisibility(visible: boolean) {
     this.regions.updateLabelVisibility(visible);
   }
 

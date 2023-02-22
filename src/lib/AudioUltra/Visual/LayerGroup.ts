@@ -53,9 +53,11 @@ export class LayerGroup extends Layer {
     this.layers.forEach(layer => {
       layer.setSize(width, height);
     });
+
+    super.setSize(width, height);
   }
 
-  sortLayers()  {
+  sortLayers() {
     this.layers.sort((a, b) =>
       a.index - b.index,
     );
