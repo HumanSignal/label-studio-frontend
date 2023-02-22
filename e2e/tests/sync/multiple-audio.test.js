@@ -64,6 +64,69 @@ Scenario('Play/pause of multiple synced audio stay in sync', async function({ I,
   }
 });
 
+
+Scenario('Looping of multiple synced audio stay in sync', async function({ I, LabelStudio, AtAudioView }) {
+  LabelStudio.setFeatureFlags({
+    fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
+    ff_front_dev_2715_audio_3_280722_short: true,
+  });
+
+  I.amOnPage('/');
+
+  LabelStudio.init(params);
+
+  await AtAudioView.waitForAudio();
+
+  I.waitForDetached('loading-progress-bar', 10);
+
+  await AtAudioView.lookForStage();
+
+  I.say('Draw an audio segment to start looping');
+  AtAudioView.dragAudioElement(160, 80);
+  {
+    const [{ paused: audioPaused1, currentTime: audioTime1 }, { paused: audioPaused2, currentTime: audioTime2 }] = await AtAudioView.getCurrentAudio();
+
+    I.say('Audio is playing');
+
+    // Check that the audio timing is within 0.05 seconds of each other (to account for rounding errors, and the fact
+    // that playback timers will not be perfectly precise)
+    assert.notEqual(audioTime1, 0);
+    assert.ok(Math.abs(audioTime1 - audioTime2) < 0.05, `Audio time difference has drifted by ${(audioTime1 - audioTime2) * 1000}ms`);
+
+    assert.equal(audioPaused1, audioPaused2);
+    assert.equal(audioPaused1, false);
+  }
+
+  I.say('Audio played to the same point in time');
+  AtAudioView.clickPauseButton();
+  I.wait(10000);
+  {
+    const [{ paused: audioPaused1, currentTime: audioTime1 }, { paused: audioPaused2, currentTime: audioTime2 }] = await AtAudioView.getCurrentAudio();
+
+    I.say('Audio is paused');
+
+    assert.equal(audioPaused1, audioPaused2);
+    assert.equal(audioPaused1, true);
+    assert.equal(audioTime1, audioTime2);
+    assert.notEqual(audioTime1, 0);
+  }
+
+  I.say('Clicking outside of the audio segment and then clicking play should restart the audio from the beginning of the segment');
+  AtAudioView.clickAt(250);
+  AtAudioView.clickPlayButton();
+  I.wait(1);
+  {
+    const [{ paused: audioPaused1, currentTime: audioTime1 }, { paused: audioPaused2, currentTime: audioTime2 }] = await AtAudioView.getCurrentAudio();
+
+    I.say('Audio is playing');
+
+    assert.equal(audioPaused1, audioPaused2);
+    assert.equal(audioPaused1, false);
+    assert.equal(audioTime1, audioTime2);
+    assert.notEqual(audioTime1, 0);
+  }
+});
+
 Scenario('Seeking of multiple synced audio stay in sync', async function({ I, LabelStudio, AtAudioView }) {
   LabelStudio.setFeatureFlags({
     fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
