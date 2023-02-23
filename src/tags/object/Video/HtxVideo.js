@@ -326,11 +326,12 @@ const HtxVideoView = ({ item, store }) => {
     setPlaying((_playing) => {
       // Audio v3
       if (isFFDev2715) {
-        if (item.isCurrentlyPlaying === false) {
+        if (!item.ref.current.playing) {
+          // @todo item.ref.current.playing? could be buffering and other states
+          item.ref.current.play();
           item.triggerSyncPlay();
-          return true;
         }
-        return item.isCurrentlyPlaying;
+        return true;
       } 
       // Audio v1,v2
       else {
@@ -348,11 +349,11 @@ const HtxVideoView = ({ item, store }) => {
     setPlaying((_playing) => {
       // Audio v3
       if (isFFDev2715) {
-        if (item.isCurrentlyPlaying === true) {
+        if (item.ref.current.playing) {
+          item.ref.current.pause();
           item.triggerSyncPause();
-          return false;
         }
-        return item.isCurrentlyPlaying;
+        return false;
       } 
       // Audio v1,v2
       else {

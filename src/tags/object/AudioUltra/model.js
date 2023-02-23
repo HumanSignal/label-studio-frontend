@@ -127,14 +127,85 @@ export const AudioModel = types.compose(
         return state?.selectedValues()?.[0];
       },
     }))
+    ////// Sync actions
+    .actions(self => ({
+      ////// Outgoing
+
+      triggerSyncSpeed(speed) {
+        self.syncSend('speed', { speed });
+      },
+
+      triggerSyncPlay() {
+        self.syncSend('play', { playing: true, time: self._ws?.currentTime });
+        // @todo should not be handled like this
+        self.handleSyncPlay();
+      },
+
+      triggerSyncPause() {
+        self.syncSend('pause', { playing: false, time: self._ws?.currentTime });
+        // @todo should not be handled like this
+        self.handleSyncPause();
+      },
+
+      triggerSyncSeek(time) {
+        self.syncSend('seek', { time, playing: self._ws.playing });
+      },
+
+      ////// Incoming
+
+      registerSyncHandlers() {
+        ['play', 'pause', 'seek'].forEach(event => {
+          self.syncHandlers.set(event, self.handleSync);
+        });
+        self.syncHandlers.set('speed', self.handleSyncSpeed);
+      },
+
+      handleSync(_, data) {
+        if (!self._ws?.loaded) return;
+
+        if (data.playing) {
+          if (!self._ws.playing) self._ws?.play();
+        } else {
+          if (self._ws.playing) self._ws?.pause();
+        }
+        self.handleSyncSeek(data);
+      },
+
+      // @todo remove both of these methods
+      handleSyncPlay() {
+        if (self._ws?.playing) return;
+
+        self._ws?.play();
+      },
+
+      handleSyncPause() {
+        if (!self._ws?.playing) return;
+
+        self._ws?.pause();
+      },
+
+      handleSyncSeek({ time }) {
+        if (!self._ws?.loaded || !isDefined(time) && time !== self._ws.currentTime) return;
+
+        try {
+          self._ws.setCurrentTime(time);
+          self._ws.syncCursor(); // sync cursor with other tags
+        } catch (err) {
+          console.log(err);
+        }
+      },
+
+      // @todo should be some way to call setRate from model
+      handleSyncSpeed(_, { speed }) {
+        if (!self._ws) return;
+        // currently it doesn't update visual control state, just an internal speed
+        self._ws.rate = speed;
+      },
+      handleSyncDuration() {},
+    }))
     .actions(self => {
       let dispose;
       let updateTimeout = null;
-
-      // const Super = {
-      //   triggerSyncPlay: self.triggerSyncPlay,
-      //   triggerSyncPause: self.triggerSyncPause,
-      // };
 
       return {
         afterCreate() {
@@ -183,69 +254,6 @@ export const AudioModel = types.compose(
 
         onRateChange(rate) {
           self.triggerSyncSpeed(rate);
-        },
-
-        triggerSyncSpeed(speed) {
-          self.syncSend('speed', { speed });
-        },
-
-        triggerSyncPlay() {
-          self.syncSend('play', { playing: true, time: self._ws?.currentTime });
-          self.handleSyncPlay();
-        },
-
-        triggerSyncPause() {
-          self.syncSend('pause', { playing: false, time: self._ws?.currentTime });
-          self.handleSyncPause();
-        },
-
-        triggerSyncSeek(time) {
-          self.syncSend('seek', { time });
-        },
-
-        registerSyncHandlers() {
-          ['play', 'pause', 'seek'].forEach(event => {
-            self.syncHandlers.set(event, self.handleSync);
-          });
-          self.syncHandlers.set('speed', self.handleSyncSpeed);
-        },
-
-        handleSync(_, data) {
-          self.handleSyncSeek(data);
-          data.playing ? self.handleSyncPlay() : self.handleSyncPause();
-        },
-
-        handleSyncPlay() {
-          if (!self._ws) return;
-          if (self._ws.playing) return;
-
-          self._ws?.play();
-        },
-
-        handleSyncPause() {
-          if (!self._ws) return;
-          if (!self._ws.playing) return;
-
-          self._ws?.pause();
-        },
-
-        // @todo should be some way to call setRate from model
-        handleSyncSpeed(event, { speed }) {
-          if (!self._ws) return;
-          // currently it doesn't update visual control state, just an internal speed
-          self._ws.rate = speed;
-        },
-        handleSyncDuration() {},
-
-        handleSyncSeek({ time }) {
-          if (!self._ws?.loaded || !isDefined(time) && time !== self._ws.currentTime) return;
-
-          try {
-            self._ws.setCurrentTime(time);
-            self._ws.syncCursor(); // sync cursor with other tags
-          } catch (err) {
-            console.log(err);
-          }
         },
 
         handleNewRegions() {

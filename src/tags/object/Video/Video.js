@@ -1,16 +1,12 @@
 import { getRoot, types } from 'mobx-state-tree';
 import React from 'react';
 
-import { isTimeRelativelySimilar } from '../../../lib/AudioUltra';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
-import { SyncMixin } from '../../../mixins/SyncMixin';
+import { SyncableMixin } from '../../../mixins/Syncable';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_2715, isFF } from '../../../utils/feature-flags';
 import ObjectBase from '../Base';
-
-const isFFDev2715 = isFF(FF_DEV_2715);
 
 /**
  * Video tag plays a simple video file. Use for video annotation tasks such as classification and transcription.
@@ -107,12 +103,63 @@ const Model = types
       return states && states.length > 0;
     },
   }))
-  .actions(self => {
-    const Super = {
-      triggerSyncPlay: self.triggerSyncPlay,
-      triggerSyncPause: self.triggerSyncPause,
-    };
+  ////// Sync actions
+  .actions(self => ({
+    setSyncedDuration() {},
 
+    ////// Outgoing
+
+    /**
+     * Wrapper to always send some important data
+     * @param {string} event 
+     * @param {any} data 
+     */
+    triggerSync(event, data) {
+      if (!self.ref.current) return;
+
+      self.syncSend(event, {
+        playing: self.ref.current.playing,
+        ...data,
+        time: self.ref.current.currentTime,
+      });
+    },
+
+    triggerSyncPlay() {
+      self.triggerSync('play', { playing: true });
+    },
+
+    triggerSyncPause() {
+      self.triggerSync('pause', { playing: false });
+    },
+
+    ////// Incoming
+
+    registerSyncHandlers() {
+      ['play', 'pause', 'seek'].forEach(event => {
+        self.syncHandlers.set(event, self.handleSync);
+      });
+      // self.syncHandlers.set('speed', self.handleSyncSpeed);
+    },
+
+    handleSync(_, data) {
+      if (!self.ref.current) return;
+
+      const video = self.ref.current;
+
+      if (data.playing) {
+        if (!video.playing) video.play();
+      } else {
+        if (video.playing) video.pause();
+      }
+
+      video.currentTime = data.time;
+    },
+
+    handleSyncSpeed(speed) {
+      self.speed = speed;
+    },
+  }))
+  .actions(self => {
     return {
       afterCreate() {
         const framerate = Number(parseValue(self.framerate, self.store.task?.dataObj));
@@ -122,106 +169,8 @@ const Model = types
         else self.framerate = String(framerate);
       },
 
-      triggerSyncPlay() {
-        // Audio v3
-        if (isFFDev2715) {
-          if (self.syncedObject) {
-            Super.triggerSyncPlay();
-          } else {
-            self.handleSyncPlay();
-          }
-        }
-        // Audio v1,v2
-        else {
-          Super.triggerSyncPlay();
-        }
-      },
-
-      triggerSyncPause() {
-        // Audio v3
-        if (isFFDev2715) {
-          if (self.syncedObject) {
-            Super.triggerSyncPause();
-          } else {
-            self.handleSyncPause();
-          }
-        }
-        // Audio v1,v2
-        else {
-          Super.triggerSyncPause();
-        }
-      },
-
-      handleSyncSeek(time) {
-        // Audio v3
-        if (isFFDev2715) {
-          if (self.syncedDuration && time >= self.syncedDuration) {
-            self.ref.current.currentTime = self.ref.current.duration;
-          } else if (self.ref.current && !isTimeRelativelySimilar(self.ref.current.currentTime, time, self.ref.current.duration)) {
-            self.ref.current.currentTime = time;
-          }
-        }
-        // Audio v2,v1
-        else {
-          if (self.ref.current) {
-            self.ref.current.currentTime = time;
-          }
-        }
-      },
-
-      handleSyncPlay() {
-        // Audio v3
-        if (isFFDev2715) {
-          if (!self.isCurrentlyPlaying) {
-            self.isCurrentlyPlaying = true;
-            try {
-              self.ref.current?.play();
-            } catch {
-              // do nothing, just ignore the DomException
-              // just in case the video was in the midst of syncing
-            }
-          }
-        }
-        // Audio v2,v1
-        else {
-          self.ref.current?.play();
-        }
-      },
-
-      handleSyncPause() {
-        // Audio v3
-        if (isFFDev2715) {
-          if (self.isCurrentlyPlaying) {
-            self.isCurrentlyPlaying = false;
-            try {
-              self.ref.current?.pause();
-            } catch {
-              // do nothing, just ignore the DomException
-              // just in case the video was in the midst of syncing
-            }
-          }
-        }
-        // Audio v2,v1
-        else {
-          self.ref.current?.pause();
-        }
-      },
-
-      handleSyncDuration(duration) {
-        if (!isFFDev2715) return;
-        if (self.ref.current) {
-          self.setLength(duration * self.framerate);
-        }
-      },
-
-      handleSyncSpeed(speed) {
-        self.speed = speed;
-      },
-
       handleSeek() {
-        if (self.ref.current) {
-          self.triggerSyncSeek(self.ref.current.currentTime);
-        }
+        self.triggerSync('seek');
       },
 
       needsUpdate() {
@@ -287,7 +236,7 @@ const Model = types
   });
 
 export const VideoModel = types.compose('VideoModel',
-  SyncMixin,
+  SyncableMixin,
   TagAttrs,
   ProcessAttrsMixin,
   ObjectBase,

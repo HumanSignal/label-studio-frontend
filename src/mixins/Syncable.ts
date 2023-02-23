@@ -1,5 +1,11 @@
 import { Instance, types } from 'mobx-state-tree';
 
+/**
+ * Supress all additional events during this window in ms.
+ * 100ms is too short to notice, but covers enough frames (~6) for back and forth events.
+ */
+export const SYNC_WINDOW = 100;
+
 export type SyncEvent = string // ex. "play" | "pause" | "seek" | "speed" | "volume" | "mute"
 
 export interface SyncTarget {
@@ -21,7 +27,7 @@ export type SyncData = Partial<SyncDataFull>;
 
 export class SyncManager {
   syncTargets = new Map<string, Instance<typeof SyncableMixin>>();
-  locks = new Map<string, boolean>();
+  locked: string | null = null; // refers to the main tag, which locked this sync
 
   register(syncTarget: Instance<typeof SyncableMixin>) {
     this.syncTargets.set(syncTarget.name, syncTarget);
@@ -32,18 +38,25 @@ export class SyncManager {
     // @todo remove manager on empty set
   }
 
-  sync(event: SyncEvent, data: SyncData, ignore: string[] = []) {
-    const locked = this.locks.get(event);
-
-    console.log('SYNC', { event, locked, data, origin: ignore.join('/') });
+  /**
+   * 
+   * @todo event should be a supplementary info, not the main piece of info to react to
+   * @param event
+   * @param data 
+   * @param origin 
+   * @returns 
+   */
+  sync(event: SyncEvent, data: SyncData, origin: string) {
+    console.log('SYNC', { event, locked: this.locked, data, origin });
 
     // locking mechanism
-    if (locked) return;
-    this.locks.set(event, true);
-    window.requestAnimationFrame(() => this.locks.delete(event));
+    // let's try to also send events came from original tag even when sync window is locked
+    if (this.locked && this.locked !== origin) return;
+    if (!this.locked) setTimeout(() => this.locked = null, SYNC_WINDOW);
+    this.locked = origin;
 
     for (const target of this.syncTargets.values()) {
-      if (!ignore.includes(target.name)) { // && target.syncEvents.includes(event)) {
+      if (origin !== target.name) {
         target.syncReceive(event, data);
       }
     }
@@ -104,7 +117,7 @@ const SyncableMixin = types
     },
 
     syncSend(event: SyncEvent, data: SyncData) {
-      self.syncManager!.sync(event, data, [self.name]);
+      self.syncManager!.sync(event, data, self.name);
     },
 
     syncReceive(event: SyncEvent, data: SyncData) {
