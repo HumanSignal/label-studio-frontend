@@ -54,13 +54,11 @@ export default {
 
   ERR_LOADING_AUDIO({ attr, url, error }) {
     return (
-      <p>
-        Error while loading audio. Check <code>{attr}</code> field in task.
-        <br />
-        Technical description: {error}
-        <br />
-        URL: {url}
-      </p>
+      <div data-testid="error:audio">
+        <p>Error while loading audio. Check <code>{attr}</code> field in task.</p>
+        <p>Technical description: {error}</p>
+        <p>URL: {url}</p>
+      </div>
     );
   },
 
@@ -97,7 +95,7 @@ export default {
 
   ERR_LOADING_HTTP({ attr, url, error }) {
     return `
-    <div>
+    <div data-testid="error:http">
       <p>
         There was an issue loading URL from <code>${attr}</code> value
       </p>

@@ -380,7 +380,7 @@ const HtxVideoView = ({ item, store }) => {
     const regions = item.regs.filter(reg => reg.selected || reg.inSelection);
 
     regions.forEach(region => {
-      switch(action) {
+      switch (action) {
         case 'lifespan_add':
         case 'lifespan_remove':
           region.toggleLifespan(data.frame);
