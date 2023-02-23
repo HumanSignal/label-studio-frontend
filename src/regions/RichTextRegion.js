@@ -5,7 +5,6 @@ import { AreaMixin } from '../mixins/AreaMixin';
 import { HighlightMixin } from '../mixins/HighlightMixin';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import WithStatesMixin from '../mixins/WithStates';
 import { RichTextModel } from '../tags/object/RichText/model';
 import { findRangeNative, rangeToGlobalOffset } from '../utils/selection-tools';
 import { isDefined } from '../utils/utilities';
@@ -273,7 +272,6 @@ const Model = types
 
 const RichTextRegionModel = types.compose(
   'RichTextRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
