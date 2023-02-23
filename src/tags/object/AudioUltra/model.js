@@ -1,5 +1,5 @@
 import { observe } from 'mobx';
-import { getRoot, getType, types } from 'mobx-state-tree';
+import { getEnv, getRoot, getType, types } from 'mobx-state-tree';
 import { customTypes } from '../../../core/CustomTypes';
 import { guidGenerator, restoreNewsnapshot } from '../../../core/Helpers.ts';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
@@ -8,7 +8,7 @@ import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import { SyncMixin } from '../../../mixins/SyncMixin';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_DEV_2461, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2461, FF_LSDV_3028, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
 import { isTimeSimilar } from '../../../lib/AudioUltra';
 import ObjectBase from '../Base';
@@ -41,11 +41,14 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  * @param {string} [defaultzoom=1] - Default zoom level (from 1 to 1500)
  * @param {string} [hotkey] - Hotkey used to play or pause audio
  * @param {string} [sync] object name to sync with
+ * @param {string} [height=96] - Total height of the audio player
+ * @param {string} [waveheight=32] - Minimum height of a waveform when in splitchannel mode with multiple channels
  * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
  * @param {string} [cursorcolor=#333] - Audio pane cursor color. Color should be specify in hex decimal string
  * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform
  * @param {boolean} [autocenter=true] – Always place cursor in the middle of the view
  * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
+ * @param {boolean} [splitchannels=true] – Display stereo channels separately
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -60,12 +63,14 @@ const TagAttrs = types.model({
   hotkey: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
-  height: types.optional(types.string, '88'),
+  height: types.optional(types.string, '96'),
+  waveheight: types.optional(types.string, '32'),
   cursorwidth: types.optional(types.string, '2'),
   cursorcolor: types.optional(customTypes.color, '#333'),
   defaultscale: types.optional(types.string, '1'),
   autocenter: types.optional(types.boolean, true),
   scrollparent: types.optional(types.boolean, true),
+  splitchannels: types.optional(types.boolean, isFF(FF_LSDV_3028)), // FF_LSDV_3028: true by default when on
 });
 
 export const AudioModel = types.compose(
@@ -420,8 +425,8 @@ export const AudioModel = types.compose(
           self._ws = ws;
 
           self.setSyncedDuration(self._ws.duration);
-          self.needsUpdate();
           self.onReady();
+          self.needsUpdate();
         },
 
         onSeek(time) {
@@ -437,7 +442,17 @@ export const AudioModel = types.compose(
         },
 
         onError(error) {
-          self.errors = [error];
+          let messageHandler;
+
+          if (error.name === 'HTTPError') {
+            messageHandler = 'ERR_LOADING_HTTP';
+          } else {
+            messageHandler = 'ERR_LOADING_AUDIO';
+          }
+
+          const message = getEnv(self.store).messages[messageHandler]({ attr: self.value, url: self._value, error: error.message });
+
+          self.errors = [message];
         },
 
         beforeDestroy() {

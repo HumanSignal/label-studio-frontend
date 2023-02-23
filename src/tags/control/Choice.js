@@ -1,5 +1,8 @@
 import React, { Component, useCallback, useState } from 'react';
-import { Button, Checkbox, Form, Radio } from 'antd';
+import Button from 'antd/lib/button/index';
+import Form from 'antd/lib/form/index';
+import Radio from 'antd/lib/radio/index';
+import Checkbox from 'antd/lib/checkbox/index';
 import { inject, observer } from 'mobx-react';
 import { types } from 'mobx-state-tree';
 
@@ -45,7 +48,7 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   style: types.maybeNull(types.string),
-  ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {} ),
+  ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {}),
 });
 
 const Model = types
@@ -142,7 +145,7 @@ const Model = types
     setSelected(val) {
       self._sel = val;
       if (!self.isLeaf) {
-        self.children.forEach((child)=>{
+        self.children.forEach((child) => {
           child.setSelected(val);
         });
       }
@@ -247,7 +250,7 @@ const HtxNewChoiceView = ({ item, store }) => {
           disabled={item.isReadOnly()}
           onChange={changeHandler}
         >
-          {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
+          {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> : item._value }
           {showHotkey && (<Hint>[{item.hotkey}]</Hint>)}
         </Elem>
         {!item.isLeaf ? (

@@ -2,6 +2,7 @@
 // HEADLESS=true npx codecept run
 const headless = process.env.HEADLESS;
 const port = process.env.LSF_PORT ?? 3000;
+const enableCoverage = process.env.COVERAGE === 'true';
 const fs = require('fs');
 const FRAGMENTS_PATH = './fragments/';
 
@@ -67,7 +68,6 @@ module.exports.config = {
         'have*',
       ],
     },
-    // For the future generations
     // coverage: {
     //   enabled: true,
     //   coverageDir: 'output/coverage',
@@ -75,6 +75,17 @@ module.exports.config = {
     featureFlags: {
       require: './plugins/featureFlags.js',
       enabled: true,
+    },
+    istanbulCoverage: {
+      require: './plugins/istanbulСoverage.js',
+      enabled: enableCoverage,
+      uniqueFileName: true,
+      coverageDir: '../coverage',
+      actionCoverage: {
+        enabled: false,
+        include: ['**/src/**'],
+        exclude: ['**/common/**', '**/components/**'],
+      },
     },
     screenshotOnFail: {
       enabled: true,

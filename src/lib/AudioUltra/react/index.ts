@@ -10,6 +10,7 @@ export const useWaveform = (
     onSeek?: (time: number) => void,
     onPlaying?: (playing: boolean) => void,
     onRateChange?: (rate: number) => void,
+    onError?: (error: Error) => void,
     autoLoad?: boolean,
     showLabels?: boolean,
   },
@@ -38,7 +39,6 @@ export const useWaveform = (
     }
 
     wf.on('load', () => {
-      setDuration(wf.duration);
       options?.onLoad?.(wf);
     });
     wf.on('play', () => {
@@ -46,6 +46,9 @@ export const useWaveform = (
     });
     wf.on('pause', () => {
       setPlaying(false);
+    });
+    wf.on('error', (error) => {
+      options?.onError?.(error);
     });
     wf.on('playing', (time: number) => {
       if (playing && !isTimeRelativelySimilar(time, currentTime, duration)) {
@@ -61,7 +64,8 @@ export const useWaveform = (
     });
     wf.on('zoom', setZoom);
     wf.on('muted', setMuted);
-    wf.on('volumeChange', setVolume);
+    wf.on('durationChanged', setDuration);
+    wf.on('volumeChanged', setVolume);
     wf.on('rateChanged', (newRate) => {
       if (newRate !== rate) {
         options?.onRateChange?.(newRate);

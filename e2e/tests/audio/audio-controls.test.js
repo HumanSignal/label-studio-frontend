@@ -1,4 +1,6 @@
-Feature('Audio Regions');
+const assert = require('assert');
+
+Feature('Audio Controls');
 
 const config = `
 <View>
@@ -53,45 +55,22 @@ const annotations = [
 
 const params = { annotations: [{ id: 'test', result: annotations }], config, data };
 
-Scenario('Check if regions is selected', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+Scenario('Check the audio controls work', async function({ I, LabelStudio, ErrorsCollector, AtAudioView, AtSidebar }) {
+  async function doNotSeeErrors() {
+    await I.wait(2);
+    const errors = await ErrorsCollector.grabErrors();
+
+    if (errors.length) {
+      assert.fail(`Got an error: ${errors[0]}`);
+    }
+  }
+
   LabelStudio.setFeatureFlags({
     ff_front_dev_2715_audio_3_280722_short: true,
   });
   I.amOnPage('/');
 
-  LabelStudio.init(params);
-
-  await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
-  await AtAudioView.lookForStage();
-
-
-  AtSidebar.seeRegions(1);
-
-  // creating a new region
-  I.pressKey('1');
-  AtAudioView.dragAudioRegion(160,80);
-  I.pressKey('u');
-
-  AtSidebar.seeRegions(2);
-
-  AtAudioView.clickAt(170);
-  AtSidebar.seeSelectedRegion();
-  AtAudioView.clickAt(170);
-  AtSidebar.dontSeeSelectedRegion();
-  AtAudioView.dragAudioRegion(170,40);
-  AtSidebar.seeSelectedRegion();
-  AtAudioView.clickAt(220);
-  AtSidebar.dontSeeSelectedRegion();
-});
-
-Scenario('Delete region by pressing delete hotkey', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
-  LabelStudio.setFeatureFlags({
-    ff_front_dev_2715_audio_3_280722_short: true,
-  });
-  I.amOnPage('/');
+  await ErrorsCollector.run();
 
   LabelStudio.init(params);
 
@@ -103,12 +82,53 @@ Scenario('Delete region by pressing delete hotkey', async function({ I, LabelStu
 
   AtSidebar.seeRegions(1);
 
-  // creating a new region
-  AtAudioView.dragAudioRegion(160,80);
+  I.say('Check the volume updates');
 
-  I.pressKey('Delete');
+  await AtAudioView.seeVolume(100);
 
-  I.pressKey('1');
+  AtAudioView.setVolumeInput(50);
 
-  AtSidebar.seeRegions(1);
+  await AtAudioView.seeVolume(50);
+
+  I.say('Check can be muted');
+
+  AtAudioView.clickMuteButton();
+
+  await AtAudioView.seeVolume(0);
+
+  I.say('Check the playback speed updates');
+
+  await AtAudioView.seePlaybackSpeed(1);
+
+  AtAudioView.setPlaybackSpeedInput(2);
+ 
+  await AtAudioView.seePlaybackSpeed(2);
+
+  I.say('Check the amplitude updates');
+
+  await AtAudioView.seeAmplitude(1);
+
+  AtAudioView.setAmplitudeInput(2);
+
+  await AtAudioView.seeAmplitude(2);
+
+  I.say('Check can be played');
+
+  await AtAudioView.seeIsPlaying(false);
+
+  AtAudioView.clickPlayButton();
+
+  await AtAudioView.seeIsPlaying(true);
+
+  I.say('Check can be paused');
+
+  AtAudioView.clickPauseButton();
+
+  await AtAudioView.seeIsPlaying(false);
+
+  I.say('Check the waveform can be zoomed without error');
+
+  await AtAudioView.zoomToPoint(-120);
+
+  await doNotSeeErrors();
 });

@@ -132,6 +132,9 @@ export const FF_DEV_1284 = 'fflag_fix_front_dev_1284_auto_detect_undo_281022_sho
  */
 export const FF_DEV_3730 = 'fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short';
 
+// Enable a Magic Wand to be used for quickly thresholding images with segmentation labels.
+export const FF_DEV_4081 = 'fflag_feat_front_dev_4081_magic_wand_tool';
+
 /**
  * Label stream ablation experiment for solving overlap issue
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short
@@ -155,6 +158,21 @@ export const FF_DEV_4075 = 'fflag_fix_front_dev_4075_taxonomy_overlap_281222_sho
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
   */
 export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short';
+
+/**
+ * Default Audio v3 to use multichannel mode if the track has 2 or more channels.
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short
+ *
+ */
+export const FF_LSDV_3028 = 'fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short';
+
+/**
+ * Removing interrupting from the draft saving
+ *
+ * Without this flag we have a situation when changes in history leading to the empty results break functionality of adding comments and make the draft saving process indicator stay forever.
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
+ */
+export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short';
 
 function getFeatureFlags() {
   return {
