@@ -272,6 +272,7 @@ export const Annotation = types
     },
 
     setReadonly(val) {
+      console.trace('setting  readonly');
       self.readonly = val;
     },
 
@@ -1060,12 +1061,6 @@ export const Annotation = types
         self._initialAnnotationObj = objAnnotation;
 
         objAnnotation.forEach(obj => {
-          const { readonly } = obj;
-
-          if (readonly) {
-            self.setReadonly(true);
-          }
-
           self.deserializeSingleResult(obj,
             (id) => areas.get(id),
             (snapshot) => areas.put(snapshot),

@@ -72,7 +72,8 @@ import { ClassificationMixed } from '../examples/classification_mixed';
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = VideoRectangles;
+console.log({ AudioRegions });
+const data = AudioRegions;
 
 function getData(task) {
   if (task && task.data) {
