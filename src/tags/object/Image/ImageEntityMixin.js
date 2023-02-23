@@ -138,6 +138,7 @@ export const ImageEntityMixin = types
     },
 
     findImageEntity(index) {
-      return self.imageEntities.find(currentImageEntity => currentImageEntity.index === index);
+      index = index ?? 0;
+      return self.imageEntities.find(entity => entity.index === index);
     },
   }));

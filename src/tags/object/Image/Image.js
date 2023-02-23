@@ -167,7 +167,7 @@ const Model = types.model({
   drawingRegion: types.optional(DrawingRegion, null),
   selectionArea: types.optional(ImageSelection, { start: null, end: null }),
 }).volatile(() => ({
-  currentImage: 0,
+  currentImage: undefined,
 })).views(self => ({
   get store() {
     return getRoot(self);
@@ -214,7 +214,7 @@ const Model = types.model({
     const regions = self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
 
     if (isFF(FF_LSDV_4583) && self.valuelist) {
-      return regions.filter(r => r.item_index === self.currentImage);
+      return regions.filter(r => (r.item_index ?? 0) === self.currentImage);
     }
 
     return regions;
@@ -306,6 +306,7 @@ const Model = types.model({
   },
 
   serializableValues(index) {
+    index = index ?? 0;
     const currentImageEntity = self.multiImage
       ? self.findImageEntity(index)
       : self;
@@ -619,9 +620,11 @@ const Model = types.model({
       self.gridsize = String(value);
     },
 
-    setCurrentImage(i) {
-      self.currentImage = i;
-      self.currentImageEntity = self.findImageEntity(i);
+    setCurrentImage(index = 0) {
+      index = index ?? 0;
+      if (index === self.currentImage) return;
+      self.currentImage = index;
+      self.currentImageEntity = self.findImageEntity(index);
       if (isFF(FF_LSDV_4583_6)) self.preloadImages();
     },
 

@@ -1,5 +1,6 @@
 import { getEnv, getParent, getRoot, getType, types } from 'mobx-state-tree';
 import { guidGenerator } from '../core/Helpers';
+import { isDefined } from '../utils/utilities';
 import { AnnotationMixin } from './AnnotationMixin';
 
 const RegionsMixin = types
@@ -26,6 +27,8 @@ const RegionsMixin = types
       'prediction-changed',
       'manual',
     ]), 'manual'),
+
+    item_index: types.maybeNull(types.number),
   })
   .volatile(() => ({
     // selected: false,
@@ -98,6 +101,11 @@ const RegionsMixin = types
 
       setShapeRef(ref) {
         self.shapeRef = ref;
+      },
+
+      setItemIndex(index) {
+        if (!isDefined(index)) throw new Error('Index must be provided for', self);
+        self.item_index = index;
       },
 
       beforeDestroy() {
