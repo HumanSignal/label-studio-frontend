@@ -31,5 +31,5 @@ Scenario('Check if the table is sorted', async function({ I, LabelStudio, AtTabl
 
   LabelStudio.init(params);
 
-  await AtTableView.seeSortedTable(_sortedArr);
+  await AtTableView.seeKeys(_sortedArr);
 });
