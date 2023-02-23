@@ -36,15 +36,7 @@ const Model = types
       const { type } = parseTypeAndOption(self.valuetype);
 
       if (type === 'json') {
-        const ordered = Object.keys(self._value).sort().reduce(
-          (obj, key) => {
-            obj[key] = self._value[key];
-            return obj;
-          },
-          {},
-        );
-
-        return Object.keys(ordered).map(k => {
+        return Object.keys(self._value).sort().map(k => {
           let val = self._value[k];
 
           if (typeof val === 'object') val = JSON.stringify(val);
