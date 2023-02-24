@@ -54,6 +54,13 @@ const DrawingTool = types
         return {};
       },
       get MIN_SIZE() {
+        if (isFF(FF_DEV_3793)) {
+          return {
+            X: MIN_SIZE.X / self.obj.stageScale / self.obj.stageWidth * 100,
+            Y: MIN_SIZE.Y / self.obj.stageScale / self.obj.stageHeight * 100,
+          };
+        }
+
         return {
           X: MIN_SIZE.X / self.obj.stageScale,
           Y: MIN_SIZE.Y / self.obj.stageScale,
