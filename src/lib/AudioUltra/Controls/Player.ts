@@ -219,21 +219,20 @@ export class Player extends Destructable {
         this.bufferResolve = resolve;
       });
 
-      const now = performance.now();
       const time = this.currentTime;
 
       this.audio.el.play().then(() => {
         this.bufferPromise!.then(() => {
           this.timestamp = performance.now();
 
-          const diff = this.timestamp - now;
-
           // We need to compensate for the time it took to load the buffer
           // otherwise the audio will be out of sync of the timer we use to
           // render updates
-          this.currentTime = Math.max(time - diff / 1000, 0);
-
-          this.watch();
+          if (this.audio?.el) {
+            this.currentTime = time;
+            this.audio.el.currentTime = this.currentTime;
+            this.watch();
+          }
         });
       });
     }
