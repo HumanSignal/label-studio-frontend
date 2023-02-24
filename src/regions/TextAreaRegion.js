@@ -10,6 +10,7 @@ import { guidGenerator } from '../core/Helpers';
 
 import styles from './TextAreaRegion/TextAreaRegion.module.scss';
 import { HtxTextBox } from '../components/HtxTextBox/HtxTextBox';
+import LeadTimeMixin from '../mixins/LeadTime';
 import { FF_DEV_1566, isFF } from '../utils/feature-flags';
 
 const Model = types
@@ -17,6 +18,7 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: 'textarearegion',
+    leadTime: 0,
 
     _value: types.string,
     // states: types.array(types.union(ChoicesModel)),
@@ -60,6 +62,7 @@ const Model = types
 const TextAreaRegionModel = types.compose(
   'TextAreaRegionModel',
   RegionsMixin,
+  LeadTimeMixin,
   NormalizationMixin,
   Model,
 );
@@ -83,8 +86,10 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
   }
 
   if (editable || parent.transcription) {
+    params.onStartEditing = item.countTime;
     params.onChange = str => {
       item.setValue(str);
+      item.countTime(true);
     };
   }
 

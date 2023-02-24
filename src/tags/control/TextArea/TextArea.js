@@ -21,6 +21,7 @@ import { Block, Elem } from '../../../utils/bem';
 import './TextArea.styl';
 import { IconTrash } from '../../../assets/icons';
 import { FF_DEV_1564_DEV_1565, FF_DEV_3730, isFF } from '../../../utils/feature-flags';
+import LeadTimeMixin from '../../../mixins/LeadTime';
 
 const { TextArea } = Input;
 
@@ -77,7 +78,6 @@ const TagAttrs = types.model({
 const Model = types.model({
   type: 'textarea',
   regions: types.array(TextAreaRegionModel),
-
   _value: types.optional(types.string, ''),
   children: Types.unionArray(['shortcut']),
 
@@ -115,6 +115,12 @@ const Model = types.model({
     } else {
       return true;
     }
+  },
+
+  get metaValue() {
+    return {
+      lead_time: self.regions.reduce((sum, reg) => sum + reg.leadTime, 0) / 1000,
+    };
   },
 
   get serializableValue() {
@@ -197,8 +203,8 @@ const Model = types.model({
       self.regions = [];
     },
 
-    createRegion(text, pid) {
-      const r = TextAreaRegionModel.create({ pid, _value: text });
+    createRegion(text, pid, leadTime) {
+      const r = TextAreaRegionModel.create({ pid, leadTime, _value: text });
 
       self.regions.push(r);
 
@@ -221,7 +227,17 @@ const Model = types.model({
     },
 
     addText(text, pid) {
-      self.createRegion(text, pid);
+      if (self.startTime) {
+        const now = +new Date();
+
+        self.leadTime += now - self.startTime;
+        self.startTime = 0;
+      }
+
+      self.createRegion(text, pid, self.leadTime);
+
+      self.leadTime = 0;
+
       self.onChange();
     },
 
@@ -247,7 +263,7 @@ const Model = types.model({
           if (isFF(FF_DEV_3730)) {
           // Try to use main textarea element
             const textareaElement = self.textareaRef.current?.input || self.textareaRef.current?.resizableTextArea?.textArea;
-          
+
             if (isAvailableElement(textareaElement, self)) {
               lastActiveElement = textareaElement;
               lastActiveElementModel = self;
@@ -269,11 +285,13 @@ const Model = types.model({
       if (!self.regions.length) return;
 
       const toname = self.toname || self.name;
+
       const tree = {
         id: self.pid,
         from_name: self.name,
         to_name: toname,
         type: 'textarea',
+        meta: self.metaValue,
         value: {
           text: self.regions.map(r => r._value),
         },
@@ -305,6 +323,7 @@ const TextAreaModel = types.compose(
   'TextAreaModel',
   ControlBase,
   TagAttrs,
+  LeadTimeMixin,
   ProcessAttrsMixin,
   RequiredMixin,
   PerRegionMixin,
@@ -335,6 +354,12 @@ const HtxTextArea = observer(({ item }) => {
     },
     onFocus,
     ref: item.textareaRef,
+    onKeyPress: item.countTime,
+    onKeyDown: item.countTime,
+    onKeyUp: item.countTime,
+    onMouseDown: item.countTime,
+    onMouseUp: item.countTime,
+    onMouseMove: ev => (ev.button || ev.buttons) && item.countTime(),
   };
 
   if (rows > 1) {
@@ -351,6 +376,8 @@ const HtxTextArea = observer(({ item }) => {
         e.stopPropagation();
         item.addText(item._value);
         item.setValue('');
+      } else {
+        item.countTime();
       }
     };
   }
