@@ -188,7 +188,7 @@ export const AudioModel = types.compose(
         if (!self._ws?.loaded || !isDefined(time) && time !== self._ws.currentTime) return;
 
         try {
-          self._ws.setCurrentTime(time);
+          self._ws.setCurrentTime(time, true);
           self._ws.syncCursor(); // sync cursor with other tags
         } catch (err) {
           console.log(err);
