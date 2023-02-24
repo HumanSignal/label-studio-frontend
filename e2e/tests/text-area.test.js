@@ -26,11 +26,7 @@ Scenario('Check if text area is saving lead_time', async function({ I, LabelStud
 
   AtTextAreaView.addNewTextTag('abcabc');
 
-  I.wait(1);
-
   AtTextAreaView.addNewTextTag('abc abc abc abc');
-
-  I.wait(1);
 
   AtTextAreaView.addNewTextTag('cba cba cba');
 
