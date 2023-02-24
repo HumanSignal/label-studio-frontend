@@ -301,7 +301,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     }
 
     return Object.values(panelData).reduce<CSSProperties>((res, data) => {
-      const visible = !panelsHidden && !data.detached && data.visible;
+      const visible = isFF(FF_DEV_3873) || (!panelsHidden && !data.detached && data.visible);
       const padding = visible ? data.width : PANEL_HEADER_HEIGHT;
       const paddingProperty = data.alignment === 'left' ? 'paddingLeft' : 'paddingRight';
 
@@ -414,7 +414,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         style={{
           ...padding,
         }}
-        mod={{ collapsed: sidepanelsCollapsed }}
+        mod={{ collapsed: sidepanelsCollapsed, newLabelingUI: isFF(FF_DEV_3873) }}
       >
         {initialized && (
           <>

@@ -8,6 +8,31 @@
   background-color #fff
   pointer-events all
 
+  &_newLabelingUI
+    .panel
+      &__header
+        color var(--icon-color)
+      &__title
+        padding 0 4px
+    &.panel
+      &_alignment
+        &_left, &_right
+          .panel__header
+            flex-direction row
+            padding 4px
+      &__header
+        color var(--icon-color)
+      &_hidden:not(&_detached)
+        margin 0;
+        border-radius 0
+        height auto
+        .panel
+          &__header
+            height auto
+            justify-content space-between
+            padding 0 4px
+            --header-border-radius 0
+
   &_alignment
     &_left
       border-right 1px solid rgba(#000, 0.1)

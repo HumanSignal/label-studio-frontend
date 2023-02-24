@@ -3,6 +3,16 @@
   overflow hidden
   position relative
 
+  &_newLabelingUI
+    .sidepanels
+      --panel-border-color rgba(137, 128, 152, 0.16)
+      &__wrapper
+        display flex
+        flex-direction column
+        &_align_left
+          border-right 1px solid var(--panel-border-color)
+        &_align_right
+          border-left 1px solid var(--panel-border-color)
   &__content
     height 100%
     position relative

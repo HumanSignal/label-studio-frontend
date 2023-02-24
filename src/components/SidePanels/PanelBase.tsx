@@ -1,6 +1,6 @@
 import { FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
-import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand } from '../../assets/icons';
+import { IconArrowLeft, IconArrowRight, IconMinus, IconOutlinerCollapse, IconOutlinerDrag, IconOutlinerExpand, LsExpandAlt } from '../../assets/icons';
 
 import './PanelBase.styl';
 import { PanelType } from './SidePanels';
@@ -29,6 +29,11 @@ const resizers = [
   'right',
   'left',
 ];
+
+interface Dimension {
+  height?: number;
+  width?: number;
+}
 
 interface PanelBaseProps {
   root: MutableRefObject<HTMLDivElement | undefined>;
@@ -116,7 +121,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       height: detached ? (height ?? '100%' ): (isFF(FF_DEV_3873) ? '' : '100%'),
       width: expanded ? '100%' : width ?? DEFAULT_PANEL_WIDTH,
     } : {
-      width: detached ? width ?? DEFAULT_PANEL_WIDTH : '100%',
+      width: isFF(FF_DEV_3873) ? (width ?? DEFAULT_PANEL_WIDTH) : detached ? width ?? DEFAULT_PANEL_WIDTH : '100%',
       height: detached ? PANEL_HEADER_HEIGHT_PADDED : undefined, // header height + 1px margin top and bottom,
     };
 
@@ -140,11 +145,27 @@ export const PanelBase: FC<PanelBaseProps> = ({
       hidden: !visible,
       alignment: detached ? 'left' : alignment ?? 'left',
       disabled: locked,
+      newLabelingUI: isFF(FF_DEV_3873),
     };
   }, [alignment, visible, detached, resizing, locked]);
 
+  const currentOutlinerIcon = useCallback(({ height, width } : Dimension = {}) => {
+    if (isFF(FF_DEV_3873)) {
+      const dimensions: Dimension = {};
+
+      if (height)
+        dimensions.height = height;
+      if (width)
+        dimensions.width = width;
+      return visible ? <IconMinus {...dimensions}/> : <LsExpandAlt {...dimensions}/>;
+    } else {
+      return visible ? <IconOutlinerCollapse/> : <IconOutlinerExpand/>;
+    }
+    
+  }, [visible]);
+
   const currentIcon = useMemo(() => {
-    if (detached) return visible ? <IconOutlinerCollapse/> : <IconOutlinerExpand/>;
+    if (detached) return currentOutlinerIcon();
     if (alignment === 'left') return visible ? <IconArrowLeft/> : <IconArrowRight/>;
     if (alignment === 'right') return visible ? <IconArrowRight/> : <IconArrowLeft/>;
 
@@ -322,18 +343,34 @@ export const PanelBase: FC<PanelBaseProps> = ({
             name="header"
             onClick={!detached ? handleExpand : undefined}
           >
-            {(visible || detached) && (
-              <Elem name="title">{title}</Elem>
-            )}
+            {isFF(FF_DEV_3873) ? (
+              <>
+                <Elem name="title" tag={IconOutlinerDrag} width={20}/>
+                <Elem
+                  name="toggle"
+                  mod={{ enabled: visible }}
+                  onClick={(detached && !visible) ? handleExpand : handleCollapse}
+                  data-tooltip={tooltipText}
+                >
+                  {currentOutlinerIcon()}
+                </Elem>
+              </>
+            ) : (
+              <>
+                {(visible || detached) && (
+                  <Elem name="title">{title}</Elem>
+                )}
 
-            <Elem
-              name="toggle"
-              mod={{ enabled: visible }}
-              onClick={(detached && !visible) ? handleExpand : handleCollapse}
-              data-tooltip={tooltipText}
-            >
-              {currentIcon}
-            </Elem>
+                <Elem
+                  name="toggle"
+                  mod={{ enabled: visible }}
+                  onClick={(detached && !visible) ? handleExpand : handleCollapse}
+                  data-tooltip={tooltipText}
+                >
+                  {currentIcon}
+                </Elem>
+              </>
+            )}
           </Elem>
         )}
         {visible && (
