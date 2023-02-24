@@ -40,7 +40,7 @@ export const KonvaRegionMixin = types.model({})
       checkSizes() {
         const { naturalWidth, naturalHeight, stageWidth: width, stageHeight: height } = self.parent;
 
-        if (width>1 && height>1) {
+        if (width > 1 && height > 1) {
           self.updateImageSize?.(width / naturalWidth, height / naturalHeight, width, height);
         }
       },

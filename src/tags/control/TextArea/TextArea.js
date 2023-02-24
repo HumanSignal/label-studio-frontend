@@ -420,7 +420,7 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDe
           icon={<IconTrash />}
           size="small"
           type="text"
-          onClick={()=>{onDelete(idx);}}
+          onClick={() => { onDelete(idx); }}
         />
       ) }
     </Elem>

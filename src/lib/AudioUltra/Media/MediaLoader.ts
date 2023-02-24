@@ -94,7 +94,10 @@ export class MediaLoader extends Destructable {
     }
 
     // Get the audio data from the url src
-    const req = await this.performRequest(this.options.src);
+    const req = await this.performRequest(this.options.src).catch((err: any) => {
+      console.error('An audio loading error occurred', err);
+      return null;
+    });
 
     if (req) {
       try {
@@ -115,8 +118,8 @@ export class MediaLoader extends Destructable {
         await this.decodeAudioData();
 
         return this.audio ?? null;
-      } catch (err) {
-        this.wf.setError('An error occurred while decoding the audio file. Please select another file or try again.');
+      } catch (err: any) {
+        this.wf.setError(`An error occurred while decoding the audio file. Please select another file or try again. ${err.message}`);
         console.error('An audio decoding error occurred', err);
       }
     }
@@ -147,6 +150,15 @@ export class MediaLoader extends Destructable {
     return new Promise<MediaResponse>((resolve, reject) => {
       xhr.responseType = 'arraybuffer';
 
+      const errorHandler = () => {
+        const error = new Error('HTTP error status: ' + xhr.status);
+
+        error.name = 'HTTPError';
+
+        this.wf.setError('HTTP error status: ' + xhr.status, error);
+        reject(xhr);
+      };
+
       xhr.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
           this.loadingProgressType = 'determinate';
@@ -163,8 +175,13 @@ export class MediaLoader extends Destructable {
       });
 
       xhr.addEventListener('error', () => {
-        this.wf.setError('An error occurred while loading the audio file. Please select another file or try again.');
-        reject(xhr);
+        errorHandler();
+      });
+
+      xhr.addEventListener('readystatechange', () => {
+        if (xhr.readyState === 4 && xhr.status !== 200 && xhr.status !== 0) {
+          errorHandler();
+        }
       });
 
       xhr.open('GET', url);
