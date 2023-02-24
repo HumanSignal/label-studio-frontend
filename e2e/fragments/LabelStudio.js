@@ -6,7 +6,7 @@ module.exports = {
   init({ events = {}, ...params }) {
     I.executeScript(Helpers.createLabelStudioInitFunction(params));
     for (const [eventName, callback] of Object.entries(events)) {
-      I.on(eventName, callback);
+      this.on(eventName, callback);
     }
   },
   on(eventName, callback) {
