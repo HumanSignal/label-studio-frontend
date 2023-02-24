@@ -19,13 +19,14 @@ const data = {
     cTest: 2,
     aaTest: 1,
     bbbTest: 3,
+    ATest: 4,
   },
 };
 
 const params = { annotations: [{ id: 'test', result: [] }], config, data };
 
 Scenario('Check if the table is sorted', async function({ I, LabelStudio, AtTableView }) {
-  const _sortedArr = ['aaTest', 'bbbTest', 'cTest'];
+  const _sortedArr = ['aaTest', 'ATest', 'bbbTest', 'cTest'];
 
   I.amOnPage('/');
 
