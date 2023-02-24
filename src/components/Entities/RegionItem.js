@@ -56,7 +56,7 @@ const RegionItemContent = observer(({ idx, item, setDraggable }) => {
     }
   }, [item.selected]);
   return (
-    <Block ref={itemElRef} name="region-item" mod={{ hidden : item.hidden }}>
+    <Block ref={itemElRef} name="region-item" mod={{ hidden : item.hidden }} data-testid={`regionitem:selected=${item.selected}`}>
       <Elem name="header" tag="div">
         <Elem name="counter">{isDefined(idx) ? idx + 1 : ''}</Elem>
 

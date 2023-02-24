@@ -217,6 +217,10 @@ export class Regions {
     return this.regions.filter(region => region.selected);
   }
 
+  get visible() {
+    return this.regions.filter(region => region.visible);
+  }
+
   isOverrideKeyPressed(e: MouseEvent) {
     return e.shiftKey;
   }
@@ -386,7 +390,7 @@ export class Regions {
   };
 
   private findRegionUnderCursor(e: MouseEvent) {
-    const region = findLast(this.regions, region => {
+    const region = findLast(this.visible, region => {
       return this.cursorInRegion(e, region);
     });
 
