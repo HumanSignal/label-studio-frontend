@@ -270,10 +270,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
 
     const totalDuration = this.worker.duration;
 
-    // The duration start is offset by 1 second in the actual wasm decoder.
-    // This is to ensure we correctly capture the entire data set for the waveform,
-    // aligning it with the audio data when played back via the media element.
-    let durationOffset = -1;
+    let durationOffset = 0;
 
     while (true) {
       yield new Promise((resolve, reject) => {
