@@ -307,9 +307,6 @@ const HtxVideoView = ({ item, store }) => {
     item.setOnlyFrame(1);
     item.setLength(length);
     item.setReady(true);
-    if (isFFDev2715) {
-      item.setSyncedDuration(item.ref.current?.duration);
-    }
   }, [item, setVideoLength]);
 
   const handleVideoResize = useCallback((videoDimensions) => {

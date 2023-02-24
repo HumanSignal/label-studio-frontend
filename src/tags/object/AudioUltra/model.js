@@ -132,23 +132,23 @@ export const AudioModel = types.compose(
       ////// Outgoing
 
       triggerSyncSpeed(speed) {
-        self.syncSend('speed', { speed });
+        self.syncSend({ speed }, 'speed');
       },
 
       triggerSyncPlay() {
-        self.syncSend('play', { playing: true, time: self._ws?.currentTime });
+        self.syncSend({ playing: true, time: self._ws?.currentTime }, 'play');
         // @todo should not be handled like this
         self.handleSyncPlay();
       },
 
       triggerSyncPause() {
-        self.syncSend('pause', { playing: false, time: self._ws?.currentTime });
+        self.syncSend({ playing: false, time: self._ws?.currentTime }, 'pause');
         // @todo should not be handled like this
         self.handleSyncPause();
       },
 
       triggerSyncSeek(time) {
-        self.syncSend('seek', { time, playing: self._ws.playing });
+        self.syncSend({ time, playing: self._ws.playing }, 'seek');
       },
 
       ////// Incoming
@@ -160,7 +160,7 @@ export const AudioModel = types.compose(
         self.syncHandlers.set('speed', self.handleSyncSpeed);
       },
 
-      handleSync(_, data) {
+      handleSync(data) {
         if (!self._ws?.loaded) return;
 
         if (data.playing) {
@@ -196,7 +196,7 @@ export const AudioModel = types.compose(
       },
 
       // @todo should be some way to call setRate from model
-      handleSyncSpeed(_, { speed }) {
+      handleSyncSpeed({ speed }) {
         if (!self._ws) return;
         // currently it doesn't update visual control state, just an internal speed
         self._ws.rate = speed;
@@ -435,7 +435,6 @@ export const AudioModel = types.compose(
           self.clearRegionMappings();
           self._ws = ws;
 
-          // self.setSyncedDuration(self._ws.duration);
           self.onReady();
           self.needsUpdate();
         },

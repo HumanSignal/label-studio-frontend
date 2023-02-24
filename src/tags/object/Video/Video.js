@@ -105,8 +105,6 @@ const Model = types
   }))
   ////// Sync actions
   .actions(self => ({
-    setSyncedDuration() {},
-
     ////// Outgoing
 
     /**
@@ -117,11 +115,11 @@ const Model = types
     triggerSync(event, data) {
       if (!self.ref.current) return;
 
-      self.syncSend(event, {
+      self.syncSend({
         playing: self.ref.current.playing,
         ...data,
         time: self.ref.current.currentTime,
-      });
+      }, event);
     },
 
     triggerSyncPlay() {
@@ -141,7 +139,7 @@ const Model = types
       // self.syncHandlers.set('speed', self.handleSyncSpeed);
     },
 
-    handleSync(_, data) {
+    handleSync(data) {
       if (!self.ref.current) return;
 
       const video = self.ref.current;
