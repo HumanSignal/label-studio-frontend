@@ -72,8 +72,8 @@ import { ClassificationMixed } from '../examples/classification_mixed';
  */
 // import { AllTypes } from "../examples/all_types";
 
-console.log({ AudioRegions });
-const data = AudioRegions;
+
+const data = ImagePolygons;
 
 function getData(task) {
   if (task && task.data) {

@@ -6,7 +6,7 @@ module.exports = {
   init({ events = {}, ...params }) {
     I.executeScript(Helpers.createLabelStudioInitFunction(params));
     for (const [eventName, callback] of Object.entries(events)) {
-      this.on(eventName, callback);
+      I.on(eventName, callback);
     }
   },
   on(eventName, callback) {
@@ -64,5 +64,27 @@ module.exports = {
     return I.executeScript((userLabels) => {
       window.Htx.userLabels?.init(userLabels);
     }, userLabels);
+  },
+
+  enableSetting(settingName) {
+    I.say('Attempting to open settings menu'); 
+    I.click('[aria-label=Settings]');
+    I.see('Settings');
+    I.say('Attempt to enable setting');
+    I.click(settingName);
+    I.seeCheckboxIsChecked(settingName);
+    I.click('[aria-label=Close]');
+    I.dontSee('Settings');
+  },
+
+  disableSetting(settingName) {
+    I.say('Attempting to open settings menu'); 
+    I.click('[aria-label=Settings]');
+    I.see('Settings');
+    I.say('Attempt to disable setting');
+    I.click(settingName);
+    I.seeCheckboxIsChecked(settingName);
+    I.click('[aria-label=Close]');
+    I.dontSee('Settings');
   },
 };

@@ -162,6 +162,8 @@ module.exports = {
       const annotation = Htx.annotationStore.selected;
       const region = annotation.regions.find((r) => r.cleanId === regionId);
 
+      console.log(region);
+
       return [region.shapeRef._id, region.bboxCoords];
     }, regionId);
 
@@ -259,6 +261,22 @@ module.exports = {
     I.scrollPageToTop();
     this.clickAt(x, y);
   },
+  async clickOnRegion(regionIndex) {
+    const regionId = await I.executeScript((regionIndex) => {
+      const regions = Htx.annotationStore.selected.regions;
+
+      return regions[regionIndex]?.cleanId ?? undefined;
+    }, regionIndex);
+
+    assert.notEqual(regionId, undefined, 'Region not found');
+
+    const position = await this.getRegionAbsoultePosition(regionId, false);
+
+    I.say('Clicking on a region at', position.x + ' ' + position.y);
+
+    this.clickAt(position.x, position.y);
+  },
+
   async dragRegion(regions, findIndex, shiftX = 50, shiftY = 50) {
     const region = regions.find(findIndex);
 
