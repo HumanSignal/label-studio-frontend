@@ -98,6 +98,8 @@ const SyncableMixin = types
   }))
   .actions(self => ({
     afterCreate() {
+      if (!self.sync) return;
+
       self.syncManager = SyncManagerFactory.get(self.sync);
       self.syncManager!.register(self as Instance<typeof SyncableMixin>);
       (self as Instance<typeof SyncableMixin>).registerSyncHandlers();
@@ -117,6 +119,7 @@ const SyncableMixin = types
     },
 
     syncSend(event: SyncEvent, data: SyncData) {
+      if (!self.sync) return;
       self.syncManager!.sync(event, data, self.name);
     },
 
