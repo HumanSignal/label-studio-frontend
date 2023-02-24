@@ -157,7 +157,9 @@ const Model = types
         bottom: self.y + self.height,
       };
 
-      return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation) : bboxCoords;
+      if (self.rotation === 0) return bboxCoords;
+
+      return rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y: self.y }, self.parent.whRatio);
     },
     get canvasX() {
       return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;

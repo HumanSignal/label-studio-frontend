@@ -1087,6 +1087,14 @@ const CoordsCalculations = types.model()
   }))
   // putting this transforms to views forces other getters to be recalculated on resize
   .views(self => ({
+    // helps to calculate rotation because internal coords are square and real one usually aren't
+    get whRatio() {
+      // don't need this for absolute coords
+      if (!isFF(FF_DEV_3793)) return 1;
+
+      return self.stageWidth / self.stageHeight;
+    },
+
     // @todo scale?
     canvasToInternalX(n) {
       return n / self.stageWidth * 100;
