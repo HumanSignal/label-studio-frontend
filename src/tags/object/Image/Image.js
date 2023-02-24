@@ -466,7 +466,9 @@ const Model = types.model({
     const manager = ToolsManager.getInstance({ name: self.name });
     const env = { manager, control: self, object: self };
 
-    function afterCreate() {
+    function createImageEntities() {
+      if (!self.store.task) return;
+    
       const parsedValue = self.multiImage
         ? self.parsedValueList
         : self.parsedValue;
@@ -505,6 +507,8 @@ const Model = types.model({
 
       if (self.rotatecontrol)
         manager.addTool('RotateTool', Tools.Rotate.create({}, env));
+
+      createImageEntities();
     }
 
     function getToolsManager() {
@@ -513,7 +517,6 @@ const Model = types.model({
 
     return {
       afterAttach,
-      afterCreate,
       getToolsManager,
     };
   }).extend((self) => {
