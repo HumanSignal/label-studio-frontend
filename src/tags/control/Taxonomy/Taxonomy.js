@@ -282,7 +282,7 @@ const HtxTaxonomy = observer(({ item }) => {
   };
 
   return (
-    <div style={{ ...style, ...visibleStyle }}>
+    <div className="taxonomy" style={{ ...style, ...visibleStyle }}>
       {(item.loading && isFF(FF_DEV_3617)) ? (
         <div className="lsf-taxonomy">
           <Spin size="small"/>
