@@ -20,6 +20,7 @@ import './Choices/Choises.styl';
 import './Choice';
 import DynamicChildrenMixin from '../../mixins/DynamicChildrenMixin';
 import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from '../../utils/feature-flags';
+import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 
 const { Option } = Select;
 
@@ -101,7 +102,6 @@ const Model = types
   .model({
     pid: types.optional(types.string, guidGenerator),
 
-    readonly: types.optional(types.boolean, false),
     visible: types.optional(types.boolean, true),
 
     type: 'choices',
@@ -202,15 +202,22 @@ const Model = types
     },
 
     setResult(values) {
-      self.tiedChildren.forEach(choice => choice.setSelected(
-        !choice.isSkipped && values?.some?.((value) => {
-          if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
-            return value.length === choice.resultValue.length && value.every?.((val, idx) => val === choice.resultValue?.[idx]);
-          } else {
-            return value === choice.resultValue;
-          }
-        }),
-      ));
+      self.tiedChildren.forEach(choice => {
+        let isSelected = false;
+
+        if (!choice.isSkipped) {
+          isSelected = values?.some?.((value) => {
+            if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
+              if (value.length !== choice.resultValue.length) return false;
+              return value.every?.((val, idx) => val === choice.resultValue?.[idx]);
+            } else {
+              return value === choice.resultValue;
+            }
+          });
+        }
+
+        choice.setSelected(isSelected);
+      });
     },
 
     // update result in the store with current selected choices
@@ -254,8 +261,6 @@ const Model = types
 
       if (obj.id) self.pid = obj.id;
 
-      self.readonly = obj.readonly;
-
       obj.value.choices.forEach(l => {
         const choice = self.findLabel(l);
 
@@ -273,6 +278,7 @@ const ChoicesModel = types.compose(
   SelectedModelMixin.props({ _child: 'ChoiceModel' }),
   RequiredMixin,
   PerRegionMixin,
+  ReadOnlyControlMixin,
   VisibilityMixin,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
   Model,
@@ -285,6 +291,7 @@ const ChoicesSelectLayout = observer(({ item }) => {
       style={{ width: '100%' }}
       value={item.selectedLabels.map(l => l._value)}
       mode={item.choice === 'multiple' ? 'multiple' : ''}
+      disabled={item.isReadOnly()}
       onChange={function(val) {
         if (Array.isArray(val)) {
           item.resetSelected();

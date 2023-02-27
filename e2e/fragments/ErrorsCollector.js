@@ -1,4 +1,3 @@
-/* global inject */
 const { I } = inject();
 
 function startErrorsCollector() {

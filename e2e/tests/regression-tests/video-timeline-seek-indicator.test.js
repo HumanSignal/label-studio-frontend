@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 const assert = require('assert');
 
 Feature('Video timeline seek indicator').tag('@regress');

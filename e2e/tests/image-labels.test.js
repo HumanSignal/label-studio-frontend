@@ -1,4 +1,3 @@
-/* global Data, Feature, locate */
 const assert = require('assert');
 const { toKebabCase } = require('strman');
 

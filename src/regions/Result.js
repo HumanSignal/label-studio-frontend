@@ -4,7 +4,7 @@ import Registry from '../core/Registry';
 import Tree from '../core/Tree';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { isDefined } from '../utils/utilities';
-import { FF_DEV_1170, FF_DEV_1372, isFF } from '../utils/feature-flags';
+import { FF_DEV_1372, isFF } from '../utils/feature-flags';
 
 const Result = types
   .model('Result', {
@@ -13,7 +13,7 @@ const Result = types
 
     score: types.maybeNull(types.number),
     // @todo to readonly mixin
-    // readonly: types.optional(types.boolean, false),
+    readonly: types.optional(types.boolean, false),
 
     // @why?
     // hidden: types.optional(types.boolean, false),
@@ -122,13 +122,15 @@ const Result = types
     },
 
     get editable() {
-      // @todo readonly is not defined here, so we have to fix this
-      // @todo and as it's used only in region list view of textarea get rid of this getter
-      if (isFF(FF_DEV_1170)) {
-        // The value of self.area.editable is always false whenever region is locked, so we need to check if it's explicitly readonly on the area.
-        return !self.readonly && self.annotation.editable === true && !self.area.readonly;
-      }
-      return !self.readonly && self.annotation.editable === true && self.area.editable === true;
+      throw new Error('Not implemented');
+    },
+
+    isReadOnly() {
+      return self.readonly || self.area.isReadOnly();
+    },
+
+    isSelfReadOnly() {
+      return self.readonly;
     },
 
     getSelectedString(joinstr = ' ') {
@@ -297,7 +299,7 @@ const Result = types
 
       if (typeof score === 'number') data.score = score;
 
-      if (!self.editable) data.readonly = true;
+      if (self.isSelfReadOnly()) data.readonly = true;
 
       return data;
     },
@@ -353,7 +355,7 @@ const Result = types
      * Remove region
      */
     deleteRegion() {
-      if (!self.annotation.editable) return;
+      if (self.annotation.isReadOnly()) return;
 
       self.unselectRegion();
 
@@ -381,4 +383,4 @@ const Result = types
     },
   }));
 
-export default types.compose(Result, AnnotationMixin);
+export default types.compose('Result', Result, AnnotationMixin);
