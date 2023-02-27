@@ -758,6 +758,29 @@ class ChannelD3 extends React.Component {
       translateY = min / diffY;
 
       this.y.domain([min, max]);
+      
+    } else {
+      const ylim = item.parent?.ylim
+
+      if (ylim !== '') {
+        // use custom range
+        const updatedylim = item.parent?.updatedYLim
+
+        if (updatedylim == null) {
+          const datarange = ylim.split(',');
+
+          let min = 0
+          let max = 1
+
+          if (datarange[0] !== '') min = Number(datarange[0]);
+          if (datarange[1] !== '') max = Number(datarange[1]);
+
+          this.y.domain([min, max]);
+          
+        } else {
+          this.y.domain([updatedylim[0], updatedylim[1]]);
+        }
+      }
     }
 
     // zoomStep - zoom level when we need to switch between optimized and original data
