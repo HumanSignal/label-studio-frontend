@@ -36,6 +36,7 @@ const _Tool = types
       const c = self.control;
 
       if (c.type === 'keypointlabels' && !c.isSelected) return;
+      if (self.annotation.isReadOnly()) return;
 
       const keyPoint = self.createRegion({
         x,

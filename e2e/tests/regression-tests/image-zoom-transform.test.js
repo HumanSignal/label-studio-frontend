@@ -1,4 +1,3 @@
-/* global Feature, Scenario */
 const assert = require('assert');
 
 Feature('Zoomed transforms').tag('@regress');
@@ -44,7 +43,7 @@ Scenario('Transforming the region on the border of zoomed image', async ({ I, La
   AtImageView.clickAt(width - 20, height / 2 + 10);
   AtSidebar.seeSelectedRegion();
   // Rotate by the rotator anchor (heuristically calculated coordinates)
-  AtImageView.drawThroughPoints([[width - 20, height / 2 - 50], [width / 2, height / 2]],  'steps', 50);
+  AtImageView.drawThroughPoints([[width - 20, height / 2 - 50], [width / 2, height / 2]], 'steps', 50);
 
   const results = await LabelStudio.serialize();
 
@@ -95,7 +94,7 @@ Scenario('Transforming the region on the border of zoomed image after window res
   I.resizeWindow(wWidth, wHeight);
 
   // If the canvas does not match the image, this action will rotate the region
-  AtImageView.drawThroughPoints([[width - 20, height / 2 - 50], [width / 2, height / 2 - 50]],  'steps', 50);
+  AtImageView.drawThroughPoints([[width - 20, height / 2 - 50], [width / 2, height / 2 - 50]], 'steps', 50);
 
   const results = await LabelStudio.serialize();
 

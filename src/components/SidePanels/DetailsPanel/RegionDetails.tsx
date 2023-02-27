@@ -129,7 +129,7 @@ export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
   };
 
   useEffect(() => {
-    if (editMode &&  input.current) {
+    if (editMode && input.current) {
       const { current } = input;
 
       current.focus();

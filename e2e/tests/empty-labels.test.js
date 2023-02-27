@@ -1,5 +1,3 @@
-/* global Feature, Scenario, locate */
-
 const Helpers = require('./helpers');
 const Asserts = require('../utils/asserts');
 const assert = require('assert');

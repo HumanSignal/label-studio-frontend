@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 Feature('Audio Regions');
 
 const config = `

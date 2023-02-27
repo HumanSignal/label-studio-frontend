@@ -1,4 +1,3 @@
-/* global Feature, Scenario */
 const assert = require('assert');
 
 Feature('Nested choices');
@@ -17,7 +16,7 @@ Scenario('Switching states at nested choices', async ({ I, LabelStudio })=>{
       <Choice value="Option 2.1" />
       <Choice value="Option 2.2" />
       <Choice value="Option 2.3" />
-    </Choice>  
+    </Choice>
   </Choices>
 </View>`,
     data: {
@@ -87,11 +86,11 @@ Scenario('Nested choices states from the annotation', async ({ I, LabelStudio })
     <Choice value="Header 2">
       <Choice value="Option 2.1" />
       <Choice value="Option 2.2" />
-    </Choice>  
+    </Choice>
     <Choice value="Header 3">
       <Choice value="Option 3.1" />
       <Choice value="Option 3.2" />
-    </Choice>  
+    </Choice>
   </Choices>
 </View>`,
     data: {

@@ -73,7 +73,7 @@ const RegionItemContent = observer(({ idx, item, setDraggable }) => {
             )}
           </Elem>
 
-          {!item.editable && <Badge count={'ro'} style={{ backgroundColor: '#ccc' }}/>}
+          {item.isReadOnly() && <Badge count={'ro'} style={{ backgroundColor: '#ccc' }}/>}
 
           {item.score && (
             <Elem
