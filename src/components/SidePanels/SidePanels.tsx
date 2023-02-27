@@ -243,11 +243,26 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
     requestAnimationFrame(() => {
       const panelAlignment = panelData[name]?.alignment;
-      const panelsOnSameAlignment = Object.keys(panelData)
-        .filter((panelName) => panelData[panelName as PanelType]?.alignment === panelAlignment);
 
-      panelsOnSameAlignment.forEach((panelName) => {
-        updatePanel(panelName as PanelType, {
+      if (isFF(FF_DEV_3873)) {
+        const panelsOnSameAlignment = Object.keys(panelData)
+          .filter((panelName) => panelData[panelName as PanelType]?.alignment === panelAlignment);
+  
+        panelsOnSameAlignment.forEach((panelName) => {
+          updatePanel(panelName as PanelType, {
+            top,
+            left,
+            relativeTop: top / viewportSize.current.height * 100,
+            relativeLeft: left / viewportSize.current.width * 100,
+            storedLeft: undefined,
+            storedTop: undefined,
+            maxHeight,
+            width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
+            height: clamp(h, DEFAULT_PANEL_HEIGHT, maxHeight),
+          });
+        });
+      } else {
+        updatePanel(name, {
           top,
           left,
           relativeTop: top / viewportSize.current.height * 100,
@@ -258,7 +273,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
           width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
           height: clamp(h, DEFAULT_PANEL_HEIGHT, maxHeight),
         });
-      });
+      }
     });
   }, [updatePanel, panelMaxWidth, panelData]);
 
