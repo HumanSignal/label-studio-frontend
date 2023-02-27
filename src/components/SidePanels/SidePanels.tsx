@@ -242,19 +242,25 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     const maxHeight = viewportSize.current.height - top;
 
     requestAnimationFrame(() => {
-      updatePanel(name, {
-        top,
-        left,
-        relativeTop: top / viewportSize.current.height * 100,
-        relativeLeft: left / viewportSize.current.width * 100,
-        storedLeft: undefined,
-        storedTop: undefined,
-        maxHeight,
-        width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
-        height: clamp(h, DEFAULT_PANEL_HEIGHT, maxHeight),
+      const panelAlignment = panelData[name]?.alignment;
+      const panelsOnSameAlignment = Object.keys(panelData)
+        .filter((panelName) => panelData[panelName as PanelType]?.alignment === panelAlignment);
+
+      panelsOnSameAlignment.forEach((panelName) => {
+        updatePanel(panelName as PanelType, {
+          top,
+          left,
+          relativeTop: top / viewportSize.current.height * 100,
+          relativeLeft: left / viewportSize.current.width * 100,
+          storedLeft: undefined,
+          storedTop: undefined,
+          maxHeight,
+          width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
+          height: clamp(h, DEFAULT_PANEL_HEIGHT, maxHeight),
+        });
       });
     });
-  }, [updatePanel, panelMaxWidth]);
+  }, [updatePanel, panelMaxWidth, panelData]);
 
   const onSnap = useCallback((name: PanelType) => {
     setPositioning(false);
@@ -355,8 +361,6 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       else if (alignment === 'left') result.left.push(panel);
       else if (alignment === 'right') result.right.push(panel);
     }
-    
-    console.log('result', result);
 
     return result;
   }, [panelData, commonProps, panelsHidden, sidepanelsCollapsed, positioning, panelMaxWidth]);
