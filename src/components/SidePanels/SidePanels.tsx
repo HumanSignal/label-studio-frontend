@@ -237,16 +237,18 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     setResizing(() => false);
   }, []);
 
+  const findPanelsOnSameSide = useCallback((panelAlignment : string) => {
+    return Object.keys(panelData)
+      .filter((panelName) => panelData[panelName as PanelType]?.alignment === panelAlignment);
+  }, [panelData]);
+
   const onResize = useCallback((name: PanelType, w: number, h: number, t: number, l: number) => {
     const { left, top } = normalizeOffsets(name, t, l);
     const maxHeight = viewportSize.current.height - top;
 
     requestAnimationFrame(() => {
-      const panelAlignment = panelData[name]?.alignment;
-
       if (isFF(FF_DEV_3873)) {
-        const panelsOnSameAlignment = Object.keys(panelData)
-          .filter((panelName) => panelData[panelName as PanelType]?.alignment === panelAlignment);
+        const panelsOnSameAlignment = findPanelsOnSameSide(panelData[name]?.alignment);
   
         panelsOnSameAlignment.forEach((panelName) => {
           updatePanel(panelName as PanelType, {
@@ -281,11 +283,19 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     setPositioning(false);
 
     if (!localSnap.current) return;
-
-    updatePanel(name, {
+    const bboxData: Partial<PanelBBox> = {
       alignment: localSnap.current,
       detached: false,
-    });
+    };
+
+    if (isFF(FF_DEV_3873)) {
+      const firstPanelOnNewSideName = findPanelsOnSameSide(localSnap.current).filter(panelName => panelName !== name)?.[0];
+
+      if(firstPanelOnNewSideName) {
+        bboxData.width = clamp(panelData[firstPanelOnNewSideName as PanelType]?.width, DEFAULT_PANEL_WIDTH, panelMaxWidth);
+      }
+    }
+    updatePanel(name, bboxData);
     setSnap(undefined);
   }, [updatePanel]);
 
