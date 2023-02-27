@@ -14,6 +14,7 @@ export const LockButton: FC<{
   style?: ButtonProps['style'],
   onClick: () => void,
 }> = observer(({ item, annotation, hovered, locked, hotkey, look, style, onClick }) => {
+  if (!item) return null;
   const isLocked = locked || item.isReadOnly() || annotation.isReadOnly();
   const isRegionReadonly = item.isReadOnly() && !locked;
 
