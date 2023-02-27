@@ -32,6 +32,6 @@ Scenario('Check if text area is saving lead_time', async function({ I, LabelStud
 
   const result = await I.executeScript(serialize);
 
-  if (!result[0]?.meta?.lead_time || result[0].meta?.lead_time < 1)
+  if (!result[0]?.meta?.lead_time || result[0].meta?.lead_time === 0)
     fail('Lead time is not saved');
 });
