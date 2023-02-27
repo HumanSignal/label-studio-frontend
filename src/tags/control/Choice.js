@@ -48,7 +48,7 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   style: types.maybeNull(types.string),
-  ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {} ),
+  ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {}),
 });
 
 const Model = types
@@ -141,7 +141,7 @@ const Model = types
     setSelected(val) {
       self._sel = val;
       if (!self.isLeaf) {
-        self.children.forEach((child)=>{
+        self.children.forEach((child) => {
           child.setSelected(val);
         });
       }
@@ -245,7 +245,7 @@ const HtxNewChoiceView = ({ item, store }) => {
           disabled={item.parent?.readonly}
           onChange={changeHandler}
         >
-          {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
+          {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> : item._value }
           {showHotkey && (<Hint>[{item.hotkey}]</Hint>)}
         </Elem>
         {!item.isLeaf ? (
