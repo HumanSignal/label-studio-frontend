@@ -1,6 +1,5 @@
 
 
-/* global Feature, Scenario, locate */
 const { initLabelStudio } = require('./helpers');
 
 Feature('Repeater paginate and scroll');

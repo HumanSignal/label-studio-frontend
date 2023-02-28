@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 const { initLabelStudio, serialize, convertToFixed, getSizeConvertor } = require('./helpers');
 
 const assert = require('assert');
@@ -99,12 +97,12 @@ const createShape = {
             [x + radius, y + radius],
           ],
         ],
-        result: { 
-          width: radius, 
-          height: radius, 
-          rotation: 0, 
-          x, 
-          y, 
+        result: {
+          width: radius,
+          height: radius,
+          rotation: 0,
+          x,
+          y,
         },
       };
     },

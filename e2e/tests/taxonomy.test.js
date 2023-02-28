@@ -1,4 +1,4 @@
-/* global Feature Scenario session Before */
+/* global Before */
 const assert = require('assert');
 
 Feature('Taxonomy');

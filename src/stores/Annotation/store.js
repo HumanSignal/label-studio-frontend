@@ -190,7 +190,7 @@ const AnnotationStoreModel = types
       if (self.root) return;
 
       if (!config) {
-        return (self.root = ViewModel.create({ id:'empty' }));
+        return (self.root = ViewModel.create({ id: 'empty' }));
       }
 
       // convert config to mst model

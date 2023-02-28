@@ -1,5 +1,3 @@
-/* global Feature, Scenario, session */
-
 const assert = require('assert');
 
 Feature('OCR scenarios');

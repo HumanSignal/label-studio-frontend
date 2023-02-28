@@ -1,5 +1,3 @@
-/* global Feature Scenario */
-
 Feature('Video meta').tag('@regress');
 
 const VIDEO = '/files/opossum_intro.webm';
