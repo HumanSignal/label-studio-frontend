@@ -1,4 +1,3 @@
-/* global Feature, Scenario */
 const assert = require('assert');
 
 Feature('Image width parameter').tag('@regress');

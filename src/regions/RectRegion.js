@@ -327,7 +327,7 @@ const HtxRectangleView = ({ item }) => {
 
   const eventHandlers = {};
 
-  if (!suggestion && item.editable) {
+  if (!suggestion && !item.isReadOnly()) {
     eventHandlers.onTransform = ({ target }) => {
       // resetting the skew makes transformations weird but predictable
       target.setAttr('skewX', 0);
@@ -395,7 +395,7 @@ const HtxRectangleView = ({ item }) => {
         scaleY={item.scaleY}
         opacity={1}
         rotation={item.rotation}
-        draggable={item.editable}
+        draggable={!item.isReadOnly()}
         name={`${item.id} _transformable`}
         {...eventHandlers}
         onMouseOver={() => {

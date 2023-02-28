@@ -1,4 +1,3 @@
-/* global Feature, Scenario */
 const assert = require('assert');
 
 Feature('Zoomed image displaying').tag('@regress');
@@ -55,4 +54,5 @@ Scenario('Image displaying precision.', async ({ I, LabelStudio, AtImageView, At
   });
 
   assert(Math.abs(fullStageHeight - imageHeight) < EPSILON, 'Heights of the stage and of the image should be equal for correct displaying.');
-});
+
+});

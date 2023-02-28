@@ -1,4 +1,6 @@
 import { DetailedHTMLProps, forwardRef, useCallback, useEffect, useRef, VideoHTMLAttributes } from 'react';
+import InfoModal from '../../components/Infomodal/Infomodal';
+
 
 type VirtualVideoProps = DetailedHTMLProps<VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement> & {
   canPlayType?: (supported: boolean) => void,
@@ -14,8 +16,11 @@ const canPlayUrl = async (url: string) => {
   });
 
   const fileType = fileMeta.headers.get('content-type');
+  const supported = !!fileType && video.canPlayType(fileType) !== '';
+  const modalExists = document.querySelector('.ant-modal');
 
-  return !!fileType && video.canPlayType(fileType) !== '';
+  if (!supported && !modalExists) InfoModal.error('There has been an error rendering your video, please check the format is supported');
+  return supported;
 };
 
 export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((props, ref) => {

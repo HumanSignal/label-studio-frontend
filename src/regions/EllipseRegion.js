@@ -279,6 +279,7 @@ const HtxEllipseView = ({ item }) => {
       <Ellipse
         x={item.x}
         y={item.y}
+        ref={el => item.setShapeRef(el)}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
         fill={regionStyles.fillColor}
@@ -359,7 +360,7 @@ const HtxEllipseView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
-        draggable={item.editable}
+        draggable={!item.isReadOnly()}
         listening={!suggestion}
       />
       <LabelOnEllipse item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth}/>

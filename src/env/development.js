@@ -66,13 +66,14 @@ import { TableCsv } from '../examples/table_csv';
 
 import { TimeSeries } from '../examples/timeseries';
 import { TimeSeriesSingle } from '../examples/timeseries_single';
+import { ClassificationMixed } from '../examples/classification_mixed';
 
 /**
  * Custom Data
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ImageList;
+const data = ImagePolygons;
 
 function getData(task) {
   if (task && task.data) {

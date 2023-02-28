@@ -441,7 +441,7 @@ const HtxPolygonView = ({ item }) => {
         name={name}
         onClick={e => item.handleLineClick({ e, flattenedPoints, insertIdx })}
         onMouseMove={e => {
-          if (!item.closed || !item.selected || !item.editable) return;
+          if (!item.closed || !item.selected || item.isReadOnly()) return;
 
           item.handleMouseMove({ e, flattenedPoints });
         }}
@@ -541,6 +541,7 @@ const HtxPolygonView = ({ item }) => {
     <Group
       key={item.id ? item.id : guidGenerator(5)}
       name={item.id}
+      ref={el => item.setShapeRef(el)}
       onMouseOver={() => {
         if (store.annotationStore.selected.relationMode) {
           item.setHighlight(true);
@@ -573,16 +574,16 @@ const HtxPolygonView = ({ item }) => {
         item.onClickRegion(e);
       }}
       {...dragProps}
-      draggable={item.editable && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
+      draggable={!item.isReadOnly() && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
       listening={!suggestion}
     >
       <LabelOnPolygon item={item} color={regionStyles.strokeColor} />
 
       {item.mouseOverStartPoint}
 
-      {item.points && item.closed ? <Poly item={item} colors={regionStyles} dragProps={dragProps} draggable={item.editable && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
-      {(item.points && item.editable) ? renderLines(item.points, item.closed) : null}
-      {(item.points && item.editable) ? renderCircles(item.points) : null}
+      {item.points && item.closed ? <Poly item={item} colors={regionStyles} dragProps={dragProps} draggable={!item.isReadOnly() && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
+      {(item.points && !item.isReadOnly()) ? renderLines(item.points, item.closed) : null}
+      {(item.points && !item.isReadOnly()) ? renderCircles(item.points) : null}
     </Group>
   );
 };

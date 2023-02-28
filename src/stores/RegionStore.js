@@ -124,6 +124,8 @@ const SelectionMap = types.model(
     highlight(region) {
       self.clear();
       self.select(region);
+
+      if (region?.type === 'polygonregion') return;
       region?.shapeRef?.parent?.canvas?._canvas?.scrollIntoView?.();
     },
   };
