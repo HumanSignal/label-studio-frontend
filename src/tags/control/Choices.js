@@ -43,6 +43,12 @@ const { Option } = Select;
  * </View>
  *
  * @example <caption>This config with dynamic labels</caption>
+ * <!--
+ *   `Choice`s can be loaded dynamically from task data. It should be an array of objects with attributes.
+ *   `html` can be used to show enriched content, it has higher priority than `value`, however `value` will be used in the exported result.
+ *   *ff_dev_2007_dev_2008_dynamic_tag_children_250322_short* should be enabled to use dynamic options.
+ *   *ff_dev_2007_rework_choices_280322_short* should be enabled to use `html` attribute.
+ * -->
  * <View>
  *   <Audio name="audio" value="$audio" />
  *   <Choices name="transcription" toName="audio" value="$variants" />
@@ -57,8 +63,6 @@ const { Option } = Select;
  *     ]
  *   }
  * } -->
- * 
- * <!-- html attribute has the higher priority and it will replace value, however value will be used in the exported result -->
  * 
  * @example <caption>is equivalent to this config</caption>
  * <View>
