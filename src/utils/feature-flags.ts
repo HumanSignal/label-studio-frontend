@@ -55,6 +55,7 @@ export const FF_DEV_2290 = 'ff_front_dev_2290_draft_in_annotation_history_short'
 // Make nested choices work according to the DES-107
 export const FF_DEV_2244 = 'ff_front_dev_2244_nested_choices_des_107_160522_short';
 
+// 3-point Rectangle tool to created rotated bboxes conveniently
 export const FF_DEV_2132 = 'ff_front_dev_2132_rotating_bounding_box';
 
 export const FF_DEV_1442 = 'ff_front_dev_1442_unselect_shape_on_click_outside_080622_short';
@@ -180,8 +181,7 @@ export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
-    [FF_DEV_1564_DEV_1565]: true,
-    [FF_DEV_1566]: true,
+    // could be used to explicitely set flags for testing, i.e. [FF_DEV_3793]: true
   };
 }
 
