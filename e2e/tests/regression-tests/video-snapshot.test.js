@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 const assert = require('assert');
 
 Feature( 'Video region snapshots').tag('@regress');

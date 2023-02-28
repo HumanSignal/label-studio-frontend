@@ -1,4 +1,3 @@
-/* global locate */
 const Helper = require('@codeceptjs/helper');
 
 const getPage = (h) => {

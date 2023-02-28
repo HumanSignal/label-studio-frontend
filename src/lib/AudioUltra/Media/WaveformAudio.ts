@@ -112,6 +112,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     delete this.decoderPromise;
     this.decoder?.destroy();
     delete this.decoder;
+    this.el?.removeEventListener('error', this.mediaReady);
     this.el?.removeEventListener('canplaythrough', this.mediaReady);
     this.el?.remove();
     delete this.el;
@@ -176,7 +177,6 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
     this.el = document.createElement('audio');
     this.el.preload = 'auto';
-    this.el.muted = true;
     this.el.setAttribute('data-testid', 'waveform-audio');
     this.el.style.display = 'none';
     document.body.appendChild(this.el);
@@ -198,9 +198,8 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
       if (this.mediaResolve) {
         this.mediaResolve?.();
         this.mediaResolve = undefined;
-        await this.forceBuffer();
-        this.invoke('canplay');
       }
+      this.invoke('canplay');
     }
   };
 
@@ -211,27 +210,6 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     if (!this.src || !this.el) return;
     
     this.el.src = this.src;
-    this.el.load();
-  }
-
-  /**
-   * In order for the audio to playback sound immediately, we need to force the browser to buffer the audio.
-   * This works by just playing the audio and then immediately pausing it.
-   */
-  private async forceBuffer() {
-    if (!this.el) return;
-
-    try {
-      await this.el.play();
-      this.el.pause();
-    } catch {
-      // ignore
-    } finally {
-      if (this.el) {
-        this.el.currentTime = 0;
-        this.el.muted = false;
-      }
-    }
   }
 
   private createAudioDecoder() {

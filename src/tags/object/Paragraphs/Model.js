@@ -144,7 +144,7 @@ const Model = types
     },
 
     isVisibleForAuthorFilter(data) {
-      if(!isFF(FF_DEV_2669)) return true;
+      if (!isFF(FF_DEV_2669)) return true;
 
       return !self.filterByAuthor.length || self.filterByAuthor.includes(data[self.namekey]);
     },
@@ -213,7 +213,7 @@ const Model = types
         self.isCurrentlyPlaying = true;
         self.muteSelfWhenSynced();
 
-        if(audioRef.current) {
+        if (audioRef.current) {
           audioRef.current.play();
         }
       },
@@ -222,7 +222,7 @@ const Model = types
         self.isCurrentlyPlaying = false;
         self.reset(false);
 
-        if(audioRef.current) {
+        if (audioRef.current) {
           audioRef.current.pause();
         }
       },

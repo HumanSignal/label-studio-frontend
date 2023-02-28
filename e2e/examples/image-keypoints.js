@@ -23,9 +23,9 @@ const result = [
     type: 'keypointlabels',
     origin: 'manual',
     value: {
-      x: 49.6,
-      y: 52.34042553191489,
-      width: 0.6666666666666666,
+      x: 49.60000000000001,
+      y: 52.34042553191488,
+      width: 0.6471078324314267,
       keypointlabels: ['Hello'],
     },
   },
