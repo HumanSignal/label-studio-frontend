@@ -7,6 +7,8 @@ import './AnnotationButton.styl';
 import { useCallback, useEffect, useState } from 'react';
 import { Dropdown } from '../../common/Dropdown/Dropdown';
 import { useDropdown } from '../../common/Dropdown/DropdownTrigger';
+import { isDefined } from '../../utils/utilities';
+
 // eslint-disable-next-line
 // @ts-ignore
 import { confirm } from '../../common/Modal/Modal';
@@ -89,11 +91,14 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
         },
       });
     }, []);
+  
     const isPrediction = entity.type === 'prediction';
+    const canSetAsTruth = isDefined(entity.pk);
+    const showGroundTruth = capabilities.groundTruthEnabled && !isPrediction && canSetAsTruth;
 
     return (
       <Block name="AnnotationButtonContextMenu">
-        {capabilities.groundTruthEnabled && !isPrediction && (
+        {showGroundTruth && (
           <Elem name='option' mod={{ groundTruth: true }} onClick={setGroundTruth}>
             {isGroundTruth ? (
               <>
