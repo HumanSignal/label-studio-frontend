@@ -138,6 +138,22 @@ export class Regions {
     return region;
   }
 
+  convertToSegment(id: string, render = true): Segment {
+    let segment = this.findRegion(id) as Segment;
+
+    const regionIndex = this.regions.findIndex(region => region.id === id);
+
+    segment = new Segment(segment.options, this.waveform, this.visualizer, this);
+
+    this.regions[regionIndex] = segment;
+
+    if (render) {
+      this.redraw();
+    }
+
+    return segment;
+  }
+
   updateRegion(options: RegionOptions, render = true) {
     if (!this.updateable || !options.id) return;
 
