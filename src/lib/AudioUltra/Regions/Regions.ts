@@ -214,7 +214,7 @@ export class Regions {
   }
 
   setLabels(labels?: string[]) {
-    if(labels) this.labels = labels;
+    if (labels) this.labels = labels;
   }
 
   resetDrawingColor() {

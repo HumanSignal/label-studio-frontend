@@ -657,7 +657,7 @@ export default types
         obj.reinitHistory();
       });
 
-      const current = as.annotations[as.annotations.length - 1];
+      const current = as.annotations.at(-1);
 
       if (current) current.setInitialValues();
 

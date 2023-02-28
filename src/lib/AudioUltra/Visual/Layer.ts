@@ -96,7 +96,7 @@ export class Layer extends Events<LayerEvents> {
     return this._context;
   }
 
-  get width(){
+  get width() {
     return this.canvas.width;
   }
 
@@ -110,7 +110,7 @@ export class Layer extends Events<LayerEvents> {
     }
   }
 
-  get height(){
+  get height() {
     return this.isVisible ? this.canvas.height : 0;
   }
 
@@ -147,7 +147,7 @@ export class Layer extends Events<LayerEvents> {
 
   setVisibility(visibility: boolean) {
     this.isVisible = visibility;
-    if(visibility){
+    if (visibility) {
       this.context.resetTransform();
     } else {
       this.clear();
@@ -284,7 +284,7 @@ export class Layer extends Events<LayerEvents> {
     this.context.strokeStyle = color;
   }
 
-  get strokeStyle(){
+  get strokeStyle() {
     if (!this.context) return '';
     return this.context.strokeStyle;
   }
@@ -294,7 +294,7 @@ export class Layer extends Events<LayerEvents> {
     this.context.fillStyle = color;
   }
 
-  get fillStyle(){
+  get fillStyle() {
     if (!this.context) return '';
     return this.context.fillStyle;
   }
@@ -304,7 +304,7 @@ export class Layer extends Events<LayerEvents> {
     this.context.lineWidth = width * this.pixelRatio;
   }
 
-  get lineWidth(){
+  get lineWidth() {
     if (!this.context) return 0;
     return this.context.lineWidth / this.pixelRatio;
   }
@@ -314,7 +314,7 @@ export class Layer extends Events<LayerEvents> {
     this.context.font = font;
   }
 
-  get font(){
+  get font() {
     if (!this.context) return '';
     return this.context.font;
   }

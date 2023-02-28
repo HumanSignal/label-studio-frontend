@@ -16,7 +16,8 @@ export const KonvaRegionMixin = types.model({})
       },
 
       get supportsTransform() {
-        return this._supportsTransform && this.editable && !this.hidden;
+        if (self.isReadOnly()) return false;
+        return this._supportsTransform && !this.hidden;
       },
     };
   })
@@ -27,7 +28,7 @@ export const KonvaRegionMixin = types.model({})
       checkSizes() {
         const { naturalWidth, naturalHeight, stageWidth: width, stageHeight: height } = self.parent;
 
-        if (width>1 && height>1) {
+        if (width > 1 && height > 1) {
           self.updateImageSize?.(width / naturalWidth, height / naturalHeight, width, height);
         }
       },
@@ -38,21 +39,29 @@ export const KonvaRegionMixin = types.model({})
 
         if (e) e.cancelBubble = true;
 
-        if (annotation.editable && annotation.relationMode) {
+        const selectAction = () => {
+          self._selectArea(additiveMode);
+          deferredSelectId = null;
+        };
+
+        if (!annotation.isReadOnly() && annotation.relationMode) {
           annotation.addRelation(self);
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
         } else {
+          // Skip double click emulation when there is nothing to focus
+          if (!self.perRegionFocusTarget) {
+            selectAction();
+            return;
+          }
+          // Double click emulation
           if (deferredSelectId) {
             clearTimeout(deferredSelectId);
             self.requestPerRegionFocus();
             deferredSelectId = null;
             annotation.selectArea(self);
           } else {
-            deferredSelectId = setTimeout(() => {
-              self._selectArea(additiveMode);
-              deferredSelectId = null;
-            }, 300);
+            deferredSelectId = setTimeout(selectAction, 300);
           }
         }
       },

@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 const assert = require('assert');
 const { omitBy } = require('./helpers');
 

@@ -1,15 +1,14 @@
-/* global inject, locate */
 const { I } = inject();
 
 class Taxonomy {
-  rootBase = '//div[./child::*[starts-with(./@class, "taxonomy--")]]';
-  input = '[class^="taxonomy--"]';
-  selectedList = '[class^="taxonomy__selected"]';
-  item = '[class^="taxonomy__item"]';
-  group = '[class^="taxonomy__grouping"]';
-  search = '[class^="taxonomy__search"]';
+  rootBase = '//div[./child::*[starts-with(./@class, "taxonomy")]]';
+  input = '[class*="taxonomy--"]';
+  selectedList = '[class*="taxonomy__selected"]';
+  item = '[class*="taxonomy__item"]';
+  group = '[class*="taxonomy__grouping"]';
+  search = '[class*="taxonomy__search"]';
   newItemField = '[name="taxonomy__add"]';
-  itemActions = '[class^="taxonomy__extra_actions"]';
+  itemActions = '[class*="taxonomy__extra_actions"]';
 
   constructor(config = {}) {
     if (config.index) {

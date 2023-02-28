@@ -124,7 +124,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
    * 1hour 44.1kHz 1ch = 1 * 60 * 60 * 44100 * 1 = 79380000 samples -> 2 chunks (39690000 samples/chunk)
    */
   getTotalChunks() {
-    return Math.ceil((this._duration  * this._channelCount) / DURATION_CHUNK_SIZE);
+    return Math.ceil((this._duration * this._channelCount) / DURATION_CHUNK_SIZE);
   }
 
   /**
@@ -142,7 +142,6 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
    */
   async init(arraybuffer: ArrayBuffer) {
     if (this.worker) return;
-
     this.worker = await getAudioDecoderWorker(DecodeAudioWasm, arraybuffer);
 
     info('decode:worker:ready', this.src);
@@ -172,7 +171,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     // Generate a unique id for this decode operation
     this.decodeId = Date.now();
     // This is a shared promise which will be observed by all instances of the same source
-    this.decodingPromise =  new Promise(resolve => (this.decodingResolve = resolve as any));
+    this.decodingPromise = new Promise(resolve => (this.decodingResolve = resolve as any));
 
     let splitChannels: SplitChannel | undefined = undefined;
 
@@ -271,10 +270,7 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
 
     const totalDuration = this.worker.duration;
 
-    // The duration start is offset by 1 second in the actual wasm decoder.
-    // This is to ensure we correctly capture the entire data set for the waveform,
-    // aligning it with the audio data when played back via the media element.
-    let durationOffset = -1;
+    let durationOffset = 0;
 
     while (true) {
       yield new Promise((resolve, reject) => {
