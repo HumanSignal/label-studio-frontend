@@ -10,6 +10,7 @@ import PerRegionMixin from '../../mixins/PerRegion';
 import RequiredMixin from '../../mixins/Required';
 import { isDefined } from '../../utils/utilities';
 import ControlBase from './Base';
+import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 
 /**
  * The Number tag supports numeric classification. Use to classify tasks using numbers.
@@ -167,18 +168,26 @@ const Model = types
     },
   }));
 
-const NumberModel = types.compose('NumberModel', ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, AnnotationMixin);
+const NumberModel = types.compose('NumberModel',
+  ControlBase,
+  TagAttrs,
+  Model,
+  RequiredMixin,
+  ReadOnlyControlMixin,
+  PerRegionMixin,
+  AnnotationMixin,
+);
 
 const HtxNumber = inject('store')(
   observer(({ item, store }) => {
     const visibleStyle = item.perRegionVisible() ? { display: 'flex', alignItems: 'center' } : { display: 'none' };
     const sliderStyle = item.slider ? { padding: '9px 0px', border: 0 } : {};
-    const disabled = !item.annotation.editable;
-      
+    const disabled = item.isReadOnly();
+
     return (
-      <div style={visibleStyle}>
+      <div className='lsf-number' style={visibleStyle}>
         <input
-          readOnly={disabled}
+          disabled={disabled}
           style={sliderStyle}
           type={item.slider ? 'range' : 'number'}
           name={item.name}

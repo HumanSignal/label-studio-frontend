@@ -46,7 +46,7 @@ const VideoRegionsPure = ({
   const [newRegion, setNewRegion] = useState();
   const [isDrawing, setDrawingMode] = useState(false);
 
-  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked && !reg.readonly);
+  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.isReadOnly());
   const listenToEvents = !locked;
 
   // if region is not in lifespan, it's not rendered,
@@ -142,7 +142,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseDown = e => {
-    if (e.target !== stageRef.current || !item.annotation?.editable) return;
+    if (e.target !== stageRef.current || item.annotation?.isReadOnly()) return;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
 
@@ -156,7 +156,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseMove = e => {
-    if (!isDrawing || !item.annotation?.editable) return false;
+    if (!isDrawing || item.annotation?.isReadOnly) return false;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
 
@@ -168,7 +168,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseUp = e => {
-    if (!isDrawing || !item.annotation?.editable) return false;
+    if (!isDrawing || item.annotation?.isReadOnly()) return false;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
 
@@ -219,12 +219,12 @@ const VideoRegionsPure = ({
           stageRef={stageRef}
         />
       </Layer>
-      {item.annotation?.editable && isDrawing ? (
+      {!item.annotation?.isReadOnly() && isDrawing ? (
         <Layer {...layerProps}>
           <SelectionRect {...newRegion}/>
         </Layer>
       ): null}
-      {item.annotation?.editable && selected?.length > 0 ? (
+      {!item.annotation?.isReadOnly() && selected?.length > 0 ? (
         <Layer>
           <Transformer
             ref={initTransform}
@@ -258,7 +258,7 @@ const RegionsLayer = observer(({
           reg={reg}
           frame={item.frame}
           workingArea={workinAreaCoordinates}
-          draggable={reg.editable && !isDrawing && !locked}
+          draggable={!reg.isReadOnly() && !isDrawing && !locked}
           selected={reg.selected || reg.inSelection}
           listening={!reg.locked}
           stageRef={stageRef}

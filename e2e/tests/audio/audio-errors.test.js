@@ -1,6 +1,3 @@
-
-/* global Feature, Scenario */
-
 Feature('Audio Errors');
 
 const config = `

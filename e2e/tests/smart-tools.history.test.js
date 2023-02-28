@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 Feature('Smart tools history');
 
 function paramsToAttrs(params) {
