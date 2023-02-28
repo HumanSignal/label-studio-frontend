@@ -1,5 +1,3 @@
-/* global Feature, Scenario, locate */
-
 const { initLabelStudio, serialize } = require('./helpers');
 const Utils = require('../examples/utils');
 const examples = [

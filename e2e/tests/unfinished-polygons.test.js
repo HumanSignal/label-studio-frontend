@@ -1,5 +1,3 @@
-/* global Feature, Scenario, DataTable Data */
-
 const { saveDraftLocally, getLocallySavedDraft } = require('./helpers');
 const assert = require('assert');
 

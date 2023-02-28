@@ -1,4 +1,3 @@
-/* global Feature, Scenario */
 const assert = require('assert');
 
 Feature('Dynamic choices').tag('@regress');

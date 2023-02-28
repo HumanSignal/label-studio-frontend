@@ -208,6 +208,7 @@ const HtxKeyPointView = ({ item }) => {
       <Circle
         x={item.canvasX}
         y={item.canvasY}
+        ref={el => item.setShapeRef(el)}
         // keypoint should always be the same visual size
         radius={Math.max(item.canvasWidth, 2) / item.parent.zoomScale}
         // fixes performance, but opactity+borders might look not so good
@@ -269,7 +270,7 @@ const HtxKeyPointView = ({ item }) => {
           item.onClickRegion(e);
         }}
         {...props}
-        draggable={item.editable}
+        draggable={!item.isReadOnly()}
         listening={!suggestion}
       />
       <LabelOnKP item={item} color={regionStyles.strokeColor}/>

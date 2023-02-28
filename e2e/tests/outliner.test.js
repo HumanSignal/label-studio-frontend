@@ -1,4 +1,3 @@
-/* global Feature Scenario */
 const assert = require('assert');
 const { centerOfBbox } = require('./helpers');
 
@@ -212,7 +211,7 @@ Scenario('Basic details', async ({ I, LabelStudio, AtOutliner, AtDetails }) => {
 
   I.say('Add line to meta');
   AtDetails.clickMeta();
-  fillByPressKeyDown( [['Shift', 'Enter'], ['3'], ['Enter']]);
+  fillByPressKeyDown([['Shift', 'Enter'], ['3'], ['Enter']]);
   AtDetails.seeMeta('3');
   AtDetails.dontSeeMeta('23');
 

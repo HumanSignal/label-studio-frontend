@@ -145,7 +145,7 @@ const _Tool = types
         brush.setDrawing(false);
         brush.endPath();
         if (isFirstBrushStroke) {
-          setTimeout(()=>{
+          setTimeout(() => {
             const newBrush = self.commitDrawingRegion();
 
             self.obj.annotation.selectArea(newBrush);

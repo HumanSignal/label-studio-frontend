@@ -11,6 +11,7 @@ import PerRegionMixin from '../../mixins/PerRegion';
 import RequiredMixin from '../../mixins/Required';
 import { isDefined } from '../../utils/utilities';
 import ControlBase from './Base';
+import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 
 const FORMAT_FULL = '%Y-%m-%dT%H:%M';
 const FORMAT_DATE = '%Y-%m-%d';
@@ -286,13 +287,14 @@ const DateTimeModel = types.compose(
   TagAttrs,
   Model,
   RequiredMixin,
+  ReadOnlyControlMixin,
   PerRegionMixin,
   AnnotationMixin,
 );
 
 const HtxDateTime = inject('store')(
   observer(({ item }) => {
-    const disabled = !item.annotation.editable;
+    const disabled = item.isReadOnly();
     const visibleStyle = item.perRegionVisible() ? { margin: '0 0 1em' } : { display: 'none' };
     const visual = {
       style: { width: 'auto', marginRight: '4px' },
@@ -325,7 +327,13 @@ const HtxDateTime = inject('store')(
     return (
       <div style={visibleStyle}>
         {item.showMonth && (
-          <select {...visual} name={item.name + '-date'} value={item.month} onChange={disabled ? undefined : item.onMonthChange}>
+          <select
+            {...visual}
+            name={item.name + '-date'}
+            disabled={disabled}
+            value={item.month}
+            onChange={disabled ? undefined : item.onMonthChange}
+          >
             <option value="">Month...</option>
             {item.months.map((month, index) => (
               <option key={month} value={index + 1}>
@@ -335,7 +343,13 @@ const HtxDateTime = inject('store')(
           </select>
         )}
         {item.showYear && (
-          <select {...visual} name={item.name + '-year'} value={item.year || ''} onChange={disabled ? undefined : item.onYearChange}>
+          <select
+            {...visual}
+            name={item.name + '-year'}
+            disabled={disabled}
+            value={item.year || ''}
+            onChange={disabled ? undefined : item.onYearChange}
+          >
             <option value="">Year...</option>
             {item.years.map(year => (
               <option key={year} value={year}>

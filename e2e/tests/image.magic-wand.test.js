@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 const {
   initLabelStudio,
   hasKonvaPixelColorAtPoint,

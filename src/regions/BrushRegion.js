@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Group, Image, Layer, Shape } from 'react-konva';
 import { observer } from 'mobx-react';
-import { getParent, getRoot, hasParent, types } from 'mobx-state-tree';
+import { getParent, getRoot, getType, hasParent, types } from 'mobx-state-tree';
 
 import Registry from '../core/Registry';
 import NormalizationMixin from '../mixins/Normalization';
@@ -65,8 +65,8 @@ const Points = types
   .actions(self => {
     return {
       updateImageSize(wp, hp,sw,sh) {
-        self.points = self.relativePoints.map((v,idx)=> {
-          const isX = !(idx%2);
+        self.points = self.relativePoints.map((v,idx) => {
+          const isX = !(idx % 2);
           const stageSize = isX ? sw : sh;
 
           return (v * stageSize) / 100;
@@ -88,7 +88,7 @@ const Points = types
 
       setPoints(points) {
         self.points = points.map((c, i) => c / (i % 2 === 0 ? self.parent.scaleX : self.parent.scaleY));
-        self.relativePoints = points.map((c, i)=> (c / (i % 2 === 0 ? self.stage.stageWidth : self.stage.stageHeight)* 100));
+        self.relativePoints = points.map((c, i) => (c / (i % 2 === 0 ? self.stage.stageWidth : self.stage.stageHeight) * 100));
         self.relativeStrokeWidth = self.strokeWidth / self.stage.stageWidth * 100;
       },
 
@@ -173,7 +173,7 @@ const Model = types
       },
       get bboxCoordsCanvas() {
         if (!self.imageData) {
-          const points = { x: [], y:[] };
+          const points = { x: [], y: [] };
 
           for (let i = 0; i in (self.touches?.[0]?.points ?? []); i += 2) {
             const curX = (self.touches?.[0]?.points ?? [])[i];
@@ -196,9 +196,9 @@ const Model = types
 
         imageBBox.x = imageBBox.x / scale - offsetX / scale;
         imageBBox.y = imageBBox.y / scale - offsetY / scale;
-        imageBBox.width = imageBBox.width/scale;
-        imageBBox.height = imageBBox.height/scale;
-        return  {
+        imageBBox.width = imageBBox.width / scale;
+        imageBBox.height = imageBBox.height / scale;
+        return {
           left: imageBBox.x,
           top: imageBBox.y,
           right: imageBBox.x + imageBBox.width,
@@ -497,7 +497,6 @@ const HtxBrushView = ({ item }) => {
 
   // Prepare brush stroke from RLE with current stroke color
   useEffect(async function() {
-
     // Two possible ways to draw an image from precreated data:
     // - rle - An RLE encoded RGBA image
     // - maskDataURL - an RGBA mask encoded as an image data URL that can be directly placed into
@@ -536,7 +535,7 @@ const HtxBrushView = ({ item }) => {
   ]);
 
   // Drawing hit area by shape color to detect interactions inside the Konva
-  const imageHitFunc = useMemo(()=>{
+  const imageHitFunc = useMemo(() => {
     let imageData;
 
     return (context, shape) => {
@@ -569,7 +568,7 @@ const HtxBrushView = ({ item }) => {
   highlightedRef.current.highlight = highlightedRef.current.highlighted ? highlightOptions : { shadowOpacity: 0 };
 
   // Caching drawn brush strokes (from the rle field and from the touches field) for bounding box calculations and highlight applying
-  const drawCallback = useMemo(()=>{
+  const drawCallback = useMemo(() => {
     let done = false;
 
     return async function() {
@@ -666,7 +665,10 @@ const HtxBrushView = ({ item }) => {
               return;
             }
 
-            if (item.parent.getToolsManager().findSelectedTool()) return;
+            const tool = item.parent.getToolsManager().findSelectedTool();
+            const isMoveTool = tool && getType(tool).name === 'MoveTool';
+
+            if (tool && !isMoveTool) return;
 
             if (store.annotationStore.selected.relationMode) {
               stage.container().style.cursor = 'default';
@@ -708,7 +710,7 @@ const HtxBrushView = ({ item }) => {
         </Group>
       </Layer>
       <Layer
-        id={item.cleanId+'_labels'}
+        id={item.cleanId + '_labels'}
         ref={ref => {
           if (ref) {
             ref.canvas._canvas.style.opacity = item.opacity;

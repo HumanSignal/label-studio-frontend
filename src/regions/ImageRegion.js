@@ -1,6 +1,7 @@
 import { getParent, getRoot, types } from 'mobx-state-tree';
 import { guidGenerator } from '../core/Helpers';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
+import { ReadOnlyRegionMixin } from '../mixins/ReadOnlyMixin';
 
 // @todo remove file
 const RegionMixin = types
@@ -9,8 +10,6 @@ const RegionMixin = types
     pid: types.optional(types.string, guidGenerator),
 
     score: types.maybeNull(types.number),
-
-    readonly: types.optional(types.boolean, false),
 
     hidden: types.optional(types.boolean, false),
 
@@ -34,12 +33,12 @@ const RegionMixin = types
       return getParent(self);
     },
 
-    get editable() {
-      return self.readonly === false && self.annotation.editable === true;
-    },
-
     get labelsState() {
       return self.states.find(s => s.type.indexOf('labels') !== -1);
+    },
+
+    isReadOnly() {
+      return self.locked || self.readonly || self.annotation.readOnly();
     },
 
     hasLabelState(labelValue) {
@@ -127,7 +126,7 @@ const RegionMixin = types
      * Remove region
      */
     deleteRegion() {
-      if (!self.annotation.editable) return;
+      if (self.annotation.isReadOnly()) return;
 
       self.unselectRegion();
 
@@ -155,4 +154,4 @@ const RegionMixin = types
     },
   }));
 
-export default types.compose(RegionMixin, AnnotationMixin);
+export default types.compose(RegionMixin, ReadOnlyRegionMixin, AnnotationMixin);

@@ -1,4 +1,3 @@
-/* global inject, locate */
 const { centerOfBbox } = require('../tests/helpers');
 const { I } = inject();
 
@@ -157,7 +156,7 @@ class Panel {
 module.exports = new Panel();
 module.exports.PANEL = {
   OUTLINER: '.lsf-outliner',
-  DETAILS:  '.lsf-details',
+  DETAILS: '.lsf-details',
 };
 module.exports.usePanel = (panel) => {
   return new Panel(panel);

@@ -1,4 +1,4 @@
-/* global actor performActionBegin performActionEnd */
+/* global  performActionBegin performActionEnd */
 // in this file you can append custom step methods to 'I' object
 
 module.exports = function() {

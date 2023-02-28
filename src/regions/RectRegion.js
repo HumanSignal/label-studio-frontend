@@ -150,7 +150,7 @@ const Model = types
       return self.object;
     },
     get bboxCoords() {
-      const bboxCoords= {
+      const bboxCoords = {
         left: self.x,
         top: self.y,
         right: self.x + self.width,
@@ -202,8 +202,8 @@ const Model = types
       return Math.abs(h);
     },
 
-    isAboveTheLine(a, b, c){
-      return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) < 0;
+    isAboveTheLine(a, b, c) {
+      return ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) < 0;
     },
 
     draw(x, y, points) {
@@ -211,7 +211,7 @@ const Model = types
 
       if (points.length === 1) {
         self.width = self.getDistanceBetweenPoints({ x, y }, self);
-        self.rotation = self.rotationAtCreation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
+        self.rotation = self.rotationAtCreation = Math.atan2(y - self.y, x - self.x) * (180 / Math.PI);
       } else if (points.length === 2) {
         const { y: firstPointY, x: firstPointX } = points[0];
         const { y: secondPointY, x: secondPointX } = points[1];
@@ -361,7 +361,7 @@ const HtxRectangleView = ({ item }) => {
 
   const eventHandlers = {};
 
-  if (!suggestion && item.editable) {
+  if (!suggestion && !item.isReadOnly()) {
     eventHandlers.onTransform = ({ target }) => {
       // resetting the skew makes transformations weird but predictable
       target.setAttr('skewX', 0);
@@ -429,7 +429,7 @@ const HtxRectangleView = ({ item }) => {
         scaleY={item.scaleY}
         opacity={1}
         rotation={item.rotation}
-        draggable={item.editable}
+        draggable={!item.isReadOnly()}
         name={`${item.id} _transformable`}
         {...eventHandlers}
         onMouseOver={() => {

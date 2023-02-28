@@ -154,7 +154,7 @@ const Model = types
       return getRoot(self);
     },
     get bboxCoords() {
-      const bboxCoords= {
+      const bboxCoords = {
         left: self.x - self.radiusX,
         top: self.y - self.radiusY,
         right: self.x + self.radiusX,
@@ -318,6 +318,7 @@ const HtxEllipseView = ({ item }) => {
       <Ellipse
         x={item.canvasX}
         y={item.canvasY}
+        ref={el => item.setShapeRef(el)}
         radiusX={item.canvasRadiusX}
         radiusY={item.canvasRadiusY}
         fill={regionStyles.fillColor}
@@ -398,7 +399,7 @@ const HtxEllipseView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
-        draggable={item.editable}
+        draggable={!item.isReadOnly()}
         listening={!suggestion}
       />
       <LabelOnEllipse item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth}/>
