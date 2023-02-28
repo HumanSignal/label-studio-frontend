@@ -27,7 +27,7 @@ import PersistentStateMixin from '../../mixins/PersistentState';
 import './TimeSeries/Channel';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 
-import MultiRangeSlider from "../../components/multiRangeSlider/MultiRangeSlider";
+import MultiRangeSlider from '../../components/multiRangeSlider/MultiRangeSlider';
 
 /**
  * The `TimeSeries` tag can be used to label time series data. Read more about Time Series Labeling on [the time series template page](../templates/time_series.html).
@@ -855,7 +855,7 @@ const HtxTimeSeriesViewRTS = ({ item }) => {
             min={Number(datarange[0])}
             max={Number(datarange[1])}
             onChange={({ min, max }) => {
-              item.updatedYLim = [ min, max ];
+              item.updatedYLim = [min, max];
             }}
           />
         </div>
