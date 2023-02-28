@@ -177,6 +177,8 @@ export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
+    [FF_DEV_1564_DEV_1565]: true,
+    [FF_DEV_1566]: true,
   };
 }
 

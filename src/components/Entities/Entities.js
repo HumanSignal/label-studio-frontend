@@ -44,7 +44,7 @@ export default observer(({
             <RadioGroup.Button value="labels">Labels</RadioGroup.Button>
           </RadioGroup>
 
-          {annotation.editable && !annotation.readonly && (
+          {annotation.isReadOnly() && (
             <Tooltip title="Delete All Regions">
               <Button
                 look="danger"

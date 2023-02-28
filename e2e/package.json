@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "test": "codeceptjs run",
+    "test:ui": "codecept-ui run",
     "test:local": "HEADLESS=true yarn test",
     "test:parallel": "codeceptjs run-workers",
     "test:ci": "HEADLESS=true COVERAGE=true yarn run test:parallel",

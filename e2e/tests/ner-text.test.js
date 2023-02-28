@@ -1,5 +1,3 @@
-/* global Feature, Scenario, locate */
-
 const { initLabelStudio, serialize, selectText } = require('./helpers');
 
 const assert = require('assert');

@@ -214,6 +214,10 @@ const SettingsModel = types
     setVideoHopSize(value) {
       self.videoHopSize = value;
     },
+
+    setProperty(name, value) {
+      self[name] = value;
+    },
   }));
 
 export default SettingsModel;
