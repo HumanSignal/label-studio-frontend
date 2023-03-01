@@ -120,6 +120,10 @@
   margin-bottom: 80px;
 }
 
+.withPagination {
+  padding-top: 30px; // pagination height 24px + 6px offset
+}
+
 .gallery {
   position: absolute;
   bottom: -80px;
@@ -144,4 +148,12 @@
       border-color: #1890ff;
     }
   }
+}
+
+.pagination {
+  position: absolute;
+  top: 0;
+  display: flex;
+  width: 100%;
+  padding-right: 40px; // for toolbar
 }
