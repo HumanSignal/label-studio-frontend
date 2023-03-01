@@ -87,6 +87,17 @@ module.exports.config = {
         exclude: ['**/common/**', '**/components/**'],
       },
     },
+    errorsCollector: {
+      require: './plugins/errorsCollector.js',
+      enabled: true,
+      uncaughtErrorFilter: {
+        interrupt: true,
+      },
+      consoleErrorFilter: {
+        // @todo switch it on to feel the pain
+        display: false,
+      },
+    },
     screenshotOnFail: {
       enabled: true,
     },
