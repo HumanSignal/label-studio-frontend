@@ -92,9 +92,9 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
       });
     }, []);
     const isPrediction = entity.type === 'prediction';
-    const isDraft = isDefined(entity.pk);
+    const isDraft = !isDefined(entity.pk);
     const showGroundTruth = capabilities.groundTruthEnabled && !isPrediction && !isDraft;
-
+    
     return (
       <Block name="AnnotationButtonContextMenu">
         {showGroundTruth && (
