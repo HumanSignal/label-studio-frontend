@@ -184,7 +184,7 @@ export class MediaLoader extends Destructable {
         }
       });
 
-      xhr.open('GET', url);
+      xhr.open('GET', url, true);
       xhr.send();
     });
   }
