@@ -189,6 +189,7 @@ function getFeatureFlags() {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
     [FF_DEV_1564_DEV_1565]: true,
     [FF_DEV_1566]: true,
+    [FF_DEV_2715]: true,
   };
 }
 

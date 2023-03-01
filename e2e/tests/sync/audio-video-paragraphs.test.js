@@ -25,7 +25,7 @@ const config = `
 `;
 
 const data = {
-  url: 'https://app.heartex.ai/static/samples/opossum_snow.mp4',
+  url: '/files/opossum_snow.mp4',
   text: [
     {
       'end': 5.6,
