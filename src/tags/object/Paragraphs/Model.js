@@ -173,11 +173,11 @@ const Model = types
 
       if (!audio) return;
 
-      self.syncSend(event, {
+      self.syncSend({
         playing: !audio.paused,
         ...data,
         time: audio.currentTime,
-      });
+      }, event);
     },
 
     registerSyncHandlers() {
@@ -250,7 +250,7 @@ const Model = types
           audioStopHandler = null;
         }
 
-        const isPlaying = isFFDev2461 ? self.isCurrentlyPlaying : !audio.paused;
+        const isPlaying = !audio.paused;
 
         if (isPlaying && currentId === idx) {
           audio.pause();

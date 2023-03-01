@@ -122,9 +122,7 @@ Scenario('Check audio clip is played when using the new sync option', async func
 
   const [{ currentTime: seekAudioPlusTime }, { currentTime: seekParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
 
-  const expectedSeekTime = Math.round(seekAudioPlusTime);
-
   assert.notEqual(seekAudioPlusTime, 0);
-  assert.equal(expectedSeekTime, Math.round(seekParagraphAudioTime), `Expected seek time to be ${expectedSeekTime} but was ${Math.round(seekParagraphAudioTime)}`);
+  assert.equal(seekAudioPlusTime, seekParagraphAudioTime, `Expected seek time to be ${seekAudioPlusTime} but was ${seekParagraphAudioTime}`);
 });
 

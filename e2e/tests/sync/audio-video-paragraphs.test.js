@@ -6,7 +6,7 @@ Feature('Sync: Audio Video Paragraphs');
 
 const config = `
 <View>
-  <Video name="video" value="$video" sync="v1" />
+  <Video name="video" value="$url" sync="v1" />
   <Audio name="audio" value="$url" hotkey="space" sync="v1" />
   <Header value="Sentiment"/>
   <ParagraphLabels name="label" toName="text">
@@ -25,7 +25,7 @@ const config = `
 `;
 
 const data = {
-  url: 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3',
+  url: 'https://app.heartex.ai/static/samples/opossum_snow.mp4',
   text: [
     {
       'end': 5.6,
@@ -129,7 +129,7 @@ Scenario('Play/pause is synced between audio, video and paragraphs when interact
     const [{ paused: audioPaused }, { paused: paragraphAudioPaused }] = await AtAudioView.getCurrentAudio();
     const [{ paused: videoPaused }] = await AtVideoView.getCurrentVideo();
 
-    assert.equal(audioPaused, videoPaused);
+    assert.equal(audioPaused, videoPaused, `Audio paused=${audioPaused} and Video paused=${videoPaused} are not equal`);
     assert.equal(audioPaused, paragraphAudioPaused);
     assert.equal(paragraphAudioPaused, false);
   }
