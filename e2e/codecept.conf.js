@@ -98,6 +98,14 @@ module.exports.config = {
         display: false,
       },
     },
+    stepLogsModifier: {
+      require: './plugins/stepLogsModifier.js',
+      enabled: true,
+      modifyStepLogs: [{
+        stepNameMatcher: 'executeScript',
+        rule: 'hideFunction',
+      }],
+    },
     screenshotOnFail: {
       enabled: true,
     },
