@@ -163,14 +163,14 @@ Scenario('Can select a region below a hidden region', async function({ I, LabelS
 
   // create a new region
   I.pressKey('1');
-  AtAudioView.dragAudioRegion(50, 80);
+  AtAudioView.dragAudioElement(50, 80);
   I.pressKey('u');
 
   AtSidebar.seeRegions(1);
 
   // create a new region above the first one
   I.pressKey('2');
-  AtAudioView.dragAudioRegion(49, 81);
+  AtAudioView.dragAudioElement(49, 81);
   I.pressKey('u');
 
   AtSidebar.seeRegions(2);
