@@ -89,7 +89,7 @@ const PolygonPoint = types
      * @param {*} ev
      */
     closeStartPoint() {
-      if (!self.annotation.editable) return;
+      if (self.annotation.isReadOnly()) return;
       if (self.parent.closed) return;
 
       if (self.parent.mouseOverStartPoint) {
@@ -277,7 +277,7 @@ const PolygonPointView = observer(({ item, name }) => {
         }}
         {...dragOpts}
         {...startPointAttr}
-        draggable={item.parent.editable && draggable}
+        draggable={!item.parent.isReadOnly() && draggable}
       />
     );
   } else {
@@ -295,7 +295,7 @@ const PolygonPointView = observer(({ item, name }) => {
         dragOnTop={false}
         {...dragOpts}
         {...startPointAttr}
-        draggable={item.parent.editable}
+        draggable={!item.parent.isReadOnly()}
       />
     );
   }

@@ -1,5 +1,3 @@
-/* global inject */
-/* global locate */
 const { I } = inject();
 
 const Helpers = require('../tests/helpers');
@@ -76,7 +74,7 @@ module.exports = {
    * @param {number} steps
    * @returns {Promise<void>}
    */
-  async clickSeekStepForward(steps= 1) {
+  async clickSeekStepForward(steps = 1) {
     for (let i = 0; i < steps; i++) {
       I.click(this._seekStepForwardSelector);
     }
@@ -87,7 +85,7 @@ module.exports = {
    * @param {number} steps
    * @returns {Promise<void>}
    */
-  async clickSeekStepBackward(steps= 2) {
+  async clickSeekStepBackward(steps = 2) {
     for (let i = 0; i < steps; i++) {
       I.click(this._seekStepBackwardSelector);
     }

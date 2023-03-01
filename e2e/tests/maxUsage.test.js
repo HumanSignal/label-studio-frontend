@@ -1,5 +1,3 @@
-/* global Feature, DataTable, Data */
-
 Feature('Max usage');
 
 const IMAGE = 'https://user.fm/files/v2-901310d5cb3fa90e0616ca10590bacb3/spacexmoon-800x501.jpg';
@@ -129,7 +127,7 @@ Data(maxUsageImageToolsDataTable).Scenario('Max usages of separated labels in Im
       'value': {
         'x': k,
         'y': 1,
-        'width':0.6666666666666666,
+        'width': 0.6666666666666666,
         'labels': [
           'Label_1',
         ],
@@ -295,11 +293,11 @@ Data(maxUsageDataTable).Scenario('Max usages of labels in Paragraphs on region c
 
   for (let k = 0; k < maxUsage; k++) {
     I.pressKey('1');
-    AtParagraphs.selectTextByOffset(k+1, 0, 3);
+    AtParagraphs.selectTextByOffset(k + 1, 0, 3);
     I.pressKey('u');
   }
   I.pressKey('1');
-  AtParagraphs.selectTextByOffset(maxUsage+1, 0, 3);
+  AtParagraphs.selectTextByOffset(maxUsage + 1, 0, 3);
 
   I.see(`You can't use Label_1 more than ${maxUsage} time(s)`);
 });

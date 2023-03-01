@@ -1,5 +1,3 @@
-/* global Feature, Scenario, locate */
-
 const { initLabelStudio, serialize, waitForImage } = require('./helpers');
 
 const assert = require('assert');
@@ -93,6 +91,7 @@ Scenario('Image with perRegion tags', async function({ I, AtImageView, AtSidebar
   I.amOnPage('/');
   I.executeScript(initLabelStudio, params);
 
+
   AtImageView.waitForImage();
   I.executeScript(waitForImage);
   AtSidebar.seeRegions(1);
@@ -121,7 +120,7 @@ Scenario('Image with perRegion tags', async function({ I, AtImageView, AtSidebar
   assert.deepStrictEqual(result[1].value.text, ['blah', 'another']);
 
   // delete first deserialized text and check that only "another" left
-  I.click(locate('[aria-label=delete]').inside('[data-testid="textarea-region"]'));
+  I.click(locate('[aria-label="Delete Region"]').inside('[data-testid="textarea-region"]'));
   I.dontSeeElement(locate('mark').withText('blah'));
   I.seeElement(locate('mark').withText('another'));
 
@@ -131,7 +130,7 @@ Scenario('Image with perRegion tags', async function({ I, AtImageView, AtSidebar
   assert.deepStrictEqual(result[1].value.text, ['another']);
 
   // delete also "another" region
-  I.click(locate('[aria-label=delete]').inside('[data-testid="textarea-region"]'));
+  I.click(locate('[aria-label="Delete Region"]').inside('[data-testid="textarea-region"]'));
   // there are should be no texts left at all
   I.dontSeeElement(locate('mark'));
 

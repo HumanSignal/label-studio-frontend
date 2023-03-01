@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 Feature('Hotkeys').tag('@regress');
 
 const AUDIO_URL = 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3';

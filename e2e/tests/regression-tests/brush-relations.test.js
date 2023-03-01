@@ -1,4 +1,3 @@
-/* global Feature, Scenario */
 const assert = require('assert');
 
 Feature('Brush relations').tag('@regress');

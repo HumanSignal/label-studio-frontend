@@ -36,7 +36,9 @@ const Model = types
       const { type } = parseTypeAndOption(self.valuetype);
 
       if (type === 'json') {
-        return Object.keys(self._value).map(k => {
+        return Object.keys(self._value).sort((a, b) => {
+          return a.toLowerCase().localeCompare(b.toLowerCase());
+        }).map(k => {
           let val = self._value[k];
 
           if (typeof val === 'object') val = JSON.stringify(val);

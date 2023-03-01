@@ -74,7 +74,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   private lastRenderedZoom = 0;
   private lastRenderedWidth = 0;
   private lastRenderedAmp = 0;
-  private lastRenderedScrollLeftPx= 0;
+  private lastRenderedScrollLeftPx = 0;
   private _container!: HTMLElement;
   private _loader!: HTMLElement;
 
@@ -443,7 +443,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     const paddingTop = this.padding?.top ?? 0;
     const paddingLeft = this.padding?.left ?? 0;
     const zero = height * channelNumber + (defaults.timelinePlacement as number ? this.reservedSpace : 0);
-    const y = zero + paddingTop +  height / 2;
+    const y = zero + paddingTop + height / 2;
     let total = 0;
 
     layer.save();
@@ -582,7 +582,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     return this.width * this.zoom;
   }
 
-  get container(){
+  get container() {
     if (this._container) return this._container;
 
     let result: HTMLElement | null = null;
@@ -711,7 +711,7 @@ export class Visualizer extends Events<VisualizerEvents> {
     if (!this.layers.has(name)) throw new Error(`Layer ${name} does not exist.`);
     const layer = this.layers.get(name);
 
-    if(layer) {
+    if (layer) {
       this.invoke('layerRemoved', [layer]);
       layer.off('layerUpdated', this.invokeLayersUpdated);
       layer.remove();
@@ -796,7 +796,7 @@ export class Visualizer extends Events<VisualizerEvents> {
         x <= (playhead.x + playhead.width + playheadPadding) &&
           y >= playHeadTop &&
           y <= height) {
-        if(!playhead.isHovered) {
+        if (!playhead.isHovered) {
           playhead.invoke('mouseEnter', [e]);
         }
         this.draw(true);

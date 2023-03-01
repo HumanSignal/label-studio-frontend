@@ -7,6 +7,8 @@ import { Region } from '../../../lib/AudioUltra/Regions/Region';
 import { Segment } from '../../../lib/AudioUltra/Regions/Segment';
 import { Regions } from '../../../lib/AudioUltra/Regions/Regions';
 import { Block } from '../../../utils/bem';
+import { ErrorMessage } from '../../../components/ErrorMessage/ErrorMessage';
+
 import './view.styl';
 
 interface AudioUltraProps {
@@ -41,6 +43,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       onPlaying: item.onPlaying,
       onSeek: item.onSeek,
       onRateChange: item.onRateChange,
+      onError: item.onError,
       regions: {
         createable: !item.readonly,
         updateable: !item.readonly,
@@ -140,6 +143,9 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
 
   return (
     <Block name="audio-tag">
+      {item.errors?.map((error: any, i: any) => (
+        <ErrorMessage key={`err-${i}`} error={error} />
+      ))}
       <div ref={(el) => (rootRef.current = el)}></div>
       <Controls
         position={controls.currentTime}

@@ -34,6 +34,7 @@ interface TagProps {
   style?: CSSProperties;
   size?: 'small' | 'compact';
   solid?: boolean;
+  children?: React.ReactNode;
 }
 
 export const Tag: FC<TagProps> = ({ className, style, size, color, solid = false, children }) => {

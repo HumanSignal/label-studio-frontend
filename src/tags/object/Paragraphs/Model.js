@@ -139,7 +139,7 @@ const Model = types
     },
 
     isVisibleForAuthorFilter(data) {
-      if(!isFF(FF_DEV_2669)) return true;
+      if (!isFF(FF_DEV_2669)) return true;
 
       return !self.filterByAuthor.length || self.filterByAuthor.includes(data[self.namekey]);
     },
