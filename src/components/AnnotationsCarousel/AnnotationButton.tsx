@@ -91,34 +91,42 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
         },
       });
     }, []);
-  
     const isPrediction = entity.type === 'prediction';
-    const canSetAsTruth = isDefined(entity.pk);
-    const showGroundTruth = capabilities.groundTruthEnabled && !isPrediction && canSetAsTruth;
+    const isDraft = isDefined(entity.pk);
+    const showGroundTruth = capabilities.groundTruthEnabled && !isPrediction && !isDraft;
 
     return (
       <Block name="AnnotationButtonContextMenu">
         {showGroundTruth && (
-          <Elem name='option' mod={{ groundTruth: true }} onClick={setGroundTruth}>
+          <Elem name="option" mod={{ groundTruth: true }} onClick={setGroundTruth}>
             {isGroundTruth ? (
               <>
-                <LsStar color='#FFC53D' width={iconSize} height={iconSize} /> Unset
+                <LsStar color="#FFC53D" width={iconSize} height={iconSize} /> Unset
               </>
             ) : (
               <>
                 <LsStarOutline width={iconSize} height={iconSize} /> Set
               </>
-            )} as Ground Truth
+            )}
+            as Ground Truth
           </Elem>
         )}
-        <Elem name='option' mod={{ duplicate: true }} onClick={duplicateAnnotation}>
-          <Elem name='icon'><IconDuplicate width={20} height={24} /></Elem> Duplicate Annotation
-        </Elem>
+        {!isDraft && (
+          <Elem name="option" mod={{ duplicate: true }} onClick={duplicateAnnotation}>
+            <Elem name="icon">
+              <IconDuplicate width={20} height={24} />
+            </Elem>
+            Duplicate Annotation
+          </Elem>
+        )}
         {capabilities.enableAnnotationDelete && (
           <>
-            <Elem name='seperator'></Elem>
-            <Elem name='option' mod={{ delete: true }} onClick={deleteAnnotation}>
-              <Elem name='icon'><IconTrashRect width={14} height={18} /></Elem> Delete Annotation
+            <Elem name="seperator"></Elem>
+            <Elem name="option" mod={{ delete: true }} onClick={deleteAnnotation}>
+              <Elem name="icon">
+                <IconTrashRect width={14} height={18} />
+              </Elem>{' '}
+              Delete Annotation
             </Elem>
           </>
         )}
