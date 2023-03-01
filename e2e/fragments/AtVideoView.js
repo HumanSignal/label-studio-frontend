@@ -1,5 +1,3 @@
-/* global inject */
-/* global locate */
 const { I } = inject();
 
 /**

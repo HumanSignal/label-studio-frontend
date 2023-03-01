@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 const assert = require('assert');
 
 Feature('Richtext cases').tag('@regress');
@@ -51,7 +49,7 @@ Scenario('The selection in degenerate cases', async ({ I, LabelStudio, AtSidebar
   });
   AtSidebar.seeRegions(0);
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(0, 2);
+  await AtRichText.selectTextByGlobalOffset(0, 2);
   const errors = await ErrorsCollector.grabErrors();
 
   if (errors.length) {
@@ -98,7 +96,7 @@ Scenario('Trim spaces around the word', async ({ I, LabelStudio, AtSidebar, AtRi
   AtRichText.dblClickOnWord('four');
   AtSidebar.see('four');
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(3,8);
+  await AtRichText.selectTextByGlobalOffset(3,8);
   AtSidebar.see('two');
   const result = await LabelStudio.serialize();
 
@@ -124,7 +122,7 @@ Scenario('Trim spaces with BRs', async ({ I, LabelStudio, AtSidebar, AtRichText,
   });
   AtSidebar.seeRegions(0);
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(5,14);
+  await AtRichText.selectTextByGlobalOffset(5,14);
   AtSidebar.see('BRs');
   const result = await LabelStudio.serialize();
 
@@ -149,10 +147,10 @@ Scenario('Overlap checks', async ({ I, LabelStudio, AtSidebar, AtRichText, Error
   });
   AtSidebar.seeRegions(0);
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(0,4);
+  await AtRichText.selectTextByGlobalOffset(0,4);
   AtSidebar.see('Half');
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(4,8);
+  await AtRichText.selectTextByGlobalOffset(4,8);
   I.seeNumberOfElements(AtRichText.locate('span.htx-highlight'), 2);
   const errors = await ErrorsCollector.grabErrors();
 
@@ -174,7 +172,7 @@ Scenario('Non-standard characters in words', async ({ I, LabelStudio, AtSidebar,
   });
   AtSidebar.seeRegions(0);
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(0,5);
+  await AtRichText.selectTextByGlobalOffset(0,5);
   AtSidebar.seeRegions(1);
   AtSidebar.see('Somé');
   const errors = await ErrorsCollector.grabErrors();

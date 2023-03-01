@@ -198,7 +198,7 @@ export class Regions {
   }
 
   setLabels(labels?: string[]) {
-    if(labels) this.labels = labels;
+    if (labels) this.labels = labels;
   }
 
   resetDrawingColor() {
@@ -215,6 +215,10 @@ export class Regions {
 
   get selected() {
     return this.regions.filter(region => region.selected);
+  }
+
+  get visible() {
+    return this.regions.filter(region => region.visible);
   }
 
   isOverrideKeyPressed(e: MouseEvent) {
@@ -386,7 +390,7 @@ export class Regions {
   };
 
   private findRegionUnderCursor(e: MouseEvent) {
-    const region = findLast(this.regions, region => {
+    const region = findLast(this.visible, region => {
       return this.cursorInRegion(e, region);
     });
 
