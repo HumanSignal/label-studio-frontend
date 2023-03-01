@@ -73,6 +73,9 @@ const SelectionMap = types.model(
       } else {
         updateResultsFromSelection();
       }
+
+      // hook for side effects after region selected
+      region.object?.afterRegionSelected?.(region);
     },
     _updateResultsFromSelection() {
       self._updateResultsFromRegions(self.selected.values());
