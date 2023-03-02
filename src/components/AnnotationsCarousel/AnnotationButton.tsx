@@ -101,11 +101,11 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
           <Elem name="option" mod={{ groundTruth: true }} onClick={setGroundTruth}>
             {isGroundTruth ? (
               <>
-                <LsStar color="#FFC53D" width={iconSize} height={iconSize} /> Unset
+                <LsStar color="#FFC53D" width={iconSize} height={iconSize} /> {'Unset ' }
               </>
             ) : (
               <>
-                <LsStarOutline width={iconSize} height={iconSize} /> Set
+                <LsStarOutline width={iconSize} height={iconSize} />{'Set '}
               </>
             )}
             as Ground Truth
