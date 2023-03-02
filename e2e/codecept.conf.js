@@ -26,6 +26,9 @@ module.exports.config = {
       windowSize: '1200x900',
       waitForNavigation: 'networkidle',
       browser: 'chromium',
+      chromium: process.env.CHROMIUM_EXECUTABLE_PATH ? {
+        executablePath: process.env.CHROMIUM_EXECUTABLE_PATH,
+      } : {},
       trace: false,
       keepTraceForPassedTests: false,
     },
