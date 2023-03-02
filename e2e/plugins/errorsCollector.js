@@ -131,9 +131,6 @@ module.exports = function(config) {
       this.handleMessage(UNCAUGHT_ERROR, exception);
     });
   };
-  ErrorCollector.prototype.stop = function() {
-
-  };
 
   function ErrorCollectors() {
     this.errors = [];
@@ -149,9 +146,6 @@ module.exports = function(config) {
     this.collectors[page._guid] = new ErrorCollector(page, this);
   };
   ErrorCollectors.prototype.reset = function() {
-    for (const collector of Object.values(this.collectors)) {
-      collector.stop();
-    }
     this.collectors = {};
     this.errors = [];
   };
