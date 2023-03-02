@@ -50,7 +50,7 @@ module.exports = function(config) {
       step.toCode = replaceArgsStepToCode.bind(step, replacer);
     },
     [HIDE_FUNCTION_RULE](step) {
-      const functionName = this.args?.[0]?.name || '(anonymous)';
+      const functionName = step.args?.[0]?.name || '<anonymous>';
 
       step.toString = replaceArgsStepToString.bind(step, functionName);
       step.toCode = replaceArgsStepToCode.bind(step, functionName);
@@ -61,7 +61,7 @@ module.exports = function(config) {
     return `${this.prefix}${this.actor} ${this.humanize()} ${replacer}${this.suffix}`;
   }
   function replaceArgsStepToCode(replacer) {
-    return `${this.prefix}${this.actor}.${this.name}${replacer}${this.suffix}`;
+    return `${this.prefix}${this.actor}.${this.name}(${replacer})${this.suffix}`;
   }
 
   function testStep(matcher, stepName) {
