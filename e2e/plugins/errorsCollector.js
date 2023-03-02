@@ -132,7 +132,7 @@ module.exports = function(config) {
     });
   };
   ErrorCollector.prototype.stop = function() {
-    console.log('STOP');
+
   };
 
   function ErrorCollectors() {

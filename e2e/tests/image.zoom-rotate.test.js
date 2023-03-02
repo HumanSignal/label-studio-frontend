@@ -213,6 +213,7 @@ Data(windowSizesTable).Scenario('Rotation with different window sizes', async fu
   assert(Math.abs(canvasSize.height - imageSize.height) < 1);
   for (const rotate of rotationQueue) {
     I.click(locate(`[aria-label='rotate-${rotate}']`));
+    I.seeElement('[alt="LS"]');
     const rotatedCanvasSize = await AtImageView.getCanvasSize();
     const rotatedImageSize = await AtImageView.getImageFrameSize();
 
