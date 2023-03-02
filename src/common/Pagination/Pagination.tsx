@@ -1,10 +1,13 @@
-import {
+import React, {
   ChangeEvent,
   FC,
   forwardRef,
   KeyboardEvent,
+  useCallback,
   useState
 } from 'react';
+import { Hotkey } from '../../core/Hotkey';
+import { useHotkey } from '../../hooks/useHotkey';
 import { Block, Elem } from '../../utils/bem';
 import './Pagination.styl';
 
@@ -14,7 +17,14 @@ interface PaginationProps {
   totalPages: number;
   pageSizeOptions?: [];
   pageSizeSelectable: boolean;
+  outline?: boolean;
+  align?: 'left' | 'right';
   size?: 'small' | 'medium' | 'large';
+  noPadding?: boolean;
+  hotkey?: {
+    prev?: string,
+    next?: string,
+  };
   onChange?: (pageNumber: number, maxPerPage?: number | string) => void;
 }
 
@@ -32,7 +42,11 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
   currentPage,
   pageSize,
   totalPages,
+  outline = true,
+  align = 'right',
+  noPadding = false,
   pageSizeSelectable = true,
+  hotkey,
   onChange,
 }) => {
   const [inputMode, setInputMode] = useState(false);
@@ -48,7 +62,7 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
   };
 
   return (
-    <Block name="pagination" mod={{ size }}>
+    <Block name="pagination" mod={{ size, outline, align, noPadding }}>
       <Elem name="navigation">
         <>
           <NavigationButton
@@ -61,7 +75,7 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
         <NavigationButton
           mod={['arrow-left']}
           onClick={() => onChange?.(currentPage - 1)}
-
+          hotkey={hotkey?.prev}
           disabled={currentPage === 1}
         />
         <Elem name="input">
@@ -113,6 +127,7 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
           mod={['arrow-right']}
           onClick={() => onChange?.(currentPage + 1)}
           disabled={currentPage === totalPages}
+          hotkey={hotkey?.next}
         />
         <>
           <Elem name="divider" />
@@ -134,16 +149,34 @@ export const Pagination: FC<PaginationProps> = forwardRef<any, PaginationProps>(
   );
 });
 
-const NavigationButton: FC<{
-  onClick: (e: React.MouseEvent<HTMLDivElement>) => void,
+type NavigationButtonProps = {
+  onClick: () => void,
   mod: string[],
   disabled?: boolean,
-}> = (props) => {
-  const mod = Object.fromEntries(props.mod.map(m => [m, true]));
+  hotkey?: string,
+};
 
-  mod.disabled = props.disabled === true;
+const NavigationButton: FC<NavigationButtonProps> = ({
+  mod,
+  disabled,
+  hotkey,
+  onClick,
+}) => {
+  const buttonMod = Object.fromEntries(mod.map(m => [m, true]));
 
-  return (
-    <Elem name="btn" mod={mod} onClick={props.onClick}/>
+  const actionHandler = useCallback(() => {
+    if (!disabled) onClick();
+  }, [disabled, onClick]);
+
+  buttonMod.disabled = disabled === true;
+
+  useHotkey(hotkey, actionHandler);
+
+  return hotkey ? (
+    <Hotkey.Tooltip name={hotkey}>
+      <Elem name="btn" mod={buttonMod} onClick={actionHandler}/>
+    </Hotkey.Tooltip>
+  ) : (
+    <Elem name="btn" mod={buttonMod} onClick={actionHandler}/>
   );
 };
