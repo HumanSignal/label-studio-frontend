@@ -32,9 +32,9 @@ const configSpeech = `
               displayMode="region-list"/>
     <Choices name="sentiment" toName="audio" showInline="true"
              perRegion="true" whenTagName="label" whenLabelValue="Speech">
-        <Choice value="Positive" html="&lt;span style='font-size: 45px; vertical-align: middle;'&gt; &#128512; &lt;/span&gt;"/>
-        <Choice value="Neutral" html="&lt;span style='font-size: 45px; vertical-align: middle;'&gt; &#128528; &lt;/span&gt;"/>
-        <Choice value="Negative" html="&lt;span style='font-size: 45px; vertical-align: middle;'&gt; &#128577; &lt;/span&gt;"/>
+        <Choice value="Positive"/>
+        <Choice value="Neutral"/>
+        <Choice value="Negative"/>
     </Choices>                               
   </View>
 `;
@@ -106,7 +106,7 @@ Scenario('Check if regions are selected', async function({ I, LabelStudio, AtAud
   AtSidebar.dontSeeSelectedRegion();
 });
 
-Scenario('Check if there are ghost regions', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+Scenario('Check if multiple regions are working changing labels', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
   LabelStudio.setFeatureFlags({
     ff_front_dev_2715_audio_3_280722_short: true,
   });
@@ -136,7 +136,6 @@ Scenario('Check if there are ghost regions', async function({ I, LabelStudio, At
     // creating a new region
     AtAudioView.clickAt((40 * i) + 20);
     AtSidebar.seeSelectedRegion();
-    AtAudioView.dontSeeGhostRegion();
     I.pressKey('u');
   }
 
@@ -211,4 +210,45 @@ Scenario('Delete region by pressing delete hotkey', async function({ I, LabelStu
   I.pressKey('1');
 
   AtSidebar.seeRegions(1);
+});
+
+Scenario('Check if there are ghost regions', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+  LabelStudio.setFeatureFlags({
+    ff_front_dev_2715_audio_3_280722_short: true,
+  });
+  I.amOnPage('/');
+
+  LabelStudio.init(paramsSpeech);
+
+  await AtAudioView.waitForAudio();
+
+  I.waitForDetached('loading-progress-bar', 10);
+
+  await AtAudioView.lookForStage();
+
+  // creating a new region
+  I.pressKey('1');
+  AtAudioView.dragAudioRegion(300,80);
+  I.pressKey('u');
+
+
+  // creating a ghost region
+  I.pressKey('1');
+  AtAudioView.dragAudioRegion(160,80, false);
+  I.pressKey('1');
+  I.wait(1);
+  I.pressMouseUp();
+  I.wait(1);
+
+  // checking if the created region is selected
+  AtAudioView.clickAt(310);
+  AtSidebar.seeSelectedRegion();
+
+  // trying to select the ghost region, if there is no ghost region, the region will keep selected
+  // as ghost region is not selectable and impossible to change the label, the created region will be deselected if there is a ghost region created.
+  AtAudioView.clickAt(170);
+  I.pressKey('2');
+  AtSidebar.seeSelectedRegion();
+
+  AtSidebar.seeRegions(2);
 });
