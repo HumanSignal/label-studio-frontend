@@ -1,5 +1,6 @@
 import { getEnv, getParent, getRoot, getType, types } from 'mobx-state-tree';
 import { guidGenerator } from '../core/Helpers';
+import { isDefined } from '../utils/utilities';
 import { AnnotationMixin } from './AnnotationMixin';
 import { ReadOnlyRegionMixin } from './ReadOnlyMixin';
 
@@ -26,6 +27,8 @@ const RegionsMixin = types
       'prediction-changed',
       'manual',
     ]), 'manual'),
+
+    item_index: types.maybeNull(types.number),
   })
   .volatile(() => ({
     // selected: false,
@@ -70,6 +73,10 @@ const RegionsMixin = types
       return true;
     },
 
+    get currentImageEntity() {
+      return self.parent.findImageEntity(self.item_index ?? 0);
+    },
+
     getConnectedDynamicRegions(selfExcluding) {
       const { regions = [] } = getRoot(self).annotationStore?.selected || {};
 
@@ -93,6 +100,11 @@ const RegionsMixin = types
       setShapeRef(ref) {
         if (!ref) return;
         self.shapeRef = ref;
+      },
+
+      setItemIndex(index) {
+        if (!isDefined(index)) throw new Error('Index must be provided for', self);
+        self.item_index = index;
       },
 
       beforeDestroy() {
@@ -133,8 +145,8 @@ const RegionsMixin = types
         degree = (360 + degree) % 360;
         // transform origin is (w/2, w/2) for ccw rotation
         // (h/2, h/2) for cw rotation
-        const w = self.parent.stageWidth;
-        const h = self.parent.stageHeight;
+        const w = self.currentImageEntity.stageWidth;
+        const h = self.currentImageEntity.stageHeight;
         // actions: translate to fit origin, rotate, translate back
         //   const shift = size / 2;
         //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
@@ -154,7 +166,7 @@ const RegionsMixin = types
       },
 
       convertXToPerc(x) {
-        return (x * 100) / self.parent.stageWidth;
+        return (x * 100) / self.currentImageEntity.stageWidth;
       },
 
       convertYToPerc(y) {
@@ -162,11 +174,11 @@ const RegionsMixin = types
       },
 
       convertHDimensionToPerc(hd) {
-        return (hd * (self.scaleX || 1) * 100) / self.parent.stageWidth;
+        return (hd * (self.scaleX || 1) * 100) / self.currentImageEntity.stageWidth;
       },
 
       convertVDimensionToPerc(vd) {
-        return (vd * (self.scaleY || 1) * 100) / self.parent.stageHeight;
+        return (vd * (self.scaleY || 1) * 100) / self.currentImageEntity.stageHeight;
       },
 
       // update region appearence based on it's current states, for

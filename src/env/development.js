@@ -29,6 +29,7 @@ import { VideoAudio } from '../examples/video_audio';
  * Image
  */
 import { ImageBbox } from '../examples/image_bbox';
+import { ImageList } from '../examples/image_list';
 import { ImageBboxLarge } from '../examples/image_bbox_large';
 import { ImageKeyPoint } from '../examples/image_keypoints';
 import { ImageMultilabel } from '../examples/image_multilabel';
@@ -71,7 +72,6 @@ import { ClassificationMixed } from '../examples/classification_mixed';
  * Custom Data
  */
 // import { AllTypes } from "../examples/all_types";
-
 
 const data = ImagePolygons;
 

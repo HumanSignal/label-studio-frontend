@@ -20,7 +20,9 @@ import ResizeObserver from '../../utils/resize-observer';
 import { debounce } from '../../utils/debounce';
 import Constants from '../../core/Constants';
 import { fixRectToFit } from '../../utils/image';
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_4081, isFF } from '../../utils/feature-flags';
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, isFF } from '../../utils/feature-flags';
+import { Pagination } from '../../common/Pagination/Pagination';
+import { Image } from './Image';
 
 Konva.showWarnings = false;
 
@@ -217,7 +219,7 @@ const TransformerBack = observer(({ item }) => {
               y: e.target.getAttr('y'),
             };
           }}
-          dragBoundFunc={(pos) => {
+          dragBounFunc={(pos) => {
             let { x, y } = pos;
             const { top, left, right, bottom } = item.selectedRegionsBBox;
             const { stageHeight, stageWidth } = item;
@@ -654,7 +656,11 @@ export default observer(
     handleError = () => {
       const { item, store } = this.props;
       const cs = store.annotationStore;
-      const message = getEnv(store).messages.ERR_LOADING_HTTP({ attr: item.value, error: '', url: item._value });
+      const message = getEnv(store).messages.ERR_LOADING_HTTP({
+        attr: item.value,
+        error: '',
+        url: item.currentSrc,
+      });
 
       cs.addErrors([errorBuilder.generalError(message)]);
     };
@@ -806,13 +812,15 @@ export default observer(
       if (!isAlive(item)) return null;
 
       // TODO fix me
-      if (!store.task || !item._value) return null;
+      if (!store.task || !item.currentSrc) return null;
 
       const regions = item.regs;
 
       const containerStyle = {};
 
       const containerClassName = styles.container;
+
+      const paginationEnabled = isFF(FF_LSDV_4583) && item.valuelist;
 
       if (getRoot(item).settings.fullscreen === false) {
         containerStyle['maxWidth'] = item.maxwidth;
@@ -836,6 +844,8 @@ export default observer(
         item.images.length > 1 ? styles.withGallery : styles.wrapper,
       ];
 
+      if (paginationEnabled) wrapperClasses.push(styles.withPagination);
+
       const {
         brushRegions,
         shapeRegions,
@@ -853,11 +863,38 @@ export default observer(
         suggestedShape: suggestedShapeRegions,
       });
 
+      const [toolsReady, stageLoading] = isFF(FF_LSDV_4583_6) ? [true, false] : [
+        item.hasTools, item.stageWidth <= 1,
+      ];
+
+      const imageIsLoaded = (
+        item.imageIsLoaded
+      ) || !isFF(FF_LSDV_4583_6);
+
       return (
         <ObjectTag
           item={item}
           className={wrapperClasses.join(' ')}
         >
+          {paginationEnabled ? (
+            <div className={styles.pagination}>
+              <Pagination
+                size='small'
+                outline={false}
+                align="left"
+                noPadding
+                hotkey={{
+                  prev: 'image:prev',
+                  next: 'image:next',
+                }}
+                currentPage={item.currentImage + 1}
+                totalPages={item.parsedValueList.length}
+                onChange={n => item.setCurrentImage(n - 1)}
+                pageSizeSelectable={false}
+              />
+            </div>
+          ) : null}
+
           <div
             ref={node => {
               item.setContainerRef(node);
@@ -873,28 +910,41 @@ export default observer(
               className={styles.filler}
               style={{ width: '100%', marginTop: item.fillerHeight }}
             />
-            <div
-              className={[
-                styles.frame,
-                ...imagePositionClassnames,
-              ].join(' ')}
-              style={item.canvasSize}
-            >
-              <img
+
+            {isFF(FF_LSDV_4583_6) ? (
+              <Image
                 ref={ref => {
                   item.setImageRef(ref);
                   this.imageRef.current = ref;
                 }}
-                loading={(isFF(FF_DEV_3077) && !item.lazyoff) && 'lazy'}
-                style={item.imageTransform}
-                src={item._value}
-                onLoad={item.updateImageSize}
-                onError={this.handleError}
-                crossOrigin={item.imageCrossOrigin}
-                alt="LS"
+                usedValue={item.usedValue}
+                imageEntity={item.currentImageEntity}
+                imageTransform={item.imageTransform}
+                updateImageSize={item.updateImageSize}
+                size={item.canvasSize}
               />
-              {isFF(FF_DEV_4081)
-                ? (
+            ) : (
+              <div
+                className={[
+                  styles.frame,
+                  ...imagePositionClassnames,
+                ].join(' ')}
+                style={item.canvasSize}
+              >
+                <img
+                  ref={ref => {
+                    item.setImageRef(ref);
+                    this.imageRef.current = ref;
+                  }}
+                  loading={(isFF(FF_DEV_3077) && !item.lazyoff) && 'lazy'}
+                  style={item.imageTransform}
+                  src={item.currentSrc}
+                  onLoad={item.updateImageSize}
+                  onError={this.handleError}
+                  crossOrigin={item.imageCrossOrigin}
+                  alt="LS"
+                />
+                {isFF(FF_DEV_4081) ? (
                   <canvas
                     className={styles.overlay}
                     ref={ref => {
@@ -902,11 +952,13 @@ export default observer(
                     }}
                     style={item.imageTransform}
                   />
-                )
-                : null}
-            </div>
+                ) : null}
+              </div>
+            )}
             {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
-            {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (
+            {stageLoading || !toolsReady ? (
+              <div className={styles.loading}><LoadingOutlined /></div>
+            ) : (imageIsLoaded) ? (
               <Stage
                 ref={ref => {
                   item.setStageRef(ref);
@@ -990,9 +1042,10 @@ export default observer(
                   />
                 )}
               </Stage>
-            )}
+            ) : null}
           </div>
-          {this.renderTools()}
+
+          {toolsReady && imageIsLoaded && this.renderTools()}
           {item.images.length > 1 && (
             <div className={styles.gallery}>
               {item.images.map((src, i) => (

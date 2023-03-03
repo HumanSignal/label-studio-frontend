@@ -50,13 +50,12 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged",
       "post-checkout": "bash scripts/copy.sh"
     }
   },
   "lint-staged": {
     "*.(js|ts|tsx)": [
-      "eslint --fix --quiet",
+      "eslint --quiet",
       "git add"
     ]
   },
