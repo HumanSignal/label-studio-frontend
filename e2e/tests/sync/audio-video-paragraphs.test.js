@@ -25,7 +25,7 @@ const config = `
 `;
 
 const data = {
-  url: '/files/opossum_snow.mp4',
+  url: 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3',
   text: [
     {
       'end': 5.6,
