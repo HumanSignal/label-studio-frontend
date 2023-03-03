@@ -59,6 +59,7 @@ interface PanelBaseProps {
   onResizeStart: () => void;
   onResizeEnd: () => void;
   onSnap: SnapHandler;
+  onCombineTabPanels: () => void;
   onPositionChange: PositonChangeHandler;
   onVisibilityChange: VisibilityChangeHandler;
   onPositionChangeBegin: PositonChangeHandler;
@@ -92,6 +93,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
   locked = false,
   positioning = false,
   onSnap,
+  onCombineTabPanels,
   onResize,
   onResizeStart,
   onResizeEnd,
@@ -102,6 +104,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
 }) => {
   const headerRef = useRef<HTMLDivElement>();
   const panelRef = useRef<HTMLDivElement>();
+  const tabRef = useRef<HTMLDivElement>();
   const resizerRef = useRef<HTMLDivElement>();
   const handlers = useRef({ onResize, onResizeStart, onResizeEnd, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
   const [resizing, setResizing] = useState<string | undefined>();
@@ -329,27 +332,17 @@ export const PanelBase: FC<PanelBaseProps> = ({
   }, [handlers, detached, width, maxWidth, height, top, left, visible, locked, positioning]);
 
   return (
-    <Block
-      ref={panelRef}
-      name="panel"
-      mix={name}
-      mod={mods}
-      style={{ ...style, ...coordinates }}
-    >
+    <Block ref={panelRef} name="panel" mix={name} mod={mods} style={{ ...style, ...coordinates }}>
       <Elem name="content">
         {!locked && (
-          <Elem
-            ref={headerRef}
-            name="header"
-            onClick={!detached ? handleExpand : undefined}
-          >
+          <Elem ref={headerRef} name="header" onClick={!detached ? handleExpand : undefined}>
             {isFF(FF_DEV_3873) ? (
               <>
-                <Elem name="title" tag={IconOutlinerDrag} width={20}/>
+                <Elem name="title" tag={IconOutlinerDrag} width={20} />
                 <Elem
                   name="toggle"
                   mod={{ enabled: visible }}
-                  onClick={(detached && !visible) ? handleExpand : handleCollapse}
+                  onClick={detached && !visible ? handleExpand : handleCollapse}
                   data-tooltip={tooltipText}
                 >
                   {currentOutlinerIcon()}
@@ -357,14 +350,12 @@ export const PanelBase: FC<PanelBaseProps> = ({
               </>
             ) : (
               <>
-                {(visible || detached) && (
-                  <Elem name="title">{title}</Elem>
-                )}
+                {(visible || detached) && <Elem name="title">{title}</Elem>}
 
                 <Elem
                   name="toggle"
                   mod={{ enabled: visible }}
-                  onClick={(detached && !visible) ? handleExpand : handleCollapse}
+                  onClick={detached && !visible ? handleExpand : handleCollapse}
                   data-tooltip={tooltipText}
                 >
                   {currentIcon}
@@ -374,26 +365,32 @@ export const PanelBase: FC<PanelBaseProps> = ({
           </Elem>
         )}
         {visible && (
-          <Elem name="body">
-            <Block name={name}>
-              {children}
-            </Block>
-          </Elem>
+          <>
+            {isFF(FF_DEV_3873) ? (
+              <Elem name="body" >
+                {/* add if dragging */}
+                <Elem ref={tabRef} name="tab">
+                  <Elem tag={IconOutlinerDrag} width={20} />
+                  {title}
+                </Elem>
+                <Block name={name}>{children}</Block>
+              </Elem>
+            ) : (
+              <Elem name="body">
+                <Block name={name}>{children}</Block>
+              </Elem>
+            )}
+          </>
         )}
       </Elem>
 
       {visible && !positioning && !locked && (
         <Elem name="resizers" ref={resizerRef} mod={{ locked: positioning || locked }}>
-          {resizers.map((res) => {
-            const shouldRender = ((res === 'left' || res === 'right') && alignment !== res || detached) || detached;
+          {resizers.map(res => {
+            const shouldRender = ((res === "left" || res === "right") && alignment !== res) || detached || detached;
 
             return shouldRender ? (
-              <Elem
-                key={res}
-                name="resizer"
-                mod={{ drag: res === resizing }}
-                data-resize={res}
-              />
+              <Elem key={res} name="resizer" mod={{ drag: res === resizing }} data-resize={res} />
             ) : null;
           })}
         </Elem>
