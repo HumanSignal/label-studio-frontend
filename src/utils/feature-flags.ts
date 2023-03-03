@@ -184,6 +184,12 @@ export const FF_LSDV_3028 = 'fflag_feat_front_lsdv_3028_audio_v3_multichannel_de
  */
 export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short';
 
+/**
+ * Enables the ffmpeg audio decoder to be the default.
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4701_audio_default_decoder_ffmpeg_long
+ */
+export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ffmpeg_long';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
