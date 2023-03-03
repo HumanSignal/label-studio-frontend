@@ -28,7 +28,7 @@ export const FramesControl: FC<TimelineSideControlProps> = ({
           }}
         />
       ) : (
-        <>{Math.round(position + 1)} <span>of {Math.round(duration)}</span></>
+        <>{clamp(Math.round(position + 1), 1, duration + 1)} <span>of {duration + 1}</span></>
       )}
     </Block>
   );
@@ -65,7 +65,7 @@ const FrameInput: FC<FrameInputProps> = ({ length, position, onChange, onFinishE
       autoFocus
       onFocus={() => input.current?.select()}
       onKeyDown={(e) => {
-        const allowedKey = allowedKeys.find(k => (k instanceof RegExp) ? k.test(e.key) : k === e.key );
+        const allowedKey = allowedKeys.find(k => (k instanceof RegExp) ? k.test(e.key) : k === e.key);
 
         if (!allowedKey && !e.metaKey) e.preventDefault();
 

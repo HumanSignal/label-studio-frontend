@@ -1,5 +1,3 @@
-/* global Feature, DataTable, Data */
-
 const assert = require('assert');
 const Asserts = require('../utils/asserts');
 const Helpers = require('./helpers');
@@ -242,6 +240,61 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMoveToolTransfor
     const exceptedResult = Shape.byBBox(0, 0, 300, 300).result;
 
     Asserts.deepEqualWithTolerance(rectangleResult[0].value, convertToImageSize(exceptedResult));
+  });
+
+Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMoveToolTransformer))
+  .Scenario('Resizing a single region with zoom', async ({ I, LabelStudio, AtImageView, AtSidebar, current }) => {
+    const { shapeName } = current;
+    const Shape = shapes[shapeName];
+
+    I.amOnPage('/');
+
+    LabelStudio.setFeatureFlags({
+      'ff_front_dev_2394_zoomed_transforms_260522_short': true,
+    });
+
+    LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
+    AtImageView.waitForImage();
+    AtSidebar.seeRegions(0);
+    await AtImageView.lookForStage();
+    const canvasSize = await AtImageView.getCanvasSize();
+    const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
+
+    // Draw a region in bbox {x1:50,y1:50,x2:150,y2:150}
+    I.pressKey(Shape.hotKey);
+    drawShapeByBbox(Shape, 50, 50, 300, 300, AtImageView);
+    AtSidebar.seeRegions(1);
+
+    // Select the shape
+    AtImageView.clickAt(100, 100);
+    AtSidebar.seeSelectedRegion();
+
+    // Switch to move tool to force appearance of transformer
+    I.pressKey('v');
+    const isTransformerExist = await AtImageView.isTransformerExist();
+
+    assert.strictEqual(isTransformerExist, true);
+
+    AtImageView.setZoom(3, 0, 0);
+
+    // Transform the shape
+    AtImageView.drawByDrag(150, 150, -150, -150);
+    I.wait(1);
+
+    AtImageView.drawByDrag(0, 0, -300, -100);
+    I.wait(1);
+
+    AtImageView.drawByDrag(0, 0, 150, 150);
+    I.wait(1);
+
+    // Check resulting sizes
+    const rectangleResult = await LabelStudio.serialize();
+
+    I.wait(10);
+
+    const exceptedResult = Shape.byBBox(50, 50, 300, 300).result;
+
+    Asserts.deepEqualWithTolerance(rectangleResult[0].value, convertToImageSize(exceptedResult), 0);
   });
 
 Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRotator))
@@ -861,11 +914,11 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionTr
     // Drag shapes by holding onto the second region
     dragShapes(bbox2Center, { x: 0, y: 100 });
     // Drag shapes by holding onto the transformer background
-    dragShapes(transformerBboxCenter, { x: 150, y: 150 }, false );
+    dragShapes(transformerBboxCenter, { x: 150, y: 150 }, false);
     // Move back throught history to check that transformer's background moving with it
     I.pressKey(['Control', 'z']);
     // Drag shapes by holding onto the transformer background again
-    dragShapes(transformerBboxCenter, { x: 100, y: 100 }, false );
+    dragShapes(transformerBboxCenter, { x: 100, y: 100 }, false);
 
 
     // Check that dragging was successful

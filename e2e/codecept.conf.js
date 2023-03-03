@@ -1,6 +1,10 @@
 // turn on headless mode when running with HEADLESS=true environment variable
 // HEADLESS=true npx codecept run
 const headless = process.env.HEADLESS;
+const port = process.env.LSF_PORT ?? 3000;
+const enableCoverage = process.env.COVERAGE === 'true';
+const fs = require('fs');
+const FRAGMENTS_PATH = './fragments/';
 
 module.exports.config = {
   timeout: 60 * 30, // Time out after 30 minutes
@@ -14,7 +18,7 @@ module.exports.config = {
     //   windowSize: "1200x900",
     // },
     Playwright: {
-      url: 'http://localhost:3000',
+      url: `http://localhost:${port}`,
       show: !headless,
       restart: 'context',
       timeout: 60000, // Action timeout after 60 seconds
@@ -37,16 +41,11 @@ module.exports.config = {
   },
   include: {
     I: './steps_file.js',
-    LabelStudio: './fragments/LabelStudio.js',
-    AtImageView: './fragments/AtImageView.js',
-    AtAudioView: './fragments/AtAudioView.js',
-    AtRichText: './fragments/AtRichText.js',
-    AtSidebar: './fragments/AtSidebar.js',
-    AtLabels: './fragments/AtLabels.js',
-    AtSettings: './fragments/AtSettings.js',
-    AtTopbar: './fragments/AtTopbar.js',
-    AtParagraphs: './fragments/AtParagraphs.js',
-    ErrorsCollector: './fragments/ErrorsCollector.js',
+    ...(Object.fromEntries(fs.readdirSync(FRAGMENTS_PATH).map(path => {
+      const name = path.split('.')[0];
+
+      return [name, `${FRAGMENTS_PATH}${path}`];
+    }))),
   },
   bootstrap: null,
   mocha: {
@@ -69,14 +68,29 @@ module.exports.config = {
         'have*',
       ],
     },
-    // For the future generations
     // coverage: {
     //   enabled: true,
-    //   coverageDir: "output/coverage",
+    //   coverageDir: 'output/coverage',
     // },
+    featureFlags: {
+      require: './plugins/featureFlags.js',
+      enabled: true,
+    },
+    istanbulCoverage: {
+      require: './plugins/istanbulСoverage.js',
+      enabled: enableCoverage,
+      uniqueFileName: true,
+      coverageDir: '../coverage',
+      actionCoverage: {
+        enabled: false,
+        include: ['**/src/**'],
+        exclude: ['**/common/**', '**/components/**'],
+      },
+    },
     screenshotOnFail: {
       enabled: true,
     },
+    pauseOnFail: {},
   },
   require: ['ts-node/register'],
 };

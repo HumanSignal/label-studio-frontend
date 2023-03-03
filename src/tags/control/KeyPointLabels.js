@@ -33,9 +33,7 @@ import ControlBase from './Base';
  * @param {number} [maxUsages]           - Maximum number of times a label can be used per task
  * @param {boolean} [showInline=true]    - Show labels in the same visual line
  * @param {float=} [opacity=0.9]         - Opacity of the keypoint
- * @param {string=} [fillColor=#8bad00]  - Keypoint fill color in hexadecimal
  * @param {number=} [strokeWidth=1]      - Width of the stroke
- * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color in hexadecimal
  */
 
 const Validation = types.model({

@@ -2,6 +2,7 @@
     "annotations": [
         {
             "id": "1001",
+            "readonly": true,
             "result": [
                 {
                   "value": {

@@ -1,5 +1,8 @@
 import React, { Component, useCallback, useState } from 'react';
-import { Button, Checkbox, Form, Radio } from 'antd';
+import Button from 'antd/lib/button/index';
+import Form from 'antd/lib/form/index';
+import Radio from 'antd/lib/radio/index';
+import Checkbox from 'antd/lib/checkbox/index';
 import { inject, observer } from 'mobx-react';
 import { types } from 'mobx-state-tree';
 
@@ -45,7 +48,7 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   style: types.maybeNull(types.string),
-  ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {} ),
+  ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {}),
 });
 
 const Model = types
@@ -113,6 +116,10 @@ const Model = types
         return self._resultValue;
       }
     },
+
+    isReadOnly() {
+      return self.readonly || self.parent?.isReadOnly();
+    },
   }))
   .volatile(() => ({
     // `selected` is a predefined parameter, we cannot use it for state, so use `sel`
@@ -120,7 +127,7 @@ const Model = types
   }))
   .actions(self => ({
     toggleSelected() {
-      if (self.parent?.readonly || !self.annotation?.editable) return;
+      if (self.parent?.readonly || self.annotation?.isReadOnly()) return;
       const choices = self.parent;
       const selected = self.sel;
 
@@ -138,7 +145,7 @@ const Model = types
     setSelected(val) {
       self._sel = val;
       if (!self.isLeaf) {
-        self.children.forEach((child)=>{
+        self.children.forEach((child) => {
           child.setSelected(val);
         });
       }
@@ -158,6 +165,7 @@ const ChoiceModel = types.compose('ChoiceModel', TagParentMixin, TagAttrs, Model
 class HtxChoiceView extends Component {
   render() {
     const { item, store } = this.props;
+
     let style = {};
 
     if (item.style) style = Tree.cssConverter(item.style);
@@ -173,9 +181,9 @@ class HtxChoiceView extends Component {
 
     const props = {
       checked: item.sel,
-      disabled: item.parent?.readonly,
+      disabled: item.parent?.isReadOnly(),
       onChange: ev => {
-        if (!item.annotation.editable) return;
+        if (item.isReadOnly()) return;
         item.toggleSelected();
         ev.nativeEvent.target.blur();
       },
@@ -186,7 +194,7 @@ class HtxChoiceView extends Component {
 
       return (
         <Form.Item style={cStyle}>
-          <Checkbox name={item._value} {...props}>
+          <Checkbox name={item._value} {...props} disabled={item.isReadOnly()}>
             {item._value}
             {showHotkey && <Hint>[{item.hotkey}]</Hint>}
           </Checkbox>
@@ -221,7 +229,7 @@ const HtxNewChoiceView = ({ item, store }) => {
     item.hotkey;
 
   const changeHandler = useCallback((ev) => {
-    if (!item.annotation.editable) return;
+    if (item.isReadOnly()) return;
     item.toggleSelected();
     ev.nativeEvent.target.blur();
   }, []);
@@ -239,10 +247,10 @@ const HtxNewChoiceView = ({ item, store }) => {
           mod={{ notLeaf: !item.isLeaf }}
           checked={item.sel}
           indeterminate={!item.sel && item.indeterminate}
-          disabled={item.parent?.readonly}
+          disabled={item.isReadOnly()}
           onChange={changeHandler}
         >
-          {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
+          {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> : item._value }
           {showHotkey && (<Hint>[{item.hotkey}]</Hint>)}
         </Elem>
         {!item.isLeaf ? (

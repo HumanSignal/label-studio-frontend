@@ -13,7 +13,7 @@ import styles from './Paragraphs.module.scss';
 import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import { isValidObjectURL } from '../../../utils/utilities';
-import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, FF_DEV_3666, isFF } from '../../../utils/feature-flags';
 import { SyncMixin } from '../../../mixins/SyncMixin';
 
 
@@ -85,9 +85,9 @@ const Model = types
       return getRoot(self);
     },
 
-    get syncedAudio() {
+    get syncedAudioVideo() {
       if (!isFFDev2461) return false;
-      return self.syncedObject?.type?.startsWith('audio');
+      return self.syncedObject?.type?.startsWith('audio') || self.syncedObject?.type?.startsWith('video');
     },
 
     get audio() {
@@ -144,7 +144,7 @@ const Model = types
     },
 
     isVisibleForAuthorFilter(data) {
-      if(!isFF(FF_DEV_2669)) return true;
+      if (!isFF(FF_DEV_2669)) return true;
 
       return !self.filterByAuthor.length || self.filterByAuthor.includes(data[self.namekey]);
     },
@@ -171,8 +171,6 @@ const Model = types
       if (isPaused) return;
 
       const currentTime = audio.currentTime;
-
-      console.log({ currentTime, endDuration });
 
       if (currentTime < endDuration) {
         stopIn(endDuration - currentTime);
@@ -215,7 +213,7 @@ const Model = types
         self.isCurrentlyPlaying = true;
         self.muteSelfWhenSynced();
 
-        if(audioRef.current) {
+        if (audioRef.current) {
           audioRef.current.play();
         }
       },
@@ -224,7 +222,7 @@ const Model = types
         self.isCurrentlyPlaying = false;
         self.reset(false);
 
-        if(audioRef.current) {
+        if (audioRef.current) {
           audioRef.current.pause();
         }
       },
@@ -234,8 +232,10 @@ const Model = types
         audioRef.current.playbackRate = speed;
       },
 
+      handleSyncDuration() {},
+
       handlePause() {
-        if (self.syncedAudio) {
+        if (self.syncedAudioVideo) {
           self.triggerSyncPause();
         } else {
           self.handleSyncPause();
@@ -243,7 +243,7 @@ const Model = types
       },
 
       handlePlay() {
-        if (self.syncedAudio) {
+        if (self.syncedAudioVideo) {
           self.triggerSyncPlay();
         } else {
           self.handleSyncPlay();
@@ -251,7 +251,7 @@ const Model = types
       },
 
       handleSeek(time) {
-        if (self.syncedAudio) {
+        if (self.syncedAudioVideo) {
           self.triggerSyncSeek(time);
         } else {
           self.handleSyncSeek(time);
@@ -259,7 +259,7 @@ const Model = types
       },
 
       muteSelfWhenSynced() {
-        if (self.syncedAudio && audioRef.current) {
+        if (self.syncedAudioVideo && audioRef.current) {
           audioRef.current.muted = true;
         }
       },
@@ -279,14 +279,14 @@ const Model = types
 
         const isPlaying = isFFDev2461 ? self.isCurrentlyPlaying : !audio.paused;
 
-        if (isPlaying) {
+        if (isPlaying && currentId === idx) {
           if (isFFDev2461) {
             self.handlePause();
           } else {
             audio.pause();
             self.playingId = -1;
           }
-          if (idx === currentId) return;
+          return;
         }
 
         if (idx !== currentId) {
@@ -407,7 +407,7 @@ const Model = types
 
     addRegions(ranges) {
       const areas = [];
-      const states = self.activeStates();
+      const states = isFF(FF_DEV_3666) ? self.getAvailableStates() : self.activeStates();
 
       if (states.length === 0) return;
 
@@ -435,7 +435,7 @@ const Model = types
       if (isFF(FF_DEV_2918)) {
         return self.addRegions([range])[0];
       } else {
-        const states = self.activeStates();
+        const states = isFF(FF_DEV_3666) ? self.getAvailableStates() : self.activeStates();
 
         if (states.length === 0) return;
 

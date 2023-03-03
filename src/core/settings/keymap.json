@@ -111,6 +111,10 @@
     "mac": "command+d",
     "description": "Duplicate selected region"
   },
+  "segment:delete": {
+    "key": "delete",
+    "description": "Delete selected region"
+  },
   "media:playpause": {
     "key": "alt+space",
     "description": "Play/pause"
@@ -162,5 +166,13 @@
   "repeater:previous-page": {
     "key": "alt+left",
     "description": "Previous Page"
+  },
+  "image:prev": {
+    "key": "ctrl+a",
+    "description": "Previous Image"
+  },
+  "image:next": {
+    "key": "ctrl+d",
+    "description": "Next Image"
   }
 }

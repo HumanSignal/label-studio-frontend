@@ -2,7 +2,6 @@ import React, { Fragment, useContext } from 'react';
 import { Circle } from 'react-konva';
 import { getRoot, types } from 'mobx-state-tree';
 
-import WithStatesMixin from '../mixins/WithStates';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import Registry from '../core/Registry';
@@ -132,9 +131,7 @@ const Model = types
      */
     serialize() {
       const result = {
-        original_width: self.parent.naturalWidth,
-        original_height: self.parent.naturalHeight,
-        image_rotation: self.parent.rotation,
+        ...self.parent.serializableValues(self.item_index),
         value: {
           x: self.convertXToPerc(self.x),
           y: self.convertYToPerc(self.y),
@@ -153,7 +150,6 @@ const Model = types
 
 const KeyPointRegionModel = types.compose(
   'KeyPointRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
@@ -194,6 +190,7 @@ const HtxKeyPointView = ({ item }) => {
       <Circle
         x={x}
         y={y}
+        ref={el => item.setShapeRef(el)}
         // keypoint should always be the same visual size
         radius={Math.max(item.width, 2) / item.parent.zoomScale}
         // fixes performance, but opactity+borders might look not so good
@@ -255,7 +252,7 @@ const HtxKeyPointView = ({ item }) => {
           item.onClickRegion(e);
         }}
         {...props}
-        draggable={item.editable}
+        draggable={!item.isReadOnly()}
         listening={!suggestion}
       />
       <LabelOnKP item={item} color={regionStyles.strokeColor}/>

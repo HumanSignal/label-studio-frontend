@@ -1,5 +1,3 @@
-/* global inject, locate */
-
 const { I } = inject();
 const Helpers = require('../tests/helpers');
 
@@ -7,7 +5,7 @@ module.exports = {
   _rootSelector: '.lsf-htx-richtext',
   selectTextByGlobalOffset(startOffset, endOffset) {
     I.executeScript(Helpers.selectText, {
-      selector: '.lsf-htx-richtext',
+      selector: this._rootSelector,
       rangeStart: startOffset,
       rangeEnd: endOffset,
     });

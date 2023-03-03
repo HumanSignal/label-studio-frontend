@@ -1,4 +1,3 @@
-/* global inject, locate */
 const { I } = inject();
 
 module.exports = {

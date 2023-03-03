@@ -115,6 +115,11 @@
   display: flex;
   padding-left: 43px;
   padding-right: 60px;
+
+  &.taxonomy__measure_ff_dev4075 {
+    padding-right: 8px;
+    line-height: 2em;
+  }
 };
 
 .taxonomy__item {
@@ -152,6 +157,7 @@
   text-align: center;
   user-select: none;
   flex-shrink: 0;
+  pointer-events: all;
 
   svg {
     transition: transform 0.1s; // visible rotation of arrow
@@ -200,7 +206,7 @@
   zoom: 1; // something to apply this class
 }
 
-.taxonomy__add__container { 
+.taxonomy__add__container {
   margin-bottom: 8px;
 }
 

@@ -1,8 +1,7 @@
 import React, { Fragment, useContext } from 'react';
 import { Ellipse } from 'react-konva';
 import { getRoot, types } from 'mobx-state-tree';
-import WithStatesMixin from '../mixins/WithStates';
-import Constants  from '../core/Constants';
+import Constants from '../core/Constants';
 import DisabledMixin from '../mixins/Normalization';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
@@ -90,14 +89,14 @@ const Model = types
       return getRoot(self);
     },
     get bboxCoords() {
-      const bboxCoords= {
+      const bboxCoords = {
         left: self.x - self.radiusX,
         top: self.y - self.radiusY,
         right: self.x + self.radiusX,
         bottom: self.y + self.radiusY,
       };
 
-      return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y:self.y }) : bboxCoords;
+      return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y: self.y }) : bboxCoords;
     },
   }))
   .actions(self => ({
@@ -105,7 +104,7 @@ const Model = types
       self.startX = self.x;
       self.startY = self.y;
 
-      switch (self.coordstype)  {
+      switch (self.coordstype) {
         case 'perc': {
           self.relativeX = self.x;
           self.relativeY = self.y;
@@ -243,9 +242,7 @@ const Model = types
      */
     serialize() {
       const res = {
-        original_width: self.parent.naturalWidth,
-        original_height: self.parent.naturalHeight,
-        image_rotation: self.parent.rotation,
+        ...self.parent.serializableValues(self.item_index),
         value: {
           x: self.convertXToPerc(self.x),
           y: self.convertYToPerc(self.y),
@@ -261,7 +258,6 @@ const Model = types
 
 const EllipseRegionModel = types.compose(
   'EllipseRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
@@ -283,6 +279,7 @@ const HtxEllipseView = ({ item }) => {
       <Ellipse
         x={item.x}
         y={item.y}
+        ref={el => item.setShapeRef(el)}
         radiusX={item.radiusX}
         radiusY={item.radiusY}
         fill={regionStyles.fillColor}
@@ -363,7 +360,7 @@ const HtxEllipseView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
-        draggable={item.editable}
+        draggable={!item.isReadOnly()}
         listening={!suggestion}
       />
       <LabelOnEllipse item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth}/>
