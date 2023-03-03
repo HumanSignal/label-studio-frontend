@@ -357,6 +357,10 @@ export const AudioModel = types.compose(
 
           if (states.length === 0) {
           // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
+            if (wsRegion.isRegion){
+              wsRegion.convertToSegment().handleSelected();
+            }
+
             return;
           }
 
