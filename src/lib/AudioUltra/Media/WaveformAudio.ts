@@ -1,7 +1,7 @@
 import { Events } from '../Common/Events';
 import { __DEBUG__ } from '../Common/Utils';
-import { AudioDecoder, DEFAULT_FREQUENCY_HZ } from './AudioDecoder';
 import { audioDecoderPool } from './AudioDecoderPool';
+import { BaseAudioDecoder, DEFAULT_FREQUENCY_HZ } from './BaseAudioDecoder';
 
 export interface WaveformAudioOptions {
   src?: string;
@@ -9,6 +9,7 @@ export interface WaveformAudioOptions {
   muted?: boolean;
   rate?: number;
   splitChannels?: boolean;
+  decoderType?: 'ffmpeg' | 'webaudio';
 }
 
 interface WaveformAudioEvents {
@@ -17,7 +18,7 @@ interface WaveformAudioEvents {
 }
 
 export class WaveformAudio extends Events<WaveformAudioEvents> {
-  decoder?: AudioDecoder;
+  decoder?: BaseAudioDecoder;
   decoderPromise?: Promise<void>;
   mediaPromise?: Promise<void>;
   mediaReject?: (err: any) => void;
@@ -29,6 +30,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private _volume = 1;
   private _savedVolume = 1;
   private splitChannels = false;
+  private decoderType: 'ffmpeg' | 'webaudio' = 'ffmpeg';
   private src?: string;
   private mediaResolve?: () => void;
 
@@ -38,6 +40,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this._savedVolume = options.volume ?? this._volume;
     this._volume = options.muted ? 0 : this._savedVolume;
     this.splitChannels = options.splitChannels ?? false;
+    this.decoderType = options.decoderType ?? this.decoderType;
     this.src = options.src;
     this.createAudioDecoder();
     this.createMediaElement();
@@ -215,7 +218,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private createAudioDecoder() {
     if (!this.src || this.decoder) return;
 
-    this.decoder = audioDecoderPool.getDecoder(this.src, this.splitChannels);
+    this.decoder = audioDecoderPool.getDecoder(this.src, this.splitChannels, this.decoderType);
 
     this.decoder.on('progress', (chunk, total) => {
       this.invoke('decodingProgress', [chunk, total]);
