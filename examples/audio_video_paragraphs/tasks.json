@@ -1,7 +1,7 @@
 [
    {
       "data":{
-         "audio": "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3",
+         "audio": "https://app.heartex.ai/static/samples/opossum_snow.mp4",
          "dialogue":[
             {
                "start": 3.1,
