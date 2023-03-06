@@ -1,7 +1,7 @@
 /**
  * libraries
  */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 
 /**
@@ -13,18 +13,7 @@ import { BoardData, ColumnData } from './createData';
 /**
  * styles
  */
-const boardStyle = {
-  display: 'flex',
-  width: '50vw',
-  marginTop: '10px',
-  backgroundColor: 'lightgrey',
-};
-
-const columnsStyle = {
-  display: 'flex',
-  justifyContent: 'space-evenly',
-  width: '100%',
-};
+import styles from './RankerBoard.module.scss';
 
 /**
  * types
@@ -35,12 +24,8 @@ interface BoardProps {
 }
 
 //component for a drag and drop board with 2 columns as defined in createData.ts
-const DragDropBoard = ({ inputData, handleChange }: BoardProps) => {
+const RankerBoard = ({ inputData, handleChange }: BoardProps) => {
   const [data, setData] = useState(inputData);
-
-  useEffect(() => {
-    setData(inputData);
-  }, [inputData]);
 
   const handleDragEnd = (result: any) => {
     //handle reordering of items
@@ -59,8 +44,8 @@ const DragDropBoard = ({ inputData, handleChange }: BoardProps) => {
     if (startCol === endCol) {
       //get original items list
       const newItemIds = Array.from(startCol.itemIds);
-      //reorder items list
 
+      //reorder items list
       newItemIds.splice(source.index, 1);
       newItemIds.splice(destination.index, 0, draggableId);
 
@@ -78,7 +63,7 @@ const DragDropBoard = ({ inputData, handleChange }: BoardProps) => {
 
       setData(newData);
       //update results
-      handleChange ? handleChange(newData.columns['column-2'].itemIds) : null;
+      handleChange ? handleChange(newData.columns[`column-${newData.columnOrder.length}`].itemIds) : null;
       return;
     }
 
@@ -110,15 +95,15 @@ const DragDropBoard = ({ inputData, handleChange }: BoardProps) => {
     };
     //update results
 
-    handleChange ? handleChange(newData.columns['column-2'].itemIds) : null;
+    handleChange ? handleChange(newData.columns[`column-${newData.columnOrder.length}`].itemIds) : null;
     setData(newData);
   };
 
   return (
-    <div>
+    <div className={styles.rankerBoard}>
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div style={boardStyle}>
-          <div style={columnsStyle}>
+        <div className={styles.boardStyle}>
+          <div className={styles.columnsStyle}>
             {data.columnOrder.map(columnId => {
               const column = data.columns[columnId] as ColumnData;
               const items = column.itemIds.map(itemId => data.items[itemId]);
@@ -132,4 +117,4 @@ const DragDropBoard = ({ inputData, handleChange }: BoardProps) => {
   );
 };
 
-export default DragDropBoard;
+export default RankerBoard;

@@ -92,7 +92,7 @@ const Model = types
       'paragraphlabels',
       'video',
       'videorectangle',
-      'ddboard',
+      'rankerboard',
     ]),
   });
 

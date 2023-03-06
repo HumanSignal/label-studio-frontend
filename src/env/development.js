@@ -62,6 +62,7 @@ import { Pairwise } from '../examples/pairwise';
 import { Repeater } from '../examples/repeater';
 import { Table } from '../examples/table';
 import { TableCsv } from '../examples/table_csv';
+import { Ranker } from '../examples/ranker';
 
 import { TimeSeries } from '../examples/timeseries';
 import { TimeSeriesSingle } from '../examples/timeseries_single';
@@ -71,7 +72,7 @@ import { TimeSeriesSingle } from '../examples/timeseries_single';
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = VideoRectangles;
+const data = Ranker;
 
 function getData(task) {
   if (task && task.data) {

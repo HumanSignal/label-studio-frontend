@@ -8,8 +8,7 @@ import { ColumnData, InputItem } from './createData';
 /**
  * styles
  */
-import './Column.css';
-
+import styles from './RankerBoard.module.scss';
 /**
  * types
  */
@@ -27,12 +26,11 @@ const Column = (props: ColumnProps) => {
   const { column, items } = props;
 
   return (
-    <div className="columnStyle">
+    <div className={styles.columnStyle}>
       <h1>{column.title}</h1>
-
       <StrictModeDroppable droppableId={column.id}>
         {provided => (
-          <div ref={provided.innerRef} {...provided.droppableProps} className="dropAreaStyle">
+          <div ref={provided.innerRef} {...provided.droppableProps} className={styles.dropAreaStyle}>
             {items.map((item, index) => (
               <Item key={item.id} item={item} index={index} />
             ))}

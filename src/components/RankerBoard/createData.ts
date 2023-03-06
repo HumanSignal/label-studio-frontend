@@ -1,5 +1,5 @@
 /**
- * this file dictates the shape of the data used in the ddboard component.
+ * this file dictates the shape of the data used in the rankerboard component.
  */
 
 //represents a column of data
@@ -24,47 +24,20 @@ export interface BoardData {
 }
 
 /**
- * assumed input data structure
- * title, body, id
+ * assumed input data structure:
  * id: assigned programatically when component renders
  * title: string
  * body: string
  */
 
-/* simulating fake input data. Ids will be assigned programatically */
-const inputData: any[] = [
-  {
-    title: 'item 0 title',
-    body: 'item 0 description',
-  },
-  {
-    title: 'item 1 title',
-    body: 'item 1 description',
-  },
-  {
-    title: 'item 2 title',
-    body: 'item 2 description',
-  },
-  {
-    title: 'item 3 title',
-    body: 'item 3 description',
-  },
-  {
-    title: 'item 4 title',
-    body: 'item 4 description',
-  },
-];
-
-export const getData = (input: InputItem[] = inputData) => {
-  /* loop through input data and create query data object used for ddboard component */
-  const itemIds = inputData.map((item: InputItem, index: number) => 'item-' + index);
+export const getData = (input: InputItem[], mode: string) => {
+  /* loop through input data and create query data object used for rankerboard component */
+  const itemIds = input.map((item: InputItem) => item.id);
 
   //convert input array into object of items so that ids are easily findable
   const itemsObject: { [id: string]: InputItem } = {};
 
-  input.forEach((item, index) => {
-    //grab item ids for each item
-    item.id = 'item-' + index;
+  input.forEach(item => {
     itemsObject[item.id] = {
       id: item.id,
       title: item.title,
@@ -81,14 +54,32 @@ export const getData = (input: InputItem[] = inputData) => {
         title: 'Search Results',
         itemIds,
       },
-      'column-2': {
-        id: 'column-2',
-        title: 'Relevant Results',
-        itemIds: [],
-      },
     },
-    columnOrder: ['column-1', 'column-2'],
+    columnOrder: ['column-1'],
   };
+
+  //if mode is rank then initialize with only 1 column, if select-2 then initialize w 3 columns
+  if (mode === 'select') {
+    queryData.columns['column-2'] = {
+      id: 'column-2',
+      title: 'Relevant Results',
+      itemIds: [],
+    };
+    queryData.columnOrder.push('column-2');
+  } else if (mode === 'select-2') {
+    queryData.columns['column-2'] = {
+      id: 'column-2',
+      title: 'Relevant Results',
+      itemIds: [],
+    };
+    queryData.columns['column-3'] = {
+      id: 'column-3',
+      title: 'Relevant Results',
+      itemIds: [],
+    };
+    queryData.columnOrder.push('column-2');
+    queryData.columnOrder.push('column-3');
+  }
 
   return queryData;
 };

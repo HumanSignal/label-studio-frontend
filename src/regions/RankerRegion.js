@@ -2,19 +2,18 @@ import { types } from 'mobx-state-tree';
 
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import { DDBoardModel } from '../tags/object';
+import { RankerBoardModel } from '../tags/object';
 import { guidGenerator } from '../core/Helpers';
 import Registry from '../core/Registry';
 import { AreaMixin } from '../mixins/AreaMixin';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 
 const Model = types
-  .model('DDBoardRegionModel', {
+  .model('RankerBoardRegionModel', {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-    type: 'ddboardregion',
-    object: types.late(() => types.reference(DDBoardModel)),
-    items: types.array(types.string),
+    type: 'rankerboardregion',
+    object: types.late(() => types.reference(RankerBoardModel)),
   })
   .volatile(() => ({
     hideable: true,
@@ -25,17 +24,17 @@ const Model = types
     },
 
   }))
-  .actions(self => ({
+  .actions(() => ({
 
     serialize() {
-      //just to silence console warning
+      //TODO remove
       console.log(self);
       return {};
     },
   }));
 
-const DDBoardRegionModel = types.compose(
-  'DDBoardRegionModel',
+const RankerBoardRegionModel = types.compose(
+  'RankerBoardRegionModel',
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
@@ -43,6 +42,6 @@ const DDBoardRegionModel = types.compose(
   Model,
 );
 
-Registry.addRegionType(DDBoardRegionModel, 'ddboard');
+Registry.addRegionType(RankerBoardRegionModel, 'rankerboard');
 
-export { DDBoardRegionModel };
+export { RankerBoardRegionModel };

@@ -9,6 +9,11 @@ import { Draggable } from 'react-beautiful-dnd';
 import { InputItem } from './createData';
 
 /**
+ * styles
+ */
+import styles from './RankerBoard.module.scss';
+
+/**
  * types
  */
 interface ItemProps {
@@ -27,10 +32,15 @@ const Item = (props: ItemProps) => {
     <Draggable draggableId={item.id} index={index}>
       {provided => {
         return (
-          <div {...provided.draggableProps} {...provided.dragHandleProps} className="itemStyle" ref={provided.innerRef}>
-            <h2 style={{ margin: '0' }}>{item.title}</h2>
-            <p style={{ margin: '0' }}>{item.body}</p>
-            <p style={{ margin: '0' }}>{item.id}</p>
+          <div
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            className={styles.itemStyle}
+            ref={provided.innerRef}
+          >
+            <h3 className={styles.itemLineStyle}>{item.title}</h3>
+            <p className={styles.itemLineStyle}>{item.body}</p>
+            <p className={styles.itemLineStyle}>{item.id}</p>
           </div>
         );
       }}
