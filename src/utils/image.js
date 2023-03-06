@@ -1,4 +1,5 @@
 import Konva from 'konva';
+import { FF_DEV_3793, isFF } from './feature-flags';
 
 export function reverseCoordinates(r1, r2) {
   let r1X = r1.x,
@@ -133,22 +134,29 @@ export function fixRectToFit(rect, stageWidth, stageHeight) {
 }
 
 
-export function createDragBoundFunc(item, offset = { x:0, y:0 }) {
-  const { parent: imageView } = item;
+export function createDragBoundFunc(item, offset = { x: 0, y: 0 }) {
+  const { parent: image } = item;
 
   return function(pos) {
-    return imageView.fixForZoomWrapper(pos, (pos) => {
+    return image.fixForZoomWrapper(pos, (pos) => {
       let { x, y } = pos;
+
+      if (isFF(FF_DEV_3793)) {
+        x = image.canvasToInternalX(x);
+        y = image.canvasToInternalY(y);
+      }
 
       x -= offset.x;
       y -= offset.y;
       const singleRegionDragging = item.selected || !item.inSelection;
       const { top, left, right, bottom } = item.bboxCoords;
-      const { top: srTop, left: srLeft, right: srRight, bottom: srBottom } = imageView?.selectedRegionsBBox || {};
+      const { top: srTop, left: srLeft, right: srRight, bottom: srBottom } = image?.selectedRegionsBBox || {};
       const bbox = singleRegionDragging
         ? { x, y, width: right - left, height: bottom - top }
         : { x: srLeft - left + x, y: srTop - top + y, width: srRight - srLeft, height: srBottom - srTop };
-      const fixed = fixRectToFit(bbox, imageView.stageWidth, imageView.stageHeight);
+      const fixed = isFF(FF_DEV_3793)
+        ? fixRectToFit(bbox, 100, 100)
+        : fixRectToFit(bbox, image.stageWidth, image.stageHeight);
 
       if (fixed.width !== bbox.width) {
         x += (fixed.width - bbox.width) * (fixed.x !== bbox.x ? -1 : 1);
@@ -157,9 +165,13 @@ export function createDragBoundFunc(item, offset = { x:0, y:0 }) {
       if (fixed.height !== bbox.height) {
         y += (fixed.height - bbox.height) * (fixed.y !== bbox.y ? -1 : 1);
       }
+
       x += offset.x;
       y += offset.y;
-      return { x, y };
+
+      if (!isFF(FF_DEV_3793)) return { x, y };
+
+      return { x: image.internalToCanvasX(x), y: image.internalToCanvasY(y) };
     });
   };
 }

@@ -238,3 +238,7 @@ export const destroyMSTObject = (object: any) => {
     destroy(object);
   }
 };
+
+// fixes `observe` - it watches only the changes of primitive props of observables used,
+// so pass all the required primitives to this stub and they'll be observed
+export const fixMobxObserve = (..._toObserve: any[]) => {};

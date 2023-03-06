@@ -20,7 +20,7 @@ import ResizeObserver from '../../utils/resize-observer';
 import { debounce } from '../../utils/debounce';
 import Constants from '../../core/Constants';
 import { fixRectToFit } from '../../utils/image';
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, isFF } from '../../utils/feature-flags';
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, isFF } from '../../utils/feature-flags';
 import { Pagination } from '../../common/Pagination/Pagination';
 import { Image } from './Image';
 
@@ -99,13 +99,18 @@ const SELECTION_COLOR = '#40A9FF';
 const SELECTION_SECOND_COLOR = 'white';
 const SELECTION_DASH = [3, 3];
 
+/**
+ * Multiple selected regions when transform is unavailable — just a box with anchors
+ */
 const SelectionBorders = observer(({ item, selectionArea }) => {
   const { selectionBorders: bbox } = selectionArea;
 
-  bbox.left = bbox.left * item.stageScale;
-  bbox.right = bbox.right * item.stageScale;
-  bbox.top = bbox.top * item.stageScale ;
-  bbox.bottom = bbox.bottom * item.stageScale ;
+  if (!isFF(FF_DEV_3793)) {
+    bbox.left = bbox.left * item.stageScale;
+    bbox.right = bbox.right * item.stageScale;
+    bbox.top = bbox.top * item.stageScale;
+    bbox.bottom = bbox.bottom * item.stageScale;
+  }
 
   const points = bbox ? [
     {
@@ -125,6 +130,7 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
       y: bbox.bottom,
     },
   ] : [];
+  const ANCHOR_SIZE = isFF(FF_DEV_3793) ? 6 / item.stageScale : 6;
 
   return (
     <>
@@ -137,6 +143,7 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
           height={bbox.bottom - bbox.top}
           stroke={SELECTION_COLOR}
           strokeWidth={1}
+          strokeScaleEnabled={false}
           listening={false}
         />
       )}
@@ -144,13 +151,14 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
         return (
           <Rect
             key={idx}
-            x={point.x - 3}
-            y={point.y - 3}
-            width={6}
-            height={6}
+            x={point.x - ANCHOR_SIZE / 2}
+            y={point.y - ANCHOR_SIZE / 2}
+            width={ANCHOR_SIZE}
+            height={ANCHOR_SIZE}
             fill={SELECTION_COLOR}
             stroke={SELECTION_SECOND_COLOR}
             strokeWidth={2}
+            strokeScaleEnabled={false}
             listening={false}
           />
         );
@@ -159,8 +167,11 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
   );
 });
 
+/**
+ * Selection area during selection — dashed rect
+ */
 const SelectionRect = observer(({ item }) => {
-  const { x, y, width, height } = item;
+  const { x, y, width, height } = item.onCanvasRect;
 
   const positionProps = {
     x,
@@ -177,12 +188,14 @@ const SelectionRect = observer(({ item }) => {
         {...positionProps}
         stroke={SELECTION_COLOR}
         dash={SELECTION_DASH}
+        strokeScaleEnabled={false}
       />
       <Rect
         {...positionProps}
         stroke={SELECTION_SECOND_COLOR}
         dash={SELECTION_DASH}
         dashOffset={SELECTION_DASH[0]}
+        strokeScaleEnabled={false}
       />
     </>
   );
@@ -219,7 +232,7 @@ const TransformerBack = observer(({ item }) => {
               y: e.target.getAttr('y'),
             };
           }}
-          dragBounFunc={(pos) => {
+          dragBoundFunc={(pos) => {
             let { x, y } = pos;
             const { top, left, right, bottom } = item.selectedRegionsBBox;
             const { stageHeight, stageWidth } = item;
@@ -286,9 +299,7 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
-
-  const scale = 1 / (item.zoomScale || 1);
-
+  const scale = isFF(FF_DEV_3793) ? 1 : 1 / (item.zoomScale || 1);
   const [isMouseWheelClick, setIsMouseWheelClick] = useState(false);
   const [shift, setShift] = useState(false);
   const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
@@ -348,11 +359,15 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
   );
 });
 
-const Selection = observer(({ item, selectionArea }) => {
-
+/**
+ * Previously regions rerendered on window resize because of size recalculations,
+ * but now they are rerendered just by mistake because of unmemoized `splitRegions` in main render.
+ * This is temporary solution to pass in relevant props changed on window resize.
+ */
+const Selection = observer(({ item, selectionArea, ...triggeredOnResize }) => {
   return (
     <>
-      <SelectedRegions key="selected-regions" item={item} selectedRegions={item.selectedRegions} />
+      <SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />
       <SelectionLayer item={item} selectionArea={selectionArea}/>
     </>
   );
@@ -1031,7 +1046,15 @@ export default observer(
                     />
                   ) : <Fragment key={groupName} />;
                 })}
-                <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
+                <Selection
+                  item={item}
+                  selectionArea={item.selectionArea}
+                  isPanning={this.state.isPanning}
+                  // to trigger rerender on resize
+                  stageWidth={item.canvasSize.width}
+                  stageHeight={item.canvasSize.height}
+                  stageScale={item.zoomScale}
+                />
                 <DrawingRegion item={item} />
 
                 {item.crosshair && (

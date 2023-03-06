@@ -426,16 +426,6 @@ export const Annotation = types
       }
     },
 
-    loadRegionState(region) {
-      region.states &&
-        region.states.forEach(s => {
-          const mainViewTag = self.names.get(s.name);
-
-          mainViewTag.unselectAll && mainViewTag.unselectAll();
-          mainViewTag.copyState(s);
-        });
-    },
-
     unloadRegionState(region) {
       region.states &&
         region.states.forEach(s => {

@@ -14,7 +14,7 @@ import { RectRegionModel } from '../../../regions/RectRegion';
 import * as Tools from '../../../tools';
 import ToolsManager from '../../../tools/Manager';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_3377, FF_DEV_3666, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, isFF } from '../../../utils/feature-flags';
 import { guidGenerator } from '../../../utils/unique';
 import { clamp, isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
@@ -230,10 +230,9 @@ const Model = types.model({
     self.selectedRegions.forEach((region) => {
       const regionBBox = region.bboxCoords;
 
-      if (!bboxCoords && !region.bboxCoords) return;
+      if (!regionBBox) return;
 
       if (bboxCoords) {
-
         bboxCoords = {
           left: Math.min(regionBBox?.left, bboxCoords.left),
           top: Math.min(regionBBox?.top, bboxCoords.top),
@@ -241,7 +240,7 @@ const Model = types.model({
           bottom: Math.max(regionBBox?.bottom, bboxCoords.bottom),
         };
       } else {
-        bboxCoords = region.bboxCoords;
+        bboxCoords = regionBBox;
       }
     });
     return bboxCoords;
@@ -988,6 +987,27 @@ const Model = types.model({
       shape.selectRegion();
     },
 
+    /**
+     * Resize of image canvas
+     * @param {*} width
+     * @param {*} height
+     */
+    onResize(width, height, userResize) {
+      self._updateImageSize({ width, height, userResize });
+    },
+
+    event(name, ev, screenX, screenY) {
+      const [canvasX, canvasY] = self.fixZoomedCoords([screenX, screenY]);
+
+      const x = self.canvasToInternalX(canvasX);
+      const y = self.canvasToInternalY(canvasY);
+
+      self.getToolsManager().event(name, ev.evt || ev, x, y, canvasX, canvasY);
+    },
+  }));
+
+const CoordsCalculations = types.model()
+  .actions(self => ({
     // convert screen coords to image coords considering zoom
     fixZoomedCoords([x, y]) {
       if (!self.stageRef) {
@@ -1035,34 +1055,49 @@ const Model = types.model({
 
       return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
     },
+  }))
+  // putting this transforms to views forces other getters to be recalculated on resize
+  .views(self => ({
+    // helps to calculate rotation because internal coords are square and real one usually aren't
+    get whRatio() {
+      // don't need this for absolute coords
+      if (!isFF(FF_DEV_3793)) return 1;
 
-    /**
-     * Resize of image canvas
-     * @param {*} width
-     * @param {*} height
-     */
-    onResize(width, height, userResize) {
-      self._updateImageSize({ width, height, userResize });
+      return self.stageWidth / self.stageHeight;
     },
 
-    event(name, ev, ...coords) {
-      self.getToolsManager().event(name, ev.evt || ev, ...self.fixZoomedCoords(coords));
+    // @todo scale?
+    canvasToInternalX(n) {
+      return n / self.stageWidth * 100;
     },
 
-    /**
-     * Transform JSON data (annotations and predictions) to format
-     */
-    fromStateJSON(obj, fromModel) {
-      const tools = self.getToolsManager().allTools();
+    canvasToInternalY(n) {
+      return n / self.stageHeight * 100;
+    },
 
-      // when there is only the image classification and nothing else, we need to handle it here
-      if (tools.length === 0 && obj.value.choices) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
+    internalToCanvasX(n) {
+      return n / 100 * self.stageWidth;
+    },
 
-        return;
-      }
+    internalToCanvasY(n) {
+      return n / 100 * self.stageHeight;
+    },
+  }));
 
-      tools.forEach(t => t.fromStateJSON && t.fromStateJSON(obj, fromModel));
+// mock coords calculations to transparently pass coords with FF 3793 off
+const AbsoluteCoordsCalculations = CoordsCalculations
+  .views(() => ({
+    canvasToInternalX(n) {
+      return n;
+    },
+    canvasToInternalY(n) {
+      return n;
+    },
+    internalToCanvasX(n) {
+      return n;
+    },
+    internalToCanvasY(n) {
+      return n;
     },
   }));
 
@@ -1074,6 +1109,7 @@ const ImageModel = types.compose(
   IsReadyWithDepsMixin,
   ImageEntityMixin,
   Model,
+  isFF(FF_DEV_3793) ? CoordsCalculations : AbsoluteCoordsCalculations,
 );
 
 const HtxImage = inject('store')(ImageView);
