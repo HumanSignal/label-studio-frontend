@@ -6,7 +6,6 @@ import ObjectBase from '../Base';
 import RegionsMixin from '../../../mixins/Regions';
 import Utils from '../../../utils';
 import { ParagraphsRegionModel } from '../../../regions/ParagraphsRegion';
-import { restoreNewsnapshot } from '../../../core/Helpers';
 import { parseValue } from '../../../utils/data';
 import messages from '../../../utils/messages';
 import styles from './Paragraphs.module.scss';
@@ -454,46 +453,6 @@ const Model = types
         area._range = range._range;
         return area;
       }
-    },
-
-    /**
-     *
-     * @param {*} obj
-     * @param {*} fromModel
-     */
-    fromStateJSON(obj, fromModel) {
-      const { start, startOffset, end, endOffset, text } = obj.value;
-
-      if (fromModel.type === 'textarea' || fromModel.type === 'choices') {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-        return;
-      }
-
-      const states = restoreNewsnapshot(fromModel);
-
-      const tree = {
-        pid: obj.id,
-        parentID: obj.parent_id === null ? '' : obj.parent_id,
-
-        startOffset,
-        endOffset,
-
-        start,
-        end,
-
-        text,
-        score: obj.score,
-        readonly: obj.readonly,
-        flagged: obj.flagged,
-        normalization: obj.normalization,
-        states: [states],
-      };
-
-      states.fromStateJSON(obj);
-
-      self.createRegion(tree);
-
-      self.needsUpdate();
     },
   }));
 
