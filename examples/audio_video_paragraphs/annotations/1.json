@@ -3,7 +3,7 @@
         {
             "result": [
                 {"id":"ryzr4QdL93","from_name":"label","to_name":"text","source":"$dialogue","type":"paragraphlabels","value":{"start":"2","end":"4","startOffset":0,"endOffset":134,"paragraphlabels":["Important Stuff"]}},
-                {"id":"ryzr4QdL94","from_name":"audio_label","to_name":"audio","source":"$audio","type":"labels","value": {"start": 2,"end": 4,"labels":["Neutral"]}}
+                {"id":"ryzr4QdL94","from_name":"audio_label","to_name":"audio","source":"$video","type":"labels","value": {"start": 2,"end": 4,"labels":["Neutral"]}}
             ]
         }
     ],

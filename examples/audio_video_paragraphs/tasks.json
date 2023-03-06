@@ -1,7 +1,7 @@
 [
    {
       "data":{
-         "audio": "https://app.heartex.ai/static/samples/opossum_snow.mp4",
+         "video": "https://app.heartex.ai/static/samples/opossum_snow.mp4",
          "dialogue":[
             {
                "start": 3.1,
