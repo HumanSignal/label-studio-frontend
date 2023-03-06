@@ -3,23 +3,24 @@ import { Group, Image, Layer, Shape } from 'react-konva';
 import { observer } from 'mobx-react';
 import { getParent, getRoot, getType, hasParent, types } from 'mobx-state-tree';
 
-import Canvas from '../utils/canvas';
+import Registry from '../core/Registry';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import Registry from '../core/Registry';
-import { ImageModel } from '../tags/object/Image';
+import Canvas from '../utils/canvas';
+
+import { ImageViewContext } from '../components/ImageView/ImageViewContext';
 import { LabelOnMask } from '../components/ImageView/LabelOnRegion';
+import { Geometry } from '../components/RelationsOverlay/Geometry';
+import { defaultStyle } from '../core/Constants';
 import { guidGenerator } from '../core/Helpers';
 import { AreaMixin } from '../mixins/AreaMixin';
-import { colorToRGBAArray, rgbArrayToHex } from '../utils/colors';
-import { defaultStyle } from '../core/Constants';
-import { AliveRegion } from './AliveRegion';
-import { KonvaRegionMixin } from '../mixins/KonvaRegion';
-import { RegionWrapper } from './RegionWrapper';
-import { Geometry } from '../components/RelationsOverlay/Geometry';
-import { ImageViewContext } from '../components/ImageView/ImageViewContext';
 import IsReadyMixin from '../mixins/IsReadyMixin';
-import { FF_DEV_4081, isFF } from '../utils/feature-flags';
+import { KonvaRegionMixin } from '../mixins/KonvaRegion';
+import { ImageModel } from '../tags/object/Image';
+import { colorToRGBAArray, rgbArrayToHex } from '../utils/colors';
+import { FF_DEV_3793, FF_DEV_4081, isFF } from '../utils/feature-flags';
+import { AliveRegion } from './AliveRegion';
+import { RegionWrapper } from './RegionWrapper';
 
 const highlightOptions = {
   shadowColor: 'red',
@@ -170,7 +171,7 @@ const Model = types
       get touchesLength() {
         return self.touches.length;
       },
-      get bboxCoords() {
+      get bboxCoordsCanvas() {
         if (!self.imageData) {
           const points = { x: [], y: [] };
 
@@ -202,6 +203,23 @@ const Model = types
           top: imageBBox.y,
           right: imageBBox.x + imageBBox.width,
           bottom: imageBBox.y + imageBBox.height,
+        };
+      },
+      /**
+       * Brushes are processed in pixels, so percentages are derived values for them,
+       * unlike for other tools.
+       */
+      get bboxCoords() {
+        const bbox = self.bboxCoordsCanvas;
+
+        if (!bbox) return null;
+        if (!isFF(FF_DEV_3793)) return bbox;
+
+        return {
+          left: self.parent.canvasToInternalX(bbox.left),
+          top: self.parent.canvasToInternalY(bbox.top),
+          right: self.parent.canvasToInternalX(bbox.right),
+          bottom: self.parent.canvasToInternalY(bbox.bottom),
         };
       },
     };

@@ -51,13 +51,6 @@ const _Tool = types
         return DEFAULT_DIMENSIONS.polygon;
       },
 
-      moreRegionParams(obj) {
-        return {
-          x: obj.value.points[0][0],
-          y: obj.value.points[0][1],
-        };
-      },
-
       createRegionOptions({ x, y }) {
         return Super.createRegionOptions({
           points: [[x, y]],
