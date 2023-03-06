@@ -1,5 +1,6 @@
 import { getEnv, getParent, getRoot, getType, types } from 'mobx-state-tree';
 import { guidGenerator } from '../core/Helpers';
+import { isDefined } from '../utils/utilities';
 import { AnnotationMixin } from './AnnotationMixin';
 import { ReadOnlyRegionMixin } from './ReadOnlyMixin';
 
@@ -26,6 +27,8 @@ const RegionsMixin = types
       'prediction-changed',
       'manual',
     ]), 'manual'),
+
+    item_index: types.maybeNull(types.number),
   })
   .volatile(() => ({
     // selected: false,
@@ -70,6 +73,10 @@ const RegionsMixin = types
       return true;
     },
 
+    get currentImageEntity() {
+      return self.parent.findImageEntity(self.item_index ?? 0);
+    },
+
     getConnectedDynamicRegions(selfExcluding) {
       const { regions = [] } = getRoot(self).annotationStore?.selected || {};
 
@@ -95,6 +102,11 @@ const RegionsMixin = types
         self.shapeRef = ref;
       },
 
+      setItemIndex(index) {
+        if (!isDefined(index)) throw new Error('Index must be provided for', self);
+        self.item_index = index;
+      },
+
       beforeDestroy() {
         self.notifyDrawingFinished({ destroy: true });
       },
@@ -113,7 +125,7 @@ const RegionsMixin = types
 
       // @todo this conversion methods should be removed after removing FF_DEV_3793
       convertXToPerc(x) {
-        return (x * 100) / self.parent.stageWidth;
+        return (x * 100) / self.currentImageEntity.stageWidth;
       },
 
       convertYToPerc(y) {
@@ -121,11 +133,11 @@ const RegionsMixin = types
       },
 
       convertHDimensionToPerc(hd) {
-        return (hd * (self.scaleX || 1) * 100) / self.parent.stageWidth;
+        return (hd * (self.scaleX || 1) * 100) / self.currentImageEntity.stageWidth;
       },
 
       convertVDimensionToPerc(vd) {
-        return (vd * (self.scaleY || 1) * 100) / self.parent.stageHeight;
+        return (vd * (self.scaleY || 1) * 100) / self.currentImageEntity.stageHeight;
       },
 
       // update region appearence based on it's current states, for

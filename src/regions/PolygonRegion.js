@@ -272,9 +272,7 @@ const Model = types
       serialize() {
         if (!isFF(FF_DEV_2432) && self.points.length < 3) return null;
         return {
-          original_width: self.parent.naturalWidth,
-          original_height: self.parent.naturalHeight,
-          image_rotation: self.parent.rotation,
+          ...self.parent.serializableValues(self.item_index),
           value: {
             points: isFF(FF_DEV_3793)
               ? self.points.map(p => [p.x, p.y])

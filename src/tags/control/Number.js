@@ -32,7 +32,7 @@ import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
  * @param {number} [min]                      - Minimum number value
  * @param {number} [max]                      - Maximum number value
  * @param {number} [step=1]                   - Step for value increment/decrement
- * @param {number} [defaultValue]             - Default number value; will be added automaticaly to result for required fields
+ * @param {number} [defaultValue]             - Default number value; will be added automatically to result for required fields
  * @param {string} [hotkey]                   - Hotkey for increasing number value
  * @param {boolean} [required=false]          - Whether to require number validation
  * @param {string} [requiredMessage]          - Message to show if validation fails

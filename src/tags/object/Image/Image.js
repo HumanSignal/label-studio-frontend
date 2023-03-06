@@ -1,23 +1,28 @@
-import { destroy, getParent, getRoot, getType, types } from 'mobx-state-tree';
 import { inject } from 'mobx-react';
+import { destroy, getRoot, getType, types } from 'mobx-state-tree';
 
-import * as Tools from '../../tools';
-import ImageView from '../../components/ImageView/ImageView';
-import ObjectBase from './Base';
-import Registry from '../../core/Registry';
-import ToolsManager from '../../tools/Manager';
-import { BrushRegionModel } from '../../regions/BrushRegion';
-import { KeyPointRegionModel } from '../../regions/KeyPointRegion';
-import { PolygonRegionModel } from '../../regions/PolygonRegion';
-import { RectRegionModel } from '../../regions/RectRegion';
-import { EllipseRegionModel } from '../../regions/EllipseRegion';
-import { customTypes } from '../../core/CustomTypes';
-import { parseValue } from '../../utils/data';
-import { AnnotationMixin } from '../../mixins/AnnotationMixin';
-import { clamp } from '../../utils/utilities';
-import { guidGenerator } from '../../utils/unique';
-import { IsReadyWithDepsMixin } from '../../mixins/IsReadyMixin';
-import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, isFF } from '../../utils/feature-flags';
+import ImageView from '../../../components/ImageView/ImageView';
+import { customTypes } from '../../../core/CustomTypes';
+import Registry from '../../../core/Registry';
+import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
+import { IsReadyWithDepsMixin } from '../../../mixins/IsReadyMixin';
+import { BrushRegionModel } from '../../../regions/BrushRegion';
+import { EllipseRegionModel } from '../../../regions/EllipseRegion';
+import { KeyPointRegionModel } from '../../../regions/KeyPointRegion';
+import { PolygonRegionModel } from '../../../regions/PolygonRegion';
+import { RectRegionModel } from '../../../regions/RectRegion';
+import * as Tools from '../../../tools';
+import ToolsManager from '../../../tools/Manager';
+import { parseValue } from '../../../utils/data';
+import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, isFF } from '../../../utils/feature-flags';
+import { guidGenerator } from '../../../utils/unique';
+import { clamp, isDefined } from '../../../utils/utilities';
+import ObjectBase from '../Base';
+import { DrawingRegion } from './DrawingRegion';
+import { ImageEntityMixin } from './ImageEntityMixin';
+import { ImageSelection } from './ImageSelection';
+
+const IMAGE_PRELOAD_COUNT = 3;
 
 /**
  * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
@@ -31,6 +36,28 @@ import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, isFF } from '../../
  *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
  *   <Image name="image" value="$url" rotateControl="true" zoomControl="true"></Image>
  * </View>
+ *  * @example
+ * <!--Labeling configuration to perform multi-image segmentation-->
+ *
+ * Config:
+ * ```xml
+ * <View>
+ *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
+ *   <Image name="image" valueList="$images" rotateControl="true" zoomControl="true"></Image>
+ * </View>
+ * ```
+ *
+ * Data:
+ * ```json
+ * {
+ *   "data": {
+ *     "images": [
+ *       "https://images.unsplash.com/photo-1556740734-7f3a7d7f0f9c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
+ *       "https://images.unsplash.com/photo-1556740734-7f3a7d7f0f9c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
+ *     ]
+ *   }
+ * }
+ * ```
  * @name Image
  * @meta_title Image Tags for Images
  * @meta_description Customize Label Studio with the Image tag to annotate images for computer vision machine learning and data science projects.
@@ -53,10 +80,12 @@ import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, isFF } from '../../
  * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
  * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
  * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
+ * @param {string} [valuelist]                  - References a variable that holds a list of image URLs
  * @param {string} [crossOrigin="none"]         - Configures CORS cross domain behavior for this image, either "none", "anonymous", or "use-credentials", similar to [DOM `img` crossOrigin property](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/crossOrigin).
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
+  valuelist: types.maybeNull(types.string),
   resize: types.maybeNull(types.number),
   width: types.optional(types.string, '100%'),
   height: types.maybeNull(types.string),
@@ -106,185 +135,12 @@ const IMAGE_CONSTANTS = {
   ellipselabels: 'ellipselabels',
 };
 
-const DrawingRegion = types.union(
-  {
-    dispatcher(sn) {
-      if (!sn) return types.null;
-      // may be a tag itself or just its name
-      const objectName = sn.object.name || sn.object;
-      // we have to use current config to detect Object tag by name
-      const tag = window.Htx.annotationStore.names.get(objectName);
-      // provide value to detect Area by data
-      const available = Registry.getAvailableAreas(tag.type, sn);
-      // union of all available Areas for this Object type
-
-      return types.union(...available, types.null);
-    },
-  },
-);
-
-const ImageSelectionPoint = types.model({
-  x: types.number,
-  y: types.number,
-});
-const ImageSelection = types.model({
-  start: types.maybeNull(ImageSelectionPoint),
-  end: types.maybeNull(ImageSelectionPoint),
-}).views(self => {
-  return {
-    get obj() {
-      return getParent(self);
-    },
-    get annotation() {
-      return self.obj.annotation;
-    },
-    get highlightedNodeExists() {
-      return !!self.annotation.highlightedNode;
-    },
-    get isActive() {
-      return self.start && self.end;
-    },
-    get x() {
-      return Math.min((self.start.x * self.scale), (self.end.x * self.scale));
-    },
-    get y() {
-      return Math.min((self.start.y * self.scale), (self.end.y * self.scale));
-    },
-    get width() {
-      return Math.abs((self.end.x * self.scale) - (self.start.x * self.scale));
-    },
-    get height() {
-      return Math.abs((self.end.y * self.scale) - (self.start.y * self.scale));
-    },
-    get scale() {
-      return self.obj.zoomScale;
-    },
-    get bbox() {
-      const { start, end } = self;
-
-      return self.isActive ? {
-        left: Math.min(start.x, end.x),
-        top: Math.min(start.y, end.y),
-        right: Math.max(start.x, end.x),
-        bottom: Math.max(start.y, end.y),
-      } : null;
-    },
-    get onCanvasBbox() {
-      if (!self.isActive) return null;
-
-      const { start, end } = self;
-
-      return {
-        left: self.obj.internalToCanvasX(Math.min(start.x, end.x)),
-        top: self.obj.internalToCanvasY(Math.min(start.y, end.y)),
-        right: self.obj.internalToCanvasX(Math.max(start.x, end.x)),
-        bottom: self.obj.internalToCanvasY(Math.max(start.y, end.y)),
-      };
-    },
-    get onCanvasRect() {
-      if (!isFF(FF_DEV_3793)) return self;
-
-      if (!self.isActive) return null;
-
-      const bbox = self.onCanvasBbox;
-
-      return {
-        x: bbox.left,
-        y: bbox.top,
-        width: bbox.right - bbox.left,
-        height: bbox.bottom - bbox.top,
-      };
-    },
-    includesBbox(bbox) {
-      return self.isActive && bbox && self.bbox.left <= bbox.left && self.bbox.top <= bbox.top && self.bbox.right >= bbox.right && self.bbox.bottom >= bbox.bottom;
-    },
-    intersectsBbox(bbox) {
-      if (!self.isActive || !bbox) return false;
-      const selfCenterX = (self.bbox.left + self.bbox.right) / 2;
-      const selfCenterY = (self.bbox.top + self.bbox.bottom) / 2;
-      const selfWidth = self.bbox.right - self.bbox.left;
-      const selfHeight = self.bbox.bottom - self.bbox.top;
-      const targetCenterX = (bbox.left + bbox.right) / 2;
-      const targetCenterY = (bbox.top + bbox.bottom) / 2;
-      const targetWidth = bbox.right - bbox.left;
-      const targetHeight = bbox.bottom - bbox.top;
-
-      return (Math.abs(selfCenterX - targetCenterX) * 2 < (selfWidth + targetWidth)) &&
-        (Math.abs(selfCenterY - targetCenterY) * 2 < (selfHeight + targetHeight));
-    },
-    get selectionBorders() {
-      if (self.isActive || !self.obj.selectedRegions.length) return null;
-
-      const initial = isFF(FF_DEV_3793)
-        ? { left: 100, top: 100, right: 0, bottom: 0 }
-        : { left: self.obj.stageWidth, top: self.obj.stageHeight, right: 0, bottom: 0 };
-      const bbox = self.obj.selectedRegions.reduce((borders, region) => {
-        return region.bboxCoords ? {
-          left: Math.min(borders.left, region.bboxCoords.left),
-          top: Math.min(borders.top,region.bboxCoords.top),
-          right: Math.max(borders.right, region.bboxCoords.right),
-          bottom: Math.max(borders.bottom, region.bboxCoords.bottom),
-        } : borders;
-      }, initial);
-
-      if (!isFF(FF_DEV_3793)) return bbox;
-
-      return {
-        left: self.obj.internalToCanvasX(bbox.left),
-        top: self.obj.internalToCanvasY(bbox.top),
-        right: self.obj.internalToCanvasX(bbox.right),
-        bottom: self.obj.internalToCanvasY(bbox.bottom),
-      };
-    },
-  };
-}).actions(self => {
-  return {
-    setStart(point) {
-      self.start = point;
-    },
-    setEnd(point) {
-      self.end = point;
-    },
-  };
-});
-
 const Model = types.model({
   type: 'image',
 
   // tools: types.array(BaseTool),
 
-  rotation: types.optional(types.number, 0),
-
   sizeUpdated: types.optional(types.boolean, false),
-
-  /**
-   * Natural sizes of Image
-   * Constants
-   */
-  naturalWidth: types.optional(types.integer, 1),
-  naturalHeight: types.optional(types.integer, 1),
-
-  stageWidth: types.optional(types.number, 1),
-  stageHeight: types.optional(types.number, 1),
-
-  /**
-   * Zoom Scale
-   */
-  zoomScale: types.optional(types.number, 1),
-
-  /**
-   * Coordinates of left top corner
-   * Default: { x: 0, y: 0 }
-   */
-  zoomingPositionX: types.optional(types.number, 0),
-  zoomingPositionY: types.optional(types.number, 0),
-
-  /**
-   * Brightness of Canvas
-   */
-  brightnessGrade: types.optional(types.number, 100),
-
-  contrastGrade: types.optional(types.number, 100),
 
   /**
    * Cursor coordinates
@@ -311,31 +167,30 @@ const Model = types.model({
   drawingRegion: types.optional(DrawingRegion, null),
   selectionArea: types.optional(ImageSelection, { start: null, end: null }),
 }).volatile(() => ({
-  currentImage: 0,
-  stageRatio: 1,
-  // Container's sizes causing limits to calculate a scale factor
-  containerWidth: 1,
-  containerHeight: 1,
-
-  stageZoom: 1,
-  stageZoomX: 1,
-  stageZoomY: 1,
-  currentZoom: 1,
+  currentImage: undefined,
 })).views(self => ({
   get store() {
     return getRoot(self);
+  },
+
+  get multiImage() {
+    return isFF(FF_LSDV_4583) && isDefined(self.valuelist);
   },
 
   get parsedValue() {
     return parseValue(self.value, self.store.task.dataObj);
   },
 
-  // @todo the name is for backward compatibility; change the name later
-  get _value() {
-    const value = self.parsedValue;
+  get parsedValueList() {
+    return parseValue(self.valuelist, self.store.task.dataObj);
+  },
 
-    if (Array.isArray(value)) return value[self.currentImage];
-    return value;
+  get currentSrc() {
+    return self.currentImageEntity.src;
+  },
+
+  get usedValue() {
+    return self.multiImage ? self.valuelist : self.value;
   },
 
   get images() {
@@ -356,7 +211,13 @@ const Model = types.model({
   },
 
   get regs() {
-    return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
+    const regions = self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
+
+    if (isFF(FF_LSDV_4583) && self.valuelist) {
+      return regions.filter(r => (r.item_index ?? 0) === self.currentImage);
+    }
+
+    return regions;
   },
 
   get selectedRegions() {
@@ -367,15 +228,19 @@ const Model = types.model({
     let bboxCoords;
 
     self.selectedRegions.forEach((region) => {
-      if (bboxCoords && region.bboxCoords) {
+      const regionBBox = region.bboxCoords;
+
+      if (!regionBBox) return;
+
+      if (bboxCoords) {
         bboxCoords = {
-          left: Math.min(region.bboxCoords.left, bboxCoords.left),
-          top: Math.min(region.bboxCoords.top, bboxCoords.top),
-          right: Math.max(region.bboxCoords.right, bboxCoords.right),
-          bottom: Math.max(region.bboxCoords.bottom, bboxCoords.bottom),
+          left: Math.min(regionBBox?.left, bboxCoords.left),
+          top: Math.min(regionBBox?.top, bboxCoords.top),
+          right: Math.max(regionBBox?.right, bboxCoords.right),
+          bottom: Math.max(regionBBox?.bottom, bboxCoords.bottom),
         };
       } else {
-        bboxCoords = region.bboxCoords;
+        bboxCoords = regionBBox;
       }
     });
     return bboxCoords;
@@ -398,11 +263,16 @@ const Model = types.model({
   },
 
   get stageTranslate() {
+    const {
+      stageWidth: width,
+      stageHeight: height,
+    } = self;
+
     return {
       0: { x: 0, y: 0 },
-      90: { x: 0, y: self.stageHeight },
-      180: { x: self.stageWidth, y: self.stageHeight },
-      270: { x: self.stageWidth, y: 0 },
+      90: { x: 0, y: height },
+      180: { x: width, y: height },
+      270: { x: width, y: 0 },
     }[self.rotation];
   },
 
@@ -427,11 +297,32 @@ const Model = types.model({
   },
 
   get fillerHeight() {
-    if (self.isSideways) {
-      return `${self.naturalWidth / self.naturalHeight * 100}%`;
-    } else {
-      return `${self.naturalHeight / self.naturalWidth * 100}%`;
+    const { naturalWidth, naturalHeight } = self;
+
+    return self.isSideways
+      ? `${naturalWidth / naturalHeight * 100}%`
+      : `${naturalHeight / naturalWidth * 100}%`;
+  },
+
+  serializableValues(index) {
+    index = index ?? 0;
+    const currentImageEntity = self.multiImage
+      ? self.findImageEntity(index)
+      : self;
+
+    const value = {
+      original_width: currentImageEntity.naturalWidth,
+      original_height: currentImageEntity.naturalHeight,
+      image_rotation: currentImageEntity.rotation,
+    };
+
+    if (self.multiImage && isDefined(index)) {
+      value.item_index = index;
     }
+
+    return {
+      ...value,
+    };
   },
 
   /**
@@ -493,14 +384,22 @@ const Model = types.model({
   get canvasSize() {
     if (self.isSideways) {
       return {
-        width: isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoomX : Math.round(self.naturalHeight * self.stageZoomX),
-        height: isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoomY : Math.round(self.naturalWidth * self.stageZoomY),
+        width: isFF(FF_DEV_3377)
+          ? self.naturalHeight * self.stageZoomX
+          : Math.round(self.naturalHeight * self.stageZoomX),
+        height: isFF(FF_DEV_3377)
+          ? self.naturalWidth * self.stageZoomY
+          : Math.round(self.naturalWidth * self.stageZoomY),
       };
     }
 
     return {
-      width: isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoomX : Math.round(self.naturalWidth * self.stageZoomX),
-      height: isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoomY : Math.round(self.naturalHeight * self.stageZoomY),
+      width: isFF(FF_DEV_3377)
+        ? self.naturalWidth * self.stageZoomX
+        : Math.round(self.naturalWidth * self.stageZoomX),
+      height: isFF(FF_DEV_3377)
+        ? self.naturalHeight * self.stageZoomY
+        : Math.round(self.naturalHeight * self.stageZoomY),
     };
   },
 
@@ -566,6 +465,32 @@ const Model = types.model({
     const manager = ToolsManager.getInstance({ name: self.name });
     const env = { manager, control: self, object: self };
 
+    function createImageEntities() {
+      if (!self.store.task) return;
+    
+      const parsedValue = self.multiImage
+        ? self.parsedValueList
+        : self.parsedValue;
+
+      if (Array.isArray(parsedValue)) {
+        parsedValue.forEach((src, index) => {
+          self.imageEntities.push({
+            id: `${self.name}#${index}`,
+            src,
+            index,
+          });
+        });
+      } else {
+        self.imageEntities.push({
+          id: `${self.name}#0`,
+          src: parsedValue,
+          index: 0,
+        });
+      }
+
+      self.setCurrentImage(0);
+    }
+
     function afterAttach() {
       if (self.selectioncontrol)
         manager.addTool('MoveTool', Tools.Selection.create({}, env));
@@ -581,13 +506,18 @@ const Model = types.model({
 
       if (self.rotatecontrol)
         manager.addTool('RotateTool', Tools.Rotate.create({}, env));
+
+      createImageEntities();
     }
 
     function getToolsManager() {
       return manager;
     }
 
-    return { afterAttach, getToolsManager };
+    return {
+      afterAttach,
+      getToolsManager,
+    };
   }).extend((self) => {
     let skipInteractions = false;
 
@@ -620,6 +550,12 @@ const Model = types.model({
       //self.annotation.history.freeze();
     },
 
+    afterRegionSelected(region) {
+      if (self.multiImage) {
+        self.setCurrentImage(region.item_index);
+      }
+    },
+
     createDrawingRegion(areaValue, resultValue, control, dynamic) {
       const controlTag = self.annotation.names.get(control.name);
 
@@ -636,6 +572,7 @@ const Model = types.model({
         ...areaValue,
         results: [result],
         dynamic,
+        item_index: self.currentImage,
       };
 
       self.drawingRegion = areaRaw;
@@ -685,8 +622,32 @@ const Model = types.model({
       self.gridsize = String(value);
     },
 
-    setCurrentImage(i) {
-      self.currentImage = i;
+    setCurrentImage(index = 0) {
+      index = index ?? 0;
+      if (index === self.currentImage) return;
+      self.currentImage = index;
+      self.currentImageEntity = self.findImageEntity(index);
+      if (isFF(FF_LSDV_4583_6)) self.preloadImages();
+    },
+
+    preloadImages() {
+      self.currentImageEntity.setImageLoaded(false);
+      self.currentImageEntity.preload();
+
+      if (self.multiImage) {
+        const [currentIndex, length] = [self.currentImage, self.imageEntities.length];
+        const prevSliceIndex = clamp(currentIndex - IMAGE_PRELOAD_COUNT, 0, currentIndex);
+        const nextSliceIndex = clamp(currentIndex + 1 + IMAGE_PRELOAD_COUNT, currentIndex, length - 1);
+
+        const images = [
+          ...self.imageEntities.slice(prevSliceIndex, currentIndex),
+          ...self.imageEntities.slice(currentIndex + 1, nextSliceIndex),
+        ];
+
+        images.forEach((imageEntity) => {
+          imageEntity.preload();
+        });
+      }
     },
 
     /**
@@ -702,7 +663,8 @@ const Model = types.model({
      * Set zoom
      */
     setZoom(scale) {
-      self.currentZoom = clamp(scale, 1, Infinity);
+      scale = clamp(scale, 1, Infinity);
+      self.currentZoom = scale;
 
       // cool comment about all this stuff
       const maxScale = self.maxScale;
@@ -759,18 +721,26 @@ const Model = types.model({
     },
 
     setZoomPosition(x, y) {
-      const min = {
-        x: (isFF(FF_DEV_3377) ? self.canvasSize.width : self.containerWidth) - self.stageComponentSize.width * self.zoomScale,
-        y: (isFF(FF_DEV_3377) ? self.canvasSize.height : self.containerHeight) - self.stageComponentSize.height * self.zoomScale,
-      };
+      const [width, height] = isFF(FF_DEV_3377)
+        ? [self.canvasSize.width, self.canvasSize.height]
+        : [self.containerWidth, self.containerHeight];
 
-      self.zoomingPositionX = clamp(x, min.x, 0);
-      self.zoomingPositionY = clamp(y, min.y, 0);
+      const [minX, minY] = [
+        width - self.stageComponentSize.width * self.zoomScale,
+        height - self.stageComponentSize.height * self.zoomScale,
+      ];
+
+      self.zoomingPositionX = clamp(x, minX, 0);
+      self.zoomingPositionY = clamp(y, minY, 0);
     },
 
     resetZoomPositionToCenter() {
-      const { containerWidth, containerHeight, stageComponentSize, zoomScale } = self;
+      const { stageComponentSize, zoomScale } = self;
       const { width, height } = stageComponentSize;
+
+      const [containerWidth, containerHeight] = isFF(FF_DEV_3377)
+        ? [self.canvasSize.width, self.canvasSize.height]
+        : [self.containerWidth, self.containerHeight];
 
       self.setZoomPosition((containerWidth - width * zoomScale) / 2, (containerHeight - height * zoomScale) / 2);
     },
@@ -875,6 +845,7 @@ const Model = types.model({
 
     rotate(degree = -90) {
       self.rotation = (self.rotation + degree + 360) % 360;
+
       let ratioK = 1 / self.stageRatio;
 
       if (self.isSideways) {
@@ -973,11 +944,12 @@ const Model = types.model({
     },
 
     updateImageSize(ev) {
-      const { naturalWidth, naturalHeight } = ev.target;
+      const { naturalWidth, naturalHeight } = self.imageRef ?? ev.target;
       const { offsetWidth, offsetHeight } = self.containerRef;
 
       self.naturalWidth = naturalWidth;
       self.naturalHeight = naturalHeight;
+
       self._updateImageSize({ width: offsetWidth, height: offsetHeight });
       // after regions' sizes adjustment we have to reset all saved history changes
       // mobx do some batch update here, so we have to reset it asynchronously
@@ -1010,7 +982,6 @@ const Model = types.model({
 
     addShape(shape) {
       self.regions.push(shape);
-
       self.annotation.addRegion(shape);
       self.setSelected(shape.id);
       shape.selectRegion();
@@ -1136,6 +1107,7 @@ const ImageModel = types.compose(
   ObjectBase,
   AnnotationMixin,
   IsReadyWithDepsMixin,
+  ImageEntityMixin,
   Model,
   isFF(FF_DEV_3793) ? CoordsCalculations : AbsoluteCoordsCalculations,
 );

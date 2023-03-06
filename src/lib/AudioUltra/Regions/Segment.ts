@@ -391,6 +391,12 @@ export class Segment extends Events<SegmentEvents> {
     return this.controller.convertToRegion(this.id, labels, render);
   }
 
+  convertToSegment(render = false) {
+    if (!this.updateable) return;
+
+    return this.controller.convertToSegment(this.id, render);
+  }
+
   remove() {
     if (!this.deleteable) return;
     this.waveform.invoke('regionRemoved', [this]);
