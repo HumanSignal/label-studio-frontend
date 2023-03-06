@@ -45,6 +45,15 @@ const { TextArea } = Input;
  *   <Rectangle name="bbox" toName="image" strokeWidth="3"/>
  *   <TextArea name="transcription" toName="image" editable="true" perRegion="true" required="true" maxSubmissions="1" rows="5" placeholder="Recognized Text" displayMode="region-list"/>
  * </View>
+ * @example
+ * <!--
+ *  You can keep submissions unique
+ *  - `fflag_feat_front_lsdv_4659_skipduplicates_060323_short` should be enabled to use `skipDuplicates` attribute.
+ * -->
+ * <View>
+ *   <Audio name="audio" value="$audio"/>
+ *   <TextArea name="genre" toName="audio" skipDuplicates="true" />
+ * </View>
  * @name TextArea
  * @meta_title Textarea Tag for Text areas
  * @meta_description Customize Label Studio with the TextArea tag to support audio transcription, image captioning, and OCR tasks for machine learning and data science projects.
@@ -55,6 +64,7 @@ const { TextArea } = Input;
  * @param {string=} [placeholder]          - Placeholder text
  * @param {string=} [maxSubmissions]       - Maximum number of submissions
  * @param {boolean=} [editable=false]      - Whether to display an editable textarea
+ * @param {boolean} [skipDuplicates=false] - Prevent duplicates in textarea inputs (see example below)
  * @param {boolean=} [transcription=false] - If false, always show editor
  * @param {number} [rows]                  - Number of rows in the textarea
  * @param {boolean} [required=false]       - Validate whether content in textarea is required
