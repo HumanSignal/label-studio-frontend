@@ -20,7 +20,7 @@ import styles from '../../../components/HtxTextBox/HtxTextBox.module.scss';
 import { Block, Elem } from '../../../utils/bem';
 import './TextArea.styl';
 import { IconTrash } from '../../../assets/icons';
-import { FF_DEV_1564_DEV_1565, FF_DEV_3730, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_1564_DEV_1565, FF_DEV_3730, FF_LSDV_4659, isFF } from '../../../utils/feature-flags';
 import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
 
 const { TextArea } = Input;
@@ -73,6 +73,9 @@ const TagAttrs = types.model({
   maxsubmissions: types.maybeNull(types.string),
   editable: types.optional(types.boolean, false),
   transcription: false,
+  ...(isFF(FF_LSDV_4659) ? {
+    skipduplicates: types.optional(types.boolean, false),
+  } : {}),
 });
 
 const Model = types.model({
@@ -137,6 +140,15 @@ const Model = types.model({
   get result() {
     return self.annotation.results.find(r => r.from_name === self && (!self.area || r.area === self.area));
   },
+
+  hasResult(text) {
+    if (!self.result) return false;
+    let value = self.result.mainValue;
+
+    if (!Array.isArray(value)) value = [value];
+    text = text.toLowerCase();
+    return value.some(val => val.toLowerCase() === text);
+  },
 })).actions(self => {
   let lastActiveElement = null;
   let lastActiveElementModel = null;
@@ -164,6 +176,10 @@ const Model = types.model({
 
     requiredModal() {
       InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
+    },
+
+    uniqueModal() {
+      InfoModal.warning('There is already an entry with that text. Please enter unique text.');
     },
 
     setResult(value) {
@@ -221,9 +237,28 @@ const Model = types.model({
       }
     },
 
+    validateValue(text) {
+      if (isFF(FF_LSDV_4659) && self.skipduplicates && self.hasResult(text)) {
+        self.uniqueModal();
+        return false;
+      }
+      return true;
+    },
+
     addText(text, pid) {
+      if (!self.validateValue(text)) return;
+
       self.createRegion(text, pid);
       self.onChange();
+    },
+
+    addTextToResult(text, result) {
+      if (!self.validateValue(text)) return;
+
+      const newValue = result.mainValue.toJSON();
+
+      newValue.push(text);
+      result.setValue(newValue);
     },
 
     beforeSend() {
@@ -525,10 +560,8 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
 
   const submitValue = useCallback(() => {
     if (result) {
-      const newValue = result.mainValue.toJSON();
 
-      newValue.push(item._value);
-      result.setValue(newValue);
+      item.addTextToResult(item._value, result);
       item.setValue('');
     } else {
       item.addText(item._value);
