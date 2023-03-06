@@ -88,8 +88,10 @@ const Model = types
         bottom: self.points[0].y,
       });
 
-      // recalc on resize
-      fixMobxObserve(self.parent.stageWidth, self.parent.stageHeight);
+      if (!isFF(FF_DEV_3793)) {
+        // recalc on resize
+        fixMobxObserve(self.parent.stageWidth, self.parent.stageHeight);
+      }
 
       return bbox;
     },
