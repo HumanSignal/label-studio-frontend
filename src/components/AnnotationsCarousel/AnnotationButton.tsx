@@ -40,6 +40,7 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
   const [isContextMenuOpen, setIsContextMenuOpen] = useState<boolean>(false);
 
   const CommentIcon = renderCommentIcon(entity);
+  const historyActionType = annotationStore.history.toJSON()?.[0]?.actionType;
 
   useEffect(() => {
     setIsGroundTruth(entity.ground_truth);
@@ -149,13 +150,13 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
           >
             {isPrediction && <LsSparks style={{ width: 18, height: 18 }}/>}
           </Elem>
-          {entity.history.hasChanges && <Elem name='status' mod={{ approved: true }}><IconCheckBold /></Elem>}
-          {entity.skipped && (
+          {historyActionType === 'accepted' && <Elem name='status' mod={{ approved: true }}><IconCheckBold /></Elem>}
+          {historyActionType && (
             <Elem name='status' mod={{ skipped: true }}>
               <IconCrossBold />
             </Elem>
           )}
-          {((entity.userGenerate && !entity.sentUserGenerate) || entity.draftSelected) && (
+          {entity.history.canUndo && (
             <Elem name='status' mod={{ updated: true }}>
               <IconCheckBold />
             </Elem>
