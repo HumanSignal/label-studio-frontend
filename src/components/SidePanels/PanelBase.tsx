@@ -8,6 +8,7 @@ import { useDrag } from '../../hooks/useDrag';
 import { clamp, isDefined } from '../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
 import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
+import { TabsContainer } from './TabsContainer';
 
 export type PanelBaseExclusiveProps = 'name' | 'title'
 
@@ -93,7 +94,6 @@ export const PanelBase: FC<PanelBaseProps> = ({
   locked = false,
   positioning = false,
   onSnap,
-  onCombineTabPanels,
   onResize,
   onResizeStart,
   onResizeEnd,
@@ -104,7 +104,6 @@ export const PanelBase: FC<PanelBaseProps> = ({
 }) => {
   const headerRef = useRef<HTMLDivElement>();
   const panelRef = useRef<HTMLDivElement>();
-  const tabRef = useRef<HTMLDivElement>();
   const resizerRef = useRef<HTMLDivElement>();
   const handlers = useRef({ onResize, onResizeStart, onResizeEnd, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
   const [resizing, setResizing] = useState<string | undefined>();
@@ -219,6 +218,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       return { x, y, oX, oY, allowDrag };
     },
 
+  
     onMouseMove(e, data) {
       if (data) {
         const { x, y, oX, oY } = data;
@@ -367,13 +367,10 @@ export const PanelBase: FC<PanelBaseProps> = ({
         {visible && (
           <>
             {isFF(FF_DEV_3873) ? (
-              <Elem name="body" >
-                {/* add if dragging */}
-                <Elem ref={tabRef} name="tab">
-                  <Elem tag={IconOutlinerDrag} width={20} />
-                  {title}
-                </Elem>
-                <Block name={name}>{children}</Block>
+              <Elem name="body">
+                <TabsContainer title={title}>
+                  <Block name={name}>{children}</Block>
+                </TabsContainer>
               </Elem>
             ) : (
               <Elem name="body">
@@ -387,7 +384,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       {visible && !positioning && !locked && (
         <Elem name="resizers" ref={resizerRef} mod={{ locked: positioning || locked }}>
           {resizers.map(res => {
-            const shouldRender = ((res === "left" || res === "right") && alignment !== res) || detached || detached;
+            const shouldRender = ((res === 'left' || res === 'right') && alignment !== res) || detached || detached;
 
             return shouldRender ? (
               <Elem key={res} name="resizer" mod={{ drag: res === resizing }} data-resize={res} />
