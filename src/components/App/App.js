@@ -37,6 +37,7 @@ import Grid from './Grid';
 import { SidebarPage, SidebarTabs } from '../SidebarTabs/SidebarTabs';
 import { AnnotationTab } from '../AnnotationTab/AnnotationTab';
 import { SidePanels } from '../SidePanels/SidePanels';
+import { SideTabPanels } from '../SidePanels/SideTabPanels';
 import { Block, Elem } from '../../utils/bem';
 import './App.styl';
 import { Space } from '../../common/Space/Space';
@@ -228,15 +229,26 @@ class App extends Component {
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
           <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled, showingBottomBar: isFF(FF_DEV_3873) }}>
             {newUIEnabled ? (
-              <SidePanels
-                panelsHidden={viewingAll}
-                currentEntity={as.selectedHistory ?? as.selected}
-                regions={as.selected.regionStore}
-              >
-                {mainContent}
+              isFF(FF_DEV_3873) ? (
+                <SideTabPanels
+                  panelsHidden={viewingAll}
+                  currentEntity={as.selectedHistory ?? as.selected}
+                  regions={as.selected.regionStore}
+                >
+                  {mainContent}
+                  {isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+                </SideTabPanels>
+              ) : (
+                <SidePanels
+                  panelsHidden={viewingAll}
+                  currentEntity={as.selectedHistory ?? as.selected}
+                  regions={as.selected.regionStore}
+                >
+                  {mainContent}
 
-                {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store}/>}
-              </SidePanels>
+                  {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+                </SidePanels>
+              )
             ) : (
               <>
                 {mainContent}

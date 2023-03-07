@@ -1,8 +1,9 @@
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useContext, useState } from 'react';
 import { IconOutlinerDrag } from '../../assets/icons';
 import { Block, Elem } from '../../utils/bem';
 import throttle from 'lodash.throttle';
 import './Tabs.styl';
+import { SidePanelsContext } from './SidePanelsContext';
 
 
 enum DroppableSide {
@@ -20,8 +21,17 @@ const determineLeftOrRight = (event: React.DragEvent<HTMLElement>) => {
   return x > half ? DroppableSide.right : DroppableSide.left;
 };
 
-export const Tabs = ({ children, title }: { children: ReactElement<any, any>, title: string }) => {
+const determineDroppableArea = (event: React.DragEvent<HTMLElement>) => {
+  const targetId = (event.target as HTMLElement).id;
 
+  return targetId.includes('droppable') && dragging && !targetId.includes(dragging);
+};
+
+
+export const Tabs = ({ children, title }: { children: ReactElement<any, any>, title: string }) => {
+  const state = useContext(SidePanelsContext);
+  
+  console.log(state);
   const [dragOverSide, setDragOverSide] = useState<DroppableSide | undefined>();
 
   const handleDrop = (event: React.DragEvent<HTMLElement>) => {
@@ -34,9 +44,7 @@ export const Tabs = ({ children, title }: { children: ReactElement<any, any>, ti
   };
   
   const handleDragOver = (event: React.DragEvent<HTMLElement>) => {
-    event.preventDefault();
-    const targetId = (event.target as HTMLElement).id;
-    const isDropArea = targetId.includes('droppable') && dragging && !targetId.includes(dragging);
+    const isDropArea = determineDroppableArea(event);
 
     throttle(() => {
       console.log('throttle');
@@ -55,13 +63,13 @@ export const Tabs = ({ children, title }: { children: ReactElement<any, any>, ti
     <Block name="panel-tabs">
       <div
         draggable={true}
-        onDrop={e => handleDrop(e)}
+        onDrop={event => handleDrop(event)}
         onDragOver={event => handleDragOver(event)}
         onDragStart={event => handleDragStart(event, title)}
       >
         <div >
           <Elem id={`${title}-droppable`} name="tab" mod={{ dragOverSide }}>
-            <Elem id={title} width={20} />
+            <Elem name="icon" tag={IconOutlinerDrag} width={20} mod={{ dragging: dragging === title }} />
             {title}
           </Elem>
           <Elem name="contents">{children}</Elem>

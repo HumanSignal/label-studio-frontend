@@ -1,6 +1,6 @@
 .panel-tabs
     &__tab
-        padding 4px 24px 6px 8px
+        padding 4px 24px 6px 24px
         height 32px
         width fit-content
         font-weight 500
@@ -15,6 +15,9 @@
         align-items center
         background #fff
         cursor grab
+
+        &:hover svg
+            color: #000
 
         &_dragOverSide_left
             &::before
@@ -36,3 +39,8 @@
 
        &__contents
             background #fff
+
+    &__icon
+        position absolute
+        left 7px
+        color #fff
