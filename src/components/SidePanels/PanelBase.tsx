@@ -8,7 +8,7 @@ import { useDrag } from '../../hooks/useDrag';
 import { clamp, isDefined } from '../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
 import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
-import { TabsContainer } from './TabsContainer';
+import { Tabs } from './Tabs';
 
 export type PanelBaseExclusiveProps = 'name' | 'title'
 
@@ -368,9 +368,9 @@ export const PanelBase: FC<PanelBaseProps> = ({
           <>
             {isFF(FF_DEV_3873) ? (
               <Elem name="body">
-                <TabsContainer title={title}>
+                <Tabs title={title}>
                   <Block name={name}>{children}</Block>
-                </TabsContainer>
+                </Tabs>
               </Elem>
             ) : (
               <Elem name="body">

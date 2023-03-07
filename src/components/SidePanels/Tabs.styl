@@ -1,0 +1,38 @@
+.panel-tabs
+    &__tab
+        padding 4px 24px 6px 8px
+        height 32px
+        width fit-content
+        font-weight 500
+        font-size 14px
+        line-height 24px
+        letter-spacing 0.15px
+        border-width 1px 1px 0px 1px;
+        border-style solid;
+        transform translateY(2px)
+        border-color rgba(65, 60, 74, 0.16);
+        display flex
+        align-items center
+        background #fff
+        cursor grab
+
+        &_dragOverSide_left
+            &::before
+                content ''
+                position absolute
+                left 0
+                background #85cbfd
+                width 4px
+                height 100%
+
+        &_dragOverSide_right
+            &::after
+                content ''
+                position absolute
+                right 0
+                background #85cbfd
+                width 4px
+                height 100%
+
+       &__contents
+            background #fff
