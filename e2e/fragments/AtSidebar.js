@@ -44,6 +44,9 @@ module.exports = {
   locate(locator) {
     return locate(this._sideBarLocator).find(locator);
   },
+  locateSelectedRegion(locator) {
+    return locate(this._regionSelectedLocator).find(locator);
+  },
   see(text) {
     I.see(text, this._sideBarLocator);
   },

@@ -75,6 +75,7 @@ module.exports.config = {
     featureFlags: {
       require: './plugins/featureFlags.js',
       enabled: true,
+      defaultFeatureFlags: require('./setup/feature-flags'),
     },
     istanbulCoverage: {
       require: './plugins/istanbulСoverage.js',
