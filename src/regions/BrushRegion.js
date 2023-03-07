@@ -403,12 +403,7 @@ const Model = types
           value.rle = Array.from(rle);
         }
 
-        const res = {
-          ...self.parent.serializableValues(self.item_index),
-          value,
-        };
-
-        return res;
+        return self.parent.createSerializedResult(self, value);
       },
     };
   });

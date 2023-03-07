@@ -130,14 +130,13 @@ const Model = types
      * @return {KeyPointRegionResult}
      */
     serialize() {
-      const result = {
-        ...self.parent.serializableValues(self.item_index),
-        value: {
-          x: self.convertXToPerc(self.x),
-          y: self.convertYToPerc(self.y),
-          width: self.convertHDimensionToPerc(self.width),
-        },
+      const value = {
+        x: self.convertXToPerc(self.x),
+        y: self.convertYToPerc(self.y),
+        width: self.convertHDimensionToPerc(self.width),
       };
+
+      const result = self.parent.createSerializedResult(self, value);
 
       if (self.dynamic) {
         result.is_positive = !self.negative;

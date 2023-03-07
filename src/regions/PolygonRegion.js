@@ -274,16 +274,16 @@ const Model = types
        */
       serialize() {
         if (!isFF(FF_DEV_2432) && self.points.length < 3) return null;
-        return {
-          ...self.parent.serializableValues(self.item_index),
-          value: {
-            points: self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
-            ...(isFF(FF_DEV_2432)
-              ? { closed: self.closed }
-              : {}
-            ),
-          },
+      
+        const value = {
+          points: self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
+          ...(isFF(FF_DEV_2432)
+            ? { closed: self.closed }
+            : {}
+          ),
         };
+
+        return self.parent.createSerializedResult(self, value);
       },
     };
   });
