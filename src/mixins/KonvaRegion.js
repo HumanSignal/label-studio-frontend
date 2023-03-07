@@ -1,4 +1,5 @@
 import { types } from 'mobx-state-tree';
+import { FF_DEV_3793, isFF } from '../utils/feature-flags';
 
 export const KonvaRegionMixin = types.model({})
   .views((self) => {
@@ -6,6 +7,18 @@ export const KonvaRegionMixin = types.model({})
       get bboxCoords() {
         console.warn('KonvaRegionMixin needs to implement bboxCoords getter in regions');
         return null;
+      },
+      get bboxCoordsCanvas() {
+        const bbox = self.bboxCoords;
+
+        if (!isFF(FF_DEV_3793)) return bbox;
+
+        return {
+          left: self.parent.internalToCanvasX(bbox.left),
+          top: self.parent.internalToCanvasY(bbox.top),
+          right: self.parent.internalToCanvasX(bbox.right),
+          bottom: self.parent.internalToCanvasY(bbox.bottom),
+        };
       },
       get control() {
         // that's a little bit tricky, but it seems that having a tools field is necessary for the region-creating control tag and it's might be a clue

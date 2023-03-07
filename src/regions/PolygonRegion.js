@@ -19,7 +19,35 @@ import { KonvaRegionMixin } from '../mixins/KonvaRegion';
 import { observer } from 'mobx-react';
 import { createDragBoundFunc } from '../utils/image';
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
-import { FF_DEV_2432, isFF } from '../utils/feature-flags';
+import { FF_DEV_2432, FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { fixMobxObserve } from '../utils/utilities';
+
+const PolygonRegionAbsoluteCoordsDEV3793 = types
+  .model({
+    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
+  })
+  .actions(self => ({
+    updateImageSize(wp, hp, sw, sh) {
+      if (self.coordstype === 'px') {
+        self.points.forEach(p => {
+          const x = (sw * p.relativeX) / 100;
+          const y = (sh * p.relativeY) / 100;
+
+          p._movePoint(x, y);
+        });
+      }
+
+      if (!self.annotation.sentUserGenerate && self.coordstype === 'perc') {
+        self.points.forEach(p => {
+          const x = (sw * p.x) / 100;
+          const y = (sh * p.y) / 100;
+
+          self.coordstype = 'px';
+          p._movePoint(x, y);
+        });
+      }
+    },
+  }));
 
 const Model = types
   .model({
@@ -30,8 +58,6 @@ const Model = types
 
     points: types.array(types.union(PolygonPoint, types.array(types.number)), []),
     closed: true,
-
-    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
   })
   .volatile(() => ({
     mouseOverStartPoint: false,
@@ -48,20 +74,26 @@ const Model = types
       return getRoot(self);
     },
     get bboxCoords() {
-      return self.points?.length && self.points.reduce((bboxCoords, point) => {
-        if (bboxCoords && point) return {
-          left: Math.min(bboxCoords.left, point.x),
-          top: Math.min(bboxCoords.top, point.y),
-          right: Math.max(bboxCoords.right, point.x),
-          bottom: Math.max(bboxCoords.bottom, point.y),
-        };
-        else return {};
-      }, {
+      if (!self.points?.length) return {};
+
+      const bbox = self.points.reduce((bboxCoords, point) => ({
+        left: Math.min(bboxCoords.left, point.x),
+        top: Math.min(bboxCoords.top, point.y),
+        right: Math.max(bboxCoords.right, point.x),
+        bottom: Math.max(bboxCoords.bottom, point.y),
+      }), {
         left: self.points[0].x,
         top: self.points[0].y,
         right: self.points[0].x,
         bottom: self.points[0].y,
       });
+
+      if (!isFF(FF_DEV_3793)) {
+        // recalc on resize
+        fixMobxObserve(self.parent.stageWidth, self.parent.stageHeight);
+      }
+
+      return bbox;
     },
   }))
   .actions(self => {
@@ -156,8 +188,8 @@ const Model = types
       insertPoint(insertIdx, x, y) {
         const p = {
           id: guidGenerator(),
-          x,
-          y,
+          x: isFF(FF_DEV_3793) ? self.parent.canvasToInternalX(x) : x,
+          y: isFF(FF_DEV_3793) ? self.parent.canvasToInternalY(y) : y,
           size: self.pointSize,
           style: self.pointStyle,
           index: self.points.length,
@@ -174,16 +206,6 @@ const Model = types
           size: self.pointSize,
           style: self.pointStyle,
           index: self.points.length,
-        });
-      },
-
-      // @todo not used
-      // only px coordtype here
-      rotate(degree = -90) {
-        self.points.forEach(point => {
-          const p = self.rotatePoint(point, degree);
-
-          point._movePoint(p.x, p.y);
         });
       },
 
@@ -225,30 +247,7 @@ const Model = types
         self.scaleY = y;
       },
 
-      updateOffset() {
-        self.points.map(p => p.computeOffset());
-      },
-
-      updateImageSize(wp, hp, sw, sh) {
-        if (self.coordstype === 'px') {
-          self.points.forEach(p => {
-            const x = (sw * p.relativeX) / 100;
-            const y = (sh * p.relativeY) / 100;
-
-            p._movePoint(x, y);
-          });
-        }
-
-        if (!self.annotation.sentUserGenerate && self.coordstype === 'perc') {
-          self.points.forEach(p => {
-            const x = (sw * p.x) / 100;
-            const y = (sh * p.y) / 100;
-
-            self.coordstype = 'px';
-            p._movePoint(x, y);
-          });
-        }
-      },
+      updateImageSize() {},
 
       /**
        * @example
@@ -277,7 +276,9 @@ const Model = types
         return {
           ...self.parent.serializableValues(self.item_index),
           value: {
-            points: self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
+            points: isFF(FF_DEV_3793)
+              ? self.points.map(p => [p.x, p.y])
+              : self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
             ...(isFF(FF_DEV_2432)
               ? { closed: self.closed }
               : {}
@@ -295,6 +296,7 @@ const PolygonRegionModel = types.compose(
   NormalizationMixin,
   KonvaRegionMixin,
   Model,
+  ...(isFF(FF_DEV_3793) ? [] : [PolygonRegionAbsoluteCoordsDEV3793]),
 );
 
 /**
@@ -320,7 +322,7 @@ function getAnchorPoint({ flattenedPoints, cursorX, cursorY }) {
 }
 
 function getFlattenedPoints(points) {
-  const p = points.map(p => [p.x, p.y]);
+  const p = points.map(p => [p.canvasX, p.canvasY]);
 
   return p.reduce(function(flattenedPoints, point) {
     return flattenedPoints.concat(point);
@@ -393,7 +395,14 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
           const d = [t.getAttr('x', 0), t.getAttr('y', 0)];
           const scale = [t.getAttr('scaleX', 1), t.getAttr('scaleY', 1)];
 
-          item.setPoints(t.getAttr('points').map((c, idx) => c * scale[idx % 2] + d[idx % 2]));
+          if (isFF(FF_DEV_3793)) {
+            item.setPoints(t.getAttr('points').map((p, idx) => idx % 2
+              ? item.parent.canvasToInternalY(p * scale[1] + d[1])
+              : item.parent.canvasToInternalX(p * scale[0] + d[0]),
+            ));
+          } else {
+            item.setPoints(t.getAttr('points').map((c, idx) => c * scale[idx % 2] + d[idx % 2]));
+          }
 
           t.setAttr('x', 0);
           t.setAttr('y', 0);
@@ -509,7 +518,7 @@ const HtxPolygonView = ({ item }) => {
 
         item.annotation.history.freeze(item.id);
       },
-      dragBoundFunc: createDragBoundFunc(item, { x: -item.bboxCoords.left , y: -item.bboxCoords.top }),
+      dragBoundFunc: createDragBoundFunc(item, { x: -item.bboxCoords.left, y: -item.bboxCoords.top }),
       onDragEnd: e => {
         if (!isDragging) return;
         const t = e.target;

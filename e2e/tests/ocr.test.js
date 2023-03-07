@@ -114,6 +114,7 @@ const REGIONS = [
     'y': 57.790927021696255,
     'width': 98.28125,
     'height': 11.242603550295858,
+    'text': 'This is a paragraph',
   },
   {
     'label': 'Header',
@@ -129,6 +130,7 @@ const REGIONS = [
     'y': 78.10650887573965,
     'width': 64.53125,
     'height': 4.930966469428008,
+    'text': 'This is a paragraph',
   },
   {
     'label': 'Header',
