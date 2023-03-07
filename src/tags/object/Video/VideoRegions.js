@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Layer, Rect, Stage, Transformer } from 'react-konva';
 import Constants from '../../../core/Constants';
 import { Annotation } from '../../../stores/Annotation/Annotation';
-import { fixMobxObserve } from '../TimeSeries/helpers';
+import { fixMobxObserve } from '../../../utils/utilities';
 import { Rectangle } from './Rectangle';
 import { createBoundingBoxGetter, createOnDragMoveHandler } from './TransformTools';
 

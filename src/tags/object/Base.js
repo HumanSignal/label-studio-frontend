@@ -32,15 +32,6 @@ const ObjectBase = types
       return true;
     },
   }))
-  .actions(self => ({
-    toStateJSON() {
-      if (!self.regions) return;
-
-      const objectsToReturn = self.regions.map(r => r.toStateJSON());
-
-      return objectsToReturn;
-    },
-  }))
   .actions(self => {
     const props = {};
 

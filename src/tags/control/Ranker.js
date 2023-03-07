@@ -129,26 +129,6 @@ const Model = types
       self.regions = arrayMove(self.regions, oldIndex, newIndex);
       self.setUpdate();
     },
-
-    toStateJSON() {
-      return {
-        from_name: self.name,
-        to_name: self.name,
-        value: {
-          // weights: ranked,
-          items: self.regions.map(r => r.value),
-          selected: self.regions.map(r => r.selected),
-        },
-      };
-    },
-
-    fromStateJSON(obj) {
-      obj.value.items.forEach((v, idx) => {
-        self._addRegion(v, idx);
-      });
-
-      self.setUpdate();
-    },
   }));
 
 const RankerModel = types.compose('RankerModel', TagAttrs, Model);
