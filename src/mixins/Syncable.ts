@@ -71,15 +71,29 @@ export class SyncManager {
 
 export const SyncManagerFactory = {
   managers: new Map<string, SyncManager>(),
-  get(name: string): SyncManager {
-    if (!this.managers.has(name)) {
-      this.managers.set(name, new SyncManager());
+
+  /**
+   * Retrieve or create SyncManager
+   * @param name sync manager's name, can be any string
+   * @param fallbackName previously `sync` attrs of two tags were referring their respective names;
+   *                     for backward compatibility these names can be passed here,
+   *                     so the first tag will create manager by the name of the second tag
+   *                     and the second tag will get this manager by the name of this tag.
+   * @returns SyncManager
+   */
+  get(name: string, fallbackName?: string): SyncManager {
+    let manager = this.managers.get(name);
+
+    if (!manager && fallbackName) manager = this.managers.get(fallbackName);
+
+    if (!manager) {
+      manager = new SyncManager();
+      this.managers.set(name, manager);
     }
-    return this.managers.get(name)!;
+
+    return manager;
   },
 };
-
-(global as any).syncManagers = SyncManagerFactory;
 
 export type SyncHandler = (data: SyncData, event: string) => void
 
@@ -108,8 +122,7 @@ const SyncableMixin = types
     afterCreate() {
       if (!self.sync) return;
 
-      // @todo support sync by other tags' names for backward compatibility
-      self.syncManager = SyncManagerFactory.get(self.sync);
+      self.syncManager = SyncManagerFactory.get(self.sync, self.name);
       self.syncManager!.register(self as Instance<typeof SyncableMixin>);
       (self as Instance<typeof SyncableMixin>).registerSyncHandlers();
     },
