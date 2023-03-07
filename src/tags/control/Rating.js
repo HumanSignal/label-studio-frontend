@@ -87,10 +87,6 @@ const Model = types
       return self.rating + ' star';
     },
 
-    copyState(obj) {
-      self.setRating(obj.rating);
-    },
-
     needsUpdate() {
       if (self.result) self.rating = self.result.mainValue;
       else self.rating = null;
@@ -137,28 +133,6 @@ const Model = types
 
     onHotKey() {
       return self.increaseValue();
-    },
-
-    toStateJSON() {
-      if (self.rating) {
-        const toname = self.toname || self.name;
-
-        return {
-          id: self.pid,
-          from_name: self.name,
-          to_name: toname,
-          type: self.type,
-          value: {
-            rating: self.rating,
-          },
-        };
-      }
-    },
-
-    fromStateJSON(obj) {
-      if (obj.id) self.pid = obj.id;
-
-      self.rating = obj.value.rating;
     },
   }));
 

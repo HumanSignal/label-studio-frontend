@@ -3,7 +3,7 @@ import { types } from 'mobx-state-tree';
 import Utils from '../utils';
 import throttle from 'lodash.throttle';
 import { MIN_SIZE } from '../tools/Base';
-import { FF_DEV_3666, FF_LSDV_4583, isFF } from '../utils/feature-flags';
+import { FF_DEV_3666, FF_DEV_3793, FF_LSDV_4583, isFF } from '../utils/feature-flags';
 
 const DrawingTool = types
   .model('DrawingTool', {
@@ -54,6 +54,13 @@ const DrawingTool = types
         return {};
       },
       get MIN_SIZE() {
+        if (isFF(FF_DEV_3793)) {
+          return {
+            X: MIN_SIZE.X / self.obj.stageScale / self.obj.stageWidth * 100,
+            Y: MIN_SIZE.Y / self.obj.stageScale / self.obj.stageHeight * 100,
+          };
+        }
+
         return {
           X: MIN_SIZE.X / self.obj.stageScale,
           Y: MIN_SIZE.Y / self.obj.stageScale,
@@ -69,21 +76,20 @@ const DrawingTool = types
     };
 
     return {
-      event(name, ev, args) {
+      event(name, ev, [x, y, canvasX, canvasY]) {
         // filter right clicks and middle clicks and shift pressed
         if (ev.button > 0 || ev.shiftKey) return;
         let fn = name + 'Ev';
 
-        if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, args);
+        if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, [x, y], [canvasX, canvasY]);
 
         // Emulating of dblclick event, 'cause redrawing will crush the the original one
         if (name === 'click') {
           const ts = ev.timeStamp;
-          const [x, y] = args;
 
           if (ts - lastClick.ts < 300 && self.comparePointsWithThreshold(lastClick, { x, y })) {
             fn = 'dbl' + fn;
-            if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, args);
+            if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, [x, y], [canvasX, canvasY]);
           }
           lastClick = { ts, x, y };
         }
@@ -131,8 +137,6 @@ const DrawingTool = types
         }, { coordstype: 'px', dynamic: self.dynamic });
 
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
-
-        console.log(obj, self.obj);
 
         if (isFF(FF_LSDV_4583)) newArea.setItemIndex?.(obj.currentImage);
 
@@ -239,7 +243,7 @@ const TwoPointsDrawingTool = DrawingTool.named('TwoPointsDrawingTool')
         x2 = Math.min(stageWidth, x2);
         y2 = Math.min(stageHeight, y2);
 
-        shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
+        shape.setPositionInternal(x1, y1, x2 - x1, y2 - y1, shape.rotation);
       },
 
       finishDrawing(x, y) {
@@ -298,11 +302,20 @@ const TwoPointsDrawingTool = DrawingTool.named('TwoPointsDrawingTool')
 
       dblclickEv(_, [x, y]) {
         if (!self.canStartDrawing()) return;
+
+        let dX = self.defaultDimensions.width;
+        let dY = self.defaultDimensions.height;
+
+        if (isFF(FF_DEV_3793)) {
+          dX = self.obj.canvasToInternalX(dX);
+          dY = self.obj.canvasToInternalY(dY);
+        }
+
         if (currentMode === DEFAULT_MODE) {
           self.startDrawing(x, y);
           if (!self.isDrawing) return;
-          x += self.defaultDimensions.width;
-          y += self.defaultDimensions.height;
+          x += dX;
+          y += dY;
           self.draw(x, y);
           self.finishDrawing(x, y);
         }
@@ -407,11 +420,18 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
 
       drawDefault() {
         const { x,y } = startPoint;
+        let dX = self.defaultDimensions.length;
+        let dY = self.defaultDimensions.length;
 
-        self.nextPoint(x + self.defaultDimensions.length, y);
+        if (isFF(FF_DEV_3793)) {
+          dX = self.obj.canvasToInternalX(dX);
+          dY = self.obj.canvasToInternalY(dY);
+        }
+
+        self.nextPoint(x + dX, y);
         self.nextPoint(
-          x + self.defaultDimensions.length / 2,
-          y + Math.sin(Math.PI / 3) * self.defaultDimensions.length,
+          x + dX / 2,
+          y + Math.sin(Math.PI / 3) * dY,
         );
         self.finishDrawing();
       },
@@ -539,11 +559,20 @@ const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
       dblclickEv(_, [x, y]) {
         lastEvent = DBL_CLICK_EVENT;
         if (!self.canStartDrawing()) return;
+
+        let dX = self.defaultDimensions.width;
+        let dY = self.defaultDimensions.height;
+
+        if (isFF(FF_DEV_3793)) {
+          dX = self.obj.canvasToInternalX(dX);
+          dY = self.obj.canvasToInternalY(dY);
+        }
+
         if (currentMode === DEFAULT_MODE) {
           self.startDrawing(x, y);
           if (!self.isDrawing) return;
-          x += self.defaultDimensions.width;
-          y += self.defaultDimensions.height;
+          x += dX;
+          y += dY;
           self.draw(x, y);
           self.finishDrawing(x, y);
         }
