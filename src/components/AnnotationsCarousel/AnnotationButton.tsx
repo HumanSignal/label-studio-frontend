@@ -40,7 +40,8 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
   const [isContextMenuOpen, setIsContextMenuOpen] = useState<boolean>(false);
 
   const CommentIcon = renderCommentIcon(entity);
-  const historyActionType = annotationStore.history.toJSON()?.[0]?.actionType;
+  // need to find a more reliable way to grab this value
+  // const historyActionType = annotationStore.history.toJSON()?.[0]?.actionType;
 
   useEffect(() => {
     setIsGroundTruth(entity.ground_truth);
@@ -150,7 +151,8 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
           >
             {isPrediction && <LsSparks style={{ width: 18, height: 18 }}/>}
           </Elem>
-          {historyActionType === 'accepted' && <Elem name='status' mod={{ approved: true }}><IconCheckBold /></Elem>}
+          {/* to do: return these icons when we have a better way to grab the history action type */}
+          {/* {historyActionType === 'accepted' && <Elem name='status' mod={{ approved: true }}><IconCheckBold /></Elem>}
           {historyActionType && (
             <Elem name='status' mod={{ skipped: true }}>
               <IconCrossBold />
@@ -160,7 +162,7 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
             <Elem name='status' mod={{ updated: true }}>
               <IconCheckBold />
             </Elem>
-          )}
+          )} */}
         </Elem>
         <Elem name='main'>
           <Elem name="user">
