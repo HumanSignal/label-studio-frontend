@@ -2,18 +2,18 @@ import { types } from 'mobx-state-tree';
 
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import { RankerBoardModel } from '../tags/object';
+import { RankerModel } from '../tags/object';
 import { guidGenerator } from '../core/Helpers';
 import Registry from '../core/Registry';
 import { AreaMixin } from '../mixins/AreaMixin';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 
 const Model = types
-  .model('RankerBoardRegionModel', {
+  .model('RankerRegionModel', {
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-    type: 'rankerboardregion',
-    object: types.late(() => types.reference(RankerBoardModel)),
+    type: 'rankerregion',
+    object: types.late(() => types.reference(RankerModel)),
   })
   .volatile(() => ({
     hideable: true,
@@ -33,8 +33,8 @@ const Model = types
     },
   }));
 
-const RankerBoardRegionModel = types.compose(
-  'RankerBoardRegionModel',
+const RankerRegionModel = types.compose(
+  'RankerRegionModel',
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
@@ -42,6 +42,6 @@ const RankerBoardRegionModel = types.compose(
   Model,
 );
 
-Registry.addRegionType(RankerBoardRegionModel, 'rankerboard');
+Registry.addRegionType(RankerRegionModel, 'ranker');
 
-export { RankerBoardRegionModel };
+export { RankerRegionModel };

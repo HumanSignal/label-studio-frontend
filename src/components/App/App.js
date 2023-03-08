@@ -19,8 +19,6 @@ import Debug from '../Debug';
 import Segment from '../Segment/Segment';
 import Settings from '../Settings/Settings';
 import { RelationsOverlay } from '../RelationsOverlay/RelationsOverlay';
-//import DragDropBoard from '../DragDropBoard/DragDropBoard';
-//import { getData } from '../DragDropBoard/fakeData';
 
 /**
  * Tags
@@ -194,7 +192,6 @@ class App extends Component {
     const root = as.selected && as.selected.root;
     const { settings } = store;
 
-
     if (store.isLoading) return this.renderLoader();
 
     if (store.noTask) return this.renderNothingToLabel(store);
@@ -208,75 +205,63 @@ class App extends Component {
     const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
 
     const mainContent = (
-
-      <Block name='main-content'>
+      <Block name="main-content">
         {as.validation === null
           ? this._renderUI(as.selectedHistory?.root ?? root, as)
           : this.renderConfigValidationException(store)}
       </Block>
-
-
     );
 
     const newUIEnabled = isFF(FF_DEV_1170);
 
     return (
-      <div>
-        <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !newUIEnabled }}>
-          <Settings store={store} />
-          <Provider store={store}>
-            {store.showingDescription && (
-              <Segment>
-                <div dangerouslySetInnerHTML={{ __html: store.description }} />
-              </Segment>
+      <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !newUIEnabled }}>
+        <Settings store={store} />
+        <Provider store={store}>
+          {store.showingDescription && (
+            <Segment>
+              <div dangerouslySetInnerHTML={{ __html: store.description }} />
+            </Segment>
+          )}
+
+          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store} />}
+          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled }}>
+            {newUIEnabled ? (
+              <SidePanels
+                panelsHidden={viewingAll}
+                currentEntity={as.selectedHistory ?? as.selected}
+                regions={as.selected.regionStore}
+              >
+                {mainContent}
+              </SidePanels>
+            ) : (
+              <>
+                {mainContent}
+
+                {(viewingAll === false) && (
+                  <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
+                    {store.hasInterface('side-column') && (
+                      <SidebarTabs active="annotation">
+                        <SidebarPage name="annotation" title="Annotation">
+                          <AnnotationTab store={store} />
+                        </SidebarPage>
+
+                        {this.props.panels.map(({ name, title, Component }) => (
+                          <SidebarPage key={name} name={name} title={title}>
+                            <Component />
+                          </SidebarPage>
+                        ))}
+                      </SidebarTabs>
+                    )}
+                  </Block>
+                )}
+              </>
             )}
 
-            {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store} />}
-            <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled }}>
-              {newUIEnabled ? (
-                <SidePanels
-                  panelsHidden={viewingAll}
-                  currentEntity={as.selectedHistory ?? as.selected}
-                  regions={as.selected.regionStore}
-                >
-                  {mainContent}
-                </SidePanels>
-              ) : (
-                <>
-                  {mainContent}
-
-                  {(viewingAll === false) && (
-                    <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
-                      {store.hasInterface('side-column') && (
-                        <SidebarTabs active="annotation">
-                          <SidebarPage name="annotation" title="Annotation">
-                            <AnnotationTab store={store} />
-                          </SidebarPage>
-
-                          {this.props.panels.map(({ name, title, Component }) => (
-                            <SidebarPage key={name} name={name} title={title}>
-                              <Component />
-                            </SidebarPage>
-                          ))}
-                        </SidebarTabs>
-                      )}
-                    </Block>
-                  )}
-                </>
-              )}
-
-            </Block>
-          </Provider>
-          {store.hasInterface('debug') && <Debug store={store} />}
-        </Block>
-        {/* BAIGEL CODE GOES HERE
-          let's try creating a husk of a component -- complete
-          let's try styling it -- complete
-          let's try importing that dnd library
-        */}
-
-        {/* <DragDropBoard inputData={finalData} /> */}
-      </div>
+          </Block>
+        </Provider>
+        {store.hasInterface('debug') && <Debug store={store} />}
+      </Block>
     );
   }
 

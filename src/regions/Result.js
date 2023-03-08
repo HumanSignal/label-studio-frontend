@@ -56,11 +56,11 @@ const Result = types
       'rating',
       'pairwise',
       'videorectangle',
-      'rankerboard',
+      'ranker',
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
-      rankerboard: types.maybe(types.array(types.string)),
+      ranker: types.maybe(types.array(types.string)),
       datetime: types.maybe(types.string),
       number: types.maybe(types.number),
       rating: types.maybe(types.number),

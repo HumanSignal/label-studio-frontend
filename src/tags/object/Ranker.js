@@ -14,19 +14,19 @@ import { parseValue } from '../../utils/data';
 /**
  * components
  */
-import RankerBoard from '../../components/RankerBoard/RankerBoard';
-import { getData } from '../../components/RankerBoard/createData';
+import Ranker from '../../components/Ranker/Ranker';
+import { getData } from '../../components/Ranker/createData';
 
 /**
- * @name RankerBoard
- * @meta_title RankerBoard Tag displays items that can be dragged and dropped between columns
+ * @name Ranker
+ * @meta_title Ranker Tag displays items that can be dragged and dropped between columns
  * @meta_description Customize Label Studio by displaying and sorting results for machine learning and data science projects.
- * @param {string} value Data field value containing JSON type for RankerBoard
- * @param {string} [valueType] Value to define the data type in RankerBoard
+ * @param {string} value Data field value containing JSON type for Ranker
+ * @param {string} [valueType] Value to define the data type in Ranker
  */
 const Model = types
   .model({
-    type: 'rankerboard',
+    type: 'ranker',
     value: types.maybeNull(types.string),
     _value: types.frozen([]),
     valuetype: types.optional(types.string, 'json'),
@@ -34,7 +34,7 @@ const Model = types
      * rank: 1 column, reorder to rank
      * select: 2 columns, drag results to second column to select
      */
-    _mode: types.optional(types.enumeration(['rank', 'select']), 'select'),
+    mode: types.optional(types.enumeration(['rank', 'select']), 'select'),
 
   })
   .views(self => ({
@@ -42,10 +42,10 @@ const Model = types
       return self._value;
     },
     get resultType() {
-      return 'rankerboard';
+      return 'ranker';
     },
     get valueType() {
-      return 'rankerboard';
+      return 'ranker';
     },
     get result() {
       return self.annotation.results.find(r => r.from_name === self);
@@ -56,12 +56,12 @@ const Model = types
       const value = parseValue(self.value, store.task.dataObj);
 
       //grabs data from the createData file
-      self._value = getData(value, self._mode);
+      self._value = getData(value, self.mode);
       yield Promise.resolve(true);
     }),
     needsUpdate() {
       if (self.annotation && !self.result) {
-        self.annotation.createResult({}, { rankerboard: [] }, self, self);
+        self.annotation.createResult({}, { ranker: [] }, self, self);
       }
 
     },
@@ -70,22 +70,22 @@ const Model = types
       if (self.result) {
         self.result.setValue(newData);
       } else {
-        self.annotation.createResult({}, { rankerboard: newData }, self, self);
+        self.annotation.createResult({}, { ranker: newData }, self, self);
       }
     },
   }));
 
-const RankerBoardModel = types.compose('RankerBoardModel', Base, ProcessAttrsMixin, AnnotationMixin, Model);
+const RankerModel = types.compose('RankerModel', Base, ProcessAttrsMixin, AnnotationMixin, Model);
 
-const HtxRankerBoard = inject('store')(
+const HtxRanker = inject('store')(
   observer(({ item }) => {
     return (
-      <RankerBoard inputData={item.dataSource} handleChange={item.updateResult} />
+      <Ranker inputData={item.dataSource} handleChange={item.updateResult} />
     );
   }),
 );
 
-Registry.addTag('rankerboard', RankerBoardModel, HtxRankerBoard);
-Registry.addObjectType(RankerBoardModel);
+Registry.addTag('ranker', RankerModel, HtxRanker);
+Registry.addObjectType(RankerModel);
 
-export { HtxRankerBoard, RankerBoardModel };
+export { HtxRanker, RankerModel };
