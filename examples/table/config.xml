@@ -1,3 +1,10 @@
 <View>
-  <RankerBoard name="rankerboard"/>
+  <Table name="menu" value="$menu" />
+  <Header>Choose ingredients</Header>
+  <Choices name="sub" toName="menu">
+    <Choice value="Tuna" />
+    <Choice value="Vegetables" />
+    <Choice value="Chicken" />
+    <Choice value="Spicy" />
+  </Choices>
 </View>
