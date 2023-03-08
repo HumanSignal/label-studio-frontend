@@ -131,24 +131,35 @@ export const AudioModel = types.compose(
     .actions(self => ({
       ////// Outgoing
 
+      triggerSync(event, data) {
+        if (!self._ws) return;
+
+        self.syncSend({
+          playing: self._ws.playing,
+          time: self._ws.currentTime,
+          speed: self._ws.rate,
+          ...data,
+        }, event);
+      },
+
       triggerSyncSpeed(speed) {
-        self.syncSend({ speed }, 'speed');
+        self.triggerSync('speed', { speed });
       },
 
       triggerSyncPlay() {
-        self.syncSend({ playing: true, time: self._ws?.currentTime }, 'play');
+        self.triggerSync('play', { playing: true });
         // @todo should not be handled like this
         self.handleSyncPlay();
       },
 
       triggerSyncPause() {
-        self.syncSend({ playing: false, time: self._ws?.currentTime }, 'pause');
+        self.triggerSync('pause', { playing: false });
         // @todo should not be handled like this
         self.handleSyncPause();
       },
 
       triggerSyncSeek(time) {
-        self.syncSend({ time, playing: self._ws.playing }, 'seek');
+        self.triggerSync('seek', { time });
       },
 
       ////// Incoming
@@ -185,7 +196,7 @@ export const AudioModel = types.compose(
       },
 
       handleSyncSeek({ time }) {
-        if (!self._ws?.loaded || !isDefined(time) && time !== self._ws.currentTime) return;
+        if (!self._ws?.loaded || !isDefined(time)) return;
 
         try {
           self._ws.setCurrentTime(time, true);
