@@ -1153,17 +1153,17 @@ export const Annotation = types
           };
 
           area = createArea(areaSnapshot);
+
+          // store copy of the original result inside the area
+          // useful when you need to serialize a result without
+          // updating it from current/actual data
+          // For safety reasons this object is always readonly
+          Object.defineProperty(area, '_rawResult', {
+            value: Object.freeze(structuredClone(obj)),
+          });
         }
 
         area.addResult({ ...data, id: resultId, type, value, from_name, to_name });
-
-        // store copy of the original result inside the area
-        // useful when you need to serialize a result without
-        // updating it from current/actual data
-        // For safety reasons this object is always readonly
-        Object.defineProperty(area, '_rawResult', {
-          value: Object.freeze(structuredClone(obj)),
-        });
 
         // if there is merged result with region data and type and also with the labels
         // and object allows such merge — create new result with these labels
