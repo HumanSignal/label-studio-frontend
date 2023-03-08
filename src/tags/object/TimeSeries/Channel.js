@@ -6,11 +6,12 @@ import * as d3 from 'd3';
 import Registry from '../../../core/Registry';
 import Types from '../../../core/Types';
 import { cloneNode, guidGenerator } from '../../../core/Helpers';
-import { checkD3EventLoop, fixMobxObserve, getOptimalWidth, getRegionColor, sparseValues } from './helpers';
+import { checkD3EventLoop, getOptimalWidth, getRegionColor, sparseValues } from './helpers';
 import { markerSymbol } from './symbols';
 import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
 import { TagParentMixin } from '../../../mixins/TagParentMixin';
 import { FF_DEV_3391, isFF } from '../../../utils/feature-flags';
+import { fixMobxObserve } from '../../../utils/utilities';
 
 /**
  * Channel tag can be used to label time series data

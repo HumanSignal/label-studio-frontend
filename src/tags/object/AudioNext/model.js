@@ -1,6 +1,6 @@
 import { getRoot, getType, types } from 'mobx-state-tree';
 import { customTypes } from '../../../core/CustomTypes';
-import { guidGenerator, restoreNewsnapshot } from '../../../core/Helpers.ts';
+import { guidGenerator } from '../../../core/Helpers.ts';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
@@ -156,58 +156,6 @@ export const AudioModel = types.compose(
         e && e.preventDefault();
         self._ws.playPause();
         return false;
-      },
-
-      fromStateJSON(obj, fromModel) {
-        let r;
-        let m;
-
-        const fm = self.annotation.names.get(obj.from_name);
-
-        fm.fromStateJSON(obj);
-
-        if (!fm.perregion && fromModel.type !== 'labels') return;
-
-        /**
-       *
-       */
-        const tree = {
-          pid: obj.id,
-          start: obj.value.start,
-          end: obj.value.end,
-          normalization: obj.normalization,
-          score: obj.score,
-          readonly: obj.readonly,
-        };
-
-        r = self.findRegion({ start: obj.value.start, end: obj.value.end });
-
-        if (fromModel) {
-          m = restoreNewsnapshot(fromModel);
-          // m.fromStateJSON(obj);
-
-          if (!r) {
-          // tree.states = [m];
-            r = self.createRegion(tree, [m]);
-          // r = self.addRegion(tree);
-          } else {
-            r.states.push(m);
-          }
-        }
-
-        if (self._ws) {
-          self._ws.addRegion({
-            start: r.start,
-            end: r.end,
-          });
-        }
-
-        // if (fm.perregion)
-        //     fm.perRegionCleanup();
-
-        r.updateAppearenceFromState();
-
-        return r;
       },
 
       setRangeValue(val) {

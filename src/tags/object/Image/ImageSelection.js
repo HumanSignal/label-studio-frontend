@@ -1,5 +1,6 @@
 import { getParent, types } from 'mobx-state-tree';
 import { ImageSelectionPoint } from './ImageSelectionPoint';
+import { FF_DEV_3793, isFF } from '../../../utils/feature-flags';
 
 export const ImageSelection = types.model({
   start: types.maybeNull(ImageSelectionPoint),
@@ -43,6 +44,32 @@ export const ImageSelection = types.model({
         bottom: Math.max(start.y, end.y),
       } : null;
     },
+    get onCanvasBbox() {
+      if (!self.isActive) return null;
+
+      const { start, end } = self;
+
+      return {
+        left: self.obj.internalToCanvasX(Math.min(start.x, end.x)),
+        top: self.obj.internalToCanvasY(Math.min(start.y, end.y)),
+        right: self.obj.internalToCanvasX(Math.max(start.x, end.x)),
+        bottom: self.obj.internalToCanvasY(Math.max(start.y, end.y)),
+      };
+    },
+    get onCanvasRect() {
+      if (!isFF(FF_DEV_3793)) return self;
+
+      if (!self.isActive) return null;
+
+      const bbox = self.onCanvasBbox;
+
+      return {
+        x: bbox.left,
+        y: bbox.top,
+        width: bbox.right - bbox.left,
+        height: bbox.bottom - bbox.top,
+      };
+    },
     includesBbox(bbox) {
       if (!self.isActive || !bbox) return false;
       const isLeftOf = self.bbox.left <= bbox.left;
@@ -67,19 +94,28 @@ export const ImageSelection = types.model({
         (Math.abs(selfCenterY - targetCenterY) * 2 < (selfHeight + targetHeight));
     },
     get selectionBorders() {
-      return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region) => {
+      if (self.isActive || !self.obj.selectedRegions.length) return null;
+
+      const initial = isFF(FF_DEV_3793)
+        ? { left: 100, top: 100, right: 0, bottom: 0 }
+        : { left: self.obj.stageWidth, top: self.obj.stageHeight, right: 0, bottom: 0 };
+      const bbox = self.obj.selectedRegions.reduce((borders, region) => {
         return region.bboxCoords ? {
           left: Math.min(borders.left, region.bboxCoords.left),
           top: Math.min(borders.top,region.bboxCoords.top),
           right: Math.max(borders.right, region.bboxCoords.right),
           bottom: Math.max(borders.bottom, region.bboxCoords.bottom),
         } : borders;
-      }, {
-        left: self.obj.stageWidth,
-        top: self.obj.stageHeight,
-        right: 0,
-        bottom: 0,
-      });
+      }, initial);
+
+      if (!isFF(FF_DEV_3793)) return bbox;
+
+      return {
+        left: self.obj.internalToCanvasX(bbox.left),
+        top: self.obj.internalToCanvasY(bbox.top),
+        right: self.obj.internalToCanvasX(bbox.right),
+        bottom: self.obj.internalToCanvasY(bbox.bottom),
+      };
     },
   };
 }).actions(self => {
