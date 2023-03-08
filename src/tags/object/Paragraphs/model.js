@@ -11,12 +11,10 @@ import messages from '../../../utils/messages';
 import styles from './Paragraphs.module.scss';
 import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
-import { isValidObjectURL } from '../../../utils/utilities';
-import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, FF_DEV_3666, isFF } from '../../../utils/feature-flags';
+import { clamp, isDefined, isValidObjectURL } from '../../../utils/utilities';
+import { FF_DEV_2669, FF_DEV_2918, FF_DEV_3666, isFF } from '../../../utils/feature-flags';
 import { SyncableMixin } from '../../../mixins/Syncable';
 
-
-const isFFDev2461 = isFF(FF_DEV_2461);
 
 /**
  * The `Paragraphs` tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
@@ -185,23 +183,26 @@ const Model = types
         // so we just stop Paragraphs' audio on any external manipulations.
         self.syncHandlers.set(event, () => self.stop({ forced: true }));
       });
-      // self.syncHandlers.set('speed', self.handleSyncSpeed);
+      self.syncHandlers.set('speed', self.handleSyncSpeed);
     },
 
-    handleSyncSpeed(speed) {
+    handleSyncSpeed({ speed }) {
       const audio = self.getRef().current;
 
-      if (audio) audio.playbackRate = speed;
+      if (audio) {
+        audio.playbackRate = speed;
+
+        self.recalculateTimer();
+      }
     },
   }))
   .actions(self => {
     const audioRef = createRef();
     let audioStopHandler = null;
     let endDuration = 0;
-    let currentId = -1;
 
     function stop({ forced = false } = {}) {
-      const audio = audioRef.current;
+      const audio = self.getRef().current;
 
       if (!audio) return;
       if (audio.paused) return;
@@ -209,18 +210,18 @@ const Model = types
       const currentTime = audio.currentTime;
 
       if (!forced && currentTime < endDuration) {
-        stopIn(endDuration - currentTime);
+        stopLater();
         return;
       }
-      audioStopHandler = null;
+      self.stopTimer();
       endDuration = 0;
       audio.pause();
       self.triggerSync('pause');
       self.reset();
     }
 
-    function stopIn(seconds) {
-      audioStopHandler = window.setTimeout(stop, 1000 * seconds);
+    function stopLater() {
+      audioStopHandler = requestAnimationFrame(stop);
     }
 
     return {
@@ -228,33 +229,64 @@ const Model = types
         return audioRef;
       },
 
-      reset(hard = true) {
+      reset() {
         self.playingId = -1;
+      },
 
-        if (!isFFDev2461 || hard) {
-          currentId = -1;
+      currentTimeData(idx) {
+        const value = self._value[idx] || {};
+        const { duration } = value;
+        let { start } = value;
+
+        const audioDuration = self.getRef()?.current?.duration ?? null;
+
+        if (!isDefined(audioDuration)) return {};
+
+        start = start ? clamp(start, 0, audioDuration) : 0;
+        const _end = duration ? start + duration : (value.end ?? audioDuration);
+        const end = clamp(_end, start, audioDuration);
+
+        endDuration = end;
+
+        return {
+          start,
+          end,
+        };
+      },
+
+      stopTimer() {
+        if (audioStopHandler) {
+          cancelAnimationFrame(audioStopHandler);
+          audioStopHandler = null;
         }
       },
 
+      recalculateTimer() {
+        if (self.playingId === -1) return;
+
+        self.stopTimer();
+
+        self.currentTimeData(self.playingId);
+
+        stopLater();
+      },
+
       play(idx) {
-        const value = self._value[idx] || {};
-        const { start, duration } = value;
-        const end = duration ? start + duration : value.end || 0;
+        const { start, end } = self.currentTimeData(idx);
+        const audio = self.getRef()?.current;
 
-        if (!audioRef || isNaN(start) || isNaN(end)) return;
-        const audio = audioRef.current;
+        if (!isDefined(audio) || !isDefined(start) || !isDefined(end)) return;
 
-        if (audioStopHandler) {
-          window.clearTimeout(audioStopHandler);
-          audioStopHandler = null;
-        }
+        self.stopTimer();
 
         const isPlaying = !audio.paused;
+
+        const currentId = self.playingId;
 
         if (isPlaying && currentId === idx) {
           audio.pause();
           self.triggerSync('pause');
-          self.playingId = -1;
+          self.reset();
           return;
         }
 
@@ -264,12 +296,8 @@ const Model = types
 
         audio.play();
         self.triggerSync('play');
-
-        endDuration = end;
         self.playingId = idx;
-        currentId = idx;
-
-        end && stopIn(end - start);
+        self.recalculateTimer();
       },
 
       setAuthorSearch(value) {

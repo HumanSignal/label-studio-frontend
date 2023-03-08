@@ -1,4 +1,4 @@
-const { initLabelStudio, serialize } = require('./helpers');
+const { serialize } = require('./helpers');
 const Utils = require('../examples/utils');
 const examples = [
   require('../examples/audio-regions'),
@@ -34,7 +34,12 @@ Feature('Smoke test through all the examples');
 
 // old audio is broken, so skipping it
 examples.slice(1).forEach(example =>
-  Scenario(example.title || 'Noname smoke test', async function({ I, AtImageView, AtAudioView, AtSidebar, AtTopbar }) {
+  Scenario(example.title || 'Noname smoke test', async function({ I, LabelStudio, AtImageView, AtAudioView, AtSidebar, AtTopbar }) {
+
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_2715_audio_3_280722_short: true,
+    });
+
     // @todo optional predictions in example
     const { annotations, config, data, result = annotations[0].result } = example;
     const params = { annotations: [{ id: 'test', result }], config, data };
@@ -47,7 +52,8 @@ examples.slice(1).forEach(example =>
     const count = ids.length;
 
     await I.amOnPage('/');
-    await I.executeScript(initLabelStudio, params);
+
+    LabelStudio.init(params);
 
     AtSidebar.seeRegions(count);
 
@@ -58,7 +64,7 @@ examples.slice(1).forEach(example =>
     }
 
     if (Utils.xmlFindBy(configTree, node => node['#name'] === 'AudioPlus' || node['#name'] === 'Audio')) {
-      AtAudioView.waitForAudio();
+      await AtAudioView.waitForAudio();
     }
 
     if (Utils.xmlFindBy(configTree, node => ['text', 'hypertext'].includes(node['#name'].toLowerCase()))) {

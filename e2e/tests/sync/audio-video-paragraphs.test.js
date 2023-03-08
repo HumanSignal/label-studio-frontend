@@ -262,7 +262,7 @@ Scenario('Seeking is synced between audio, video when interacting with audio int
   await AtAudioView.lookForStage();
 
   {
-    const [{ currentTime: startingAudioTime }] = await AtAudioView.getCurrentAudio();
+    const [,{ currentTime: startingAudioTime }] = await AtAudioView.getCurrentAudio();
     const [{ currentTime: startingVideoTime }] = await AtVideoView.getCurrentVideo();
 
     assert.equal(startingAudioTime, startingVideoTime);
@@ -324,4 +324,63 @@ Scenario('Seeking is synced between audio, video when interacting with audio int
   }
 });
 
+Scenario('Playback speed is synced between audio, video, paragraph audio when interacting with audio interface', async function({ I, LabelStudio, AtAudioView, AtVideoView }) {
+  LabelStudio.setFeatureFlags({
+    fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
+    ff_front_dev_2715_audio_3_280722_short: true,
+  });
 
+  I.amOnPage('/');
+
+  LabelStudio.init(params);
+
+  await AtAudioView.waitForAudio();
+  await AtAudioView.lookForStage();
+
+  {
+    const [{ playbackRate: paragraphAudioPlaybackRate }, { playbackRate: audioPlaybackRate }] = await AtAudioView.getCurrentAudio();
+    const [{ playbackRate: videoPlaybackRate }] = await AtVideoView.getCurrentVideo();
+
+    assert.equal(audioPlaybackRate, paragraphAudioPlaybackRate);
+    assert.equal(videoPlaybackRate, audioPlaybackRate);
+    assert.equal(audioPlaybackRate, 1);
+  }
+
+  AtAudioView.clickPlayButton();
+  I.wait(1); // wait for audio to start playing
+  AtAudioView.setPlaybackSpeedInput(1.5);
+  await AtAudioView.seePlaybackSpeed(1.5);
+  {
+    I.say('Changing playback speed to 1.5x for audio, video and paragraph audio during playback');
+    const [{ playbackRate: paragraphAudioPlaybackRate }, { playbackRate: audioPlaybackRate }] = await AtAudioView.getCurrentAudio();
+    const [{ playbackRate: videoPlaybackRate }] = await AtVideoView.getCurrentVideo();
+
+    assert.equal(audioPlaybackRate, paragraphAudioPlaybackRate);
+    assert.equal(videoPlaybackRate, audioPlaybackRate);
+    assert.equal(audioPlaybackRate, 1.5);
+  }
+
+  I.wait(2); // wait for audio to play for a bit at 1.5x speed
+  AtAudioView.setPlaybackSpeedInput(1);
+  await AtAudioView.seePlaybackSpeed(1);
+  {
+    I.say('Changing playback speed to 1x for audio, video and paragraph audio during playback');
+    const [{ playbackRate: paragraphAudioPlaybackRate }, { playbackRate: audioPlaybackRate }] = await AtAudioView.getCurrentAudio();
+    const [{ playbackRate: videoPlaybackRate }] = await AtVideoView.getCurrentVideo();
+
+    assert.equal(audioPlaybackRate, paragraphAudioPlaybackRate);
+    assert.equal(videoPlaybackRate, audioPlaybackRate);
+    assert.equal(audioPlaybackRate, 1);
+  }
+
+  AtAudioView.clickPauseButton();
+  {
+    I.say('Audio, video and paragraph audio played to the same time');
+    const [{ currentTime: currentParagraphAudioTime },{ currentTime: currentAudioTime }] = await AtAudioView.getCurrentAudio();
+    const [{ currentTime: currentVideoTime }] = await AtVideoView.getCurrentVideo();
+
+    assert.equal(Math.abs(currentAudioTime - currentVideoTime) < 0.3, true, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
+    assert.equal(Math.abs(currentAudioTime - currentParagraphAudioTime) < 0.3, true, `Audio currentTime and paragraph audio currentTime drifted too far. Got audio=${currentAudioTime} video=${currentParagraphAudioTime}`);
+    assert.equal(Math.abs(currentParagraphAudioTime - currentVideoTime) < 0.3, true, `Paragraph audio currentTime and video currentTime drifted too far. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
+  }
+});
