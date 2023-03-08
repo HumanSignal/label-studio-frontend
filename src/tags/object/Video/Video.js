@@ -108,7 +108,7 @@ const Model = types
     ////// Outgoing
 
     /**
-     * Wrapper to always send some important data
+     * Wrapper to always send important data
      * @param {string} event 
      * @param {any} data 
      */
@@ -117,8 +117,8 @@ const Model = types
 
       self.syncSend({
         playing: self.ref.current.playing,
-        ...data,
         time: self.ref.current.currentTime,
+        ...data,
       }, event);
     },
 
@@ -136,7 +136,7 @@ const Model = types
       ['play', 'pause', 'seek'].forEach(event => {
         self.syncHandlers.set(event, self.handleSync);
       });
-      // self.syncHandlers.set('speed', self.handleSyncSpeed);
+      self.syncHandlers.set('speed', self.handleSyncSpeed);
     },
 
     handleSync(data) {
@@ -150,10 +150,14 @@ const Model = types
         if (video.playing) video.pause();
       }
 
+      if (data.speed) {
+        self.speed = data.speed;
+      }
+
       video.currentTime = data.time;
     },
 
-    handleSyncSpeed(speed) {
+    handleSyncSpeed({ speed }) {
       self.speed = speed;
     },
   }))
