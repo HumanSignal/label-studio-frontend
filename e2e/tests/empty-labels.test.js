@@ -37,7 +37,7 @@ examples.forEach(example => {
       AtImageView.waitForImage();
     }
     if (Utils.xmlFindBy(configTree, node => node['#name'] === 'AudioPlus' || node['#name'] === 'Audio')) {
-      AtAudioView.waitForAudio();
+      await AtAudioView.waitForAudio();
     }
 
     if (regionsCount) {
@@ -73,7 +73,7 @@ examples.forEach(example => {
       AtImageView.waitForImage();
     }
     if (Utils.xmlFindBy(configTree, node => node['#name'] === 'AudioPlus' || node['#name'] === 'Audio')) {
-      AtAudioView.waitForAudio();
+      await AtAudioView.waitForAudio();
     }
 
     if (regionsCount) {
