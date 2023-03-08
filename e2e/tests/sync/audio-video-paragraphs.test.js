@@ -105,9 +105,6 @@ Scenario('Play/pause is synced between audio, video and paragraphs when interact
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   {
@@ -163,9 +160,6 @@ Scenario('Play/pause is synced between audio, video when interacting with audio 
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   {
@@ -215,9 +209,6 @@ Scenario('Play/pause is synced between audio, video when interacting with video 
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   {
@@ -268,9 +259,6 @@ Scenario('Seeking is synced between audio, video when interacting with audio int
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   {

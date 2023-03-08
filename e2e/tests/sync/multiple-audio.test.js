@@ -30,9 +30,6 @@ Scenario('Play/pause of multiple synced audio stay in sync', async function({ I,
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   {
@@ -77,9 +74,6 @@ Scenario('Looping of multiple synced audio stay in sync', async function({ I, La
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   I.say('Draw an audio segment to start looping');
@@ -141,9 +135,6 @@ Scenario('Seeking of multiple synced audio stay in sync', async function({ I, La
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
   {
     const [{ currentTime: audioTime1 }, { currentTime: audioTime2 }] = await AtAudioView.getCurrentAudio();

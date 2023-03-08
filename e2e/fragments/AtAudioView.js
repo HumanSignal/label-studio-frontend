@@ -35,6 +35,7 @@ module.exports = {
   async waitForAudio() {
     await I.executeScript(Helpers.waitForAudio);
     I.waitForInvisible(this._progressBarSelector);
+    I.waitForDetached('loading-progress-bar', 10);
   },
   getCurrentAudio() {
     return I.executeScript(Helpers.getCurrentMedia, 'audio');
