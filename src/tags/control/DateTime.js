@@ -173,10 +173,6 @@ const Model = types
     return { months, years };
   })
   .actions(self => ({
-    copyState(obj) {
-      self.setDateTime(obj.datetime);
-    },
-
     setNeedsUpdate(value) {
       self.updateValue = value;
     },

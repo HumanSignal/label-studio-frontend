@@ -190,12 +190,6 @@ const Model = types
       InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
     },
 
-    copyState(choices) {
-      choices.selectedValues().forEach(l => {
-        self.findLabel(l).setSelected(true);
-      });
-    },
-
     // this is not labels, unselect affects result, so don't unselect on random reason
     unselectAll() {},
 
@@ -241,40 +235,6 @@ const Model = types
           self.annotation.createResult({}, { choices: self.selectedValues() }, self, self.toname);
         }
       }
-    },
-
-    toStateJSON() {
-      const names = self.selectedValues();
-
-      if (names && names.length) {
-        const toname = self.toname || self.name;
-
-        return {
-          id: self.pid,
-          from_name: self.name,
-          to_name: toname,
-          type: self.type,
-          value: {
-            choices: names,
-          },
-        };
-      }
-    },
-
-    fromStateJSON(obj) {
-      self.unselectAll();
-
-      if (!obj.value.choices) throw new Error('No labels param');
-
-      if (obj.id) self.pid = obj.id;
-
-      obj.value.choices.forEach(l => {
-        const choice = self.findLabel(l);
-
-        if (!choice) throw new Error('No label ' + l);
-
-        choice.setSelected(true);
-      });
     },
   }));
 

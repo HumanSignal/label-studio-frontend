@@ -2,6 +2,7 @@ const { recorder, event } = require('codeceptjs');
 const Container = require('codeceptjs/lib/container');
 
 const defaultConfig = {
+  defaultFeatureFlags: {},
 };
 
 const supportedHelpers = ['Playwright'];
@@ -27,7 +28,7 @@ module.exports = function(config) {
     return;
   }
 
-  const options = Object.assign(defaultConfig, helper.options, config);
+  const options = Object.assign({}, defaultConfig, helper.options, config);
 
   if (options.enable) return;
 
@@ -39,7 +40,7 @@ module.exports = function(config) {
   }
 
   event.dispatcher.on(event.test.before, async () => {
-    ffs = {};
+    ffs = { ...options.defaultFeatureFlags };
   });
 
   event.dispatcher.on(event.step.before, async (step) => {

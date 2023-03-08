@@ -1,22 +1,99 @@
 import React, { Fragment, useContext } from 'react';
 import { Ellipse } from 'react-konva';
 import { getRoot, types } from 'mobx-state-tree';
+
 import Constants from '../core/Constants';
-import DisabledMixin from '../mixins/Normalization';
+import Registry from '../core/Registry';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import Registry from '../core/Registry';
-import { ImageModel } from '../tags/object/Image';
-import { guidGenerator } from '../core/Helpers';
-import { LabelOnEllipse } from '../components/ImageView/LabelOnRegion';
-import { AreaMixin } from '../mixins/AreaMixin';
-import { createDragBoundFunc } from '../utils/image';
-import { useRegionStyles } from '../hooks/useRegionColor';
-import { AliveRegion } from './AliveRegion';
-import { KonvaRegionMixin } from '../mixins/KonvaRegion';
-import { rotateBboxCoords } from '../utils/bboxCoords';
+
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
+import { LabelOnEllipse } from '../components/ImageView/LabelOnRegion';
+import { guidGenerator } from '../core/Helpers';
+import { useRegionStyles } from '../hooks/useRegionColor';
+import { AreaMixin } from '../mixins/AreaMixin';
+import { KonvaRegionMixin } from '../mixins/KonvaRegion';
+import { ImageModel } from '../tags/object/Image';
+import { rotateBboxCoords } from '../utils/bboxCoords';
+import { FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { createDragBoundFunc } from '../utils/image';
+import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
+
+const EllipseRegionAbsoluteCoordsDEV3793 = types
+  .model({
+    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
+  })
+  .volatile(() => ({
+    relativeX: 0,
+    relativeY: 0,
+    relativeWidth: 0,
+    relativeHeight: 0,
+    relativeRadiusX: 0,
+    relativeRadiusY: 0,
+  }))
+  .actions(self => ({
+    afterCreate() {
+      self.startX = self.x;
+      self.startY = self.y;
+
+      switch (self.coordstype)  {
+        case 'perc': {
+          self.relativeX = self.x;
+          self.relativeY = self.y;
+          self.relativeRadiusX = self.radiusX;
+          self.relativeRadiusY = self.radiusY;
+          self.relativeWidth = self.width;
+          self.relativeHeight = self.height;
+          break;
+        }
+        case 'px': {
+          const { stageWidth, stageHeight } = self.parent;
+
+          if (stageWidth && stageHeight) {
+            self.setPosition(self.x, self.y, self.radiusX, self.radiusY, self.rotation);
+          }
+          break;
+        }
+      }
+      self.checkSizes();
+      self.updateAppearenceFromState();
+    },
+    setPosition(x, y, radiusX, radiusY, rotation) {
+      self.x = x;
+      self.y = y;
+      self.radiusX = radiusX;
+      self.radiusY = radiusY;
+
+      self.relativeX = (x / self.parent?.stageWidth) * 100;
+      self.relativeY = (y / self.parent?.stageHeight) * 100;
+
+      self.relativeRadiusX = (radiusX / self.parent?.stageWidth) * 100;
+      self.relativeRadiusY = (radiusY / self.parent?.stageHeight) * 100;
+
+      self.rotation = (rotation + 360) % 360;
+    },
+    setPositionInternal(x, y, radiusX, radiusY, rotation) {
+      return self.setPosition(x, y, radiusX, radiusY, rotation);
+    },
+    updateImageSize(wp, hp, sw, sh) {
+      self.sw = sw;
+      self.sh = sh;
+
+      if (self.coordstype === 'px') {
+        self.x = (sw * self.relativeX) / 100;
+        self.y = (sh * self.relativeY) / 100;
+        self.radiusX = (sw * self.relativeRadiusX) / 100;
+        self.radiusY = (sh * self.relativeRadiusY) / 100;
+      } else if (self.coordstype === 'perc') {
+        self.x = (sw * self.x) / 100;
+        self.y = (sh * self.y) / 100;
+        self.radiusX = (sw * self.radiusX) / 100;
+        self.radiusY = (sh * self.radiusY) / 100;
+        self.coordstype = 'px';
+      }
+    },
+  }));
 
 /**
  * Ellipse object for Bounding Box
@@ -31,26 +108,14 @@ const Model = types
 
     x: types.number,
     y: types.number,
-
     radiusX: types.number,
     radiusY: types.number,
 
     rotation: 0,
-
-    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
   })
   .volatile(() => ({
-    relativeX: 0,
-    relativeY: 0,
-
-    relativeWidth: 0,
-    relativeHeight: 0,
-
     startX: 0,
     startY: 0,
-
-    relativeRadiusX: 0,
-    relativeRadiusY: 0,
 
     // @todo not used
     scaleX: 1,
@@ -96,35 +161,27 @@ const Model = types
         bottom: self.y + self.radiusY,
       };
 
-      return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y: self.y }) : bboxCoords;
+      if (self.rotation === 0) return bboxCoords;
+
+      return rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y: self.y }, self.parent.whRatio);
+    },
+    get canvasX() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
+    },
+    get canvasY() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
+    },
+    get canvasRadiusX() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.radiusX) : self.radiusX;
+    },
+    get canvasRadiusY() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.radiusY) : self.radiusY;
     },
   }))
   .actions(self => ({
     afterCreate() {
       self.startX = self.x;
       self.startY = self.y;
-
-      switch (self.coordstype) {
-        case 'perc': {
-          self.relativeX = self.x;
-          self.relativeY = self.y;
-          self.relativeRadiusX = self.radiusX;
-          self.relativeRadiusY = self.radiusY;
-          self.relativeWidth = self.width;
-          self.relativeHeight = self.height;
-          break;
-        }
-        case 'px': {
-          const { stageWidth, stageHeight } = self.parent;
-
-          if (stageWidth && stageHeight) {
-            self.setPosition(self.x, self.y, self.radiusX, self.radiusY, self.rotation);
-          }
-          break;
-        }
-      }
-      self.checkSizes();
-      self.updateAppearenceFromState();
     },
 
     // @todo not used
@@ -154,11 +211,12 @@ const Model = types
       }
     },
 
-    // @todo not used
-    rotate(degree) {
-      const p = self.rotatePoint(self, degree);
-
-      self.setPosition(p.x, p.y, self.radiusY, self.radiusX, self.rotation);
+    setPositionInternal(x, y, radiusX, radiusY, rotation) {
+      self.x = x;
+      self.y = y;
+      self.radiusX = radiusX;
+      self.radiusY = radiusY;
+      self.rotation = (rotation + 360) % 360;
     },
 
     /**
@@ -170,18 +228,13 @@ const Model = types
      * @param {number} rotation
      */
     setPosition(x, y, radiusX, radiusY, rotation) {
-      self.x = x;
-      self.y = y;
-      self.radiusX = radiusX;
-      self.radiusY = radiusY;
-
-      self.relativeX = (x / self.parent?.stageWidth) * 100;
-      self.relativeY = (y / self.parent?.stageHeight) * 100;
-
-      self.relativeRadiusX = (radiusX / self.parent?.stageWidth) * 100;
-      self.relativeRadiusY = (radiusY / self.parent?.stageHeight) * 100;
-
-      self.rotation = (rotation + 360) % 360;
+      self.setPositionInternal(
+        self.parent.canvasToInternalX(x),
+        self.parent.canvasToInternalY(y),
+        self.parent.canvasToInternalX(radiusX),
+        self.parent.canvasToInternalY(radiusY),
+        rotation,
+      );
     },
 
     setScale(x, y) {
@@ -193,23 +246,7 @@ const Model = types
       self.fill = color;
     },
 
-    updateImageSize(wp, hp, sw, sh) {
-      self.sw = sw;
-      self.sh = sh;
-
-      if (self.coordstype === 'px') {
-        self.x = (sw * self.relativeX) / 100;
-        self.y = (sh * self.relativeY) / 100;
-        self.radiusX = (sw * self.relativeRadiusX) / 100;
-        self.radiusY = (sh * self.relativeRadiusY) / 100;
-      } else if (self.coordstype === 'perc') {
-        self.x = (sw * self.x) / 100;
-        self.y = (sh * self.y) / 100;
-        self.radiusX = (sw * self.radiusX) / 100;
-        self.radiusY = (sh * self.radiusY) / 100;
-        self.coordstype = 'px';
-      }
-    },
+    updateImageSize() {},
 
     /**
      * @example
@@ -244,10 +281,10 @@ const Model = types
       const res = {
         ...self.parent.serializableValues(self.item_index),
         value: {
-          x: self.convertXToPerc(self.x),
-          y: self.convertYToPerc(self.y),
-          radiusX: self.convertHDimensionToPerc(self.radiusX),
-          radiusY: self.convertVDimensionToPerc(self.radiusY),
+          x: isFF(FF_DEV_3793) ? self.x : self.convertXToPerc(self.x),
+          y: isFF(FF_DEV_3793) ? self.y : self.convertYToPerc(self.y),
+          radiusX: isFF(FF_DEV_3793) ? self.radiusX : self.convertHDimensionToPerc(self.radiusX),
+          radiusY: isFF(FF_DEV_3793) ? self.radiusY : self.convertVDimensionToPerc(self.radiusY),
           rotation: self.rotation,
         },
       };
@@ -261,10 +298,10 @@ const EllipseRegionModel = types.compose(
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
-  DisabledMixin,
   KonvaRegionMixin,
   EditableRegion,
   Model,
+  ...(isFF(FF_DEV_3793) ? [] : [EllipseRegionAbsoluteCoordsDEV3793]),
 );
 
 const HtxEllipseView = ({ item }) => {
@@ -277,11 +314,11 @@ const HtxEllipseView = ({ item }) => {
   return (
     <Fragment>
       <Ellipse
-        x={item.x}
-        y={item.y}
+        x={item.canvasX}
+        y={item.canvasY}
         ref={el => item.setShapeRef(el)}
-        radiusX={item.radiusX}
-        radiusY={item.radiusY}
+        radiusX={item.canvasRadiusX}
+        radiusY={item.canvasRadiusY}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}
