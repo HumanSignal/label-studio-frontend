@@ -18,6 +18,11 @@ module.exports = {
   _positionSelector: '.lsf-seeker__position',
   _seekStepForwardSelector: '.lsf-timeline-controls__main-controls > div:nth-child(2) > button:nth-child(4)',
   _seekStepBackwardSelector: '.lsf-timeline-controls__main-controls > div:nth-child(2) > button:nth-child(2)',
+  _playButtonSelector: '.lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(2)',
+
+  locateRootSelector() {
+    return locate(this._rootSelector);
+  },
 
   locateVideoContainer() {
     return locate(this._videoRootSelector);
@@ -25,6 +30,18 @@ module.exports = {
 
   videoLocate(locator) {
     return locator ? locate(locator).inside(this.locateVideoContainer()) : this.locateVideoContainer();
+  },
+
+  seekStepForwardSelector() {
+    return locate(this._seekStepForwardSelector).inside(this.locateRootSelector());
+  },
+
+  seekStepBackwardSelector() {
+    return locate(this._seekStepBackwardSelector).inside(this.locateRootSelector());
+  },
+
+  playButtonSelector() {
+    return locate(this._playButtonSelector).inside(this.locateRootSelector());
   },
 
   getCurrentVideo() {
@@ -76,7 +93,7 @@ module.exports = {
    */
   async clickSeekStepForward(steps = 1) {
     for (let i = 0; i < steps; i++) {
-      I.click(this._seekStepForwardSelector);
+      I.click(this.seekStepForwardSelector());
     }
   },
 
@@ -87,7 +104,23 @@ module.exports = {
    */
   async clickSeekStepBackward(steps = 2) {
     for (let i = 0; i < steps; i++) {
-      I.click(this._seekStepBackwardSelector);
+      I.click(this.seekStepBackwardSelector());
     }
+  },
+
+  /**
+   * Click the video controls play button.
+   * @returns {Promise<void>}
+   */
+  async clickPlayButton() {
+    I.click(this.playButtonSelector());
+  },
+
+  /**
+   * Click the video controls pause button.
+   * @returns {Promise<void>}
+   */
+  async clickPauseButton() {
+    I.click(this.playButtonSelector());
   },
 };
