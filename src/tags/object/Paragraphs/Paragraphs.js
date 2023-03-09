@@ -41,6 +41,22 @@ class HtxParagraphsView extends Component {
     return [fullOffset, phraseNode, phraseIndex];
   }
 
+  fixStart(selection, start, startOffset) {
+    let text = selection.toString();
+    let fixedStartOffset = startOffset;
+    let fixedStart = start;
+
+    // if text starts with a newline
+    // fix the start, startOffset and remove the newline from the text
+    if (text.startsWith('\n')) {
+      text = text.replace(/^\n/, '');
+      fixedStartOffset = 0;
+      fixedStart++;
+    }
+
+    return [fixedStart, fixedStartOffset, text];
+  }
+
   captureDocumentSelection() {
     const item = this.props.item;
     const cls = item.layoutClasses;
@@ -68,7 +84,6 @@ class HtxParagraphsView extends Component {
       if (r.endContainer.nodeName === 'DIV') {
         r.setEnd(r.startContainer, r.startContainer.length);
       }
-
       if (r.collapsed || /^\s*$/.test(r.toString())) continue;
 
       try {
@@ -89,7 +104,8 @@ class HtxParagraphsView extends Component {
 
           if (visibleIndexes.length !== end - start + 1) {
             const texts = [...this.myRef.current.getElementsByClassName(cls.text)];
-            let fromIdx = start;
+            const fromIdx = start;
+            let skippedRanges = 0;
 
             for (let k = 0; k < visibleIndexes.length; k++) {
               const curIdx = visibleIndexes[k];
@@ -129,42 +145,57 @@ class HtxParagraphsView extends Component {
                 selection.removeAllRanges();
                 selection.addRange(_range);
 
-                ranges.push({
-                  startOffset: anchorOffset,
-                  start: String(fromIdx),
-                  endOffset: focusOffset,
-                  end: String(curIdx),
-                  _range,
-                  text: selection.toString(),
-                });
+                const text = selection.toString().trim();
 
-                if (visibleIndexes.length - 1 > k) {
-                  fromIdx = visibleIndexes[k + 1];
+                if (text) {
+                  let startIdx = fromIdx;
+
+                  if (skippedRanges > 0) {
+                    startIdx = curIdx;
+                    anchorOffset = 0;
+                    skippedRanges = 0;
+                  }
+
+                  ranges.push({
+                    startOffset: anchorOffset,
+                    start: String(startIdx),
+                    endOffset: focusOffset,
+                    end: String(curIdx),
+                    _range,
+                    text,
+                  });
+                } else {
+                  // if text is empty, skip the range
+                  skippedRanges++;
                 }
               }
             }
           } else {
+            const [fixedStart, fixedStartOffset, text] = this.fixStart(selection, start, startOffset);
+
             // user selection always has only one range, so we can use selection's text
             // which doesn't contain hidden elements (names in our case)
             ranges.push({
-              startOffset,
-              start: String(start),
+              startOffset: fixedStartOffset,
+              start: String(fixedStart),
               endOffset,
               end: String(end),
               _range: r,
-              text: selection.toString(),
+              text,
             });
           }
         } else {
+          const [fixedStart, fixedStartOffset, text] = this.fixStart(selection, start, startOffset);
+
           // user selection always has only one range, so we can use selection's text
           // which doesn't contain hidden elements (names in our case)
           ranges.push({
-            startOffset,
-            start: String(start),
+            startOffset: fixedStartOffset,
+            start: String(fixedStart),
             endOffset,
             end: String(end),
             _range: r,
-            text: selection.toString(),
+            text,
           });
         }
       } catch (err) {
