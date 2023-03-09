@@ -41,12 +41,13 @@ class HtxParagraphsView extends Component {
     return [fullOffset, phraseNode, phraseIndex];
   }
 
-  fixStart(selection, start, startOffset) {
+  fixSelectionStartEnd(selection, start, startOffset, end, endOffset) {
     let text = selection.toString();
     let fixedStartOffset = startOffset;
     let fixedStart = start;
+    let fixedEndOffset = endOffset;
+    let fixedEnd = end;
 
-    console.log({ text });
     // if text starts with a newline
     // fix the start, startOffset and remove the newline from the text
     if (text.startsWith('\n')) {
@@ -55,7 +56,15 @@ class HtxParagraphsView extends Component {
       fixedStart++;
     }
 
-    return [fixedStart, fixedStartOffset, text];
+    // if text ends with a newline
+    // fix the end, endOffset and remove the newline from the text
+    if (text.endsWith('\n')) {
+      text = text.replace(/\n+$/, '');
+      fixedEndOffset = text.length;
+      fixedEnd--;
+    }
+
+    return [fixedStart, fixedStartOffset, fixedEnd, fixedEndOffset, text];
   }
 
   captureDocumentSelection() {
@@ -145,7 +154,7 @@ class HtxParagraphsView extends Component {
                 selection.removeAllRanges();
                 selection.addRange(_range);
 
-                const [fixedStart, fixedStartOffset, text] = this.fixStart(selection, fromIdx, anchorOffset);
+                const [fixedStart, fixedStartOffset, fixedEnd, fixedEndOffset, text] = this.fixSelectionStartEnd(selection, fromIdx, anchorOffset, curIdx, focusOffset);
 
                 // Sometimes the selection is empty, which is the case for dragging from the end of a line above the
                 // target line, while having collapsed lines between.
@@ -153,8 +162,8 @@ class HtxParagraphsView extends Component {
                   ranges.push({
                     startOffset: fixedStartOffset,
                     start: String(fixedStart),
-                    endOffset: focusOffset,
-                    end: String(curIdx),
+                    endOffset: fixedEndOffset,
+                    end: String(fixedEnd),
                     _range,
                     text,
                   });
@@ -166,29 +175,29 @@ class HtxParagraphsView extends Component {
               }
             }
           } else {
-            const [fixedStart, fixedStartOffset, text] = this.fixStart(selection, start, startOffset);
+            const [fixedStart, fixedStartOffset, fixedEnd, fixedEndOffset, text] = this.fixSelectionStartEnd(selection, start, startOffset, end, endOffset);
 
             // user selection always has only one range, so we can use selection's text
             // which doesn't contain hidden elements (names in our case)
             ranges.push({
               startOffset: fixedStartOffset,
               start: String(fixedStart),
-              endOffset,
-              end: String(end),
+              endOffset: fixedEndOffset,
+              end: String(fixedEnd),
               _range: r,
               text,
             });
           }
         } else {
-          const [fixedStart, fixedStartOffset, text] = this.fixStart(selection, start, startOffset);
+          const [fixedStart, fixedStartOffset, fixedEnd, fixedEndOffset, text] = this.fixSelectionStartEnd(selection, start, startOffset, end, endOffset);
 
           // user selection always has only one range, so we can use selection's text
           // which doesn't contain hidden elements (names in our case)
           ranges.push({
             startOffset: fixedStartOffset,
             start: String(fixedStart),
-            endOffset,
-            end: String(end),
+            endOffset: fixedEndOffset,
+            end: String(fixedEnd),
             _range: r,
             text,
           });
