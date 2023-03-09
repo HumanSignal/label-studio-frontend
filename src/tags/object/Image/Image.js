@@ -325,8 +325,6 @@ const Model = types.model({
     // as it can only be present for already created (submitter) regions
     const useRawResult = !currentImageEntity.imageLoaded && isDefined(region._rawResult);
 
-    console.log({ useRawResult });
-
     return useRawResult ? structuredClone(region._rawResult) : {
       ...imageDimension,
       value,
