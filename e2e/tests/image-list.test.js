@@ -185,6 +185,10 @@ Scenario('Image list with hotkey navigation', async ({ I, AtImageView }) => {
 });
 
 Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView }) => {
+  LabelStudio.setFeatureFlags({
+    feat_front_lsdv_4583_multi_image_segmentation_short: true,
+  });
+
   const params = {
     config,
     data,
@@ -199,6 +203,9 @@ Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView
 
   I.say('Attempting to go to the next image');
   I.pressKey('Ctrl+d');
+
+  await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
   I.seeElement(`img[src="${data.images[1]}"]`);
 
   await LabelStudio.resultsNotChanged(result);
