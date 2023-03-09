@@ -104,8 +104,7 @@ class HtxParagraphsView extends Component {
 
           if (visibleIndexes.length !== end - start + 1) {
             const texts = [...this.myRef.current.getElementsByClassName(cls.text)];
-            const fromIdx = start;
-            let skippedRanges = 0;
+            let fromIdx = start;
 
             for (let k = 0; k < visibleIndexes.length; k++) {
               const curIdx = visibleIndexes[k];
@@ -144,29 +143,23 @@ class HtxParagraphsView extends Component {
 
                 selection.removeAllRanges();
                 selection.addRange(_range);
+                const text = selection.toString();
 
-                const text = selection.toString().trim();
-
+                // Sometimes the selection is empty, which is the case for dragging from the end of a line above the
+                // target line, while having collapsed lines between.
                 if (text) {
-                  let startIdx = fromIdx;
-
-                  if (skippedRanges > 0) {
-                    startIdx = curIdx;
-                    anchorOffset = 0;
-                    skippedRanges = 0;
-                  }
-
                   ranges.push({
                     startOffset: anchorOffset,
-                    start: String(startIdx),
+                    start: String(fromIdx),
                     endOffset: focusOffset,
                     end: String(curIdx),
                     _range,
                     text,
                   });
-                } else {
-                  // if text is empty, skip the range
-                  skippedRanges++;
+                }
+
+                if (visibleIndexes.length - 1 > k) {
+                  fromIdx = visibleIndexes[k + 1];
                 }
               }
             }
