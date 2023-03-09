@@ -980,7 +980,7 @@ export const Annotation = types
         
         // Insert image dimensions from result 
         (() => {
-          if (!obj.type.endsWith('labels')) return;
+          if (!isDefined(obj.original_width)) return;
           if (!tagNames.has(obj.to_name)) return;
 
           const tag = tagNames.get(obj.to_name);

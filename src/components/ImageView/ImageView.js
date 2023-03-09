@@ -954,7 +954,10 @@ export default observer(
                   loading={(isFF(FF_DEV_3077) && !item.lazyoff) && 'lazy'}
                   style={item.imageTransform}
                   src={item.currentSrc}
-                  onLoad={item.updateImageSize}
+                  onLoad={(e) => {
+                    item.updateImageSize(e);
+                    item.currentImageEntity.setImageLoaded(true);
+                  }}
                   onError={this.handleError}
                   crossOrigin={item.imageCrossOrigin}
                   alt="LS"

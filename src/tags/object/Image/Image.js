@@ -306,9 +306,7 @@ const Model = types.model({
 
   createSerializedResult(region, value) {
     const index = region.item_index ?? 0;
-    const currentImageEntity = self.multiImage
-      ? self.findImageEntity(index)
-      : self;
+    const currentImageEntity = self.findImageEntity(index);
 
     const imageDimension = {
       original_width: currentImageEntity.naturalWidth,
@@ -326,6 +324,8 @@ const Model = types.model({
     // we have to forsee this scenario and avoid using raw result
     // as it can only be present for already created (submitter) regions
     const useRawResult = !currentImageEntity.imageLoaded && isDefined(region._rawResult);
+
+    console.log({ useRawResult });
 
     return useRawResult ? structuredClone(region._rawResult) : {
       ...imageDimension,
