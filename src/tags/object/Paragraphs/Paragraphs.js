@@ -46,7 +46,6 @@ class HtxParagraphsView extends Component {
     let fixedStartOffset = startOffset;
     let fixedStart = start;
 
-    console.log({ text });
     // if text starts with a newline
     // fix the start, startOffset and remove the newline from the text
     if (text.startsWith('\n')) {
