@@ -9,7 +9,7 @@ import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import { SyncableMixin } from '../../../mixins/Syncable';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_LSDV_3028, isFF } from '../../../utils/feature-flags';
+import { FF_LSDV_3028, FF_LSDV_4701, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
@@ -50,6 +50,7 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  * @param {boolean} [autocenter=true] – Always place cursor in the middle of the view
  * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
  * @param {boolean} [splitchannels=true] – Display stereo channels separately
+ * @param {string} [decoder=ffmpeg] – Decoder type to use to decode audio data. ("ffmpeg" or "webaudio")
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -72,6 +73,7 @@ const TagAttrs = types.model({
   autocenter: types.optional(types.boolean, true),
   scrollparent: types.optional(types.boolean, true),
   splitchannels: types.optional(types.boolean, isFF(FF_LSDV_3028)), // FF_LSDV_3028: true by default when on
+  decoder: types.optional(types.enumeration(['ffmpeg', 'webaudio']), isFF(FF_LSDV_4701) ? 'ffmpeg' : 'webaudio'), // FF_LSDV_4701: 'ffmpeg' by default when on, 'webaudio' otherwise
 });
 
 export const AudioModel = types.compose(

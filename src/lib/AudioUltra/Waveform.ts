@@ -73,6 +73,11 @@ export interface WaveformOptions {
   splitChannels?: boolean;
 
   /**
+   * Decoder used to decode the audio to waveform data.
+   */
+  decoderType?: 'webaudio' | 'ffmpeg';
+
+  /**
    * Center the view to the cursor when zoomin
    * @default false
    */
