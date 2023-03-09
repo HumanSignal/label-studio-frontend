@@ -11,6 +11,10 @@ Data(imageExamples).Scenario('Audio Readonly Regions', async ({
   AtSidebar,
   AtAudioView,
 }) => {
+  LabelStudio.setFeatureFlags({
+    ff_front_dev_2715_audio_3_280722_short: true,
+  });
+
   I.amOnPage('/');
   const { config, result: r, data } = current.example;
 
@@ -30,6 +34,7 @@ Data(imageExamples).Scenario('Audio Readonly Regions', async ({
   });
 
   await AtAudioView.waitForAudio();
+  await AtAudioView.lookForStage();
 
   I.say('Check region is selectable');
   AtSidebar.seeRegions(regions.length);

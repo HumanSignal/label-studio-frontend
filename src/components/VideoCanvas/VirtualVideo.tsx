@@ -109,7 +109,6 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
       video.current?.pause();
       source.current?.setAttribute('src', '');
       video.current?.load();
-      video.current = null;
     }
   };
 
@@ -128,11 +127,6 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
     source.current = sourceEl;
   }, [props.src]);
 
-  useEffect(() => {
-    detachEventListeners();
-    attachEventListeners();
-  });
-
   // Create a video tag
   useEffect(() => {
     createVideoElement();
@@ -142,15 +136,15 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
     attachRef(video.current);
 
     document.body.append(video.current!);
-  }, []);
 
-  // Handle video cleanup
-  useEffect(() => () => {
-    detachEventListeners();
-    unloadSource();
-    attachRef(null);
-    video.current?.remove();
-    video.current = null;
+    return () => {
+      // Handle video cleanup
+      detachEventListeners();
+      unloadSource();
+      attachRef(null);
+      video.current?.remove();
+      video.current = null;
+    };
   }, []);
 
   useEffect(() => {

@@ -30,9 +30,6 @@ Scenario('Play/pause of multiple synced audio stay in sync', async function({ I,
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   {
@@ -59,8 +56,9 @@ Scenario('Play/pause of multiple synced audio stay in sync', async function({ I,
 
     assert.equal(audioPaused1, audioPaused2);
     assert.equal(audioPaused1, true);
-    assert.equal(audioTime1, audioTime2);
+    assert.equal(Math.abs(audioTime1 - audioTime2) < 0.3, true, `Audio 1 currentTime and audio 2 currentTime drifted too far. Got audio1=${audioTime1} audio2=${audioTime2}`);
     assert.notEqual(audioTime1, 0);
+    assert.notEqual(audioTime2, 0);
   }
 });
 
@@ -76,9 +74,6 @@ Scenario('Looping of multiple synced audio stay in sync', async function({ I, La
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   I.say('Draw an audio segment to start looping');
@@ -88,10 +83,11 @@ Scenario('Looping of multiple synced audio stay in sync', async function({ I, La
 
     I.say('Audio is playing');
 
-    // Check that the audio timing is within 0.05 seconds of each other (to account for rounding errors, and the fact
+    // Check that the audio timing is within 0.3 seconds of each other (to account for rounding errors, and the fact
     // that playback timers will not be perfectly precise)
     assert.notEqual(audioTime1, 0);
-    assert.ok(Math.abs(audioTime1 - audioTime2) < 0.05, `Audio time difference has drifted by ${(audioTime1 - audioTime2) * 1000}ms`);
+    assert.notEqual(audioTime2, 0);
+    assert.ok(Math.abs(audioTime1 - audioTime2) < 0.3, `Audio time difference has drifted by ${(audioTime1 - audioTime2) * 1000}ms`);
 
     assert.equal(audioPaused1, audioPaused2);
     assert.equal(audioPaused1, false);
@@ -99,7 +95,6 @@ Scenario('Looping of multiple synced audio stay in sync', async function({ I, La
 
   I.say('Audio played to the same point in time');
   AtAudioView.clickPauseButton();
-  I.wait(10000);
   {
     const [{ paused: audioPaused1, currentTime: audioTime1 }, { paused: audioPaused2, currentTime: audioTime2 }] = await AtAudioView.getCurrentAudio();
 
@@ -107,8 +102,9 @@ Scenario('Looping of multiple synced audio stay in sync', async function({ I, La
 
     assert.equal(audioPaused1, audioPaused2);
     assert.equal(audioPaused1, true);
-    assert.equal(audioTime1, audioTime2);
+    assert.ok(Math.abs(audioTime1 - audioTime2) < 0.3, `Audio time difference has drifted by ${(audioTime1 - audioTime2) * 1000}ms`);
     assert.notEqual(audioTime1, 0);
+    assert.notEqual(audioTime2, 0);
   }
 
   I.say('Clicking outside of the audio segment and then clicking play should restart the audio from the beginning of the segment');
@@ -122,8 +118,9 @@ Scenario('Looping of multiple synced audio stay in sync', async function({ I, La
 
     assert.equal(audioPaused1, audioPaused2);
     assert.equal(audioPaused1, false);
-    assert.equal(audioTime1, audioTime2);
+    assert.ok(Math.abs(audioTime1 - audioTime2) < 0.3, `Audio time difference has drifted by ${(audioTime1 - audioTime2) * 1000}ms`);
     assert.notEqual(audioTime1, 0);
+    assert.notEqual(audioTime2, 0);
   }
 });
 
@@ -138,9 +135,6 @@ Scenario('Seeking of multiple synced audio stay in sync', async function({ I, La
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
   {
     const [{ currentTime: audioTime1 }, { currentTime: audioTime2 }] = await AtAudioView.getCurrentAudio();

@@ -7,7 +7,6 @@ import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import { SyncMixin } from '../../../mixins/SyncMixin';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_DEV_2461, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
@@ -245,7 +244,7 @@ export const AudioModel = types.compose(
       },
 
       handleSeek() {
-        if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === 'paragraphs')) return;
+        if (!self._ws || self.syncedObject?.type === 'paragraphs') return;
 
         self.triggerSyncSeek(self._ws.getCurrentTime());
       },

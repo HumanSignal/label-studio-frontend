@@ -199,9 +199,6 @@ export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_sh
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
-    [FF_DEV_1564_DEV_1565]: true,
-    [FF_DEV_1566]: true,
-    [FF_DEV_2715]: true,
     // could be used to explicitly set flags for testing, i.e. [FF_DEV_3793]: true
   };
 }

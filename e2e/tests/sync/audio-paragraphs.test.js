@@ -102,9 +102,6 @@ Scenario('Check audio clip is played when using the new sync option', async func
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   AtSidebar.seeRegions(2);
