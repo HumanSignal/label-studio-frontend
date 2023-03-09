@@ -19,6 +19,7 @@ import {
   FF_DEV_2432,
   FF_DEV_3391,
   FF_LSDV_3009,
+  FF_LSDV_4583,
   isFF
 } from '../../utils/feature-flags';
 import { delay, isDefined } from '../../utils/utilities';
@@ -1154,13 +1155,15 @@ export const Annotation = types
 
           area = createArea(areaSnapshot);
 
-          // store copy of the original result inside the area
-          // useful when you need to serialize a result without
-          // updating it from current/actual data
-          // For safety reasons this object is always readonly
-          Object.defineProperty(area, '_rawResult', {
-            value: Object.freeze(structuredClone(obj)),
-          });
+          if (isFF(FF_LSDV_4583)) {
+            // store copy of the original result inside the area
+            // useful when you need to serialize a result without
+            // updating it from current/actual data
+            // For safety reasons this object is always readonly
+            Object.defineProperty(area, '_rawResult', {
+              value: Object.freeze(structuredClone(obj)),
+            });
+          }
         }
 
         area.addResult({ ...data, id: resultId, type, value, from_name, to_name });
