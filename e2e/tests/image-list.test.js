@@ -85,11 +85,13 @@ const result = [
   },
 ];
 
-Scenario('Image list rendering', async ({ I, LabelStudio, AtImageView }) => {
+Before(async ({ LabelStudio }) => {
   LabelStudio.setFeatureFlags({
     feat_front_lsdv_4583_multi_image_segmentation_short: true,
   });
+});
 
+Scenario('Image list rendering', async ({ I, LabelStudio, AtImageView }) => {
   const params = {
     config,
     data,
@@ -105,11 +107,7 @@ Scenario('Image list rendering', async ({ I, LabelStudio, AtImageView }) => {
   I.seeElement(`img[src="${data.images[0]}"]`);
 });
 
-Scenario('Image list with page navigation', async ({ I, LabelStudio, AtImageView }) => {
-  LabelStudio.setFeatureFlags({
-    feat_front_lsdv_4583_multi_image_segmentation_short: true,
-  });
-
+Scenario('Image list with page navigation', async ({ I, AtImageView, LabelStudio }) => {
   const params = {
     config,
     data,
@@ -147,11 +145,7 @@ Scenario('Image list with page navigation', async ({ I, LabelStudio, AtImageView
   I.see('1 of 4');
 });
 
-Scenario('Image list with hotkey navigation', async ({ I, LabelStudio, AtImageView }) => {
-  LabelStudio.setFeatureFlags({
-    feat_front_lsdv_4583_multi_image_segmentation_short: true,
-  });
-
+Scenario('Image list with hotkey navigation', async ({ I, AtImageView, LabelStudio }) => {
   const params = {
     config,
     data,
@@ -207,3 +201,53 @@ Scenario('Ensure that results are the same when exporting existing regions', asy
   await LabelStudio.resultsNotChanged(result);
 });
 
+Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView }) => {
+  LabelStudio.setFeatureFlags({
+    feat_front_lsdv_4583_multi_image_segmentation_short: true,
+  });
+
+  const params = {
+    config,
+    data,
+    annotations: [{ id: 1, result }],
+  };
+
+  I.amOnPage('/');
+  LabelStudio.init(params);
+
+  await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
+
+  I.say('Attempting to go to the next image');
+  I.pressKey('Ctrl+d');
+
+  await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
+  I.seeElement(`img[src="${data.images[1]}"]`);
+
+  await LabelStudio.resultsNotChanged(result);
+});
+
+// TODO: temporarily disable, will be fixed in another ticket
+Scenario('Regions are not changes when duplicating an annotation', async ({ I, LabelStudio, AtImageView }) => {
+  const params = {
+    config,
+    data,
+    annotations: [{ id: 1, result }],
+  };
+
+  I.amOnPage('/');
+  LabelStudio.init(params);
+
+  await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
+
+  I.say('Attempting to duplicate an annotaion');
+  I.click('[aria-label="Copy Annotation"]');
+
+  await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
+
+  I.say('Confirm that result is not changed');
+  await LabelStudio.resultsNotChanged(result);
+});
