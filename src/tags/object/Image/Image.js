@@ -315,7 +315,7 @@ const Model = types.model({
     };
 
     if (self.multiImage && isDefined(index)) {
-      value.item_index = index;
+      imageDimension.item_index = index;
     }
 
     // We're using raw region result instead of calulated one when
