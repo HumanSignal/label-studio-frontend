@@ -46,6 +46,7 @@ class HtxParagraphsView extends Component {
     let fixedStartOffset = startOffset;
     let fixedStart = start;
 
+    console.log({ text });
     // if text starts with a newline
     // fix the start, startOffset and remove the newline from the text
     if (text.startsWith('\n')) {
@@ -143,14 +144,15 @@ class HtxParagraphsView extends Component {
 
                 selection.removeAllRanges();
                 selection.addRange(_range);
-                const text = selection.toString();
+
+                const [fixedStart, fixedStartOffset, text] = this.fixStart(selection, fromIdx, anchorOffset);
 
                 // Sometimes the selection is empty, which is the case for dragging from the end of a line above the
                 // target line, while having collapsed lines between.
                 if (text) {
                   ranges.push({
-                    startOffset: anchorOffset,
-                    start: String(fromIdx),
+                    startOffset: fixedStartOffset,
+                    start: String(fixedStart),
                     endOffset: focusOffset,
                     end: String(curIdx),
                     _range,
