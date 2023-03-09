@@ -264,3 +264,76 @@ Scenario('Check different cases ', async ({ I, LabelStudio, AtSidebar, AtParagra
     });
   }
 });
+
+Scenario('Check start and end indices do not leak to other lines', async ({ I, LabelStudio, AtSidebar, AtParagraphs, AtLabels }) => {
+  const dialogue = [
+    1, // 1
+    3, // 2
+    1, // 3
+    2, // 4
+    3, // 5
+    1, // 6
+    2, // 7
+    1, // 8
+    3, // 9
+    1, // 10
+  ].map((authorId, idx) => ({
+    start: idx + 1,
+    end: idx + 2,
+    author: `Author ${authorId}`,
+    text: `Message ${idx + 1}`,
+  }));
+  const params = {
+    config: CONFIG,
+    data: {
+      audio: AUDIO,
+      dialogue,
+    },
+  };
+
+  LabelStudio.setFeatureFlags(FEATURE_FLAGS);
+  I.amOnPage('/');
+
+  LabelStudio.init(params);
+  AtSidebar.seeRegions(0);
+  I.say('Test selection from the end of one turn to end of the one below correctly creates a single region with proper start and startOffset');
+  AtLabels.clickLabel('Random talk');
+  AtParagraphs.setSelection(AtParagraphs.locateText('Message 8'), 9, AtParagraphs.locateText('Message 9'), 9);
+  AtSidebar.seeRegions(1);
+
+  {
+    const result = await LabelStudio.serialize();
+
+    assert.deepStrictEqual(
+      omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
+      {
+        start: '8',
+        end: '8',
+        startOffset: 0,
+        endOffset: 9,
+        text: 'Message 9',
+      },
+    );
+  }
+
+  I.say('Test selection from the end of one turn to end of ones below across collapsed text correctly creates a single region with proper start and startOffset');
+  AtParagraphs.clickFilter('Author 2', 'Author 3');
+  AtLabels.clickLabel('Important Stuff');
+  AtParagraphs.setSelection(AtParagraphs.locateText('Message 2'), 9, AtParagraphs.locateText('Message 8'), 9);
+  AtSidebar.seeRegions(3);
+
+  {
+    const result = await LabelStudio.serialize();
+
+    assert.deepStrictEqual(
+      omitBy(result[1].value, (v, key) => key === 'paragraphlabels'),
+      {
+        start: '3',
+        end: '4',
+        startOffset: 0,
+        endOffset: 9,
+        text: 'Message 4\n\nMessage 5',
+      },
+    );
+  }
+});

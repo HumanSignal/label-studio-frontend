@@ -50,7 +50,7 @@ class HtxParagraphsView extends Component {
     // if text starts with a newline
     // fix the start, startOffset and remove the newline from the text
     if (text.startsWith('\n')) {
-      text = text.replace(/^\n/, '');
+      text = text.replace(/^\n+/, '');
       fixedStartOffset = 0;
       fixedStart++;
     }
