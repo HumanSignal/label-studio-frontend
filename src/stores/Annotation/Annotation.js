@@ -1107,7 +1107,6 @@ export const Annotation = types
       if (typeof objAnnotation !== 'object') {
         objAnnotation = JSON.parse(objAnnotation);
       }
-      
       objAnnotation = self.fixBrokenAnnotation(objAnnotation ?? []);
 
       return objAnnotation;
