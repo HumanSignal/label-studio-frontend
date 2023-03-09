@@ -129,7 +129,7 @@ const RegionsMixin = types
       },
 
       convertYToPerc(y) {
-        return (y * 100) / self.parent.stageHeight;
+        return (y * 100) / self.currentImageEntity.stageHeight;
       },
 
       convertHDimensionToPerc(hd) {
