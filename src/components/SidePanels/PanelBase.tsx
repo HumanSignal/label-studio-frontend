@@ -8,6 +8,7 @@ import { useDrag } from '../../hooks/useDrag';
 import { clamp, isDefined } from '../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
 import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
+import { PanelView } from './SideTabPanels';
 import { Tabs } from './Tabs';
 
 export type PanelBaseExclusiveProps = 'name' | 'title'
@@ -36,7 +37,7 @@ interface Dimension {
   width?: number;
 }
 
-interface PanelBaseProps {
+export interface PanelBaseProps {
   root: MutableRefObject<HTMLDivElement | undefined>;
   name: PanelType;
   title: string;
@@ -56,6 +57,7 @@ interface PanelBaseProps {
   locked: boolean;
   zIndex: number;
   positioning: boolean;
+  panelViews?: PanelView[];
   onResize: ResizeHandler;
   onResizeStart: () => void;
   onResizeEnd: () => void;
@@ -74,34 +76,35 @@ const distance = (x1: number, x2: number, y1: number, y2: number) => {
   );
 };
 
-export const PanelBase: FC<PanelBaseProps> = ({
-  name,
-  root,
-  title,
-  width,
-  maxWidth,
-  height,
-  visible,
-  detached,
-  alignment,
-  expanded,
-  top,
-  left,
-  relativeTop,
-  relativeLeft,
-  zIndex,
-  tooltip,
-  locked = false,
-  positioning = false,
-  onSnap,
-  onResize,
-  onResizeStart,
-  onResizeEnd,
-  onVisibilityChange,
-  onPositionChange,
-  onPositionChangeBegin,
-  children,
-}) => {
+export const PanelBase: FC<PanelBaseProps> = (panelProps) => {
+  const {
+    name,
+    root,
+    title,
+    width,
+    maxWidth,
+    height,
+    visible,
+    detached,
+    alignment,
+    expanded,
+    top,
+    left,
+    relativeTop,
+    relativeLeft,
+    zIndex,
+    tooltip,
+    locked = false,
+    positioning = false,
+    onSnap,
+    onResize,
+    onResizeStart,
+    onResizeEnd,
+    onVisibilityChange,
+    onPositionChange,
+    onPositionChangeBegin,
+    children,
+  } = panelProps;
   const headerRef = useRef<HTMLDivElement>();
   const panelRef = useRef<HTMLDivElement>();
   const resizerRef = useRef<HTMLDivElement>();
@@ -368,9 +371,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
           <>
             {isFF(FF_DEV_3873) ? (
               <Elem name="body">
-                <Tabs title={title}>
-                  <Block name={name}>{children}</Block>
-                </Tabs>
+                <Tabs {...panelProps} />
               </Elem>
             ) : (
               <Elem name="body">

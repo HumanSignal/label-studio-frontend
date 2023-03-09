@@ -1,9 +1,11 @@
 import { createContext } from 'react';
 
-interface SideTabPanelsContextProps {
+interface SidePanelsContextProps {
   locked: boolean;
+  updatePanelTabs?: any;
 }
 
-export const SidePanelsContext = createContext<SideTabPanelsContextProps>({
+export const SidePanelsContext = createContext<SidePanelsContextProps>({
   locked: false,
+  updatePanelTabs: undefined,
 });

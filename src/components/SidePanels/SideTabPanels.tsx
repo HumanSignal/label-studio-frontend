@@ -2,7 +2,7 @@ import { observer } from 'mobx-react';
 import { CSSProperties, FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
 import { DetailsPanel } from './DetailsPanel/DetailsPanel';
-import { OutlinerPanel } from './OutlinerPanel/OutlinerPanel';
+import { OutlinerComponent } from './OutlinerPanel/OutlinerPanel';
 
 import { IconDetails, IconHamburger } from '../../assets/icons';
 import { useMedia } from '../../hooks/useMedia';
@@ -13,6 +13,7 @@ import { PanelProps } from './PanelBase';
 import './SidePanels.styl';
 import { SidePanelsContext } from './SidePanelsContext';
 import { useRegionsCopyPaste } from '../../hooks/useRegionsCopyPaste';
+import { PanelBase } from './PanelBase';
 
 const maxWindowWidth = 980;
 
@@ -21,7 +22,12 @@ interface SidePanelsProps {
   store: any;
   currentEntity: any;
 }
-
+export interface PanelView {
+  title: string;
+  component: FC<any>;
+  icon: FC;
+  active: boolean;
+}
 interface PanelBBox {
   width: number;
   height:  number;
@@ -36,43 +42,41 @@ interface PanelBBox {
   visible: boolean;
   detached: boolean;
   alignment: 'left' | 'right';
+  panelViews: PanelView[];
 }
 
-interface PanelView<T extends PanelProps = PanelProps> {
-  title: string;
-  component: FC<T>;
-  icon: FC;
-}
 
-export type PanelType = 'outliner' | 'details';
+export type PanelType = string;
 
 type PanelSize = Record<PanelType, PanelBBox>;
 
-const restorePanel = (name: PanelType, defaults: PanelBBox) => {
-  const panelData = window.localStorage.getItem(`panel:${name}`);
+// const restorePanel = (name: PanelType, defaults: PanelBBox) => {
+//   const panelData = window.localStorage.getItem(`panel:${name}`);
 
-  return panelData ? {
-    ...defaults,
-    ...JSON.parse(panelData),
-  } : defaults;
+//   return panelData ? {
+//     ...defaults,
+//     ...JSON.parse(panelData),
+//   } : defaults;
+// };
+
+const savePanel = (key: PanelType, panelData: PanelBBox) => {
+  window.localStorage.setItem(`panel:${key}`, JSON.stringify(panelData));
 };
 
-const savePanel = (name: PanelType, panelData: PanelBBox) => {
-  window.localStorage.setItem(`panel:${name}`, JSON.stringify(panelData));
-};
-
-const panelView: Record<PanelType, PanelView> = {
-  outliner: {
-    title: 'Outliner',
-    component: OutlinerPanel as FC<PanelProps>,
-    icon: IconHamburger,
-  },
-  details: {
-    title: 'Details',
-    component: DetailsPanel as FC<PanelProps>,
-    icon: IconDetails,
-  },
-};
+// const panelView: Record<PanelType, PanelView> = {
+//   '0': {
+//     title: 'Outliner',
+//     component: OutlinerPanel as FC<PanelProps>,
+//     icon: IconHamburger,
+//     active: true,
+//   },
+//   '1': {
+//     title: 'Details',
+//     component: DetailsPanel as FC<PanelProps>,
+//     icon: IconDetails,
+//     active: true,
+//   },
+// };
 
 const SidePanelsComponent: FC<SidePanelsProps> = ({
   currentEntity,
@@ -92,7 +96,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   const [snap, setSnap] = useState<'left' | 'right' | undefined>();
   const localSnap = useRef(snap);
   const [panelData, setPanelData] = useState<PanelSize>({
-    outliner: restorePanel('outliner', {
+    '0': {
       top: 0,
       left: 0,
       relativeLeft: 0,
@@ -104,49 +108,61 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       detached: false,
       alignment: 'left',
       maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    }),
-    details: restorePanel('details', {
-      top: 0,
-      left: 0,
-      relativeLeft: 0,
-      relativeTop: 0,
-      zIndex: 1,
-      width: DEFAULT_PANEL_WIDTH,
-      height: DEFAULT_PANEL_HEIGHT,
-      visible: true,
-      detached: false,
-      alignment: 'right',
-      maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    }),
+      panelViews: [{
+        title: 'Outliner',
+        component: OutlinerComponent as FC<PanelProps>,
+        icon: IconHamburger,
+        active: true,
+      }],
+    },
+    // '1': {
+    //   top: 0,
+    //   left: 0,
+    //   relativeLeft: 0,
+    //   relativeTop: 0,
+    //   zIndex: 1,
+    //   width: DEFAULT_PANEL_WIDTH,
+    //   height: DEFAULT_PANEL_HEIGHT,
+    //   visible: true,
+    //   detached: false,
+    //   alignment: 'right',
+    //   maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
+    //   panelViews: [{
+    //     title: 'Details',
+    //     component: OutlinerComponent as FC<PanelProps>,
+    //     icon: IconDetails,
+    //     active: true,
+    //   }],
+    // },
   });
 
   useRegionsCopyPaste(currentEntity);
 
-  const sidepanelsCollapsed = useMemo(() => {
+  const sidePanelsCollapsed = useMemo(() => {
     return viewportSizeMatch || screenSizeMatch.matches;
   }, [viewportSizeMatch, screenSizeMatch.matches]);
 
   const updatePanel = useCallback((
-    name: PanelType,
+    key: PanelType,
     patch: Partial<PanelBBox>,
   ) => {
     setPanelData((state) => {
-      const panel = { ...state[name], ...patch };
+      const panel = { ...state[key], ...patch };
 
-      savePanel(name, panel);
+      savePanel(key, panel);
 
       return {
         ...state,
-        [name]: panel,
+        [key]: panel,
       };
     });
   }, [panelData]);
 
-  const onVisibilityChange = useCallback((name: PanelType, visible: boolean) => {
-    const panel = panelData[name];
-    const position = normalizeOffsets(name, panel.top, panel.left, visible);
+  const onVisibilityChange = useCallback((key: PanelType, visible: boolean) => {
+    const panel = panelData[key];
+    const position = normalizeOffsets(key, panel.top, panel.left, visible);
 
-    updatePanel(name, {
+    updatePanel(key, {
       visible,
       storedTop: position.top / viewportSize.current.height * 100,
       storedLeft: position.left / viewportSize.current.width * 100,
@@ -168,8 +184,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
   };
 
-  const normalizeOffsets = (name: PanelType, top: number, left: number, visible?: boolean) => {
-    const panel = panelData[name];
+  const normalizeOffsets = (key: PanelType, top: number, left: number, visible?: boolean) => {
+    const panel = panelData[key];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
     const height = panel.detached
       ? (visible ?? panel.visible) ? panel.height : PANEL_HEADER_HEIGHT_PADDED
@@ -183,7 +199,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     };
   };
 
-  const onPositionChangeBegin = useCallback((name: PanelType) => {
+  const onPositionChangeBegin = useCallback((key: PanelType) => {
     const patch = Object.entries(panelData).reduce<PanelSize>((res, [panelName, panelData]) => {
       const panel = { ...panelData, zIndex: 1 };
 
@@ -192,26 +208,26 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       return { ...res, [panelName]: panel };
     }, { ...panelData });
 
-    patch[name] = {
-      ...patch[name],
+    patch[key] = {
+      ...patch[key],
       zIndex: 15,
     };
 
-    savePanel(name, patch[name]);
+    savePanel(key, patch[key]);
     setPanelData(patch);
   }, [panelData]);
 
-  const onPositionChange = useCallback((name: PanelType, t: number, l:  number, detached: boolean) => {
-    const panel = panelData[name];
+  const onPositionChange = useCallback((key: PanelType, t: number, l:  number, detached: boolean) => {
+    const panel = panelData[key];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
 
-    const { left, top } = normalizeOffsets(name, t, l, panel.visible);
+    const { left, top } = normalizeOffsets(key, t, l, panel.visible);
     const maxHeight = viewportSize.current.height - top;
 
     checkSnap(left, parentWidth, panel.width);
 
     requestAnimationFrame(() => {
-      updatePanel(name, {
+      updatePanel(key, {
         top,
         left,
         relativeTop: top / viewportSize.current.height * 100,
@@ -235,18 +251,18 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
   const findPanelsOnSameSide = useCallback((panelAlignment : string) => {
     return Object.keys(panelData)
-      .filter((panelName) => panelData[panelName as PanelType]?.alignment === panelAlignment);
+      .filter((key) => panelData[key as PanelType]?.alignment === panelAlignment);
   }, [panelData]);
 
-  const onResize = useCallback((name: PanelType, w: number, h: number, t: number, l: number) => {
-    const { left, top } = normalizeOffsets(name, t, l);
+  const onResize = useCallback((key: PanelType, w: number, h: number, t: number, l: number) => {
+    const { left, top } = normalizeOffsets(key, t, l);
     const maxHeight = viewportSize.current.height - top;
 
     requestAnimationFrame(() => {
-      const panelsOnSameAlignment = findPanelsOnSameSide(panelData[name]?.alignment);
+      const panelsOnSameAlignment = findPanelsOnSameSide(panelData[key]?.alignment);
 
-      panelsOnSameAlignment.forEach(panelName => {
-        updatePanel(panelName as PanelType, {
+      panelsOnSameAlignment.forEach(key => {
+        updatePanel(key as PanelType, {
           top,
           left,
           relativeTop: (top / viewportSize.current.height) * 100,
@@ -261,7 +277,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     });
   }, [updatePanel, panelMaxWidth, panelData]);
 
-  const onSnap = useCallback((name: PanelType) => {
+  const onSnap = useCallback((key: PanelType) => {
     setPositioning(false);
 
     if (!localSnap.current) return;
@@ -271,7 +287,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     };
 
     const firstPanelOnNewSideName = findPanelsOnSameSide(localSnap.current).filter(
-      panelName => panelName !== name,
+      panelName => panelName !== key,
     )?.[0];
 
     if (firstPanelOnNewSideName) {
@@ -282,7 +298,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       );
     }
     
-    updatePanel(name, bboxData);
+    updatePanel(key, bboxData);
     setSnap(undefined);
   }, [updatePanel]);
 
@@ -314,7 +330,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
       paddingRight: 0,
     };
 
-    if (sidepanelsCollapsed) {
+    if (sidePanelsCollapsed) {
       return result;
     }
 
@@ -331,13 +347,13 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [
     panelsHidden,
     panelData,
-    sidepanelsCollapsed,
+    sidePanelsCollapsed,
   ]);
 
   const panels = useMemo(() => {
     if (panelsHidden) return {};
 
-    const result: Record<string, {props: Record<string, any>, Component: FC<any>}[]> = {
+    const result: Record<string, {props: Record<string, any>}[]> = {
       detached: [],
       left: [],
       right: [],
@@ -345,28 +361,29 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
 
     const panels = Object.entries(panelData);
 
-    for(const [name, panelData] of panels) {
+    for(const [, panelData] of panels) {
       const { alignment, detached } = panelData;
-      const view = panelView[name as PanelType];
-      const Component = view.component;
-      const Icon = view.icon;
+      // const views = panelData.panelViews;
+
+      // const Component = view.component;
+      // const Icon = view.icon;
       const props = {
         ...panelData,
         ...commonProps,
         top: panelData.storedTop ?? panelData.top,
         left: panelData.storedLeft ?? panelData.left,
-        tooltip: view.title,
-        icon: <Icon/>,
+        tooltip: panelData.panelViews.find(view => view.active)?.title,
+        icon: <IconDetails/>,
         positioning,
         maxWidth: panelMaxWidth,
         zIndex: panelData.zIndex,
-        expanded: sidepanelsCollapsed,
-        alignment: sidepanelsCollapsed ? 'left' : panelData.alignment,
-        locked: sidepanelsCollapsed,
+        expanded: sidePanelsCollapsed,
+        alignment: sidePanelsCollapsed ? 'left' : panelData.alignment,
+        locked: sidePanelsCollapsed,
       };
       const panel = {
         props,
-        Component,
+        // Component,
       };
 
       if (detached) result.detached.push(panel);
@@ -375,7 +392,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     }
 
     return result;
-  }, [panelData, commonProps, panelsHidden, sidepanelsCollapsed, positioning, panelMaxWidth]);
+  }, [panelData, commonProps, panelsHidden, sidePanelsCollapsed, positioning, panelMaxWidth]);
 
   useEffect(() => {
     localSnap.current = snap;
@@ -411,11 +428,16 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     };
   }, []);
 
+  const updatePanelTabs = (panelKey: string, componentName: string ) => {
+    console.log('updatePanelTabs', panelKey );
+  };
+
   const contextValue = useMemo(() => {
     return {
-      locked: sidepanelsCollapsed,
+      locked: sidePanelsCollapsed,
+      updatePanelTabs,
     };
-  }, [sidepanelsCollapsed]);
+  }, [sidePanelsCollapsed]);
 
   return (
     <SidePanelsContext.Provider value={contextValue}>
@@ -430,7 +452,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         style={{
           ...padding,
         }}
-        mod={{ collapsed: sidepanelsCollapsed, newLabelingUI: true}}
+        mod={{ collapsed: sidePanelsCollapsed, newLabelingUI: true }}
       >
         {initialized && (
           <>
@@ -440,10 +462,14 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
             {panelsHidden !== true && (
               <>
                 {Object.entries(panels).map(([key, panel]) => {
-                  const content = panel.map(({ props, Component }, i) => <Component key={i} {...props} />);
+                  // const content = () => <h1>test</h1>;
+
+                  const content = panel.map(({ props }, i) => <PanelBase key={i} {...props} />);
+
+                  console.log(content);
 
                   if (key === 'detached') {
-                    return <Fragment key={key}>{content}</Fragment>;
+                    return  <Fragment key={key}>{content}</Fragment>;
                   }
 
                   return (
