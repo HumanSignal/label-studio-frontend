@@ -160,6 +160,10 @@ const Model = types
     handleSyncSpeed({ speed }) {
       self.speed = speed;
     },
+
+    syncMuted(muted) {
+      self.muted = muted;
+    },
   }))
   .actions(self => {
     return {
@@ -173,14 +177,6 @@ const Model = types
 
       handleSeek() {
         self.triggerSync('seek');
-      },
-
-      needsUpdate() {
-        if (self.sync) {
-          if (self.syncedObject?.type?.startsWith('audio')) {
-            self.muted = true;
-          }
-        }
       },
 
       setLength(length) {

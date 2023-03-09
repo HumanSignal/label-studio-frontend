@@ -6,7 +6,7 @@ import { Instance, types } from 'mobx-state-tree';
  */
 export const SYNC_WINDOW = 100;
 
-export type SyncEvent = string; // ex. "play" | "pause" | "seek" | "speed" | "volume"
+export type SyncEvent = 'play' | 'pause' | 'seek' | 'speed';
 
 /**
  * Currently only for reference, MST mixins don't allow to apply this interface
@@ -51,13 +51,15 @@ export class SyncManager {
    * @param {SyncData} data state to sync between connected tags
    * @param {string} event name of event, supplementary info, actions should rely on data
    * @param {string} origin name of the tag triggered event
+   * @returns {boolean} false if event was suppressed, because it's inside other event sync window
    */
   sync(data: SyncData, event: SyncEvent, origin: string) {
+    // @todo remove
     if (!this.locked || this.locked === origin) console.log('SYNC', { event, locked: this.locked, data, origin });
 
     // locking mechanism
     // let's try to also send events came from original tag even when sync window is locked
-    if (this.locked && this.locked !== origin) return;
+    if (this.locked && this.locked !== origin) return false;
     if (!this.locked) setTimeout(() => this.locked = null, SYNC_WINDOW);
     this.locked = origin;
 
@@ -66,6 +68,7 @@ export class SyncManager {
         target.syncReceive(data, event);
       }
     }
+    return true;
   }
 }
 
@@ -117,6 +120,12 @@ const SyncableMixin = types
     syncHandlers: new Map(),
     syncManager: null,
   }))
+  .actions(() => ({
+    syncMuted(_muted: boolean) {
+      // should be overriden in models, that can be and should be muted
+      // self.muted = muted;
+    },
+  }))
   /* eslint-enable @typescript-eslint/indent */
   .actions(self => ({
     afterCreate() {
@@ -134,11 +143,19 @@ const SyncableMixin = types
 
     syncSend(data: SyncData, event: SyncEvent) {
       if (!self.sync) return;
-      self.syncManager!.sync(data, event, self.name);
+      const notSuppressed = self.syncManager!.sync(data, event, self.name);
+
+      if (notSuppressed && event === 'play') {
+        self.syncMuted(false);
+      }
     },
 
     syncReceive(data: SyncData, event: SyncEvent) {
       const handler = self.syncHandlers.get(event);
+
+      if (event === 'play') {
+        self.syncMuted(true);
+      }
 
       if (handler) {
         handler(data, event);

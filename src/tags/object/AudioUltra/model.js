@@ -212,7 +212,11 @@ export const AudioModel = types.compose(
         // currently it doesn't update visual control state, just an internal speed
         self._ws.rate = speed;
       },
-      handleSyncDuration() {},
+
+      syncMuted(muted) {
+        if (!self._ws) return;
+        self._ws.muted = muted;
+      },
     }))
     .actions(self => {
       let dispose;
