@@ -174,21 +174,28 @@ const Model = types
 
       self.syncSend({
         playing: !audio.paused,
-        ...data,
         time: audio.currentTime,
+        ...data,
       }, event);
     },
 
     registerSyncHandlers() {
-      ['pause', 'seek'].forEach(event => {
-        // it's unclear how to sync and display playing from any random moment here,
-        // so we just stop Paragraphs' audio on any external manipulations.
-        self.syncHandlers.set(event, () => self.stop({ forced: true }));
+      self.syncHandlers.set('pause', () => self.stop({ forced: true }));
+      self.syncHandlers.set('seek', ({ time }) => {
+        const audio = self.getRef().current;
+
+        if (!audio) return;
+
+        // seek to given time only if it's inside current region.
+        // otherwise it will be paused immediately.
+        // if time is correct, audio will be paused at the end of current region.
+        audio.currentTime = time;
+        self.stop();
       });
-      // self.syncHandlers.set('speed', self.handleSyncSpeed);
+      self.syncHandlers.set('speed', self.handleSyncSpeed);
     },
 
-    handleSyncSpeed(speed) {
+    handleSyncSpeed({ speed }) {
       const audio = self.getRef().current;
 
       if (audio) audio.playbackRate = speed;
