@@ -2,115 +2,15 @@ import { AudioDecoderWorker, getAudioDecoderWorker } from '@martel/audio-file-de
 // eslint-disable-next-line
 // @ts-ignore
 import DecodeAudioWasm from '@martel/audio-file-decoder/decode-audio.wasm';
-import { Events } from '../Common/Events';
+import { BaseAudioDecoder } from './BaseAudioDecoder';
 import { clamp, info } from '../Common/Utils';
 import { SplitChannel } from './SplitChannel';
 
 
 const DURATION_CHUNK_SIZE = 60 * 30; // 30 minutes
 
-export const DEFAULT_FREQUENCY_HZ = 44100;
-
-interface AudioDecoderEvents {
-  progress: (chunk: number, total: number) => void;
-}
-
-export class AudioDecoder extends Events<AudioDecoderEvents> {
-  chunks?: Float32Array[][];
-  private cancelled = false;
-  private decodeId = 0; // if id=0, decode is not in progress
+export class AudioDecoder extends BaseAudioDecoder {
   private worker: AudioDecoderWorker | undefined;
-  private _dataLength = 0;
-  private _dataSize = 0;
-  private _channelCount = 1;
-  private _sampleRate = DEFAULT_FREQUENCY_HZ;
-  private _duration = 0;
-  private decodingResolve?: () => void;
-  decodingPromise: Promise<void> | undefined;
-
-  /**
-   * Timeout for removal of the decoder from the cache.
-   * Any subsequent requests for the same source will renew the decoder and cancel the removal.
-   */
-  removalId: any = null;
-
-  constructor(private src: string) {
-    super();
-  }
-
-  get channelCount() {
-    return this._channelCount;
-  }
-
-  get sampleRate() {
-    return this._sampleRate;
-  }
-
-  get duration() {
-    return this._duration;
-  }
-
-  get dataLength() {
-    if (this.chunks && !this._dataLength) {
-      this._dataLength = (this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.length, 0), 0) ?? 0) / this._channelCount;
-    }
-    return this._dataLength;
-  }
-
-  get dataSize() {
-    if (this.chunks && !this._dataSize) {
-      this._dataSize = (this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.byteLength, 0), 0) ?? 0) / this._channelCount;
-    }
-    return this._dataSize;
-  }
-
-  get sourceDecoded() {
-    return this.chunks !== undefined;
-  }
-
-  get sourceDecodeCancelled() {
-    return this.cancelled && this.decodeId === 0;
-  }
-
-  /**
-   * Cancel the decoding process.
-   * This will stop the generator and dispose the worker.
-   */
-  cancel() {
-    if (!this.cancelled) {
-      info('decode:cancelled', this.src);
-    }
-    this.cancelled = true;
-    this.decodeId = 0;
-
-    this.disposeWorker();
-  }
-
-  /**
-   * Renew the decoder instance to allow reuse of the same decoder with any resultant encoding data.
-   */
-  renew() {
-    this.cancelled = false;
-  }
-
-  /**
-   * Since this is a singleton, we don't want to destroy the instance but clear all active
-   * subscriptions and cancel any pending decoding work
-   */
-  destroy() {
-    super.removeAllListeners();
-    this.cancel();
-  }
-
-  /**
-   * Resolve and remove the shared decoding promise.
-   */
-  cleanupResolvers() {
-    this.decodingResolve?.();
-    this.decodingResolve = undefined;
-    this.decodingPromise = undefined;
-    info('decode:cleanup', this.src);
-  }
 
   /**
    * Total number of chunks to decode.
@@ -243,14 +143,14 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
       info('decode:complete', this.src);
     } finally {
       splitChannels?.destroy();
-      this.disposeWorker();
+      this.dispose();
     }
   }
 
   /**
    * Web worker containing the ffmpeg wasm decoder must be disposed of to prevent memory leaks.
    */
-  private disposeWorker() {
+  protected dispose() {
     if (this.worker) {
       this.worker.dispose();
       this.worker = undefined;

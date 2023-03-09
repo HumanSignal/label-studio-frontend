@@ -77,6 +77,7 @@ export class MediaLoader extends Destructable {
       ...options,
       src: this.options.src,
       splitChannels: this.wf.params.splitChannels,
+      decoderType: this.wf.params.decoderType,
     });
 
     // If this failed to allocate an audio decoder, we can't continue
