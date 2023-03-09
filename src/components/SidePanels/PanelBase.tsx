@@ -369,15 +369,15 @@ export const PanelBase: FC<PanelBaseProps> = (panelProps) => {
         )}
         {visible && (
           <>
-            {isFF(FF_DEV_3873) ? (
+            {/* {isFF(FF_DEV_3873) ? (
               <Elem name="body">
                 <Tabs {...panelProps} />
               </Elem>
-            ) : (
-              <Elem name="body">
-                <Block name={name}>{children}</Block>
-              </Elem>
-            )}
+            ) : ( */}
+            <Elem name="body">
+              <Block name={name}>{children}</Block>
+            </Elem>
+            {/* )} */}
           </>
         )}
       </Elem>

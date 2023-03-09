@@ -1,12 +1,9 @@
-import React, { FC, ReactElement, useContext, useState } from 'react';
+import React, { FC, useContext, useState } from 'react';
 import { IconOutlinerDrag } from '../../assets/icons';
 import { Block, Elem } from '../../utils/bem';
 import { PanelBaseProps } from './PanelBase';
 import { SidePanelsContext } from './SidePanelsContext';
-import { PanelView } from './SideTabPanels';
-// import throttle from 'lodash.throttle';
 import './Tabs.styl';
-// import { SidePanelsContext } from './SidePanelsContext';
 
 
 enum DroppableSide {
@@ -107,7 +104,9 @@ const Tab = (props: TabProps) => {
 };
 
 export const Tabs = (props: PanelBaseProps) => {
-  return props.panelViews?.map((view, index) => (
+  console.log('props', props);
+  if (!props.panelViews) return null;
+  return props.panelViews.map((view, index) => (
     <Tab key={`${view.title}-${index}`} tabTitle={view.title} active={view.active} component={view.component} {...props} />
   ));
 };

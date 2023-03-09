@@ -27,6 +27,14 @@ const DetailsPanelComponent: FC<DetailsPanelProps> = ({ currentEntity, regions, 
   );
 };
 
+const DetailsComponent: FC<DetailsPanelProps> = ({ currentEntity, regions, ...props }) => {
+  const selectedRegions = regions.selection;
+
+  return (
+    <Content selection={selectedRegions} currentEntity={currentEntity} />
+  );
+};
+
 const Content: FC<any> = observer(({
   selection,
   currentEntity,
@@ -121,4 +129,5 @@ const SelectedRegion: FC<{region: any}> = observer(({
   );
 });
 
+export const Details = observer(DetailsComponent);
 export const DetailsPanel = observer(DetailsPanelComponent);

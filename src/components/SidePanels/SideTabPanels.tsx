@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react';
 import { CSSProperties, FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
-import { DetailsPanel } from './DetailsPanel/DetailsPanel';
+import { Details } from './DetailsPanel/DetailsPanel';
 import { OutlinerComponent } from './OutlinerPanel/OutlinerPanel';
 
 import { IconDetails, IconHamburger } from '../../assets/icons';
@@ -115,25 +115,25 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         active: true,
       }],
     },
-    // '1': {
-    //   top: 0,
-    //   left: 0,
-    //   relativeLeft: 0,
-    //   relativeTop: 0,
-    //   zIndex: 1,
-    //   width: DEFAULT_PANEL_WIDTH,
-    //   height: DEFAULT_PANEL_HEIGHT,
-    //   visible: true,
-    //   detached: false,
-    //   alignment: 'right',
-    //   maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    //   panelViews: [{
-    //     title: 'Details',
-    //     component: OutlinerComponent as FC<PanelProps>,
-    //     icon: IconDetails,
-    //     active: true,
-    //   }],
-    // },
+    '1': {
+      top: 0,
+      left: 0,
+      relativeLeft: 0,
+      relativeTop: 0,
+      zIndex: 1,
+      width: DEFAULT_PANEL_WIDTH,
+      height: DEFAULT_PANEL_HEIGHT,
+      visible: true,
+      detached: false,
+      alignment: 'right',
+      maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
+      panelViews: [{
+        title: 'Details',
+        component: Details as FC<PanelProps>,
+        icon: IconDetails,
+        active: true,
+      }],
+    },
   });
 
   useRegionsCopyPaste(currentEntity);
@@ -218,6 +218,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [panelData]);
 
   const onPositionChange = useCallback((key: PanelType, t: number, l:  number, detached: boolean) => {
+    console.log('onPositionChange', key, t, l, detached);
+    
     const panel = panelData[key];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
 
@@ -372,7 +374,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         ...commonProps,
         top: panelData.storedTop ?? panelData.top,
         left: panelData.storedLeft ?? panelData.left,
-        tooltip: panelData.panelViews.find(view => view.active)?.title,
+        tooltip: panelData.panelViews?.find(view => view.active)?.title,
         icon: <IconDetails/>,
         positioning,
         maxWidth: panelMaxWidth,
@@ -462,11 +464,19 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
             {panelsHidden !== true && (
               <>
                 {Object.entries(panels).map(([key, panel]) => {
-                  // const content = () => <h1>test</h1>;
 
-                  const content = panel.map(({ props }, i) => <PanelBase key={i} {...props} />);
+                  const content = panel.map((props, i) => {
+                    console.log(props, key);
 
-                  console.log(content);
+                    return <h1>hi</h1>;
+                  });
+                  // const Components = props.panelViews
+                  // return (
+                  // <PanelBase key={i} {...props}>
+                  //   <Tabs > props.</Tabs>
+                  // </PanelBase>
+                  // ));
+                  // const content = panel.map(({ props, Component }, i) => <Component key={i} {...props} />);
 
                   if (key === 'detached') {
                     return  <Fragment key={key}>{content}</Fragment>;
