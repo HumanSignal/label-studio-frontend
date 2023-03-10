@@ -185,7 +185,14 @@ export class MediaLoader extends Destructable {
         }
       });
 
-      xhr.open('GET', url, true);
+      const newUrl = new URL(url, url.startsWith('/') ? window.location.href : undefined);
+
+      // Arbitrary setting of query param to stop caching from reusing any media requests which may have less headers
+      // cached than this request. This is to prevent a CORS error when the headers are different between partial
+      // content and full content requests.
+      newUrl.searchParams.set('t', '1');
+
+      xhr.open('GET', newUrl.toString(), true);
       xhr.send();
     });
   }
