@@ -173,6 +173,8 @@ class HtxParagraphsView extends Component {
               }
             }
           } else {
+            // user selection always has only one range, so we can use selection's text
+            // which doesn't contain hidden elements (names in our case)
             ranges.push({
               startOffset,
               start: String(start),
