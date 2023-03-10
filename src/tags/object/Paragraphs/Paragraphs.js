@@ -62,6 +62,7 @@ class HtxParagraphsView extends Component {
       text = text.replace(/\n+$/, '');
       const splitText = text.split('\n\n');
       const lastTextLength = splitText[splitText.length - 1].length;
+
       fixedEndOffset = lastTextLength;
       fixedEnd--;
     }
@@ -134,7 +135,7 @@ class HtxParagraphsView extends Component {
 
                   const walker = texts[fromIdx].ownerDocument.createTreeWalker(texts[fromIdx], NodeFilter.SHOW_ALL);
 
-                  while (walker.firstChild()) ;
+                  while (walker.firstChild());
 
                   _range.setStart(walker.currentNode, anchorOffset);
                 }
@@ -148,7 +149,7 @@ class HtxParagraphsView extends Component {
 
                   const walker = texts[curIdx].ownerDocument.createTreeWalker(texts[curIdx], NodeFilter.SHOW_ALL);
 
-                  while (walker.lastChild()) ;
+                  while (walker.lastChild());
 
                   _range.setEnd(walker.currentNode, walker.currentNode.length);
                 }
