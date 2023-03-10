@@ -1,7 +1,3 @@
-/* global Feature, Scenario, locate */
-
-const { initLabelStudio } = require('./helpers');
-
 Feature('Image list via `valueList`');
 
 const config = `
@@ -46,9 +42,8 @@ const result = [
     'item_index': 0,
   },
   {
-    'original_width': 768,
-    'original_height': 510,
-    'image_rotation': 0,
+    'id': 'spPCrj0omt',
+    'type': 'rectanglelabels',
     'value': {
       'x': 40.237685381355924,
       'y': 22.88135593220339,
@@ -59,12 +54,13 @@ const result = [
         'Moonwalker',
       ],
     },
-    'id': 'spPCrj0omt',
-    'from_name': 'tag',
-    'to_name': 'img',
-    'type': 'rectanglelabels',
     'origin': 'manual',
+    'to_name': 'img',
+    'from_name': 'tag',
     'item_index': 1,
+    'image_rotation': 0,
+    'original_width': 768,
+    'original_height': 510,
   },
   {
     'original_width': 768,
@@ -95,7 +91,7 @@ Before(async ({ LabelStudio }) => {
   });
 });
 
-Scenario('Image list rendering', async ({ I, AtImageView }) => {
+Scenario('Image list rendering', async ({ I, LabelStudio, AtImageView }) => {
   const params = {
     config,
     data,
@@ -103,7 +99,7 @@ Scenario('Image list rendering', async ({ I, AtImageView }) => {
   };
 
   I.amOnPage('/');
-  I.executeScript(initLabelStudio, params);
+  await LabelStudio.init(params);
 
   await AtImageView.waitForImage();
   await AtImageView.lookForStage();
@@ -111,7 +107,7 @@ Scenario('Image list rendering', async ({ I, AtImageView }) => {
   I.seeElement(`img[src="${data.images[0]}"]`);
 });
 
-Scenario('Image list with page navigation', async ({ I, AtImageView }) => {
+Scenario('Image list with page navigation', async ({ I, AtImageView, LabelStudio }) => {
   const params = {
     config,
     data,
@@ -122,7 +118,7 @@ Scenario('Image list with page navigation', async ({ I, AtImageView }) => {
   const nextPageButton = locate('.lsf-pagination__btn.lsf-pagination__btn_arrow-right');
 
   I.amOnPage('/');
-  I.executeScript(initLabelStudio, params);
+  await LabelStudio.init(params);
 
   await AtImageView.waitForImage();
   await AtImageView.lookForStage();
@@ -149,7 +145,7 @@ Scenario('Image list with page navigation', async ({ I, AtImageView }) => {
   I.see('1 of 4');
 });
 
-Scenario('Image list with hotkey navigation', async ({ I, AtImageView }) => {
+Scenario('Image list with hotkey navigation', async ({ I, AtImageView, LabelStudio }) => {
   const params = {
     config,
     data,
@@ -157,7 +153,7 @@ Scenario('Image list with hotkey navigation', async ({ I, AtImageView }) => {
   };
 
   I.amOnPage('/');
-  I.executeScript(initLabelStudio, params);
+  await LabelStudio.init(params);
 
   await AtImageView.waitForImage();
   await AtImageView.lookForStage();
@@ -184,6 +180,27 @@ Scenario('Image list with hotkey navigation', async ({ I, AtImageView }) => {
   I.see('1 of 4');
 });
 
+Scenario('Ensure that results are the same when exporting existing regions', async ({ I, AtImageView, LabelStudio }) => {
+  LabelStudio.setFeatureFlags({
+    feat_front_lsdv_4583_multi_image_segmentation_short: true,
+  });
+
+  const params = {
+    config,
+    data,
+    annotations: [{ id: 1, result }],
+  };
+
+  I.amOnPage('/');
+  await LabelStudio.init(params);
+
+  await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
+  
+  I.say('Result must be exactly the same as we\'re not modifying anything');
+  await LabelStudio.resultsNotChanged(result);
+});
+
 Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView }) => {
   LabelStudio.setFeatureFlags({
     feat_front_lsdv_4583_multi_image_segmentation_short: true,
@@ -196,7 +213,7 @@ Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView
   };
 
   I.amOnPage('/');
-  I.executeScript(initLabelStudio, params);
+  LabelStudio.init(params);
 
   await AtImageView.waitForImage();
   await AtImageView.lookForStage();
@@ -212,25 +229,25 @@ Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView
 });
 
 // TODO: temporarily disable, will be fixed in another ticket
-// Scenario('Regions are not changes when duplicating an annotation', async ({ I, LabelStudio, AtImageView }) => {
-//   const params = {
-//     config,
-//     data,
-//     annotations: [{ id: 1, result }],
-//   };
-// 
-//   I.amOnPage('/');
-//   I.executeScript(initLabelStudio, params);
-// 
-//   await AtImageView.waitForImage();
-//   await AtImageView.lookForStage();
-// 
-//   I.say('Attempting to duplicate an annotaion');
-//   I.click('[aria-label="Copy Annotation"]');
-// 
-//   await AtImageView.waitForImage();
-//   await AtImageView.lookForStage();
-// 
-//   I.say('Confirm that result is not changed');
-//   await LabelStudio.resultsNotChanged(result);
-// });
+Scenario('Regions are not changes when duplicating an annotation', async ({ I, LabelStudio, AtImageView }) => {
+  const params = {
+    config,
+    data,
+    annotations: [{ id: 1, result }],
+  };
+
+  I.amOnPage('/');
+  LabelStudio.init(params);
+
+  await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
+
+  I.say('Attempting to duplicate an annotaion');
+  I.click('[aria-label="Copy Annotation"]');
+
+  await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
+
+  I.say('Confirm that result is not changed');
+  await LabelStudio.resultsNotChanged(result);
+});

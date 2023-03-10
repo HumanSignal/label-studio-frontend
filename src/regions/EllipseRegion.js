@@ -278,18 +278,15 @@ const Model = types
      * @return {EllipseRegionResult}
      */
     serialize() {
-      const res = {
-        ...self.parent.serializableValues(self.item_index),
-        value: {
-          x: isFF(FF_DEV_3793) ? self.x : self.convertXToPerc(self.x),
-          y: isFF(FF_DEV_3793) ? self.y : self.convertYToPerc(self.y),
-          radiusX: isFF(FF_DEV_3793) ? self.radiusX : self.convertHDimensionToPerc(self.radiusX),
-          radiusY: isFF(FF_DEV_3793) ? self.radiusY : self.convertVDimensionToPerc(self.radiusY),
-          rotation: self.rotation,
-        },
-      };
+      const value = {
+        x: isFF(FF_DEV_3793) ? self.x : self.convertXToPerc(self.x),
+        y: isFF(FF_DEV_3793) ? self.y : self.convertYToPerc(self.y),
+        radiusX: isFF(FF_DEV_3793) ? self.radiusX : self.convertHDimensionToPerc(self.radiusX),
+        radiusY: isFF(FF_DEV_3793) ? self.radiusY : self.convertVDimensionToPerc(self.radiusY),
+        rotation: self.rotation,
+      }; 
 
-      return res;
+      return self.parent.createSerializedResult(self, value);
     },
   }));
 
