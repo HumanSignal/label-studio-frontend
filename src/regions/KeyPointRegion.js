@@ -148,14 +148,13 @@ const Model = types
      * @return {KeyPointRegionResult}
      */
     serialize() {
-      const result = {
-        ...self.parent.serializableValues(self.item_index),
-        value: {
-          x: isFF(FF_DEV_3793) ? self.x : self.convertXToPerc(self.x),
-          y: isFF(FF_DEV_3793) ? self.y : self.convertYToPerc(self.y),
-          width: isFF(FF_DEV_3793) ? self.width : self.convertHDimensionToPerc(self.width),
-        },
+      const value = {
+        x: isFF(FF_DEV_3793) ? self.x : self.convertXToPerc(self.x),
+        y: isFF(FF_DEV_3793) ? self.y : self.convertYToPerc(self.y),
+        width: isFF(FF_DEV_3793) ? self.width : self.convertHDimensionToPerc(self.width),
       };
+
+      const result = self.parent.createSerializedResult(self, value);
 
       if (self.dynamic) {
         result.is_positive = !self.negative;

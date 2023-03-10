@@ -41,13 +41,13 @@ module.exports = {
   async resultsNotChanged(result, fractionDigits = 2) {
     const serialized = (await this.serialize());
 
-    Asserts.deepEqualWithTolerance(result, serialized, fractionDigits);
+    I.assertDeepEqualWithTolerance(result, serialized, fractionDigits, 'Results must be equal');
   },
 
   async resultsChanged(result, fractionDigits = 2) {
     const serialized = (await this.serialize());
 
-    Asserts.notDeepEqualWithTolerance(result, serialized, fractionDigits);
+    I.assertNotDeepEqualWithTolerance(result, serialized, fractionDigits, 'Results must be different');
   },
 
   async grabUserLabels() {
