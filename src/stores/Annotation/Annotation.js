@@ -19,6 +19,7 @@ import {
   FF_DEV_2432,
   FF_DEV_3391,
   FF_LSDV_3009,
+  FF_LSDV_4583,
   isFF
 } from '../../utils/feature-flags';
 import { delay, isDefined } from '../../utils/utilities';
@@ -272,7 +273,6 @@ export const Annotation = types
     },
 
     setReadonly(val) {
-      console.trace('setting  readonly');
       self.readonly = val;
     },
 
@@ -903,7 +903,7 @@ export const Annotation = types
     // And this problems are fixable, so better to fix them on start
     fixBrokenAnnotation(json) {
       return (json ?? []).reduce((res, objRaw) => {
-        const obj = JSON.parse(JSON.stringify(objRaw));
+        const obj = structuredClone(objRaw) ?? {};
 
         if (obj.type === 'relation') {
           res.push(objRaw);
@@ -978,6 +978,23 @@ export const Annotation = types
         if (tagNames.has(obj.from_name) && tagNames.has(obj.to_name)) {
           res.push(obj);
         }
+        
+        // Insert image dimensions from result 
+        (() => {
+          if (!isDefined(obj.original_width)) return;
+          if (!tagNames.has(obj.to_name)) return;
+
+          const tag = tagNames.get(obj.to_name);
+
+          if (tag.type !== 'image') return;
+
+          const imageEntity = tag.findImageEntity(obj.item_index ?? 0); 
+
+          if (!imageEntity) return;
+
+          imageEntity.setNaturalWidth(obj.original_width);
+          imageEntity.setNaturalHeight(obj.original_height);
+        })();
 
         return res;
       }, []);
@@ -1137,6 +1154,16 @@ export const Annotation = types
           };
 
           area = createArea(areaSnapshot);
+
+          if (isFF(FF_LSDV_4583)) {
+            // store copy of the original result inside the area
+            // useful when you need to serialize a result without
+            // updating it from current/actual data
+            // For safety reasons this object is always readonly
+            Object.defineProperty(area, '_rawResult', {
+              value: Object.freeze(structuredClone(obj)),
+            });
+          }
         }
 
         area.addResult({ ...data, id: resultId, type, value, from_name, to_name });

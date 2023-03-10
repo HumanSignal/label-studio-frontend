@@ -326,16 +326,15 @@ const Model = types
      * @return {RectRegionResult}
      */
     serialize() {
-      return {
-        ...self.parent.serializableValues(self.item_index),
-        value: {
-          x: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertXToPerc(self.x) : self.x,
-          y: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertYToPerc(self.y) : self.y,
-          width: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertHDimensionToPerc(self.width) : self.width,
-          height: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertVDimensionToPerc(self.height) : self.height,
-          rotation: self.rotation,
-        },
+      const value = {
+        x: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertXToPerc(self.x) : self.x,
+        y: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertYToPerc(self.y) : self.y,
+        width: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertHDimensionToPerc(self.width) : self.width,
+        height: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertVDimensionToPerc(self.height) : self.height,
+        rotation: self.rotation,
       };
+
+      return self.parent.createSerializedResult(self, value);
     },
   }));
 
