@@ -28,7 +28,15 @@ class HtxParagraphsView extends Component {
     return node;
   }
 
-  getOffsetInPhraseElement(container, offset) {
+  /**
+   * Check for the selection in the phrase and return the offset and index.
+   *
+   * @param {HTMLElement} node
+   * @param {number} offset
+   * @param {boolean} [isStart=true]
+   * @return {[number, HTMLElement, number]}
+   */
+  getOffsetInPhraseElement(container, offset, isStart = true) {
     const node = this.getPhraseElement(container);
     const range = document.createRange();
 
@@ -38,36 +46,22 @@ class HtxParagraphsView extends Component {
     const phraseIndex = [...node.parentNode.parentNode.children].indexOf(node.parentNode);
     const phraseNode = node;
 
-    return [fullOffset, phraseNode, phraseIndex];
+    // if the selection is made from the very end of a given phrase, we need to
+    // move the offset to the beginning of the next phrase
+    if (isStart && fullOffset === phraseNode.textContent.length) {
+      return [0, phraseNode, phraseIndex + 1, phraseIndex];
+    }
+    // if the selection is made to the very beginning of the next phrase, we need to
+    // move the offset to the end of the previous phrase
+    else if (!isStart && fullOffset === 0) {
+      return [phraseNode.textContent.length, phraseNode, phraseIndex - 1, phraseIndex];
+    }
+
+    return [fullOffset, phraseNode, phraseIndex, phraseIndex];
   }
 
-  fixSelectionStartEnd(selection, start, startOffset, end, endOffset) {
-    let text = selection.toString();
-    let fixedStartOffset = startOffset;
-    let fixedStart = start;
-    let fixedEndOffset = endOffset;
-    let fixedEnd = end;
-
-    // if text starts with a newline
-    // fix the start, startOffset and remove the newline from the text
-    if (text.startsWith('\n')) {
-      text = text.replace(/^\n+/, '');
-      fixedStartOffset = 0;
-      fixedStart++;
-    }
-
-    // if text ends with a newline
-    // fix the end, endOffset and remove the newline from the text
-    if (text.endsWith('\n')) {
-      text = text.replace(/\n+$/, '');
-      const splitText = text.split('\n\n');
-      const lastTextLength = splitText[splitText.length - 1].length;
-
-      fixedEndOffset = lastTextLength;
-      fixedEnd--;
-    }
-
-    return [fixedStart, fixedStartOffset, fixedEnd, fixedEndOffset, text];
+  removeSurroundingNewlines(text) {
+    return text.replace(/^\n+/, '').replace(/\n+$/, '');
   }
 
   captureDocumentSelection() {
@@ -101,23 +95,23 @@ class HtxParagraphsView extends Component {
 
       try {
         splitBoundaries(r);
-        const [startOffset, , start] = this.getOffsetInPhraseElement(r.startContainer, r.startOffset);
-        const [endOffset, , end] = this.getOffsetInPhraseElement(r.endContainer, r.endOffset);
+        const [startOffset, , start, originalStart] = this.getOffsetInPhraseElement(r.startContainer, r.startOffset);
+        const [endOffset, , end, originalEnd] = this.getOffsetInPhraseElement(r.endContainer, r.endOffset, false);
 
         if (isFF(FF_DEV_2918)) {
           const visibleIndexes = item._value.reduce((visibleIndexes, v, idx) => {
             const isContentVisible = item.isVisibleForAuthorFilter(v);
 
-            if (isContentVisible && start <= idx && end >= idx) {
+            if (isContentVisible && originalStart <= idx && originalEnd >= idx) {
               visibleIndexes.push(idx);
             }
 
             return visibleIndexes;
           }, []);
 
-          if (visibleIndexes.length !== end - start + 1) {
+          if (visibleIndexes.length !== originalEnd - originalStart + 1) {
             const texts = [...this.myRef.current.getElementsByClassName(cls.text)];
-            let fromIdx = start;
+            let fromIdx = originalStart;
 
             for (let k = 0; k < visibleIndexes.length; k++) {
               const curIdx = visibleIndexes[k];
@@ -128,7 +122,8 @@ class HtxParagraphsView extends Component {
 
                 const _range = r.cloneRange();
 
-                if (fromIdx === start) {
+                if (fromIdx === originalStart) {
+                  fromIdx = start;
                   anchorOffset = startOffset;
                 } else {
                   anchorOffset = 0;
@@ -157,16 +152,16 @@ class HtxParagraphsView extends Component {
                 selection.removeAllRanges();
                 selection.addRange(_range);
 
-                const [fixedStart, fixedStartOffset, fixedEnd, fixedEndOffset, text] = this.fixSelectionStartEnd(selection, fromIdx, anchorOffset, curIdx, focusOffset);
+                const text = this.removeSurroundingNewlines(selection.toString());
 
                 // Sometimes the selection is empty, which is the case for dragging from the end of a line above the
                 // target line, while having collapsed lines between.
                 if (text) {
                   ranges.push({
-                    startOffset: fixedStartOffset,
-                    start: String(fixedStart),
-                    endOffset: fixedEndOffset,
-                    end: String(fixedEnd),
+                    startOffset: anchorOffset,
+                    start: String(fromIdx),
+                    endOffset: focusOffset,
+                    end: String(curIdx),
                     _range,
                     text,
                   });
@@ -178,31 +173,25 @@ class HtxParagraphsView extends Component {
               }
             }
           } else {
-            const [fixedStart, fixedStartOffset, fixedEnd, fixedEndOffset, text] = this.fixSelectionStartEnd(selection, start, startOffset, end, endOffset);
-
-            // user selection always has only one range, so we can use selection's text
-            // which doesn't contain hidden elements (names in our case)
             ranges.push({
-              startOffset: fixedStartOffset,
-              start: String(fixedStart),
-              endOffset: fixedEndOffset,
-              end: String(fixedEnd),
+              startOffset,
+              start: String(start),
+              endOffset,
+              end: String(end),
               _range: r,
-              text,
+              text: this.removeSurroundingNewlines(selection.toString()),
             });
           }
         } else {
-          const [fixedStart, fixedStartOffset, fixedEnd, fixedEndOffset, text] = this.fixSelectionStartEnd(selection, start, startOffset, end, endOffset);
-
           // user selection always has only one range, so we can use selection's text
           // which doesn't contain hidden elements (names in our case)
           ranges.push({
-            startOffset: fixedStartOffset,
-            start: String(fixedStart),
-            endOffset: fixedEndOffset,
-            end: String(fixedEnd),
+            startOffset,
+            start: String(start),
+            endOffset,
+            end: String(end),
             _range: r,
-            text,
+            text: this.removeSurroundingNewlines(selection.toString()),
           });
         }
       } catch (err) {
