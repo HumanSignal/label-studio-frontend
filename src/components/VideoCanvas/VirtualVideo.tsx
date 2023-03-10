@@ -127,6 +127,11 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
     source.current = sourceEl;
   }, [props.src]);
 
+  useEffect(() => {
+    detachEventListeners();
+    attachEventListeners();
+  });
+
   // Create a video tag
   useEffect(() => {
     createVideoElement();
