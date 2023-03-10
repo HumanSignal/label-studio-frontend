@@ -280,6 +280,10 @@ Scenario(
       1, // 8
       3, // 9
       1, // 10
+      3, // 11
+      2, // 12
+      3, // 13
+      2, // 14
     ].map((authorId, idx) => ({
       start: idx + 1,
       end: idx + 2,
@@ -425,6 +429,34 @@ Scenario(
           startOffset: 0,
           endOffset: 9,
           text: 'Message 7',
+        },
+      );
+    }
+
+    I.say(
+      'Test selection from the end of Message 11 to the start of Message 14 to get region over Message 12 and Message 13',
+    );
+    AtLabels.clickLabel('Random talk');
+    AtParagraphs.setSelection(
+      AtParagraphs.locateText('Message 11'),
+      10,
+      AtParagraphs.locateText('Message 14'),
+      0,
+    );
+    AtSidebar.seeRegions(7);
+
+    {
+      const result = await LabelStudio.serialize();
+
+      console.log(result[6].value);
+      assert.deepStrictEqual(
+        omitBy(result[6].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '11',
+          end: '12',
+          startOffset: 0,
+          endOffset: 10,
+          text: 'Message 12\n\nMessage 13',
         },
       );
     }
