@@ -60,7 +60,9 @@ class HtxParagraphsView extends Component {
     // fix the end, endOffset and remove the newline from the text
     if (text.endsWith('\n')) {
       text = text.replace(/\n+$/, '');
-      fixedEndOffset = text.length;
+      const splitText = text.split('\n\n');
+      const lastTextLength = splitText[splitText.length - 1].length;
+      fixedEndOffset = lastTextLength;
       fixedEnd--;
     }
 
