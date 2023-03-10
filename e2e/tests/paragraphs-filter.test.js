@@ -448,7 +448,6 @@ Scenario(
     {
       const result = await LabelStudio.serialize();
 
-      console.log(result[6].value);
       assert.deepStrictEqual(
         omitBy(result[6].value, (v, key) => key === 'paragraphlabels'),
         {
