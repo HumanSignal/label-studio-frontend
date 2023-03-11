@@ -1,0 +1,28 @@
+export const ImageView = {
+  get image() {
+    return cy.get('img[alt=LS]');
+  },
+  get drawingArea() {
+    return this.image.closest('[class^="frame--"]')
+      .siblings()
+      .get('[class^="image-element--"] .konvajs-content');
+  },
+  waitForImage() {
+    this.image
+      .should('be.visible')
+      .and((img) => {
+        return expect((img[0] as HTMLImageElement).naturalWidth).to.be.greaterThan(0); 
+      });
+
+    this.drawingArea
+      .get('canvas')
+      .should('be.visible');
+  },
+  drawRect(x: number, y: number, width: number, height: number) {
+    this.drawingArea
+      .scrollIntoView()
+      .trigger('mousedown', x, y, { eventConstructor: 'MouseEvent' })
+      .trigger('mousemove', x + width, y + height, { eventConstructor: 'MouseEvent' })
+      .trigger('mouseup', { eventConstructor: 'MouseEvent' });
+  },
+};
