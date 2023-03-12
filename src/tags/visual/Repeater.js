@@ -44,7 +44,7 @@
  *     { "text": "Placeholder for array index in params of underlying tags" }
  *   ]
  * }
- * @name Repeater
+ * @todo Tag will be deprecated, currently it's removed from docs; don't add @name
  * @meta_title Repeater Tag to duplicate annotation settings
  * @meta_description Customize Label Studio with the Repeater tag to repeat similar data blocks to accelerate labeling for machine learning and data science projects.
  * @param {string} on                  - Data field object with array with similar data
