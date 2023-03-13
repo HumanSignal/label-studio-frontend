@@ -28,6 +28,10 @@ class HtxParagraphsView extends Component {
     return node;
   }
 
+  get phraseElements() {
+    return [...this.myRef.current.getElementsByClassName(this.props.item.layoutClasses.text)];
+  }
+
   /**
    * Check for the selection in the phrase and return the offset and index.
    *
@@ -43,8 +47,8 @@ class HtxParagraphsView extends Component {
     range.setStart(node, 0);
     range.setEnd(container, offset);
     const fullOffset = range.toString().length;
-    const phraseIndex = [...node.parentNode.parentNode.children].indexOf(node.parentNode);
-    const phraseNode = node;
+    const phraseIndex = this.phraseElements.indexOf(node);
+    let phraseNode = node;
 
     // if the selection is made from the very end of a given phrase, we need to
     // move the offset to the beginning of the next phrase
@@ -54,6 +58,7 @@ class HtxParagraphsView extends Component {
     // if the selection is made to the very beginning of the next phrase, we need to
     // move the offset to the end of the previous phrase
     else if (!isStart && fullOffset === 0) {
+      phraseNode = this.phraseElements[phraseIndex - 1];
       return [phraseNode.textContent.length, phraseNode, phraseIndex - 1, phraseIndex];
     }
 
@@ -110,7 +115,7 @@ class HtxParagraphsView extends Component {
           }, []);
 
           if (visibleIndexes.length !== originalEnd - originalStart + 1) {
-            const texts = [...this.myRef.current.getElementsByClassName(cls.text)];
+            const texts = this.phraseElements;
             let fromIdx = originalStart;
 
             for (let k = 0; k < visibleIndexes.length; k++) {
