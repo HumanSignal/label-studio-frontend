@@ -1,2 +1,4 @@
 output
 runner-results/
+xunit.xml
+test-results.xml

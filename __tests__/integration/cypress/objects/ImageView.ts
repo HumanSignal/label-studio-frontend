@@ -1,13 +1,18 @@
 export const ImageView = {
   get image() {
-    return cy.get('img[alt=LS]');
+    cy.log('Get main image');
+    return cy
+      .get('img[alt=LS]');
   },
   get drawingArea() {
-    return this.image.closest('[class^="frame--"]')
+    cy.log('Get Konva.js root');
+    return this.image
+      .closest('[class^="frame--"]')
       .siblings()
       .get('[class^="image-element--"] .konvajs-content');
   },
   waitForImage() {
+    cy.log('Make sure that the image is visible and loaded');
     this.image
       .should('be.visible')
       .and((img) => {
@@ -19,6 +24,7 @@ export const ImageView = {
       .should('be.visible');
   },
   drawRect(x: number, y: number, width: number, height: number) {
+    cy.log(`Draw rectangle at (${x}, ${y}) of size ${width}x${height}`);
     this.drawingArea
       .scrollIntoView()
       .trigger('mousedown', x, y, { eventConstructor: 'MouseEvent' })

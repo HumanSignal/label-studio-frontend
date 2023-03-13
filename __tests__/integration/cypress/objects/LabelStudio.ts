@@ -49,7 +49,7 @@ export const LabelStudio = {
     });
   },
   shouldHaveFeatureFlag(flagName: string) {
-    this
+    return this
       .getFeatureFlag(flagName)
       .then(flagValue => {
         expect(flagValue).to.be.true;
