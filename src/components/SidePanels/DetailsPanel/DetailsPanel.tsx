@@ -1,6 +1,6 @@
 import { inject, observer } from 'mobx-react';
 import { FC } from 'react';
-import { Elem } from '../../../utils/bem';
+import { Block, Elem } from '../../../utils/bem';
 import { FF_DEV_2290, isFF } from '../../../utils/feature-flags';
 import { Comments } from '../../Comments/Comments';
 import { AnnotationHistory } from '../../CurrentEntity/AnnotationHistory';
@@ -27,13 +27,16 @@ const DetailsPanelComponent: FC<DetailsPanelProps> = ({ currentEntity, regions, 
   );
 };
 
-const DetailsComponent: FC<DetailsPanelProps> = ({ currentEntity, regions, ...props }) => {
+const DetailsComponent: FC<DetailsPanelProps> = ({ currentEntity, regions }) => {
   const selectedRegions = regions.selection;
 
   return (
-    <Content selection={selectedRegions} currentEntity={currentEntity} />
+    <Block name="details">
+      <Content selection={selectedRegions} currentEntity={currentEntity} />
+    </Block>
   );
 };
+
 
 const Content: FC<any> = observer(({
   selection,

@@ -1,4 +1,53 @@
+.tabs
+    &__tabs-row
+        display flex
+
+    &__contents
+        background #fff
+        height 100%
+        position relative
+        z-index 1
+        styled-scrollbars()
+
+        & .main-content
+            overflow auto
+            padding-bottom calc(var(--bottombar-height) + 8px);
+
+        &_resizing
+            position relative
+            pointer-events none
+
+        &::before
+            top 0
+            left 0
+            content ""
+            width 100%
+            height 100%
+            z-index 100
+            display block
+            position absolute
+
+        ~/_collapsed &
+            flex 1
+
+    &__drop-space-after
+        width 100%
+
+        &:hover svg
+            color: #000
+
+        &_dragOverSide_left
+            &::before
+                content ''
+                position absolute
+                left 0
+                background #85cbfd
+                width 4px
+                height 100%
+
+
 .panel-tabs
+
     &__tab
         padding 4px 24px 6px 24px
         height 32px
@@ -11,10 +60,12 @@
         border-style solid;
         transform translateY(2px)
         border-color rgba(65, 60, 74, 0.16);
+        margin: 0 2px
         display flex
         align-items center
         background #fff
         cursor grab
+        user-select none
 
         &:hover svg
             color: #000
@@ -37,8 +88,16 @@
                 width 4px
                 height 100%
 
-       &__contents
-            background #fff
+    &__ghost-tab
+        opacity 0.8
+        position absolute
+        z-index 100
+        left 0
+        top 0
+        pointer-events none
+        display none
+            &__contents
+                background #fff
 
     &__icon
         position absolute

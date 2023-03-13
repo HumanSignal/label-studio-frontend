@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { Elem } from '../../../utils/bem';
+import { Block, Elem } from '../../../utils/bem';
 import { PanelBase, PanelProps } from '../PanelBase';
 import { OutlinerTree } from './OutlinerTree';
 import { ViewControls } from './ViewControls';
@@ -61,7 +61,15 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
   );
 };
 
+const OutlinerComponentStyled: FC<OutlinerPanelProps> = ({ regions }) => {
+  return (
+    <Block  name="outliner">
+      <Outliner regions={regions} />
+    </Block>
+  );
+};
 
-export const OutlinerComponent = observer(Outliner);
+
+export const OutlinerComponent = observer(OutlinerComponentStyled);
 
 export const OutlinerPanel = observer(OutlinerPanelComponent);

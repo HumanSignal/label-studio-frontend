@@ -1,22 +1,13 @@
-import { FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
 import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand } from '../../assets/icons';
-
-import './PanelBase.styl';
-import { PanelType } from './SidePanels';
 import { useDrag } from '../../hooks/useDrag';
 import { clamp, isDefined } from '../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
+import './PanelBase.styl';
+import { BaseProps } from './types';
 
 export type PanelBaseExclusiveProps = 'name' | 'title'
-
-type ResizeHandler = (name: PanelType, width: number, height: number, top: number, left: number) => void;
-
-type SnapHandler = (name: PanelType) => void
-
-type PositonChangeHandler = (name: PanelType, top: number, left: number, detached: boolean) => void;
-
-type VisibilityChangeHandler = (name: PanelType, visible: boolean) => void;
 
 const resizers = [
   'top-left',
@@ -29,47 +20,15 @@ const resizers = [
   'left',
 ];
 
-interface PanelBaseProps {
-  root: MutableRefObject<HTMLDivElement | undefined>;
-  name: PanelType;
-  title: string;
-  tooltip: string;
-  top: number;
-  left: number;
-  relativeTop: number;
-  relativeLeft: number;
-  width: number;
-  maxWidth: number;
-  height: number;
-  visible: boolean;
-  alignment: 'left' | 'right';
-  currentEntity: any;
-  detached: boolean;
-  expanded: boolean;
-  locked: boolean;
-  zIndex: number;
-  positioning: boolean;
-  onResize: ResizeHandler;
-  onResizeStart: () => void;
-  onResizeEnd: () => void;
-  onSnap: SnapHandler;
-  onPositionChange: PositonChangeHandler;
-  onVisibilityChange: VisibilityChangeHandler;
-  onPositionChangeBegin: PositonChangeHandler;
-}
-
-export type PanelProps = Omit<PanelBaseProps, PanelBaseExclusiveProps>
-
 const distance = (x1: number, x2: number, y1: number, y2: number) => {
   return Math.sqrt(
     Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2),
   );
 };
 
-export const PanelBase: FC<PanelBaseProps> = ({
-  name,
+export const PanelTabsBase: FC<BaseProps> = ({
+  index,
   root,
-  title,
   width,
   maxWidth,
   height,
@@ -103,11 +62,11 @@ export const PanelBase: FC<PanelBaseProps> = ({
   const handleCollapse = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
     e.stopPropagation();
     e.preventDefault();
-    onVisibilityChange?.(name, false);
+    onVisibilityChange?.(index, false);
   }, [onVisibilityChange]);
 
   const handleExpand = useCallback(() => {
-    onVisibilityChange?.(name, true);
+    onVisibilityChange?.(index, true);
   }, [onVisibilityChange]);
 
   const style = useMemo(() => {
@@ -189,7 +148,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
         bbox.top - parentBBox.top,
       ];
 
-      handlers.current.onPositionChangeBegin?.(name, top, left, detached);
+      handlers.current.onPositionChangeBegin?.(index, top, left, detached);
 
       return { x, y, oX, oY, allowDrag };
     },
@@ -210,12 +169,12 @@ export const PanelBase: FC<PanelBaseProps> = ({
 
         const [nX, nY] = [oX + (mX - x), oY + (mY - y)];
 
-        handlers.current.onPositionChange?.(name, nY, nX, true);
+        handlers.current.onPositionChange?.(index, nY, nX, true);
       }
     },
 
     onMouseUp() {
-      handlers.current.onSnap?.(name);
+      handlers.current.onSnap?.(index);
     },
   }, [headerRef, detached, visible, locked]);
 
@@ -292,7 +251,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
         const left = shiftLeft ? (l + (w - width)) : l;
 
         handlers.current.onResize(
-          name,
+          index,
           width,
           height,
           top,
@@ -310,7 +269,6 @@ export const PanelBase: FC<PanelBaseProps> = ({
     <Block
       ref={panelRef}
       name="panel"
-      mix={name}
       mod={mods}
       style={{ ...style, ...coordinates }}
     >
@@ -322,9 +280,9 @@ export const PanelBase: FC<PanelBaseProps> = ({
             onClick={!detached ? handleExpand : undefined}
           >
             {(visible || detached) && (
-              <Elem name="title">{title}</Elem>
+              <Elem name="title">{index}</Elem>
             )}
-
+            
             <Elem
               name="toggle"
               mod={{ enabled: visible }}
@@ -337,7 +295,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
         )}
         {visible && (
           <Elem name="body">
-            <Block name={name}>
+            <Block name={`${index}`}>
               {children}
             </Block>
           </Elem>

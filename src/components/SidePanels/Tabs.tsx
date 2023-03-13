@@ -1,112 +1,154 @@
-import React, { FC, useContext, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { IconOutlinerDrag } from '../../assets/icons';
+import { useDrag } from '../../hooks/useDrag';
 import { Block, Elem } from '../../utils/bem';
-import { PanelBaseProps } from './PanelBase';
-import { SidePanelsContext } from './SidePanelsContext';
 import './Tabs.styl';
-
-
-enum DroppableSide {
-  left = 'left',
-  right = 'right',
-}
-const lastCallTime: { [key: string]: number } | undefined = {};
-const timeouts: { [key: string]: ReturnType<typeof setTimeout> | null } = {};
-
-const throttleAndPop = (callback: () => any, callback2: () => any, name:string, delay = 100): any => {
-  const now = Date.now();
-  const timeSinceLastCall = now - (lastCallTime[name] || 0);
-
-  if (timeSinceLastCall >= delay) {
-    lastCallTime[name] = now;
-    callback();
-    clearTimeout(timeouts[name]!);
-    timeouts[name] = setTimeout(() => {
-      lastCallTime[name] = 0;
-      timeouts[name] = null;
-      callback2();
-    }, delay * 2);
-  }
-};
-
-const determineLeftOrRight = (event: React.DragEvent<HTMLElement>, droppableElement?: HTMLElement) => {
-  const element = droppableElement || event.target as HTMLElement;  
-  const dropWidth = (element as HTMLElement).clientWidth as number;
-  const x = event.pageX as number - (element as HTMLElement).getBoundingClientRect().left;
-  const half = dropWidth / 2;
-  
-  return x > half ? DroppableSide.right : DroppableSide.left;
-};
-
-const determineDroppableArea = (droppingElement: HTMLElement) => droppingElement.id.includes('droppable');
-
-type TabProps = { tabTitle: string, active: boolean, component: FC<any>}
+import { BaseProps, DroppableSide, TabProps } from './types';
+import { determineDroppableArea, determineLeftOrRight } from './utils';
 
 const Tab = (props: TabProps) => {
-  const { tabTitle: tabText, active, component } = props;
-  const panelContext = useContext(SidePanelsContext);
+  const { rootRef, tabTitle: tabText, tabIndex, panelIndex, children, transferTab, createNewPanel, setActiveTab } = props;
   const [dragOverSide, setDragOverSide] = useState<DroppableSide | undefined>();
-  const [dragging, setDragging] = useState<boolean>(false);
-
-  const isBeingDrugOver = (event: React.DragEvent<HTMLElement>) => {
-    if (dragging) return;
-    const isDropArea = determineDroppableArea(event.target as HTMLElement);
-    
-    throttleAndPop(() => {
-      if (!isDropArea) return setDragOverSide(undefined);
-      setDragOverSide(determineLeftOrRight(event));
-    }, () => {
-      setDragOverSide(undefined);
-    }, 'droppable');
-  };
-
+  const tabRef = useRef<HTMLDivElement>();
+  const ghostTabRef = useRef<HTMLDivElement>();
+  const dragging = useRef(false);
   
-  const handleDrop = (event: React.DragEvent<HTMLElement>) => {
-    const droppedOver = document.elementFromPoint(event.clientX, event.clientY);
-    const isDropArea = determineDroppableArea(droppedOver as HTMLElement);
+  console.log(tabText, panelIndex, tabIndex);
+  useDrag({
+    elementRef: tabRef,
+    onMouseDown(event) {
+      rootRef.current?.append(ghostTabRef.current!);
 
-    if (isDropArea) {
-      // const dropSide = determineLeftOrRight(event, droppedOver as HTMLElement);
+      const tab = tabRef.current!;
+      const page = rootRef.current!.getBoundingClientRect();
+      const bbox = tab.getBoundingClientRect();
+      const [x, y] = [event.pageX, event.pageY];
+      const [oX, oY] = [bbox.left - page.left, bbox.top - page.top];
 
-      panelContext.updatePanelTabs(droppedOver?.id);
-      // console.log('move tab', (event.target as HTMLElement).id , '===>', droppedOver?.id, dropSide);
-    } else {
-      console.log('create new Panel');
+      return { x, y, oX, oY };
+    },
+    onMouseMove(event, data) {
+      if (!data) return;
+      dragging.current = true;
+      const { x, y, oX, oY } = data;
+
+      ghostTabRef.current!.style.display = 'block';
+      ghostTabRef.current!.style.top = `${event.pageY - (y - oY)}px`;
+      ghostTabRef.current!.style.left = `${event.pageX - (x - oX)}px`;
+    },
+    onMouseUp(event, data) {
+      tabRef.current?.append(ghostTabRef.current!);
+      ghostTabRef.current!.style.display = 'none';
+      if (!dragging.current) setActiveTab(panelIndex, tabIndex);
+      if (!data || !dragging.current) return;
+
+      dragging.current = false;
+      const { x, y, oX, oY } = data;
+      const headerHeight = 32;
+      const [nX, nY] = [event.pageX - (x - oX), event.pageY - (y - oY)];
+      const left = nX < 0 ? 0 : nX;
+      const top = nY < 0 ? 0 : nY - headerHeight;
+      const droppedOver = document.elementFromPoint(event.clientX, event.clientY);
+      const isDropArea = determineDroppableArea(droppedOver as HTMLElement);
+
+      if (!isDropArea) createNewPanel(panelIndex, tabIndex, left, top);
+      else {
+        const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+        const dropTargetId = dropTarget?.id;
+
+        if (!dropTargetId || !dropTargetId?.includes('droppable')) return;
+
+        const droppedOnIndices = dropTargetId.split('-').map(string => parseInt(string, 10));
+        const receivingPanel = droppedOnIndices[0];
+        const receivingTab = droppedOnIndices[1];
+   
+        const dropSide = determineLeftOrRight(event, dropTarget as HTMLElement);
+
+        dropSide && transferTab(tabIndex, panelIndex, receivingPanel, receivingTab, dropSide);
+      }
+    },
+  }, [tabRef]);
+
+  const handleOnEnter = (event: React.MouseEvent<HTMLElement>) => {
+    if (event.buttons === 1 || event.buttons === 3) {
+      const isDropArea = determineDroppableArea(event.target as HTMLElement);
+
+      if (isDropArea) setDragOverSide(determineLeftOrRight(event));
     }
   };
 
-  const isDragging = (event: React.DragEvent<HTMLElement>) => {
-    throttleAndPop(() => {
-      if (!dragging) setDragging(true);
-    }, () => {
-      setDragging(false);
-      handleDrop(event);
-    }, 'dragging');
+  const handleMouseLeave = () => {
+    setDragOverSide(undefined);
   };
 
-  const Component = component;
+  const Label = () => (
+    <Elem id={`${panelIndex}-${tabIndex}-droppable`} name="tab" mod={{ dragOverSide }}>
+      <Elem name="icon" tag={IconOutlinerDrag} width={20} />
+      {tabText}
+    </Elem>
+  );
 
   return (
     <Block name="panel-tabs">
-      <div
-        onDragOver={event => isBeingDrugOver(event)}
-      >
-        <div id={`${tabText}-draggable`} draggable={true} onDrag={event => isDragging(event)}>
-          <Elem id={`${tabText}-droppable`} name="tab" mod={{ dragOverSide }}>
-            <Elem name="icon" tag={IconOutlinerDrag} width={20} mod={{ dragging }} />
-            {tabText}
-          </Elem>
-          <Elem name="contents"><Component {...props} /></Elem>
-        </div>
+      <div onMouseEnter={event => handleOnEnter(event)} onMouseLeave={() => handleMouseLeave()}>
+        <Elem
+          id={`${tabText}-draggable`}
+          ref={tabRef}
+        >
+          <Label />
+        </Elem>
+        <Elem ref={ghostTabRef} name="ghost-tab">
+          <Label />
+          <Elem name="contents">{children}</Elem>
+        </Elem>
       </div>
     </Block>
   );
 };
 
-export const Tabs = (props: PanelBaseProps) => {
-  console.log('props', props);
-  if (!props.panelViews) return null;
-  return props.panelViews.map((view, index) => (
-    <Tab key={`${view.title}-${index}`} tabTitle={view.title} active={view.active} component={view.component} {...props} />
-  ));
+export const Tabs = (props: BaseProps) => {
+  return (
+    <Block name="tabs">
+      <Elem name="tabs-row">
+        {props.panelViews.map((view, index) => {
+          const Component = view.component;
+
+          return (
+            <div key={`${view.title}-tab`} >
+              <Tab
+                rootRef={props.root}
+                key={`${view.title}-tab`}
+                panelIndex={props.index}
+                tabIndex={index}
+                tabTitle={view.title}
+                transferTab={props.transferTab}
+                createNewPanel={props.createNewPanel}
+                setActiveTab={props.setActiveTab}
+              >
+                <Elem name="content">
+                  <Component {...props} />
+                </Elem>
+              </Tab>
+              {index === props.panelViews.length - 1 && (
+                <Elem id={`${index}-${props.index}-droppable-space`} name="drop-space-after" />
+              )}
+            </div>
+          );
+        })}
+      </Elem>
+      {props.panelViews.map(view => {
+        const Component = view.component;
+
+        return (
+          <>
+            {view.active && (
+              <Elem key={`${view.title}-contents`} name="contents">
+                <Component {...props} />
+              </Elem>
+            )}
+          </>
+        );
+      })}
+    </Block>
+  );
 };
