@@ -336,9 +336,9 @@ Scenario(
     );
     AtLabels.clickLabel('Random talk');
     AtParagraphs.setSelection(
-      AtParagraphs.locateText('Message 2'),
+      AtParagraphs.locateText('Message 8'),
       9,
-      AtParagraphs.locateText('Message 4'),
+      AtParagraphs.locateText('Message 10'),
       0,
     );
     AtSidebar.seeRegions(2);
@@ -349,11 +349,11 @@ Scenario(
       assert.deepStrictEqual(
         omitBy(result[1].value, (v, key) => key === 'paragraphlabels'),
         {
-          start: '2',
-          end: '2',
+          start: '8',
+          end: '8',
           startOffset: 0,
           endOffset: 9,
-          text: 'Message 3',
+          text: 'Message 9',
         },
       );
     }
