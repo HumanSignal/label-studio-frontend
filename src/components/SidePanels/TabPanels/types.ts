@@ -8,6 +8,7 @@ export type TabProps = {
   tabIndex: number,
   active: boolean,
   children: ReactNode,
+  panelWidth: number,
   transferTab: EventHandlers['transferTab'],
   createNewPanel: EventHandlers['createNewPanel'],
   setActiveTab: EventHandlers['setActiveTab'],
@@ -112,4 +113,13 @@ export const emptyPanel: PanelBBox = {
   maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
   panelViews: [],
 };
-    
+
+export type PanelBaseExclusiveProps = 'name' | 'title'
+
+export type ResizeHandler = (name: string, width: number, height: number, top: number, left: number) => void;
+
+export type SnapHandler = (name: string) => void
+
+export type PositionChangeHandler = (name: string, top: number, left: number, detached: boolean) => void;
+
+export type VisibilityChangeHandler = (name: string, visible: boolean) => void;

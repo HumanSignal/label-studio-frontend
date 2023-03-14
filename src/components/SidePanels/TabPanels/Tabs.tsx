@@ -2,12 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { IconOutlinerDrag } from '../../../assets/icons';
 import { useDrag } from '../../../hooks/useDrag';
 import { Block, Elem } from '../../../utils/bem';
+import { DEFAULT_PANEL_MAX_HEIGHT } from '../constants';
 import './Tabs.styl';
 import { BaseProps, DroppableSide, TabProps } from './types';
 import { determineDroppableArea, determineLeftOrRight } from './utils';
 
 const Tab = (props: TabProps) => {
-  const { rootRef, tabTitle: tabText, tabIndex, panelKey, children, active,  transferTab, createNewPanel, setActiveTab } = props;
+  const { rootRef, tabTitle: tabText, tabIndex, panelKey, children, active, panelWidth, transferTab, createNewPanel, setActiveTab } = props;
   const [dragOverSide, setDragOverSide] = useState<DroppableSide | undefined>();
   const tabRef = useRef<HTMLDivElement>();
   const ghostTabRef = useRef<HTMLDivElement>();
@@ -74,6 +75,7 @@ const Tab = (props: TabProps) => {
 
   const handleMouseOver = (event: React.MouseEvent<HTMLElement>) => {
     if (event.buttons === 1 || event.buttons === 3) {
+      if (dragging.current) return;
       const isDropArea = determineDroppableArea(event.target as HTMLElement);
 
       if (isDropArea) setDragOverSide(determineLeftOrRight(event));
@@ -97,14 +99,14 @@ const Tab = (props: TabProps) => {
   return (
     <Block name="panel-tabs">
       <div onMouseOver={event => handleMouseOver(event)} onMouseLeave={() => handleMouseLeave()}>
-        <Elem
-          name="draggable-tab"
-          id={`${tabText}-draggable`}
-          ref={tabRef}
-        >
+        <Elem name="draggable-tab" id={`${tabText}-draggable`} ref={tabRef}>
           <Label />
         </Elem>
-        <Elem ref={ghostTabRef} name="ghost-tab">
+        <Elem
+          ref={ghostTabRef}
+          name="ghost-tab"
+          style={{ width: `${panelWidth}px`, height: `${DEFAULT_PANEL_MAX_HEIGHT}.px` }}
+        >
           <Label />
           <Elem name="contents">{children}</Elem>
         </Elem>
@@ -133,6 +135,7 @@ export const Tabs = (props: BaseProps) => {
                   transferTab={props.transferTab}
                   createNewPanel={props.createNewPanel}
                   setActiveTab={props.setActiveTab}
+                  panelWidth={props.width}
                 >
                   <Elem name="content">
                     <Component {...props} />

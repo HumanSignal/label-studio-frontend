@@ -1,6 +1,6 @@
 import { FC, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../../utils/bem';
-import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand } from '../../../assets/icons';
+import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerDrag, IconOutlinerExpand } from '../../../assets/icons';
 import { useDrag } from '../../../hooks/useDrag';
 import { clamp, isDefined } from '../../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from '../constants';
@@ -102,6 +102,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
       hidden: !visible,
       alignment: detached ? 'left' : alignment ?? 'left',
       disabled: locked,
+      newLabelingUI: true,
     };
   }, [alignment, visible, detached, resizing, locked]);
 
@@ -273,6 +274,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
       setResizing(undefined);
     },
   }, [handlers, detached, width, maxWidth, height, top, left, visible, locked, positioning]);
+  
 
   return (
     <Block
@@ -289,7 +291,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
             onClick={!detached ? handleExpand : undefined}
           >
             {(visible || detached) && (
-              <Elem name="title"></Elem>
+              <Elem name="icon" tag={IconOutlinerDrag} width={20} />
             )}
             
             <Elem
