@@ -34,6 +34,27 @@ const Relation = types
 
       return r && r.children && r.children.length > 0;
     },
+
+    get shouldRender() {
+      const { node1: start, node2: end } = self;
+      const [sIdx, eIdx] = [start.item_index, end.item_index];
+
+      if (start.object !== end.object) return true;
+
+      if (!sIdx && !eIdx) return true;
+
+      if (sIdx !== eIdx) return false;
+    
+      // as we don't currently have a unified solution for multi-object segmentation
+      // and the Image tag is the only one to support it, we rely on its API
+      // TODO: make multi-object solution more generic
+      if (start.object.multiImage && 
+      sIdx === start.object.currentImage &&
+      eIdx === end.object.currentImage
+      ) return true;
+
+      return false;
+    },
   }))
   .actions(self => ({
     afterAttach() {
