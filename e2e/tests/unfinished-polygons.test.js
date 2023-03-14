@@ -288,10 +288,9 @@ Scenario('Init an annotation with result of new format of polygon results', asyn
 
 });
 
-Scenario('Removing a polygon by going back through history', async function({ I, LabelStudio, AtLabels, AtImageView, ErrorsCollector }) {
+Scenario('Removing a polygon by going back through history', async function({ I, LabelStudio, AtLabels, AtImageView }) {
   I.amOnPage('/');
   LabelStudio.setFeatureFlags(FLAGS);
-  await ErrorsCollector.run();
   LabelStudio.init({
     config: CONFIG,
     data: {
@@ -327,12 +326,7 @@ Scenario('Removing a polygon by going back through history', async function({ I,
   assert.strictEqual(result.length, 0);
 
   I.say('check if there were any errors');
-  const errors = await ErrorsCollector.grabErrors();
-
-  if (errors.length) {
-    assert.fail(`Got an error: ${errors[0]}`);
-  }
-
+  // The potential errors should be caught by `errorsCollector` plugin
 });
 
 Scenario('Continue annotating after closing region from draft', async function({ I, LabelStudio, AtLabels, AtImageView }) {
