@@ -287,7 +287,11 @@ export const PanelTabsBase: FC<BaseProps> = ({
             ref={headerRef}
             name="header"
             onClick={!detached ? handleExpand : undefined}
-          > 
+          >
+            {(visible || detached) && (
+              <Elem name="title"></Elem>
+            )}
+            
             <Elem
               name="toggle"
               mod={{ enabled: visible }}

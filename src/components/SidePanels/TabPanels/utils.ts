@@ -122,8 +122,7 @@ const panelViews = [{
   title: 'Details',
   component: Details as FC<PanelProps>,
   active: true,
-}
-];
+}];
 
 export const defaultPanelState: Record<string, PanelBBox> = {
   'outliner': {
