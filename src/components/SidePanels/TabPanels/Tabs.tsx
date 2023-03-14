@@ -15,16 +15,13 @@ const Tab = (props: TabProps) => {
   const location = useRef({ panelKey, tabIndex });
 
   useEffect(() => { location.current = { panelKey, tabIndex }; }, [panelKey, tabIndex]);
-  
+
   useDrag({
     elementRef: tabRef,
     onMouseDown(event) {
       const { panelKey, tabIndex } = { ...location.current };
 
-      console.log(panelKey, tabIndex );
-
       setActiveTab(panelKey, tabIndex);
-
       rootRef.current?.append(ghostTabRef.current!);
       const tab = tabRef.current!;
       const page = rootRef.current!.getBoundingClientRect();
@@ -45,11 +42,9 @@ const Tab = (props: TabProps) => {
     },
     onMouseUp(event, data) {
       tabRef.current?.append(ghostTabRef.current!);
-      
       ghostTabRef.current!.style.display = 'none';
 
       if (!data || !dragging.current) return;
-
       dragging.current = false;
       const { x, y, oX, oY, panelKey, tabIndex } = data;
       const headerHeight = 32;
@@ -66,11 +61,9 @@ const Tab = (props: TabProps) => {
         const dropTargetId = dropTarget?.id;
 
         if (!dropTargetId || !dropTargetId?.includes('droppable')) return;
-
         const droppedOnIndices = dropTargetId.split('_');
         const receivingPanel = droppedOnIndices[0];
         const receivingTab = parseInt(droppedOnIndices[1]);
-   
         const dropSide = determineLeftOrRight(event, dropTarget as HTMLElement);
 
         dropSide && transferTab(tabIndex, panelKey, receivingPanel, receivingTab, dropSide);

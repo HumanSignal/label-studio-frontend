@@ -2,7 +2,9 @@
     &__tabs-row
         display flex
         background #f6f5f7
-        
+        border-bottom: 1px solid rgba(137, 128, 152, 0.16);
+        z-index 2
+
     &__contents
         background #fff
         height 100%
@@ -102,8 +104,9 @@
         pointer-events none
         display none
         cursor grabbing
-            &__contents
-                background #fff
+        
+    &__contents
+        background #fff
 
     &__icon
         position absolute

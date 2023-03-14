@@ -111,6 +111,20 @@ export const stateRemovePanelEmptyViews = (state: Record<string, PanelBBox>) => 
   return newState;
 };
 
+const panelViews = [{
+  name: 'outliner',
+  title: 'Outliner',
+  component: OutlinerComponent as FC<PanelProps>,
+  active: true,
+},
+{
+  name: 'details',
+  title: 'Details',
+  component: Details as FC<PanelProps>,
+  active: true,
+}
+];
+
 export const defaultPanelState: Record<string, PanelBBox> = {
   'outliner': {
     top: 0,
@@ -124,12 +138,7 @@ export const defaultPanelState: Record<string, PanelBBox> = {
     detached: false,
     alignment: DroppableSide.left,
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [{
-      name: 'outliner',
-      title: 'Outliner',
-      component: OutlinerComponent as FC<PanelProps>,
-      active: true,
-    }],
+    panelViews: [panelViews[0]],
   },
   'details': {
     top: 0,
@@ -143,12 +152,7 @@ export const defaultPanelState: Record<string, PanelBBox> = {
     detached: false,
     alignment: DroppableSide.right,
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [{
-      name: 'details',
-      title: 'Details',
-      component: Details as FC<PanelProps>,
-      active: true,
-    }],
+    panelViews: [panelViews[1]],
   },
 };
 
@@ -160,8 +164,11 @@ export const panelComponents: {[key:string]: FC<PanelProps>} = {
 export const restorePanel = ( defaults: Record<string, PanelBBox>) => {
   const panelData = window.localStorage.getItem('panelState');
 
-  if (panelData) return restoreComponentsToState(JSON.parse(panelData));
-  else return defaults;
+  const parsed = panelData && JSON.parse(panelData);
+  const allTabs = panelData && Object.entries(parsed).map(([_, panel]: any) => panel.panelViews).flat(1);
+  
+  if (!allTabs || allTabs.length !== panelViews.length) return defaults;
+  return restoreComponentsToState(JSON.parse(panelData));
 };
 
 export const restoreComponentsToState = (panelData: Record<string, PanelBBox>) => {
