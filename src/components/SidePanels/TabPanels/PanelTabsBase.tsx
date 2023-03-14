@@ -52,6 +52,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
   onPositionChange,
   onPositionChangeBegin,
   children,
+  panelViews,
 }) => {
   const headerRef = useRef<HTMLDivElement>();
   const panelRef = useRef<HTMLDivElement>();
@@ -274,55 +275,41 @@ export const PanelTabsBase: FC<BaseProps> = ({
       setResizing(undefined);
     },
   }, [handlers, detached, width, maxWidth, height, top, left, visible, locked, positioning]);
-  
 
   return (
-    <Block
-      ref={panelRef}
-      name="panel"
-      mod={mods}
-      style={{ ...style, ...coordinates }}
-    >
+    <Block ref={panelRef} name="panel" mod={mods} style={{ ...style, ...coordinates }}>
       <Elem name="content">
         {!locked && (
-          <Elem
-            ref={headerRef}
-            name="header"
-            onClick={!detached ? handleExpand : undefined}
-          >
-            {(visible || detached) && (
-              <Elem name="icon" tag={IconOutlinerDrag} width={20} />
-            )}
-            
+          <Elem ref={headerRef} name="header" onClick={!detached ? handleExpand : undefined}>
+            <Elem name="header-left" style={{ display: 'flex', alignItems: 'center' }}>
+              {(visible || detached) && (
+                <Elem name="icon" tag={IconOutlinerDrag} width={20} />
+              )}
+              {(!visible && panelViews.length > 1) && (
+                <Elem name="title">{panelViews.map(view => view.title).join(' ')}</Elem>
+              )}
+            </Elem>
+
             <Elem
               name="toggle"
               mod={{ enabled: visible }}
-              onClick={(detached && !visible) ? handleExpand : handleCollapse}
+              onClick={detached && !visible ? handleExpand : handleCollapse}
               data-tooltip={tooltipText}
             >
               {currentIcon}
             </Elem>
           </Elem>
         )}
-        {visible && (
-          <Elem name="body">
-            {children}
-          </Elem>
-        )}
+        {visible && <Elem name="body">{children}</Elem>}
       </Elem>
 
       {visible && !positioning && !locked && (
         <Elem name="resizers" ref={resizerRef} mod={{ locked: positioning || locked }}>
-          {resizers.map((res) => {
-            const shouldRender = ((res === 'left' || res === 'right') && alignment !== res || detached) || detached;
+          {resizers.map(res => {
+            const shouldRender = ((res === 'left' || res === 'right') && alignment !== res) || detached || detached;
 
             return shouldRender ? (
-              <Elem
-                key={res}
-                name="resizer"
-                mod={{ drag: res === resizing }}
-                data-resize={res}
-              />
+              <Elem key={res} name="resizer" mod={{ drag: res === resizing }} data-resize={res} />
             ) : null;
           })}
         </Elem>

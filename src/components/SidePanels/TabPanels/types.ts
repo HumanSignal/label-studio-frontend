@@ -91,6 +91,7 @@ export type BaseProps = PanelBBox & CommonProps & {
   expanded: boolean,
   alignment: DroppableSide,
   locked: boolean,
+  panelViews: PanelView[],
 }
     
 export type Result = {
