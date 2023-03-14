@@ -23,7 +23,6 @@ module.exports = {
   _seekForwardButtonSelector: '.lsf-audio-tag .lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(3)',
   _errorSelector: '[data-testid="error:audio"]',
   _httpErrorSelector: '[data-testid="error:http"]',
-  _choiceSelector: '.lsf-choices.lsf-choices_layout_inline',
 
   _stageBbox: { x: 0, y: 0, width: 0, height: 0 },
 
@@ -49,11 +48,12 @@ module.exports = {
    * @param x {number}
    * @param shiftX {number}
    */
-  dragAudioRegion(x, shiftX) {
+  dragAudioRegion(x, shiftX, shouldRelease = true) {
     I.scrollPageToTop();
     I.moveMouse(this._stageBbox.x + x, this._stageBbox.y + this._stageBbox.height / 2);
     I.pressMouseDown();
     I.moveMouse(this._stageBbox.x + x + shiftX, this._stageBbox.y + this._stageBbox.height / 2, 3);
+    if (shouldRelease === false) return;
     I.pressMouseUp();
     I.wait(1);
   },
@@ -279,12 +279,6 @@ module.exports = {
     const error = await I.grabTextFrom(selector);
 
     assert.equal(error, value);
-  },
-
-  async dontSeeGhostRegion() {
-    const selectedChoice = await I.grabTextFrom(this._choiceSelector);
-
-    assert.equal(selectedChoice, 'Positive');
   },
   
   /**

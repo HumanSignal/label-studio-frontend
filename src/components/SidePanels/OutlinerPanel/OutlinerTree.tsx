@@ -38,9 +38,9 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
 }) => {
   const rootClass = cn('tree');
   const [hovered, setHovered] = useState<string | null>(null);
-  const onHover = (hovered: boolean, id: string) => setHovered(hovered ? id : null);
+  const onHover = useCallback((hovered: boolean, id: string) => setHovered(hovered ? id : null), [setHovered]);
 
-  const eventHandlers = useEventHandlers({ regions, onHover });
+  const eventHandlers = useEventHandlers({ onHover });
   const regionsTree = useDataTree({ regions, hovered, rootClass, selectedKeys });
 
   if( isFF(FF_DEV_2755) ) {
@@ -165,10 +165,8 @@ const useDataTree = ({
 };
 
 const useEventHandlers = ({
-  regions,
   onHover,
 }: {
-  regions: any,
   onHover: (hovered: boolean, id: string) => void,
 }) => {
   const onSelect = useCallback((_, evt) => {
@@ -198,12 +196,12 @@ const useEventHandlers = ({
   const onMouseEnter = useCallback(({ node }: any) => {
     onHover(true, node.key);
     node.item?.setHighlight(true);
-  }, []);
+  }, [onHover]);
 
   const onMouseLeave = useCallback(({ node }: any) => {
     onHover(false, node.key);
     node.item?.setHighlight(false);
-  }, []);
+  }, [onHover]);
 
 
   // find the height of the tree formed by dragReg for
@@ -213,6 +211,7 @@ const useEventHandlers = ({
   const treeHeight = useCallback((node: any): number => {
     if (!node) return 0;
 
+    const regions = node.item.annotation.regionStore;
     // TODO this can blow up if we have lots of stuff there
     const nodes: any[] = regions.filterByParentID(node.pid);
     const childrenHeight = nodes.map(c => treeHeight(c));
@@ -227,6 +226,7 @@ const useEventHandlers = ({
     const dropKey = node.props.eventKey;
     const dragKey = dragNode.props.eventKey;
     const dropPos = node.props.pos.split('-');
+    const regions = node.item.annotation.regionStore;
 
     dropPosition = dropPosition - parseInt(dropPos[dropPos.length - 1]);
     const treeDepth = dropPos.length;

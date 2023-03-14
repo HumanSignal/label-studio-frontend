@@ -53,7 +53,7 @@ export const RegionItem: FC<RegionItemProps> = observer(({
       {region?.isDrawing && (
         <Elem name="warning">
           <IconWarning />
-          <Elem name="warning-text">Incomplete polygon</Elem>
+          <Elem name="warning-text">Incomplete {region.type.replace('region', '')}</Elem>
         </Elem>
       )}
       {withActions && (

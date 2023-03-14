@@ -1,14 +1,14 @@
 import { observe } from 'mobx';
 import { getEnv, getRoot, getType, types } from 'mobx-state-tree';
 import { customTypes } from '../../../core/CustomTypes';
-import { guidGenerator, restoreNewsnapshot } from '../../../core/Helpers.ts';
+import { guidGenerator } from '../../../core/Helpers.ts';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import { SyncMixin } from '../../../mixins/SyncMixin';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_DEV_2461, FF_LSDV_3028, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2461, FF_LSDV_3028, FF_LSDV_4701, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
 import { isTimeSimilar } from '../../../lib/AudioUltra';
 import ObjectBase from '../Base';
@@ -49,6 +49,7 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  * @param {boolean} [autocenter=true] – Always place cursor in the middle of the view
  * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
  * @param {boolean} [splitchannels=true] – Display stereo channels separately
+ * @param {string} [decoder=ffmpeg] – Decoder type to use to decode audio data. ("ffmpeg" or "webaudio")
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -71,6 +72,7 @@ const TagAttrs = types.model({
   autocenter: types.optional(types.boolean, true),
   scrollparent: types.optional(types.boolean, true),
   splitchannels: types.optional(types.boolean, isFF(FF_LSDV_3028)), // FF_LSDV_3028: true by default when on
+  decoder: types.optional(types.enumeration(['ffmpeg', 'webaudio']), isFF(FF_LSDV_4701) ? 'ffmpeg' : 'webaudio'), // FF_LSDV_4701: 'ffmpeg' by default when on, 'webaudio' otherwise
 });
 
 export const AudioModel = types.compose(
@@ -262,48 +264,6 @@ export const AudioModel = types.compose(
           return false;
         },
 
-        fromStateJSON(obj, fromModel) {
-          let r;
-          let m;
-
-          const fm = self.annotation.names.get(obj.from_name);
-
-          fm.fromStateJSON(obj);
-
-          if (!fm.perregion && fromModel.type !== 'labels') return;
-
-          const tree = {
-            pid: obj.id,
-            start: obj.value.start,
-            end: obj.value.end,
-            normalization: obj.normalization,
-            score: obj.score,
-            readonly: obj.readonly,
-          };
-
-          r = self.findRegion({ start: obj.value.start, end: obj.value.end });
-
-          if (fromModel) {
-            m = restoreNewsnapshot(fromModel);
-
-            if (!r) {
-              r = self.createRegion(tree, [m]);
-            } else {
-              r.states.push(m);
-            }
-          }
-
-          if (self._ws) {
-            self._ws.addRegion({
-              start: r.start,
-              end: r.end,
-              color: r.getColor(),
-            });
-          }
-
-          return r;
-        },
-
         setRangeValue(val) {
           self.rangeValue = val;
         },
@@ -355,6 +315,10 @@ export const AudioModel = types.compose(
 
           if (states.length === 0) {
           // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
+            if (wsRegion.isRegion){
+              wsRegion.convertToSegment().handleSelected();
+            }
+
             return;
           }
 

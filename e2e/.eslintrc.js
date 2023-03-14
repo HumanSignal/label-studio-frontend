@@ -8,6 +8,7 @@ module.exports = {
     Scenario: true,
     Data: true,
     DataTable: true,
+    Before: true,
     locate: true,
     actor: true,
     inject: true,

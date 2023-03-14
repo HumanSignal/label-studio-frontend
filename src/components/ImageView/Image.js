@@ -73,7 +73,6 @@ const ImageRenderer = observer(forwardRef(({
   const imageStyles = useMemo(() => {
     const style = imageTransform ?? {};
 
-    console.log(isLoaded);
     return { ...style, visibility: isLoaded ? 'visible' : 'hidden' };
   }, [imageTransform, isLoaded]);
 
