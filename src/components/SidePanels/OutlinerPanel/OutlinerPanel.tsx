@@ -69,7 +69,6 @@ const OutlinerComponentStyled: FC<OutlinerPanelProps> = ({ regions }) => {
   );
 };
 
-
 export const OutlinerComponent = observer(OutlinerComponentStyled);
 
 export const OutlinerPanel = observer(OutlinerPanelComponent);

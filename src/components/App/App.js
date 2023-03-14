@@ -37,7 +37,7 @@ import Grid from './Grid';
 import { SidebarPage, SidebarTabs } from '../SidebarTabs/SidebarTabs';
 import { AnnotationTab } from '../AnnotationTab/AnnotationTab';
 import { SidePanels } from '../SidePanels/SidePanels';
-import { SideTabsPanels } from '../SidePanels/SideTabsPanels';
+import { SideTabsPanels } from '../SidePanels/TabPanels/SideTabsPanels';
 import { Block, Elem } from '../../utils/bem';
 import './App.styl';
 import { Space } from '../../common/Space/Space';

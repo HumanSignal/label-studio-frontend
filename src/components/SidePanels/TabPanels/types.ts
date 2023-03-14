@@ -1,11 +1,12 @@
 import { FC, MutableRefObject, ReactNode } from 'react';
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_WIDTH } from './constants';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_WIDTH } from '../constants';
 
 export type TabProps = {
   rootRef: MutableRefObject<HTMLDivElement | undefined>,
   tabTitle: string,
-  panelIndex: number,
+  panelKey: string,
   tabIndex: number,
+  active: boolean,
   children: ReactNode,
   transferTab: EventHandlers['transferTab'],
   createNewPanel: EventHandlers['createNewPanel'],
@@ -17,18 +18,19 @@ export interface SidePanelsProps {
   store: any;
   currentEntity: any;
 }
+
 export interface PanelView {
   title: string;
+  name: string;
   component: FC<any>;
-  icon: FC;
   active: boolean;
 }
-  
+
 export enum DroppableSide {
   left = 'left',
   right = 'right',
 }
-      
+
 export interface PanelBBox {
   width: number;
   height:  number;
@@ -47,28 +49,27 @@ export interface PanelBBox {
 }
     
 export interface EventHandlers {
-  onResize: (index: number, w: number, h: number, t: number, l: number) => void;
+  onResize: (key: string, w: number, h: number, t: number, l: number) => void;
   onResizeStart: ()=> void;
   onResizeEnd: ()=> void;
-  onPositionChange: (index: number, t: number, l: number, detached: boolean) => void;
-  onVisibilityChange: (index: number, visible: boolean) => void;
-  onPositionChangeBegin: (index: number, t: number, l: number, detached: boolean) => void;
-  onSnap: (index: number) => void;
+  onPositionChange: (key: string, t: number, l: number, detached: boolean) => void;
+  onVisibilityChange: (key: string, visible: boolean) => void;
+  onPositionChangeBegin: (key: string, t: number, l: number, detached: boolean) => void;
+  onSnap: (key: string) => void;
   transferTab: (
     movingTab: number,
-    movingPanel: number,
-    receivingPanel: number,
+    movingPanel: string,
+    receivingPanel: string,
     receivingTab: number,
     dropSide: DroppableSide,
   ) => void;
   createNewPanel(
+    movingPanel: string,
     movingTab: number,
-    movingPanel: number,
     left: number,
     top: number,
-    dropSide?: DroppableSide,
   ): void;
-  setActiveTab: (panelIndex: number, tabIndex: number) => void;
+  setActiveTab: (key: string, tabIndex: number) => void;
 }
 export type CommonProps = EventHandlers & {
   root: MutableRefObject<HTMLDivElement | undefined>,
@@ -78,7 +79,7 @@ export type CommonProps = EventHandlers & {
 }
     
 export type BaseProps = PanelBBox & CommonProps & {
-  index: number,
+  name: string,
   top: number,
   left: number,
   tooltip: string | undefined,

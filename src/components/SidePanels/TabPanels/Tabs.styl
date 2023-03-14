@@ -1,7 +1,8 @@
 .tabs
     &__tabs-row
         display flex
-
+        background #f6f5f7
+        
     &__contents
         background #fff
         height 100%
@@ -56,16 +57,17 @@
         font-size 14px
         line-height 24px
         letter-spacing 0.15px
-        border-width 1px 1px 0px 1px;
-        border-style solid;
         transform translateY(2px)
         border-color rgba(65, 60, 74, 0.16);
         margin: 0 2px
         display flex
         align-items center
-        background #fff
         cursor grab
-        user-select none
+
+        &_active
+            border-width 1px 1px 0px 1px;
+            border-style solid;
+            background #fff
 
         &:hover svg
             color: #000
@@ -88,6 +90,9 @@
                 width 4px
                 height 100%
 
+        &_label
+            pointer-events none
+
     &__ghost-tab
         opacity 0.8
         position absolute
@@ -96,6 +101,7 @@
         top 0
         pointer-events none
         display none
+        cursor grabbing
             &__contents
                 background #fff
 

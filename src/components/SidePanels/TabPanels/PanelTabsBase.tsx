@@ -1,10 +1,10 @@
 import { FC, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Block, Elem } from '../../utils/bem';
-import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand } from '../../assets/icons';
-import { useDrag } from '../../hooks/useDrag';
-import { clamp, isDefined } from '../../utils/utilities';
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
-import './PanelBase.styl';
+import { Block, Elem } from '../../../utils/bem';
+import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand } from '../../../assets/icons';
+import { useDrag } from '../../../hooks/useDrag';
+import { clamp, isDefined } from '../../../utils/utilities';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from '../constants';
+import '../PanelBase.styl';
 import { BaseProps } from './types';
 
 export type PanelBaseExclusiveProps = 'name' | 'title'
@@ -27,7 +27,7 @@ const distance = (x1: number, x2: number, y1: number, y2: number) => {
 };
 
 export const PanelTabsBase: FC<BaseProps> = ({
-  index,
+  name: key,
   root,
   width,
   maxWidth,
@@ -58,16 +58,20 @@ export const PanelTabsBase: FC<BaseProps> = ({
   const resizerRef = useRef<HTMLDivElement>();
   const handlers = useRef({ onResize, onResizeStart, onResizeEnd, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
   const [resizing, setResizing] = useState<string | undefined>();
+  const keyRef = useRef(key);
+
+  useEffect(() => { keyRef.current = key; }, [key]);
 
   const handleCollapse = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
+
     e.stopPropagation();
     e.preventDefault();
-    onVisibilityChange?.(index, false);
-  }, [onVisibilityChange]);
+    onVisibilityChange?.(key, false);
+  }, [onVisibilityChange, key]);
 
   const handleExpand = useCallback(() => {
-    onVisibilityChange?.(index, true);
-  }, [onVisibilityChange]);
+    onVisibilityChange?.(key, true);
+  }, [onVisibilityChange, key]);
 
   const style = useMemo(() => {
     const dynamicStyle = visible ? {
@@ -147,8 +151,10 @@ export const PanelTabsBase: FC<BaseProps> = ({
         bbox.left - parentBBox.left,
         bbox.top - parentBBox.top,
       ];
+      
+      const { current: key } = keyRef;
 
-      handlers.current.onPositionChangeBegin?.(index, top, left, detached);
+      handlers.current.onPositionChangeBegin?.(key, top, left, detached);
 
       return { x, y, oX, oY, allowDrag };
     },
@@ -161,20 +167,22 @@ export const PanelTabsBase: FC<BaseProps> = ({
         const dist = distance(x, mX, y, mY);
 
         if (dist > 30) {
-          // setDragLocked(true);
           allowDrag = true;
         }
 
         if (!allowDrag) return;
 
         const [nX, nY] = [oX + (mX - x), oY + (mY - y)];
+        const { current: key } = keyRef;
 
-        handlers.current.onPositionChange?.(index, nY, nX, true);
+        handlers.current.onPositionChange?.(key, nY, nX, true);
       }
     },
 
     onMouseUp() {
-      handlers.current.onSnap?.(index);
+      const { current: key } = keyRef;
+
+      handlers.current.onSnap?.(key);
     },
   }, [headerRef, detached, visible, locked]);
 
@@ -249,9 +257,10 @@ export const PanelTabsBase: FC<BaseProps> = ({
 
         const top = shiftTop ? (t + (h - height)) : t;
         const left = shiftLeft ? (l + (w - width)) : l;
+        const { current: key } = keyRef;
 
         handlers.current.onResize(
-          index,
+          key,
           width,
           height,
           top,
@@ -280,7 +289,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
             onClick={!detached ? handleExpand : undefined}
           >
             {(visible || detached) && (
-              <Elem name="title">{index}</Elem>
+              <Elem name="title">{key}</Elem>
             )}
             
             <Elem
@@ -295,9 +304,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
         )}
         {visible && (
           <Elem name="body">
-            <Block name={`${index}`}>
-              {children}
-            </Block>
+            {children}
           </Elem>
         )}
       </Elem>

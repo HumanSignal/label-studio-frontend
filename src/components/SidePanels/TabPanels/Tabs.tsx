@@ -1,24 +1,29 @@
-import React, { useRef, useState } from 'react';
-import { IconOutlinerDrag } from '../../assets/icons';
-import { useDrag } from '../../hooks/useDrag';
-import { Block, Elem } from '../../utils/bem';
+import React, { useEffect, useRef, useState } from 'react';
+import { IconOutlinerDrag } from '../../../assets/icons';
+import { useDrag } from '../../../hooks/useDrag';
+import { Block, Elem } from '../../../utils/bem';
 import './Tabs.styl';
 import { BaseProps, DroppableSide, TabProps } from './types';
 import { determineDroppableArea, determineLeftOrRight } from './utils';
 
 const Tab = (props: TabProps) => {
-  const { rootRef, tabTitle: tabText, tabIndex, panelIndex, children, transferTab, createNewPanel, setActiveTab } = props;
+  const { rootRef, tabTitle: tabText, tabIndex, panelKey, children, active,  transferTab, createNewPanel, setActiveTab } = props;
   const [dragOverSide, setDragOverSide] = useState<DroppableSide | undefined>();
   const tabRef = useRef<HTMLDivElement>();
   const ghostTabRef = useRef<HTMLDivElement>();
   const dragging = useRef(false);
+  const location = useRef({ panelKey, tabIndex });
+
+  useEffect(() => { location.current = { panelKey, tabIndex }; }, [panelKey, tabIndex]);
   
-  console.log(tabText, panelIndex, tabIndex);
   useDrag({
     elementRef: tabRef,
     onMouseDown(event) {
-      rootRef.current?.append(ghostTabRef.current!);
+      const { panelKey, tabIndex } = location.current;
+      
+      setActiveTab(panelKey, tabIndex);
 
+      rootRef.current?.append(ghostTabRef.current!);
       const tab = tabRef.current!;
       const page = rootRef.current!.getBoundingClientRect();
       const bbox = tab.getBoundingClientRect();
@@ -39,7 +44,7 @@ const Tab = (props: TabProps) => {
     onMouseUp(event, data) {
       tabRef.current?.append(ghostTabRef.current!);
       ghostTabRef.current!.style.display = 'none';
-      if (!dragging.current) setActiveTab(panelIndex, tabIndex);
+
       if (!data || !dragging.current) return;
 
       dragging.current = false;
@@ -50,30 +55,34 @@ const Tab = (props: TabProps) => {
       const top = nY < 0 ? 0 : nY - headerHeight;
       const droppedOver = document.elementFromPoint(event.clientX, event.clientY);
       const isDropArea = determineDroppableArea(droppedOver as HTMLElement);
+      const { panelKey, tabIndex } = location.current;
 
-      if (!isDropArea) createNewPanel(panelIndex, tabIndex, left, top);
+      if (!isDropArea) createNewPanel(panelKey, tabIndex, left, top);
       else {
         const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
         const dropTargetId = dropTarget?.id;
 
         if (!dropTargetId || !dropTargetId?.includes('droppable')) return;
 
-        const droppedOnIndices = dropTargetId.split('-').map(string => parseInt(string, 10));
+        const droppedOnIndices = dropTargetId.split('-');
         const receivingPanel = droppedOnIndices[0];
-        const receivingTab = droppedOnIndices[1];
+        const receivingTab = parseInt(droppedOnIndices[1]);
    
         const dropSide = determineLeftOrRight(event, dropTarget as HTMLElement);
+        const { panelKey, tabIndex } = location.current;
 
-        dropSide && transferTab(tabIndex, panelIndex, receivingPanel, receivingTab, dropSide);
+        dropSide && transferTab(tabIndex, panelKey, receivingPanel, receivingTab, dropSide);
       }
     },
   }, [tabRef]);
 
-  const handleOnEnter = (event: React.MouseEvent<HTMLElement>) => {
+
+  const handleMouseOver = (event: React.MouseEvent<HTMLElement>) => {
     if (event.buttons === 1 || event.buttons === 3) {
       const isDropArea = determineDroppableArea(event.target as HTMLElement);
 
       if (isDropArea) setDragOverSide(determineLeftOrRight(event));
+      setTimeout(()=> setDragOverSide(undefined), 200);
     }
   };
 
@@ -82,16 +91,19 @@ const Tab = (props: TabProps) => {
   };
 
   const Label = () => (
-    <Elem id={`${panelIndex}-${tabIndex}-droppable`} name="tab" mod={{ dragOverSide }}>
+    <Elem id={`${panelKey}-${tabIndex}-droppable`} name="tab" mod={{ dragOverSide, active }}>
       <Elem name="icon" tag={IconOutlinerDrag} width={20} />
-      {tabText}
+      <Elem name="label">
+        {tabText}
+      </Elem>
     </Elem>
   );
 
   return (
     <Block name="panel-tabs">
-      <div onMouseEnter={event => handleOnEnter(event)} onMouseLeave={() => handleMouseLeave()}>
+      <div onMouseOver={event => handleMouseOver(event)} onMouseLeave={() => handleMouseLeave()}>
         <Elem
+          name="draggable-tab"
           id={`${tabText}-draggable`}
           ref={tabRef}
         >
@@ -108,47 +120,50 @@ const Tab = (props: TabProps) => {
 
 export const Tabs = (props: BaseProps) => {
   return (
-    <Block name="tabs">
-      <Elem name="tabs-row">
-        {props.panelViews.map((view, index) => {
+    <>
+      <Block name="tabs">
+        <Elem name="tabs-row">
+          {props.panelViews.map((view, index) => {
+            // const Component = view.component;
+
+            return (
+              <Elem name={'tab-contiainer'} key={`${view.title}-${index}-tab`} >
+                <Tab
+                  rootRef={props.root}
+                  key={`${view.title}-tab`}
+                  panelKey={props.name}
+                  tabIndex={index}
+                  active={view.active}
+                  tabTitle={view.title}
+                  transferTab={props.transferTab}
+                  createNewPanel={props.createNewPanel}
+                  setActiveTab={props.setActiveTab}
+                >
+                  <Elem name="content">
+                    {/* <Component {...props} /> */}
+                  </Elem>
+                </Tab>
+                {index === props.panelViews.length - 1 && (
+                  <Elem id={`${index}-${props.name}-droppable-space`} name="drop-space-after" />
+                )}
+              </Elem>
+            );
+          })}
+        </Elem>
+        {props.panelViews.map(view => {
           const Component = view.component;
 
           return (
-            <div key={`${view.title}-tab`} >
-              <Tab
-                rootRef={props.root}
-                key={`${view.title}-tab`}
-                panelIndex={props.index}
-                tabIndex={index}
-                tabTitle={view.title}
-                transferTab={props.transferTab}
-                createNewPanel={props.createNewPanel}
-                setActiveTab={props.setActiveTab}
-              >
-                <Elem name="content">
+            <>
+              {view.active && (
+                <Elem key={`${view.title}-contents`} name="contents">
                   <Component {...props} />
                 </Elem>
-              </Tab>
-              {index === props.panelViews.length - 1 && (
-                <Elem id={`${index}-${props.index}-droppable-space`} name="drop-space-after" />
               )}
-            </div>
+            </>
           );
         })}
-      </Elem>
-      {props.panelViews.map(view => {
-        const Component = view.component;
-
-        return (
-          <>
-            {view.active && (
-              <Elem key={`${view.title}-contents`} name="contents">
-                <Component {...props} />
-              </Elem>
-            )}
-          </>
-        );
-      })}
-    </Block>
+      </Block>
+    </>
   );
 };
