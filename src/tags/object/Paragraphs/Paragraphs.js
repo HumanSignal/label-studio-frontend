@@ -38,7 +38,6 @@ class HtxParagraphsView extends Component {
    * @param {HTMLElement} node
    * @param {number} offset
    * @param {boolean} [isStart=true]
-   * @type OffsetInPhraseElementReturn
    * @return {Array}
    */
   getOffsetInPhraseElement(container, offset, isStart = true) {
