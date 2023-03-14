@@ -38,6 +38,9 @@ module.exports.config = {
     Annotations: {
       require: './helpers/Annotations.ts',
     },
+    Assertion: {
+      require: './helpers/Assertion.js',
+    },
   },
   include: {
     I: './steps_file.js',
@@ -75,6 +78,7 @@ module.exports.config = {
     featureFlags: {
       require: './plugins/featureFlags.js',
       enabled: true,
+      defaultFeatureFlags: require('./setup/feature-flags'),
     },
     istanbulCoverage: {
       require: './plugins/istanbulСoverage.js',
