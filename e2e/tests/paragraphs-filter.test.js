@@ -41,6 +41,7 @@ const CONFIG = `
   <ParagraphLabels name="ner" toName="text">
     <Label value="Important Stuff"></Label>
     <Label value="Random talk"></Label>
+    <Label value="Other"></Label>
   </ParagraphLabels>
   <Paragraphs audioUrl="$audio" name="text" value="$dialogue" layout="dialogue" savetextresult="yes" />
 </View>`;
@@ -264,3 +265,199 @@ Scenario('Check different cases ', async ({ I, LabelStudio, AtSidebar, AtParagra
     });
   }
 });
+
+Scenario(
+  'Check start and end indices do not leak to other lines',
+  async ({ I, LabelStudio, AtSidebar, AtParagraphs, AtLabels }) => {
+    const dialogue = [
+      1, // 1
+      3, // 2
+      1, // 3
+      2, // 4
+      3, // 5
+      1, // 6
+      2, // 7
+      1, // 8
+      3, // 9
+      1, // 10
+      3, // 11
+      2, // 12
+      3, // 13
+      2, // 14
+    ].map((authorId, idx) => ({
+      start: idx + 1,
+      end: idx + 2,
+      author: `Author ${authorId}`,
+      text: `Message ${idx + 1}`,
+    }));
+    const params = {
+      config: CONFIG,
+      data: {
+        audio: AUDIO,
+        dialogue,
+      },
+    };
+
+    LabelStudio.setFeatureFlags(FEATURE_FLAGS);
+    I.amOnPage('/');
+
+    LabelStudio.init(params);
+    AtSidebar.seeRegions(0);
+
+    I.say(
+      'Test selection from the end of one turn to end of the one below correctly creates a single region with proper start,startOffset,end,endOffset',
+    );
+    AtLabels.clickLabel('Random talk');
+    AtParagraphs.setSelection(
+      AtParagraphs.locateText('Message 8'),
+      9,
+      AtParagraphs.locateText('Message 9'),
+      9,
+    );
+    AtSidebar.seeRegions(1);
+
+    {
+      const result = await LabelStudio.serialize();
+
+      assert.deepStrictEqual(
+        omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '8',
+          end: '8',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 9',
+        },
+      );
+    }
+
+    I.say(
+      'Test selection from the end of one turn to the very start of another below correctly creates a single region with proper start,startOffset,end,endOffset',
+    );
+    AtLabels.clickLabel('Random talk');
+    AtParagraphs.setSelection(
+      AtParagraphs.locateText('Message 8'),
+      9,
+      AtParagraphs.locateText('Message 10'),
+      0,
+    );
+    AtSidebar.seeRegions(2);
+
+    {
+      const result = await LabelStudio.serialize();
+
+      assert.deepStrictEqual(
+        omitBy(result[1].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '8',
+          end: '8',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 9',
+        },
+      );
+    }
+
+    I.say(
+      'Test selection from the end of one turn to end of ones below across collapsed text correctly creates regions with proper start,startOffset,end,endOffset',
+    );
+    AtParagraphs.clickFilter('Author 2', 'Author 3');
+    AtLabels.clickLabel('Important Stuff');
+    AtParagraphs.setSelection(
+      AtParagraphs.locateText('Message 2'),
+      9,
+      AtParagraphs.locateText('Message 8'),
+      9,
+    );
+    AtSidebar.seeRegions(4);
+
+    {
+      const result = await LabelStudio.serialize();
+
+      assert.deepStrictEqual(
+        omitBy(result[2].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '3',
+          end: '4',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 4\n\nMessage 5',
+        },
+      );
+      assert.deepStrictEqual(
+        omitBy(result[3].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '6',
+          end: '6',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 7',
+        },
+      );
+    }
+
+    I.say(
+      'Test selection from the end of one turn to very start of ones below across collapsed text correctly creates creates regions with proper start,startOffset,end,endOffset',
+    );
+    AtLabels.clickLabel('Other');
+    AtParagraphs.setSelection(
+      AtParagraphs.locateText('Message 2'),
+      9,
+      AtParagraphs.locateText('Message 8'),
+      0,
+    );
+    AtSidebar.seeRegions(6);
+
+    {
+      const result = await LabelStudio.serialize();
+
+      assert.deepStrictEqual(
+        omitBy(result[4].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '3',
+          end: '4',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 4\n\nMessage 5',
+        },
+      );
+      assert.deepStrictEqual(
+        omitBy(result[5].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '6',
+          end: '6',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 7',
+        },
+      );
+    }
+
+    I.say(
+      'Test selection from the end of Message 11 to the start of Message 14 to get region over Message 12 and Message 13',
+    );
+    AtLabels.clickLabel('Random talk');
+    AtParagraphs.setSelection(
+      AtParagraphs.locateText('Message 11'),
+      10,
+      AtParagraphs.locateText('Message 14'),
+      0,
+    );
+    AtSidebar.seeRegions(7);
+
+    {
+      const result = await LabelStudio.serialize();
+
+      assert.deepStrictEqual(
+        omitBy(result[6].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '11',
+          end: '12',
+          startOffset: 0,
+          endOffset: 10,
+          text: 'Message 12\n\nMessage 13',
+        },
+      );
+    }
+  },
+);
