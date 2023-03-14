@@ -118,7 +118,8 @@ Data(shapesTable).Scenario('Selecting after creation', async function({ I, AtIma
     Labels.selectWithHotkey('1');
     AtImageView[current.action](...convertParamsToPixels(region.params, canvasSize));
   }
-
+  // Check regions to be sure there is something to unselect already
+  AtSidebar.seeRegions(current.regions.length);
   Regions.unselectWithHotkey();
   if (current.shape === 'Brush') {
     // Switching to the move tool

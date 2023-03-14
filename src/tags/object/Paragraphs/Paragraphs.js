@@ -278,9 +278,11 @@ class HtxParagraphsView extends Component {
     } else {
       const htxRange = item.addRegion(selectedRanges[0]);
 
-      const spans = htxRange.createSpans();
+      if (htxRange) {
+        const spans = htxRange.createSpans();
 
-      htxRange.addEventsToSpans(spans);
+        htxRange.addEventsToSpans(spans);
+      }
     }
   }
 
