@@ -1,6 +1,3 @@
-
-/* global Feature, Scenario */
-
 Feature('Table');
 
 const config = `
