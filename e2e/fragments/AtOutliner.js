@@ -1,3 +1,4 @@
+const { centerOfBbox } = require('../tests/helpers');
 const { I } = inject();
 
 module.exports = {
@@ -33,5 +34,28 @@ module.exports = {
   },
   dontSeeSelectedRegion() {
     I.dontSeeElement(locate(this._regionListItemSelectedSelector).inside(this.locateRegionList()));
+  },
+  /**
+   * Drag and drop region through the outliner's regions tree
+   * @param {number} dragRegionIdx - Index of the dragged region
+   * @param {number} dropRegionIdx - Index of the region that will be a drop zone
+   * @param {number} [steps=3] - Sends intermediate mousemove events.
+   * @returns {Promise<void>}
+   */
+  async dragAndDropRegion(dragRegionIdx, dropRegionIdx, steps = 3) {
+    const fromBbox = await I.grabElementBoundingRect(this.locateRegionItemIndex(dragRegionIdx));
+    const toBbox = await I.grabElementBoundingRect(this.locateRegionItemIndex(dropRegionIdx));
+    const fromPoint = centerOfBbox(fromBbox);
+    const toPoint = {
+      x: toBbox.x + toBbox.width / 2,
+      y: toBbox.y + 3 * toBbox.height / 4,
+    };
+
+    return await I.dragAndDropMouse(
+      fromPoint,
+      toPoint,
+      'left',
+      steps,
+    );
   },
 };
