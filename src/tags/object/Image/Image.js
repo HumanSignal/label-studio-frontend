@@ -304,24 +304,30 @@ const Model = types.model({
       : `${naturalHeight / naturalWidth * 100}%`;
   },
 
-  serializableValues(index) {
-    index = index ?? 0;
-    const currentImageEntity = self.multiImage
-      ? self.findImageEntity(index)
-      : self;
+  createSerializedResult(region, value) {
+    const index = region.item_index ?? 0;
+    const currentImageEntity = self.findImageEntity(index);
 
-    const value = {
+    const imageDimension = {
       original_width: currentImageEntity.naturalWidth,
       original_height: currentImageEntity.naturalHeight,
       image_rotation: currentImageEntity.rotation,
     };
 
     if (self.multiImage && isDefined(index)) {
-      value.item_index = index;
+      imageDimension.item_index = index;
     }
 
-    return {
-      ...value,
+    // We're using raw region result instead of calulated one when
+    // the image data is not available (image is not yet loaded)
+    // As the serialization also happens during region creation,
+    // we have to forsee this scenario and avoid using raw result
+    // as it can only be present for already created (submitter) regions
+    const useRawResult = !currentImageEntity.imageLoaded && isDefined(region._rawResult);
+
+    return useRawResult ? structuredClone(region._rawResult) : {
+      ...imageDimension,
+      value,
     };
   },
 

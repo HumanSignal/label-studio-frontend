@@ -12,7 +12,10 @@ const canPlayUrl = async (url: string) => {
   const video = document.createElement('video');
 
   const fileMeta = await fetch(url, {
-    method: 'HEAD',
+    method: 'GET',
+    headers: {
+      'Range': 'bytes=0-0',
+    },
   });
 
   const fileType = fileMeta.headers.get('content-type');
