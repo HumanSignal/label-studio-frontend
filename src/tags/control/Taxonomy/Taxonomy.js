@@ -6,6 +6,7 @@ import Infomodal from '../../../components/Infomodal/Infomodal';
 import { Taxonomy } from '../../../components/Taxonomy/Taxonomy';
 import { guidGenerator } from '../../../core/Helpers';
 import Registry from '../../../core/Registry';
+import Tree from '../../../core/Tree';
 import Types from '../../../core/Types';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import PerRegionMixin from '../../../mixins/PerRegion';
@@ -142,6 +143,15 @@ const Model = types
         return self.annotation.results.find(r => r.from_name === self && r.area === area);
       }
       return self.annotation.results.find(r => r.from_name === self);
+    },
+
+    get tiedChildren() {
+      return Tree.filterChildrenOfType(self, 'ChoiceModel');
+    },
+
+    // @todo doesn't work with FF_DEV_3617 because of empty _value
+    get preselectedValues() {
+      return self.tiedChildren.filter(c => c.selected === true && !c.isSkipped).map(c => c.resultValue);
     },
 
     get items() {
