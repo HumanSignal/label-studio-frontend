@@ -37,6 +37,8 @@ export const determineDroppableArea = (droppingElement: HTMLElement) => dropping
 
 export const stateRemovedTab = (state: Record<string, PanelBBox>, movingPanel: string, movingTab: number) => {
   const newState = { ...state };
+
+  if (!newState[movingPanel]) return newState;
   const panel = newState[movingPanel];
 
   panel.panelViews = panel.panelViews
@@ -96,10 +98,8 @@ export const stateAddedTab = (
   const newPanelViews = panel.panelViews;
 
   newPanelViews.splice(receivingTab + (dropSide === DroppableSide.right ? 1 : 0), 0, movingTabData);
-
   return newState;
 };
-
 
 export const stateRemovePanelEmptyViews = (state: Record<string, PanelBBox>) => {
   const newState = { ...state };
@@ -159,7 +159,7 @@ export const panelComponents: {[key:string]: FC<PanelProps>} = {
 
 export const restorePanel = ( defaults: Record<string, PanelBBox>) => {
   const panelData = window.localStorage.getItem('panelState');
-  
+
   if (panelData) return restoreComponentsToState(JSON.parse(panelData));
   else return defaults;
 };

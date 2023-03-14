@@ -19,8 +19,10 @@ const Tab = (props: TabProps) => {
   useDrag({
     elementRef: tabRef,
     onMouseDown(event) {
-      const { panelKey, tabIndex } = location.current;
-      
+      const { panelKey, tabIndex } = { ...location.current };
+
+      console.log(panelKey, tabIndex );
+
       setActiveTab(panelKey, tabIndex);
 
       rootRef.current?.append(ghostTabRef.current!);
@@ -30,7 +32,7 @@ const Tab = (props: TabProps) => {
       const [x, y] = [event.pageX, event.pageY];
       const [oX, oY] = [bbox.left - page.left, bbox.top - page.top];
 
-      return { x, y, oX, oY };
+      return { x, y, oX, oY, panelKey, tabIndex };
     },
     onMouseMove(event, data) {
       if (!data) return;
@@ -43,19 +45,20 @@ const Tab = (props: TabProps) => {
     },
     onMouseUp(event, data) {
       tabRef.current?.append(ghostTabRef.current!);
+      
       ghostTabRef.current!.style.display = 'none';
 
       if (!data || !dragging.current) return;
 
       dragging.current = false;
-      const { x, y, oX, oY } = data;
+      const { x, y, oX, oY, panelKey, tabIndex } = data;
       const headerHeight = 32;
       const [nX, nY] = [event.pageX - (x - oX), event.pageY - (y - oY)];
       const left = nX < 0 ? 0 : nX;
       const top = nY < 0 ? 0 : nY - headerHeight;
       const droppedOver = document.elementFromPoint(event.clientX, event.clientY);
       const isDropArea = determineDroppableArea(droppedOver as HTMLElement);
-      const { panelKey, tabIndex } = location.current;
+
 
       if (!isDropArea) createNewPanel(panelKey, tabIndex, left, top);
       else {
@@ -64,12 +67,11 @@ const Tab = (props: TabProps) => {
 
         if (!dropTargetId || !dropTargetId?.includes('droppable')) return;
 
-        const droppedOnIndices = dropTargetId.split('-');
+        const droppedOnIndices = dropTargetId.split('_');
         const receivingPanel = droppedOnIndices[0];
         const receivingTab = parseInt(droppedOnIndices[1]);
    
         const dropSide = determineLeftOrRight(event, dropTarget as HTMLElement);
-        const { panelKey, tabIndex } = location.current;
 
         dropSide && transferTab(tabIndex, panelKey, receivingPanel, receivingTab, dropSide);
       }
@@ -91,7 +93,7 @@ const Tab = (props: TabProps) => {
   };
 
   const Label = () => (
-    <Elem id={`${panelKey}-${tabIndex}-droppable`} name="tab" mod={{ dragOverSide, active }}>
+    <Elem id={`${panelKey}_${tabIndex}_droppable`} name="tab" mod={{ dragOverSide, active }}>
       <Elem name="icon" tag={IconOutlinerDrag} width={20} />
       <Elem name="label">
         {tabText}
@@ -124,7 +126,7 @@ export const Tabs = (props: BaseProps) => {
       <Block name="tabs">
         <Elem name="tabs-row">
           {props.panelViews.map((view, index) => {
-            // const Component = view.component;
+            const Component = view.component;
 
             return (
               <Elem name={'tab-contiainer'} key={`${view.title}-${index}-tab`} >
@@ -140,7 +142,7 @@ export const Tabs = (props: BaseProps) => {
                   setActiveTab={props.setActiveTab}
                 >
                   <Elem name="content">
-                    {/* <Component {...props} /> */}
+                    <Component {...props} />
                   </Elem>
                 </Tab>
                 {index === props.panelViews.length - 1 && (

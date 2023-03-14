@@ -36,7 +36,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const localSnap = useRef(snap);
   const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(savedPanels);
 
-  // console.log('panelData', panelData);
   useRegionsCopyPaste(currentEntity);
 
   const sidePanelsCollapsed = useMemo(() => {
@@ -97,15 +96,18 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         relativeLeft: left / viewportSize.current.width * 100,
         visible: true,
         detached: true,
-        zIndex: 2,
+        zIndex: 11,
       };
       
       movingTabComponent.active = true;
       const stateWithRemovals = stateRemovedTab(state, movingPanel, movingTab);
+
+      Object.keys(stateWithRemovals).forEach(panelKey => stateWithRemovals[panelKey].zIndex = 10 );
       const panelsWithRemovals = stateRemovePanelEmptyViews(stateWithRemovals); 
       const panelWithAdditions = { ...panelsWithRemovals, [`${movingTabComponent.name}`]: newPanel };
       const renamedKeys = renameKeys(panelWithAdditions);
       const activeDefaults = setActiveDefaults(renamedKeys);
+      
 
       return activeDefaults;
       
@@ -158,7 +160,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   };
 
   const onPositionChangeBegin = useCallback((key: string) => {
-    updatePanel(key, { zIndex: 1 });
+    Object.keys(panelData).forEach(panelKey => updatePanel(panelKey, { zIndex: panelKey === key ? 11 : 10 }));
     setPositioning(true);
   }, [panelData]);
 
