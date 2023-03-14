@@ -28,17 +28,45 @@ class HtxParagraphsView extends Component {
     return node;
   }
 
-  getOffsetInPhraseElement(container, offset) {
+  get phraseElements() {
+    return [...this.myRef.current.getElementsByClassName(this.props.item.layoutClasses.text)];
+  }
+
+  /**
+   * Check for the selection in the phrase and return the offset and index.
+   *
+   * @param {HTMLElement} node
+   * @param {number} offset
+   * @param {boolean} [isStart=true]
+   * @return {[number, HTMLElement, number, number]}
+   */
+  getOffsetInPhraseElement(container, offset, isStart = true) {
     const node = this.getPhraseElement(container);
     const range = document.createRange();
 
     range.setStart(node, 0);
     range.setEnd(container, offset);
     const fullOffset = range.toString().length;
-    const phraseIndex = [...node.parentNode.parentNode.children].indexOf(node.parentNode);
-    const phraseNode = node;
+    const phraseIndex = this.phraseElements.indexOf(node);
+    let phraseNode = node;
 
-    return [fullOffset, phraseNode, phraseIndex];
+    // if the selection is made from the very end of a given phrase, we need to
+    // move the offset to the beginning of the next phrase
+    if (isStart && fullOffset === phraseNode.textContent.length) {
+      return [0, phraseNode, phraseIndex + 1, phraseIndex];
+    }
+    // if the selection is made to the very beginning of the next phrase, we need to
+    // move the offset to the end of the previous phrase
+    else if (!isStart && fullOffset === 0) {
+      phraseNode = this.phraseElements[phraseIndex - 1];
+      return [phraseNode.textContent.length, phraseNode, phraseIndex - 1, phraseIndex];
+    }
+
+    return [fullOffset, phraseNode, phraseIndex, phraseIndex];
+  }
+
+  removeSurroundingNewlines(text) {
+    return text.replace(/^\n+/, '').replace(/\n+$/, '');
   }
 
   captureDocumentSelection() {
@@ -68,28 +96,27 @@ class HtxParagraphsView extends Component {
       if (r.endContainer.nodeName === 'DIV') {
         r.setEnd(r.startContainer, r.startContainer.length);
       }
-
       if (r.collapsed || /^\s*$/.test(r.toString())) continue;
 
       try {
         splitBoundaries(r);
-        const [startOffset, , start] = this.getOffsetInPhraseElement(r.startContainer, r.startOffset);
-        const [endOffset, , end] = this.getOffsetInPhraseElement(r.endContainer, r.endOffset);
+        const [startOffset, , start, originalStart] = this.getOffsetInPhraseElement(r.startContainer, r.startOffset);
+        const [endOffset, , end, originalEnd] = this.getOffsetInPhraseElement(r.endContainer, r.endOffset, false);
 
         if (isFF(FF_DEV_2918)) {
           const visibleIndexes = item._value.reduce((visibleIndexes, v, idx) => {
             const isContentVisible = item.isVisibleForAuthorFilter(v);
 
-            if (isContentVisible && start <= idx && end >= idx) {
+            if (isContentVisible && originalStart <= idx && originalEnd >= idx) {
               visibleIndexes.push(idx);
             }
 
             return visibleIndexes;
           }, []);
 
-          if (visibleIndexes.length !== end - start + 1) {
-            const texts = [...this.myRef.current.getElementsByClassName(cls.text)];
-            let fromIdx = start;
+          if (visibleIndexes.length !== originalEnd - originalStart + 1) {
+            const texts = this.phraseElements;
+            let fromIdx = originalStart;
 
             for (let k = 0; k < visibleIndexes.length; k++) {
               const curIdx = visibleIndexes[k];
@@ -100,14 +127,15 @@ class HtxParagraphsView extends Component {
 
                 const _range = r.cloneRange();
 
-                if (fromIdx === start) {
+                if (fromIdx === originalStart) {
+                  fromIdx = start;
                   anchorOffset = startOffset;
                 } else {
                   anchorOffset = 0;
 
                   const walker = texts[fromIdx].ownerDocument.createTreeWalker(texts[fromIdx], NodeFilter.SHOW_ALL);
 
-                  while (walker.firstChild()) ;
+                  while (walker.firstChild());
 
                   _range.setStart(walker.currentNode, anchorOffset);
                 }
@@ -121,7 +149,7 @@ class HtxParagraphsView extends Component {
 
                   const walker = texts[curIdx].ownerDocument.createTreeWalker(texts[curIdx], NodeFilter.SHOW_ALL);
 
-                  while (walker.lastChild()) ;
+                  while (walker.lastChild());
 
                   _range.setEnd(walker.currentNode, walker.currentNode.length);
                 }
@@ -129,14 +157,20 @@ class HtxParagraphsView extends Component {
                 selection.removeAllRanges();
                 selection.addRange(_range);
 
-                ranges.push({
-                  startOffset: anchorOffset,
-                  start: String(fromIdx),
-                  endOffset: focusOffset,
-                  end: String(curIdx),
-                  _range,
-                  text: selection.toString(),
-                });
+                const text = this.removeSurroundingNewlines(selection.toString());
+
+                // Sometimes the selection is empty, which is the case for dragging from the end of a line above the
+                // target line, while having collapsed lines between.
+                if (text) {
+                  ranges.push({
+                    startOffset: anchorOffset,
+                    start: String(fromIdx),
+                    endOffset: focusOffset,
+                    end: String(curIdx),
+                    _range,
+                    text,
+                  });
+                }
 
                 if (visibleIndexes.length - 1 > k) {
                   fromIdx = visibleIndexes[k + 1];
@@ -152,7 +186,7 @@ class HtxParagraphsView extends Component {
               endOffset,
               end: String(end),
               _range: r,
-              text: selection.toString(),
+              text: this.removeSurroundingNewlines(selection.toString()),
             });
           }
         } else {
@@ -164,7 +198,7 @@ class HtxParagraphsView extends Component {
             endOffset,
             end: String(end),
             _range: r,
-            text: selection.toString(),
+            text: this.removeSurroundingNewlines(selection.toString()),
           });
         }
       } catch (err) {
