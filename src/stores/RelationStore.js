@@ -53,7 +53,7 @@ const Relation = types
       if (!isDefined(eIdx) && end.object.multiImage && 
       eIdx !== end.object.currentImage) return false;
 
-      return false;
+      return true;
     },
   }))
   .actions(self => ({
