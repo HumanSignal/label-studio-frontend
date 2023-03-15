@@ -9,6 +9,7 @@ export type TabProps = {
   active: boolean,
   children: ReactNode,
   panelWidth: number,
+  viewLength: number,
   transferTab: EventHandlers['transferTab'],
   createNewPanel: EventHandlers['createNewPanel'],
   setActiveTab: EventHandlers['setActiveTab'],

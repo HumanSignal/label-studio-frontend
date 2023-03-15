@@ -8,7 +8,7 @@ import { BaseProps, DroppableSide, TabProps } from './types';
 import { determineDroppableArea, determineLeftOrRight } from './utils';
 
 const Tab = (props: TabProps) => {
-  const { rootRef, tabTitle: tabText, tabIndex, panelKey, children, active, panelWidth, transferTab, createNewPanel, setActiveTab } = props;
+  const { rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, children, active, panelWidth, transferTab, createNewPanel, setActiveTab } = props;
   const [dragOverSide, setDragOverSide] = useState<DroppableSide | undefined>();
   const tabRef = useRef<HTMLDivElement>();
   const ghostTabRef = useRef<HTMLDivElement>();
@@ -70,6 +70,7 @@ const Tab = (props: TabProps) => {
         const receivingTab = parseInt(droppedOnIndices[1]);
         const dropSide = determineLeftOrRight(event, dropTarget as HTMLElement);
 
+        if ((tabIndex === receivingTab || receivingTab === viewLength) && panelKey === receivingPanel) return; 
         dropSide && transferTab(tabIndex, panelKey, receivingPanel, receivingTab, dropSide);
       }
     },
@@ -93,9 +94,7 @@ const Tab = (props: TabProps) => {
   const Label = () => (
     <Elem id={`${panelKey}_${tabIndex}_droppable`} name="tab" mod={{ dragOverSide, active }}>
       <Elem name="icon" tag={IconOutlinerDrag} width={20} />
-      <Elem name="label">
-        {tabText}
-      </Elem>
+      {tabText}
     </Elem>
   );
 
@@ -119,6 +118,8 @@ const Tab = (props: TabProps) => {
 };
 
 export const Tabs = (props: BaseProps) => {
+  const [hoveringRight, setHoveringRight] = useState(false);
+
   return (
     <>
       <Block name="tabs">
@@ -127,7 +128,7 @@ export const Tabs = (props: BaseProps) => {
             const Component = view.component;
 
             return (
-              <Elem name={'tab-contiainer'} key={`${view.title}-${index}-tab`} >
+              <Elem name="tab-container" key={`${view.title}-${index}-tab`}>
                 <Tab
                   rootRef={props.root}
                   key={`${view.title}-tab`}
@@ -139,17 +140,24 @@ export const Tabs = (props: BaseProps) => {
                   createNewPanel={props.createNewPanel}
                   setActiveTab={props.setActiveTab}
                   panelWidth={props.width}
+                  viewLength={props.panelViews.length}
                 >
                   <Elem name="content">
                     <Component {...props} />
                   </Elem>
                 </Tab>
-                {index === props.panelViews.length - 1 && (
-                  <Elem id={`${index}-${props.name}-droppable-space`} name="drop-space-after" />
-                )}
               </Elem>
             );
           })}
+          <Elem
+            id={`${props.name}_${props.panelViews.length}-droppable-space`}
+            name="drop-space-after"
+            mod={{ hoveringRight }}
+            onMouseOver={(event: MouseEvent) => {
+              if (event.buttons === 1 || event.buttons === 3) setHoveringRight(true);
+            }}
+            onMouseLeave={() => setHoveringRight(false)}
+          />
         </Elem>
         {props.panelViews.map(view => {
           const Component = view.component;

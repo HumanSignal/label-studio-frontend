@@ -285,7 +285,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
               {(visible || detached) && (
                 <Elem name="icon" tag={IconOutlinerDrag} width={20} />
               )}
-              {(!visible && panelViews.length > 1) && (
+              {(!visible && panelViews.length > 1 && detached) && (
                 <Elem name="title">{panelViews.map(view => view.title).join(' ')}</Elem>
               )}
             </Elem>

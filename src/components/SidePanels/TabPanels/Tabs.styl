@@ -37,18 +37,16 @@
 
     &__drop-space-after
         width 100%
+        
+        &_hoveringRight
 
-        &:hover svg
-            color: #000
-
-        &_dragOverSide_left
-            &::before
-                content ''
-                position absolute
-                left 0
-                background #85cbfd
-                width 4px
-                height 100%
+            &:hover 
+                &::before
+                    content ''
+                    position absolute
+                    background #85cbfd
+                    width 4px
+                    height 100%
 
 
 .panel-tabs
@@ -67,6 +65,7 @@
         display flex
         align-items center
         cursor grab
+        user-select none
 
         &_active
             border-width 1px 1px 0px 1px;
@@ -105,7 +104,6 @@
         top 0
         pointer-events none
         display none
-        cursor grabbing
         
     &__contents
         background #fff
