@@ -111,8 +111,6 @@ const DrawingTool = types
         self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
 
-        if (isFF(FF_LSDV_4583)) self.currentArea.setItemIndex?.(self.obj.currentImage);
-
         self.applyActiveStates(self.currentArea);
         self.annotation.setIsDrawing(true);
         return self.currentArea;
@@ -137,8 +135,6 @@ const DrawingTool = types
         }, { coordstype: 'px', dynamic: self.dynamic });
 
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
-
-        if (isFF(FF_LSDV_4583)) newArea.setItemIndex?.(obj.currentImage);
 
         currentArea.setDrawing(false);
         self.applyActiveStates(newArea);

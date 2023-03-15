@@ -515,6 +515,13 @@ const Model = types.model({
 
       createImageEntities();
     }
+  
+    function afterResultCreated(region) {
+      if (!region) return;
+      if (!self.multiImage) return;
+
+      region.setItemIndex?.(self.currentImage);
+    }
 
     function getToolsManager() {
       return manager;
@@ -523,6 +530,7 @@ const Model = types.model({
     return {
       afterAttach,
       getToolsManager,
+      afterResultCreated,
     };
   }).extend((self) => {
     let skipInteractions = false;
