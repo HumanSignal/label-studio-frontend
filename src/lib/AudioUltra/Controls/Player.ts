@@ -229,7 +229,8 @@ export class Player extends Destructable {
           // otherwise the audio will be out of sync of the timer we use to
           // render updates
           if (this.audio?.el) {
-            this.currentTime = time;
+            // This must not be notifying of this adjustment otherwise it can cause sync issues and near infinite loops
+            this.setCurrentTime(time);
             this.audio.el.currentTime = this.currentTime;
             this.watch();
           }

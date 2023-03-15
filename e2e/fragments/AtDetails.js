@@ -1,10 +1,16 @@
 const { I } = inject();
 
+/**
+ * Helper to test different information displayed in Details panel,
+ * like region labels, editable fields, meta info, etc.
+ */
 module.exports = {
   _rootSelector: '.lsf-details',
   _labelSelector: '.lsf-detailed-region .lsf-labels-list span',
   _textSelector: '.lsf-region-meta__content_type_text',
   _editMetaSelector: '[aria-label="Edit region\'s meta"]',
+  _editableFieldInput: '.lsf-region-editor__input',
+  _editableFieldTitle: '.lsf-region-editor__text',
   _metaField: '.lsf-detailed-region__meta-text',
   _resultBlockSelector: '.lsf-detailed-region__result',
   _resultTitleSelector: '.ant-typography',
@@ -17,6 +23,11 @@ module.exports = {
   },
   locateMeta() {
     return this.locate(this._metaField);
+  },
+  locateEditableField(field) {
+    const title = this.locate(this._editableFieldTitle).withText(field);
+
+    return this.locate(this._editableFieldInput).before(title);
   },
   locateResultBlock() {
     return this.locate(this._resultBlockSelector);
@@ -59,6 +70,10 @@ module.exports = {
   },
   fillMeta(text) {
     I.fillField(this.locateMeta(), text);
+  },
+  // can be not very precise: actual '82.1000003' will match value '82.1'
+  seeFieldWithValue(field, value) {
+    I.seeInField(this.locateEditableField(field), value);
   },
   seeMeta(text) {
     I.see(text, this.locateMeta());

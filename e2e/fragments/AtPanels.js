@@ -1,6 +1,10 @@
 const { centerOfBbox } = require('../tests/helpers');
 const { I } = inject();
 
+/**
+ * Helper to test draggable panels like Details and Outliner.
+ * They are selected by providing one of PANEL selectors to constructor (see exports).
+ */
 class Panel {
   container = '.lsf-sidepanels';
   root = '.lsf-panel';

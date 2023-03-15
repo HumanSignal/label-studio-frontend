@@ -31,10 +31,6 @@ export const getRegionColor = (region, alpha = 1) => {
   return Utils.Colors.convertToRGBA(color, alpha);
 };
 
-// fixes `observe` - it watches only the changes of primitive props of observables count
-// so pass all the required primitives to this stub and they'll be observed
-export const fixMobxObserve = () => {};
-
 // clear d3 sourceEvent via async call to prevent infinite loops
 export const clearD3Event = f => setTimeout(f, 0);
 

@@ -38,6 +38,9 @@ module.exports.config = {
     Annotations: {
       require: './helpers/Annotations.ts',
     },
+    Assertion: {
+      require: './helpers/Assertion.js',
+    },
   },
   include: {
     I: './steps_file.js',
@@ -75,6 +78,7 @@ module.exports.config = {
     featureFlags: {
       require: './plugins/featureFlags.js',
       enabled: true,
+      defaultFeatureFlags: require('./setup/feature-flags'),
     },
     istanbulCoverage: {
       require: './plugins/istanbulСoverage.js',
@@ -86,6 +90,25 @@ module.exports.config = {
         include: ['**/src/**'],
         exclude: ['**/common/**', '**/components/**'],
       },
+    },
+    errorsCollector: {
+      require: './plugins/errorsCollector.js',
+      enabled: true,
+      uncaughtErrorFilter: {
+        interrupt: true,
+      },
+      consoleErrorFilter: {
+        // @todo switch it on to feel the pain
+        display: false,
+      },
+    },
+    stepLogsModifier: {
+      require: './plugins/stepLogsModifier.js',
+      enabled: true,
+      modifyStepLogs: [{
+        stepNameMatcher: 'executeScript',
+        rule: 'hideFunction',
+      }],
     },
     screenshotOnFail: {
       enabled: true,
