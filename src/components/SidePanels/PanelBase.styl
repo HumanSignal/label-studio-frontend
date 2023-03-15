@@ -9,10 +9,16 @@
   pointer-events all
 
   &_newLabelingUI
+     --header-background-new #e1e0e2
+     --icon-color #898098 
     .panel
       &__header
-        background #e1e0e2
+        background var(--header-background-new)
         color var(--icon-color)
+        &:hover
+          --icon-color #096DD9
+          --header-background-new #d8e7f9
+          
     &.panel
       &_alignment
         &_left, &_right
@@ -24,6 +30,7 @@
       &__header
         color var(--icon-color)
         padding-left: 24px
+
 
       &_hidden:not(&_detached)
         margin 0;
