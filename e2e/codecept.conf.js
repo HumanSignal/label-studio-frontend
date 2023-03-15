@@ -91,6 +91,25 @@ module.exports.config = {
         exclude: ['**/common/**', '**/components/**'],
       },
     },
+    errorsCollector: {
+      require: './plugins/errorsCollector.js',
+      enabled: true,
+      uncaughtErrorFilter: {
+        interrupt: true,
+      },
+      consoleErrorFilter: {
+        // @todo switch it on to feel the pain
+        display: false,
+      },
+    },
+    stepLogsModifier: {
+      require: './plugins/stepLogsModifier.js',
+      enabled: true,
+      modifyStepLogs: [{
+        stepNameMatcher: 'executeScript',
+        rule: 'hideFunction',
+      }],
+    },
     screenshotOnFail: {
       enabled: true,
     },
