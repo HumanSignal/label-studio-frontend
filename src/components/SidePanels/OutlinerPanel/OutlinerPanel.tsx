@@ -71,7 +71,7 @@ const OutlinerComponentStyled: FC<OutlinerPanelProps> = ({ regions }) => {
   regions.setGrouping(group);
 
   return (
-    <Block  name="outliner">
+    <Block name="outliner">
       <Outliner regions={regions} />
     </Block>
   );
