@@ -12,7 +12,7 @@ import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
 import { PanelTabsBase } from './PanelTabsBase';
 import { Tabs } from './Tabs';
 import { CommonProps, DroppableSide, emptyPanel, EventHandlers, PanelBBox, Result, SidePanelsProps } from './types';
-import { defaultPanelState, renameKeys, restorePanel, savePanels, setActive, setActiveDefaults, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews, throttleAndPop } from './utils';
+import { defaultPanelState, renameKeys, restorePanel, savePanels, setActive, setActiveDefaults, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
 
 const savedPanels = restorePanel(defaultPanelState);
 
@@ -314,7 +314,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         name,
         top: panelData.storedTop ?? panelData.top,
         left: panelData.storedLeft ?? panelData.left,
-        tooltip: panelData.panelViews?.find(view => view.active)?.title,
+        tooltip: panelData.panelViews.map(view => view.title).join(' '),
         icon: <IconDetails/>,
         positioning,
         maxWidth: panelMaxWidth,
@@ -333,13 +333,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   }, [panelData, commonProps, panelsHidden, sidePanelsCollapsed, positioning, panelMaxWidth]);
 
   useEffect(() => {
-    if (Object.keys(panelData).length) 
-      throttleAndPop(
-        () => {},
-        () => savePanels(panelData),
-        'savePanels',
-        1000,
-      );
+    if (Object.keys(panelData).length) savePanels(panelData);
   }, [panelData]);
 
   useEffect(() => {
@@ -382,6 +376,8 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     };
   }, [sidePanelsCollapsed]);
 
+  const newLabelingUI = true;
+
   return (
     <SidePanelsContext.Provider value={contextValue}>
       <Block
@@ -395,7 +391,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         style={{
           ...padding,
         }}
-        mod={{ collapsed: sidePanelsCollapsed, newLabelingUI: true }}
+        mod={{ collapsed: sidePanelsCollapsed, newLabelingUI }}
       >
         {initialized && (
           <>

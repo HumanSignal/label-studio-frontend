@@ -35,6 +35,7 @@ const Tab = (props: TabProps) => {
     onMouseMove(event, data) {
       if (!data) return;
       document.body.style.cursor = 'grabbing' ;
+      document.body.style.cursor = 'user-select: none';
 
       dragging.current = true;
       const { x, y, oX, oY } = data;
@@ -46,7 +47,8 @@ const Tab = (props: TabProps) => {
     onMouseUp(event, data) {
       tabRef.current?.append(ghostTabRef.current!);
       ghostTabRef.current!.style.display = 'none';
-      document.body.style.cursor = 'auto' ;
+      document.body.style.cursor = 'auto';
+      document.body.style.cursor = 'user-select: all';
 
       if (!data || !dragging.current) return;
       dragging.current = false;
@@ -128,6 +130,7 @@ export const Tabs = (props: BaseProps) => {
             const Component = view.component;
 
             return (
+              
               <Elem name="tab-container" key={`${view.title}-${index}-tab`}>
                 <Tab
                   rootRef={props.root}
@@ -143,7 +146,7 @@ export const Tabs = (props: BaseProps) => {
                   viewLength={props.panelViews.length}
                 >
                   <Elem name="content">
-                    <Component {...props} />
+                    <Component key={`${view.title}-${index}-component`} {...props} />
                   </Elem>
                 </Tab>
               </Elem>

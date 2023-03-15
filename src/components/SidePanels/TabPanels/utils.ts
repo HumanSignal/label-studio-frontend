@@ -7,23 +7,6 @@ import { DroppableSide, PanelBBox, PanelView } from './types';
 
 export const lastCallTime: { [key: string]: number } | undefined = {};
 export const timeouts: { [key: string]: ReturnType<typeof setTimeout> | null } = {};
-  
-export const throttleAndPop = (callback: () => any, callback2: () => any, name:string, delay = 100): any => {
-  const now = Date.now();
-  const timeSinceLastCall = now - (lastCallTime[name] || 0);
-  
-  if (timeSinceLastCall >= delay) {
-    lastCallTime[name] = now;
-    callback();
-    clearTimeout(timeouts[name]!);
-    timeouts[name] = setTimeout(() => {
-      lastCallTime[name] = 0;
-      timeouts[name] = null;
-      callback2();
-    }, delay * 2);
-  }
-};
-
 export const determineLeftOrRight = (event: any, droppableElement?: ReactNode) => {
   const element = droppableElement || event.target as HTMLElement;  
   const dropWidth = (element as HTMLElement).clientWidth as number;
@@ -165,9 +148,11 @@ export const restorePanel = ( defaults: Record<string, PanelBBox>) => {
 
   const parsed = panelData && JSON.parse(panelData);
   const allTabs = panelData && Object.entries(parsed).map(([_, panel]: any) => panel.panelViews).flat(1);
-  
+  const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
+  const withActiveDefaults = setActiveDefaults(noEmptyPanels);
+
   if (!allTabs || allTabs.length !== panelViews.length) return defaults;
-  return restoreComponentsToState(JSON.parse(panelData));
+  return restoreComponentsToState(withActiveDefaults);
 };
 
 export const restoreComponentsToState = (panelData: Record<string, PanelBBox>) => {
