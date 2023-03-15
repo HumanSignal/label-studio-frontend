@@ -72,7 +72,7 @@ const Tab = (props: TabProps) => {
         const receivingTab = parseInt(droppedOnIndices[1]);
         const dropSide = determineLeftOrRight(event, dropTarget as HTMLElement);
 
-        if ((tabIndex === receivingTab || receivingTab === viewLength) && panelKey === receivingPanel) return; 
+        if (tabIndex === receivingTab || (viewLength === 1 && panelKey === receivingPanel)) return;
         dropSide && transferTab(tabIndex, panelKey, receivingPanel, receivingTab, dropSide);
       }
     },
