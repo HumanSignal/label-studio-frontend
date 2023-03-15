@@ -10,7 +10,7 @@ interface OutlinerPanelProps extends PanelProps {
   regions: any;
 }
 
-const Outliner: FC<any> = ({ regions }) => {
+const Outliner: FC<Pick<OutlinerPanelProps, 'regions'>> = ({ regions }) => {
   const [group, setGroup] = useState();
   const onOrderingChange = useCallback((value) => {
     regions.setSort(value);
@@ -62,6 +62,14 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
 };
 
 const OutlinerComponentStyled: FC<OutlinerPanelProps> = ({ regions }) => {
+  const [group, setGroup] = useState();
+
+  useEffect(() => {
+    setGroup(regions.group);
+  }, []);
+
+  regions.setGrouping(group);
+
   return (
     <Block  name="outliner">
       <Outliner regions={regions} />
