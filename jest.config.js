@@ -65,6 +65,7 @@ module.exports = {
     '/node_modules/',
     '/e2e/',
   ],
+  'testRegex': '__tests__/.*.test.[tj]sx?',
   'transformIgnorePatterns': [
     'node_modules/?!(nanoid|konva)',
   ],

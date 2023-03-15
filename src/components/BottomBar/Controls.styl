@@ -1,15 +1,24 @@
-.topbar
+.bottombar
   .controls
     flex 1
     height 100%
     display grid
     grid-auto-columns 1fr
+    column-gap 8px
     grid-auto-flow column
     justify-content flex-end
+    padding-right 8px
+    align-items center
 
-    &__tooltip-wrapper
-      button
-        width 100%
+    .button
+      width 160px
+      height 40px
+      font-size 16px
+      line-height 24px
+      &_look_primary
+        background-color #096DD9
+      &_look_danger
+        border-color #e1e0e2
 
     &__skipped-info
       display flex
@@ -21,12 +30,6 @@
 
       svg
         margin 0 8px 0 4px
-
-    .button
-      height 100%
-      font-size 16px
-      box-shadow none
-      border-radius 0
 
   .action-dialog
     height 278px
