@@ -3,7 +3,7 @@ import { types } from 'mobx-state-tree';
 import Utils from '../utils';
 import throttle from 'lodash.throttle';
 import { MIN_SIZE } from '../tools/Base';
-import { FF_DEV_3666, FF_DEV_3793, FF_LSDV_4583, isFF } from '../utils/feature-flags';
+import { FF_DEV_3666, FF_DEV_3793, isFF } from '../utils/feature-flags';
 
 const DrawingTool = types
   .model('DrawingTool', {
