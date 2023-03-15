@@ -208,10 +208,8 @@ export const AudioModel = types.compose(
         }
       },
 
-      // @todo should be some way to call setRate from model
       handleSyncSpeed({ speed }) {
         if (!self._ws) return;
-        // currently it doesn't update visual control state, just an internal speed
         self._ws.rate = speed;
       },
 
