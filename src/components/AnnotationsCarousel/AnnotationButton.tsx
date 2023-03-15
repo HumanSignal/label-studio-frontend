@@ -1,6 +1,6 @@
 import { Block, Elem } from '../../utils/bem';
 import { Userpic } from '../../common/Userpic/Userpic';
-import { IconAnnotationGroundTruth, IconAnnotationSkipped2, IconCheckBold, IconCrossBold, IconDraftCreated2, IconDuplicate, IconEllipsis, IconTrashRect, LsComment, LsCommentRed, LsSparks, LsStar, LsStarOutline } from '../../assets/icons';
+import { IconAnnotationGroundTruth, IconAnnotationSkipped2, IconDraftCreated2, IconDuplicate, IconEllipsis, IconTrashRect, LsComment, LsCommentRed, LsSparks, LsStar, LsStarOutline } from '../../assets/icons';
 import { userDisplayName } from '../../utils/utilities'; 
 import { TimeAgo }  from '../../common/TimeAgo/TimeAgo';
 import './AnnotationButton.styl';
