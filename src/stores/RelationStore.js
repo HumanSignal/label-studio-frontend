@@ -43,11 +43,11 @@ const Relation = types
       // as we don't currently have a unified solution for multi-object segmentation
       // and the Image tag is the only one to support it, we rely on its API
       // TODO: make multi-object solution more generic
-      if (!isDefined(sIdx) &&
+      if (isDefined(sIdx) &&
           start.object.multiImage && 
           sIdx !== start.object.currentImage) return false;
 
-      if (!isDefined(eIdx) &&
+      if (isDefined(eIdx) &&
           end.object.multiImage && 
           eIdx !== end.object.currentImage) return false;
 
