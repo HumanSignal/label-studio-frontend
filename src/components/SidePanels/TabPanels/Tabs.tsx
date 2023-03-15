@@ -54,10 +54,10 @@ const Tab = (props: TabProps) => {
       const headerHeight = 32;
       const [nX, nY] = [event.pageX - (x - oX), event.pageY - (y - oY)];
       const left = nX < 0 ? 0 : nX;
-      const top = nY < 0 ? 0 : nY - headerHeight;
+      const implementedHeight = nY - headerHeight;
+      const top = implementedHeight < 0 ?  0 : implementedHeight;
       const droppedOver = document.elementFromPoint(event.clientX, event.clientY);
       const isDropArea = determineDroppableArea(droppedOver as HTMLElement);
-
 
       if (!isDropArea) createNewPanel(panelKey, tabIndex, left, top);
       else {
