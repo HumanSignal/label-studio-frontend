@@ -204,6 +204,7 @@ module.exports = {
    */
   setVolumeInput(value) {
     this.toggleControlsMenu();
+    I.clearField(this._volumeInputSelector);
     I.fillField(this._volumeInputSelector, value);
     this.toggleControlsMenu();
   },
@@ -221,6 +222,7 @@ module.exports = {
 
     I.seeInField(this._playbackSpeedInputSelector, value);
     I.seeInField(this._playbackSpeedSliderSelector, value);
+
     const playbackSpeed = await I.grabAttributeFrom(this._audioElementSelector, 'playbackRate');
 
     assert.equal(playbackSpeed, value, 'Playback speed doesn\'t match in audio element');
@@ -237,6 +239,7 @@ module.exports = {
    */
   setPlaybackSpeedInput(value) {
     this.toggleSettingsMenu();
+    I.clearField(this._playbackSpeedInputSelector);
     I.fillField(this._playbackSpeedInputSelector, value);
     this.toggleSettingsMenu();
   },
@@ -267,6 +270,7 @@ module.exports = {
    */
   setAmplitudeInput(value) {
     this.toggleSettingsMenu();
+    I.clearField(this._amplitudeInputSelector);
     I.fillField(this._amplitudeInputSelector, value);
     this.toggleSettingsMenu();
   },
