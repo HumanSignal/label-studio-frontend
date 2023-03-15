@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { IconOutlinerDrag } from '../../../assets/icons';
 import { useDrag } from '../../../hooks/useDrag';
 import { Block, Elem } from '../../../utils/bem';
@@ -14,7 +14,7 @@ const Tab = (props: TabProps) => {
   const ghostTabRef = useRef<HTMLDivElement>();
   const dragging = useRef(false);
   const location = useRef({ panelKey, tabIndex });
-  
+
   location.current = { panelKey, tabIndex };
 
   useDrag({
@@ -85,7 +85,9 @@ const Tab = (props: TabProps) => {
       const isDropArea = determineDroppableArea(event.target as HTMLElement);
 
       if (isDropArea) setDragOverSide(determineLeftOrRight(event));
-      setTimeout(()=> setDragOverSide(undefined), 200);
+      const resetSideCheck = 200;
+
+      setTimeout(()=> setDragOverSide(undefined), resetSideCheck);
     }
   };
 
