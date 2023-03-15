@@ -34,6 +34,8 @@ const Tab = (props: TabProps) => {
     },
     onMouseMove(event, data) {
       if (!data) return;
+      document.body.style.cursor = 'grabbing' ;
+
       dragging.current = true;
       const { x, y, oX, oY } = data;
 
@@ -44,6 +46,7 @@ const Tab = (props: TabProps) => {
     onMouseUp(event, data) {
       tabRef.current?.append(ghostTabRef.current!);
       ghostTabRef.current!.style.display = 'none';
+      document.body.style.cursor = 'auto' ;
 
       if (!data || !dragging.current) return;
       dragging.current = false;
