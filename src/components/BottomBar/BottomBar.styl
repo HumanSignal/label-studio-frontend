@@ -1,5 +1,5 @@
-.topbar
-  height var(--topbar-height)
+.bottombar
+  height var(--bottombar-height)
   width 100%
   z-index 101
   flex none
@@ -9,8 +9,8 @@
   background-color #fff
   border-bottom 1px solid rgba(#000, 0.1)
   user-select none
-  position sticky
-  top 0
+  position absolute
+  bottom 0
 
   &__group
     display flex
@@ -25,13 +25,8 @@
     &_flat
       padding 0
 
-    & + &
-      border-left 1px solid rgba(#000, 0.1)
-  &_newLabelingUI
-    display block
-    background-color #FAFAFA
-    .topbar
-      &__group
-        height var(--topbar-height)
-        flex 1
-        align-items center
+    & .button
+      &_withIcon
+        &:not([disabled]):hover
+            background-color rgba(65, 60, 74, 0.08) !important
+            border-radius 4px
