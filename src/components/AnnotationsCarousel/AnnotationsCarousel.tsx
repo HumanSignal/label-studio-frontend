@@ -39,7 +39,7 @@ export const AnnotationsCarousel = observer(({ store, annotationStore }: Annotat
   useEffect(() => {
     setIsLeftDisabled(currentPosition <= 0);
     setIsRightDisabled(currentPosition >= ((carouselRef.current?.clientWidth ?? 0) - (containerRef.current?.clientWidth ?? 0)));
-  }, [containerRef.current, carouselRef.current, currentPosition, window.innerWidth, window.innerHeight]);
+  }, [entities.length, containerRef.current, carouselRef.current, currentPosition, window.innerWidth, window.innerHeight]);
 
   useEffect(() => {
     const newEntities = [];
@@ -54,7 +54,7 @@ export const AnnotationsCarousel = observer(({ store, annotationStore }: Annotat
     <Block name='annotations-carousel' style={{ '--carousel-left': `${currentPosition}px` }}>
       <Elem ref={containerRef} name='container'>
         <Elem ref={carouselRef} name='carosel'>
-          {entities.map(entity => (
+          {entities.sort((a, b) => a.pk - b.pk).map(entity => (
             <AnnotationButton 
               key={entity?.id} 
               entity={entity} 

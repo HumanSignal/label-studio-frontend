@@ -1,12 +1,13 @@
 import { Block, Elem } from '../../utils/bem';
 import { Userpic } from '../../common/Userpic/Userpic';
-import { IconAnnotationGroundTruth, IconAnnotationSkipped2, IconCheckBold, IconCrossBold, IconDraftCreated2, IconDuplicate, IconEllipsis, IconTrashRect, LsComment, LsCommentRed, LsSparks, LsStar, LsStarOutline } from '../../assets/icons';
+import { IconAnnotationGroundTruth, IconAnnotationSkipped2, IconDraftCreated2, IconDuplicate, IconEllipsis, IconTrashRect, LsComment, LsCommentRed, LsSparks, LsStar, LsStarOutline } from '../../assets/icons';
 import { userDisplayName } from '../../utils/utilities'; 
 import { TimeAgo }  from '../../common/TimeAgo/TimeAgo';
 import './AnnotationButton.styl';
 import { useCallback, useEffect, useState } from 'react';
 import { Dropdown } from '../../common/Dropdown/Dropdown';
 import { useDropdown } from '../../common/Dropdown/DropdownTrigger';
+
 // eslint-disable-next-line
 // @ts-ignore
 import { confirm } from '../../common/Modal/Modal';
@@ -136,17 +137,18 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
           >
             {isPrediction && <LsSparks style={{ width: 18, height: 18 }}/>}
           </Elem>
-          {entity.history.hasChanges && <Elem name='status' mod={{ approved: true }}><IconCheckBold /></Elem>}
-          {entity.skipped && (
+          {/* to do: return these icons when we have a better way to grab the history action type */}
+          {/* {historyActionType === 'accepted' && <Elem name='status' mod={{ approved: true }}><IconCheckBold /></Elem>}
+          {historyActionType && (
             <Elem name='status' mod={{ skipped: true }}>
               <IconCrossBold />
             </Elem>
           )}
-          {((entity.userGenerate && !entity.sentUserGenerate) || entity.draftSelected) && (
+          {entity.history.canUndo && (
             <Elem name='status' mod={{ updated: true }}>
               <IconCheckBold />
             </Elem>
-          )}
+          )} */}
         </Elem>
         <Elem name='main'>
           <Elem name="user">

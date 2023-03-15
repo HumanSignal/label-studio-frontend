@@ -322,6 +322,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [eventHandlers, rootRef, regions, regions.selectio, currentEntity]);
 
   const padding = useMemo(() => {
+    if (panelsHidden && isFF(FF_DEV_3873)) return {};
+
     const result = {
       paddingLeft: 0,
       paddingRight: 0,

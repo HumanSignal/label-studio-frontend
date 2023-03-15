@@ -8,7 +8,7 @@ import { CurrentTask } from './CurrentTask';
 import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 import { Button } from '../../common/Button/Button';
 import { Tooltip } from '../../common/Tooltip/Tooltip';
-import { IconViewAll } from '../../assets/icons';
+import { IconViewAll, LsPlus } from '../../assets/icons';
 import { AnnotationsCarousel } from '../AnnotationsCarousel/AnnotationsCarousel';
 import './TopBar.styl';
 
@@ -38,6 +38,28 @@ export const TopBar = observer(({ store }) => {
                   padding: 0,
                 }}
               />
+            </Tooltip>
+          )}
+          {store.hasInterface('annotations:add-new') && (
+            <Tooltip placement="topLeft" title="Create a new annotation">
+              <Button
+                icon={<LsPlus />}
+                type="text"
+                aria-label="View All"
+                onClick={event => {
+                  event.preventDefault();
+                  const created = store.annotationStore.createAnnotation();
+
+                  store.annotationStore.selectAnnotation(created.id);
+                }}
+                style={{
+                  height: 36,
+                  width: 36,
+                  padding: 0,
+                  marginRight: 4,
+                }}
+              />
+  
             </Tooltip>
           )}
           {!isViewAll && (
