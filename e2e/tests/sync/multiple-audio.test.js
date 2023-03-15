@@ -107,10 +107,10 @@ Scenario('Looping of multiple synced audio stay in sync', async function({ I, La
     assert.notEqual(audioTime2, 0);
   }
 
+
   I.say('Clicking outside of the audio segment and then clicking play should restart the audio from the beginning of the segment');
   AtAudioView.clickAt(250);
   AtAudioView.clickPlayButton();
-  I.wait(1);
   {
     const [{ paused: audioPaused1, currentTime: audioTime1 }, { paused: audioPaused2, currentTime: audioTime2 }] = await AtAudioView.getCurrentAudio();
 
