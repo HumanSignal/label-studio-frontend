@@ -267,7 +267,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       selection: regions.selection,
       currentEntity,
     };
-  }, [eventHandlers, rootRef, regions, regions.selection, currentEntity]);
+  }, [eventHandlers, regions, regions.selection, currentEntity]);
 
   const padding = useMemo(() => {
     const result = {

@@ -14,8 +14,8 @@ const Tab = (props: TabProps) => {
   const ghostTabRef = useRef<HTMLDivElement>();
   const dragging = useRef(false);
   const location = useRef({ panelKey, tabIndex });
-
-  useEffect(() => { location.current = { panelKey, tabIndex }; }, [panelKey, tabIndex]);
+  
+  location.current = { panelKey, tabIndex };
 
   useDrag({
     elementRef: tabRef,
@@ -76,7 +76,7 @@ const Tab = (props: TabProps) => {
         dropSide && transferTab(tabIndex, panelKey, receivingPanel, receivingTab, dropSide);
       }
     },
-  }, [tabRef]);
+  }, []);
 
 
   const handleMouseOver = (event: React.MouseEvent<HTMLElement>) => {

@@ -61,8 +61,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
   const [resizing, setResizing] = useState<string | undefined>();
   const keyRef = useRef(key);
 
-  useEffect(() => { keyRef.current = key; }, [key]);
-
+  keyRef.current = key;
   const handleCollapse = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
 
     e.stopPropagation();
@@ -186,7 +185,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
 
       handlers.current.onSnap?.(key);
     },
-  }, [headerRef, detached, visible, locked]);
+  }, [detached, visible, locked]);
 
   // Panel resizing
   useDrag({
