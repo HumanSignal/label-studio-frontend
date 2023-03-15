@@ -63,7 +63,6 @@ export const PanelTabsBase: FC<BaseProps> = ({
 
   keyRef.current = key;
   const handleCollapse = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
-
     e.stopPropagation();
     e.preventDefault();
     onVisibilityChange?.(key, false);
