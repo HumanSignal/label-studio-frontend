@@ -155,7 +155,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [updatePanel]);
 
   const spaceFree = useCallback((alignment: 'left' | 'right') => {
-    return isFF(FF_DEV_3873) ? true : Object.values(panelData).find(p => p.alignment === alignment && !p.detached) === undefined;
+    return isFF(FF_DEV_3873) || Object.values(panelData).find(p => p.alignment === alignment && !p.detached) === undefined;
   }, [panelData]);
 
   const checkSnap = useCallback((left: number, parentWidth: number, panelWidth: number) => {
