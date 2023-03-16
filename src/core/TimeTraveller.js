@@ -103,7 +103,6 @@ const TimeTraveller = types
       },
 
       reinit(force = true) {
-        console.trace('reinit', { force });
         self.history = [getSnapshot(targetStore)];
         self.undoIdx = 0;
         self.createdIdx = 0;
