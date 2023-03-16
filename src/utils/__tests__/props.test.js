@@ -9,7 +9,7 @@ describe('normalizeAngle', () => {
     expect(normalizeAngle(0)).toBe(0);
     expect(normalizeAngle(90)).toBe(90);
     expect(normalizeAngle(180)).toBe(180);
-  });
+  }); 
   it('projects angles from the intervals [-360;-180] and (180;360] onto the interval (-180; 180]', () => {
     expect(normalizeAngle(-360)).toBe(0);
     expect(normalizeAngle(-181)).toBe(179);
