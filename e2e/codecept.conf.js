@@ -31,6 +31,7 @@ module.exports.config = {
       } : {},
       trace: false,
       keepTraceForPassedTests: false,
+      video: 'retain-on-failure',
     },
     MouseActions: {
       require: './helpers/MouseActions.js',
