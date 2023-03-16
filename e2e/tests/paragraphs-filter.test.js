@@ -266,6 +266,44 @@ Scenario('Check different cases ', async ({ I, LabelStudio, AtSidebar, AtParagra
   }
 });
 
+Scenario('Selecting the end character on a paragraph phrase to the very start of other phrases includes all selected phrases', async ({ I, LabelStudio, AtSidebar, AtParagraphs, AtLabels }) => {
+  const params = {
+    data: DATA,
+    config: CONFIG,
+  };
+
+  I.amOnPage('/');
+
+  LabelStudio.setFeatureFlags(FEATURE_FLAGS);
+  LabelStudio.init(params);
+  AtSidebar.seeRegions(0);
+
+  I.say('Select 2 regions in the consecutive phrases of the one person');
+
+  AtLabels.clickLabel('Random talk');
+  AtParagraphs.setSelection(
+    AtParagraphs.locateText('Hate what?'),
+    9,
+    AtParagraphs.locateText('I dont know. Thats a good question.'),
+    0,
+  );
+
+  AtSidebar.seeRegions(1);
+
+  const result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(
+    omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
+    {
+      start: '1',
+      end: '2',
+      startOffset: 9,
+      endOffset: 102,
+      text: '?\nUncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?',
+    },
+  );
+});
+
 Scenario(
   'Check start and end indices do not leak to other lines',
   async ({ I, LabelStudio, AtSidebar, AtParagraphs, AtLabels }) => {
