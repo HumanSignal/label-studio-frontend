@@ -98,7 +98,9 @@ module.exports = {
 
   async getWrapperPosition(tagName) {
     const wrapperPosition = await I.executeScript((tagName) => {
-      const wrapper = Htx.annotationStore.selected.names.get(tagName)._ws.container;
+      const _ws = Htx.annotationStore.selected.names.get(tagName)._ws;
+      // `visualizer.wrapper` is for Audio v3
+      const wrapper = _ws.visualizer?.wrapper ?? _ws.container;
       const bbox = wrapper.getBoundingClientRect();
 
       return {
@@ -123,6 +125,31 @@ module.exports = {
         y: rect.y + rect.height / 2,
       };
     }, regionId);
+
+    return I.dragAndDropMouse(regionPosition, {
+      x: regionPosition.x + offset,
+      y: regionPosition.y,
+    });
+  },
+
+  async moveRegionV3(regionId, offset = 30) {
+    const regionPosition = await I.executeScript(({ regionId, stageBbox }) => {
+      const region = Htx.annotationStore.selected.regions.find(r => r.cleanId === regionId);
+
+      const wsRegion = region._ws_region;
+
+      if (!wsRegion.inViewport) {
+        return null;
+      }
+      const { height } = wsRegion.visualizer;
+
+      return {
+        x: (wsRegion.xStart + wsRegion.xEnd) / 2 + stageBbox.x,
+        y: height / 2 + stageBbox.y,
+      };
+    }, { regionId, stageBbox: this._stageBbox });
+
+    if (!regionPosition) return;
 
     return I.dragAndDropMouse(regionPosition, {
       x: regionPosition.x + offset,

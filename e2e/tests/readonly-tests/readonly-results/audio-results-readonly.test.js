@@ -43,7 +43,7 @@ Data(imageExamples).Scenario('Audio Readonly Regions', async ({
   I.say('Attempt to move a readonly region');
   const readonlyRegionId = regions[0].id;
 
-  await AtAudioView.moveRegion(readonlyRegionId, 100);
+  await AtAudioView.moveRegionV3(readonlyRegionId, 100);
 
   I.say('Results are equal after modification attempt');
   await LabelStudio.resultsNotChanged(result);
@@ -51,7 +51,7 @@ Data(imageExamples).Scenario('Audio Readonly Regions', async ({
   I.say('Attempt to move a non-readonly region');
   const nonReadonlyRegionId = regions[1].id;
 
-  await AtAudioView.moveRegion(nonReadonlyRegionId, 100);
+  await AtAudioView.moveRegionV3(nonReadonlyRegionId, 100);
 
   I.say('Results are not equal after modification attempt');
   await LabelStudio.resultsChanged(result);
@@ -65,5 +65,5 @@ Data(imageExamples).Scenario('Audio Readonly Regions', async ({
   I.pressKey('1');
 
   await AtAudioView.createRegion('audio', 100, 150);
-  AtSidebar.seeRegions(regions.length);
+  AtSidebar.seeRegions(regions.length + 1);
 });
