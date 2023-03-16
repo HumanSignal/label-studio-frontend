@@ -93,8 +93,23 @@ class HtxParagraphsView extends Component {
     for (i = 0; i < selection.rangeCount; i++) {
       const r = selection.getRangeAt(i);
 
-      if (r.endContainer.nodeName === 'DIV') {
-        r.setEnd(r.startContainer, r.startContainer.length);
+      if (r.endContainer.nodeType !== Node.TEXT_NODE) {
+        // offsets work differently for nodes and texts, so we have to find #text.
+        // lastChild because most probably this is div of the whole paragraph,
+        // and it has author div and phrase div.
+        const el = this.getPhraseElement(r.endContainer.lastChild);
+        let textNode = el;
+
+        while (textNode && textNode.nodeType !== Node.TEXT_NODE) {
+          textNode = textNode.firstChild;
+        }
+
+        // most probably this div is out of Paragraphs
+        // @todo maybe select till the end of Paragraphs?
+        if (!textNode) continue;
+
+        // @todo !! range should be also shifted after getOffsetInPhraseElement
+        r.setEnd(textNode, 0);
       }
       if (r.collapsed || /^\s*$/.test(r.toString())) continue;
 
