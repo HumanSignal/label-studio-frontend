@@ -168,6 +168,7 @@ const Model = types.model({
   selectionArea: types.optional(ImageSelection, { start: null, end: null }),
 }).volatile(() => ({
   currentImage: undefined,
+  shouldReinitHistory: true,
 })).views(self => ({
   get store() {
     return getRoot(self);
@@ -612,6 +613,14 @@ const Model = types.model({
       self.brushStrokeWidth = arg;
     },
 
+    disableHistoryReinit() {
+      self.shouldReinitHistory = false;
+    },
+
+    enableHistoryReinit() {
+      self.shouldReinitHistory = true;
+    },
+
     /**
      * Update brightnessGrade of Image
      * @param {number} value
@@ -633,7 +642,11 @@ const Model = types.model({
       if (index === self.currentImage) return;
       self.currentImage = index;
       self.currentImageEntity = self.findImageEntity(index);
-      if (isFF(FF_LSDV_4583_6)) self.preloadImages();
+
+      if (self.multiImage) {
+        self.preloadImages();
+        self.disableHistoryReinit();
+      }
     },
 
     preloadImages() {
@@ -967,8 +980,15 @@ const Model = types.model({
       } else {
         self.sizeToAuto();
       }
+
       // Don't force unselection of regions during the updateObjects callback from history reinit
-      setTimeout(() => self.annotation.reinitHistory(false), 0);
+      setTimeout(() => {
+        if (self.shouldReinitHistory === false) {
+          self.enableHistoryReinit();
+          return;
+        }
+        self.annotation.reinitHistory(false);
+      }, 0);
     },
 
     checkLabels() {
