@@ -1,4 +1,4 @@
-/* global describe, test, expect, it */
+/* global describe, expect, it */
 
 import { interpolateProp, normalizeAngle } from '../props';
 
