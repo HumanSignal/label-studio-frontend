@@ -282,9 +282,9 @@ Scenario('Selecting the end character on a paragraph phrase to the very start of
 
   AtLabels.clickLabel('Random talk');
   AtParagraphs.setSelection(
-    AtParagraphs.locateText('Hate what?'),
-    9,
-    AtParagraphs.locateText('I dont know. Thats a good question.'),
+    AtParagraphs.locateText('Dont you hate that?'),
+    18,
+    AtParagraphs.locateText('Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?'),
     0,
   );
 
@@ -295,11 +295,11 @@ Scenario('Selecting the end character on a paragraph phrase to the very start of
   assert.deepStrictEqual(
     omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
     {
-      start: '1',
-      end: '2',
-      startOffset: 9,
-      endOffset: 102,
-      text: '?\nUncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?',
+      start: '0',
+      end: '1',
+      startOffset: 18,
+      endOffset: 10,
+      text: '?\n\nHate what?',
     },
   );
 });
