@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 
 import ObjectTag from '../../../components/Tags/Object';
-import { findNodeAt, matchesSelector, splitBoundaries } from '../../../utils/html';
+import { findNodeAt, /* getTextNodesInRange,*/ matchesSelector, splitBoundaries } from '../../../utils/html';
 import { isSelectionContainsSpan } from '../../../utils/selection-tools';
 import styles from './Paragraphs.module.scss';
 import { AuthorFilter } from './AuthorFilter';
@@ -93,8 +93,6 @@ class HtxParagraphsView extends Component {
     for (i = 0; i < selection.rangeCount; i++) {
       const r = selection.getRangeAt(i);
 
-      if (r.collapsed || /^\s*$/.test(r.toString())) continue;
-
       if (r.endContainer.nodeType !== Node.TEXT_NODE) {
         // offsets work differently for nodes and texts, so we have to find #text.
         // lastChild because most probably this is div of the whole paragraph,
@@ -113,6 +111,8 @@ class HtxParagraphsView extends Component {
         // @todo !! range should be also shifted after getOffsetInPhraseElement
         r.setEnd(textNode, 0);
       }
+
+      if (r.collapsed || /^\s*$/.test(r.toString())) continue;
 
       try {
         splitBoundaries(r);
@@ -350,6 +350,7 @@ class HtxParagraphsView extends Component {
           }
         } else if (!r.text && range.toString()) {
           r.setText(range.toString());
+          // r.setText(getTextNodesInRange(range).join(''));
         }
 
         splitBoundaries(range);

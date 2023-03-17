@@ -29,7 +29,7 @@ export const Phrases = observer(({ item }) => {
             onClick={() => item.play(idx)}
           />
         )}
-        <span className={cls.name} data-textnode-skip="true">{v[item.namekey]}</span>
+        <span className={cls.name} data-skip-node="true">{v[item.namekey]}</span>
         <span className={cls.text}>{v[item.textkey]}</span>
       </div>
     );

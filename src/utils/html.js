@@ -94,14 +94,14 @@ function getNextNode(node) {
 
 function isValidTreeNode(node, commonAncestor) {
   while(node) {
-    if (node === commonAncestor) return true;
-    if (node.nodeType === Node.ELEMENT_NODE && node.dataset.textnodeSkip === 'true') return false;
+    if (commonAncestor && node === commonAncestor) return true;
+    if (node.nodeType === Node.ELEMENT_NODE && node.dataset.skipNode === 'true') return false;
     node = node.parentNode;
   }
   return true;
 }
 
-function getNodesInRange(range) {
+export function getNodesInRange(range) {
   const start = range.startContainer;
   const end = range.endContainer;
   const commonAncestor = range.commonAncestorContainer;
@@ -122,6 +122,10 @@ function getNodesInRange(range) {
   }
 
   return nodes;
+}
+
+export function getTextNodesInRange(range) {
+  return getNodesInRange(range).filter(n => isTextNode(n));
 }
 
 function documentReverse(node) {
@@ -201,9 +205,7 @@ function highlightRange(normedRange, cssClass, cssStyle) {
     cssClass = 'htx-annotation';
   }
 
-  const allNodes = getNodesInRange(normedRange._range);
-
-  const textNodes = allNodes.filter(n => isTextNode(n));
+  const textNodes = getTextNodesInRange(normedRange._range);
 
   const white = /^\s*$/;
 

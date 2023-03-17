@@ -5,6 +5,28 @@ Feature('Paragraphs filter');
 
 const AUDIO = 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3';
 
+const ANNOTATIONS = [
+  {
+    'result': [
+      {
+        'id':'ryzr4QdL93',
+        'from_name':'ner',
+        'to_name':'text',
+        'source':'$dialogue',
+        'type':'paragraphlabels',
+        'value':{
+          'start':'2',
+          'end':'4',
+          'startOffset':0,
+          'endOffset':134,
+          'paragraphlabels': ['Important Stuff'],
+          'text': 'Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?I dont know. Thats a good question.Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+        },
+      },
+    ],
+  },
+];
+
 const DATA = {
   audio: AUDIO,
   dialogue: [
@@ -266,44 +288,6 @@ Scenario('Check different cases ', async ({ I, LabelStudio, AtSidebar, AtParagra
   }
 });
 
-Scenario('Selecting the end character on a paragraph phrase to the very start of other phrases includes all selected phrases', async ({ I, LabelStudio, AtSidebar, AtParagraphs, AtLabels }) => {
-  const params = {
-    data: DATA,
-    config: CONFIG,
-  };
-
-  I.amOnPage('/');
-
-  LabelStudio.setFeatureFlags(FEATURE_FLAGS);
-  LabelStudio.init(params);
-  AtSidebar.seeRegions(0);
-
-  I.say('Select 2 regions in the consecutive phrases of the one person');
-
-  AtLabels.clickLabel('Random talk');
-  AtParagraphs.setSelection(
-    AtParagraphs.locateText('Dont you hate that?'),
-    18,
-    AtParagraphs.locateText('Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?'),
-    0,
-  );
-
-  AtSidebar.seeRegions(1);
-
-  const result = await LabelStudio.serialize();
-
-  assert.deepStrictEqual(
-    omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
-    {
-      start: '0',
-      end: '1',
-      startOffset: 18,
-      endOffset: 10,
-      text: '?\n\nHate what?',
-    },
-  );
-});
-
 Scenario(
   'Check start and end indices do not leak to other lines',
   async ({ I, LabelStudio, AtSidebar, AtParagraphs, AtLabels }) => {
@@ -499,3 +483,65 @@ Scenario(
     }
   },
 );
+
+Scenario('Selecting the end character on a paragraph phrase to the very start of other phrases includes all selected phrases', async ({ I, LabelStudio, AtSidebar, AtParagraphs, AtLabels }) => {
+  const params = {
+    data: DATA,
+    config: CONFIG,
+  };
+
+  I.amOnPage('/');
+
+  LabelStudio.setFeatureFlags(FEATURE_FLAGS);
+  LabelStudio.init(params);
+  AtSidebar.seeRegions(0);
+
+  I.say('Select 2 regions in the consecutive phrases of the one person');
+
+  AtLabels.clickLabel('Random talk');
+  AtParagraphs.setSelection(
+    AtParagraphs.locateText('Dont you hate that?'),
+    18,
+    AtParagraphs.locateText('Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?'),
+    0,
+  );
+
+  AtSidebar.seeRegions(1);
+
+  const result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(
+    omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
+    {
+      start: '0',
+      end: '1',
+      startOffset: 18,
+      endOffset: 10,
+      text: '?\n\nHate what?',
+    },
+  );
+});
+
+Scenario('Initializing a paragraph region range should not include author names in text', async ({ I, LabelStudio, AtSidebar }) => {
+  const params = {
+    data: DATA,
+    annotations: ANNOTATIONS,
+    config: CONFIG,
+  };
+
+  I.amOnPage('/');
+  LabelStudio.setFeatureFlags(FEATURE_FLAGS);
+
+  const [{ result : [region] }] = ANNOTATIONS;
+  const { paragraphlabels: _paragraphlabels, ...value } = region.value;
+
+  LabelStudio.init(params);
+  AtSidebar.seeRegions(1);
+
+  const result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(
+    omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
+    value,
+  );
+});
