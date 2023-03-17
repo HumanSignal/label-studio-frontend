@@ -302,6 +302,48 @@ class HtxParagraphsView extends Component {
     }
   }
 
+  /**
+   * Generates a textual representation of the current selection range.
+   * Excludes any invalid nodes, and their children. This is necessary to avoid
+   * capturing the text of elements such as the author name.
+   *
+   * @param {string} textClass 
+   * @param {Text[]} phrases
+   * @param {number} start
+   * @param {number} end
+   * @param {number} startOffset
+   * @param {number} endOffset
+   * @returns {string}
+   */
+  _getResultText(textClass, phrases, range, start, startOffset, endOffset) {
+    const nodesInRange = getTextNodesInRange(range);
+    const endNodeIndex = nodesInRange.length - 1;
+
+    const resultText = nodesInRange
+      .reduce((acc, _n, i) => {
+        const str = phrases[+start + i]
+          ?.getElementsByClassName(textClass)?.[0]
+          ?.textContent;
+
+        if (!str) return acc;
+
+        acc.push(str);
+
+        if (i === 0 && i === endNodeIndex) {
+          acc[i] = acc[i].slice(startOffset, endOffset);
+        } else if (i === 0) {
+          acc[i] = acc[i].slice(startOffset);
+        } else if (i === endNodeIndex) {
+          acc[i] = acc[i].slice(0, endOffset);
+        }
+
+        return acc;
+      }, [])
+      .join('');
+
+    return resultText;
+  }
+
   _handleUpdate() {
     const root = this.myRef.current;
     const { item } = this.props;
@@ -309,7 +351,7 @@ class HtxParagraphsView extends Component {
     // wait until text is loaded
     if (!item._value) return;
 
-    item.regs.forEach(function(r, i) {
+    item.regs.forEach((r, i) => {
       // spans can be totally missed if this is app init or undo/redo
       // or they can be disconnected from DOM on annotations switching
       // so we have to recreate them from regions data
@@ -320,6 +362,7 @@ class HtxParagraphsView extends Component {
         const range = document.createRange();
         const startNode = phrases[r.start].getElementsByClassName(item.layoutClasses.text)[0];
         const endNode = phrases[r.end].getElementsByClassName(item.layoutClasses.text)[0];
+
         let { startOffset, endOffset } = r;
 
         range.setStart(...findNodeAt(startNode, startOffset));
@@ -349,7 +392,7 @@ class HtxParagraphsView extends Component {
             r.fixOffsets(startOffset, endOffset);
           }
         } else if (!r.text && range.toString()) {
-          r.setText(getTextNodesInRange(range).map(n => n.textContent).join(''));
+          r.setText(this._getResultText(item.layoutClasses.text, phrases, range, r.start, startOffset, endOffset));
         }
 
         splitBoundaries(range);
