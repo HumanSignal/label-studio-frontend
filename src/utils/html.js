@@ -92,7 +92,7 @@ function getNextNode(node) {
   }
 }
 
-function isValidTreeNode(node, commonAncestor) {
+export function isValidTreeNode(node, commonAncestor) {
   while(node) {
     if (commonAncestor && node === commonAncestor) return true;
     if (node.nodeType === Node.ELEMENT_NODE && node.dataset.skipNode === 'true') return false;

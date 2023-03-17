@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 
 import ObjectTag from '../../../components/Tags/Object';
-import { findNodeAt, /* getTextNodesInRange,*/ matchesSelector, splitBoundaries } from '../../../utils/html';
+import { findNodeAt, getTextNodesInRange, matchesSelector, splitBoundaries } from '../../../utils/html';
 import { isSelectionContainsSpan } from '../../../utils/selection-tools';
 import styles from './Paragraphs.module.scss';
 import { AuthorFilter } from './AuthorFilter';
@@ -349,8 +349,7 @@ class HtxParagraphsView extends Component {
             r.fixOffsets(startOffset, endOffset);
           }
         } else if (!r.text && range.toString()) {
-          r.setText(range.toString());
-          // r.setText(getTextNodesInRange(range).join(''));
+          r.setText(getTextNodesInRange(range).map(n => n.textContent).join(''));
         }
 
         splitBoundaries(range);
