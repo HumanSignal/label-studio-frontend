@@ -92,6 +92,15 @@ function getNextNode(node) {
   }
 }
 
+function isValidTreeNode(node, commonAncestor) {
+  while(node) {
+    if (node === commonAncestor) return true;
+    if (node.nodeType === Node.ELEMENT_NODE && node.dataset.textnodeSkip === 'true') return false;
+    node = node.parentNode;
+  }
+  return true;
+}
+
 function getNodesInRange(range) {
   const start = range.startContainer;
   const end = range.endContainer;
@@ -101,14 +110,14 @@ function getNodesInRange(range) {
 
   // walk parent nodes from start to common ancestor
   for (node = start.parentNode; node; node = node.parentNode) {
-    nodes.push(node);
+    if (isValidTreeNode(node, commonAncestor)) nodes.push(node);
     if (node === commonAncestor) break;
   }
   nodes.reverse();
 
   // walk children and siblings from start until end is found
   for (node = start; node; node = getNextNode(node)) {
-    nodes.push(node);
+    if (isValidTreeNode(node, commonAncestor)) nodes.push(node);
     if (node === end) break;
   }
 
@@ -193,6 +202,7 @@ function highlightRange(normedRange, cssClass, cssStyle) {
   }
 
   const allNodes = getNodesInRange(normedRange._range);
+
   const textNodes = allNodes.filter(n => isTextNode(n));
 
   const white = /^\s*$/;

@@ -93,6 +93,8 @@ class HtxParagraphsView extends Component {
     for (i = 0; i < selection.rangeCount; i++) {
       const r = selection.getRangeAt(i);
 
+      if (r.collapsed || /^\s*$/.test(r.toString())) continue;
+
       if (r.endContainer.nodeType !== Node.TEXT_NODE) {
         // offsets work differently for nodes and texts, so we have to find #text.
         // lastChild because most probably this is div of the whole paragraph,
@@ -111,7 +113,6 @@ class HtxParagraphsView extends Component {
         // @todo !! range should be also shifted after getOffsetInPhraseElement
         r.setEnd(textNode, 0);
       }
-      if (r.collapsed || /^\s*$/.test(r.toString())) continue;
 
       try {
         splitBoundaries(r);
