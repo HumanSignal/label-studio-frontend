@@ -22,7 +22,7 @@ module.exports.config = {
       show: !headless,
       restart: 'context',
       timeout: 60000, // Action timeout after 60 seconds
-      waitForAction: 1,
+      waitForAction: headless ? 100 : 1200,
       windowSize: '1200x900',
       waitForNavigation: 'networkidle',
       browser: 'chromium',
@@ -31,7 +31,6 @@ module.exports.config = {
       } : {},
       trace: false,
       keepTraceForPassedTests: false,
-      video: 'retain-on-failure',
     },
     MouseActions: {
       require: './helpers/MouseActions.js',
