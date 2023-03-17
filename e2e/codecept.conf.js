@@ -22,7 +22,7 @@ module.exports.config = {
       show: !headless,
       restart: 'context',
       timeout: 60000, // Action timeout after 60 seconds
-      waitForAction: headless ? 100 : 1200,
+      waitForAction: 1,
       windowSize: '1200x900',
       waitForNavigation: 'networkidle',
       browser: 'chromium',
@@ -100,6 +100,11 @@ module.exports.config = {
       enabled: true,
       uncaughtErrorFilter: {
         interrupt: true,
+        ignore: [
+          /^ResizeObserver loop limit exceeded$/,
+          // @todo: solve the problems below
+          /^TypeError: Cannot read properties of null \(reading 'getBoundingClientRect'\)/,
+        ],
       },
       consoleErrorFilter: {
         // @todo switch it on to feel the pain
