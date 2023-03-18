@@ -211,6 +211,7 @@ function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
     // could be used to explicitly set flags for testing, i.e. [FF_DEV_3793]: true
+    [FF_LSDV_4583]: true,
   };
 }
 

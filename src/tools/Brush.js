@@ -188,6 +188,7 @@ const _Tool = types
         if (brush && brush.type === 'brushregion') {
           self.annotation.history.freeze();
           self.mode = 'drawing';
+          brush.dropRLECache();
           brush.setDrawing(true);
           self.obj.annotation.setIsDrawing(true);
           isFirstBrushStroke = false;

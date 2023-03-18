@@ -639,6 +639,7 @@ const Model = types.model({
     setCurrentImage(index = 0) {
       index = index ?? 0;
       if (index === self.currentImage) return;
+
       self.currentImage = index;
       self.currentImageEntity = self.findImageEntity(index);
       if (isFF(FF_LSDV_4583_6)) self.preloadImages();

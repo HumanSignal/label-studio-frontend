@@ -504,7 +504,7 @@ const HtxBrushView = ({ item }) => {
     if (item.maskDataURL && isFF(FF_DEV_4081)) {
       img = await Canvas.maskDataURL2Image(item.maskDataURL, { color: item.strokeColor });
     } else if (item.rle) {
-      img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
+      img = Canvas.RLE2Region(item, { color: item.strokeColor });
     }
 
     if (img) {
