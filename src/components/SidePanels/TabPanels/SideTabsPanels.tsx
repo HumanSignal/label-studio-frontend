@@ -5,7 +5,7 @@ import { IconDetails } from '../../../assets/icons';
 import { useMedia } from '../../../hooks/useMedia';
 import ResizeObserver from '../../../utils/resize-observer';
 import { clamp } from '../../../utils/utilities';
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT, PANEL_HEADER_HEIGHT_PADDED } from '../constants';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
 import '../SidePanels.styl';
 import { SidePanelsContext } from '../SidePanelsContext';
 import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
@@ -87,6 +87,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     setPanelData((state) => {
 
       const movingTabComponent = state[movingPanel].panelViews[movingTab];
+
       const newPanel = {
         ...emptyPanel,
         panelViews: [movingTabComponent],
@@ -96,7 +97,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         relativeLeft: left / viewportSize.current.width * 100,
         visible: true,
         detached: true,
-        zIndex: 11,
+        zIndex: 12,
       };
       
       movingTabComponent.active = true;
@@ -148,7 +149,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     const panel = panelData[key];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
     const height = panel.detached
-      ? (visible ?? panel.visible) ? panel.height : PANEL_HEADER_HEIGHT_PADDED
+      ? (visible ?? panel.visible) ? panel.height : PANEL_HEADER_HEIGHT
       : panel.height;
     const normalizedLeft = clamp(left, 0, parentWidth - panel.width);
     const normalizedTop = clamp(top, 0, (rootRef.current?.clientHeight ?? 0) - height);
@@ -160,7 +161,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   };
 
   const onPositionChangeBegin = useCallback((key: string) => {
-    Object.keys(panelData).forEach(panelKey => updatePanel(panelKey, { zIndex: panelKey === key ? 11 : 10 }));
+    Object.keys(panelData).forEach(panelKey => updatePanel(panelKey, { zIndex: panelKey === key ? 12 : 10 }));
     setPositioning(true);
   }, [panelData]);
 

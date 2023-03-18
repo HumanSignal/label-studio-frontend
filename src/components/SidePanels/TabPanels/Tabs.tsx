@@ -7,8 +7,7 @@ import './Tabs.styl';
 import { BaseProps, DroppableSide, TabProps } from './types';
 import { determineDroppableArea, determineLeftOrRight } from './utils';
 
-const Tab = (props: TabProps) => {
-  const { rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, children, active, panelWidth, transferTab, createNewPanel, setActiveTab } = props;
+const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, children, active, panelWidth, transferTab, createNewPanel, setActiveTab }: TabProps) => {
   const [dragOverSide, setDragOverSide] = useState<DroppableSide | undefined>();
   const tabRef = useRef<HTMLDivElement>();
   const ghostTabRef = useRef<HTMLDivElement>();
@@ -24,6 +23,8 @@ const Tab = (props: TabProps) => {
 
       setActiveTab(panelKey, tabIndex);
       rootRef.current?.append(ghostTabRef.current!);
+      ghostTabRef.current!.style.pointerEvents = 'all';
+
       const tab = tabRef.current!;
       const page = rootRef.current!.getBoundingClientRect();
       const bbox = tab.getBoundingClientRect();
@@ -35,7 +36,7 @@ const Tab = (props: TabProps) => {
     onMouseMove(event, data) {
       if (!data) return;
       document.body.style.cursor = 'grabbing' ;
-      document.body.style.cursor = 'user-select: none';
+      window.getSelection()?.removeAllRanges();
 
       dragging.current = true;
       const { x, y, oX, oY } = data;
@@ -43,12 +44,15 @@ const Tab = (props: TabProps) => {
       ghostTabRef.current!.style.display = 'block';
       ghostTabRef.current!.style.top = `${event.pageY - (y - oY)}px`;
       ghostTabRef.current!.style.left = `${event.pageX - (x - oX)}px`;
+      const dropTarget = document.elementsFromPoint(event.clientX, event.clientY);
+
+      if (dropTarget.some(((target, index) => target.id.includes('droppable') && index > 0))) ghostTabRef.current!.style.pointerEvents = 'none';
+      else ghostTabRef.current!.style.pointerEvents = 'all';
     },
     onMouseUp(event, data) {
       tabRef.current?.append(ghostTabRef.current!);
       ghostTabRef.current!.style.display = 'none';
       document.body.style.cursor = 'auto';
-      document.body.style.cursor = 'user-select: all';
 
       if (!data || !dragging.current) return;
       dragging.current = false;
@@ -72,7 +76,10 @@ const Tab = (props: TabProps) => {
         const receivingTab = parseInt(droppedOnIndices[1]);
         const dropSide = determineLeftOrRight(event, dropTarget as HTMLElement);
 
-        if (tabIndex === receivingTab || (viewLength === 1 && panelKey === receivingPanel)) return;
+        if (
+          (tabIndex === receivingTab && panelKey === receivingPanel) ||
+          (viewLength === 1 && panelKey === receivingPanel)
+        ) return;
         dropSide && transferTab(tabIndex, panelKey, receivingPanel, receivingTab, dropSide);
       }
     },
@@ -83,9 +90,9 @@ const Tab = (props: TabProps) => {
     if (event.buttons === 1 || event.buttons === 3) {
       if (dragging.current) return;
       const isDropArea = determineDroppableArea(event.target as HTMLElement);
-
+      
       if (isDropArea) setDragOverSide(determineLeftOrRight(event));
-      const resetSideCheck = 200;
+      const resetSideCheck = 500;
 
       setTimeout(()=> setDragOverSide(undefined), resetSideCheck);
     }
@@ -141,11 +148,11 @@ export const Tabs = (props: BaseProps) => {
                   tabIndex={index}
                   active={view.active}
                   tabTitle={view.title}
+                  panelWidth={props.width}
+                  viewLength={props.panelViews.length}
                   transferTab={props.transferTab}
                   createNewPanel={props.createNewPanel}
                   setActiveTab={props.setActiveTab}
-                  panelWidth={props.width}
-                  viewLength={props.panelViews.length}
                 >
                   <Elem name="content">
                     <Component key={`${view.title}-${index}-component`} {...props} />
