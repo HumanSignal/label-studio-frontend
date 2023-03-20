@@ -130,20 +130,6 @@ function setMaskPixelColors(ctx, data, nw, nh, color, numChannels) {
   ctx.putImageData(resultsData, 0, 0);
 }
 
-function tintImageData(imageData, color) {
-  const rgb = chroma(color).rgb();
-
-  for (let i = imageData.data.length / 4; i--;) {
-    if (imageData.data[i * 4 + 3]) {
-      imageData.data[i * 4] = rgb[0];
-      imageData.data[i * 4 + 1] = rgb[1];
-      imageData.data[i * 4 + 2] = rgb[2];
-    }
-  }
-
-  return imageData;
-}
-
 /**
  * Given the RLE array returns the DOM Image element with loaded image.
  * @param {string} rle RLE encoded image to be turned into a Region object.
@@ -167,7 +153,15 @@ function RLE2Region(item, { color = Constants.FILL_COLOR } = {}) {
 
   newdata.data.set(decoded, 0);
 
-  tintImageData(newdata, color);
+  const rgb = chroma(color).rgb();
+
+  for (let i = newdata.data.length / 4; i--;) {
+    if (newdata.data[i * 4 + 3]) {
+      newdata.data[i * 4] = rgb[0];
+      newdata.data[i * 4 + 1] = rgb[1];
+      newdata.data[i * 4 + 2] = rgb[2];
+    }
+  }
 
   ctx.putImageData(newdata, 0, 0);
 
@@ -211,8 +205,6 @@ function exportRLE(region) {
     const imageData = ctx.createImageData(naturalWidth, naturalHeight);
 
     imageData.data.set(decode(region.rle));
-
-    tintImageData(imageData, '#000');
 
     ctx.putImageData(imageData, 0, 0);
   }
