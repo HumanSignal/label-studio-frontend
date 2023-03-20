@@ -368,9 +368,9 @@ Scenario('Playback speed is synced between audio, video, paragraph audio when in
     const [{ playbackRate: paragraphAudioPlaybackRate }, { playbackRate: audioPlaybackRate }] = await AtAudioView.getCurrentAudio();
     const [{ playbackRate: videoPlaybackRate }] = await AtVideoView.getCurrentVideo();
 
-    assert.equal(audioPlaybackRate, paragraphAudioPlaybackRate);
-    assert.equal(videoPlaybackRate, audioPlaybackRate);
-    assert.equal(audioPlaybackRate, 1);
+    assert.equal(audioPlaybackRate, paragraphAudioPlaybackRate, 'Audio and Paragraphs speed rate is equal');
+    assert.equal(videoPlaybackRate, audioPlaybackRate, 'Video and Audio speed rate is equal');
+    assert.equal(audioPlaybackRate, 1, 'Audio speed rate is 1');
   }
 
   AtAudioView.clickPauseButton();

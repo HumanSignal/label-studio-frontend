@@ -266,7 +266,9 @@ module.exports = {
    */
   setPlaybackSpeedInput(value) {
     this.toggleSettingsMenu();
-    I.clearField(this._playbackSpeedInputSelector);
+    // it was not easy to set this field, so we have to carefully remove value and put it
+    I.doubleClick(locate(this._playbackSpeedInputSelector));
+    I.pressKey('Backspace');
     I.fillField(this._playbackSpeedInputSelector, value);
     this.toggleSettingsMenu();
   },
