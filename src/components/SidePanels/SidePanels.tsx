@@ -13,6 +13,7 @@ import { PanelProps } from './PanelBase';
 import './SidePanels.styl';
 import { SidePanelsContext } from './SidePanelsContext';
 import { useRegionsCopyPaste } from '../../hooks/useRegionsCopyPaste';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 const maxWindowWidth = 980;
 
@@ -290,6 +291,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [eventHandlers, rootRef, regions, regions.selectio, currentEntity]);
 
   const padding = useMemo(() => {
+    if (panelsHidden && isFF(FF_DEV_3873)) return {};
+
     const result = {
       paddingLeft: 0,
       paddingRight: 0,
