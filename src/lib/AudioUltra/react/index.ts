@@ -67,10 +67,8 @@ export const useWaveform = (
     wf.on('durationChanged', setDuration);
     wf.on('volumeChanged', setVolume);
     wf.on('rateChanged', (newRate) => {
-      if (newRate !== rate) {
-        options?.onRateChange?.(newRate);
-        setRate(newRate);
-      }
+      options?.onRateChange?.(newRate);
+      setRate(newRate);
     });
     wf.on('layersUpdated', (layers) => {
       const layersArray = [];
