@@ -27,7 +27,6 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  *   <Rating name="rate-1" toName="audio-1" />
  *   <Audio name="audio-1" value="$audio" />
  * </View>
- * @name Audio
  * @meta_title Audio Tag for Audio Labeling
  * @meta_description Customize Label Studio with the Audio tag for advanced audio annotation tasks for machine learning and data science projects.
  * @param {string} name - Name of the element

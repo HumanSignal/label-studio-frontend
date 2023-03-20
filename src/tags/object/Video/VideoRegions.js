@@ -156,7 +156,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseMove = e => {
-    if (!isDrawing || item.annotation?.isReadOnly) return false;
+    if (!isDrawing || item.annotation?.isReadOnly()) return false;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
 
