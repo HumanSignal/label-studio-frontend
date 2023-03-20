@@ -38,7 +38,7 @@ const isBinary = (mimeType: string|null|undefined) => {
   return mimeType.includes('octet-stream');
 };
 
-const canPlayUrl = async (url: string) => {
+export const canPlayUrl = async (url: string) => {
   const video = document.createElement('video');
 
   const pathName = new URL(url).pathname;
@@ -180,11 +180,14 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
   useEffect(() => {
     createVideoElement();
     attachEventListeners();
-    canPlayType(props.src ?? '');
-    attachSource();
-    attachRef(video.current);
+    canPlayType(props.src ?? '').then((canPlay) => {
+      if (canPlay) {
+        attachSource();
+        attachRef(video.current);
 
-    document.body.append(video.current!);
+        document.body.append(video.current!);
+      }
+    });
   }, []);
 
   // Handle video cleanup
