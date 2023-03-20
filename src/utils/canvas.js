@@ -4,7 +4,6 @@ import Constants from '../core/Constants';
 
 import * as Colors from './colors';
 import { FF_LSDV_4583, isFF } from './feature-flags';
-import { getRegionStyles } from '../hooks/useRegionColor';
 
 /**
  * Given a single channel UInt8 image data mask with non-zero values indicating the
