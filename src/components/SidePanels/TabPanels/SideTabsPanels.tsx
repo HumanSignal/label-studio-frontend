@@ -12,9 +12,7 @@ import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
 import { PanelTabsBase } from './PanelTabsBase';
 import { Tabs } from './Tabs';
 import { CommonProps, DroppableSide, emptyPanel, EventHandlers, PanelBBox, Result, SidePanelsProps } from './types';
-import { defaultPanelState, renameKeys, restorePanel, savePanels, setActive, setActiveDefaults, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
-
-const savedPanels = restorePanel(defaultPanelState);
+import { renameKeys, restorePanel, savePanels, setActive, setActiveDefaults, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
 
 const maxWindowWidth = 980;
 const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
@@ -34,7 +32,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<'left' | 'right' | undefined>();
   const localSnap = useRef(snap);
-  const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(savedPanels);
+  const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel());
 
   useRegionsCopyPaste(currentEntity);
 
@@ -235,13 +233,12 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       detached: false,
     };
 
-    const firstPanelOnNewSideName = findPanelsOnSameSide(localSnap.current).filter(panelName => panelName !== key)?.[0];
-
-    if(firstPanelOnNewSideName) {
-      bboxData.width = clamp(panelData[firstPanelOnNewSideName as string]?.width, DEFAULT_PANEL_WIDTH, panelMaxWidth);
-    }
+    const sameSidePanels = findPanelsOnSameSide(localSnap.current).filter(panelName => panelName !== key);
     
-    updatePanel(key, bboxData);
+    if(sameSidePanels.length > 0) {
+      bboxData.width = clamp(panelData[sameSidePanels[0] as string]?.width, DEFAULT_PANEL_WIDTH, panelMaxWidth);
+    } else updatePanel(key, bboxData);    
+    
     setSnap(undefined);
   }, [updatePanel]);
 

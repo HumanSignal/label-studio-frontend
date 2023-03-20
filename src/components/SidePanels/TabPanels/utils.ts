@@ -145,7 +145,7 @@ export const defaultPanelState: Record<string, PanelBBox> = {
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
     panelViews: [panelViews[0]],
   },
-  'details': {
+  'history-comments-relations': {
     top: 0,
     left: 0,
     relativeLeft: 0,
@@ -162,15 +162,14 @@ export const defaultPanelState: Record<string, PanelBBox> = {
 };
 
 
-export const restorePanel = ( defaults: Record<string, PanelBBox>) => {
+export const restorePanel = () => {
   const panelData = window.localStorage.getItem('panelState');
-
   const parsed = panelData && JSON.parse(panelData);
   const allTabs = panelData && Object.entries(parsed).map(([_, panel]: any) => panel.panelViews).flat(1);
   const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
   const withActiveDefaults = setActiveDefaults(noEmptyPanels);
 
-  if (!allTabs || allTabs.length !== panelViews.length) return defaults;
+  if (!allTabs || allTabs.length !== panelViews.length) return defaultPanelState;
   return restoreComponentsToState(withActiveDefaults);
 };
 
