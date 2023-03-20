@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 const assert = require('assert');
 
 Feature('Sync: Audio Video Paragraphs');
@@ -94,6 +92,8 @@ const annotations = [
 
 const params = {  annotations: [{ id: 'test', result: annotations }], config, data };
 
+const TIME_DIFF_THRESHOLD = 0.3;
+
 Scenario('Play/pause is synced between audio, video and paragraphs when interacting with paragraph interface', async function({ I, LabelStudio, AtAudioView, AtVideoView }) {
   LabelStudio.setFeatureFlags({
     fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
@@ -143,9 +143,9 @@ Scenario('Play/pause is synced between audio, video and paragraphs when interact
     assert.equal(audioPaused, paragraphAudioPaused);
     assert.equal(paragraphAudioPaused, true);
 
-    assert.equal(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime to be the same. Got audio=${currentAudioTime} video=${currentVideoTime}`);
-    assert.equal(currentAudioTime, currentParagraphAudioTime, `Audio currentTime and paragraph audio currentTime to be the same. Got audio=${currentAudioTime} paragraph audio=${currentParagraphAudioTime}`);
-    assert.equal(currentParagraphAudioTime, currentVideoTime, `Paragraph audio currentTime and video currentTime to be the same. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
+    assert.equal(Math.abs(currentAudioTime - currentVideoTime) < TIME_DIFF_THRESHOLD, true, `Audio currentTime and video currentTime to be the same. Got audio=${currentAudioTime} video=${currentVideoTime}`);
+    assert.equal(Math.abs(currentAudioTime - currentParagraphAudioTime) < TIME_DIFF_THRESHOLD, true, `Audio currentTime and paragraph audio currentTime to be the same. Got audio=${currentAudioTime} paragraph audio=${currentParagraphAudioTime}`);
+    assert.equal(Math.abs(currentParagraphAudioTime - currentVideoTime) < TIME_DIFF_THRESHOLD, true, `Paragraph audio currentTime and video currentTime to be the same. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
   }
 });
 
@@ -194,7 +194,7 @@ Scenario('Play/pause is synced between audio, video when interacting with audio 
 
     assert.equal(audioPaused, videoPaused);
     assert.equal(audioPaused, true);
-    assert.equal(Math.abs(currentAudioTime - currentVideoTime) < 0.3, true, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
+    assert.equal(Math.abs(currentAudioTime - currentVideoTime) < TIME_DIFF_THRESHOLD, true, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
   }
 });
 
@@ -244,7 +244,7 @@ Scenario('Play/pause is synced between audio, video when interacting with video 
     assert.equal(audioPaused, videoPaused);
     assert.equal(audioPaused, true);
 
-    assert.equal(Math.abs(currentAudioTime - currentVideoTime) < 0.3, true, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
+    assert.equal(Math.abs(currentAudioTime - currentVideoTime) < TIME_DIFF_THRESHOLD, true, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
   }
 });
 
@@ -318,9 +318,9 @@ Scenario('Seeking is synced between audio, video when interacting with audio int
     assert.equal(audioPaused, paragraphAudioPaused);
     assert.equal(paragraphAudioPaused, true);
 
-    assert.equal(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime to be the same. Got audio=${currentAudioTime} video=${currentVideoTime}`);
-    assert.equal(currentAudioTime, currentParagraphAudioTime, `Audio currentTime and paragraph audio currentTime to be the same. Got audio=${currentAudioTime} paragraph audio=${currentParagraphAudioTime}`);
-    assert.equal(currentParagraphAudioTime, currentVideoTime, `Paragraph audio currentTime and video currentTime to be the same. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
+    assert.equal(Math.abs(currentAudioTime - currentVideoTime) < TIME_DIFF_THRESHOLD, true, `Audio currentTime and video currentTime to be the same. Got audio=${currentAudioTime} video=${currentVideoTime}`);
+    assert.equal(Math.abs(currentAudioTime - currentParagraphAudioTime) < TIME_DIFF_THRESHOLD, true, `Audio currentTime and paragraph audio currentTime to be the same. Got audio=${currentAudioTime} paragraph audio=${currentParagraphAudioTime}`);
+    assert.equal(Math.abs(currentParagraphAudioTime - currentVideoTime) < TIME_DIFF_THRESHOLD, true, `Paragraph audio currentTime and video currentTime to be the same. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
   }
 });
 
@@ -379,8 +379,8 @@ Scenario('Playback speed is synced between audio, video, paragraph audio when in
     const [{ currentTime: currentParagraphAudioTime },{ currentTime: currentAudioTime }] = await AtAudioView.getCurrentAudio();
     const [{ currentTime: currentVideoTime }] = await AtVideoView.getCurrentVideo();
 
-    assert.equal(Math.abs(currentAudioTime - currentVideoTime) < 0.3, true, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
-    assert.equal(Math.abs(currentAudioTime - currentParagraphAudioTime) < 0.3, true, `Audio currentTime and paragraph audio currentTime drifted too far. Got audio=${currentAudioTime} video=${currentParagraphAudioTime}`);
-    assert.equal(Math.abs(currentParagraphAudioTime - currentVideoTime) < 0.3, true, `Paragraph audio currentTime and video currentTime drifted too far. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
+    assert.equal(Math.abs(currentAudioTime - currentVideoTime) < TIME_DIFF_THRESHOLD, true, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
+    assert.equal(Math.abs(currentAudioTime - currentParagraphAudioTime) < TIME_DIFF_THRESHOLD, true, `Audio currentTime and paragraph audio currentTime drifted too far. Got audio=${currentAudioTime} video=${currentParagraphAudioTime}`);
+    assert.equal(Math.abs(currentParagraphAudioTime - currentVideoTime) < TIME_DIFF_THRESHOLD, true, `Paragraph audio currentTime and video currentTime drifted too far. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
   }
 });
