@@ -257,7 +257,7 @@ function exportRLE(region) {
 
   const imageData = ctx.getImageData(0, 0, naturalWidth, naturalHeight).data;
 
-  // Combine every 4th pixel
+  // Grayscale pixels respecting the opacity
   for (let i = imageData.length / 4; i--;) {
     imageData[i * 4] = imageData[i * 4 + 1] = imageData[i * 4 + 2] = imageData[i * 4 + 3];
   }
