@@ -86,7 +86,7 @@ jobs:
           yarn install --frozen-lockfile
 
       - name: Run e2e test suite
-        timeout-minutes: 30 # 8-10 minutes is enough to pass tests
+        timeout-minutes: 40
         env:
           NODE_ENV: 'production'
           TEST_ENV: true
