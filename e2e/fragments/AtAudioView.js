@@ -3,6 +3,8 @@ const assert = require('assert');
 
 const Helpers = require('../tests/helpers');
 
+const TIME_DIFF_THRESHOLD = 0.3;
+
 module.exports = {
   _stageSelector: '#waveform-layer-main',
   _progressBarSelector: 'loading-progress-bar',
@@ -25,6 +27,8 @@ module.exports = {
   _httpErrorSelector: '[data-testid="error:http"]',
 
   _stageBbox: { x: 0, y: 0, width: 0, height: 0 },
+
+  TIME_DIFF_THRESHOLD,
 
   async lookForStage() {
     I.scrollPageToTop();
@@ -333,5 +337,20 @@ module.exports = {
     const isPaused = await I.grabAttributeFrom(this._audioElementSelector, 'paused');
 
     assert.equal(!isPaused, playing, playing ? 'Audio is not playing' : 'Audio is playing');
+  },
+
+  /**
+   * Asserts that two times are equal after sync (with some possible threshold)
+   * @param {number} time1
+   * @param {number} time2
+   * @param {string} [message] for assertion
+   * @param {{ strict: boolean }} [options] only option is `strict` for strict comparison
+   */
+  seeTimesInSync(time1, time2, message = '', options = {}) {
+    if (options.strict) {
+      assert.equal(time1, time2, message);
+    } else {
+      assert.equal(Math.abs(time1 - time2) < TIME_DIFF_THRESHOLD, true, message);
+    }
   },
 };
