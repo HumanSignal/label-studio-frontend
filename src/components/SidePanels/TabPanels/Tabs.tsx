@@ -7,8 +7,33 @@ import './Tabs.styl';
 import { BaseProps, DroppableSide, TabProps } from './types';
 import { determineDroppableArea, determineLeftOrRight } from './utils';
 
+const classAddedTabs: (Element | undefined)[] = [];
+
+enum DragOverHeightClasses {
+  tabLeft = 'lsf-drag_over_tab_left',
+  tabRight = 'lsf-drag_over_tab_right',
+  emptyTabSpace = 'lsf-drag_over_empty_tab_space',
+}
+
+const removeHoverClasses = () => {
+  classAddedTabs.forEach(tab => {
+    tab?.classList.remove(DragOverHeightClasses.tabLeft);
+    tab?.classList.remove(DragOverHeightClasses.tabRight);
+    tab?.classList.remove(DragOverHeightClasses.emptyTabSpace);
+  });
+};
+const addHoverClasses = (side?: DroppableSide, dropTarget?: Element) => { 
+  classAddedTabs.push(dropTarget);
+  let draggingClass;
+  
+  if (side === DroppableSide.left) draggingClass = DragOverHeightClasses.tabLeft;
+  if (side === DroppableSide.right) draggingClass = DragOverHeightClasses.tabRight;
+  if (side === undefined) draggingClass = DragOverHeightClasses.emptyTabSpace;
+
+  draggingClass && dropTarget?.classList.add(draggingClass);
+};
+
 const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, children, active, panelWidth, transferTab, createNewPanel, setActiveTab }: TabProps) => {
-  const [dragOverSide, setDragOverSide] = useState<DroppableSide | undefined>();
   const tabRef = useRef<HTMLDivElement>();
   const ghostTabRef = useRef<HTMLDivElement>();
   const dragging = useRef(false);
@@ -44,12 +69,20 @@ const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, child
       ghostTabRef.current!.style.display = 'block';
       ghostTabRef.current!.style.top = `${event.pageY - (y - oY)}px`;
       ghostTabRef.current!.style.left = `${event.pageX - (x - oX)}px`;
-      const dropTarget = document.elementsFromPoint(event.clientX, event.clientY);
+      const dropTargets = document.elementsFromPoint(event.clientX, event.clientY);
 
-      if (dropTarget.some(((target, index) => target.id.includes('droppable') && index > 0))) ghostTabRef.current!.style.pointerEvents = 'none';
-      else ghostTabRef.current!.style.pointerEvents = 'all';
+      const dropTarget = dropTargets.find(((target, index) => target.id.includes('droppable') && index > 0));
+      
+      let side: DroppableSide | undefined = determineLeftOrRight(event, dropTarget);
+
+      removeHoverClasses();
+      if ((dropTarget as HTMLElement).id === `${panelKey}_${tabIndex}_droppable`) return;
+      if ((dropTarget as HTMLElement).id.includes('droppable-space')) side = undefined;
+      addHoverClasses(side, dropTarget);
     },
     onMouseUp(event, data) {
+      removeHoverClasses();
+      classAddedTabs.length = 0;
       tabRef.current?.append(ghostTabRef.current!);
       ghostTabRef.current!.style.display = 'none';
       document.body.style.cursor = 'auto';
@@ -85,25 +118,8 @@ const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, child
     },
   }, []);
 
-
-  const handleMouseOver = (event: React.MouseEvent<HTMLElement>) => {
-    if (event.buttons === 1 || event.buttons === 3) {
-      if (dragging.current) return;
-      const isDropArea = determineDroppableArea(event.target as HTMLElement);
-      
-      if (isDropArea) setDragOverSide(determineLeftOrRight(event));
-      const resetSideCheck = 500;
-
-      setTimeout(()=> setDragOverSide(undefined), resetSideCheck);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setDragOverSide(undefined);
-  };
-
   const Label = () => (
-    <Elem id={`${panelKey}_${tabIndex}_droppable`} name="tab" mod={{ dragOverSide, active }}>
+    <Elem id={`${panelKey}_${tabIndex}_droppable`} name="tab" mod={{ active }}>
       <Elem name="icon" tag={IconOutlinerDrag} width={20} />
       {tabText}
     </Elem>
@@ -111,19 +127,17 @@ const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, child
 
   return (
     <Block name="panel-tabs">
-      <div onMouseOver={event => handleMouseOver(event)} onMouseLeave={() => handleMouseLeave()}>
-        <Elem name="draggable-tab" id={`${tabText}-draggable`} ref={tabRef}>
-          <Label />
-        </Elem>
-        <Elem
-          ref={ghostTabRef}
-          name="ghost-tab"
-          style={{ width: `${panelWidth}px`, height: `${DEFAULT_PANEL_MAX_HEIGHT}.px` }}
-        >
-          <Label />
-          <Elem name="contents">{children}</Elem>
-        </Elem>
-      </div>
+      <Elem name="draggable-tab" id={`${tabText}-draggable`} ref={tabRef}>
+        <Label />
+      </Elem>
+      <Elem
+        ref={ghostTabRef}
+        name="ghost-tab"
+        style={{ width: `${panelWidth}px`, height: `${DEFAULT_PANEL_MAX_HEIGHT}.px` }}
+      >
+        <Label />
+        <Elem name="contents">{children}</Elem>
+      </Elem>
     </Block>
   );
 };
@@ -140,7 +154,7 @@ export const Tabs = (props: BaseProps) => {
 
             return (
               
-              <Elem name="tab-container" key={`${view.title}-${index}-tab`}>
+              <Elem name="tab-container" key={`${view.title}-${index}-tab`} mod={{ active: view.active }}>
                 <Tab
                   rootRef={props.root}
                   key={`${view.title}-tab`}

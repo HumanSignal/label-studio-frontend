@@ -1,6 +1,6 @@
 import { FC, ReactNode } from 'react';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_WIDTH } from '../constants';
-import { Comments, Details, History, Relations } from '../DetailsPanel/DetailsPanel';
+import { Comments, History, Relations } from '../DetailsPanel/DetailsPanel';
 import { OutlinerComponent } from '../OutlinerPanel/OutlinerPanel';
 import { PanelProps } from '../PanelBase';
 import { DroppableSide, PanelBBox, PanelView } from './types';

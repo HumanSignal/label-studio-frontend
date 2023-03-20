@@ -6,6 +6,13 @@
         position relative
         z-index 2
 
+    &__tab-container
+        min-width 0 
+        flex-shrink 1
+
+        &_active
+            flex-shrink 0
+
     &__contents
         position relative
         background #fff
@@ -36,6 +43,7 @@
 
     &__drop-space-after
         width 100%
+        flex-shrink 100
         
         &_hoveringRight
             &:hover 
@@ -48,47 +56,35 @@
 
 .panel-tabs
 
+    &__draggable-tab
+        transform translateY(2px)
+
     &__tab
+        overflow hidden
+        text-overflow ellipsis
+        white-space nowrap
         padding 4px 24px 6px 24px
         height 32px
-        width fit-content
+        width 100%
         font-weight 500
         font-size 14px
         line-height 24px
         letter-spacing 0.15px
-        transform translateY(2px)
-        border-color rgba(65, 60, 74, 0.16);
+        border-color rgba(65, 60, 74, 0.16)
         margin: 0 2px
-        display flex
-        align-items center
+        display block
         cursor grab
         user-select none
 
         &_active
-            border-width 1px 1px 0px 1px;
+            overflow visible
+            width fit-content
+            border-width 1px 1px 0px 1px
             border-style solid;
             background #fff
 
         &:hover svg
-            color: #000
-
-        &_dragOverSide_left
-            &::before
-                content ''
-                position absolute
-                left 0
-                background #85cbfd
-                width 4px
-                height 100%
-
-        &_dragOverSide_right
-            &::after
-                content ''
-                position absolute
-                right 0
-                background #85cbfd
-                width 4px
-                height 100%
+            display block
 
     &__ghost-tab
         opacity 0.8
@@ -103,5 +99,36 @@
 
     &__icon
         position absolute
-        left 7px
-        color #fff
+        left 10px
+        top 9.5px
+        color var(--icon-color);
+        display none 
+
+.drag_over_tab_left
+    &::before
+        content ''
+        position absolute
+        left 0
+        background #85cbfd
+        width 4px
+        height 30px
+        transform translateY(-4px)
+
+.drag_over_tab_right
+    &::after
+        content ''
+        position absolute
+        right 0
+        background #85cbfd
+        width 4px
+        height 30px
+        transform translateY(-4px)
+
+.drag_over_empty_tab_space
+    &::before
+        content ''
+        transform translate(-4px, 2px)
+        position absolute
+        background #85cbfd
+        width 4px
+        height 30px
