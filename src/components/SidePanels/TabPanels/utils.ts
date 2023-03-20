@@ -1,6 +1,6 @@
 import { FC, ReactNode } from 'react';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_WIDTH } from '../constants';
-import { Details } from '../DetailsPanel/DetailsPanel';
+import { Comments, Details, History, Relations } from '../DetailsPanel/DetailsPanel';
 import { OutlinerComponent } from '../OutlinerPanel/OutlinerPanel';
 import { PanelProps } from '../PanelBase';
 import { DroppableSide, PanelBBox, PanelView } from './types';
@@ -94,18 +94,41 @@ export const stateRemovePanelEmptyViews = (state: Record<string, PanelBBox>) => 
   return newState;
 };
 
-const panelViews = [{
-  name: 'outliner',
-  title: 'Outliner',
-  component: OutlinerComponent as FC<PanelProps>,
-  active: true,
-},
-{
-  name: 'details',
-  title: 'Details',
-  component: Details as FC<PanelProps>,
-  active: true,
-}];
+
+export const panelComponents: {[key:string]: FC<PanelProps>} = {
+  'outliner': OutlinerComponent as FC<PanelProps>,
+  'history': History as FC<PanelProps>,
+  'relations': Relations as FC<PanelProps>,
+  'comments': Comments as FC<PanelProps>,
+};
+
+
+const panelViews = [
+  {
+    name: 'outliner',
+    title: 'Outliner',
+    component: panelComponents['outliner'] as FC<PanelProps>,
+    active: true,
+  },
+  {
+    name: 'history',
+    title: 'History',
+    component: panelComponents['history'] as FC<PanelProps>,
+    active: true,
+  },
+  {
+    name: 'comments',
+    title: 'Comments',
+    component: panelComponents['comments'] as FC<PanelProps>,
+    active: false,
+  },
+  {
+    name: 'relations',
+    title: 'Relations',
+    component: panelComponents['relations'] as FC<PanelProps>,
+    active: false,
+  },
+];
 
 export const defaultPanelState: Record<string, PanelBBox> = {
   'outliner': {
@@ -134,14 +157,10 @@ export const defaultPanelState: Record<string, PanelBBox> = {
     detached: false,
     alignment: DroppableSide.right,
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[1]],
+    panelViews: [panelViews[1], panelViews[2], panelViews[3]],
   },
 };
 
-export const panelComponents: {[key:string]: FC<PanelProps>} = {
-  'outliner': OutlinerComponent as FC<PanelProps>,
-  'details': Details as FC<PanelProps>,
-};
 
 export const restorePanel = ( defaults: Record<string, PanelBBox>) => {
   const panelData = window.localStorage.getItem('panelState');
