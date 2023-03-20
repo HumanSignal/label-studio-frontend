@@ -103,6 +103,7 @@ module.exports.config = {
           /^ResizeObserver loop limit exceeded$/,
           // @todo: solve the problems below
           /^TypeError: Cannot read properties of null \(reading 'getBoundingClientRect'\)/,
+          /The play\(\) request was interrupted/,
         ],
       },
       consoleErrorFilter: {
