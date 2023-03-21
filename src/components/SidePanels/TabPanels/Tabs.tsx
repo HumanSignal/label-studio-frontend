@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { IconOutlinerDrag } from '../../../assets/icons';
 import { useDrag } from '../../../hooks/useDrag';
 import { Block, Elem } from '../../../utils/bem';
@@ -44,6 +44,7 @@ const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, child
   useDrag({
     elementRef: tabRef,
     onMouseDown(event) {
+      if(event.buttons === 2) return;
       const { panelKey, tabIndex } = { ...location.current };
 
       setActiveTab(panelKey, tabIndex);
@@ -65,10 +66,12 @@ const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, child
 
       dragging.current = true;
       const { x, y, oX, oY } = data;
-
-      ghostTabRef.current!.style.display = 'block';
-      ghostTabRef.current!.style.top = `${event.pageY - (y - oY)}px`;
-      ghostTabRef.current!.style.left = `${event.pageX - (x - oX)}px`;
+      
+      if (ghostTabRef.current) {
+        ghostTabRef.current!.style.display = 'block';
+        ghostTabRef.current!.style.top = `${event.pageY - (y - oY)}px`;
+        ghostTabRef.current!.style.left = `${event.pageX - (x - oX)}px`;
+      } 
       const dropTargets = document.elementsFromPoint(event.clientX, event.clientY);
 
       const dropTarget = dropTargets.find(((target, index) => target.id.includes('droppable') && index > 0));
@@ -78,15 +81,15 @@ const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, child
       checkSnap(x, panelWidth);
 
       removeHoverClasses();
-      if ((dropTarget as HTMLElement).id === `${panelKey}_${tabIndex}_droppable`) return;
-      if ((dropTarget as HTMLElement).id.includes('droppable-space')) side = undefined;
+      if ((dropTarget as HTMLElement)?.id === `${panelKey}_${tabIndex}_droppable`) return;
+      if ((dropTarget as HTMLElement)?.id.includes('droppable-space')) side = undefined;
       addHoverClasses(side, dropTarget);
     },
     onMouseUp(event, data) {
       removeHoverClasses();
       classAddedTabs.length = 0;
       tabRef.current?.append(ghostTabRef.current!);
-      ghostTabRef.current!.style.display = 'none';
+      if (ghostTabRef.current?.style) ghostTabRef.current.style.display = 'none';
       document.body.style.cursor = 'auto';
 
       if (!data || !dragging.current) return;
@@ -145,17 +148,17 @@ const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, child
 };
 
 export const Tabs = (props: BaseProps) => {
-  const [hoveringRight, setHoveringRight] = useState(false);
+
+  const ActiveComponent = props.panelViews?.find(view => view.active)?.component;
 
   return (
     <>
       <Block name="tabs">
         <Elem name="tabs-row">
           {props.panelViews.map((view, index) => {
-            const Component = view.component;
+            const { component: Component } = view;
 
             return (
-              
               <Elem name="tab-container" key={`${view.title}-${index}-tab`} mod={{ active: view.active }}>
                 <Tab
                   rootRef={props.root}
@@ -172,7 +175,7 @@ export const Tabs = (props: BaseProps) => {
                   checkSnap={props.checkSnap}
                 >
                   <Elem name="content">
-                    <Component key={`${view.title}-${index}-component`} {...props} />
+                    <Component key={`${view.title}-${index}-ghost`} {...props} />
                   </Elem>
                 </Tab>
               </Elem>
@@ -181,26 +184,12 @@ export const Tabs = (props: BaseProps) => {
           <Elem
             id={`${props.name}_${props.panelViews.length}-droppable-space`}
             name="drop-space-after"
-            mod={{ hoveringRight }}
-            onMouseOver={(event: MouseEvent) => {
-              if (event.buttons === 1 || event.buttons === 3) setHoveringRight(true);
-            }}
-            onMouseLeave={() => setHoveringRight(false)}
           />
         </Elem>
-        {props.panelViews.map(view => {
-          const Component = view.component;
-
-          return (
-            <>
-              {view.active && (
-                <Elem key={`${view.title}-contents`} name="contents">
-                  <Component {...props} />
-                </Elem>
-              )}
-            </>
-          );
-        })}
+        <Elem  name="contents">
+          {ActiveComponent && <ActiveComponent {...props} />}
+        </Elem>
+          
       </Block>
     </>
   );
