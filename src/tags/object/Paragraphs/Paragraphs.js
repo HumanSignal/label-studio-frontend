@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 
 import ObjectTag from '../../../components/Tags/Object';
-import { findNodeAt, getTextNodesInRange, matchesSelector, splitBoundaries } from '../../../utils/html';
+import { findNodeAt, matchesSelector, splitBoundaries } from '../../../utils/html';
 import { isSelectionContainsSpan } from '../../../utils/selection-tools';
 import styles from './Paragraphs.module.scss';
 import { AuthorFilter } from './AuthorFilter';
