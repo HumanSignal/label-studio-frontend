@@ -6,19 +6,8 @@ import { clamp, isDefined } from '../../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from '../constants';
 import '../PanelBase.styl';
 import { BaseProps } from './types';
+import { resizers } from './utils';
 
-export type PanelBaseExclusiveProps = 'name' | 'title'
-
-const resizers = [
-  'top-left',
-  'top-right',
-  'bottom-left',
-  'bottom-right',
-  'top',
-  'bottom',
-  'right',
-  'left',
-];
 
 const distance = (x1: number, x2: number, y1: number, y2: number) => {
   return Math.sqrt(
@@ -74,11 +63,11 @@ export const PanelTabsBase: FC<BaseProps> = ({
 
   const style = useMemo(() => {
     const dynamicStyle = visible ? {
-      height: detached ? height ?? '100%' : '100%',
+      height: height ?? '100%',
       width: expanded ? '100%' : width ?? DEFAULT_PANEL_WIDTH,
     } : {
       width: detached ? width ?? DEFAULT_PANEL_WIDTH : '100%',
-      height: detached ? PANEL_HEADER_HEIGHT_PADDED : undefined, // header height + 1px margin top and bottom,
+      height: detached ? PANEL_HEADER_HEIGHT_PADDED : undefined,
     };
 
     return {
@@ -154,7 +143,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
       
       const { current: key } = keyRef;
 
-      handlers.current.onPositionChangeBegin?.(key, top, left, detached);
+      handlers.current.onPositionChangeBegin?.(key, alignment, detached);
 
       return { x, y, oX, oY, allowDrag };
     },
@@ -298,7 +287,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
             </Elem>
           </Elem>
         )}
-        {visible && <Elem name="body">{children}</Elem>}
+        {visible && <Elem name="body" style={{ overflow: 'hidden' }}>{children}</Elem>}
       </Elem>
 
       {visible && !positioning && !locked && (

@@ -13,6 +13,7 @@ export type TabProps = {
   transferTab: EventHandlers['transferTab'],
   createNewPanel: EventHandlers['createNewPanel'],
   setActiveTab: EventHandlers['setActiveTab'],
+  checkSnap: EventHandlers['checkSnap'],
 }
   
 export interface SidePanelsProps {
@@ -28,7 +29,7 @@ export interface PanelView {
   active: boolean;
 }
 
-export enum DroppableSide {
+export enum Side {
   left = 'left',
   right = 'right',
 }
@@ -46,7 +47,7 @@ export interface PanelBBox {
   zIndex: number;
   visible: boolean;
   detached: boolean;
-  alignment: DroppableSide;
+  alignment: Side;
   panelViews: PanelView[];
 }
     
@@ -56,14 +57,14 @@ export interface EventHandlers {
   onResizeEnd: ()=> void;
   onPositionChange: (key: string, t: number, l: number, detached: boolean) => void;
   onVisibilityChange: (key: string, visible: boolean) => void;
-  onPositionChangeBegin: (key: string, t: number, l: number, detached: boolean) => void;
+  onPositionChangeBegin: (key: string, side: Side, detached: boolean) => void;
   onSnap: (key: string) => void;
   transferTab: (
     movingTab: number,
     movingPanel: string,
     receivingPanel: string,
     receivingTab: number,
-    dropSide: DroppableSide,
+    dropSide: Side,
   ) => void;
   createNewPanel(
     movingPanel: string,
@@ -72,6 +73,7 @@ export interface EventHandlers {
     top: number,
   ): void;
   setActiveTab: (key: string, tabIndex: number) => void;
+  checkSnap: (left: number, panelWidth: number) => void;
 }
 export type CommonProps = EventHandlers & {
   root: MutableRefObject<HTMLDivElement | undefined>,
@@ -90,7 +92,7 @@ export type BaseProps = PanelBBox & CommonProps & {
   maxWidth: number,
   zIndex: number,
   expanded: boolean,
-  alignment: DroppableSide,
+  alignment: Side,
   locked: boolean,
   panelViews: PanelView[],
 }
@@ -111,7 +113,7 @@ export const emptyPanel: PanelBBox = {
   height: DEFAULT_PANEL_HEIGHT,
   visible: true,
   detached: true,
-  alignment: DroppableSide.left,
+  alignment: Side.left,
   maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
   panelViews: [],
 };

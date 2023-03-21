@@ -4,7 +4,7 @@ import { useDrag } from '../../../hooks/useDrag';
 import { Block, Elem } from '../../../utils/bem';
 import { DEFAULT_PANEL_MAX_HEIGHT } from '../constants';
 import './Tabs.styl';
-import { BaseProps, DroppableSide, TabProps } from './types';
+import { BaseProps, Side, TabProps } from './types';
 import { determineDroppableArea, determineLeftOrRight } from './utils';
 
 const classAddedTabs: (Element | undefined)[] = [];
@@ -22,18 +22,18 @@ const removeHoverClasses = () => {
     tab?.classList.remove(DragOverHeightClasses.emptyTabSpace);
   });
 };
-const addHoverClasses = (side?: DroppableSide, dropTarget?: Element) => { 
+const addHoverClasses = (side?: Side, dropTarget?: Element) => { 
   classAddedTabs.push(dropTarget);
   let draggingClass;
   
-  if (side === DroppableSide.left) draggingClass = DragOverHeightClasses.tabLeft;
-  if (side === DroppableSide.right) draggingClass = DragOverHeightClasses.tabRight;
+  if (side === Side.left) draggingClass = DragOverHeightClasses.tabLeft;
+  if (side === Side.right) draggingClass = DragOverHeightClasses.tabRight;
   if (side === undefined) draggingClass = DragOverHeightClasses.emptyTabSpace;
 
   draggingClass && dropTarget?.classList.add(draggingClass);
 };
 
-const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, children, active, panelWidth, transferTab, createNewPanel, setActiveTab }: TabProps) => {
+const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, children, active, panelWidth, transferTab, createNewPanel, setActiveTab, checkSnap }: TabProps) => {
   const tabRef = useRef<HTMLDivElement>();
   const ghostTabRef = useRef<HTMLDivElement>();
   const dragging = useRef(false);
@@ -73,7 +73,9 @@ const Tab = ({ rootRef, tabTitle: tabText, tabIndex, panelKey, viewLength, child
 
       const dropTarget = dropTargets.find(((target, index) => target.id.includes('droppable') && index > 0));
       
-      let side: DroppableSide | undefined = determineLeftOrRight(event, dropTarget);
+      let side: Side | undefined = determineLeftOrRight(event, dropTarget);
+      
+      checkSnap(x, panelWidth);
 
       removeHoverClasses();
       if ((dropTarget as HTMLElement).id === `${panelKey}_${tabIndex}_droppable`) return;
@@ -167,6 +169,7 @@ export const Tabs = (props: BaseProps) => {
                   transferTab={props.transferTab}
                   createNewPanel={props.createNewPanel}
                   setActiveTab={props.setActiveTab}
+                  checkSnap={props.checkSnap}
                 >
                   <Elem name="content">
                     <Component key={`${view.title}-${index}-component`} {...props} />

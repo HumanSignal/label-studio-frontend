@@ -1,4 +1,4 @@
-import { DroppableSide, PanelBBox } from '../types';
+import { Side, PanelBBox } from '../types';
 import { determineDroppableArea, determineLeftOrRight, setActive, setActiveDefaults, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
 
 
@@ -13,7 +13,7 @@ const dummyPanels = {
     height: 500,
     visible: true,
     detached: false,
-    alignment: DroppableSide.left,
+    alignment: Side.left,
     maxHeight: 800,
     panelViews: [
       { title: 'Tab 1', name: 'Tab1', component: () => null, active: true },
@@ -31,7 +31,7 @@ const dummyPanels = {
     height: 500,
     visible: true,
     detached: true,
-    alignment: DroppableSide.right,
+    alignment: Side.right,
     maxHeight: 800,
     panelViews: [
       { title: 'Tab 4', name: 'Tab4', component: () => null, active: true },
@@ -50,7 +50,7 @@ describe('determineLeftOrRight', () => {
       },
     };
 
-    expect(determineLeftOrRight(event)).toBe(DroppableSide.right);
+    expect(determineLeftOrRight(event)).toBe(Side.right);
   });
 
   it('returns DroppableSide.left when the event x position is less than half the droppable element width', () => {
@@ -62,7 +62,7 @@ describe('determineLeftOrRight', () => {
       },
     };
 
-    expect(determineLeftOrRight(event)).toBe(DroppableSide.left);
+    expect(determineLeftOrRight(event)).toBe(Side.left);
   });
 });
 
@@ -221,7 +221,7 @@ describe('stateAddedTab', () => {
   it('adds a new tab to the receiving panel on the right', () => {
     const movingTabData = { title: 'Tab 3', name: 'Tab3', component: () => null, active: false };
     const receivingTab = 1;
-    const dropSide = DroppableSide.right;
+    const dropSide = Side.right;
   
     const expectedPanelViews = [
       { title: 'Tab 1', name: 'Tab1', component: () => null, active: true },
@@ -244,7 +244,7 @@ describe('stateAddedTab', () => {
   it('adds a new tab to the receiving panel on the left', () => {
     const movingTabData = { title: 'Tab 3', name: 'Tab3', component: () => null, active: false };
     const receivingTab = 1;
-    const dropSide = DroppableSide.left;
+    const dropSide = Side.left;
   
     const expectedPanelViews = [
       { title: 'Tab 1', name: 'Tab1', component: () => null, active: true },
@@ -300,7 +300,7 @@ describe('stateRemovePanelEmptyViews', () => {
       height: 500,
       visible: true,
       detached: false,
-      alignment: DroppableSide.left,
+      alignment: Side.left,
       maxHeight: 800,
       panelViews: [],
     },
@@ -314,7 +314,7 @@ describe('stateRemovePanelEmptyViews', () => {
       height: 500,
       visible: true,
       detached: true,
-      alignment: DroppableSide.right,
+      alignment: Side.right,
       maxHeight: 800,
       panelViews: [
         { title: 'Tab 4', name: 'Tab4', component: () => null, active: true },
@@ -333,7 +333,7 @@ describe('stateRemovePanelEmptyViews', () => {
       height: 500,
       visible: true,
       detached: false,
-      alignment: DroppableSide.left,
+      alignment: Side.left,
       maxHeight: 800,
       panelViews: [
         { title: 'Tab 1', name: 'Tab1', component: () => null, active: true },
@@ -351,7 +351,7 @@ describe('stateRemovePanelEmptyViews', () => {
       height: 500,
       visible: true,
       detached: true,
-      alignment: DroppableSide.right,
+      alignment: Side.right,
       maxHeight: 800,
       panelViews: [
         { title: 'Tab 4', name: 'Tab4', component: () => null, active: true },
