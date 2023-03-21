@@ -343,6 +343,11 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
         return Super.canStartDrawing() && !self.annotation.regionStore.hasSelection;
       },
       nextPoint(x, y) {
+        const area = self.getCurrentArea();
+        const object = self.obj;
+
+        if (area && object && object.multiImage && area.item_index !== object.currentImage) return;
+
         self.getCurrentArea().addPoint(x, y);
         pointsCount++;
       },

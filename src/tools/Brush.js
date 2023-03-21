@@ -182,9 +182,15 @@ const _Tool = types
         )
           return;
         const c = self.control;
+        const o = self.obj;
+
+        brush = self.getSelectedShape;
+
+        // prevent drawing when current image is
+        // different from image where the brush was started
+        if (o && brush && o.multiImage && o.currentImage !== brush.item_index) return;
 
         // Reset the timer if a user started drawing again
-        brush = self.getSelectedShape;
         if (brush && brush.type === 'brushregion') {
           self.annotation.history.freeze();
           self.mode = 'drawing';
