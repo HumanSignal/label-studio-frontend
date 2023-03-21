@@ -304,44 +304,23 @@ class HtxParagraphsView extends Component {
 
   /**
    * Generates a textual representation of the current selection range.
-   * Excludes any invalid nodes, and their children. This is necessary to avoid
-   * capturing the text of elements such as the author name.
    *
-   * @param {string} textClass 
-   * @param {Text[]} phrases
    * @param {number} start
    * @param {number} end
    * @param {number} startOffset
    * @param {number} endOffset
    * @returns {string}
    */
-  _getResultText(textClass, phrases, range, start, startOffset, endOffset) {
-    const nodesInRange = getTextNodesInRange(range);
-    const endNodeIndex = nodesInRange.length - 1;
+  _getResultText(start, end, startOffset, endOffset) {
+    const phrases = this.phraseElements;
 
-    const resultText = nodesInRange
-      .reduce((acc, _n, i) => {
-        const str = phrases[+start + i]
-          ?.getElementsByClassName(textClass)?.[0]
-          ?.textContent;
+    if (start === end) return phrases[start].innerText.slice(startOffset, endOffset);
 
-        if (!str) return acc;
-
-        acc.push(str);
-
-        if (i === 0 && i === endNodeIndex) {
-          acc[i] = acc[i].slice(startOffset, endOffset);
-        } else if (i === 0) {
-          acc[i] = acc[i].slice(startOffset);
-        } else if (i === endNodeIndex) {
-          acc[i] = acc[i].slice(0, endOffset);
-        }
-
-        return acc;
-      }, [])
-      .join('');
-
-    return resultText;
+    return [
+      phrases[start].innerText.slice(startOffset),
+      phrases.slice(start + 1, end).map(phrase => phrase.innerText),
+      phrases[end].innerText.slice(0, endOffset),
+    ].flat().join('');
   }
 
   _handleUpdate() {
@@ -392,7 +371,7 @@ class HtxParagraphsView extends Component {
             r.fixOffsets(startOffset, endOffset);
           }
         } else if (!r.text && range.toString()) {
-          r.setText(this._getResultText(item.layoutClasses.text, phrases, range, r.start, startOffset, endOffset));
+          r.setText(this._getResultText(+r.start, +r.end, startOffset, endOffset));
         }
 
         splitBoundaries(range);
