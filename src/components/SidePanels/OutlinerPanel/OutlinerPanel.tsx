@@ -10,41 +10,6 @@ interface OutlinerPanelProps extends PanelProps {
   regions: any;
 }
 
-const Outliner: FC<Pick<OutlinerPanelProps, 'regions'>> = ({ regions }) => {
-  const [group, setGroup] = useState();
-  const onOrderingChange = useCallback((value) => {
-    regions.setSort(value);
-  }, [regions]);
-
-  const onGroupingChange = useCallback((value) => {
-    regions.setGrouping(value);
-    setGroup(value);
-  }, [regions]);
-
-  useEffect(() => {
-    setGroup(regions.group);
-  }, []);
-
-  regions.setGrouping(group);
-
-  return (
-    <>
-      <ViewControls
-        grouping={regions.group}
-        ordering={regions.sort}
-        orderingDirection={regions.sortOrder}
-        onOrderingChange={onOrderingChange}
-        onGroupingChange={onGroupingChange}
-      />
-      {regions?.regions?.length > 0 ? (
-        <OutlinerTree regions={regions} selectedKeys={regions.selection.keys} />
-      ) : (
-        <Elem name="empty">Regions not added</Elem>
-      )}
-    </>
-  );
-};
-
 const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
   const [group, setGroup] = useState();
   const onOrderingChange = useCallback((value) => {
