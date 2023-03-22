@@ -179,7 +179,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     
     if (!positioning && !panelData[key].detached) {
       setPositioning(true);
-      // setPanelDragging(key);
       const sameSidePanelKeys = findPanelsOnSameSide(alignment).filter(panelName => panelName !== key);      
       const splitPanelState = splitPanelColumns(panelData, sameSidePanelKeys, key, viewportSize.current.height);
       
