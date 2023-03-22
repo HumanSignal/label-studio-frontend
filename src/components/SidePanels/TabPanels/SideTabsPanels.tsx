@@ -76,8 +76,9 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       const stateWithAdditions = stateAddedTab(panelsWithRemovals, receivingPanel, movingTabComponent, receivingTab, dropSide);
       const renamedKeys = renameKeys(stateWithAdditions);
       const activeDefaults = setActiveDefaults(renamedKeys);
+      const restorePanelHeights = reCalcSnappedHeights(activeDefaults, viewportSize.current.height);
 
-      return activeDefaults;
+      return restorePanelHeights;
     });
   }, [panelData]);
 
@@ -109,8 +110,9 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       const panelWithAdditions = { ...panelsWithRemovals, [`${movingTabComponent.name}`]: newPanel };
       const renamedKeys = renameKeys(panelWithAdditions);
       const activeDefaults = setActiveDefaults(renamedKeys);
-      
-      return activeDefaults;
+      const restorePanelHeights = reCalcSnappedHeights(activeDefaults, viewportSize.current.height);
+
+      return restorePanelHeights;
       
     });
   }, [panelData]);

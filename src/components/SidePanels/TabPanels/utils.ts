@@ -181,6 +181,25 @@ export const restorePanel = () => {
   return restoreComponentsToState(withActiveDefaults);
 };
 
+export const restoreComponentsToState = (panelData: Record<string, PanelBBox>) => {
+  const updatedPanels: any = { ...panelData };
+  
+  Object.keys(updatedPanels).forEach(panelName => {
+    const panel = updatedPanels[panelName];
+
+    panel.panelViews.forEach((view: { name: string, component: FC<PanelProps> }) => {
+      view.component = panelComponents[view.name];
+    });
+  });
+
+  return updatedPanels; 
+};
+
+export const savePanels = (panelData: Record<string, PanelBBox>) => {
+  window.localStorage.setItem('panelState', JSON.stringify(panelData));
+};
+
+
 export const reCalcSnappedHeights = (
   state: Record<string, PanelBBox>,
   totalHeight: number,
@@ -198,24 +217,6 @@ export const reCalcSnappedHeights = (
   });
 
   return newState ;
-};
-
-export const restoreComponentsToState = (panelData: Record<string, PanelBBox>) => {
-  const updatedPanels: any = { ...panelData };
-  
-  Object.keys(updatedPanels).forEach(panelName => {
-    const panel = updatedPanels[panelName];
-
-    panel.panelViews.forEach((view: { name: string, component: FC<PanelProps> }) => {
-      view.component = panelComponents[view.name];
-    });
-  });
-
-  return updatedPanels; 
-};
-
-export const savePanels = (panelData: Record<string, PanelBBox>) => {
-  window.localStorage.setItem('panelState', JSON.stringify(panelData));
 };
 
 export const joinPanelColumns = (
