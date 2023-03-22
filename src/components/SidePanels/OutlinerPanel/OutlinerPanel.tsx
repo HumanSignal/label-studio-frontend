@@ -10,7 +10,7 @@ interface OutlinerPanelProps extends PanelProps {
   regions: any;
 }
 
-const Outliner: FC<Pick<OutlinerPanelProps, 'regions'>> = ({ regions }) => {
+const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
   const [group, setGroup] = useState();
   const onOrderingChange = useCallback((value) => {
     regions.setSort(value);
@@ -28,7 +28,7 @@ const Outliner: FC<Pick<OutlinerPanelProps, 'regions'>> = ({ regions }) => {
   regions.setGrouping(group);
 
   return (
-    <>
+    <PanelBase {...props} name="outliner" title="Outliner">
       <ViewControls
         grouping={regions.group}
         ordering={regions.sort}
@@ -37,32 +37,29 @@ const Outliner: FC<Pick<OutlinerPanelProps, 'regions'>> = ({ regions }) => {
         onGroupingChange={onGroupingChange}
       />
       {regions?.regions?.length > 0 ? (
-        <OutlinerTree regions={regions} selectedKeys={regions.selection.keys} />
+        <OutlinerTree
+          regions={regions}
+          selectedKeys={regions.selection.keys}
+        />
       ) : (
-        <Elem name="empty">Regions not added</Elem>
+        <Elem name="empty">
+          Regions not added
+        </Elem>
       )}
-    </>
-  );
-};
-
-const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
-  const [group, setGroup] = useState();
-
-  useEffect(() => {
-    setGroup(regions.group);
-  }, []);
-
-  regions.setGrouping(group);
-
-  return (
-    <PanelBase {...props} name="outliner" title="Outliner">
-      <Outliner regions={regions} />
     </PanelBase>
   );
 };
 
-const OutlinerComponentStyled: FC<OutlinerPanelProps> = ({ regions }) => {
+const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
   const [group, setGroup] = useState();
+  const onOrderingChange = useCallback((value) => {
+    regions.setSort(value);
+  }, [regions]);
+
+  const onGroupingChange = useCallback((value) => {
+    regions.setGrouping(value);
+    setGroup(value);
+  }, [regions]);
 
   useEffect(() => {
     setGroup(regions.group);
@@ -72,11 +69,28 @@ const OutlinerComponentStyled: FC<OutlinerPanelProps> = ({ regions }) => {
 
   return (
     <Block name="outliner">
-      <Outliner regions={regions} />
+      <ViewControls
+        grouping={regions.group}
+        ordering={regions.sort}
+        orderingDirection={regions.sortOrder}
+        onOrderingChange={onOrderingChange}
+        onGroupingChange={onGroupingChange}
+      />
+      {regions?.regions?.length > 0 ? (
+        <OutlinerTree
+          {...props }
+          regions={regions}
+          selectedKeys={regions.selection.keys}
+        />
+      ) : (
+        <Elem name="empty">
+          Regions not added
+        </Elem>
+      )}
     </Block>
   );
 };
 
-export const OutlinerComponent = observer(OutlinerComponentStyled);
+export const OutlinerComponent = observer(OutlinerStandAlone);
 
 export const OutlinerPanel = observer(OutlinerPanelComponent);
