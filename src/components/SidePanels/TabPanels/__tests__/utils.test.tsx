@@ -1,5 +1,5 @@
-import { Side, PanelBBox } from '../types';
-import { determineDroppableArea, determineLeftOrRight, setActive, setActiveDefaults, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
+import { emptyPanel, PanelBBox, Side } from '../types';
+import { determineDroppableArea, determineLeftOrRight, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
 
 
 const dummyPanels = {
@@ -371,5 +371,42 @@ describe('stateRemovePanelEmptyViews', () => {
 
     expect(result.panel1.panelViews).not.toHaveLength(0);
     expect(result.panel2.panelViews).not.toHaveLength(0);
+  });
+});
+
+describe('splitPanelColumns', () => {
+  const panel1: PanelBBox = emptyPanel;
+  const panel2: PanelBBox = emptyPanel;
+  const panel3: PanelBBox = emptyPanel;
+  const state = {
+    panel1,
+    panel2,
+    panel3,
+  };
+  const sameSidePanelKeys = ['panel1', 'panel2', 'panel3'];
+  const removingKey = 'panel2';
+  const totalHeight = 300;
+
+  it('should update the height of panels on the same side', () => {
+    const result = splitPanelColumns(state, sameSidePanelKeys, removingKey, totalHeight);
+
+    expect(result['panel1'].height).toBe(150);
+    expect(result['panel3'].height).toBe(150);
+  });
+
+  it('should return a new state with the removed panel and its attributes', () => {
+    const result = splitPanelColumns(state, sameSidePanelKeys, removingKey, totalHeight);
+
+    expect(result['panel2'].width).toBe(320);
+    expect(result['panel2'].height).toBe(400);
+    expect(result['panel2'].detached).toBe(true);
+  });
+
+  it('should not modify the original state', () => {
+    splitPanelColumns(state, sameSidePanelKeys, removingKey, totalHeight);
+
+    expect(state['panel1'].height).toBe(150);
+    expect(state['panel2'].height).toBe(150);
+    expect(state['panel3'].height).toBe(150);
   });
 });
