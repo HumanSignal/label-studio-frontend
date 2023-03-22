@@ -58,7 +58,7 @@ const CommentsTab: FC<any> = inject('store')(observer(({ store }) => {
   return (
     <>
       {store.hasInterface('annotations:comments') && store.commentStore.isCommentable && (
-        <Block name="comments">
+        <Block name="comments-panel">
           <Elem name="section">
             <Elem name="section-head">Comments</Elem>
             <Elem name="section-content">
