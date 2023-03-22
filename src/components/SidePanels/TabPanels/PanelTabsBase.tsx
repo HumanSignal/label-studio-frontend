@@ -123,18 +123,21 @@ export const PanelTabsBase: FC<BaseProps> = ({
     elementRef: headerRef,
     disabled: locked || (!detached && !visible),
 
-    onMouseDown(e) {
+    onMouseDown(e: any) {
       const el = e.target as HTMLElement;
       const toggleClassName = '[class*=__toggle]';
 
       if (el.matches(toggleClassName) || el.closest(toggleClassName)) {
         return;
       }
-
       const allowDrag = detached;
       const panel = panelRef.current!;
       const parentBBox = root.current!.getBoundingClientRect();
       const bbox = panel.getBoundingClientRect();
+      const clickTarget = e.target?.getBoundingClientRect();
+      const tx = e.clientX - clickTarget.left; //x position within the element.
+      const ty = e.clientY - clickTarget.top; 
+
       const [x, y] = [e.pageX, e.pageY];
       const [oX, oY] = [
         bbox.left - parentBBox.left,
@@ -142,38 +145,32 @@ export const PanelTabsBase: FC<BaseProps> = ({
       ];
       
       const { current: key } = keyRef;
+      const [nX, nY] = [x - tx, y - ty];
 
-      handlers.current.onPositionChangeBegin?.(key, alignment, detached);
+      handlers.current.onPositionChangeBegin?.(key, nX, nY, alignment, detached);
 
-      return { x, y, oX, oY, allowDrag };
+      return { x, y, oX, oY, allowDrag, alignment, key };
     },
 
     onMouseMove(e, data) {
-      if (data) {
-        const { x, y, oX, oY } = data;
-        let { allowDrag } = data;
-        const [mX, mY] = [e.pageX, e.pageY];
-        const dist = distance(x, mX, y, mY);
+      if (!data) return;
+      const { x, y, oX, oY, key: draggingKey } = data;
+      const [mX, mY] = [e.pageX, e.pageY];
+      const dist = distance(x, mX, y, mY);
 
-        if (dist > 30) {
-          allowDrag = true;
-        }
+      if (dist < 30) return;
+      const [nX, nY] = [oX + (mX - x), oY + (mY - y)];
 
-        if (!allowDrag) return;
-
-        const [nX, nY] = [oX + (mX - x), oY + (mY - y)];
-        const { current: key } = keyRef;
-
-        handlers.current.onPositionChange?.(key, nY, nX, true);
-      }
+      handlers.current.onPositionChange?.(draggingKey, nY, nX, true, alignment);
     },
 
-    onMouseUp() {
-      const { current: key } = keyRef;
+    onMouseUp(_, data) {
+      if (!data) return;
+      const { key: draggingKey } = data;
 
-      handlers.current.onSnap?.(key);
+      handlers.current.onSnap?.(draggingKey);
     },
-  }, [detached, visible, locked]);
+  }, [detached, visible, locked, alignment, key]);
 
   // Panel resizing
   useDrag({
@@ -267,10 +264,10 @@ export const PanelTabsBase: FC<BaseProps> = ({
     <Block ref={panelRef} name="panel" mod={mods} style={{ ...style, ...coordinates }}>
       <Elem name="content">
         {!locked && (
-          <Elem ref={headerRef} name="header" onClick={!detached ? handleExpand : undefined}>
-            <Elem name="header-left" style={{ display: 'flex', alignItems: 'center' }}>
+          <Elem ref={headerRef} id={key} name="header" onClick={!detached ? handleExpand : undefined}>
+            <Elem name="header-left" style={{ display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
               {(visible || detached) && (
-                <Elem name="icon" tag={IconOutlinerDrag} width={20} />
+                <Elem name="icon" style={{ pointerEvents: 'none' }} tag={IconOutlinerDrag} width={20} />
               )}
               {(!visible && panelViews.length > 1 && detached) && (
                 <Elem name="title">{panelViews.map(view => view.title).join(' ')}</Elem>

@@ -55,9 +55,9 @@ export interface EventHandlers {
   onResize: (key: string, w: number, h: number, t: number, l: number) => void;
   onResizeStart: ()=> void;
   onResizeEnd: ()=> void;
-  onPositionChange: (key: string, t: number, l: number, detached: boolean) => void;
+  onPositionChange: (key: string, t: number, l: number, detached: boolean, alignment: Side ) => void;
   onVisibilityChange: (key: string, visible: boolean) => void;
-  onPositionChangeBegin: (key: string, side: Side, detached: boolean) => void;
+  onPositionChangeBegin: (key: string, x: number, y: number, side: Side, detached: boolean) => void;
   onSnap: (key: string) => void;
   transferTab: (
     movingTab: number,

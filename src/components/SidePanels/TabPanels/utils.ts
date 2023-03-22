@@ -3,7 +3,7 @@ import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_WIDTH } f
 import { Comments, History, Relations } from '../DetailsPanel/DetailsPanel';
 import { OutlinerComponent } from '../OutlinerPanel/OutlinerPanel';
 import { PanelProps } from '../PanelBase';
-import { Side, PanelBBox, PanelView } from './types';
+import { PanelBBox, PanelView, Side } from './types';
 
 export const lastCallTime: { [key: string]: number } | undefined = {};
 export const timeouts: { [key: string]: ReturnType<typeof setTimeout> | null } = {};
@@ -94,14 +94,12 @@ export const stateRemovePanelEmptyViews = (state: Record<string, PanelBBox>) => 
   return newState;
 };
 
-
 export const panelComponents: {[key:string]: FC<PanelProps>} = {
   'outliner': OutlinerComponent as FC<PanelProps>,
   'history': History as FC<PanelProps>,
   'relations': Relations as FC<PanelProps>,
   'comments': Comments as FC<PanelProps>,
 };
-
 
 const panelViews = [
   {
@@ -178,10 +176,28 @@ export const restorePanel = () => {
   const allTabs = panelData && Object.entries(parsed).map(([_, panel]: any) => panel.panelViews).flat(1);
   const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
   const withActiveDefaults = setActiveDefaults(noEmptyPanels);
-  
-  return defaultPanelState;
+
   if (!allTabs || allTabs.length !== panelViews.length) return defaultPanelState;
   return restoreComponentsToState(withActiveDefaults);
+};
+
+export const reCalcSnappedHeights = (
+  state: Record<string, PanelBBox>,
+  totalHeight: number,
+) => {
+  const newState = { ...state };
+  const leftKeys = Object.keys(newState).filter((key) => !newState[key].detached && newState[key].alignment === Side.left);
+  const rightKeys = Object.keys(newState).filter((key) => !newState[key].detached && newState[key].alignment === Side.right);
+  
+  [leftKeys, rightKeys].forEach(list => {
+    const panelHeight = totalHeight / list.length;
+  
+    list.forEach(panelKey => {
+      newState[panelKey].height = panelHeight;
+    });
+  });
+
+  return newState ;
 };
 
 export const restoreComponentsToState = (panelData: Record<string, PanelBBox>) => {
@@ -190,7 +206,7 @@ export const restoreComponentsToState = (panelData: Record<string, PanelBBox>) =
   Object.keys(updatedPanels).forEach(panelName => {
     const panel = updatedPanels[panelName];
 
-    panel.panelViews.forEach((view: { name: string, component: FC<PanelProps>}) => {
+    panel.panelViews.forEach((view: { name: string, component: FC<PanelProps> }) => {
       view.component = panelComponents[view.name];
     });
   });
@@ -235,15 +251,16 @@ export const splitPanelColumns = (
   const newState = { ...state };
   const panelRemovedKeys = sameSidePanelKeys.filter(panelKey => panelKey !== removingKey);
   const panelHeight = totalHeight / panelRemovedKeys.length;
-  console.log(removingKey);
-  newState[removingKey].width = DEFAULT_PANEL_WIDTH;
-  newState[removingKey].detached = true;
-  newState[removingKey].height = DEFAULT_PANEL_HEIGHT;
+
+  const movingTabAttributes = {
+    width: DEFAULT_PANEL_WIDTH,
+    detached: true,
+    height: DEFAULT_PANEL_HEIGHT,
+  };
 
   panelRemovedKeys.forEach(panelKey => {
     newState[panelKey].height = panelHeight;
-    console.log(newState[panelKey].detached);
-
   });
-  return newState;
+
+  return { ...newState, [removingKey]: { ...newState[removingKey], ...movingTabAttributes } };
 };
