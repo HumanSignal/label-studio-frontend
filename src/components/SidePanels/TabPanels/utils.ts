@@ -200,7 +200,7 @@ export const savePanels = (panelData: Record<string, PanelBBox>) => {
 };
 
 
-export const reCalcSnappedHeights = (
+export const getSnappedHeights = (
   state: Record<string, PanelBBox>,
   totalHeight: number,
 ) => {
