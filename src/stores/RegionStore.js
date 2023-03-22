@@ -126,7 +126,15 @@ const SelectionMap = types.model(
       self.select(region);
 
       if (region?.type === 'polygonregion') return;
-      region?.shapeRef?.parent?.canvas?._canvas?.scrollIntoView?.();
+
+      // scroll page to related canvas for image regions
+      const canvas = region?.shapeRef?.parent?.canvas?._canvas;
+
+      if (canvas) {
+        const scroll = canvas.scrollIntoViewIfNeeded || canvas.scrollIntoView;
+
+        scroll.call(canvas);
+      }
     },
   };
 });
