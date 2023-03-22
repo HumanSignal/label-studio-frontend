@@ -1,5 +1,5 @@
 import { emptyPanel, PanelBBox, Side } from '../types';
-import { determineDroppableArea, determineLeftOrRight, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
+import { determineDroppableArea, determineLeftOrRight, getSnappedHeights, joinPanelColumns, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
 
 
 const dummyPanels = {
@@ -408,5 +408,130 @@ describe('splitPanelColumns', () => {
     expect(state['panel1'].height).toBe(150);
     expect(state['panel2'].height).toBe(150);
     expect(state['panel3'].height).toBe(150);
+  });
+});
+
+describe('joinPanelColumns', () => {
+  const panel1: PanelBBox = {
+    width: 200,
+    height: 100,
+    left: 0,
+    top: 0,
+    relativeLeft: 0,
+    relativeTop: 0,
+    maxHeight: 300,
+    zIndex: 1,
+    visible: true,
+    detached: false,
+    alignment: Side.left,
+    panelViews: [],
+  };
+  const panel2: PanelBBox = {
+    width: 200,
+    height: 100,
+    left: 0,
+    top: 100,
+    relativeLeft: 0,
+    relativeTop: 0,
+    maxHeight: 300,
+    zIndex: 1,
+    visible: true,
+    detached: false,
+    alignment: Side.left,
+    panelViews: [],
+  };
+  const panel3: PanelBBox = {
+    width: 200,
+    height: 100,
+    left: 0,
+    top: 200,
+    relativeLeft: 0,
+    relativeTop: 0,
+    maxHeight: 300,
+    zIndex: 1,
+    visible: true,
+    detached: false,
+    alignment: Side.left,
+    panelViews: [],
+  };
+  const state: Record<string, PanelBBox> = {
+    panel1,
+    panel2,
+    panel3,
+  };
+  const sameSidePanelKeys = ['panel1', 'panel2'];
+  const panelAddKey = 'panel3';
+  const alignment = 'left';
+  const totalHeight = 300;
+  const width = 200;
+
+  it('should update the height, width, top, alignment, and detached properties of panels on the same side', () => {
+    const result = joinPanelColumns(state, sameSidePanelKeys, panelAddKey, alignment, totalHeight, width);
+
+    expect(result['panel1'].height).toBe(150);
+    expect(result['panel1'].width).toBe(200);
+    expect(result['panel1'].top).toBe(0);
+    expect(result['panel1'].alignment).toBe('left');
+    expect(result['panel1'].detached).toBe(false);
+
+    expect(result['panel2'].height).toBe(150);
+    expect(result['panel2'].width).toBe(200);
+    expect(result['panel2'].top).toBe(150);
+    expect(result['panel2'].alignment).toBe('left');
+    expect(result['panel2'].detached).toBe(false);
+
+    expect(result['panel3'].height).toBe(150);
+    expect(result['panel3'].width).toBe(200);
+    expect(result['panel3'].top).toBe(300);
+    expect(result['panel3'].alignment).toBe('left');
+    expect(result['panel3'].detached).toBe(false);
+  });
+
+  it('should add the panel to the same side panel keys array', () => {
+    const result = joinPanelColumns(state, sameSidePanelKeys, panelAddKey, alignment, totalHeight, width);
+
+    expect(JSON.stringify(result)).toContain('panel3');
+  });
+
+  it('should return a new state', () => {
+    const result = joinPanelColumns(state, sameSidePanelKeys, panelAddKey, alignment, totalHeight, width);
+
+    expect(result).not.toBe(state);
+  });
+});
+
+
+describe('getSnappedHeights', () => {
+  const state: Record<string, PanelBBox> = {
+    panel1: { width: 100, height: 100, left: 0, top: 0, relativeLeft: 0, relativeTop: 0, maxHeight: 0, zIndex: 0, visible: true, detached: false, alignment: Side.left, panelViews: [] },
+    panel2: { width: 100, height: 100, left: 0, top: 0, relativeLeft: 0, relativeTop: 0, maxHeight: 0, zIndex: 0, visible: true, detached: false, alignment: Side.left, panelViews: [] },
+    panel3: { width: 100, height: 100, left: 0, top: 0, relativeLeft: 0, relativeTop: 0, maxHeight: 0, zIndex: 0, visible: true, detached: false, alignment: Side.right, panelViews: [] },
+  };
+
+  it('should evenly distribute heights for panels on the left and 100% of the panel on the left', () => {
+    const totalHeight = 300;
+    const expectedState = {
+      ...state,
+      panel1: { ...state.panel1, height: 150 },
+      panel2: { ...state.panel2, height: 150 },
+      panel3: { ...state.panel3, height: 300 },
+    };
+
+    expect(getSnappedHeights(state, totalHeight)).toEqual(expectedState);
+  });
+
+  it('should not change heights of detached panels', () => {
+    const detachedState = {
+      ...state,
+      panel1: { ...state.panel1, detached: true },
+    };
+    const totalHeight = 200;
+    const expectedState = {
+      ...detachedState,
+      panel2: { ...state.panel2, height: 200 },
+      panel3: { ...state.panel3, height: 200 },
+    };
+
+    expect(getSnappedHeights(detachedState, totalHeight)).toEqual(expectedState);
   });
 });

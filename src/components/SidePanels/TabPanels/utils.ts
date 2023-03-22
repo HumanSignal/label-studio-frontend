@@ -231,6 +231,7 @@ export const joinPanelColumns = (
   let top = 0;
 
   const sameSidePanelKeys = Array.from(new Set([..._sameSidePanelKeys, panelAddKey]));
+  
   sameSidePanelKeys.forEach(panelKey => {
     newState[panelKey].height = totalHeight / (sameSidePanelKeys.length);
     newState[panelKey].width = width;
