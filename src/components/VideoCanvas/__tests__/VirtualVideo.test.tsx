@@ -25,6 +25,16 @@ describe('VirtualVideo', () => {
     expect(canPlayType).toBeCalledWith(true);
   });
 
+  it('should call canPlayUrl and return true if valid relative url specified', async () => {
+    const canPlayType = jest.fn();
+
+    render(<VirtualVideo.VirtualVideo src="/files/opossum_intro.webm" canPlayType={canPlayType} />);
+
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    expect(canPlayType).toBeCalledWith(true);
+  });
+
   it('should call canPlayUrl and return true if valid url specified, even if content-type is binary/octet-stream', async () => {
     const canPlayType = jest.fn();
 

@@ -41,7 +41,7 @@ const isBinary = (mimeType: string|null|undefined) => {
 export const canPlayUrl = async (url: string) => {
   const video = document.createElement('video');
 
-  const pathName = new URL(url).pathname;
+  const pathName = new URL(url, /^https?/.exec(url) ? undefined : window.location.href).pathname;
 
   const fileType = (pathName.split('.').pop() ?? '') as keyof typeof mimeTypeMapping;
 
