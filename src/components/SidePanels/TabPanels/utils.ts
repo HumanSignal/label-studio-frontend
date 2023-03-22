@@ -200,7 +200,7 @@ export const savePanels = (panelData: Record<string, PanelBBox>) => {
 };
 
 
-export const reCalcSnappedHeights = (
+export const getSnappedHeights = (
   state: Record<string, PanelBBox>,
   totalHeight: number,
 ) => {
@@ -221,7 +221,7 @@ export const reCalcSnappedHeights = (
 
 export const joinPanelColumns = (
   state: Record<string, PanelBBox>,
-  sameSidePanelKeys: string[],
+  _sameSidePanelKeys: string[],
   panelAddKey: string,
   alignment: string,
   totalHeight: number,
@@ -230,7 +230,7 @@ export const joinPanelColumns = (
   const newState = { ...state };
   let top = 0;
 
-  sameSidePanelKeys.push(panelAddKey);
+  const sameSidePanelKeys = Array.from(new Set([..._sameSidePanelKeys, panelAddKey]));
   sameSidePanelKeys.forEach(panelKey => {
     newState[panelKey].height = totalHeight / (sameSidePanelKeys.length);
     newState[panelKey].width = width;
