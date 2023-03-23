@@ -58,6 +58,7 @@ const DATA = {
     },
   ],
 };
+
 const CONFIG = `
 <View>
   <ParagraphLabels name="ner" toName="text">
@@ -496,7 +497,7 @@ Scenario('Selecting the end character on a paragraph phrase to the very start of
   LabelStudio.init(params);
   AtSidebar.seeRegions(0);
 
-  I.say('Select 2 regions in the consecutive phrases of the one person');
+  I.say('Select 2 regions in the consecutive phrases');
 
   AtLabels.clickLabel('Random talk');
   AtParagraphs.setSelection(
@@ -518,6 +519,58 @@ Scenario('Selecting the end character on a paragraph phrase to the very start of
       startOffset: 18,
       endOffset: 10,
       text: '?\n\nHate what?',
+    },
+  );
+});
+
+Scenario('Selecting the end character on a paragraph phrase to the very start of other phrases includes all selected phrases except the very last one', async ({ I, LabelStudio, AtSidebar, AtParagraphs, AtLabels }) => {
+  const params = {
+    data: {
+      ...DATA,
+      dialogue: DATA.dialogue.map(d => [d, { ...d, text: `${d.text}2` }]).flat(), 
+    },
+    config: CONFIG,
+  };
+
+  I.amOnPage('/');
+
+  LabelStudio.setFeatureFlags(FEATURE_FLAGS);
+  LabelStudio.init(params);
+  AtSidebar.seeRegions(0);
+
+
+  I.say('Select 2 regions in the consecutive phrases of the one person');
+  AtParagraphs.clickFilter('Vincent Vega');
+  AtLabels.clickLabel('Random talk');
+  AtParagraphs.setSelection(
+    AtParagraphs.locateText('Hate what?2'),
+    10,
+    AtParagraphs.locateText('I dont know. Thats a good question.2'),
+    0,
+  );
+
+  AtSidebar.seeRegions(2);
+
+  const result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(
+    omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
+    {
+      start: '3',
+      end: '3',
+      startOffset: 10,
+      endOffset: 11,
+      text: '2',
+    },
+  );
+  assert.deepStrictEqual(
+    omitBy(result[1].value, (v, key) => key === 'paragraphlabels'),
+    {
+      start: '6',
+      end: '6',
+      startOffset: 0,
+      endOffset: 35,
+      text: 'I dont know. Thats a good question.',
     },
   );
 });

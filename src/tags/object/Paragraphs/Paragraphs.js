@@ -108,7 +108,6 @@ class HtxParagraphsView extends Component {
         // @todo maybe select till the end of Paragraphs?
         if (!textNode) continue;
 
-        // @todo !! range should be also shifted after getOffsetInPhraseElement
         r.setEnd(textNode, 0);
       }
 
@@ -117,7 +116,10 @@ class HtxParagraphsView extends Component {
       try {
         splitBoundaries(r);
         const [startOffset, , start, originalStart] = this.getOffsetInPhraseElement(r.startContainer, r.startOffset);
-        const [endOffset, , end, originalEnd] = this.getOffsetInPhraseElement(r.endContainer, r.endOffset, false);
+        const [endOffset, , end, _originalEnd] = this.getOffsetInPhraseElement(r.endContainer, r.endOffset, false);
+
+        // if this shifts backwards, we need to take the lesser index.
+        const originalEnd = Math.min(end, _originalEnd);
 
         if (isFF(FF_DEV_2918)) {
           const visibleIndexes = item._value.reduce((visibleIndexes, v, idx) => {
