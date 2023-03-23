@@ -31,8 +31,10 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const [initialized, setInitialized] = useState(false);
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<Side | undefined>();
-  const localSnap = useRef(snap);
   const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel());
+  const localSnap = useRef(snap);
+
+  localSnap.current = snap;
 
   useRegionsCopyPaste(currentEntity);
 
@@ -143,6 +145,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     }
   };
 
+
   const normalizeOffsets = (key: string, top: number, left: number, visible?: boolean) => {
     const panel = panelData[key];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
@@ -234,7 +237,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
   const onSnap = useCallback((key: string) => {
     setPositioning(false);
-
+    console.log(localSnap.current);
     if (!localSnap.current) return;
     const bboxData: Partial<PanelBBox> = {
       height: viewportSize.current.height,
@@ -359,7 +362,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       // Remember current width and height of the viewport
       viewportSize.current.width = clientWidth ?? 0;
       viewportSize.current.height = clientHeight ?? 0;
-      setPanelData(getSnappedHeights(panelData, clientHeight));
       setViewportSizeMatch(checkContentFit());
       setPanelMaxWidth(root.clientWidth * 0.4);
     });
