@@ -357,7 +357,8 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
     const observer = new ResizeObserver(() => {
       const { clientWidth, clientHeight } = root ?? {};
-
+      
+      if(viewportSize.current.height !== clientHeight) setPanelData(getSnappedHeights(panelData, clientHeight));
       // Remember current width and height of the viewport
       viewportSize.current.width = clientWidth ?? 0;
       viewportSize.current.height = clientHeight ?? 0;
