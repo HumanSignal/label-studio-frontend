@@ -34,11 +34,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const localSnap = useRef(snap);
   const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel());
 
-  useEffect(() => {
-    if (viewportSize.current.height > 0) setPanelData(getSnappedHeights(panelData, viewportSize.current.height));
-  }, [viewportSize.current.height]);
-  localSnap.current = snap;
-
   useRegionsCopyPaste(currentEntity);
 
   const sidePanelsCollapsed = useMemo(() => {
@@ -364,7 +359,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       // Remember current width and height of the viewport
       viewportSize.current.width = clientWidth ?? 0;
       viewportSize.current.height = clientHeight ?? 0;
-
+      setPanelData(getSnappedHeights(panelData, clientHeight));
       setViewportSizeMatch(checkContentFit());
       setPanelMaxWidth(root.clientWidth * 0.4);
     });
