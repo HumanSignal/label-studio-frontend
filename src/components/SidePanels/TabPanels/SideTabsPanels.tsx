@@ -237,7 +237,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
   const onSnap = useCallback((key: string) => {
     setPositioning(false);
-    console.log(localSnap.current);
     if (!localSnap.current) return;
     const bboxData: Partial<PanelBBox> = {
       height: viewportSize.current.height,
