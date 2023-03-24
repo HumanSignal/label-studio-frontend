@@ -31,7 +31,7 @@ const DetailsComponent: FC<DetailsPanelProps> = ({ currentEntity, regions }) => 
   const selectedRegions = regions.selection;
 
   return (
-    <Block name="details">
+    <Block name="details-tab">
       <Content selection={selectedRegions} currentEntity={currentEntity} />
     </Block>
   );
@@ -59,8 +59,7 @@ const CommentsTab: FC<any> = inject('store')(observer(({ store }) => {
     <>
       {store.hasInterface('annotations:comments') && store.commentStore.isCommentable && (
         <Block name="comments-panel">
-          <Elem name="section">
-            <Elem name="section-head">Comments</Elem>
+          <Elem name="section-tab">
             <Elem name="section-content">
               <CommentsComponent commentStore={store.commentStore} cacheKey={`task.${store.task.id}`} />
             </Elem>
@@ -77,7 +76,7 @@ const RelationsTab: FC<any> = inject('store')(observer(({ currentEntity }) => {
   return (
     <>
       <Block name="relations">
-        <Elem name="section">
+        <Elem name="section-tab">
           <Elem name="section-head">Relations ({relationStore.size})</Elem>
           <Elem name="section-content">
             <RelationsComponent relationStore={relationStore} />
@@ -98,7 +97,7 @@ const HistoryTab: FC<any> = inject('store')(observer(({ store, currentEntity }) 
         {!showDraftInHistory ? (
           <DraftPanel item={currentEntity} />
         ) : (
-          <Elem name="section">
+          <Elem name="section-tab">
             <Elem name="section-head">
               Annotation History
               <span>#{currentEntity.pk ?? currentEntity.id}</span>
@@ -112,6 +111,22 @@ const HistoryTab: FC<any> = inject('store')(observer(({ store, currentEntity }) 
     </>
   );
 }));
+
+
+const InfoTab: FC<any> = inject('store')(
+  observer(({ selection }) => {
+    return (
+      <>
+        <Block name="info">
+          <Elem name="section-tab">
+            <Elem name="section-head">Selection Details</Elem>
+            <RegionsPanel regions={selection}/>
+          </Elem>
+        </Block>
+      </>
+    );
+  }),
+);
 
 const GeneralPanel: FC<any> = inject('store')(observer(({ store, currentEntity }) => {
   const { relationStore } = currentEntity;
@@ -195,6 +210,6 @@ const SelectedRegion: FC<{region: any}> = observer(({
 export const Comments = observer(CommentsTab);
 export const History = observer(HistoryTab);
 export const Relations = observer(RelationsTab);
-
+export const Info = observer(InfoTab);
 export const Details = observer(DetailsComponent);
 export const DetailsPanel = observer(DetailsPanelComponent);
