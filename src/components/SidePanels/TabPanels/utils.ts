@@ -175,7 +175,6 @@ export const restorePanel = () => {
   const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
   const withActiveDefaults = setActiveDefaults(noEmptyPanels);
 
-  if (!allTabs || allTabs.length !== panelViews.length) return defaultPanelState;
   return restoreComponentsToState(withActiveDefaults);
 };
 
