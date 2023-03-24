@@ -1,6 +1,6 @@
 import { FC, ReactNode } from 'react';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_WIDTH } from '../constants';
-import { Comments, History, Relations } from '../DetailsPanel/DetailsPanel';
+import { Comments, History, Info, Relations } from '../DetailsPanel/DetailsPanel';
 import { OutlinerComponent } from '../OutlinerPanel/OutlinerPanel';
 import { PanelProps } from '../PanelBase';
 import { PanelBBox, PanelView, Side } from './types';
@@ -95,17 +95,18 @@ export const stateRemovePanelEmptyViews = (state: Record<string, PanelBBox>) => 
 };
 
 export const panelComponents: {[key:string]: FC<PanelProps>} = {
-  'outliner': OutlinerComponent as FC<PanelProps>,
+  'regions': OutlinerComponent as FC<PanelProps>,
   'history': History as FC<PanelProps>,
   'relations': Relations as FC<PanelProps>,
   'comments': Comments as FC<PanelProps>,
+  'info': Info as FC<PanelProps>,
 };
 
 const panelViews = [
   {
-    name: 'outliner',
-    title: 'Outliner',
-    component: panelComponents['outliner'] as FC<PanelProps>,
+    name: 'regions',
+    title: 'Regions',
+    component: panelComponents['regions'] as FC<PanelProps>,
     active: true,
   },
   {
@@ -126,10 +127,16 @@ const panelViews = [
     component: panelComponents['relations'] as FC<PanelProps>,
     active: false,
   },
+  {
+    name: 'info',
+    title: 'Info',
+    component: panelComponents['info'] as FC<PanelProps>,
+    active: false,
+  }
 ];
 
 export const defaultPanelState: Record<string, PanelBBox> = {
-  'outliner': {
+  'regions-info': {
     top: 0,
     left: 0,
     relativeLeft: 0,
@@ -141,7 +148,7 @@ export const defaultPanelState: Record<string, PanelBBox> = {
     detached: false,
     alignment: Side.left,
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[0]],
+    panelViews: [panelViews[0], panelViews[4]],
   },
   'history-comments-relations': {
     top: 0,
@@ -174,6 +181,8 @@ export const restorePanel = () => {
   const panelData = window.localStorage.getItem('panelState');
   const parsed = panelData && JSON.parse(panelData);
   const allTabs = panelData && Object.entries(parsed).map(([_, panel]: any) => panel.panelViews).flat(1);
+  
+  if (!allTabs || allTabs.length !== panelViews.length) return defaultPanelState;
   const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
   const withActiveDefaults = setActiveDefaults(noEmptyPanels);
 
