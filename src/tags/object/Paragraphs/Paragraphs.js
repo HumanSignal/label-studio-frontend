@@ -93,15 +93,33 @@ class HtxParagraphsView extends Component {
     for (i = 0; i < selection.rangeCount; i++) {
       const r = selection.getRangeAt(i);
 
-      if (r.endContainer.nodeName === 'DIV') {
-        r.setEnd(r.startContainer, r.startContainer.length);
+      if (r.endContainer.nodeType !== Node.TEXT_NODE) {
+        // offsets work differently for nodes and texts, so we have to find #text.
+        // lastChild because most probably this is div of the whole paragraph,
+        // and it has author div and phrase div.
+        const el = this.getPhraseElement(r.endContainer.lastChild);
+        let textNode = el;
+
+        while (textNode && textNode.nodeType !== Node.TEXT_NODE) {
+          textNode = textNode.firstChild;
+        }
+
+        // most probably this div is out of Paragraphs
+        // @todo maybe select till the end of Paragraphs?
+        if (!textNode) continue;
+
+        r.setEnd(textNode, 0);
       }
+
       if (r.collapsed || /^\s*$/.test(r.toString())) continue;
 
       try {
         splitBoundaries(r);
         const [startOffset, , start, originalStart] = this.getOffsetInPhraseElement(r.startContainer, r.startOffset);
-        const [endOffset, , end, originalEnd] = this.getOffsetInPhraseElement(r.endContainer, r.endOffset, false);
+        const [endOffset, , end, _originalEnd] = this.getOffsetInPhraseElement(r.endContainer, r.endOffset, false);
+
+        // if this shifts backwards, we need to take the lesser index.
+        const originalEnd = Math.min(end, _originalEnd);
 
         if (isFF(FF_DEV_2918)) {
           const visibleIndexes = item._value.reduce((visibleIndexes, v, idx) => {
@@ -286,6 +304,27 @@ class HtxParagraphsView extends Component {
     }
   }
 
+  /**
+   * Generates a textual representation of the current selection range.
+   *
+   * @param {number} start
+   * @param {number} end
+   * @param {number} startOffset
+   * @param {number} endOffset
+   * @returns {string}
+   */
+  _getResultText(start, end, startOffset, endOffset) {
+    const phrases = this.phraseElements;
+
+    if (start === end) return phrases[start].innerText.slice(startOffset, endOffset);
+
+    return [
+      phrases[start].innerText.slice(startOffset),
+      phrases.slice(start + 1, end).map(phrase => phrase.innerText),
+      phrases[end].innerText.slice(0, endOffset),
+    ].flat().join('');
+  }
+
   _handleUpdate() {
     const root = this.myRef.current;
     const { item } = this.props;
@@ -293,7 +332,7 @@ class HtxParagraphsView extends Component {
     // wait until text is loaded
     if (!item._value) return;
 
-    item.regs.forEach(function(r, i) {
+    item.regs.forEach((r, i) => {
       // spans can be totally missed if this is app init or undo/redo
       // or they can be disconnected from DOM on annotations switching
       // so we have to recreate them from regions data
@@ -304,6 +343,7 @@ class HtxParagraphsView extends Component {
         const range = document.createRange();
         const startNode = phrases[r.start].getElementsByClassName(item.layoutClasses.text)[0];
         const endNode = phrases[r.end].getElementsByClassName(item.layoutClasses.text)[0];
+
         let { startOffset, endOffset } = r;
 
         range.setStart(...findNodeAt(startNode, startOffset));
@@ -333,7 +373,7 @@ class HtxParagraphsView extends Component {
             r.fixOffsets(startOffset, endOffset);
           }
         } else if (!r.text && range.toString()) {
-          r.setText(range.toString());
+          r.setText(this._getResultText(+r.start, +r.end, startOffset, endOffset));
         }
 
         splitBoundaries(range);
