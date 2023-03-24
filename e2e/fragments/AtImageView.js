@@ -310,7 +310,7 @@ module.exports = {
 
   async multiImageGoBackwardWithHotkey() {
     I.say('Attempting to go to the next image');
-    I.pressKey('Ctrl+d');
+    I.pressKey('Ctrl+a');
 
     await this.waitForImage();
   },
