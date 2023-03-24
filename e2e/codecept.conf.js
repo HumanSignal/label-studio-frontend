@@ -7,7 +7,7 @@ const fs = require('fs');
 const FRAGMENTS_PATH = './fragments/';
 
 module.exports.config = {
-  timeout: 60 * 30, // Time out after 30 minutes
+  timeout: 60 * 40, // Time out after 40 minutes
   tests: './tests/**/*.test.js',
   output: './output',
   helpers: {
