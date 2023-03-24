@@ -216,19 +216,13 @@ export const getSnappedHeights = (
   const rightKeys = getRightKeys(newState);
 
   [leftKeys, rightKeys].forEach(list => {
-    console.log(list.length)
-    const collapsedAdjustments = list.reduce((acc, panelKey) => {
-      if (newState[panelKey].visible) return acc + PANEL_HEADER_HEIGHT;
-      else return acc;
-    }, 0);
 
     const totalCollapsed = list.filter(panelKey => !newState[panelKey].visible).length;
+    const collapsedAdjustments =  PANEL_HEADER_HEIGHT * totalCollapsed;
     const panelHeight = (totalHeight - collapsedAdjustments) /  ((list.length - totalCollapsed) || 1);
-    
     let top = 0;
 
     list.forEach(panelKey => {
-      console.log(newState[panelKey].visible);
       if (newState[panelKey].visible) {
         newState[panelKey].height = panelHeight;
         newState[panelKey].top = top;
@@ -236,7 +230,6 @@ export const getSnappedHeights = (
       } else top += PANEL_HEADER_HEIGHT;
     });
   });
-  console.log(newState);
 
   return newState ;
 };
@@ -260,23 +253,15 @@ export const joinPanelColumns = (
 
 export const splitPanelColumns = (
   state: Record<string, PanelBBox>,
-  sameSidePanelKeys: string[],
   removingKey: string,
-  totalHeight: number,
 ) => {
   const newState = { ...state };
-  const panelRemovedKeys = sameSidePanelKeys.filter(panelKey => panelKey !== removingKey);
-  const panelHeight = totalHeight / panelRemovedKeys.length;
 
   const movingTabAttributes = {
     width: DEFAULT_PANEL_WIDTH,
     detached: true,
     height: DEFAULT_PANEL_HEIGHT,
   };
-
-  panelRemovedKeys.forEach(panelKey => {
-    newState[panelKey].height = panelHeight;
-  });
 
   return { ...newState, [removingKey]: { ...newState[removingKey], ...movingTabAttributes } };
 };

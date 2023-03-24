@@ -50,7 +50,8 @@ export const PanelTabsBase: FC<BaseProps> = ({
   const keyRef = useRef(key);
   const isParentOfPanel = attachedKeys && attachedKeys[0] === key;
   const isChildOfPanel = attachedKeys && !isParentOfPanel;
-
+  const tooltipText = visible ? 'Collapse' : 'Expand';
+  
   keyRef.current = key;
 
   const style = useMemo(() => {
@@ -104,7 +105,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
 
     onMouseDown(e: any) {
       const el = e.target as HTMLElement;
-      const collapseClassName = '[class*=__collapse-panel]';
+      const collapseClassName = '[class*=__toggle]';
 
       if (el.matches(collapseClassName) || el.closest(collapseClassName)) {
         return;
@@ -266,14 +267,14 @@ export const PanelTabsBase: FC<BaseProps> = ({
                 <Elem name="title">{panelViews.map(view => view.title).join(' ')}</Elem>
               )}
             </Elem>
-            <Elem name="header-right" style={{ display: 'flex', alignItems: 'center' }}>
+            <Elem name="header-right" mod={{ detached }} style={{ display: 'flex', alignItems: 'center' }}>
               {isParentOfPanel && (
-                <Elem name="collapse-group" onClick={handleGroupPanelToggle} data-tooltip={'Collapse Group'}>
+                <Elem name="toggle" onClick={handleGroupPanelToggle} data-tooltip={`${tooltipText} Group` }>
                   {Side.left === alignment ? <IconArrowLeft /> : <IconArrowRight />}
                 </Elem>
               )}
               {true && (
-                <Elem name="collapse-panel" onClick={handlePanelToggle} data-tooltip={'Collapse'}>
+                <Elem name="toggle" mod={{ detached }} onClick={handlePanelToggle} data-tooltip={tooltipText}>
                   {visible ? <IconOutlinerCollapse /> : <IconOutlinerExpand />}
                 </Elem>
               )}

@@ -183,10 +183,10 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     
     if (!positioning && !panelData[key].detached) {
       setPositioning(true);
-      const sameSidePanelKeys = findPanelsOnSameSide(alignment).filter(panelName => panelName !== key);      
-      const splitPanelState = splitPanelColumns(panelData, sameSidePanelKeys, key, viewportSize.current.height);
-      
-      setPanelData(splitPanelState);
+      const splitPanelState = splitPanelColumns(panelData, key);
+      const restorePanelHeights = getSnappedHeights(splitPanelState, viewportSize.current.height);
+
+      setPanelData(restorePanelHeights);
     }
     checkSnap(left, panel.width);
     requestAnimationFrame(() => {
@@ -300,7 +300,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
     return Object.values(panelData).reduce<CSSProperties>((res, data) => {
       //todo: refactor visible panels for groups.
-      const visible = !panelsHidden && !data.detached && data.visible;
+      const visible = !data.detached && data.visible;
       const padding = visible ? data.width : PANEL_HEADER_HEIGHT;
       const paddingProperty = data.alignment === 'left' ? 'paddingLeft' : 'paddingRight';
 

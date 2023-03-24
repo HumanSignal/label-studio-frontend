@@ -34,7 +34,7 @@
     border 1px solid rgba(137, 128, 152, 0.16)
     box-shadow: 0px 6px 10px 4px rgba(38, 38, 38, 0.15), 0px 2px 3px rgba(38, 38, 38, 0.3);
 
-  &_hidden:not(&_detached)
+  &_hidden
     top 0
     width 22px
     border none
@@ -66,27 +66,7 @@
     justify-content space-between
     background-color var(--header-background)
     color var(--icon-color) 
-    padding-left: 24px
-
-    ~/_alignment_left &
-      text-align left
-      flex-direction row
-      padding 4px 0 4px 12px
-
-    ~/_alignment_right &
-      text-align right
-      flex-direction row-reverse
-      padding 4px 12px 4px 0
-
-  &__collapse-group, &__collapse-panel
-    width 24px
-    height 24px
-    display flex
-    position relative
-    justify-content center
-    color var(--icon-color)
-    transform scale(0.85)
-    cursor pointer
+    padding-left: 11px
 
   &__toggle
     width 24px
@@ -96,59 +76,38 @@
     align-items center
     justify-content center
     color var(--icon-color)
-
-    svg
-      display block
+    transform scale(0.85)
+    cursor pointer
 
     &:hover
       background-color rgba(#096DD9, 0.16)
+        
+      &::before
+        color #fff
+        font-size 16px
+        font-weight 500
+        padding 4px 16px
+        position absolute
+        white-space nowrap
+        border-radius 4px
+        background-color #262626
+        content attr(data-tooltip)
+        left 50%
+        transform translate(-50%, -110%)
+
+    &:not(&_detached)
+      &::before 
+        left 50%
+        top calc(100% + 4px)
+        transform translate(-50%, 0) 
+    
+    svg
+      display block
+
+
 
   &_hidden:not(&_detached) &__toggle
     background-color transparent
-
-  // Toggle button tooltip styles
-  &:not(&_hidden) &__toggle:hover,
-  &_hidden&&_detached &__toggle:hover,
-  &_hidden:not(&_detached) &__header:hover &__toggle
-    &::before
-      color #fff
-      font-size 16px
-      font-weight 500
-      padding 4px 16px
-      position absolute
-      white-space nowrap
-      border-radius 4px
-      background-color #262626
-      content attr(data-tooltip)
-
-  // Panel is hidden and snapped to one of the sides
-  &_hidden&:not(&_detached)&_alignment_left &__toggle,
-  &_hidden&:not(&_detached)&_alignment_right &__toggle
-    &::before
-      top 50%
-      transform translate(0, -50%)
-
-  &_hidden&:not(&_detached)&_alignment_left &__toggle
-    &::before
-      left calc(100% + 4px)
-
-  &_hidden&:not(&_detached)&_alignment_right &__toggle
-    &::before
-      right calc(100% + 4px)
-
-  // Panel is visible and snapped to one of the sides
-  &:not(&_hidden):not(&_detached) &__toggle
-    &::before
-      left 50%
-      top calc(100% + 4px)
-      transform translate(-50%, 0)
-
-  // Panel is visible and floating
-  &_detached &__toggle
-    &::before
-      left 50%
-      bottom calc(100% + 4px)
-      transform translate(-50%, 0)
 
   &__content
     width 100%
@@ -282,3 +241,50 @@
     &:hover::before,
     &_drag::before
       display block
+
+
+
+.ghjk
+  // Toggle button tooltip styles
+  &:not(&_hidden) &__toggle:hover,
+  &_hidden&&_detached &__toggle:hover,
+  &_hidden:not(&_detached) &__header:hover &__toggle
+    &::before
+      color #fff
+      font-size 16px
+      font-weight 500
+      padding 4px 16px
+      position absolute
+      white-space nowrap
+      border-radius 4px
+      background-color #262626
+      content attr(data-tooltip)
+
+  // Panel is hidden and snapped to one of the sides
+  &_hidden&:not(&_detached)&_alignment_left &__toggle,
+  &_hidden&:not(&_detached)&_alignment_right &__toggle
+    &::before
+      top calc(100% + 4px)
+      transform translate(-50%, 0)
+
+  &_hidden&:not(&_detached)&_alignment_left &__toggle
+    &::before
+      left calc(100% + 4px)
+
+  &_hidden&:not(&_detached)&_alignment_right &__toggle
+    &::before
+      right calc(100% + 4px)
+
+  // Panel is visible and snapped to one of the sides
+  &:not(&_hidden):not(&_detached) &__toggle
+    &::before
+      left 50%
+      top calc(100% + 4px)
+      transform translate(-50%, 0)
+
+  // Panel is visible and floating
+  &_detached &__toggle
+    &::before
+      left 50%
+      bottom calc(100% + 4px)
+      transform translate(-50%, 0)
