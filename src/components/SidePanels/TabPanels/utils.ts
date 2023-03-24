@@ -132,7 +132,7 @@ const panelViews = [
     title: 'Info',
     component: panelComponents['info'] as FC<PanelProps>,
     active: false,
-  }
+  },
 ];
 
 export const defaultPanelState: Record<string, PanelBBox> = {
@@ -185,8 +185,7 @@ export const restorePanel = () => {
   if (!allTabs || allTabs.length !== panelViews.length) return defaultPanelState;
   const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
   const withActiveDefaults = setActiveDefaults(noEmptyPanels);
-  return defaultPanelState;
-  if (!allTabs || allTabs.length !== panelViews.length) return defaultPanelState;
+
   return restoreComponentsToState(withActiveDefaults);
 };
 
@@ -249,7 +248,6 @@ export const joinPanelColumns = (
   alignment: Side,
   width: number,
 ) => {
-  console.log('joinPanelColumns', alignment);
   return {
     ...state, [panelAddKey]: {
       ...state[panelAddKey],

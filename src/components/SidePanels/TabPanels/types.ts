@@ -81,6 +81,8 @@ export type CommonProps = EventHandlers & {
   selection: any,
   currentEntity: any,
 }
+
+interface PanelsCollapsed { [Side.left]: boolean, [Side.right]: boolean }
     
 export type BaseProps = PanelBBox & CommonProps & {
   name: string,
@@ -94,6 +96,8 @@ export type BaseProps = PanelBBox & CommonProps & {
   locked: boolean,
   panelViews: PanelView[],
   attachedKeys: string[] | undefined,
+  sidePanelCollapsed:PanelsCollapsed,
+  setSidePanelCollapsed: React.Dispatch<React.SetStateAction<PanelsCollapsed>>,
 }
     
 export type Result = {

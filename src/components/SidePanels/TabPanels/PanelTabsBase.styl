@@ -65,8 +65,18 @@
     align-items center
     justify-content space-between
     background-color var(--header-background)
-    color var(--icon-color) 
-    padding-left: 11px
+    color var(--icon-color)
+    padding 4px
+    padding-left 11px
+
+    &_collapsed
+      height 100%
+      display flex
+      padding 0
+      cursor pointer
+      
+      svg
+        transform rotate(180deg)
 
   &__toggle
     width 24px
@@ -103,8 +113,6 @@
     
     svg
       display block
-
-
 
   &_hidden:not(&_detached) &__toggle
     background-color transparent

@@ -28,6 +28,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const [resizing, setResizing] = useState(false);
   const [positioning, setPositioning] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [collapsedSide, setCollapsedSide] = useState({ [Side.left]: false, [Side.right]: false });
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<Side | undefined>();
   const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel());
@@ -176,7 +177,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     }));
   }, [panelData]);
 
-  const onPositionChange = useCallback((key: string, t: number, l: number, setDetached: boolean, alignment: Side) => { 
+  const onPositionChange = useCallback((key: string, t: number, l: number, setDetached: boolean) => { 
     const panel = panelData[key];
     const { left, top } = normalizeOffsets(key, t, l, panel.visible);
     const maxHeight = viewportSize.current.height - top;
@@ -299,20 +300,21 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     }
 
     return Object.values(panelData).reduce<CSSProperties>((res, data) => {
-      //todo: refactor visible panels for groups.
       const visible = !data.detached && data.visible;
-      const padding = visible ? data.width : PANEL_HEADER_HEIGHT;
+      const collapsed = collapsedSide[data.alignment];
+      const visibility = !visible || collapsed ?  PANEL_HEADER_HEIGHT : data.width;
       const paddingProperty = data.alignment === 'left' ? 'paddingLeft' : 'paddingRight';
-
+     
       return (!data.detached) ? {
         ...res,
-        [paddingProperty]: padding,
+        [paddingProperty]: visibility,
       } : res;
     }, result);
   }, [
     panelsHidden,
     panelData,
     sidePanelsCollapsed,
+    collapsedSide,
   ]);
 
   const panels = useMemo((): Result | Record<string, never> => {
@@ -394,6 +396,8 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
   const newLabelingUI = true;
 
+  console.log(collapsedSide);
+
   return (
     <SidePanelsContext.Provider value={contextValue}>
       <Block
@@ -419,7 +423,9 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
                 {Object.entries(panels).map(([panelType, panels], iterator) => {
 
                   const content = panels.map((baseProps, index) => (
-                    <PanelTabsBase key={`${panelType}-${index}-${iterator}`} {...baseProps}>
+                    <PanelTabsBase
+                      
+                      key={`${panelType}-${index}-${iterator}`} {...{ ...baseProps, sidePanelCollapsed: collapsedSide, setSidePanelCollapsed: setCollapsedSide }}>
                       <Tabs {...baseProps} /> 
                     </PanelTabsBase>
                   ));
