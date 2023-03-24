@@ -45,6 +45,32 @@ export const KonvaRegionMixin = types.model({})
           self.updateImageSize?.(width / naturalWidth, height / naturalHeight, width, height);
         }
       },
+
+      selectRegion() {
+        const canvas = self.shapeRef?.parent?.canvas?._canvas;
+        let viewport = canvas;
+
+        while (viewport && !viewport.scrollTop && !viewport.className.includes('main-content')) {
+          viewport = viewport.parentElement;
+        }
+        if (!viewport) return;
+
+        const VISIBLE_PIECE = 10;
+        const INFOBAR_HEIGHT = 36;
+
+        const vBBox = viewport.getBoundingClientRect();
+        const cBBox = canvas.getBoundingClientRect();
+        const rBBox = self.bboxCoordsCanvas;
+        const overTop = rBBox.bottom - (vBBox.top - cBBox.top);
+        const overBottom = (canvas.clientHeight - rBBox.top) - (cBBox.bottom - vBBox.bottom);
+
+        if (overTop < VISIBLE_PIECE) {
+          viewport.scrollBy(0, overTop - VISIBLE_PIECE);
+        } else if (overBottom < VISIBLE_PIECE + INFOBAR_HEIGHT) {
+          viewport.scrollBy(0, -overBottom + VISIBLE_PIECE + INFOBAR_HEIGHT);
+        }
+      },
+
       onClickRegion(e) {
         const annotation = self.annotation;
         const ev = e?.evt || e;
