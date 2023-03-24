@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react';
 import { CSSProperties, FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../../utils/bem';
-import { IconDetails } from '../../../assets/icons';
 import { useMedia } from '../../../hooks/useMedia';
 import ResizeObserver from '../../../utils/resize-observer';
 import { clamp } from '../../../utils/utilities';
@@ -12,7 +11,7 @@ import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
 import { PanelTabsBase } from './PanelTabsBase';
 import { Tabs } from './Tabs';
 import { CommonProps, emptyPanel, EventHandlers, PanelBBox, Result, Side, SidePanelsProps } from './types';
-import { getSnappedHeights, joinPanelColumns, renameKeys, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
+import { getAttachedPerSide, getSnappedHeights, joinPanelColumns, renameKeys, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
 
 const maxWindowWidth = 980;
 const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
@@ -120,16 +119,24 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   );
 
   const onVisibilityChange = useCallback((key: string, visible: boolean) => {
-    const panel = panelData[key];
-    const position = normalizeOffsets(key, panel.top, panel.left, visible);
+    
+    setPanelData((state) => {
+      const panel = panelData[key];
+      const position = normalizeOffsets(key, panel.top, panel.left, visible);
 
-    updatePanel(key, {
-      visible,
-      storedTop: position.top / viewportSize.current.height * 100,
-      storedLeft: position.left / viewportSize.current.width * 100,
+      const newState = {
+        ...state, [key]: {
+          ...panel,
+          visible, 
+          storedTop: position.top / viewportSize.current.height * 100,
+          storedLeft: position.left / viewportSize.current.width * 100,
+        },
+      };
+      
+      return getSnappedHeights(newState, viewportSize.current.height);
     });
-  }, [updatePanel]);
 
+  }, [setPanelData, panelData]);
 
   const checkSnap = (left: number, panelWidth: number) => {
     const right = left + panelWidth;
@@ -144,7 +151,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       setSnap(undefined);
     }
   };
-
 
   const normalizeOffsets = (key: string, top: number, left: number, visible?: boolean) => {
     const panel = panelData[key];
@@ -243,18 +249,18 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       alignment: localSnap.current as Side,
       detached: false,
     };
-
     const sameSidePanelKeys = findPanelsOnSameSide(localSnap.current).filter(panelName => panelName !== key);
 
     if(sameSidePanelKeys.length > 0) {
       const width = clamp(panelData[sameSidePanelKeys[0] as string]?.width, DEFAULT_PANEL_WIDTH, panelMaxWidth);
-      const joinedPanelState = joinPanelColumns(panelData, sameSidePanelKeys, key, localSnap.current as Side, viewportSize.current.height, width);
-      
-      setPanelData(joinedPanelState);
+      const joinedPanelState = joinPanelColumns(panelData, key, localSnap.current as Side, width);
+      const heightsAdjusted = getSnappedHeights(joinedPanelState, viewportSize.current.height);
+
+      setPanelData(heightsAdjusted);
     } else updatePanel(key, bboxData);
     
     setSnap(undefined);
-  }, [updatePanel]);
+  }, [updatePanel, panelData]);
 
   const eventHandlers: EventHandlers = useMemo(() => {
     return {
@@ -293,6 +299,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     }
 
     return Object.values(panelData).reduce<CSSProperties>((res, data) => {
+      //todo: refactor visible panels for groups.
       const visible = !panelsHidden && !data.detached && data.visible;
       const padding = visible ? data.width : PANEL_HEADER_HEIGHT;
       const paddingProperty = data.alignment === 'left' ? 'paddingLeft' : 'paddingRight';
@@ -319,22 +326,22 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
     const panels = Object.entries(panelData);
 
-    for(const [name, panelData] of panels) {
-      const { alignment, detached } = panelData;
+    for(const [name, panelDatum] of panels) {
+      const { alignment, detached } = panelDatum;
+      const attachedKeys = getAttachedPerSide(panelData, alignment);
       const props = {
-        ...panelData,
+        ...panelDatum,
         ...commonProps,
         name,
-        top: panelData.storedTop ?? panelData.top,
-        left: panelData.storedLeft ?? panelData.left,
-        tooltip: panelData.panelViews.map(view => view.title).join(' '),
-        icon: <IconDetails/>,
+        top: panelDatum.storedTop ?? panelDatum.top,
+        left: panelDatum.storedLeft ?? panelDatum.left,
         positioning,
         maxWidth: panelMaxWidth,
-        zIndex: panelData.zIndex,
+        zIndex: panelDatum.zIndex,
         expanded: sidePanelsCollapsed,
-        alignment: sidePanelsCollapsed ? Side.left : panelData.alignment,
+        alignment: sidePanelsCollapsed ? Side.left : panelDatum.alignment,
         locked: sidePanelsCollapsed,
+        attachedKeys,
       };
 
       if (detached) result.detached.push(props);

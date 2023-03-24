@@ -3,11 +3,10 @@ import { Block, Elem } from '../../../utils/bem';
 import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerDrag, IconOutlinerExpand } from '../../../assets/icons';
 import { useDrag } from '../../../hooks/useDrag';
 import { clamp, isDefined } from '../../../utils/utilities';
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from '../constants';
-import '../PanelBase.styl';
-import { BaseProps } from './types';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
+import { BaseProps, Side } from './types';
 import { resizers } from './utils';
-
+import './PanelTabsBase.styl';
 
 const distance = (x1: number, x2: number, y1: number, y2: number) => {
   return Math.sqrt(
@@ -30,7 +29,6 @@ export const PanelTabsBase: FC<BaseProps> = ({
   relativeTop,
   relativeLeft,
   zIndex,
-  tooltip,
   locked = false,
   positioning = false,
   onSnap,
@@ -42,6 +40,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
   onPositionChangeBegin,
   children,
   panelViews,
+  attachedKeys,
 }) => {
   const headerRef = useRef<HTMLDivElement>();
   const panelRef = useRef<HTMLDivElement>();
@@ -49,25 +48,18 @@ export const PanelTabsBase: FC<BaseProps> = ({
   const handlers = useRef({ onResize, onResizeStart, onResizeEnd, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
   const [resizing, setResizing] = useState<string | undefined>();
   const keyRef = useRef(key);
+  const isParentOfPanel = attachedKeys && attachedKeys[0] === key;
+  const isChildOfPanel = attachedKeys && !isParentOfPanel;
 
   keyRef.current = key;
-  const handleCollapse = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-    onVisibilityChange?.(key, false);
-  }, [onVisibilityChange, key]);
-
-  const handleExpand = useCallback(() => {
-    onVisibilityChange?.(key, true);
-  }, [onVisibilityChange, key]);
 
   const style = useMemo(() => {
     const dynamicStyle = visible ? {
       height: height ?? '100%',
       width: expanded ? '100%' : width ?? DEFAULT_PANEL_WIDTH,
     } : {
-      width: detached ? width ?? DEFAULT_PANEL_WIDTH : '100%',
-      height: detached ? PANEL_HEADER_HEIGHT_PADDED : undefined,
+      width: width ?? DEFAULT_PANEL_WIDTH,
+      height: PANEL_HEADER_HEIGHT,
     };
 
     return {
@@ -90,21 +82,8 @@ export const PanelTabsBase: FC<BaseProps> = ({
       hidden: !visible,
       alignment: detached ? 'left' : alignment ?? 'left',
       disabled: locked,
-      newLabelingUI: true,
     };
   }, [alignment, visible, detached, resizing, locked]);
-
-  const currentIcon = useMemo(() => {
-    if (detached) return visible ? <IconOutlinerCollapse/> : <IconOutlinerExpand/>;
-    if (alignment === 'left') return visible ? <IconArrowLeft/> : <IconArrowRight/>;
-    if (alignment === 'right') return visible ? <IconArrowRight/> : <IconArrowLeft/>;
-
-    return null;
-  }, [detached, visible, alignment]);
-
-  const tooltipText = useMemo(() => {
-    return `${visible ? 'Collapse' : 'Expand'} ${tooltip}`;
-  }, [visible, tooltip]);
 
   useEffect(() => {
     Object.assign(handlers.current, {
@@ -121,16 +100,16 @@ export const PanelTabsBase: FC<BaseProps> = ({
   // Panel positioning
   useDrag({
     elementRef: headerRef,
-    disabled: locked || (!detached && !visible),
+    disabled: locked,
 
     onMouseDown(e: any) {
       const el = e.target as HTMLElement;
-      const toggleClassName = '[class*=__toggle]';
+      const collapseClassName = '[class*=__collapse-panel]';
 
-      if (el.matches(toggleClassName) || el.closest(toggleClassName)) {
+      if (el.matches(collapseClassName) || el.closest(collapseClassName)) {
         return;
       }
-      const allowDrag = detached;
+      const allowDrag = true;
       const panel = panelRef.current!;
       const parentBBox = root.current!.getBoundingClientRect();
       const bbox = panel.getBoundingClientRect();
@@ -260,31 +239,52 @@ export const PanelTabsBase: FC<BaseProps> = ({
     },
   }, [handlers, detached, width, maxWidth, height, top, left, visible, locked, positioning]);
 
+  const handleGroupPanelToggle = () => {
+    console.log(expanded);
+  };
+
+  const handlePanelToggle = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
+    console.log('handlePanelToggle');
+    e.stopPropagation();
+    e.preventDefault();
+    onVisibilityChange?.(key, !visible);
+  }, [onVisibilityChange, key, visible]);
+
+
   return (
-    <Block ref={panelRef} name="panel" mod={mods} style={{ ...style, ...coordinates }}>
+    <Block ref={panelRef} name="tabs-panel" mod={mods} style={{ ...style, ...coordinates }}>
       <Elem name="content">
         {!locked && (
-          <Elem ref={headerRef} id={key} name="header" onClick={!detached ? handleExpand : undefined}>
+          <Elem
+            ref={headerRef}
+            id={key}
+            name="header"
+          >
             <Elem name="header-left" style={{ display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
-              {(visible || detached) && (
-                <Elem name="icon" style={{ pointerEvents: 'none' }} tag={IconOutlinerDrag} width={20} />
-              )}
-              {(!visible && panelViews.length > 1 && detached) && (
+              <Elem name="icon" style={{ pointerEvents: 'none' }} tag={IconOutlinerDrag} width={20} />
+              {!visible && panelViews.length > 1 && detached && (
                 <Elem name="title">{panelViews.map(view => view.title).join(' ')}</Elem>
               )}
             </Elem>
-
-            <Elem
-              name="toggle"
-              mod={{ enabled: visible }}
-              onClick={detached && !visible ? handleExpand : handleCollapse}
-              data-tooltip={tooltipText}
-            >
-              {currentIcon}
+            <Elem name="header-right" style={{ display: 'flex', alignItems: 'center' }}>
+              {isParentOfPanel && (
+                <Elem name="collapse-group" onClick={handleGroupPanelToggle} data-tooltip={'Collapse Group'}>
+                  {Side.left === alignment ? <IconArrowLeft /> : <IconArrowRight />}
+                </Elem>
+              )}
+              {true && (
+                <Elem name="collapse-panel" onClick={handlePanelToggle} data-tooltip={'Collapse'}>
+                  {visible ? <IconOutlinerCollapse /> : <IconOutlinerExpand />}
+                </Elem>
+              )}
             </Elem>
           </Elem>
         )}
-        {visible && <Elem name="body" style={{ overflow: 'hidden' }}>{children}</Elem>}
+        {visible && (
+          <Elem name="body" style={{ overflow: 'hidden' }}>
+            {children}
+          </Elem>
+        )}
       </Elem>
 
       {visible && !positioning && !locked && (

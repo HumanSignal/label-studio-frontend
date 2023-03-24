@@ -86,8 +86,6 @@ export type BaseProps = PanelBBox & CommonProps & {
   name: string,
   top: number,
   left: number,
-  tooltip: string | undefined,
-  icon: JSX.Element,
   positioning: boolean,
   maxWidth: number,
   zIndex: number,
@@ -95,6 +93,7 @@ export type BaseProps = PanelBBox & CommonProps & {
   alignment: Side,
   locked: boolean,
   panelViews: PanelView[],
+  attachedKeys: string[] | undefined,
 }
     
 export type Result = {

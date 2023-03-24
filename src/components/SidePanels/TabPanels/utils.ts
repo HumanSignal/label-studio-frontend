@@ -1,5 +1,5 @@
 import { FC, ReactNode } from 'react';
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_WIDTH } from '../constants';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
 import { Comments, History, Relations } from '../DetailsPanel/DetailsPanel';
 import { OutlinerComponent } from '../OutlinerPanel/OutlinerPanel';
 import { PanelProps } from '../PanelBase';
@@ -176,7 +176,7 @@ export const restorePanel = () => {
   const allTabs = panelData && Object.entries(parsed).map(([_, panel]: any) => panel.panelViews).flat(1);
   const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
   const withActiveDefaults = setActiveDefaults(noEmptyPanels);
-
+  return defaultPanelState;
   if (!allTabs || allTabs.length !== panelViews.length) return defaultPanelState;
   return restoreComponentsToState(withActiveDefaults);
 };
@@ -199,49 +199,63 @@ export const savePanels = (panelData: Record<string, PanelBBox>) => {
   window.localStorage.setItem('panelState', JSON.stringify(panelData));
 };
 
+export const getLeftKeys = (state: Record<string, PanelBBox>) =>  Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.left);
+export const getRightKeys = (state: Record<string, PanelBBox>) =>  Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.right);
+
+export const getAttachedPerSide = (state: Record<string, PanelBBox>, side: Side) => {
+  if (side === Side.left) return getLeftKeys(state);
+  if (side === Side.right) return getRightKeys(state);
+};
 
 export const getSnappedHeights = (
   state: Record<string, PanelBBox>,
   totalHeight: number,
 ) => {
   const newState = { ...state };
-  const leftKeys = Object.keys(newState).filter((key) => !newState[key].detached && newState[key].alignment === Side.left);
-  const rightKeys = Object.keys(newState).filter((key) => !newState[key].detached && newState[key].alignment === Side.right);
-  
+  const leftKeys = getLeftKeys(newState);
+  const rightKeys = getRightKeys(newState);
+
   [leftKeys, rightKeys].forEach(list => {
-    const panelHeight = totalHeight / list.length;
-  
+    console.log(list.length)
+    const collapsedAdjustments = list.reduce((acc, panelKey) => {
+      if (newState[panelKey].visible) return acc + PANEL_HEADER_HEIGHT;
+      else return acc;
+    }, 0);
+
+    const totalCollapsed = list.filter(panelKey => !newState[panelKey].visible).length;
+    const panelHeight = (totalHeight - collapsedAdjustments) /  ((list.length - totalCollapsed) || 1);
+    
+    let top = 0;
+
     list.forEach(panelKey => {
-      newState[panelKey].height = panelHeight;
+      console.log(newState[panelKey].visible);
+      if (newState[panelKey].visible) {
+        newState[panelKey].height = panelHeight;
+        newState[panelKey].top = top;
+        top += newState[panelKey].height;
+      } else top += PANEL_HEADER_HEIGHT;
     });
   });
+  console.log(newState);
 
   return newState ;
 };
 
 export const joinPanelColumns = (
   state: Record<string, PanelBBox>,
-  _sameSidePanelKeys: string[],
   panelAddKey: string,
-  alignment: string,
-  totalHeight: number,
+  alignment: Side,
   width: number,
 ) => {
-  const newState = { ...state };
-  let top = 0;
-
-  const sameSidePanelKeys = Array.from(new Set([..._sameSidePanelKeys, panelAddKey]));
-  
-  sameSidePanelKeys.forEach(panelKey => {
-    newState[panelKey].height = totalHeight / (sameSidePanelKeys.length);
-    newState[panelKey].width = width;
-    newState[panelKey].top = top;
-    newState[panelKey].alignment = alignment as Side;
-    newState[panelKey].detached = false;
-    top += newState[panelKey].height;
-  });
-
-  return newState;
+  console.log('joinPanelColumns', alignment);
+  return {
+    ...state, [panelAddKey]: {
+      ...state[panelAddKey],
+      width,
+      alignment,
+      detached: false,
+    },
+  };
 };
 
 export const splitPanelColumns = (
