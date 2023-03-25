@@ -12,6 +12,14 @@
   &__header
     padding 4px
 
+  &__header-right,
+  &__header-left
+    display flex
+    alignItems center 
+
+  &__header-left
+    pointerEvents: none
+
     &:hover
         --icon-color #096DD9
         --header-background #d8e7f9
@@ -47,7 +55,7 @@
 
     &:hover
       --icon-color #096DD9
-      --header-background rgba(#096DD9, 0.16)
+      --header-background #d8e5f5
 
   &__header
     top 0
@@ -74,7 +82,7 @@
       display flex
       padding 0
       cursor pointer
-      
+
       svg
         transform rotate(180deg)
 
@@ -98,19 +106,40 @@
         font-weight 500
         padding 4px 16px
         position absolute
+        z-index: 100
         white-space nowrap
         border-radius 4px
         background-color #262626
         content attr(data-tooltip)
         left 50%
         transform translate(-50%, -110%)
-
+    
     &:not(&_detached)
       &::before 
         left 50%
         top calc(100% + 4px)
-        transform translate(-50%, 0) 
-    
+        transform translate(-50%, 0)
+
+    &:not(&_detached):not(&_alignment_right)
+      &::before
+        left 0
+        transform translate(22%, -110%)
+
+    &:not(&_detached):not(&_alignment_left)
+      &::before
+        left 0
+        transform translate(-105%, -28px)
+
+    &:not(&_detached):not(&_collapsed):not(&_alignment_right)
+      &::before
+        left -58%
+        transform translate(58%, -120%)
+
+    &:not(&_detached):not(&_collapsed):not(&_alignment_left)
+      &::before
+        left 58%
+        transform translate(-79%, 0)
+
     svg
       display block
 
@@ -126,8 +155,7 @@
 
   &__body
     z-index 1
-    overflow-y auto
-    overflow-x hidden
+    overflow hidden
     height calc(100% - var(--header-height))
     position relative
     styled-scrollbars()

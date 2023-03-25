@@ -303,7 +303,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       const visible = !data.detached && data.visible;
       const collapsed = collapsedSide[data.alignment];
       const visibility = !visible || collapsed ?  PANEL_HEADER_HEIGHT : data.width;
-      const paddingProperty = data.alignment === 'left' ? 'paddingLeft' : 'paddingRight';
+      const paddingProperty:string = data.alignment === 'left' ? 'paddingLeft' : 'paddingRight';
      
       return (!data.detached) ? {
         ...res,
@@ -344,6 +344,8 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         alignment: sidePanelsCollapsed ? Side.left : panelDatum.alignment,
         locked: sidePanelsCollapsed,
         attachedKeys,
+        sidePanelCollapsed: collapsedSide,
+        setSidePanelCollapsed: setCollapsedSide,
       };
 
       if (detached) result.detached.push(props);
@@ -394,10 +396,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     };
   }, [sidePanelsCollapsed]);
 
-  const newLabelingUI = true;
-
-  console.log(collapsedSide);
-
   return (
     <SidePanelsContext.Provider value={contextValue}>
       <Block
@@ -411,7 +409,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         style={{
           ...padding,
         }}
-        mod={{ collapsed: sidePanelsCollapsed, newLabelingUI }}
+        mod={{ collapsed: sidePanelsCollapsed, newLabelingUI: true }}
       >
         {initialized && (
           <>
@@ -421,11 +419,9 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
             {panelsHidden !== true && (
               <>
                 {Object.entries(panels).map(([panelType, panels], iterator) => {
-
                   const content = panels.map((baseProps, index) => (
                     <PanelTabsBase
-                      
-                      key={`${panelType}-${index}-${iterator}`} {...{ ...baseProps, sidePanelCollapsed: collapsedSide, setSidePanelCollapsed: setCollapsedSide }}>
+                      key={`${panelType}-${index}-${iterator}`} {...{ ...baseProps }}>
                       <Tabs {...baseProps} /> 
                     </PanelTabsBase>
                   ));

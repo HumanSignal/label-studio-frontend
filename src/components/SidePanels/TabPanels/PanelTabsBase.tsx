@@ -59,11 +59,11 @@ export const PanelTabsBase: FC<BaseProps> = ({
 
   const style = useMemo(() => {
     const dynamicStyle = visible ? {
-      height: height ?? '100%',
+      height: collapsed ? '100%' : height ?? '100%',
       width: !collapsed ? width ?? '100%' : PANEL_HEADER_HEIGHT,
     } : {
-      width: width ?? DEFAULT_PANEL_WIDTH,
-      height: PANEL_HEADER_HEIGHT,
+      width: collapsed ? '100%' : width ?? DEFAULT_PANEL_WIDTH,
+      height: collapsed ? '100%' :  PANEL_HEADER_HEIGHT,
     };
 
     return {
@@ -72,7 +72,6 @@ export const PanelTabsBase: FC<BaseProps> = ({
     };
   }, [width, height, visible, detached, expanded, zIndex, collapsed]);
 
-  console.log('style', collapsed, style.width);
   const coordinates = useMemo(() => {
     return detached && !locked ? {
       top: `${relativeTop}%`,
@@ -89,7 +88,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
       disabled: locked,
       collapsed,
     };
-  }, [alignment, visible, detached, resizing, locked]);
+  }, [alignment, visible, detached, resizing, locked, collapsed]);
 
   useEffect(() => {
     Object.assign(handlers.current, {
@@ -155,7 +154,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
 
       handlers.current.onSnap?.(draggingKey);
     },
-  }, [detached, visible, locked, alignment, key]);
+  }, [detached, visible, locked, alignment, key, collapsed]);
 
   // Panel resizing
   useDrag({
@@ -260,18 +259,18 @@ export const PanelTabsBase: FC<BaseProps> = ({
       <Elem name="content">
         {!locked && collapsedHeader && (
           <Elem ref={headerRef} onClick={() => { if (collapsed) handleGroupPanelToggle(); }} id={key} mod={{ collapsed }} name="header">
-            <Elem name="header-left" style={{ display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+            <Elem name="header-left">
               {!collapsed && <Elem name="icon" style={{ pointerEvents: 'none' }} tag={IconOutlinerDrag} width={20} />}
               {!visible && !collapsed && <Elem name="title">{panelViews.map(view => view.title).join(' ')}</Elem>}
             </Elem>
-            <Elem name="header-right" mod={{ detached }} style={{ display: 'flex', alignItems: 'center' }}>
-              {visible && (
-                <Elem name="toggle" onClick={handleGroupPanelToggle} data-tooltip={`${tooltipText} Group`}>
+            <Elem name="header-right" >
+              {(!detached || collapsed) && (
+                <Elem name="toggle" mod={{ detached, collapsed, alignment }} onClick={handleGroupPanelToggle} data-tooltip={`${tooltipText} Group`}>
                   {Side.left === alignment ? <IconArrowLeft /> : <IconArrowRight />}
                 </Elem>
               )}
               {!collapsed && (
-                <Elem name="toggle" mod={{ detached }} onClick={handlePanelToggle} data-tooltip={tooltipText}>
+                <Elem name="toggle" mod={{ detached, collapsed, alignment }} onClick={handlePanelToggle} data-tooltip={tooltipText}>
                   {visible ? <IconOutlinerCollapse /> : <IconOutlinerExpand />}
                 </Elem>
               )}
@@ -279,7 +278,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
           </Elem>
         )}
         {visible && !collapsed && (
-          <Elem name="body" style={{ overflow: 'hidden' }}>
+          <Elem name="body">
             {children}
           </Elem>
         )}
