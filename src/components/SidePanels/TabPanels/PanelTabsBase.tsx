@@ -287,7 +287,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
       {visible && !positioning && !locked && (
         <Elem name="resizers" ref={resizerRef} mod={{ locked: positioning || locked }}>
           {resizers.map(res => {
-            const shouldRender = ((res === 'left' || res === 'right') && alignment !== res) || detached || detached;
+            const shouldRender = collapsed ? false : ((res === 'left' || res === 'right') && alignment !== res) || detached;
 
             return shouldRender ? (
               <Elem key={res} name="resizer" mod={{ drag: res === resizing }} data-resize={res} />

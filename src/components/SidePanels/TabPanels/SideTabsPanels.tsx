@@ -226,7 +226,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     requestAnimationFrame(() => {
       const panelsOnSameAlignment = findPanelsOnSameSide(panelData[key]?.alignment);
 
-      panelsOnSameAlignment.forEach(() => {
+      panelsOnSameAlignment.forEach((key) => {
         updatePanel(key, {
           top,
           left,
