@@ -53,6 +53,7 @@ export interface PanelBBox {
     
 export interface EventHandlers {
   onResize: (key: string, w: number, h: number, t: number, l: number) => void;
+  onGroupHeightResize: (key: string, h: number, t: number) => void;
   onResizeStart: ()=> void;
   onResizeEnd: ()=> void;
   onPositionChange: (key: string, t: number, l: number, detached: boolean, alignment: Side ) => void;

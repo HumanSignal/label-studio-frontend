@@ -4,14 +4,14 @@ import { Block, Elem } from '../../../utils/bem';
 import { useMedia } from '../../../hooks/useMedia';
 import ResizeObserver from '../../../utils/resize-observer';
 import { clamp } from '../../../utils/utilities';
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
 import '../SidePanels.styl';
 import { SidePanelsContext } from '../SidePanelsContext';
 import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
 import { PanelTabsBase } from './PanelTabsBase';
 import { Tabs } from './Tabs';
 import { CommonProps, emptyPanel, EventHandlers, PanelBBox, Result, Side, SidePanelsProps } from './types';
-import { getAttachedPerSide, getSnappedHeights, joinPanelColumns, renameKeys, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
+import { getAttachedPerSide, getSnappedHeights, joinPanelColumns, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
 
 const maxWindowWidth = 980;
 const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
@@ -120,7 +120,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   );
 
   const onVisibilityChange = useCallback((key: string, visible: boolean) => {
-    
     setPanelData((state) => {
       const panel = panelData[key];
       const position = normalizeOffsets(key, panel.top, panel.left, visible);
@@ -205,19 +204,17 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     });
   }, [updatePanel, checkSnap, panelData, positioning]);
 
-  const onResizeStart = useCallback(() => {
-    setResizing(() => true);
-  }, []);
-
-  const onResizeEnd = useCallback(() => {
-    setResizing(() => false);
-  }, []);
+  const onResizeStart = useCallback(() => { setResizing(() => true); }, []);
+  const onResizeEnd = useCallback(() => { setResizing(() => false); }, []);
 
   const findPanelsOnSameSide = useCallback((panelAlignment : string) => {
     return Object.keys(panelData)
       .filter((panelName) => panelData[panelName as string]?.alignment === panelAlignment);
   }, [panelData]);
 
+  const onGroupHeightResize = useCallback((key: string, h: number, t: number) => {
+    setPanelData((state) => resizePanelColumns(state, key, h, t, viewportSize.current.height));
+  }, [setPanelData]);
 
   const onResize = useCallback((key: string, w: number, h: number, t: number, l: number) => {
     const { left, top } = normalizeOffsets(key, t, l);
@@ -226,8 +223,10 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     requestAnimationFrame(() => {
       const panelsOnSameAlignment = findPanelsOnSameSide(panelData[key]?.alignment);
 
-      panelsOnSameAlignment.forEach((key) => {
-        updatePanel(key, {
+      panelsOnSameAlignment.forEach((panelKey) => {
+        const height = panelKey === key ? h : panelData[panelKey].height;
+        
+        updatePanel(panelKey, {
           top,
           left,
           relativeTop: (top / viewportSize.current.height) * 100,
@@ -236,7 +235,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
           storedTop: undefined,
           maxHeight,
           width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
-          height: clamp(h, DEFAULT_PANEL_HEIGHT, maxHeight),
+          height: clamp(height, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT),
         });
       });
     });
@@ -266,6 +265,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const eventHandlers: EventHandlers = useMemo(() => {
     return {
       onResize,
+      onGroupHeightResize,
       onResizeStart,
       onResizeEnd,
       onPositionChange,
@@ -277,7 +277,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       setActiveTab,
       checkSnap,
     };
-  }, [onResize, onResizeStart, onResizeEnd, onPositionChange, onVisibilityChange, onSnap, transferTab, createNewPanel, setActiveTab]);
+  }, [onResize, onGroupHeightResize, onResizeStart, onResizeEnd, onPositionChange, onVisibilityChange, onSnap, transferTab, createNewPanel, setActiveTab]);
 
   const commonProps: CommonProps = useMemo(() => {
     return {

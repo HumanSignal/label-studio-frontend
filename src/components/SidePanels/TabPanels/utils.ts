@@ -1,5 +1,6 @@
 import { FC, ReactNode } from 'react';
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
+import { clamp } from '../../../utils/utilities';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
 import { Comments, History, Info, Relations } from '../DetailsPanel/DetailsPanel';
 import { OutlinerComponent } from '../OutlinerPanel/OutlinerPanel';
 import { PanelProps } from '../PanelBase';
@@ -175,6 +176,7 @@ export const resizers = [
   'bottom',
   'right',
   'left',
+  'grouped-top',
 ];
 
 export const restorePanel = () => {
@@ -271,4 +273,43 @@ export const splitPanelColumns = (
   };
 
   return { ...newState, [removingKey]: { ...newState[removingKey], ...movingTabAttributes } };
+};
+
+export const resizePanelColumns = (
+  state: Record<string, PanelBBox>,
+  key: string,
+  height: number,
+  top: number,
+  availableHeight: number,
+) => {
+  const newState = { ...state };
+  const panelsOnSameAlignment = getAttachedPerSide(newState, newState[key]?.alignment as Side);
+
+  const maxHeight = availableHeight;
+
+  if (!panelsOnSameAlignment) return state;
+  const difference = (height - newState[key].height);
+  const panelAboveKey =  panelsOnSameAlignment[panelsOnSameAlignment.indexOf(key) - 1];
+
+  panelsOnSameAlignment.forEach((panelKey) => {
+    let newHeight = newState[panelKey].height;
+    
+    if (panelKey === key) newHeight = height;
+    if (panelKey === panelAboveKey) newHeight = newHeight - difference;
+    if (height <= DEFAULT_PANEL_MIN_HEIGHT) height = DEFAULT_PANEL_MIN_HEIGHT;
+
+    newState[panelKey] = {
+      ...newState[panelKey],
+      relativeTop: (top / availableHeight) * 100,
+      storedLeft: undefined,
+      storedTop: undefined,
+      maxHeight,
+      height: clamp(newHeight, DEFAULT_PANEL_MIN_HEIGHT, availableHeight),
+    };
+  });
+  const totalHeight = panelsOnSameAlignment.reduce((acc, panelKey) => acc + newState[panelKey].height, 0);
+
+  if (totalHeight > availableHeight) return state;
+
+  return newState;
 };

@@ -180,7 +180,6 @@
     &[data-resize=top]
       top 0
       transform translate(0, -50%)
-
     &[data-resize=bottom]
       bottom 0
       transform translate(0, 50%)
@@ -237,7 +236,6 @@
       transform translate(50%, 50%)
       cursor nwse-resize
 
-
     &::before
       top 50%
       left 50%
@@ -250,12 +248,14 @@
       background-color $accent_color
       border-radius 100%
 
+    &[data-resize=grouped-top]::before
     &[data-resize=top]::before,
     &[data-resize=bottom]::before,
     &[data-resize=left]::before,
     &[data-resize=right]::before
       border-radius 20px
-
+      
+    &[data-resize=grouped-top]::before
     &[data-resize=top]::before,
     &[data-resize=bottom]::before
       left 0
@@ -278,49 +278,22 @@
     &_drag::before
       display block
 
+  &__grouped-top
+    z-index 10
+    position absolute
+    background-color transparent
+    user-select none
+    height 12px
+    width 100%
+    cursor ns-resize
 
-
-.ghjk
-  // Toggle button tooltip styles
-  &:not(&_hidden) &__toggle:hover,
-  &_hidden&&_detached &__toggle:hover,
-  &_hidden:not(&_detached) &__header:hover &__toggle
-    &::before
-      color #fff
-      font-size 16px
-      font-weight 500
-      padding 4px 16px
+    &:hover::before, 
+    &_drag
+      background-color $accent_color
+      content ''
+      width 100%
+      height 3px
       position absolute
-      white-space nowrap
-      border-radius 4px
-      background-color #262626
-      content attr(data-tooltip)
-
-  // Panel is hidden and snapped to one of the sides
-  &_hidden&:not(&_detached)&_alignment_left &__toggle,
-  &_hidden&:not(&_detached)&_alignment_right &__toggle
-    &::before
-      top calc(100% + 4px)
-      transform translate(-50%, 0)
-
-  &_hidden&:not(&_detached)&_alignment_left &__toggle
-    &::before
-      left calc(100% + 4px)
-
-  &_hidden&:not(&_detached)&_alignment_right &__toggle
-    &::before
-      right calc(100% + 4px)
-
-  // Panel is visible and snapped to one of the sides
-  &:not(&_hidden):not(&_detached) &__toggle
-    &::before
-      left 50%
-      top calc(100% + 4px)
-      transform translate(-50%, 0)
-
-  // Panel is visible and floating
-  &_detached &__toggle
-    &::before
-      left 50%
-      bottom calc(100% + 4px)
-      transform translate(-50%, 0)
+      background-color $accent_color
+      border-radius 3px
+      transform translate(0, -50%)
