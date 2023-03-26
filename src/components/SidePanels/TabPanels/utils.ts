@@ -293,10 +293,11 @@ export const resizePanelColumns = (
 
   panelsOnSameAlignment.forEach((panelKey) => {
     let newHeight = newState[panelKey].height;
-    
+
     if (panelKey === key) newHeight = height;
     if (panelKey === panelAboveKey) newHeight = newHeight - difference;
     if (height <= DEFAULT_PANEL_MIN_HEIGHT) height = DEFAULT_PANEL_MIN_HEIGHT;
+    if (!newState[panelKey].visible) return;
 
     newState[panelKey] = {
       ...newState[panelKey],
@@ -307,9 +308,11 @@ export const resizePanelColumns = (
       height: clamp(newHeight, DEFAULT_PANEL_MIN_HEIGHT, availableHeight),
     };
   });
-  const totalHeight = panelsOnSameAlignment.reduce((acc, panelKey) => acc + newState[panelKey].height, 0);
-
+  const totalHeight = panelsOnSameAlignment.reduce((acc, panelKey) => {
+    if (newState[panelKey].visible) acc + newState[panelKey].height;
+    return acc;
+  }, 0);
+  
   if (totalHeight > availableHeight) return state;
-
   return newState;
 };

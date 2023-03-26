@@ -250,7 +250,6 @@ export const PanelTabsBase: FC<BaseProps> = ({
   }, [handlers, width, height, top, left, locked, positioning]);
 
 
-
   const handleGroupPanelToggle = () => {
     setSidePanelCollapsed({ ...sidePanelCollapsed, [alignment]: !sidePanelCollapsed[alignment as Side] });
   };
@@ -266,7 +265,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
       <Elem name="content">
         {!locked && collapsedHeader && (
           <>
-            {isChildOfGroup && <Elem name="grouped-top" ref={resizeGroup} mod={{ drag: 'grouped-top' === resizing }} data-resize={'grouped-top'} />}
+            {isChildOfGroup && visible && <Elem name="grouped-top" ref={resizeGroup} mod={{ drag: 'grouped-top' === resizing }} data-resize={'grouped-top'} />}
             <Elem ref={headerRef} onClick={() => { if (collapsed) handleGroupPanelToggle(); }} id={key} mod={{ collapsed }} name="header">
               <Elem name="header-left">
                 {!collapsed && <Elem name="icon" style={{ pointerEvents: 'none' }} tag={IconOutlinerDrag} width={20} />}
