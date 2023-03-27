@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  # increment it in case if you need to reset cache
+  CACHE_NAME_PREFIX: v3
+  NODE: "14"
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout codebase"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ inputs.sha }}
+
+      - name: "Setup NodeJS"
+        uses: actions/setup-node@v3
+        with:
+          node-version: "${{ env.NODE }}"
+
+      - name: Upgrade Yarn
+        run: npm install -g yarn@1.22
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build distribution package
+        timeout-minutes: 10
+        run: yarn run build-bundle
+        env:
+          CI: false # on true webpack breaks on warnings, and we have them a lot
+          NODE_ENV: "production"
+
+      - name: Release package
+        run: yarn semantic-release
+        env:
+          NPM_TOKEN: "TODO: inject your NPM token here"
