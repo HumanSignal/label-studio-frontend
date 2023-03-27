@@ -1,10 +1,10 @@
-import { FC, ReactNode } from 'react';
+import { FC, MutableRefObject, ReactNode } from 'react';
 import { clamp } from '../../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
 import { Comments, History, Info, Relations } from '../DetailsPanel/DetailsPanel';
 import { OutlinerComponent } from '../OutlinerPanel/OutlinerPanel';
 import { PanelProps } from '../PanelBase';
-import { PanelBBox, PanelView, Side } from './types';
+import { emptyPanel, JoinOrder, PanelBBox, PanelView, Side, ViewportSize } from './types';
 
 export const lastCallTime: { [key: string]: number } | undefined = {};
 export const timeouts: { [key: string]: ReturnType<typeof setTimeout> | null } = {};
@@ -138,6 +138,7 @@ const panelViews = [
 
 export const defaultPanelState: Record<string, PanelBBox> = {
   'regions-info': {
+    order: 1,
     top: 0,
     left: 0,
     relativeLeft: 0,
@@ -152,6 +153,7 @@ export const defaultPanelState: Record<string, PanelBBox> = {
     panelViews: [panelViews[0], panelViews[4]],
   },
   'history-comments-relations': {
+    order: 1,
     top: 0,
     left: 0,
     relativeLeft: 0,
@@ -183,6 +185,7 @@ export const restorePanel = () => {
   const parsed = panelData && JSON.parse(panelData);
   const allTabs = panelData && Object.entries(parsed).map(([_, panel]: any) => panel.panelViews).flat(1);
   
+  return defaultPanelState;
   if (!allTabs || allTabs.length !== panelViews.length) return defaultPanelState;
   const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
   const withActiveDefaults = setActiveDefaults(noEmptyPanels);
@@ -250,15 +253,31 @@ export const getSnappedHeights = (
   return newState ;
 };
 
+const setOrder = (state: Record<string, PanelBBox>, panelAddKey: string, columnsToOrder: string[], order: JoinOrder) => {
+  const newState = { ...state };
+
+  newState[panelAddKey].order = order === JoinOrder.top ? 0 : columnsToOrder.length;
+  let orderCounter = order === JoinOrder.bottom ? 0 : 1;
+
+  columnsToOrder.forEach((panelKey) => {
+    if (panelAddKey === panelKey) return;
+    newState[panelKey].order = orderCounter;
+    orderCounter += 1;
+  });
+
+  return newState;
+};
+
 export const joinPanelColumns = (
   state: Record<string, PanelBBox>,
   panelAddKey: string,
   alignment: Side,
   width: number,
   totalHeight: number,
+  order: JoinOrder = JoinOrder.bottom,
 ): Record<string, PanelBBox> => {
   const newState = { ...state };
-  const columns = getAttachedPerSide(state, alignment);
+  const columns = getAttachedPerSide(newState, alignment);
 
   if (!columns) return state;
   const newWidth = columns ? columns.reduce((acc, key) => {
@@ -268,8 +287,7 @@ export const joinPanelColumns = (
 
   const visible = columns.filter(panelKey => state[panelKey].visible);
   const averageHeight = visible.reduce((acc, key) => acc + newState[key].height, 0) / visible.length;
-
-  return getSnappedHeights({
+  const addedPanel = {
     ...newState, [panelAddKey]: {
       ...newState[panelAddKey],
       width: newWidth,
@@ -277,7 +295,11 @@ export const joinPanelColumns = (
       detached: false,
       height: averageHeight,
     },
-  }, totalHeight);
+  };
+  const newColumns = getAttachedPerSide(addedPanel, alignment) as string[];
+  const orderedState = setOrder(addedPanel, panelAddKey, newColumns, order);
+
+  return getSnappedHeights(orderedState, totalHeight);
 };
 
 export const splitPanelColumns = (
@@ -292,8 +314,11 @@ export const splitPanelColumns = (
     detached: true,
     height: DEFAULT_PANEL_HEIGHT,
   };
+  const removedState = { ...newState, [removingKey]: { ...newState[removingKey], ...movingTabAttributes } };
+  const column = getAttachedPerSide(newState, newState[removingKey].alignment as Side);
 
-  return getSnappedHeights({ ...newState, [removingKey]: { ...newState[removingKey], ...movingTabAttributes } }, totalHeight);
+  column?.forEach((key, index) => { newState[key].order = index; });
+  return getSnappedHeights(removedState, totalHeight);
 };
 
 export const resizePanelColumns = (
@@ -341,4 +366,48 @@ export const resizePanelColumns = (
   
   if (totalHeight + collapsedAdjustments > availableHeight) return getSnappedHeights(state, availableHeight);
   return getSnappedHeights(newState, availableHeight);
+};
+
+
+export const newPanelFromTab = (
+  state: Record<string, PanelBBox>,
+  name: string,
+  movingPanel: string,
+  movingTab: number,
+  left: number,
+  top: number,
+  viewportSize: MutableRefObject<ViewportSize>,
+  
+) => ({
+  ...emptyPanel,
+  name,
+  panelViews: [{ ...state[movingPanel].panelViews[movingTab], active: true }],
+  top,
+  left,
+  relativeTop: (top / viewportSize.current.height) * 100,
+  relativeLeft: (left / viewportSize.current.width) * 100,
+  visible: true,
+  detached: true,
+  zIndex: 12,
+});
+
+export const newPanelInState = (
+  state: Record<string, PanelBBox>,
+  name: string,
+  movingPanel: string,
+  movingTab: number,
+  left: number,
+  top: number,
+  viewportSize: MutableRefObject<ViewportSize>,
+) => {
+  const newPanel = newPanelFromTab(state, name, movingPanel, movingTab, left, top, viewportSize);
+  const stateWithRemovals = stateRemovedTab(state, movingPanel, movingTab);
+
+  Object.keys(stateWithRemovals).forEach(panelKey => (stateWithRemovals[panelKey].zIndex = 10));
+  const panelsWithRemovals = stateRemovePanelEmptyViews(stateWithRemovals);
+  const panelWithAdditions = { ...panelsWithRemovals, [`${newPanel.name}`]: newPanel };
+  const renamedKeys = renameKeys(panelWithAdditions);
+  const activeDefaults = setActiveDefaults(renamedKeys);
+
+  return getSnappedHeights(activeDefaults, viewportSize.current.height);
 };

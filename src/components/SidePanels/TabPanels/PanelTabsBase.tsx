@@ -1,4 +1,4 @@
-import { FC, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, MouseEvent as RMouseEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../../utils/bem';
 import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerDrag, IconOutlinerExpand } from '../../../assets/icons';
 import { useDrag } from '../../../hooks/useDrag';
@@ -56,8 +56,9 @@ export const PanelTabsBase: FC<BaseProps> = ({
   const isParentOfCollapsedPanel = attachedKeys && attachedKeys[0] === key;
   const isChildOfGroup = attachedKeys && attachedKeys.includes(key) && attachedKeys[0] !== key;
   const collapsedHeader = !(collapsed && !isParentOfCollapsedPanel);
-  const tooltipText = visible ? 'Collapse' : 'Expand';
+  const tooltipText = visible && !collapsed ? 'Collapse' : 'Expand';
 
+  handlers.current = { onResize, onGroupHeightResize, onResizeStart, onResizeEnd, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap };
   keyRef.current = key;
 
   const style = useMemo(() => {
@@ -92,18 +93,6 @@ export const PanelTabsBase: FC<BaseProps> = ({
       collapsed,
     };
   }, [alignment, visible, detached, resizing, locked, collapsed]);
-
-  useEffect(() => {
-    Object.assign(handlers.current, {
-      onResize,
-      onResizeStart,
-      onResizeEnd,
-      onPositionChangeBegin,
-      onPositionChange,
-      onVisibilityChange,
-      onSnap,
-    });
-  }, [onResize, onResizeStart, onResizeEnd, onPositionChange, onVisibilityChange, onPositionChangeBegin, onSnap]);
 
   // Panel positioning
   useDrag({

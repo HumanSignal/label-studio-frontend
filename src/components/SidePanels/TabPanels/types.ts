@@ -9,18 +9,19 @@ export type TabProps = {
   active: boolean,
   children: ReactNode,
   panelWidth: number,
-  panelHeight: number,
   viewLength: number,
   transferTab: EventHandlers['transferTab'],
   createNewPanel: EventHandlers['createNewPanel'],
   setActiveTab: EventHandlers['setActiveTab'],
-  checkTabSnap: EventHandlers['checkTabSnap'],
+  checkSnap: EventHandlers['checkSnap'],
 }
 export interface SidePanelsProps {
   panelsHidden: boolean;
   store: any;
   currentEntity: any;
 }
+
+export interface ViewportSize { width: number, height: number }
 export interface PanelView {
   title: string;
   name: string;
@@ -32,15 +33,22 @@ export enum Side {
   left = 'left',
   right = 'right',
 }
+
 export enum DropSide {
   left = 'left',
   right = 'right',
-  topRight = 'top-right',
-  topLeft = 'top-left',
-  bottomRight = 'bottom-right',
-  bottomLeft = 'bottom-left',
+  topRight = 'right-top',
+  topLeft = 'left-top',
+  bottomRight = 'right-bottom',
+  bottomLeft = 'left-bottom',
+}
+
+export enum JoinOrder {
+  top = 'top',
+  bottom = 'bottom',
 }
 export interface PanelBBox {
+  order: number;
   width: number;
   height:  number;
   left: number;
@@ -79,8 +87,7 @@ export interface EventHandlers {
     top: number,
   ): void;
   setActiveTab: (key: string, tabIndex: number) => void;
-  checkSnap: (left: number, panelWidth: number) => void;
-  checkTabSnap: (left: number, panelWidth: number, top: number, height: number) => void;
+  checkSnap: (left: number, panelWidth: number, top: number, height: number) => void;
 }
 export type CommonProps = EventHandlers & {
   root: MutableRefObject<HTMLDivElement | undefined>,
@@ -114,6 +121,7 @@ export type Result = {
 }
     
 export const emptyPanel: PanelBBox = {
+  order: 0,
   top: 0,
   left: 0,
   relativeLeft: 0,

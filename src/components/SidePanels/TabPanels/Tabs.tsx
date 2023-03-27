@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { IconOutlinerDrag } from '../../../assets/icons';
 import { useDrag } from '../../../hooks/useDrag';
 import { Block, Elem } from '../../../utils/bem';
-import { DEFAULT_PANEL_MAX_HEIGHT } from '../constants';
+import { DEFAULT_PANEL_HEIGHT } from '../constants';
 import './Tabs.styl';
 import { BaseProps, Side, TabProps } from './types';
 import { determineDroppableArea, determineLeftOrRight } from './utils';
@@ -43,11 +43,10 @@ const Tab = ({
   children,
   active,
   panelWidth,
-  panelHeight,
   transferTab,
   createNewPanel,
   setActiveTab,
-  checkTabSnap,
+  checkSnap,
 }: TabProps) => {
   const tabRef = useRef<HTMLDivElement>();
   const ghostTabRef = useRef<HTMLDivElement>();
@@ -91,12 +90,11 @@ const Tab = ({
           ghostTabRef.current!.style.left = `${newX}px`;
         }
         const dropTargets = document.elementsFromPoint(event.clientX, event.clientY);
-
         const dropTarget = dropTargets.find((target, index) => target.id.includes('droppable') && index > 0);
-
         let side: Side | undefined = determineLeftOrRight(event, dropTarget);
+        const tabHeight = ghostTabRef.current?.getBoundingClientRect().height;
 
-        checkTabSnap(newX, panelWidth, newY, panelHeight);
+        tabHeight && checkSnap(newX, panelWidth, newY, tabHeight);
 
         removeHoverClasses();
         if ((dropTarget as HTMLElement)?.id === `${panelKey}_${tabIndex}_droppable`) return;
@@ -120,7 +118,7 @@ const Tab = ({
         const top = implementedHeight < 0 ? 0 : implementedHeight;
         const droppedOver = document.elementFromPoint(event.clientX, event.clientY);
         const isDropArea = determineDroppableArea(droppedOver as HTMLElement);
-
+        
         if (!isDropArea) createNewPanel(panelKey, tabIndex, left, top);
         else {
           const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
@@ -135,8 +133,8 @@ const Tab = ({
           if (
             (tabIndex === receivingTab && panelKey === receivingPanel) ||
             (viewLength === 1 && panelKey === receivingPanel)
-          )
-            return;
+          ) return;
+
           dropSide && transferTab(tabIndex, panelKey, receivingPanel, receivingTab, dropSide);
         }
       },
@@ -159,7 +157,12 @@ const Tab = ({
       <Elem
         ref={ghostTabRef}
         name="ghost-tab"
-        style={{ width: `${panelWidth}px`, height: `${DEFAULT_PANEL_MAX_HEIGHT}.px` }}
+        style={{
+          width: `${panelWidth}px`,
+          height: 'fit-content',
+          maxHeight: `${DEFAULT_PANEL_HEIGHT}px`,
+          overflow: 'hidden',
+        }}
       >
         <Label />
         <Elem name="contents">{children}</Elem>
@@ -189,12 +192,11 @@ export const Tabs = (props: BaseProps) => {
                   active={view.active}
                   tabTitle={view.title}
                   panelWidth={props.width}
-                  panelHeight={props.height}
                   viewLength={props.panelViews.length}
                   transferTab={props.transferTab}
                   createNewPanel={props.createNewPanel}
                   setActiveTab={props.setActiveTab}
-                  checkTabSnap={props.checkTabSnap}
+                  checkSnap={props.checkSnap}
                 >
                   <Elem name="content">
                     <Component key={`${view.title}-${index}-ghost`} {...props} />
