@@ -11,6 +11,7 @@
           border-right 1px solid var(--panel-border-color)
         &_align_right
           border-left 1px solid var(--panel-border-color)
+
   &__content
     height 100%
     position relative
@@ -62,6 +63,7 @@
       border-radius 0 4px 4px 0
 
     &_align_right&_snap::before
+      left: calc(100% - 6px);
       border-radius 4px 0 0 4px
 
     &_align

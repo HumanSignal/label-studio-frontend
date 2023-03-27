@@ -159,6 +159,10 @@
     height calc(100% - var(--header-height))
     position relative
     styled-scrollbars()
+    pointer-events all
+
+    &_resizing
+      pointer-events none
 
   &__resizer
     --size 12px
@@ -284,16 +288,20 @@
     background-color transparent
     user-select none
     height 12px
-    width 100%
+    width calc(100% - 50px)
     cursor ns-resize
 
     &:hover::before, 
     &_drag
       background-color $accent_color
       content ''
-      width 100%
+      width calc(100% + 50px)
       height 3px
       position absolute
       background-color $accent_color
       border-radius 3px
       transform translate(0, -50%)
+      cursor ns-resize
+
+    &_drag
+      width 100%

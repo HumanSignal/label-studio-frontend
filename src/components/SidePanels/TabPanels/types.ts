@@ -9,19 +9,18 @@ export type TabProps = {
   active: boolean,
   children: ReactNode,
   panelWidth: number,
+  panelHeight: number,
   viewLength: number,
   transferTab: EventHandlers['transferTab'],
   createNewPanel: EventHandlers['createNewPanel'],
   setActiveTab: EventHandlers['setActiveTab'],
-  checkSnap: EventHandlers['checkSnap'],
+  checkTabSnap: EventHandlers['checkTabSnap'],
 }
-  
 export interface SidePanelsProps {
   panelsHidden: boolean;
   store: any;
   currentEntity: any;
 }
-
 export interface PanelView {
   title: string;
   name: string;
@@ -33,7 +32,14 @@ export enum Side {
   left = 'left',
   right = 'right',
 }
-
+export enum DropSide {
+  left = 'left',
+  right = 'right',
+  topRight = 'top-right',
+  topLeft = 'top-left',
+  bottomRight = 'bottom-right',
+  bottomLeft = 'bottom-left',
+}
 export interface PanelBBox {
   width: number;
   height:  number;
@@ -50,7 +56,6 @@ export interface PanelBBox {
   alignment: Side;
   panelViews: PanelView[];
 }
-    
 export interface EventHandlers {
   onResize: (key: string, w: number, h: number, t: number, l: number) => void;
   onGroupHeightResize: (key: string, h: number, t: number) => void;
@@ -75,6 +80,7 @@ export interface EventHandlers {
   ): void;
   setActiveTab: (key: string, tabIndex: number) => void;
   checkSnap: (left: number, panelWidth: number) => void;
+  checkTabSnap: (left: number, panelWidth: number, top: number, height: number) => void;
 }
 export type CommonProps = EventHandlers & {
   root: MutableRefObject<HTMLDivElement | undefined>,

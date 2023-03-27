@@ -167,8 +167,6 @@ export const PanelTabsBase: FC<BaseProps> = ({
     passive: true,
 
     onMouseDown(e) {
-      console.log('onMouseDown', e);
-
       const target = e.target as HTMLElement;
       const type = target.dataset.resize;
       const shift = (() => {
@@ -287,7 +285,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
           </>
         )}
         {visible && !collapsed && (
-          <Elem name="body">
+          <Elem name="body" mod={{ resizing }}>
             {children}
           </Elem>
         )}

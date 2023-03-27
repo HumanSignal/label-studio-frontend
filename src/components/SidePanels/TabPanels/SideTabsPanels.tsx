@@ -10,7 +10,7 @@ import { SidePanelsContext } from '../SidePanelsContext';
 import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
 import { PanelTabsBase } from './PanelTabsBase';
 import { Tabs } from './Tabs';
-import { CommonProps, emptyPanel, EventHandlers, PanelBBox, Result, Side, SidePanelsProps } from './types';
+import { CommonProps, DropSide, emptyPanel, EventHandlers, PanelBBox, Result, Side, SidePanelsProps } from './types';
 import { getAttachedPerSide, getSnappedHeights, joinPanelColumns, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
 
 const maxWindowWidth = 980;
@@ -30,7 +30,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const [initialized, setInitialized] = useState(false);
   const [collapsedSide, setCollapsedSide] = useState({ [Side.left]: false, [Side.right]: false });
   const rootRef = useRef<HTMLDivElement>();
-  const [snap, setSnap] = useState<Side | undefined>();
+  const [snap, setSnap] = useState<DropSide | Side | undefined>();
   const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel());
   const localSnap = useRef(snap);
 
@@ -85,6 +85,15 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     left: number,
     top: number,
   ) => { 
+    if (localSnap.current) {
+      setPanelData((state) => {
+        const joinedPanelState = joinPanelColumns(state, movingPanel, localSnap.current as Side, state[movingPanel].width, viewportSize.current.height);
+        
+        return joinedPanelState;
+      });
+      setSnap(undefined);
+      return;
+    }
     setPanelData((state) => {
       const movingTabComponent = state[movingPanel].panelViews[movingTab];
       const newPanel = {
@@ -140,17 +149,35 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
   const checkSnap = (left: number, panelWidth: number) => {
     const right = left + panelWidth;
-    const parentWidth = rootRef.current?.clientWidth ?? 0;
+    const parentWidth = viewportSize.current.width ?? 0;
     const rightLimit = parentWidth - snapThreshold;
 
     if (left >= 0 && left <= snapThreshold) {
-      setSnap(Side.left);
+      setSnap(DropSide.left);
     } else if (right <= parentWidth && right >= rightLimit) {
-      setSnap(Side.right);
+      setSnap(DropSide.right);
     } else {
       setSnap(undefined);
     }
   };
+
+  const checkTabSnap = useCallback((left: number, panelWidth: number, top: number, panelHeight: number) => {
+
+    const right = left + panelWidth;
+    const parentWidth = rootRef.current?.clientWidth ?? 0;
+    const targetRightWidth = Object.entries(panelData).find(([_, panelData]) => panelData.alignment === Side.right)?.[1].width;
+    const targetLeftWidth = Object.entries(panelData).find(([_, panelData]) => panelData.alignment === Side.left)?.[1].width;
+    
+    if (!collapsedSide[Side.left] && targetLeftWidth && left < targetLeftWidth && top <= 0) setSnap(DropSide.topLeft);
+    else if (!collapsedSide[Side.left] && targetLeftWidth && left < targetLeftWidth && top + panelHeight >= viewportSize.current.height ) setSnap(DropSide.bottomLeft);
+    else if (!collapsedSide[Side.right] && targetRightWidth && right > parentWidth - targetRightWidth && top <= 0) setSnap(DropSide.topRight);
+    else if (!collapsedSide[Side.right] && targetRightWidth && right < parentWidth - targetRightWidth && top + panelHeight >= viewportSize.current.height ) setSnap(DropSide.bottomLeft);
+
+    else if (left <= 0) setSnap(DropSide.left);
+    else if (right >= parentWidth) setSnap(DropSide.right);
+    else setSnap(undefined);
+  
+  }, [panelData]);
 
   const normalizeOffsets = (key: string, top: number, left: number, visible?: boolean) => {
     const panel = panelData[key];
@@ -183,10 +210,9 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     
     if (!positioning && !panelData[key].detached) {
       setPositioning(true);
-      const splitPanelState = splitPanelColumns(panelData, key);
-      const restorePanelHeights = getSnappedHeights(splitPanelState, viewportSize.current.height);
-
-      setPanelData(restorePanelHeights);
+      setPanelData((state) => {
+        return splitPanelColumns(state, key, viewportSize.current.height);
+      });
     }
     checkSnap(left, panel.width);
     requestAnimationFrame(() => {
@@ -253,10 +279,9 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
     if(sameSidePanelKeys.length > 0) {
       const width = clamp(panelData[sameSidePanelKeys[0] as string]?.width, DEFAULT_PANEL_WIDTH, panelMaxWidth);
-      const joinedPanelState = joinPanelColumns(panelData, key, localSnap.current as Side, width);
-      const heightsAdjusted = getSnappedHeights(joinedPanelState, viewportSize.current.height);
+      const joinedPanelState = joinPanelColumns(panelData, key, localSnap.current as Side, width, viewportSize.current.height);
 
-      setPanelData(heightsAdjusted);
+      setPanelData(joinedPanelState);
     } else updatePanel(key, bboxData);
     
     setSnap(undefined);
@@ -276,6 +301,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       createNewPanel,
       setActiveTab,
       checkSnap,
+      checkTabSnap,
     };
   }, [onResize, onGroupHeightResize, onResizeStart, onResizeEnd, onPositionChange, onVisibilityChange, onSnap, transferTab, createNewPanel, setActiveTab]);
 

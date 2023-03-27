@@ -176,7 +176,6 @@ export const resizers = [
   'bottom',
   'right',
   'left',
-  'grouped-top',
 ];
 
 export const restorePanel = () => {
@@ -212,7 +211,7 @@ export const savePanels = (panelData: Record<string, PanelBBox>) => {
 export const getLeftKeys = (state: Record<string, PanelBBox>) =>  Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.left);
 export const getRightKeys = (state: Record<string, PanelBBox>) =>  Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.right);
 
-export const getAttachedPerSide = (state: Record<string, PanelBBox>, side: Side) => {
+export const getAttachedPerSide = (state: Record<string, PanelBBox>, side: string) => {
   if (side === Side.left) return getLeftKeys(state);
   if (side === Side.right) return getRightKeys(state);
 };
@@ -225,18 +224,25 @@ export const getSnappedHeights = (
   const leftKeys = getLeftKeys(newState);
   const rightKeys = getRightKeys(newState);
 
-  [leftKeys, rightKeys].forEach(list => {
-
-    const totalCollapsed = list.filter(panelKey => !newState[panelKey].visible).length;
-    const collapsedAdjustments =  PANEL_HEADER_HEIGHT * totalCollapsed;
-    const panelHeight = (totalHeight - collapsedAdjustments) /  ((list.length - totalCollapsed) || 1);
+  [leftKeys, rightKeys].forEach((list) => {
+    const totalCollapsed = list.filter(panelKey => !state[panelKey].visible).length;
+    const visible = list.filter(panelKey => state[panelKey].visible);
+    const collapsedAdjustments = PANEL_HEADER_HEIGHT * totalCollapsed;
+    const visibleGroupHeight = visible.reduce((acc, key) => acc + newState[key].height, 0);
+    const visibleGroupDifference = totalHeight - collapsedAdjustments - visibleGroupHeight;
+    const negativeNumber = visibleGroupDifference < 0;
+    const adjustment = Math.abs(visibleGroupDifference) / (visible.length || 1);
     let top = 0;
 
-    list.forEach(panelKey => {
+    visible.forEach(panelKey => {
+      const newHeight = negativeNumber
+        ? newState[panelKey].height - adjustment
+        : newState[panelKey].height + adjustment;
+      
       if (newState[panelKey].visible) {
-        newState[panelKey].height = panelHeight;
+        newState[panelKey].height = newHeight;
         newState[panelKey].top = top;
-        top += newState[panelKey].height;
+        top += newHeight;
       } else top += PANEL_HEADER_HEIGHT;
     });
   });
@@ -249,20 +255,35 @@ export const joinPanelColumns = (
   panelAddKey: string,
   alignment: Side,
   width: number,
-) => {
-  return {
-    ...state, [panelAddKey]: {
-      ...state[panelAddKey],
-      width,
+  totalHeight: number,
+): Record<string, PanelBBox> => {
+  const newState = { ...state };
+  const columns = getAttachedPerSide(state, alignment);
+
+  if (!columns) return state;
+  const newWidth = columns ? columns.reduce((acc, key) => {
+    if (acc < state[key].width) return state[key].width;
+    return acc;
+  }, 0) : width;
+
+  const visible = columns.filter(panelKey => state[panelKey].visible);
+  const averageHeight = visible.reduce((acc, key) => acc + newState[key].height, 0) / visible.length;
+
+  return getSnappedHeights({
+    ...newState, [panelAddKey]: {
+      ...newState[panelAddKey],
+      width: newWidth,
       alignment,
       detached: false,
+      height: averageHeight,
     },
-  };
+  }, totalHeight);
 };
 
 export const splitPanelColumns = (
   state: Record<string, PanelBBox>,
   removingKey: string,
+  totalHeight: number,
 ) => {
   const newState = { ...state };
 
@@ -272,7 +293,7 @@ export const splitPanelColumns = (
     height: DEFAULT_PANEL_HEIGHT,
   };
 
-  return { ...newState, [removingKey]: { ...newState[removingKey], ...movingTabAttributes } };
+  return getSnappedHeights({ ...newState, [removingKey]: { ...newState[removingKey], ...movingTabAttributes } }, totalHeight);
 };
 
 export const resizePanelColumns = (
@@ -289,7 +310,11 @@ export const resizePanelColumns = (
 
   if (!panelsOnSameAlignment) return state;
   const difference = (height - newState[key].height);
-  const panelAboveKey =  panelsOnSameAlignment[panelsOnSameAlignment.indexOf(key) - 1];
+  const visiblePanels = panelsOnSameAlignment.filter((panelKey) => newState[panelKey].visible);
+  const panelAboveKeyIndex = visiblePanels?.findIndex((visibleKey) => visibleKey === key) - 1;
+
+  if (panelAboveKeyIndex === undefined) return state;
+  const panelAboveKey = visiblePanels[panelAboveKeyIndex];
 
   panelsOnSameAlignment.forEach((panelKey) => {
     let newHeight = newState[panelKey].height;
@@ -308,11 +333,12 @@ export const resizePanelColumns = (
       height: clamp(newHeight, DEFAULT_PANEL_MIN_HEIGHT, availableHeight),
     };
   });
-  const totalHeight = panelsOnSameAlignment.reduce((acc, panelKey) => {
-    if (newState[panelKey].visible) acc + newState[panelKey].height;
-    return acc;
-  }, 0);
+  const collapsedAdjustments = panelsOnSameAlignment
+    .filter(panelKey => !newState[panelKey].visible).length * PANEL_HEADER_HEIGHT;
+  const totalHeight = panelsOnSameAlignment
+    .filter(panelKey => newState[panelKey].visible)
+    .reduce((acc, panelKey) => acc + newState[panelKey].height, 0);
   
-  if (totalHeight > availableHeight) return state;
-  return newState;
+  if (totalHeight + collapsedAdjustments > availableHeight) return getSnappedHeights(state, availableHeight);
+  return getSnappedHeights(newState, availableHeight);
 };
