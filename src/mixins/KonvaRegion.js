@@ -50,24 +50,32 @@ export const KonvaRegionMixin = types.model({})
         const canvas = self.shapeRef?.parent?.canvas?._canvas;
         let viewport = canvas;
 
+        // don't scroll when image is zoomed
+        if (self.object.zoomScale > 1) return;
+
+        // `.lsf-main-content` is the main scrollable container for LSF
         while (viewport && !viewport.scrollTop && !viewport.className.includes('main-content')) {
           viewport = viewport.parentElement;
         }
         if (!viewport) return;
 
+        // minimum pixels to consider element visible
         const VISIBLE_PIECE = 10;
+        // positioned absolutely, covering part of interface
         const INFOBAR_HEIGHT = 36;
 
         const vBBox = viewport.getBoundingClientRect();
         const cBBox = canvas.getBoundingClientRect();
         const rBBox = self.bboxCoordsCanvas;
+        // comparing the farthest point of region from top or bottom image edge
+        // and how deep is this edge hidden behind respective edge of viewport
         const overTop = rBBox.bottom - (vBBox.top - cBBox.top);
         const overBottom = (canvas.clientHeight - rBBox.top) - (cBBox.bottom - vBBox.bottom);
 
         if (overTop < VISIBLE_PIECE) {
-          viewport.scrollBy(0, overTop - VISIBLE_PIECE);
+          viewport.scrollBy({ top: overTop - VISIBLE_PIECE, left: 0, behavior: 'smooth' });
         } else if (overBottom < VISIBLE_PIECE + INFOBAR_HEIGHT) {
-          viewport.scrollBy(0, -overBottom + VISIBLE_PIECE + INFOBAR_HEIGHT);
+          viewport.scrollBy({ top: -overBottom + VISIBLE_PIECE + INFOBAR_HEIGHT, left: 0, behavior: 'smooth' });
         }
       },
 
