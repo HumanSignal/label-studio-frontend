@@ -46,10 +46,14 @@ export const KonvaRegionMixin = types.model({})
         }
       },
 
-      /**
-       * Scrolls to region if possible
-       */
       selectRegion() {
+        self.scrollToRegion();
+      },
+
+      /**
+       * Scrolls to region if possible or scrolls to whole image if needed
+       */
+      scrollToRegion() {
         const zoomedIn = self.object.zoomScale > 1;
         const canvas = self.shapeRef?.parent?.canvas?._canvas;
         let viewport = canvas;
