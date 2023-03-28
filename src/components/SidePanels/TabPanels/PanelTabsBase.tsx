@@ -75,7 +75,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
       ...dynamicStyle,
       zIndex,
     };
-  }, [width, height, visible, locked, collapsed]);
+  }, [width, height, visible, locked, collapsed, zIndex]);
 
   const coordinates = useMemo(() => {
     return detached && !locked ? {
@@ -106,9 +106,8 @@ export const PanelTabsBase: FC<BaseProps> = ({
       const el = e.target as HTMLElement;
       const collapseClassName = '[class*=__toggle]';
 
-      if (el.matches(collapseClassName) || el.closest(collapseClassName) || collapsed) {
-        return;
-      }
+      if (el.matches(collapseClassName) || el.closest(collapseClassName) || collapsed) return;
+      
       const allowDrag = true;
       const panel = panelRef.current!;
       const parentBBox = root.current!.getBoundingClientRect();
@@ -139,7 +138,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
 
       if (dist < 30) return;
       const [nX, nY] = [oX + (mX - x), oY + (mY - y)];
-
+      
       handlers.current.onPositionChange?.(draggingKey, nY, nX, true, alignment);
     },
 

@@ -156,23 +156,20 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     setSnap(snap);
   }, [panelData]);
 
-  const normalizeOffsets = (key: string, top: number, left: number, visible?: boolean) => {
+  const normalizeOffsets = useCallback((key: string, top: number, left: number, visible?: boolean) => {
     const panel = panelData[key];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
-    let height = panel.detached
-      ? (visible ?? panel.visible) ? panel.height : PANEL_HEADER_HEIGHT
-      : panel.height;
-    
-    if (panel.height === rootRef.current?.clientHeight) height = DEFAULT_PANEL_HEIGHT;
-      
+    const visibleHeight = (visible ?? panel.visible) ? panel.height : PANEL_HEADER_HEIGHT;
+    const detachedHeight = panel.detached ? visibleHeight : panel.height;
+    const adjustedHeight = panel.height === rootRef.current?.clientHeight || !panel.detached ? DEFAULT_PANEL_HEIGHT : detachedHeight;
     const normalizedLeft = clamp(left, 0, parentWidth - panel.width);
-    const normalizedTop = clamp(top, 0, (rootRef.current?.clientHeight ?? 0) - height);
+    const normalizedTop = clamp(top, 0, (rootRef.current?.clientHeight ?? 0) - adjustedHeight);
 
     return {
       left: normalizedLeft,
       top: normalizedTop || 1,
     };
-  };
+  }, [panelData]);
 
   const onPositionChangeBegin = useCallback((key: string) => {
     Object.keys(panelData).forEach(panelKey => updatePanel(panelKey, {
@@ -331,6 +328,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     for(const [name, panelDatum] of panels) {
       const { alignment, detached } = panelDatum;
       const attachedKeys = getAttachedPerSide(panelData, alignment);
+
       const props = {
         ...panelDatum,
         ...commonProps,
