@@ -1,4 +1,4 @@
-Feature('Image list via `valueList`');
+Feature('MIG');
 
 const assert = require('assert');
 
@@ -283,13 +283,13 @@ Scenario('No errors during brush export in MIG', async ({ I, LabelStudio, AtImag
   await AtImageView.lookForStage();
 
   I.say('Create brush regions on the first image');
-  
   AtLabels.clickLabel('Moonwalker');
   AtImageView.drawThroughPoints(brushRegionPoints);
 
   await AtImageView.multiImageGoForwartWithHotkey();
 
   I.pressKey('u');
+  I.say('Create brush regions on the second image');
   AtLabels.clickLabel('Planet');
   AtImageView.drawThroughPoints(brushRegionPoints);
 
