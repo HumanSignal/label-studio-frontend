@@ -305,7 +305,7 @@ export const joinPanelColumns = (
   }, 0) : width;
 
   const visible = columns.filter(panelKey => state[panelKey].visible);
-  const averageHeight = visible.reduce((acc, key) => acc + newState[key].height, 0) / visible.length;
+  const averageHeight = visible.reduce((acc, key) => acc + newState[key].height, 0) / (visible.length || 1);
   const addedPanel = {
     ...newState, [panelAddKey]: {
       ...newState[panelAddKey],

@@ -356,7 +356,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     }
     return result;
 
-  }, [panelData, commonProps, panelsHidden, positioning, panelMaxWidth, collapsedSide, snap]);
+  }, [panelData, commonProps, panelsHidden, panelBreakPoint, positioning, panelMaxWidth, collapsedSide, snap]);
 
   useEffect(() => {
     if (Object.keys(panelData).length) savePanels(panelData);
