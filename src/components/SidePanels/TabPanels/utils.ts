@@ -234,7 +234,7 @@ export const getLeftKeys = (state: Record<string, PanelBBox>) =>  Object.keys(st
 export const getRightKeys = (state: Record<string, PanelBBox>) =>  Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.right);
 
 export const getAttachedPerSide = (state: Record<string, PanelBBox>, side: string) => {
-  if (side === Side.left) return getLeftKeys(state);
+  if (side === Side.left) return getLeftKeys(state).sort((a, b) => state[a].order - state[b].order);
   if (side === Side.right) return getRightKeys(state);
 };
 

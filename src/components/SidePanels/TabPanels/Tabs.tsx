@@ -58,7 +58,6 @@ const Tab = ({
 
   location.current = { panelKey, tabIndex };
 
-  console.log(breakPointActiveTab, setBreakPointActiveTab, locked);
   useDrag(
     {
       elementRef: tabRef,
