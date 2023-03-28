@@ -212,7 +212,9 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const onResizeEnd = useCallback(() => { setResizing(() => false); }, []);
 
   const onGroupHeightResize = useCallback((key: string, h: number, t: number) => {
-    setPanelData((state) => resizePanelColumns(state, key, h, t, viewportSize.current.height));
+    requestAnimationFrame(() => {
+      setPanelData((state) => resizePanelColumns(state, key, h, t, viewportSize.current.height));
+    });
   }, [setPanelData]);
 
   const onResize = useCallback((key: string, w: number, h: number, t: number, l: number) => {
@@ -220,22 +222,16 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     const maxHeight = viewportSize.current.height - top;
 
     requestAnimationFrame(() => {
-      const panelsOnSameAlignment = getAttachedPerSide(panelData, panelData[key]?.alignment);
-
-      panelsOnSameAlignment && panelsOnSameAlignment.forEach((panelKey) => {
-        const height = panelKey === key ? h : panelData[panelKey].height;
-        
-        updatePanel(panelKey, {
-          top,
-          left,
-          relativeTop: (top / viewportSize.current.height) * 100,
-          relativeLeft: (left / viewportSize.current.width) * 100,
-          storedLeft: undefined,
-          storedTop: undefined,
-          maxHeight,
-          width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
-          height: clamp(height, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT),
-        });
+      updatePanel(key, {
+        top,
+        left,
+        relativeTop: (top / viewportSize.current.height) * 100,
+        relativeLeft: (left / viewportSize.current.width) * 100,
+        storedLeft: undefined,
+        storedTop: undefined,
+        maxHeight,
+        width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
+        height: clamp(h, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT),
       });
     });
   }, [updatePanel, panelMaxWidth, panelData]);
