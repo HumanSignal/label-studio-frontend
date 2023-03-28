@@ -46,12 +46,13 @@ export const KonvaRegionMixin = types.model({})
         }
       },
 
+      /**
+       * Scrolls to region if possible
+       */
       selectRegion() {
+        const zoomedIn = self.object.zoomScale > 1;
         const canvas = self.shapeRef?.parent?.canvas?._canvas;
         let viewport = canvas;
-
-        // don't scroll when image is zoomed
-        if (self.object.zoomScale > 1) return;
 
         // `.lsf-main-content` is the main scrollable container for LSF
         while (viewport && !viewport.scrollTop && !viewport.className.includes('main-content')) {
@@ -66,20 +67,28 @@ export const KonvaRegionMixin = types.model({})
 
         const vBBox = viewport.getBoundingClientRect();
         const cBBox = canvas.getBoundingClientRect();
-        const rBBox = self.bboxCoordsCanvas;
+        // bbox inside canvas; for zoomed images calculations are tough,
+        // so we use the whole image so it should be visible enough at the end
+        const rBBox = zoomedIn ? { top: 0, bottom: cBBox.height } : self.bboxCoordsCanvas;
         const height = rBBox.bottom - rBBox.top;
         // comparing the closest point of region from top or bottom image edge
         // and how deep is this edge hidden behind respective edge of viewport
         const overTop = rBBox.top - (vBBox.top - cBBox.top);
         const overBottom = (canvas.clientHeight - rBBox.bottom) - (cBBox.bottom - vBBox.bottom) - INFOBAR_HEIGHT;
+        // huge images should be scrolled to the closest edge, not to hidden one
+        const isHuge = zoomedIn && canvas.clientHeight > viewport.clientHeight;
 
-        // huge region cut off by viewport edges — do nothing
+        // huge region or image cut off by viewport edges — do nothing
         if (overTop < 0 && overBottom < 0) return;
 
         if (overTop < 0 && -overTop / height > (1 - VISIBLE_AREA)) {
-          viewport.scrollBy({ top: overTop, left: 0, behavior: 'smooth' });
+          // if image is still visible enough — don't scroll
+          if (zoomedIn && (cBBox.bottom - vBBox.top) / viewport.clientHeight > (1 - VISIBLE_AREA)) return;
+          viewport.scrollBy({ top: isHuge ? -overBottom : overTop, left: 0, behavior: 'smooth' });
         } else if (overBottom < 0 && -overBottom / height > (1 - VISIBLE_AREA)) {
-          viewport.scrollBy({ top: -overBottom, left: 0, behavior: 'smooth' });
+          // if image is still visible enough — don't scroll
+          if (zoomedIn && (vBBox.bottom - cBBox.top) / viewport.clientHeight > (1 - VISIBLE_AREA)) return;
+          viewport.scrollBy({ top: isHuge ? overTop : -overBottom, left: 0, behavior: 'smooth' });
         }
       },
 
