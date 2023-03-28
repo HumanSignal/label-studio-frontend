@@ -1,6 +1,6 @@
 import { FC, MutableRefObject, ReactNode } from 'react';
 import { clamp } from '../../../utils/utilities';
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
 import { Comments, History, Info, Relations } from '../DetailsPanel/DetailsPanel';
 import { OutlinerComponent } from '../OutlinerPanel/OutlinerPanel';
 import { PanelProps } from '../PanelBase';
@@ -169,6 +169,26 @@ export const defaultPanelState: Record<string, PanelBBox> = {
   },
 };
 
+export const partialEmptyBaseProps = {
+  ...emptyPanel,
+  name: 'breakpointCollapsed',
+  positioning: false,
+  height: DEFAULT_PANEL_HEIGHT,
+  maxHeight: DEFAULT_PANEL_HEIGHT,
+  detached: false,
+  maxWidth: DEFAULT_PANEL_MAX_WIDTH,
+  zIndex: 10,
+  expanded: true,
+  alignment: Side.left,
+  locked: true,
+  attachedKeys: [],
+  sidePanelCollapsed: { [Side.left]: false, [Side.right]: false },
+  setSidePanelCollapsed: () => { },
+  dragTop: false,
+  dragBottom: false,
+  panelViews: [panelViews[0], panelViews[1], panelViews[2], panelViews[3], panelViews[4]],
+};
+
 export const resizers = [
   'top-left',
   'top-right',
@@ -329,7 +349,6 @@ export const resizePanelColumns = (
 ) => {
   const newState = { ...state };
   const panelsOnSameAlignment = getAttachedPerSide(newState, newState[key]?.alignment as Side);
-
   const maxHeight = availableHeight;
 
   if (!panelsOnSameAlignment) return state;
@@ -366,7 +385,6 @@ export const resizePanelColumns = (
   if (totalHeight + collapsedAdjustments > availableHeight) return getSnappedHeights(state, availableHeight);
   return getSnappedHeights(newState, availableHeight);
 };
-
 
 export const newPanelFromTab = (
   state: Record<string, PanelBBox>,

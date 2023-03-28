@@ -11,7 +11,7 @@ import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
 import { PanelTabsBase } from './PanelTabsBase';
 import { Tabs } from './Tabs';
 import { CommonProps, DropSide, EventHandlers, JoinOrder, PanelBBox, Result, Side, SidePanelsProps, ViewportSize } from './types';
-import { getAttachedPerSide, getLeftKeys, getRightKeys, getSnappedHeights, joinPanelColumns, newPanelInState, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
+import { getAttachedPerSide, getLeftKeys, getRightKeys, getSnappedHeights, joinPanelColumns, newPanelInState, partialEmptyBaseProps, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
 
 const maxWindowWidth = 980;
 const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
@@ -32,6 +32,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<DropSide | Side | undefined>();
   const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel());
+  const [breakPointActiveTab, setBreakPointActiveTab] = useState(0);
   const localSnap = useRef(snap);
 
   localSnap.current = snap;
@@ -42,7 +43,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     return viewportSizeMatch || screenSizeMatch.matches;
   }, [viewportSizeMatch, screenSizeMatch.matches]);
 
-  console.log(panelBreakPoint);
   const updatePanel = useCallback((
     name: string,
     patch: Partial<PanelBBox>,
@@ -282,6 +282,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       createNewPanel,
       setActiveTab,
       checkSnap,
+      setBreakPointActiveTab,
     };
   }, [onResize, onGroupHeightResize, onResizeStart, onResizeEnd, onPositionChange, onVisibilityChange, onSnap, transferTab, createNewPanel, setActiveTab]);
 
@@ -295,7 +296,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     };
   }, [eventHandlers, regions, regions.selection, currentEntity]);
 
-  const widthsTracker = useMemo(() => {
+  const padding = useMemo(() => {
     const leftKeys = getLeftKeys(panelData);
     const rightKeys = getRightKeys(panelData);
     const allLeftNotVisible = leftKeys.every((key) => !panelData[key].visible);
@@ -306,21 +307,18 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     const panelRightWidth = rightKeys.length && panelData[rightKeys[0]].width || 0;
     const visibilityLeft = allLeftNotVisible ? 0 : panelLeftWidth;
     const visibilityRight = allRightNotVisible ? 0 : panelRightWidth;
-    const paddingLeft = leftCollapsed ?  PANEL_HEADER_HEIGHT : visibilityLeft;
-    const paddingRight = rightCollapsed ? PANEL_HEADER_HEIGHT : visibilityRight;
-    const leftWidth = allLeftNotVisible || leftCollapsed ? panelLeftWidth : 0;
-    const rightWidth = allRightNotVisible || rightCollapsed ? panelRightWidth : 0;
+    const paddingLeft = panelBreakPoint ? 0 : leftCollapsed ?  PANEL_HEADER_HEIGHT : visibilityLeft ;
+    const paddingRight = panelBreakPoint ? 0 :  rightCollapsed ? PANEL_HEADER_HEIGHT : visibilityRight;
 
     return ({
       paddingLeft,
       paddingRight,
-      leftWidth,
-      rightWidth,
     });
   }, [
     panelsHidden,
     panelData,
     collapsedSide,
+    panelBreakPoint,
   ]);
 
   const panels = useMemo((): Result | Record<string, never> => {
@@ -348,12 +346,14 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         zIndex: panelDatum.zIndex,
         expanded: collapsedSide[alignment],
         alignment: panelDatum.alignment,
-        locked: false,
+        locked: panelBreakPoint,
         attachedKeys,
         sidePanelCollapsed: collapsedSide,
         setSidePanelCollapsed: setCollapsedSide,
         dragTop: alignment === Side.left ? snap === DropSide.topLeft : snap === DropSide.topRight,
         dragBottom: alignment === Side.left ? snap === DropSide.bottomLeft : snap === DropSide.bottomRight,
+        breakPointActiveTab,
+        setBreakPointActiveTab,
       };
 
       if (detached) result.detached.push(props);
@@ -400,9 +400,11 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
   const contextValue = useMemo(() => {
     return {
-      locked: false,
+      locked: panelBreakPoint,
     };
   }, []);
+
+  const emptyBaseProps = { ...partialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
 
   return (
     <SidePanelsContext.Provider value={contextValue}>
@@ -414,37 +416,47 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
           }
         }}
         name="sidepanels"
-        style={{ ...widthsTracker }}
+        mod={{ collapsed: panelBreakPoint }}
+        style={{ ...padding }}
       >
         {initialized && (
           <>
             <Elem name="content" mod={{ resizing: resizing || positioning }}>
               {children}
             </Elem>
-            {panelsHidden !== true && (
-              <>
-                {Object.entries(panels).map(([panelType, panels], iterator) => {
-                  const content = panels.sort((a, b)=> a.order - b.order).map((baseProps, index) => (
-                    <PanelTabsBase
-                      key={`${panelType}-${index}-${iterator}`} { ...baseProps }>
-                      <Tabs {...baseProps} /> 
+            {panelsHidden !== true &&
+              panelBreakPoint ? (
+                <>
+                  <Elem name="wrapper">
+                    <PanelTabsBase { ...emptyBaseProps } >
+                      <Tabs {...emptyBaseProps} />
                     </PanelTabsBase>
-                  ));
+                  </Elem>
+                </>
+              ):(
+                <>
+                  {Object.entries(panels).map(([panelType, panels], iterator) => {              
+                  
+                    const content = panels.sort((a, b) => a.order - b.order).map((baseProps, index) => {
+                      return (
+                        <PanelTabsBase
+                          key = {`${panelType}-${index}-${iterator}`} { ...baseProps } >
+                          <Tabs {...baseProps} />
+                        </PanelTabsBase>
+                      );
+                    });
 
-                  if (panelType === 'detached') {
-                    return  <Fragment key={panelType}>{content}</Fragment>;
-                  }
-                  console.log(
-
-                  );
-                  return (
-                    <Elem key={panelType} name="wrapper" mod={{ align: panelType, snap: snap === panelType }}>
-                      {content}
-                    </Elem>
-                  );
-                })}
-              </>
-            )}
+                    if (panelType === 'detached') {
+                      return <Fragment key={panelType}>{content}</Fragment>;
+                    }
+                    return (
+                      <Elem key={panelType} name="wrapper" mod={{ align: panelType, snap: snap === panelType }}>
+                        {content}
+                      </Elem>
+                    );
+                  })}
+                </>
+              )}
           </>
         )}
       </Block>

@@ -3,7 +3,7 @@ import { Block, Elem } from '../../../utils/bem';
 import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerDrag, IconOutlinerExpand } from '../../../assets/icons';
 import { useDrag } from '../../../hooks/useDrag';
 import { clamp, isDefined } from '../../../utils/utilities';
-import { DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
 import { BaseProps, Side } from './types';
 import { resizers } from './utils';
 import './PanelTabsBase.styl';
@@ -23,7 +23,6 @@ export const PanelTabsBase: FC<BaseProps> = ({
   visible,
   detached,
   alignment,
-  expanded,
   top,
   left,
   relativeTop,
@@ -65,8 +64,8 @@ export const PanelTabsBase: FC<BaseProps> = ({
 
   const style = useMemo(() => {
     const dynamicStyle = visible ? {
-      height: collapsed ? '100%' : height ?? '100%',
-      width: !collapsed ? width ?? '100%' : PANEL_HEADER_HEIGHT,
+      height: locked ? DEFAULT_PANEL_HEIGHT : (collapsed ? '100%' : height ?? '100%'),
+      width: locked ? '100%' : (!collapsed ? width ?? '100%' : PANEL_HEADER_HEIGHT),
     } : {
       width: collapsed ? '100%' : width ?? DEFAULT_PANEL_WIDTH,
       height: collapsed ? '100%' :  PANEL_HEADER_HEIGHT,
@@ -76,7 +75,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
       ...dynamicStyle,
       zIndex,
     };
-  }, [width, height, visible, detached, expanded, zIndex, collapsed]);
+  }, [width, height, visible, locked, collapsed]);
 
   const coordinates = useMemo(() => {
     return detached && !locked ? {

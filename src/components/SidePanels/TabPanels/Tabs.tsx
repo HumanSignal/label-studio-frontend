@@ -43,6 +43,9 @@ const Tab = ({
   children,
   active,
   panelWidth,
+  locked,
+  breakPointActiveTab,
+  setBreakPointActiveTab,
   transferTab,
   createNewPanel,
   setActiveTab,
@@ -55,10 +58,15 @@ const Tab = ({
 
   location.current = { panelKey, tabIndex };
 
+  console.log(breakPointActiveTab, setBreakPointActiveTab, locked);
   useDrag(
     {
       elementRef: tabRef,
       onMouseDown(event) {
+        if (locked) {
+          setBreakPointActiveTab && setBreakPointActiveTab(location.current.tabIndex);
+          return;
+        }
         if (event.buttons === 2) return;
         const { panelKey, tabIndex } = { ...location.current };
 
@@ -143,8 +151,8 @@ const Tab = ({
   );
 
   const Label = () => (
-    <Elem id={`${panelKey}_${tabIndex}_droppable`} name="tab" mod={{ active }}>
-      <Elem name="icon" tag={IconOutlinerDrag} width={20} />
+    <Elem id={`${panelKey}_${tabIndex}_droppable`} name="tab" mod={{ active: locked ?  tabIndex === breakPointActiveTab : active }}>
+      {!locked && <Elem name="icon" tag={IconOutlinerDrag} width={20} />}
       {tabText}
     </Elem>
   );
@@ -193,10 +201,13 @@ export const Tabs = (props: BaseProps) => {
                   tabTitle={view.title}
                   panelWidth={props.width}
                   viewLength={props.panelViews.length}
+                  locked={props.locked}
                   transferTab={props.transferTab}
                   createNewPanel={props.createNewPanel}
                   setActiveTab={props.setActiveTab}
                   checkSnap={props.checkSnap}
+                  breakPointActiveTab={props.breakPointActiveTab}
+                  setBreakPointActiveTab={props.setBreakPointActiveTab}
                 >
                   <Elem name="content">
                     <Component key={`${view.title}-${index}-ghost`} {...props} />
