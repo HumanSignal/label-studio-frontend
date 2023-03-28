@@ -255,12 +255,12 @@ export const getSnappedHeights = (
     const negativeNumber = visibleGroupDifference < 0;
     const adjustment = Math.abs(visibleGroupDifference) / (visible.length || 1);
     let top = 0;
-
+    
     visible.forEach(panelKey => {
       const newHeight = negativeNumber
         ? newState[panelKey].height - adjustment
         : newState[panelKey].height + adjustment;
-      
+
       if (newState[panelKey].visible) {
         newState[panelKey].height = newHeight;
         newState[panelKey].top = top;
@@ -270,6 +270,32 @@ export const getSnappedHeights = (
   });
 
   return newState ;
+};
+
+export const normalizeNewHeight = (
+  state: Record<string, PanelBBox>,
+  totalHeight: number,
+  panelAddKey?: string,
+) => {
+  const newState = { ...state };
+
+  if (!panelAddKey) return getSnappedHeights(newState, totalHeight);
+  const panel = newState[panelAddKey];
+  const alignment = panel.alignment;
+  const sideKeys = getAttachedPerSide(newState, alignment);
+
+  if (!sideKeys?.length) return state;
+  const visible = sideKeys.filter(panelKey => state[panelKey].visible);
+  const averageHeight = visible.reduce((acc, key) => acc + newState[key].height, 0) / (visible.length || 1);
+    
+  return getSnappedHeights({
+    ...newState, [panelAddKey]: {
+      ...newState[panelAddKey],
+      alignment,
+      detached: false,
+      height: averageHeight,
+    },
+  }, totalHeight);
 };
 
 const setOrder = (state: Record<string, PanelBBox>, panelAddKey: string, columnsToOrder: string[], order: JoinOrder) => {
@@ -303,22 +329,18 @@ export const joinPanelColumns = (
     if (acc < state[key].width) return state[key].width;
     return acc;
   }, 0) : width;
-
-  const visible = columns.filter(panelKey => state[panelKey].visible);
-  const averageHeight = visible.reduce((acc, key) => acc + newState[key].height, 0) / (visible.length || 1);
   const addedPanel = {
     ...newState, [panelAddKey]: {
       ...newState[panelAddKey],
       width: newWidth,
       alignment,
       detached: false,
-      height: averageHeight,
     },
   };
   const newColumns = getAttachedPerSide(addedPanel, alignment) as string[];
   const orderedState = setOrder(addedPanel, panelAddKey, newColumns, order);
 
-  return getSnappedHeights(orderedState, totalHeight);
+  return normalizeNewHeight(orderedState, totalHeight, panelAddKey);
 };
 
 export const splitPanelColumns = (

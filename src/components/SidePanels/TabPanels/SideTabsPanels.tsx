@@ -11,7 +11,7 @@ import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
 import { PanelTabsBase } from './PanelTabsBase';
 import { Tabs } from './Tabs';
 import { CommonProps, DropSide, EventHandlers, JoinOrder, PanelBBox, Result, Side, SidePanelsProps, ViewportSize } from './types';
-import { getAttachedPerSide, getLeftKeys, getRightKeys, getSnappedHeights, joinPanelColumns, newPanelInState, partialEmptyBaseProps, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
+import { getAttachedPerSide, getLeftKeys, getRightKeys, getSnappedHeights, joinPanelColumns, newPanelInState, normalizeNewHeight, partialEmptyBaseProps, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
 
 const maxWindowWidth = 980;
 const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
@@ -125,7 +125,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         },
       };
       
-      return getSnappedHeights(newState, viewportSize.current.height);
+      return normalizeNewHeight(newState, viewportSize.current.height, visible ? key : undefined);
     });
 
   }, [setPanelData, panelData]);
