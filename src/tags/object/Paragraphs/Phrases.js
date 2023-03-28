@@ -20,7 +20,7 @@ export const Phrases = observer(({ item }) => {
     if (getRoot(item).settings.showLineNumbers) classNames.push(styles.numbered);
 
     return (
-      <div key={`${item.name}-${idx}`} className={classNames.join(' ')} style={style.phrase}>
+      <div key={`${item.name}-${idx}`} data-testid={`phrase:${idx}`} className={classNames.join(' ')} style={style.phrase}>
         {isContentVisible && withAudio && !isNaN(v.start) && (
           <Button
             type="text"
@@ -29,7 +29,7 @@ export const Phrases = observer(({ item }) => {
             onClick={() => item.play(idx)}
           />
         )}
-        <span className={cls.name}>{v[item.namekey]}</span>
+        <span className={cls.name} data-skip-node="true">{v[item.namekey]}</span>
         <span className={cls.text}>{v[item.textkey]}</span>
       </div>
     );
