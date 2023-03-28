@@ -186,6 +186,7 @@ export const partialEmptyBaseProps = {
   setSidePanelCollapsed: () => { },
   dragTop: false,
   dragBottom: false,
+  resizing: false,
   panelViews: [panelViews[0], panelViews[1], panelViews[2], panelViews[3], panelViews[4]],
 };
 

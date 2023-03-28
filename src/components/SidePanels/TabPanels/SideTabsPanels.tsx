@@ -342,6 +342,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         alignment: panelDatum.alignment,
         locked: panelBreakPoint,
         attachedKeys,
+        resizing,
         sidePanelCollapsed: collapsedSide,
         setSidePanelCollapsed: setCollapsedSide,
         dragTop: alignment === Side.left ? snap === DropSide.topLeft : snap === DropSide.topRight,
@@ -354,7 +355,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     }
     return result;
 
-  }, [panelData, commonProps, panelsHidden, panelBreakPoint, positioning, panelMaxWidth, collapsedSide, snap]);
+  }, [panelData, commonProps, resizing, panelsHidden, panelBreakPoint, positioning, panelMaxWidth, collapsedSide, snap]);
 
   useEffect(() => {
     if (Object.keys(panelData).length) savePanels(panelData);

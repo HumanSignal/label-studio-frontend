@@ -45,6 +45,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
   setSidePanelCollapsed,
   dragTop,
   dragBottom,
+  resizing: dragging,
 }) => {
   const headerRef = useRef<HTMLDivElement>();
   const panelRef = useRef<HTMLDivElement>();
@@ -87,7 +88,6 @@ export const PanelTabsBase: FC<BaseProps> = ({
   const mods = useMemo(() => {
     return {
       detached: locked ? false : detached,
-      resizing: isDefined(resizing),
       hidden: !visible,
       alignment: detached ? 'left' : alignment ?? 'left',
       disabled: locked,
@@ -276,7 +276,8 @@ export const PanelTabsBase: FC<BaseProps> = ({
           </>
         )}
         {visible && !collapsed && (
-          <Elem name="body" mod={{ resizing }}>
+          <Elem name="body">
+            {dragging && <Elem name="shield" />}
             {children}
           </Elem>
         )}

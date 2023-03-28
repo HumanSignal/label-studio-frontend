@@ -57,6 +57,13 @@
       --icon-color #096DD9
       --header-background #d8e5f5
 
+  &__shield
+    width 100%
+    height 100%
+    background transparent
+    position absolute
+    z-index 100
+
   &__header
     top 0
     height var(--header-height)
@@ -161,8 +168,6 @@
     styled-scrollbars()
     pointer-events all
 
-    &_resizing
-      pointer-events none
 
   &__resizer
     --size 12px
@@ -292,7 +297,7 @@
     cursor ns-resize
 
     &:hover::before, 
-    &_drag
+    &_drag::before
       background-color $accent_color
       content ''
       width calc(100% + 50px)
@@ -303,8 +308,6 @@
       transform translate(0, -50%)
       cursor ns-resize
 
-    &_drag
-      width 100%
 
   &_dragTop::before,
   &_dragBottom::after
