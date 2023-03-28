@@ -15,7 +15,7 @@ import { parseValue } from '../../utils/data';
  * components
  */
 import Ranker from '../../components/Ranker/Ranker';
-import { getData } from '../../components/Ranker/createData';
+import { transformData } from '../../components/Ranker/createData';
 
 /**
  * @name Ranker
@@ -35,11 +35,26 @@ const Model = types
      * select: 2 columns, drag results to second column to select
      */
     mode: types.optional(types.enumeration(['rank', 'select']), 'select'),
+    title: types.optional(types.string, ''),
 
   })
   .views(self => ({
     get dataSource() {
-      return self._value;
+      const data = self._value;
+      const result = self.result.value.ranker;
+      let columns = [];
+
+      if (self.mode === 'rank') {
+        columns = [result.map(id => data.find(d => d.id === id))];
+      }
+      else {
+        columns = [
+          data.filter(d => !result.includes(d.id)),
+          result.map(id => data.find(d => d.id === id)),
+        ];
+      }
+      //grabs data from the createData file
+      return transformData(columns, self.title.split('|'));
     },
     get resultType() {
       return 'ranker';
@@ -50,18 +65,25 @@ const Model = types
     get result() {
       return self.annotation.results.find(r => r.from_name === self);
     },
+
   }))
   .actions(self => ({
     updateValue: flow(function* (store) {
       const value = parseValue(self.value, store.task.dataObj);
 
-      //grabs data from the createData file
-      self._value = getData(value, self.mode);
+      self._value = value;
       yield Promise.resolve(true);
     }),
     needsUpdate() {
-      if (self.annotation && !self.result) {
-        self.annotation.createResult({}, { ranker: [] }, self, self);
+      if (self.annotation && !self.result && self._value) {
+        if (self.mode === 'rank') {
+
+          self.annotation.createResult({}, { ranker: self._value.map(item => item.id) }, self, self);
+        }
+        else {
+          self.annotation.createResult({}, { ranker: [] }, self, self);
+
+        }
       }
 
     },

@@ -27,8 +27,6 @@ const Model = types
   .actions(() => ({
 
     serialize() {
-      //TODO remove
-      console.log(self);
       return {};
     },
   }));

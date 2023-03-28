@@ -15,6 +15,7 @@ import styles from './Ranker.module.scss';
 interface ColumnProps {
   column: ColumnData;
   items: InputItem[];
+  title: string;
 }
 
 /*
@@ -23,11 +24,11 @@ interface ColumnProps {
  */
 
 const Column = (props: ColumnProps) => {
-  const { column, items } = props;
+  const { column, items, title } = props;
 
   return (
     <div className={styles.columnStyle}>
-      <h1>{column.title}</h1>
+      <h1>{title ? title : column.title}</h1>
       <StrictModeDroppable droppableId={column.id}>
         {provided => (
           <div ref={provided.innerRef} {...provided.droppableProps} className={styles.dropAreaStyle}>

@@ -63,7 +63,7 @@ const Ranker = ({ inputData, handleChange }: BoardProps) => {
 
       setData(newData);
       //update results
-      handleChange ? handleChange(newData.columns[`column-${newData.columnOrder.length}`].itemIds) : null;
+      handleChange ? handleChange(newData.columns[`${newData.columnOrder.length - 1}`].itemIds) : null;
       return;
     }
 
@@ -71,6 +71,7 @@ const Ranker = ({ inputData, handleChange }: BoardProps) => {
     const startItemIds = Array.from(startCol.itemIds);
 
     startItemIds.splice(source.index, 1);
+
     const newStartCol = {
       ...startCol,
       itemIds: startItemIds,
@@ -79,6 +80,7 @@ const Ranker = ({ inputData, handleChange }: BoardProps) => {
     const endItemIds = Array.from(endCol.itemIds);
 
     endItemIds.splice(destination.index, 0, draggableId);
+
     const newEndCol = {
       ...endCol,
       itemIds: endItemIds,
@@ -95,7 +97,7 @@ const Ranker = ({ inputData, handleChange }: BoardProps) => {
     };
     //update results
 
-    handleChange ? handleChange(newData.columns[`column-${newData.columnOrder.length}`].itemIds) : null;
+    handleChange ? handleChange(newData.columns[`${newData.columnOrder.length - 1}`].itemIds) : null;
     setData(newData);
   };
 
@@ -108,7 +110,7 @@ const Ranker = ({ inputData, handleChange }: BoardProps) => {
               const column = data.columns[columnId] as ColumnData;
               const items = column.itemIds.map(itemId => data.items[itemId]);
 
-              return <Column key={column.id} column={column} items={items} />;
+              return <Column key={column.id} column={column} items={items} title={column.title} />;
             })}
           </div>
         </div>
