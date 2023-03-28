@@ -352,8 +352,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         setSidePanelCollapsed: setCollapsedSide,
         dragTop: alignment === Side.left ? snap === DropSide.topLeft : snap === DropSide.topRight,
         dragBottom: alignment === Side.left ? snap === DropSide.bottomLeft : snap === DropSide.bottomRight,
-        breakPointActiveTab,
-        setBreakPointActiveTab,
       };
 
       if (detached) result.detached.push(props);

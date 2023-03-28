@@ -235,7 +235,7 @@ export const getRightKeys = (state: Record<string, PanelBBox>) =>  Object.keys(s
 
 export const getAttachedPerSide = (state: Record<string, PanelBBox>, side: string) => {
   if (side === Side.left) return getLeftKeys(state).sort((a, b) => state[a].order - state[b].order);
-  if (side === Side.right) return getRightKeys(state);
+  if (side === Side.right) return getRightKeys(state).sort((a, b) => state[a].order - state[b].order);
 };
 
 export const getSnappedHeights = (
@@ -355,8 +355,9 @@ export const resizePanelColumns = (
   const difference = (height - newState[key].height);
   const visiblePanels = panelsOnSameAlignment.filter((panelKey) => newState[panelKey].visible);
   const panelAboveKeyIndex = visiblePanels?.findIndex((visibleKey) => visibleKey === key) - 1;
-
+  
   if (panelAboveKeyIndex === undefined) return state;
+
   const panelAboveKey = visiblePanels[panelAboveKeyIndex];
 
   panelsOnSameAlignment.forEach((panelKey) => {
@@ -394,7 +395,6 @@ export const newPanelFromTab = (
   left: number,
   top: number,
   viewportSize: MutableRefObject<ViewportSize>,
-  
 ) => ({
   ...emptyPanel,
   name,
