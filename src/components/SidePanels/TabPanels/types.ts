@@ -112,6 +112,8 @@ export type BaseProps = PanelBBox & CommonProps & {
   attachedKeys: string[] | undefined,
   sidePanelCollapsed:PanelsCollapsed,
   setSidePanelCollapsed: React.Dispatch<React.SetStateAction<PanelsCollapsed>>,
+  dragTop: boolean,
+  dragBottom: boolean,
 }
     
 export type Result = {

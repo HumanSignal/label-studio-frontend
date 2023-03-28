@@ -185,7 +185,6 @@ export const restorePanel = () => {
   const parsed = panelData && JSON.parse(panelData);
   const allTabs = panelData && Object.entries(parsed).map(([_, panel]: any) => panel.panelViews).flat(1);
   
-  return defaultPanelState;
   if (!allTabs || allTabs.length !== panelViews.length) return defaultPanelState;
   const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
   const withActiveDefaults = setActiveDefaults(noEmptyPanels);

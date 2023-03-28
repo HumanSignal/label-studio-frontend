@@ -41,7 +41,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const panelBreakPoint = useMemo(() => {
     return viewportSizeMatch || screenSizeMatch.matches;
   }, [viewportSizeMatch, screenSizeMatch.matches]);
-  
+
   console.log(panelBreakPoint);
   const updatePanel = useCallback((
     name: string,
@@ -295,7 +295,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     };
   }, [eventHandlers, regions, regions.selection, currentEntity]);
 
-  const padding = useMemo(() => {
+  const widthsTracker = useMemo(() => {
     const leftKeys = getLeftKeys(panelData);
     const rightKeys = getRightKeys(panelData);
     const allLeftNotVisible = leftKeys.every((key) => !panelData[key].visible);
@@ -308,10 +308,14 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     const visibilityRight = allRightNotVisible ? 0 : panelRightWidth;
     const paddingLeft = leftCollapsed ?  PANEL_HEADER_HEIGHT : visibilityLeft;
     const paddingRight = rightCollapsed ? PANEL_HEADER_HEIGHT : visibilityRight;
+    const leftWidth = allLeftNotVisible || leftCollapsed ? panelLeftWidth : 0;
+    const rightWidth = allRightNotVisible || rightCollapsed ? panelRightWidth : 0;
 
     return ({
       paddingLeft,
       paddingRight,
+      leftWidth,
+      rightWidth,
     });
   }, [
     panelsHidden,
@@ -348,6 +352,8 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         attachedKeys,
         sidePanelCollapsed: collapsedSide,
         setSidePanelCollapsed: setCollapsedSide,
+        dragTop: alignment === Side.left ? snap === DropSide.topLeft : snap === DropSide.topRight,
+        dragBottom: alignment === Side.left ? snap === DropSide.bottomLeft : snap === DropSide.bottomRight,
       };
 
       if (detached) result.detached.push(props);
@@ -356,7 +362,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     }
     return result;
 
-  }, [panelData, commonProps, panelsHidden, positioning, panelMaxWidth, collapsedSide]);
+  }, [panelData, commonProps, panelsHidden, positioning, panelMaxWidth, collapsedSide, snap]);
 
   useEffect(() => {
     if (Object.keys(panelData).length) savePanels(panelData);
@@ -408,8 +414,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
           }
         }}
         name="sidepanels"
-        style={{ ...padding }}
-        // mod={{ collapsed: sidePanelsCollapsed }}
+        style={{ ...widthsTracker }}
       >
         {initialized && (
           <>
@@ -421,7 +426,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
                 {Object.entries(panels).map(([panelType, panels], iterator) => {
                   const content = panels.sort((a, b)=> a.order - b.order).map((baseProps, index) => (
                     <PanelTabsBase
-                      key={`${panelType}-${index}-${iterator}`} {...{ ...baseProps }}>
+                      key={`${panelType}-${index}-${iterator}`} { ...baseProps }>
                       <Tabs {...baseProps} /> 
                     </PanelTabsBase>
                   ));
@@ -429,6 +434,9 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
                   if (panelType === 'detached') {
                     return  <Fragment key={panelType}>{content}</Fragment>;
                   }
+                  console.log(
+
+                  );
                   return (
                     <Elem key={panelType} name="wrapper" mod={{ align: panelType, snap: snap === panelType }}>
                       {content}

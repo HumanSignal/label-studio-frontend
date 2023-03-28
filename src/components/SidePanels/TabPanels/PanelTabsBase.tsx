@@ -44,6 +44,8 @@ export const PanelTabsBase: FC<BaseProps> = ({
   attachedKeys,
   sidePanelCollapsed,
   setSidePanelCollapsed,
+  dragTop,
+  dragBottom,
 }) => {
   const headerRef = useRef<HTMLDivElement>();
   const panelRef = useRef<HTMLDivElement>();
@@ -91,8 +93,10 @@ export const PanelTabsBase: FC<BaseProps> = ({
       alignment: detached ? 'left' : alignment ?? 'left',
       disabled: locked,
       collapsed,
+      dragTop: dragTop && attachedKeys && attachedKeys[0] === key,
+      dragBottom: dragBottom && attachedKeys && attachedKeys[attachedKeys.length - 1] === key,
     };
-  }, [alignment, visible, detached, resizing, locked, collapsed]);
+  }, [alignment, visible, detached, resizing, locked, collapsed, dragTop, dragBottom]);
 
   // Panel positioning
   useDrag({
@@ -111,7 +115,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
       const parentBBox = root.current!.getBoundingClientRect();
       const bbox = panel.getBoundingClientRect();
       const clickTarget = e.target?.getBoundingClientRect();
-      const tx = e.clientX - clickTarget.left; //x position within the element.
+      const tx = e.clientX - clickTarget.left;
       const ty = e.clientY - clickTarget.top; 
 
       const [x, y] = [e.pageX, e.pageY];
