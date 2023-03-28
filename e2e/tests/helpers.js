@@ -176,7 +176,7 @@ const waitForAudio = async () => {
 
   await Promise.all(
     [...audios].map(audio => {
-      if (audio.readyState === 4) return true;
+      if (audio.readyState === 4) return Promise.resolve(true);
       return new Promise(resolve => {
         audio.addEventListener('durationchange', () => {
           resolve(true);
