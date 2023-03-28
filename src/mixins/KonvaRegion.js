@@ -59,23 +59,27 @@ export const KonvaRegionMixin = types.model({})
         }
         if (!viewport) return;
 
-        // minimum pixels to consider element visible
-        const VISIBLE_PIECE = 10;
-        // positioned absolutely, covering part of interface
+        // minimum percent of region area to consider it visible
+        const VISIBLE_AREA = 0.6;
+        // infobar is positioned absolutely, covering part of UI
         const INFOBAR_HEIGHT = 36;
 
         const vBBox = viewport.getBoundingClientRect();
         const cBBox = canvas.getBoundingClientRect();
         const rBBox = self.bboxCoordsCanvas;
-        // comparing the farthest point of region from top or bottom image edge
+        const height = rBBox.bottom - rBBox.top;
+        // comparing the closest point of region from top or bottom image edge
         // and how deep is this edge hidden behind respective edge of viewport
-        const overTop = rBBox.bottom - (vBBox.top - cBBox.top);
-        const overBottom = (canvas.clientHeight - rBBox.top) - (cBBox.bottom - vBBox.bottom);
+        const overTop = rBBox.top - (vBBox.top - cBBox.top);
+        const overBottom = (canvas.clientHeight - rBBox.bottom) - (cBBox.bottom - vBBox.bottom) - INFOBAR_HEIGHT;
 
-        if (overTop < VISIBLE_PIECE) {
-          viewport.scrollBy({ top: overTop - VISIBLE_PIECE, left: 0, behavior: 'smooth' });
-        } else if (overBottom < VISIBLE_PIECE + INFOBAR_HEIGHT) {
-          viewport.scrollBy({ top: -overBottom + VISIBLE_PIECE + INFOBAR_HEIGHT, left: 0, behavior: 'smooth' });
+        // huge region cut off by viewport edges — do nothing
+        if (overTop < 0 && overBottom < 0) return;
+
+        if (overTop < 0 && -overTop / height > (1 - VISIBLE_AREA)) {
+          viewport.scrollBy({ top: overTop, left: 0, behavior: 'smooth' });
+        } else if (overBottom < 0 && -overBottom / height > (1 - VISIBLE_AREA)) {
+          viewport.scrollBy({ top: -overBottom, left: 0, behavior: 'smooth' });
         }
       },
 
