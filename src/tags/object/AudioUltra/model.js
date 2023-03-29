@@ -188,15 +188,16 @@ export const AudioModel = types.compose(
       },
 
       triggerSyncPlay() {
-        self.triggerSync('play', { playing: true });
         // @todo should not be handled like this
         self.handleSyncPlay();
+        // trigger play only after it actually started to play
+        self.triggerSync('play', { playing: true });
       },
 
       triggerSyncPause() {
-        self.triggerSync('pause', { playing: false });
         // @todo should not be handled like this
         self.handleSyncPause();
+        self.triggerSync('pause', { playing: false });
       },
 
       triggerSyncSeek(time) {

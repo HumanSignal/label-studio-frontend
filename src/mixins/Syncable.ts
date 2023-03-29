@@ -57,8 +57,9 @@ export class SyncManager {
     // @todo remove
     if (!this.locked || this.locked === origin) console.log('SYNC', { event, locked: this.locked, data, origin });
 
-    // locking mechanism
-    // let's try to also send events came from original tag even when sync window is locked
+    ///// locking mechanism
+    // also send events came from original tag even when sync window is locked,
+    // this allows to correct state in case of coupled events like play + seek.
     if (this.locked && this.locked !== origin) return false;
     if (!this.locked) setTimeout(() => this.locked = null, SYNC_WINDOW);
     this.locked = origin;
