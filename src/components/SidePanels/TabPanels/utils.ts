@@ -72,6 +72,7 @@ export const renameKeys = (state: Record<string, PanelBBox>) => {
 
 export const stateAddedTab = (
   state: Record<string, PanelBBox>,
+  movingPanel: string,
   receivingPanel: string,
   movingTabData: PanelView,
   receivingTab: number,
@@ -80,8 +81,10 @@ export const stateAddedTab = (
   const newState = { ...state };
   const panel = newState[receivingPanel];
   const newPanelViews = panel.panelViews;
+  let index = receivingTab + (dropSide === Side.right ? 1 : 0);
 
-  newPanelViews.splice(receivingTab + (dropSide === Side.right ? 1 : 0), 0, movingTabData);
+  if (movingPanel === receivingPanel && index > 0) index -= 1; 
+  newPanelViews.splice(index, 0, movingTabData);
   return newState;
 };
 
@@ -181,7 +184,7 @@ export const partialEmptyBaseProps = {
   expanded: true,
   locked: true,
   alignment: Side.left,
-  lockPanelContents: true,
+  lockPanelContents: false,
   attachedKeys: [],
   sidePanelCollapsed: { [Side.left]: false, [Side.right]: false },
   setSidePanelCollapsed: () => { },

@@ -13,6 +13,7 @@ import { Tabs } from './Tabs';
 import { CommonProps, DropSide, EventHandlers, JoinOrder, PanelBBox, Result, Side, SidePanelsProps, ViewportSize } from './types';
 import { getAttachedPerSide, getLeftKeys, getRightKeys, getSnappedHeights, joinPanelColumns, newPanelInState, normalizeNewHeight, partialEmptyBaseProps, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
 
+const savedState = restorePanel();
 const maxWindowWidth = 980;
 const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   currentEntity,
@@ -31,13 +32,12 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const [collapsedSide, setCollapsedSide] = useState({ [Side.left]: false, [Side.right]: false });
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<DropSide | Side | undefined>();
-  const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel());
+  const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(savedState);
   const [breakPointActiveTab, setBreakPointActiveTab] = useState(0);
   const localSnap = useRef(snap);
 
   localSnap.current = snap;
   useRegionsCopyPaste(currentEntity);
-
 
   const panelBreakPoint = useMemo(() => {
     return viewportSizeMatch || screenSizeMatch.matches;
@@ -71,7 +71,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       if (movingTabComponent) movingTabComponent.active = true;
       const stateWithRemovals = stateRemovedTab(state, movingPanel, movingTab);
       const panelsWithRemovals = stateRemovePanelEmptyViews(stateWithRemovals); 
-      const stateWithAdditions = stateAddedTab(panelsWithRemovals, receivingPanel, movingTabComponent, receivingTab, dropSide);
+      const stateWithAdditions = stateAddedTab(panelsWithRemovals, movingPanel, receivingPanel, movingTabComponent, receivingTab, dropSide);      
       const renamedKeys = renameKeys(stateWithAdditions);
       const activeDefaults = setActiveDefaults(renamedKeys);
       const restorePanelHeights = getSnappedHeights(activeDefaults, viewportSize.current.height);
