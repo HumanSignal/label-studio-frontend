@@ -144,14 +144,14 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     let snap: DropSide | undefined = undefined;
 
     if (!collapsedSide[Side.left] && panelLeftHit) { 
+      if (left <= snapThreshold) snap = DropSide.left;
       if (topHit) snap = DropSide.topLeft;
       if (bottomHit) snap = DropSide.bottomLeft;
-      if (left <= snapThreshold) snap = DropSide.left;
     }
     if (!collapsedSide[Side.right] && panelRightHit) {
+      if (right >= parentWidth - snapThreshold) snap = DropSide.right;
       if (topHit) snap = DropSide.topRight;
       if (bottomHit) snap = DropSide.bottomRight;
-      if (right >= parentWidth - snapThreshold) snap = DropSide.right;
     }
     setSnap(snap);
   }, [panelData]);
@@ -259,7 +259,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       alignment: side,
       detached: false,
     });
-    setLockPanelContents(() => false);
     setSnap(undefined);
   }, [updatePanel, panelData]);
 

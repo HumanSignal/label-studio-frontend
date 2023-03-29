@@ -325,11 +325,11 @@ export const joinPanelColumns = (
   const newState = { ...state };
   const columns = getAttachedPerSide(newState, alignment);
 
-  if (!columns) return state;
-  const newWidth = columns ? columns.reduce((acc, key) => {
+  const newWidth = !columns ? width || DEFAULT_PANEL_WIDTH : columns.reduce((acc, key) => {
     if (acc < state[key].width) return state[key].width;
     return acc;
-  }, 0) : width;
+  }, 0) || width;
+  
   const addedPanel = {
     ...newState, [panelAddKey]: {
       ...newState[panelAddKey],
