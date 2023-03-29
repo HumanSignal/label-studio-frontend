@@ -81,6 +81,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   }, [panelData]);
 
   const createNewPanel = useCallback((
+    name: string,
     movingPanel: string,
     movingTab: number,
     left: number,
@@ -88,14 +89,10 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   ) => { 
 
     setPanelData((state) => {
-      const name = { ...state[movingPanel].panelViews[movingTab] }.name;
-
       return newPanelInState(state, name, movingPanel, movingTab, left, top, viewportSize);    
     });
     localSnap.current &&
       setPanelData(state => {
-        const name = { ...state[movingPanel].panelViews[movingTab] }.name;
-
         if (!localSnap.current) return state;
         const snapSide = localSnap.current.split('-');
         const side = snapSide[0] as Side;

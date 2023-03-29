@@ -17,7 +17,7 @@ export const determineLeftOrRight = (event: any, droppableElement?: ReactNode) =
   return x > half ? Side.right : Side.left;
 };
   
-export const determineDroppableArea = (droppingElement: HTMLElement) => droppingElement.id.includes('droppable');
+export const determineDroppableArea = (droppingElement: HTMLElement) => droppingElement?.id?.includes('droppable');
 
 export const stateRemovedTab = (state: Record<string, PanelBBox>, movingPanel: string, movingTab: number) => {
   const newState = { ...state };

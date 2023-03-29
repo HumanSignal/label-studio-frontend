@@ -2,6 +2,7 @@ import { FC, MutableRefObject, ReactNode } from 'react';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_WIDTH } from '../constants';
 
 export type TabProps = {
+  name: string,
   rootRef: MutableRefObject<HTMLDivElement | undefined>,
   tabTitle: string,
   panelKey: string,
@@ -84,6 +85,7 @@ export interface EventHandlers {
     dropSide: Side,
   ) => void;
   createNewPanel(
+    name: string,
     movingPanel: string,
     movingTab: number,
     left: number,

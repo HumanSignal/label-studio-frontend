@@ -35,6 +35,7 @@ const addHoverClasses = (side?: Side, dropTarget?: Element) => {
 };
 
 const Tab = ({
+  name,
   rootRef,
   tabTitle: tabText,
   tabIndex,
@@ -125,8 +126,8 @@ const Tab = ({
         const top = implementedHeight < 0 ? 0 : implementedHeight;
         const droppedOver = document.elementFromPoint(event.clientX, event.clientY);
         const isDropArea = determineDroppableArea(droppedOver as HTMLElement);
-        
-        if (!isDropArea) createNewPanel(panelKey, tabIndex, left, top);
+
+        if (!isDropArea) createNewPanel(name, panelKey, tabIndex, left, top);
         else {
           const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
           const dropTargetId = dropTarget?.id;
@@ -192,6 +193,7 @@ export const Tabs = (props: BaseProps) => {
             return (
               <Elem name="tab-container" key={`${view.title}-${index}-tab`} mod={{ active: view.active }}>
                 <Tab
+                  name={view.name}
                   rootRef={props.root}
                   key={`${view.title}-tab`}
                   panelKey={props.name}
