@@ -81,7 +81,7 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  * @param {string} value - Data field containing path or a URL to the audio.
  * @param {string} [defaultspeed=1] - Default speed level (from 0.5 to 2).
  * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform.
- * @param {string} [defaultzoom=1] - Default zoom level for waveform (from 1 to 1500);
+ * @param {string} [defaultzoom=1] - Default zoom level for waveform. (from 1 to 1500).
  * @param {string} [defaultvolume=1] - Default volume level (from 0 to 1).
  * @param {string} [hotkey] - Hotkey used to play or pause audio.
  * @param {string} [sync] Object name to sync with.
