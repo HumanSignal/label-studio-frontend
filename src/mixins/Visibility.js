@@ -1,5 +1,6 @@
 import { getParent, types } from 'mobx-state-tree';
 import { FF_DEV_1372, isFF } from '../utils/feature-flags';
+import { isDefined } from '../utils/utilities';
 
 /*
  * Per Region Mixin
@@ -46,12 +47,27 @@ const VisibilityMixin = types
             if (!tag) return false;
 
             if (choiceValue) {
-              const choicesSelected = choiceValue
-                .split(',')
-                .map(v => tag.findLabel(v))
-                .some(c => c && c.sel);
+              // @todo Revisit this and make it more consistent, and refactor this
+              // behaviour out of the SelectedModel mixin and use a singular approach.
+              // This is the original behaviour of other SelectedModel mixin usages
+              // as they are using alias lookups for choices. For now we will keep it as is since it works for all the
+              // other cases currently.
+              if (tag.findLabel) {
+                return choiceValue
+                  .split(',')
+                  .map(v => tag.findLabel(v))
+                  .some(c => c && c.sel);
+              }
 
-              return choicesSelected;
+              // Check the selected values of the choices for existence of the choiceValue(s)
+              // This currently doesn't work for alias lookups as it is a direct comparison.
+              const selectedValues = (tag.selectedValues() || []).flat();
+
+              if (selectedValues.length) {
+                return choiceValue.split(',').some(v => selectedValues.includes(v));
+              }
+
+              return false;
             }
 
             return tag.isSelected;

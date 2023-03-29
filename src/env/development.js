@@ -73,7 +73,7 @@ import { ClassificationMixed } from '../examples/classification_mixed';
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ImagePolygons;
+const data = Taxonomy;
 
 function getData(task) {
   if (task && task.data) {

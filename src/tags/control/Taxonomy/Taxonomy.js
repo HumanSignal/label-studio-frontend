@@ -18,7 +18,6 @@ import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
 import { Spin } from 'antd';
 import './Taxonomy.styl';
 import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
-import SelectedModelMixin from '../../../mixins/SelectedModel';
 
 /**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
@@ -171,6 +170,10 @@ const Model = types
     get defaultChildType() {
       return 'choice';
     },
+
+    selectedValues() {
+      return self.selected;
+    },
   }))
   .actions(self => ({
     afterAttach() {
@@ -204,37 +207,15 @@ const Model = types
       if (self.result) self.selected = self.result.mainValue;
       else self.selected = [];
       self.maxUsagesReached = self.selected.length >= self.maxusages;
-      self.updateChildValues();
-    },
-
-    selectedValues() {
-      return self.selected;
     },
 
     updateFromResult() {
       self.needsUpdate();
     },
 
-    updateChildValues() {
-      const currentSelected = self.selected.flat();
-
-      self.children.forEach(child => {
-        if (child.type === 'choice') {
-          const allChildValues = (Array.isArray(child.value) ? child.value : [child.value]).flat();
-          const selectedChildValues = allChildValues.filter(v => currentSelected.includes(v));
-          const isSelected = selectedChildValues.length === allChildValues.length;
-
-          child.setSelected(isSelected);
-        }
-      });
-    },
-
-    onChange(node, checked) {
+    onChange(_node, checked) {
       self.selected = checked.map(s => s.path ?? s);
       self.maxUsagesReached = self.selected.length >= self.maxusages;
-
-      self.updateChildValues();
-
       if (self.result) {
         self.result.area.setValue(self);
       } else {
@@ -276,7 +257,6 @@ const Model = types
 const TaxonomyModel = types.compose('TaxonomyModel',
   ControlBase,
   TagAttrs,
-  SelectedModelMixin.props({ _child: 'ChoiceModel' }),
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
   Model,
   ...(isFF(FF_DEV_3617) ? [SharedStoreMixin] : []),
