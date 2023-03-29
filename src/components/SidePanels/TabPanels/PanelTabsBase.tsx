@@ -45,7 +45,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
   setSidePanelCollapsed,
   dragTop,
   dragBottom,
-  resizing: dragging,
+  lockPanelContents,
 }) => {
   const headerRef = useRef<HTMLDivElement>();
   const panelRef = useRef<HTMLDivElement>();
@@ -277,7 +277,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
         )}
         {visible && !collapsed && (
           <Elem name="body">
-            {dragging && <Elem name="shield" />}
+            {lockPanelContents && <Elem name="shield" />}
             {children}
           </Elem>
         )}

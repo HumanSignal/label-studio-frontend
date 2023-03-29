@@ -179,14 +179,14 @@ export const partialEmptyBaseProps = {
   maxWidth: DEFAULT_PANEL_MAX_WIDTH,
   zIndex: 10,
   expanded: true,
-  alignment: Side.left,
   locked: true,
+  alignment: Side.left,
+  lockPanelContents: true,
   attachedKeys: [],
   sidePanelCollapsed: { [Side.left]: false, [Side.right]: false },
   setSidePanelCollapsed: () => { },
   dragTop: false,
   dragBottom: false,
-  resizing: false,
   panelViews: [panelViews[0], panelViews[1], panelViews[2], panelViews[3], panelViews[4]],
 };
 

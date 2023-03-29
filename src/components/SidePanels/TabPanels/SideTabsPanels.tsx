@@ -25,7 +25,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const screenSizeMatch = useMedia(`screen and (max-width: ${maxWindowWidth}px)`);
   const [panelMaxWidth, setPanelMaxWidth] = useState(DEFAULT_PANEL_MAX_WIDTH);
   const [viewportSizeMatch, setViewportSizeMatch] = useState(false);
-  const [resizing, setResizing] = useState(false);
+  const [lockPanelContents, setLockPanelContents] = useState(false);
   const [positioning, setPositioning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [collapsedSide, setCollapsedSide] = useState({ [Side.left]: false, [Side.right]: false });
@@ -172,6 +172,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   }, [panelData]);
 
   const onPositionChangeBegin = useCallback((key: string) => {
+    setLockPanelContents(() => true);
     Object.keys(panelData).forEach(panelKey => updatePanel(panelKey, {
       zIndex: panelKey === key ? 12 : 10,
     }));
@@ -205,8 +206,8 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     });
   }, [updatePanel, checkSnap, panelData, positioning]);
 
-  const onResizeStart = useCallback(() => { setResizing(() => true); }, []);
-  const onResizeEnd = useCallback(() => { setResizing(() => false); }, []);
+  const onResizeStart = useCallback(() => { setLockPanelContents(() => true); }, []);
+  const onResizeEnd = useCallback(() => { setLockPanelContents(() => false); }, []);
 
   const onGroupHeightResize = useCallback((key: string, h: number, t: number) => {
     requestAnimationFrame(() => {
@@ -235,6 +236,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
   const onSnap = useCallback((key: string) => {
     setPositioning(false);
+    setLockPanelContents(() => false);
     if (!localSnap.current) return;
     const snap = localSnap.current.split('-');
     const side = snap[0] as Side;
@@ -257,7 +259,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       alignment: side,
       detached: false,
     });
-    
+    setLockPanelContents(() => false);
     setSnap(undefined);
   }, [updatePanel, panelData]);
 
@@ -342,7 +344,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         alignment: panelDatum.alignment,
         locked: panelBreakPoint,
         attachedKeys,
-        resizing,
+        lockPanelContents,
         sidePanelCollapsed: collapsedSide,
         setSidePanelCollapsed: setCollapsedSide,
         dragTop: alignment === Side.left ? snap === DropSide.topLeft : snap === DropSide.topRight,
@@ -355,7 +357,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     }
     return result;
 
-  }, [panelData, commonProps, resizing, panelsHidden, panelBreakPoint, positioning, panelMaxWidth, collapsedSide, snap]);
+  }, [panelData, commonProps, lockPanelContents, panelsHidden, panelBreakPoint, positioning, panelMaxWidth, collapsedSide, snap]);
 
   useEffect(() => {
     if (Object.keys(panelData).length) savePanels(panelData);
@@ -414,7 +416,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       >
         {initialized && (
           <>
-            <Elem name="content" mod={{ resizing: resizing || positioning }}>
+            <Elem name="content" mod={{ resizing: lockPanelContents || positioning }}>
               {children}
             </Elem>
             {panelsHidden !== true &&
@@ -428,8 +430,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
                 </>
               ):(
                 <>
-                  {Object.entries(panels).map(([panelType, panels], iterator) => {              
-                  
+                  {Object.entries(panels).map(([panelType, panels], iterator) => {
                     const content = panels.sort((a, b) => a.order - b.order).map((baseProps, index) => {
                       return (
                         <PanelTabsBase
