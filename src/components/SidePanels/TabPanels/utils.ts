@@ -80,11 +80,16 @@ export const stateAddedTab = (
 ) => {
   const newState = { ...state };
   const panel = newState[receivingPanel];
-  const newPanelViews = panel.panelViews;
+  
+  panel.panelViews = newState[receivingPanel].panelViews.map((view) => {
+    view.active = false;
+    return view;
+  });
+  
   let index = receivingTab + (dropSide === Side.right ? 1 : 0);
 
   if (movingPanel === receivingPanel && index > 0) index -= 1; 
-  newPanelViews.splice(index, 0, movingTabData);
+  panel.panelViews.splice(index, 0, movingTabData);
   return newState;
 };
 
@@ -93,7 +98,6 @@ export const stateRemovePanelEmptyViews = (state: Record<string, PanelBBox>) => 
 
   Object.keys(newState).forEach((panel) => {
     if (newState[panel].panelViews.length === 0) delete newState[panel];
-    else newState[panel].panelViews.forEach(view => view.active = false);
   });
   return newState;
 };
