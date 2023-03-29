@@ -236,7 +236,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
       handlers.current.onResizeEnd?.();
       setResizing(undefined);
     },
-  }, [handlers, width, height, top, left, locked, positioning]);
+  }, [handlers, width, height, top, left, locked, positioning, resizeGroup.current]);
 
 
   const handleGroupPanelToggle = () => {
