@@ -1,12 +1,24 @@
-Feature('Image list via `valueList`');
+Feature('MIG');
 
-const config = `
+const assert = require('assert');
+
+const rectConfig = `
   <View>
     <Image name="img" valueList="$images"/>
     <RectangleLabels name="tag" toName="img">
       <Label value="Planet"></Label>
       <Label value="Moonwalker" background="blue"></Label>
     </RectangleLabels>
+  </View>
+`;
+
+const brushConfig = `
+  <View>
+    <Image name="img" valueList="$images"/>
+    <BrushLabels name="tag" toName="img">
+      <Label value="Planet"></Label>
+      <Label value="Moonwalker" background="blue"></Label>
+    </BrushLabels>
   </View>
 `;
 
@@ -93,7 +105,7 @@ Before(async ({ LabelStudio }) => {
 
 Scenario('Image list rendering', async ({ I, LabelStudio, AtImageView }) => {
   const params = {
-    config,
+    config: rectConfig,
     data,
     annotations: [{ id: 1, result: [] }],
   };
@@ -109,7 +121,7 @@ Scenario('Image list rendering', async ({ I, LabelStudio, AtImageView }) => {
 
 Scenario('Image list with page navigation', async ({ I, AtImageView, LabelStudio }) => {
   const params = {
-    config,
+    config: rectConfig,
     data,
     annotations: [{ id: 1, result: [] }],
   };
@@ -147,7 +159,7 @@ Scenario('Image list with page navigation', async ({ I, AtImageView, LabelStudio
 
 Scenario('Image list with hotkey navigation', async ({ I, AtImageView, LabelStudio }) => {
   const params = {
-    config,
+    config: rectConfig,
     data,
     annotations: [{ id: 1, result: [] }],
   };
@@ -167,15 +179,13 @@ Scenario('Image list with hotkey navigation', async ({ I, AtImageView, LabelStud
   I.say('The number of pages is correct');
   I.see('1 of 4');
 
-  I.say('Clicking on the next page');
-  I.pressKey('Ctrl+d');
+  await AtImageView.multiImageGoForwartWithHotkey();
 
   I.say('Loading second image');
   I.seeElement(`img[src="${data.images[1]}"]`);
   I.see('2 of 4');
 
-  I.say('Clicking on the previous page');
-  I.pressKey('Ctrl+a');
+  await AtImageView.multiImageGoBackwardWithHotkey();
   I.seeElement(`img[src="${data.images[0]}"]`);
   I.see('1 of 4');
 });
@@ -186,7 +196,7 @@ Scenario('Ensure that results are the same when exporting existing regions', asy
   });
 
   const params = {
-    config,
+    config: rectConfig,
     data,
     annotations: [{ id: 1, result }],
   };
@@ -207,7 +217,7 @@ Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView
   });
 
   const params = {
-    config,
+    config: rectConfig,
     data,
     annotations: [{ id: 1, result }],
   };
@@ -218,8 +228,7 @@ Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView
   await AtImageView.waitForImage();
   await AtImageView.lookForStage();
 
-  I.say('Attempting to go to the next image');
-  I.pressKey('Ctrl+d');
+  AtImageView.multiImageGoForwartWithHotkey();
 
   await AtImageView.waitForImage();
   await AtImageView.lookForStage();
@@ -231,7 +240,7 @@ Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView
 // TODO: temporarily disable, will be fixed in another ticket
 Scenario('Regions are not changes when duplicating an annotation', async ({ I, LabelStudio, AtImageView }) => {
   const params = {
-    config,
+    config: rectConfig,
     data,
     annotations: [{ id: 1, result }],
   };
@@ -251,3 +260,41 @@ Scenario('Regions are not changes when duplicating an annotation', async ({ I, L
   I.say('Confirm that result is not changed');
   await LabelStudio.resultsNotChanged(result);
 });
+
+Scenario('No errors during brush export in MIG', async ({ I, LabelStudio, AtImageView, AtLabels }) => {
+  const params = {
+    config: brushConfig,
+    data,
+    annotations: [{ id: 1, result: [] }],
+  };
+
+  const brushRegionPoints = [
+    [20, 20],
+    [20, 40],
+    [40, 40],
+    [40, 20],
+    [20, 20],
+  ];
+
+  I.amOnPage('/');
+  LabelStudio.init(params);
+
+  await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
+
+  I.say('Create brush regions on the first image');
+  AtLabels.clickLabel('Moonwalker');
+  AtImageView.drawThroughPoints(brushRegionPoints);
+
+  await AtImageView.multiImageGoForwartWithHotkey();
+
+  I.pressKey('u');
+  I.say('Create brush regions on the second image');
+  AtLabels.clickLabel('Planet');
+  AtImageView.drawThroughPoints(brushRegionPoints);
+
+  const result = await LabelStudio.serialize();
+
+  assert.equal(result.length, 2);
+});
+
