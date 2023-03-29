@@ -4,7 +4,7 @@ import { Block, Elem } from '../../../utils/bem';
 import { useMedia } from '../../../hooks/useMedia';
 import ResizeObserver from '../../../utils/resize-observer';
 import { clamp } from '../../../utils/utilities';
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT, DEFAULT_PANEL_MAX_WIDTH, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
 import '../SidePanels.styl';
 import { SidePanelsContext } from '../SidePanelsContext';
 import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
@@ -215,21 +215,31 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     });
   }, [setPanelData]);
 
+  const findPanelsOnSameSide = useCallback((panelAlignment : string) => {
+    return Object.keys(panelData)
+      .filter((panelName) => panelData[panelName as string]?.alignment === panelAlignment);
+  }, [panelData]);
+
   const onResize = useCallback((key: string, w: number, h: number, t: number, l: number) => {
     const { left, top } = normalizeOffsets(key, t, l);
     const maxHeight = viewportSize.current.height - top;
 
     requestAnimationFrame(() => {
-      updatePanel(key, {
-        top,
-        left,
-        relativeTop: (top / viewportSize.current.height) * 100,
-        relativeLeft: (left / viewportSize.current.width) * 100,
-        storedLeft: undefined,
-        storedTop: undefined,
-        maxHeight,
-        width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
-        height: clamp(h, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT),
+      const detached = panelData[key].detached;
+      const panelsToAdjust = detached ? [key] : findPanelsOnSameSide(panelData[key]?.alignment);
+
+      panelsToAdjust.forEach((panelKey) => {
+        updatePanel(panelKey, {
+          top,
+          left,
+          relativeTop: (top / viewportSize.current.height) * 100,
+          relativeLeft: (left / viewportSize.current.width) * 100,
+          storedLeft: undefined,
+          storedTop: undefined,
+          maxHeight,
+          width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
+          height: panelData[panelKey].detached? clamp(h, DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MAX_HEIGHT) : panelData[panelKey].height,
+        });
       });
     });
   }, [updatePanel, panelMaxWidth, panelData]);
