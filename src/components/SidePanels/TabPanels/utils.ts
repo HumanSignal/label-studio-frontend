@@ -280,30 +280,31 @@ export const getSnappedHeights = (
   return newState ;
 };
 
-export const normalizeNewHeight = (
+export const redistributeHeights = (
   state: Record<string, PanelBBox>,
   totalHeight: number,
-  panelAddKey?: string,
+  alignment: Side,
 ) => {
   const newState = { ...state };
-
-  if (!panelAddKey) return getSnappedHeights(newState, totalHeight);
-  const panel = newState[panelAddKey];
-  const alignment = panel.alignment;
   const sideKeys = getAttachedPerSide(newState, alignment);
 
   if (!sideKeys?.length) return state;
-  const visible = sideKeys.filter(panelKey => state[panelKey].visible);
-  const averageHeight = visible.reduce((acc, key) => acc + newState[key].height, 0) / (visible.length || 1);
-    
-  return getSnappedHeights({
-    ...newState, [panelAddKey]: {
-      ...newState[panelAddKey],
-      alignment,
-      detached: false,
-      height: averageHeight,
-    },
-  }, totalHeight);
+  const visible = sideKeys.filter(panelKey => newState[panelKey].visible);
+  const totalCollapsed = sideKeys.filter(panelKey => !newState[panelKey].visible).length;
+  const collapsedAdjustments = PANEL_HEADER_HEIGHT * totalCollapsed;
+  const distributedHeight = (totalHeight - collapsedAdjustments) / visible.length || 1;
+
+  visible.forEach(panelKey => {
+    let top = 0;
+
+    if (newState[panelKey].visible) {
+      newState[panelKey].height = distributedHeight;
+      newState[panelKey].top = top;
+      top += distributedHeight;
+    } else top += PANEL_HEADER_HEIGHT;
+  });
+
+  return newState;
 };
 
 const setOrder = (state: Record<string, PanelBBox>, panelAddKey: string, columnsToOrder: string[], order: JoinOrder) => {
@@ -348,7 +349,7 @@ export const joinPanelColumns = (
   const newColumns = getAttachedPerSide(addedPanel, alignment) as string[];
   const orderedState = setOrder(addedPanel, panelAddKey, newColumns, order);
 
-  return normalizeNewHeight(orderedState, totalHeight, panelAddKey);
+  return redistributeHeights(orderedState, totalHeight, alignment);
 };
 
 export const splitPanelColumns = (
@@ -357,17 +358,17 @@ export const splitPanelColumns = (
   totalHeight: number,
 ) => {
   const newState = { ...state };
-
+  const alignment = newState[removingKey].alignment as Side;
   const movingTabAttributes = {
     width: DEFAULT_PANEL_WIDTH,
     detached: true,
     height: DEFAULT_PANEL_HEIGHT,
   };
   const removedState = { ...newState, [removingKey]: { ...newState[removingKey], ...movingTabAttributes } };
-  const column = getAttachedPerSide(newState, newState[removingKey].alignment as Side);
+  const column = getAttachedPerSide(newState, alignment);
 
   column?.forEach((key, index) => { newState[key].order = index; });
-  return getSnappedHeights(removedState, totalHeight);
+  return redistributeHeights(removedState, totalHeight, alignment);
 };
 
 export const resizePanelColumns = (
