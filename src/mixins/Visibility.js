@@ -1,6 +1,5 @@
 import { getParent, types } from 'mobx-state-tree';
 import { FF_DEV_1372, isFF } from '../utils/feature-flags';
-import { isDefined } from '../utils/utilities';
 
 /*
  * Per Region Mixin
