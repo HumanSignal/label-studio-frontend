@@ -11,9 +11,9 @@ import { FilterRow } from './FilterRow';
 
 export const Filter: FC<FilterInterface> = ({
   availableFilters,
-  filterData,
-  filteringPath,
-  onChange,
+  // filterData,
+  // filteringPath,
+  // onChange,
 }) => {
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
 

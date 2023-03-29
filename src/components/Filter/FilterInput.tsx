@@ -1,4 +1,5 @@
-import React, {FC} from 'react';
+import React, { FC } from 'react';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Input from '../../common/Input/Input';
 
