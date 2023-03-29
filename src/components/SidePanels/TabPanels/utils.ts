@@ -48,9 +48,9 @@ export const setActiveDefaults = (state: Record<string, PanelBBox>) => {
   const newState = { ...state };
 
   Object.keys(state).forEach((panelKey: string) => {
-    const hasActiveTab = newState[panelKey].panelViews.some((view) => view.active);
+    const firstActiveTab = newState[panelKey].panelViews.findIndex((view) => view.active) ;
     
-    if (!hasActiveTab) newState[panelKey].panelViews[0].active = true;
+    newState[panelKey].panelViews[firstActiveTab > 0 ? firstActiveTab :  0].active = true;
   });
 
   return newState;
