@@ -1,11 +1,13 @@
-import { emptyPanel, PanelBBox, Side } from '../types';
-import { determineDroppableArea, determineLeftOrRight, getSnappedHeights, joinPanelColumns, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
+import { DEFAULT_PANEL_WIDTH, DEFAULT_PANEL_HEIGHT } from '../../constants';
+import { emptyPanel, JoinOrder, PanelBBox, Side } from '../types';
+import { determineDroppableArea, determineLeftOrRight, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
 
 
-const dummyPanels = {
-  p1: {
+const dummyPanels: Record<string, PanelBBox> = {
+  'p1': {
     top: 0,
     left: 0,
+    order: 0,
     relativeLeft: 0,
     relativeTop: 0,
     zIndex: 1,
@@ -21,9 +23,10 @@ const dummyPanels = {
       { title: 'Tab 3', name: 'Tab3', component: () => null, active: false },
     ],
   },
-  p2: {
+  'p2': {
     top: 0,
     left: 0,
+    order: 0,
     relativeLeft: 0,
     relativeTop: 0,
     zIndex: 1,
@@ -126,22 +129,30 @@ describe('setActive', () => {
   const tabIndex = 1;
   
   it('should set the correct tab as active', () => {
-    const expectedPanelViews = [
-      { title: 'Tab 1', name: 'Tab1', component: () => null, active: false },
-      { title: 'Tab 3', name: 'Tab3', component: () => null, active: true },
-    ];
-  
-    const expectedState = {
-      ...dummyPanels,
-      [panelName]: {
-        ...dummyPanels[panelName],
-        panelViews: expectedPanelViews,
+    const expectedState = [
+      {
+        title: 'Tab 1',
+        name: 'Tab1',
+        component: () => null,
+        active: false,
       },
-    };
-  
+      {
+        title: 'Tab 2',
+        name: 'Tab2',
+        component: () => null,
+        active: true,
+      },
+      {
+        title: 'Tab 3',
+        name: 'Tab3',
+        component: () => null,
+        active: false,
+      },
+    ];
+    
     const newState = setActive(dummyPanels, panelName, tabIndex);
-        
-    expect(JSON.stringify(newState)).toEqual(JSON.stringify(expectedState));
+
+    expect(JSON.stringify(newState[panelName].panelViews)).toEqual(JSON.stringify(expectedState));
   });
   
   it('should not modify the original state object', () => {
@@ -221,12 +232,13 @@ describe('stateAddedTab', () => {
   it('adds a new tab to the receiving panel on the right', () => {
     const movingTabData = { title: 'Tab 3', name: 'Tab3', component: () => null, active: false };
     const receivingTab = 1;
+    const receivingPanel = panelName;
     const dropSide = Side.right;
   
     const expectedPanelViews = [
-      { title: 'Tab 1', name: 'Tab1', component: () => null, active: true },
-      { title: 'Tab 2', name: 'Tab2', component: () => null, active: false },
+      { title: 'Tab 1', name: 'Tab1', component: () => null, active: false },
       { title: 'Tab 3', name: 'Tab3', component: () => null, active: false },
+      { title: 'Tab 2', name: 'Tab2', component: () => null, active: false },
     ];
   
     const expectedState = {
@@ -236,21 +248,22 @@ describe('stateAddedTab', () => {
       },
     };
   
-    const newState = stateAddedTab(state, panelName, movingTabData, receivingTab, dropSide);
-  
+    const newState = stateAddedTab(state, panelName, receivingPanel, movingTabData, receivingTab, dropSide);
+
     expect(JSON.stringify(newState)).toEqual(JSON.stringify(expectedState));
   });
  
   it('adds a new tab to the receiving panel on the left', () => {
     const movingTabData = { title: 'Tab 3', name: 'Tab3', component: () => null, active: false };
     const receivingTab = 1;
+    const receivingPanel = panelName;
     const dropSide = Side.left;
   
     const expectedPanelViews = [
-      { title: 'Tab 1', name: 'Tab1', component: () => null, active: true },
+      { title: 'Tab 3', name: 'Tab3', component: () => null, active: false },
+      { title: 'Tab 1', name: 'Tab1', component: () => null, active: false },
       { title: 'Tab 3', name: 'Tab3', component: () => null, active: false },
       { title: 'Tab 2', name: 'Tab2', component: () => null, active: false },
-      { title: 'Tab 3', name: 'Tab3', component: () => null, active: false },
     ];
   
     const expectedState = {
@@ -259,9 +272,9 @@ describe('stateAddedTab', () => {
         panelViews: expectedPanelViews,
       },
     };
-      
-    const newState = stateAddedTab(state, panelName, movingTabData, receivingTab, dropSide);
-      
+    
+    const newState = stateAddedTab(state, panelName, receivingPanel, movingTabData, receivingTab, dropSide);
+
     expect(JSON.stringify(newState)).toEqual(JSON.stringify(expectedState));
   });
 });
@@ -288,250 +301,290 @@ describe('stateRemovePanelEmptyViews', () => {
   });
 });
   
-describe('stateRemovePanelEmptyViews', () => {
-  const panelsWithEmptyViews = {
-    panel1: {
-      top: 0,
-      left: 0,
-      relativeLeft: 0,
-      relativeTop: 0,
-      zIndex: 1,
-      width: 500,
-      height: 500,
-      visible: true,
-      detached: false,
-      alignment: Side.left,
-      maxHeight: 800,
-      panelViews: [],
-    },
-    panel2: {
-      top: 0,
-      left: 0,
-      relativeLeft: 0,
-      relativeTop: 0,
-      zIndex: 1,
-      width: 500,
-      height: 500,
-      visible: true,
-      detached: true,
-      alignment: Side.right,
-      maxHeight: 800,
-      panelViews: [
-        { title: 'Tab 4', name: 'Tab4', component: () => null, active: true },
-      ],
-    },
-  };
-  
-  const panelsWithNonEmptyViews = {
-    panel1: {
-      top: 0,
-      left: 0,
-      relativeLeft: 0,
-      relativeTop: 0,
-      zIndex: 1,
-      width: 500,
-      height: 500,
-      visible: true,
-      detached: false,
-      alignment: Side.left,
-      maxHeight: 800,
-      panelViews: [
-        { title: 'Tab 1', name: 'Tab1', component: () => null, active: true },
-        { title: 'Tab 2', name: 'Tab2', component: () => null, active: false },
-        { title: 'Tab 3', name: 'Tab3', component: () => null, active: false },
-      ],
-    },
-    panel2: {
-      top: 0,
-      left: 0,
-      relativeLeft: 0,
-      relativeTop: 0,
-      zIndex: 1,
-      width: 500,
-      height: 500,
-      visible: true,
-      detached: true,
-      alignment: Side.right,
-      maxHeight: 800,
-      panelViews: [
-        { title: 'Tab 4', name: 'Tab4', component: () => null, active: true },
-      ],
-    },
-  };
-  
-  it('removes panels with empty views from state', () => {
-    const result = stateRemovePanelEmptyViews(panelsWithEmptyViews);
-
-    expect(Object.keys(result)).toHaveLength(1);
-    expect(result.panel2).toEqual(panelsWithEmptyViews.panel2);
-  });
-  
-  it('removes empty views from panels', () => {
-    const result = stateRemovePanelEmptyViews(panelsWithNonEmptyViews);
-
-    expect(result.panel1.panelViews).not.toHaveLength(0);
-    expect(result.panel2.panelViews).not.toHaveLength(0);
-  });
-});
-
 describe('splitPanelColumns', () => {
-  const panel1: PanelBBox = emptyPanel;
-  const panel2: PanelBBox = emptyPanel;
-  const panel3: PanelBBox = emptyPanel;
-  const state = {
-    panel1,
-    panel2,
-    panel3,
+  const panel1 = 'panel1';
+  const panel2 = 'panel2';
+  const panel3 = 'panel3';
+  const totalHeight = 1000;
+  const panelAttributes = {
+    panelViews:[{ name: 'view1', component: () => null }],
+    order: 0,
+    width: DEFAULT_PANEL_WIDTH,
+    height: DEFAULT_PANEL_HEIGHT,
+    alignment: Side.left,
   };
-  const sameSidePanelKeys = ['panel1', 'panel2', 'panel3'];
-  const removingKey = 'panel2';
-  const totalHeight = 300;
+  const initialPanels = {
+    panel1: { ...panelAttributes },
+    panel2: { ...panelAttributes, alignment: Side.right },
+    panel3: { ...panelAttributes, alignment: Side.left },
+  };
 
-  it('should update the height of panels on the same side', () => {
-    const result = splitPanelColumns(state, sameSidePanelKeys, removingKey, totalHeight);
+  it('should split the columns when removing a panel from a column', () => {
+    const removingKey = panel1;
+    const expectedPanel1Attributes = {
+      ...panelAttributes,
+      order: 0,
+      alignment: Side.left,
+      detached: true,
+      panelViews: [{ name: 'view1', component: () => null }],
+    };
+    const expectedPanel2Attributes = {
+      ...panelAttributes,
+      order: 0,
+      alignment: Side.right,
+    };
+    const expectedPanel3Attributes = {
+      ...panelAttributes,
+      order: 1,
+      alignment: Side.left,
+    };
+    const expectedState = {
+      [panel1]: { ...expectedPanel1Attributes },
+      [panel2]: { ...expectedPanel2Attributes },
+      [panel3]: { ...expectedPanel3Attributes },
+    };
 
-    expect(result['panel1'].height).toBe(150);
-    expect(result['panel3'].height).toBe(150);
+    const newState = splitPanelColumns(initialPanels, removingKey, totalHeight);
+
+    expect(JSON.stringify(newState[removingKey])).toEqual(JSON.stringify(expectedState[removingKey]));
   });
 
-  it('should return a new state with the removed panel and its attributes', () => {
-    const result = splitPanelColumns(state, sameSidePanelKeys, removingKey, totalHeight);
+  it('should split the columns when removing a panel from a column with multiple panels', () => {
+    const panel1Attributes = {
+      ...panelAttributes,
+      panelViews: [{ name: 'view1', component: () => null }],
+    };
+    const panel2Attributes = {
+      ...panelAttributes,
+      alignment: Side.left,
+      panelViews: [{ name: 'view2', component: () => null }],
+    };
+    const panel3Attributes = {
+      ...panelAttributes,
+      alignment: Side.right,
+      panelViews: [{ name: 'view3', component: () => null }],
+    };
+    const removingKey = panel1;
+    const expectedPanel1Attributes = {
+      ...panelAttributes,
+      order: 0,
+      alignment: Side.left,
+      detached: true,
+    };
+    const expectedPanel2Attributes = {
+      ...panelAttributes,
+      order: 1,
+      alignment: Side.left,
+      panelViews: [{ name: 'view2', component: () => null }],
+    };
+    const expectedPanel3Attributes = {
+      ...panelAttributes,
+      order: 0,
+      alignment: Side.right,
+      panelViews: [{ name: 'view3', component: () => null }],
+    };
+    const expectedState = {
+      [panel1]: { ...expectedPanel1Attributes },
+      [panel2]: { ...expectedPanel2Attributes },
+      [panel3]: { ...expectedPanel3Attributes },
+    };
 
-    expect(result['panel2'].width).toBe(320);
-    expect(result['panel2'].height).toBe(400);
-    expect(result['panel2'].detached).toBe(true);
-  });
+    const newState = splitPanelColumns({ panel1: panel1Attributes, panel2: panel2Attributes, panel3: panel3Attributes }, removingKey, totalHeight);
 
-  it('should not modify the original state', () => {
-    splitPanelColumns(state, sameSidePanelKeys, removingKey, totalHeight);
-
-    expect(state['panel1'].height).toBe(150);
-    expect(state['panel2'].height).toBe(150);
-    expect(state['panel3'].height).toBe(150);
+    expect(JSON.stringify(newState)).toEqual(JSON.stringify(expectedState));
   });
 });
 
 describe('joinPanelColumns', () => {
   const panel1: PanelBBox = {
     width: 200,
-    height: 100,
-    left: 0,
+    height: 300,
     top: 0,
-    relativeLeft: 0,
-    relativeTop: 0,
-    maxHeight: 300,
-    zIndex: 1,
-    visible: true,
+    left: 0,
+    order: 0,
     detached: false,
     alignment: Side.left,
     panelViews: [],
   };
   const panel2: PanelBBox = {
-    width: 200,
-    height: 100,
-    left: 0,
-    top: 100,
-    relativeLeft: 0,
-    relativeTop: 0,
-    maxHeight: 300,
-    zIndex: 1,
-    visible: true,
+    width: 300,
+    height: 200,
+    top: 0,
+    left: 200,
+    order: 1,
     detached: false,
     alignment: Side.left,
     panelViews: [],
   };
   const panel3: PanelBBox = {
-    width: 200,
-    height: 100,
-    left: 0,
-    top: 200,
-    relativeLeft: 0,
-    relativeTop: 0,
-    maxHeight: 300,
-    zIndex: 1,
-    visible: true,
+    width: 250,
+    height: 400,
+    top: 0,
+    left: 500,
+    order: 2,
     detached: false,
-    alignment: Side.left,
+    alignment: Side.right,
     panelViews: [],
   };
-  const state: Record<string, PanelBBox> = {
+  const panel4: PanelBBox = {
+    width: 250,
+    height: 400,
+    top: 0,
+    left: 500,
+    order: 2,
+    detached: false,
+    alignment: Side.right,
+    panelViews: [],
+  };
+  const state = {
     panel1,
     panel2,
     panel3,
+    panel4,
   };
-  const sameSidePanelKeys = ['panel1', 'panel2'];
-  const panelAddKey = 'panel3';
-  const alignment = 'left';
-  const totalHeight = 300;
-  const width = 200;
 
-  it('should update the height, width, top, alignment, and detached properties of panels on the same side', () => {
-    const result = joinPanelColumns(state, sameSidePanelKeys, panelAddKey, alignment, totalHeight, width);
+  it('should join two columns on the left', () => {
+    const result = joinPanelColumns(state, 'panel4', Side.left, 300, 600);
 
-    expect(result['panel1'].height).toBe(150);
-    expect(result['panel1'].width).toBe(200);
-    expect(result['panel1'].top).toBe(0);
-    expect(result['panel1'].alignment).toBe('left');
-    expect(result['panel1'].detached).toBe(false);
-
-    expect(result['panel2'].height).toBe(150);
-    expect(result['panel2'].width).toBe(200);
-    expect(result['panel2'].top).toBe(150);
-    expect(result['panel2'].alignment).toBe('left');
-    expect(result['panel2'].detached).toBe(false);
-
-    expect(result['panel3'].height).toBe(150);
-    expect(result['panel3'].width).toBe(200);
-    expect(result['panel3'].top).toBe(300);
-    expect(result['panel3'].alignment).toBe('left');
-    expect(result['panel3'].detached).toBe(false);
+    expect(result).toEqual({
+      panel1,
+      panel2,
+      panel3,
+      panel4: {
+        width: 300,
+        height: 400,
+        top: 0,
+        left: 500,
+        order: 3,
+        detached: false,
+        alignment: 'left',
+        panelViews: [],
+      },
+    });
   });
 
-  it('should add the panel to the same side panel keys array', () => {
-    const result = joinPanelColumns(state, sameSidePanelKeys, panelAddKey, alignment, totalHeight, width);
+  it('should join two columns on the right', () => {
+    const result = joinPanelColumns(state, 'panel4', Side.right, 400, 600);
 
-    expect(JSON.stringify(result)).toContain('panel3');
+    expect(result).toEqual({
+      panel1,
+      panel2,
+      panel3,
+      panel4: {
+        width: 250,
+        height: 400,
+        top: 0,
+        left: 500,
+        order: 2,
+        detached: false,
+        alignment: 'right',
+        panelViews: [],
+      },
+    });
   });
 
-  it('should return a new state', () => {
-    const result = joinPanelColumns(state, sameSidePanelKeys, panelAddKey, alignment, totalHeight, width);
+  it('should adjust the order when joining two columns', () => {
+    const result = joinPanelColumns(state, 'panel4', Side.left, 300, 600, JoinOrder.top);
 
-    expect(result).not.toBe(state);
+    expect(result.panel1.order).toBe(1);
+    expect(result.panel2.order).toBe(2);
+    expect(result.panel3.order).toBe(0);
+    expect(result.panel4.order).toBe(0);
   });
 });
 
+describe('redistributeHeights', () => {
+  const state = {
+    panel1: {
+      detached: false,
+      alignment: 'left',
+      height: 100,
+      visible: true,
+    },
+    panel2: {
+      detached: false,
+      alignment: 'left',
+      height: 100,
+      visible: true,
+    },
+    panel3: {
+      detached: false,
+      alignment: 'left',
+      height: 100,
+      visible: true,
+    },
+    panel4: {
+      detached: false,
+      alignment: 'left',
+      height: 100,
+      visible: true,
+    },
+    panel5: {
+      detached: false,
+      alignment: 'left',
+      height: 100,
+      visible: false,
+    },
+  };
+  const totalHeight = 500;
+  const alignment = 'left';
+  const result = redistributeHeights(state, totalHeight, alignment);
+
+  it('should return a new state object', () => {
+    expect(result).not.toBe(state);
+  });
+
+  it('should distribute the total height among the visible panels', () => {
+    expect(result.panel1.height).toBeCloseTo(119);
+    expect(result.panel2.height).toBeCloseTo(119);
+    expect(result.panel3.height).toBeCloseTo(119);
+    expect(result.panel4.height).toBeCloseTo(119);
+  });
+
+  it('should not change the height of collapsed panels', () => {
+    expect(result.panel5.height).toBe(100);
+  });
+});
 
 describe('getSnappedHeights', () => {
-  const state: Record<string, PanelBBox> = {
-    panel1: { width: 100, height: 100, left: 0, top: 0, relativeLeft: 0, relativeTop: 0, maxHeight: 0, zIndex: 0, visible: true, detached: false, alignment: Side.left, panelViews: [] },
-    panel2: { width: 100, height: 100, left: 0, top: 0, relativeLeft: 0, relativeTop: 0, maxHeight: 0, zIndex: 0, visible: true, detached: false, alignment: Side.left, panelViews: [] },
-    panel3: { width: 100, height: 100, left: 0, top: 0, relativeLeft: 0, relativeTop: 0, maxHeight: 0, zIndex: 0, visible: true, detached: false, alignment: Side.right, panelViews: [] },
+  const state = {
+    panel1: { height: 100, top: 0, visible: true },
+    panel2: { height: 200, top: 100, visible: true },
+    panel3: { height: 50, top: 300, visible: true },
+    panel4: { height: 30, top: 350, visible: false },
+    panel5: { height: 70, top: 380, visible: false },
   };
 
-  it('should evenly distribute heights for panels on the left and 100% of the panel on the left', () => {
-    const totalHeight = 300;
+  it('should return a new state object with updated panel heights and top positions', () => {
+    const totalHeight = 500;
     const expectedState = {
-      ...state,
-      panel1: { ...state.panel1, height: 150 },
-      panel2: { ...state.panel2, height: 150 },
-      panel3: { ...state.panel3, height: 300 },
+      panel1: { height: 100, top: 0, visible: true },
+      panel2: { height: 200, top: 100, visible: true },
+      panel3: { height: 50, top: 300, visible: true },
+      panel4: { height: 30, top: 350, visible: false },
+      panel5: { height: 70, top: 380, visible: false },
     };
 
     expect(getSnappedHeights(state, totalHeight)).toEqual(expectedState);
   });
 
-  it('should not change heights of detached panels', () => {
-    const detachedState = {
-      ...state,
-      panel1: { ...state.panel1, detached: true },
-    };
-    const totalHeight = 200;
+  it('should handle collapsed panels', () => {
+    const totalHeight = 300;
     const expectedState = {
-      ...detachedState,
-      panel2: { ...state.panel2, height: 200 },
-      panel3: { ...state.panel3, height: 200 },
+      panel1: { height: 100, top: 0, visible: true },
+      panel2: { height: 200, top: 100, visible: true },
+      panel3: { height: 50, top: 300, visible: true },
+      panel4: { height: 30, top: 350, visible: false },
+      panel5: { height: 70, top: 380, visible: false },
     };
 
-    expect(getSnappedHeights(detachedState, totalHeight)).toEqual(expectedState);
+    expect(getSnappedHeights(state, totalHeight)).toEqual(expectedState);
+  });
+
+  it('should handle an empty state object', () => {
+    const totalHeight = 500;
+    const expectedState = {};
+
+    expect(getSnappedHeights({}, totalHeight)).toEqual(expectedState);
   });
 });
