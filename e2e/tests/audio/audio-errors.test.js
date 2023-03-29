@@ -55,7 +55,7 @@ Scenario('Check if audio decoder error handler is showing', async function({ I, 
 
   await AtAudioView.lookForStage();
 
-  AtAudioView.seeErrorHandler('An error occurred while decoding the audio file');
+  await AtAudioView.seeErrorHandler('An error occurred while decoding the audio file');
 });
 
 Scenario('Check if audio http error handler is showing', async function({ I, LabelStudio, AtAudioView }) {
@@ -74,5 +74,5 @@ Scenario('Check if audio http error handler is showing', async function({ I, Lab
 
   await AtAudioView.lookForStage();
 
-  AtAudioView.seeErrorHandler('HTTP error status: 404', '_httpErrorSelector');
+  await AtAudioView.seeErrorHandler('HTTP error status: 404', '_httpErrorSelector');
 });

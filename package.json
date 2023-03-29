@@ -36,7 +36,7 @@
     "copy-examples": "bash scripts/copy.sh",
     "docs:generate": "node scripts/create-docs.js",
     "lint:write": "eslint --debug src/ --fix",
-    "lint": "eslint --debug src/",
+    "lint": "eslint src/",
     "prepublishOnly": "yarn run test && yarn run build:final",
     "prettier-styles": "prettier --write src/**/*.{css,scss}",
     "prettier": "prettier --write src/**/*.js",

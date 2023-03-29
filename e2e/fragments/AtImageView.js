@@ -50,9 +50,9 @@ module.exports = {
     return this._stageBBox?.y ?? 0;
   },
 
-  waitForImage() {
+  async waitForImage() {
     I.say('Waiting for image to be loaded');
-    I.executeScript(Helpers.waitForImage);
+    await I.executeScript(Helpers.waitForImage);
     I.waitForVisible('canvas', 5);
   },
 
@@ -299,5 +299,19 @@ module.exports = {
   selectMoveTool() {
     I.say('Select move tool');
     I.pressKey('V');
+  },
+
+  async multiImageGoForwartWithHotkey() {
+    I.say('Attempting to go to the next image');
+    I.pressKey('Ctrl+d');
+
+    await this.waitForImage();
+  },
+
+  async multiImageGoBackwardWithHotkey() {
+    I.say('Attempting to go to the next image');
+    I.pressKey('Ctrl+a');
+
+    await this.waitForImage();
   },
 };

@@ -86,6 +86,10 @@ const Regions = memo(({ regions, useLayers = true, chunkSize = 15, suggestion = 
 
 const DrawingRegion = observer(({ item }) => {
   const { drawingRegion } = item;
+  
+  if (!drawingRegion) return null;
+  if (item.multiImage && item.currentImage !== drawingRegion.item_index) return null;
+
   const Wrapper = drawingRegion && drawingRegion.type === 'brushregion' ? Fragment : Layer;
 
   return (
