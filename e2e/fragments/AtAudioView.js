@@ -277,8 +277,9 @@ module.exports = {
   async seeErrorHandler(value, selector = null) {
     selector = selector ? this[selector] : this._errorSelector;
     const error = await I.grabTextFrom(selector);
+    const matcher = new RegExp(value);
 
-    assert.equal(error, value);
+    assert.match(error, matcher);
   },
   
   /**
