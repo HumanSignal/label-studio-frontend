@@ -1,5 +1,5 @@
 import { DEFAULT_PANEL_WIDTH, DEFAULT_PANEL_HEIGHT } from '../../constants';
-import { emptyPanel, JoinOrder, PanelBBox, Side } from '../types';
+import { JoinOrder, PanelBBox, Side } from '../types';
 import { determineDroppableArea, determineLeftOrRight, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
 
 
@@ -552,7 +552,6 @@ describe('getSnappedHeights', () => {
     panel2: { height: 200, top: 100, visible: true },
     panel3: { height: 50, top: 300, visible: true },
     panel4: { height: 30, top: 350, visible: false },
-    panel5: { height: 70, top: 380, visible: false },
   };
 
   it('should return a new state object with updated panel heights and top positions', () => {
@@ -562,7 +561,6 @@ describe('getSnappedHeights', () => {
       panel2: { height: 200, top: 100, visible: true },
       panel3: { height: 50, top: 300, visible: true },
       panel4: { height: 30, top: 350, visible: false },
-      panel5: { height: 70, top: 380, visible: false },
     };
 
     expect(getSnappedHeights(state, totalHeight)).toEqual(expectedState);
@@ -575,7 +573,6 @@ describe('getSnappedHeights', () => {
       panel2: { height: 200, top: 100, visible: true },
       panel3: { height: 50, top: 300, visible: true },
       panel4: { height: 30, top: 350, visible: false },
-      panel5: { height: 70, top: 380, visible: false },
     };
 
     expect(getSnappedHeights(state, totalHeight)).toEqual(expectedState);
