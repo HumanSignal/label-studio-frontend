@@ -179,7 +179,7 @@ Scenario('Image list with hotkey navigation', async ({ I, AtImageView, LabelStud
   I.say('The number of pages is correct');
   I.see('1 of 4');
 
-  await AtImageView.multiImageGoForwartWithHotkey();
+  await AtImageView.multiImageGoForwardWithHotkey();
 
   I.say('Loading second image');
   I.seeElement(`img[src="${data.images[1]}"]`);
@@ -191,10 +191,6 @@ Scenario('Image list with hotkey navigation', async ({ I, AtImageView, LabelStud
 });
 
 Scenario('Ensure that results are the same when exporting existing regions', async ({ I, AtImageView, LabelStudio }) => {
-  LabelStudio.setFeatureFlags({
-    feat_front_lsdv_4583_multi_image_segmentation_short: true,
-  });
-
   const params = {
     config: rectConfig,
     data,
@@ -212,10 +208,6 @@ Scenario('Ensure that results are the same when exporting existing regions', asy
 });
 
 Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView }) => {
-  LabelStudio.setFeatureFlags({
-    feat_front_lsdv_4583_multi_image_segmentation_short: true,
-  });
-
   const params = {
     config: rectConfig,
     data,
@@ -228,7 +220,7 @@ Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView
   await AtImageView.waitForImage();
   await AtImageView.lookForStage();
 
-  AtImageView.multiImageGoForwartWithHotkey();
+  AtImageView.multiImageGoForwardWithHotkey();
 
   await AtImageView.waitForImage();
   await AtImageView.lookForStage();
@@ -237,7 +229,6 @@ Scenario('Image list exports correct data', async ({ I, LabelStudio, AtImageView
   await LabelStudio.resultsNotChanged(result);
 });
 
-// TODO: temporarily disable, will be fixed in another ticket
 Scenario('Regions are not changes when duplicating an annotation', async ({ I, LabelStudio, AtImageView }) => {
   const params = {
     config: rectConfig,
@@ -286,12 +277,16 @@ Scenario('No errors during brush export in MIG', async ({ I, LabelStudio, AtImag
   AtLabels.clickLabel('Moonwalker');
   AtImageView.drawThroughPoints(brushRegionPoints);
 
-  await AtImageView.multiImageGoForwartWithHotkey();
+  await AtImageView.multiImageGoForwardWithHotkey();
 
   I.pressKey('u');
   I.say('Create brush regions on the second image');
   AtLabels.clickLabel('Planet');
   AtImageView.drawThroughPoints(brushRegionPoints);
+
+  // Brush might not have a chanve to finish whatewer it's
+  // doing, so it's safer to wait a little before exporting it
+  I.wait(2); 
 
   const result = await LabelStudio.serialize();
 

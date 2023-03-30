@@ -78,16 +78,16 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  * @meta_description Customize Label Studio with the Audio tag for advanced audio annotation tasks for machine learning and data science projects.
  * @name Audio
  * @param {string} name - Name of the element
- * @param {string} value - Data field containing path or a URL to the audio
- * @param {string} [defaultspeed=1] - Default speed level (from 0.5 to 2)
- * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform
- * @param {string} [defaultzoom=1] - Default zoom level for waveform (from 1 to 1500)
- * @param {string} [defaultvolume=1] - Default volume level (from 0 to 1)
- * @param {string} [hotkey] - Hotkey used to play or pause audio
- * @param {string} [sync] object name to sync with
- * @param {string} [height=96] - Total height of the audio player
- * @param {string} [waveheight=32] - Minimum height of a waveform when in splitchannel mode with multiple channels
- * @param {boolean} [splitchannels=false] - Display multichannel separately (if supported by the file)
+ * @param {string} value - Data field containing path or a URL to the audio.
+ * @param {string} [defaultspeed=1] - Default speed level (from 0.5 to 2).
+ * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform.
+ * @param {string} [defaultzoom=1] - Default zoom level for waveform. (from 1 to 1500).
+ * @param {string} [defaultvolume=1] - Default volume level (from 0 to 1).
+ * @param {string} [hotkey] - Hotkey used to play or pause audio.
+ * @param {string} [sync] Object name to sync with.
+ * @param {string} [height=96] - Total height of the audio player.
+ * @param {string} [waveheight=32] - Minimum height of a waveform when in `splitchannels` mode with multiple channels to display.
+ * @param {boolean} [splitchannels=false] - Display multiple audio channels separately, if the audio file has more than one channel. (**NOTE: Requires more memory to operate.**)
  * @param {string} [decoder=webaudio] - Decoder type to use to decode audio data. (`"webaudio"` or `"ffmpeg"`)
  */
 const TagAttrs = types.model({
