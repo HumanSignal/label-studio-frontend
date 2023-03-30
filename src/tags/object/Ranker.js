@@ -59,6 +59,12 @@ const Model = types
     get result() {
       return self.annotation.results.find(r => r.from_name === self);
     },
+    get resultType() {
+      return 'ranker';
+    },
+    get valueType() {
+      return 'ranker';
+    },
   }))
   .actions(self => ({
     updateValue: flow(function* (store) {
