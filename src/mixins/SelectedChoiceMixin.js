@@ -21,7 +21,7 @@ const SelectedChoiceMixin = types
 
       return isDefined(choice1) && isDefined(choice2) && choice1 === choice2;
     },
-    hasChoiceSelection(choiceValue, _selectedValues = []) {
+    hasChoiceSelection(choiceValue, selectedValues = []) {
       if (choiceValue?.length) {
         // @todo Revisit this and make it more consistent, and refactor this
         // behaviour out of the SelectedModel mixin and use a singular approach.
@@ -35,8 +35,6 @@ const SelectedChoiceMixin = types
         }
 
         // Check the selected values of the choices for existence of the choiceValue(s)
-        const selectedValues = _selectedValues.flat();
-
         if (selectedValues.length) {
           const includesValue = v => {
             if (self.findItemByValueOrAlias) {
@@ -45,7 +43,7 @@ const SelectedChoiceMixin = types
               v = item?.alias || item?.value || v;
             }
 
-            return selectedValues.includes(v);
+            return selectedValues.map(s => Array.isArray(s) ? s.at(-1) : s).includes(v);
           };
 
           return choiceValue.some(includesValue);

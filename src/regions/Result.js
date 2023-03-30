@@ -157,6 +157,9 @@ const Result = types
         if (label && !self.area.hasLabel(label)) return false;
       }
 
+      const innerResults = (r) =>
+        r.map(s => Array.isArray(s) ? s.at(-1) : s);
+
       const isChoiceSelected = () => {
         const tagName = control.whentagname;
         const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(',') : null;
@@ -170,12 +173,11 @@ const Result = types
           });
 
           if (!result) return false;
-
-          if (choiceValues && !choiceValues.some(v => result.mainValue.flat().some(vv => result.from_name.selectedChoicesMatch(v, vv)))) return false;
+          if (choiceValues && !choiceValues.some(v => innerResults(result.mainValue).some(vv => result.from_name.selectedChoicesMatch(v, vv)))) return false;
         } else {
           if (!results.length) return false;
           // if no given choice value is selected in any choice result
-          if (choiceValues && !results.some(r => choiceValues.some(v => r.mainValue.flat().some(vv => r.from_name.selectedChoicesMatch(v, vv))))) return false;
+          if (choiceValues && !results.some(r => choiceValues.some(v => innerResults(r.mainValue).some(vv => r.from_name.selectedChoicesMatch(v, vv))))) return false;
         }
         return true;
       };
