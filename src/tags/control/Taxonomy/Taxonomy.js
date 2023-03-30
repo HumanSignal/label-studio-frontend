@@ -174,6 +174,33 @@ const Model = types
     selectedValues() {
       return self.selected;
     },
+
+    findItemByValueOrAlias(valueOrAlias) {
+      // search the tree of items for the given
+      // value or alias match
+      const findItem = (items) => {
+        for (const item of items) {
+          const label = item.label;
+          const value = item.path[item.path.length - 1];
+
+          item.value = label;
+          if (value !== label) {
+            item.alias = value;
+          }
+
+          if (item.value === valueOrAlias || item.alias === valueOrAlias) {
+            return item;
+          }
+          if (item.children) {
+            const found = findItem(item.children, valueOrAlias);
+
+            if (found) return found;
+          }
+        }
+      };
+
+      return findItem(self.items);
+    },
   }))
   .actions(self => ({
     afterAttach() {

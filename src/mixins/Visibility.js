@@ -63,7 +63,18 @@ const VisibilityMixin = types
               const selectedValues = (tag.selectedValues() || []).flat();
 
               if (selectedValues.length) {
-                return choiceValue.split(',').some(v => selectedValues.includes(v));
+                const includesValue = v => {
+
+                  if (tag.findItemByValueOrAlias) {
+                    const item = tag.findItemByValueOrAlias(v);
+
+                    v = item?.alias || item?.value || v;
+                  }
+
+                  return selectedValues.includes(v);
+                };
+
+                return choiceValue.split(',').some(includesValue);
               }
 
               return false;

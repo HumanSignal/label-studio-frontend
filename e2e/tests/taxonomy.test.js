@@ -872,7 +872,7 @@ Scenario('Taxonomy visibleWhen with aliases', async ({ I, LabelStudio, AtTaxonom
   const result = await LabelStudio.serialize();
 
   assert.deepStrictEqual(result[0].value.taxonomy, [['1-3', '3'], ['4-7', '4']]);
-  assert.deepStrictEqual(result[0].value.choices, ['8']);
+  assert.deepStrictEqual(result[1].value.choices, ['8']);
 
   await session('Deserialization', async () => {
     I.amOnPage('/');
