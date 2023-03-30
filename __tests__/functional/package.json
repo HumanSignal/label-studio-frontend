@@ -1,0 +1,16 @@
+{
+  "name": "functional",
+  "version": "1.0.0",
+  "description": "LSF test suite",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "ls-test": "../integration"
+  },
+  "scripts": {
+    "test": "lstest",
+    "test:alt": "yarn --cwd ./node_modules/ls-test test"
+  }
+}
