@@ -56,16 +56,9 @@ const Model = types
       //grabs data from the createData file
       return transformData(columns, self.title.split('|'));
     },
-    get resultType() {
-      return 'ranker';
-    },
-    get valueType() {
-      return 'ranker';
-    },
     get result() {
       return self.annotation.results.find(r => r.from_name === self);
     },
-
   }))
   .actions(self => ({
     updateValue: flow(function* (store) {
@@ -75,17 +68,14 @@ const Model = types
       yield Promise.resolve(true);
     }),
     needsUpdate() {
-      if (self.annotation && !self.result && self._value) {
+      // if annotation was already deserialized but has no result for Ranker — create it
+      if (self.annotation?._initialAnnotationObj && !self.result && self._value) {
         if (self.mode === 'rank') {
-
           self.annotation.createResult({}, { ranker: self._value.map(item => item.id) }, self, self);
-        }
-        else {
+        } else {
           self.annotation.createResult({}, { ranker: [] }, self, self);
-
         }
       }
-
     },
     updateResult(newData) {
       //check if result exists already, since only one instance of it can exist at a time
