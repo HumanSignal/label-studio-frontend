@@ -11,8 +11,11 @@
       "./node_modules/@types"
     ]
   },
+  "exclude": [
+    "node_modules"
+  ],
   "include": [
     "**/*.ts",
-    "./node_modules/ls-test/helpers/**/*.ts"
+    "node_modules/ls-test/**/*.ts"
   ]
 }

@@ -1,4 +1,4 @@
-import { LabelStudio } from 'ls-test/helpers/LSF';
+import { LabelStudio } from '@heartexlabs/ls-test/helpers/LSF';
 
 describe('Label Studio UI init', () => {
   it('Initialize Label Studio', () => {

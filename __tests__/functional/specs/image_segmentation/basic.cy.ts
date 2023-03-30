@@ -1,4 +1,4 @@
-import { ImageView, Labels, LabelStudio, Sidebar } from 'ls-test/helpers/LSF';
+import { ImageView, Labels, LabelStudio, Sidebar } from '@heartexlabs/ls-test/helpers/LSF';
 
 const config = `
   <View>

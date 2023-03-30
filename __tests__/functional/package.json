@@ -7,10 +7,14 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "ls-test": "../integration"
+    "@heartexlabs/ls-test": "https://github.com/heartexlabs/ls-frontend-test.git"
   },
   "scripts": {
-    "test": "lstest",
-    "test:alt": "yarn --cwd ./node_modules/ls-test test"
+    "test": "lstest run",
+    "test:ui": "lstest open"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.2"
   }
 }

@@ -1,5 +1,3 @@
-import configure from 'ls-test';
+import configure from '@heartexlabs/ls-test';
 
-export default configure(cfg => {
-  return cfg;
-});
+export default configure();
