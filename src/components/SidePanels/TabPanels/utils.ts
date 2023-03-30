@@ -6,8 +6,6 @@ import { OutlinerComponent } from '../OutlinerPanel/OutlinerPanel';
 import { PanelProps } from '../PanelBase';
 import { emptyPanel, JoinOrder, PanelBBox, PanelView, Side, ViewportSize } from './types';
 
-export const lastCallTime: { [key: string]: number } | undefined = {};
-export const timeouts: { [key: string]: ReturnType<typeof setTimeout> | null } = {};
 export const determineLeftOrRight = (event: any, droppableElement?: ReactNode) => {
   const element = droppableElement || event.target as HTMLElement;  
   const dropWidth = (element as HTMLElement).clientWidth as number;
