@@ -27,7 +27,7 @@ const Column = (props: ColumnProps) => {
   const { column, items, title } = props;
 
   return (
-    <div className={styles.columnStyle}>
+    <div className={[styles.columnStyle, 'htx-ranker-column'].join(' ')}>
       <h1>{title ? title : column.title}</h1>
       <StrictModeDroppable droppableId={column.id}>
         {provided => (

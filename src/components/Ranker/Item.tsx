@@ -35,7 +35,7 @@ const Item = (props: ItemProps) => {
           <div
             {...provided.draggableProps}
             {...provided.dragHandleProps}
-            className={styles.itemStyle}
+            className={[styles.itemStyle, 'htx-ranker-item'].join(' ')}
             ref={provided.innerRef}
           >
             <h3 className={styles.itemLineStyle}>{item.title}</h3>
