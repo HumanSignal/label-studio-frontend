@@ -260,7 +260,7 @@ const RegionsLayer = observer(({
           workingArea={workinAreaCoordinates}
           draggable={!reg.isReadOnly() && !isDrawing && !locked}
           selected={reg.selected || reg.inSelection}
-          listening={!reg.locked}
+          listening={!reg.locked && !reg.hidden}
           stageRef={stageRef}
           onDragMove={onDragMove}
         />
