@@ -150,7 +150,8 @@ describe('setActive', () => {
       },
     ];
     
-    const newState = setActive(dummyPanels, panelName, tabIndex);
+    const stateBefore = { ...dummyPanels };
+    const newState = setActive(stateBefore, panelName, tabIndex);
 
     expect(JSON.stringify(newState[panelName].panelViews)).toEqual(JSON.stringify(expectedState));
   });

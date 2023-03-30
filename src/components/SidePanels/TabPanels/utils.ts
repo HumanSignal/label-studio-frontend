@@ -21,12 +21,14 @@ export const stateRemovedTab = (state: Record<string, PanelBBox>, movingPanel: s
   const newState = { ...state };
 
   if (!newState[movingPanel]) return newState;
-  const panel = newState[movingPanel];
 
-  panel.panelViews = panel.panelViews
-    .filter((_, tabIterator) => tabIterator !== movingTab);
-
-  return newState;
+  return {
+    ...newState,
+    [movingPanel]: {
+      ...newState[movingPanel],
+      panelViews: newState[movingPanel].panelViews.filter((_, tabIterator) => tabIterator !== movingTab),
+    },
+  };
 };
 
 export const setActive = (state: Record<string, PanelBBox>, key: string, tabIndex: number) => {
