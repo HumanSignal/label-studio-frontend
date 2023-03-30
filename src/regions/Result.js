@@ -159,7 +159,7 @@ const Result = types
 
       const isChoiceSelected = () => {
         const tagName = control.whentagname;
-        const choiceValue = control.whenchoicevalue;
+        const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(',') : null;
         const results = self.annotation.results.filter(r => ['choices', 'taxonomy'].includes(r.type) && r !== self);
 
         if (tagName) {
@@ -170,11 +170,12 @@ const Result = types
           });
 
           if (!result) return false;
-          if (choiceValue && !result.canBeSubmitted) return false;
+
+          if (choiceValues && !choiceValues.some(v => result.mainValue.flat().some(vv => result.from_name.selectedChoicesMatch(v, vv)))) return false;
         } else {
           if (!results.length) return false;
           // if no given choice value is selected in any choice result
-          if (choiceValue && !results.some(r => r.canBeSubmitted)) return false;
+          if (choiceValues && !results.some(r => choiceValues.some(v => r.mainValue.flat().some(vv => r.from_name.selectedChoicesMatch(v, vv))))) return false;
         }
         return true;
       };

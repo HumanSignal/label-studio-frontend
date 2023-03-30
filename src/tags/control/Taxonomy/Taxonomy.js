@@ -18,6 +18,7 @@ import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
 import { Spin } from 'antd';
 import './Taxonomy.styl';
 import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
+import SelectedChoiceMixin from '../../../mixins/SelectedChoiceMixin';
 
 /**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
@@ -290,6 +291,7 @@ const TaxonomyModel = types.compose('TaxonomyModel',
   RequiredMixin,
   PerRegionMixin,
   ReadOnlyControlMixin,
+  SelectedChoiceMixin,
   VisibilityMixin,
   AnnotationMixin,
 );

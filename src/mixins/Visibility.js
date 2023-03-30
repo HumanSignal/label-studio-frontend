@@ -43,44 +43,9 @@ const VisibilityMixin = types
 
             const tag = self.annotation.names.get(tagName);
 
-            if (!tag) return false;
+            if (!tag?.hasChoiceSelection) return false;
 
-            if (choiceValue) {
-              // @todo Revisit this and make it more consistent, and refactor this
-              // behaviour out of the SelectedModel mixin and use a singular approach.
-              // This is the original behaviour of other SelectedModel mixin usages
-              // as they are using alias lookups for choices. For now we will keep it as is since it works for all the
-              // other cases currently.
-              if (tag.findLabel) {
-                return choiceValue
-                  .split(',')
-                  .map(v => tag.findLabel(v))
-                  .some(c => c && c.sel);
-              }
-
-              // Check the selected values of the choices for existence of the choiceValue(s)
-              // This currently doesn't work for alias lookups as it is a direct comparison.
-              const selectedValues = (tag.selectedValues() || []).flat();
-
-              if (selectedValues.length) {
-                const includesValue = v => {
-
-                  if (tag.findItemByValueOrAlias) {
-                    const item = tag.findItemByValueOrAlias(v);
-
-                    v = item?.alias || item?.value || v;
-                  }
-
-                  return selectedValues.includes(v);
-                };
-
-                return choiceValue.split(',').some(includesValue);
-              }
-
-              return false;
-            }
-
-            return tag.isSelected;
+            return tag.hasChoiceSelection(choiceValue.split(','), tag.selectedValues());
           },
 
           'no-region-selected': () => !self.annotation.highlightedNode,

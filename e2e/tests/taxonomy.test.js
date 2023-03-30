@@ -773,7 +773,29 @@ Scenario('Taxonomy visibleWhen', async ({ I, LabelStudio, AtTaxonomy }) => {
   I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
   I.say('Should get results for taxonomy and choices');
 
-  const result = await LabelStudio.serialize();
+  let result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(result[0].value.taxonomy, [['One to three', 'Three'], ['Four to seven', 'Four']]);
+  assert.deepStrictEqual(result[1].value.choices, ['Eight']);
+
+  I.say('Should get results for only taxonomy when visibleWhen is not met');
+  AtTaxonomy.clickTaxonomy();
+  AtTaxonomy.clickItemByText('Four');
+  AtTaxonomy.clickTaxonomy();
+  I.dontSeeElement('.ant-checkbox-checked [name=\'Eight\']');
+
+  result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(result[0].value.taxonomy, [['One to three', 'Three']]);
+  assert.deepStrictEqual(result?.[1]?.value?.choices, undefined);
+
+  I.say('Should get results for taxonomy and choices when visibleWhen is met');
+  AtTaxonomy.clickTaxonomy();
+  AtTaxonomy.clickItemByText('Four');
+  AtTaxonomy.clickTaxonomy();
+  I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
+
+  result = await LabelStudio.serialize();
 
   assert.deepStrictEqual(result[0].value.taxonomy, [['One to three', 'Three'], ['Four to seven', 'Four']]);
   assert.deepStrictEqual(result[1].value.choices, ['Eight']);
@@ -869,7 +891,29 @@ Scenario('Taxonomy visibleWhen with aliases', async ({ I, LabelStudio, AtTaxonom
   I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
   I.say('Should get aliases as results');
 
-  const result = await LabelStudio.serialize();
+  let result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(result[0].value.taxonomy, [['1-3', '3'], ['4-7', '4']]);
+  assert.deepStrictEqual(result[1].value.choices, ['8']);
+
+  I.say('Should get alias results for only taxonomy when visibleWhen is not met');
+  AtTaxonomy.clickTaxonomy();
+  AtTaxonomy.clickItemByText('Four');
+  AtTaxonomy.clickTaxonomy();
+  I.dontSeeElement('.ant-checkbox-checked [name=\'Eight\']');
+
+  result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(result[0].value.taxonomy, [['1-3', '3']]);
+  assert.deepStrictEqual(result?.[1]?.value?.choices, undefined);
+
+  I.say('Should get alias results for taxonomy and choices when visibleWhen is met');
+  AtTaxonomy.clickTaxonomy();
+  AtTaxonomy.clickItemByText('Four');
+  AtTaxonomy.clickTaxonomy();
+  I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
+
+  result = await LabelStudio.serialize();
 
   assert.deepStrictEqual(result[0].value.taxonomy, [['1-3', '3'], ['4-7', '4']]);
   assert.deepStrictEqual(result[1].value.choices, ['8']);
