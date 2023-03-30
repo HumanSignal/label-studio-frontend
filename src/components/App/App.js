@@ -224,7 +224,7 @@ class App extends Component {
             </Segment>
           )}
 
-          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store} />}
+          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
           <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled }}>
             {newUIEnabled ? (
               <SidePanels
@@ -243,12 +243,12 @@ class App extends Component {
                     {store.hasInterface('side-column') && (
                       <SidebarTabs active="annotation">
                         <SidebarPage name="annotation" title="Annotation">
-                          <AnnotationTab store={store} />
+                          <AnnotationTab store={store}/>
                         </SidebarPage>
 
                         {this.props.panels.map(({ name, title, Component }) => (
                           <SidebarPage key={name} name={name} title={title}>
-                            <Component />
+                            <Component/>
                           </SidebarPage>
                         ))}
                       </SidebarTabs>
