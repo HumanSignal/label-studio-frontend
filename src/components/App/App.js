@@ -234,6 +234,7 @@ class App extends Component {
                   panelsHidden={viewingAll}
                   currentEntity={as.selectedHistory ?? as.selected}
                   regions={as.selected.regionStore}
+                  showComments={!store.hasInterface('annotations:comments')}
                 >
                   {mainContent}
                   {isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}

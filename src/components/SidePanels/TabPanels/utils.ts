@@ -123,12 +123,7 @@ const panelViews = [
     component: panelComponents['history'] as FC<PanelProps>,
     active: true,
   },
-  {
-    name: 'comments',
-    title: 'Comments',
-    component: panelComponents['comments'] as FC<PanelProps>,
-    active: false,
-  },
+
   {
     name: 'relations',
     title: 'Relations',
@@ -141,9 +136,15 @@ const panelViews = [
     component: panelComponents['info'] as FC<PanelProps>,
     active: false,
   },
+  {
+    name: 'comments',
+    title: 'Comments',
+    component: panelComponents['comments'] as FC<PanelProps>,
+    active: false,
+  },
 ];
 
-export const defaultPanelState: Record<string, PanelBBox> = {
+export const enterprisePanelDefault: Record<string, PanelBBox> = {
   'regions-info': {
     order: 1,
     top: 0,
@@ -158,6 +159,39 @@ export const defaultPanelState: Record<string, PanelBBox> = {
     alignment: Side.left,
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
     panelViews: [panelViews[0], panelViews[4]],
+  },
+  'history-comments-relations': {
+    order: 1,
+    top: 0,
+    left: 0,
+    relativeLeft: 0,
+    relativeTop: 0,
+    zIndex: 10,
+    width: DEFAULT_PANEL_WIDTH,
+    height: DEFAULT_PANEL_HEIGHT,
+    visible: true,
+    detached: false,
+    alignment: Side.right,
+    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
+    panelViews: [panelViews[1], panelViews[2], panelViews[3]],
+  },
+};
+
+export const openSourcePanelDefault: Record<string, PanelBBox> = {
+  'regions-info': {
+    order: 1,
+    top: 0,
+    left: 0,
+    relativeLeft: 0,
+    relativeTop: 0,
+    zIndex: 10,
+    width: DEFAULT_PANEL_WIDTH,
+    height: DEFAULT_PANEL_HEIGHT,
+    visible: true,
+    detached: false,
+    alignment: Side.left,
+    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
+    panelViews: [panelViews[0]],
   },
   'history-comments-relations': {
     order: 1,
@@ -208,12 +242,13 @@ export const resizers = [
   'left',
 ];
 
-export const restorePanel = () => {
+export const restorePanel = (showComments: boolean) => {
   const panelData = window.localStorage.getItem('panelState');
   const parsed = panelData && JSON.parse(panelData);
   const allTabs = panelData && Object.entries(parsed).map(([_, panel]: any) => panel.panelViews).flat(1);
   
-  if (!allTabs || allTabs.length !== panelViews.length) return defaultPanelState;
+  if (!allTabs || allTabs.length !== (panelViews.length - (showComments ? 1 : 0)))
+    return showComments ? openSourcePanelDefault : enterprisePanelDefault;
   const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
   const withActiveDefaults = setActiveDefaults(noEmptyPanels);
 

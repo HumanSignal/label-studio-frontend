@@ -23,6 +23,7 @@ export interface SidePanelsProps {
   panelsHidden: boolean;
   store: any;
   currentEntity: any;
+  showComments: boolean;
 }
 
 export interface ViewportSize { width: number, height: number }

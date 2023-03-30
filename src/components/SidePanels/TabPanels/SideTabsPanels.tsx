@@ -18,6 +18,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   currentEntity,
   panelsHidden,
   children,
+  showComments,
 }) => {
   const snapThreshold = 5;
   const regions = currentEntity.regionStore;
@@ -31,7 +32,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const [collapsedSide, setCollapsedSide] = useState({ [Side.left]: false, [Side.right]: false });
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<DropSide | Side | undefined>();
-  const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel());
+  const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel(showComments));
   const [breakPointActiveTab, setBreakPointActiveTab] = useState(0);
   const localSnap = useRef(snap);
 

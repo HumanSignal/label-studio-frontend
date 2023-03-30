@@ -148,7 +148,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
 
       handlers.current.onSnap?.(draggingKey);
     },
-  }, [detached, visible, locked, alignment, key, collapsed]);
+  }, [detached, visible, locked, alignment, key, collapsed, headerRef.current]);
 
   // Panel resizing
   useDrag({
