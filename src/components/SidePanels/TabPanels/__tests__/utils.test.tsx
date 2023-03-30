@@ -1,4 +1,4 @@
-import { DEFAULT_PANEL_WIDTH, DEFAULT_PANEL_HEIGHT } from '../../constants';
+import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH } from '../../constants';
 import { JoinOrder, PanelBBox, Side } from '../types';
 import { determineDroppableArea, determineLeftOrRight, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
 
