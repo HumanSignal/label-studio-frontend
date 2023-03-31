@@ -247,7 +247,7 @@ class App extends Component {
               viewAll: viewingAll,
               bsp: settings.bottomSidePanel,
               outliner: outlinerEnabled,
-              showingBottomBar: isFF(FF_DEV_3873),
+              showingBottomBar: newUIEnabled,
             }}
           >
             {outlinerEnabled ? (
