@@ -5,6 +5,7 @@ import React, { Component } from 'react';
 import { Result, Spin } from 'antd';
 import { getEnv, getRoot } from 'mobx-state-tree';
 import { observer, Provider } from 'mobx-react';
+import { InstructionsModal } from '../InstructionsModal/InstructionsModal';
 
 /**
  * Core
@@ -220,11 +221,13 @@ class App extends Component {
       <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !newUIEnabled }}>
         <Settings store={store} />
         <Provider store={store}>
-          {store.showingDescription && (
-            <Segment>
-              <div dangerouslySetInnerHTML={{ __html: store.description }} />
-            </Segment>
-          )}
+          <InstructionsModal
+            visible={store.showingDescription}
+            onCancel={() => store.toggleDescription()}
+            title="Labeling Instructions"
+          >
+            {store.description}
+          </InstructionsModal>
 
           {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
           <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled, showingBottomBar: isFF(FF_DEV_3873) }}>
