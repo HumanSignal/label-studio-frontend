@@ -32,6 +32,7 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
       <ViewControls
         grouping={regions.group}
         ordering={regions.sort}
+        regions={regions}
         orderingDirection={regions.sortOrder}
         onOrderingChange={onOrderingChange}
         onGroupingChange={onGroupingChange}

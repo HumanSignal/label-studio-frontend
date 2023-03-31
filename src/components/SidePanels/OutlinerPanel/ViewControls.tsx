@@ -2,10 +2,14 @@ import { FC, useCallback, useContext, useMemo } from 'react';
 import { IconCursor, IconDetails, IconList, IconSortDown, IconSortUp, IconSpeed, IconTagAlt } from '../../../assets/icons';
 import { Button } from '../../../common/Button/Button';
 import { Dropdown } from '../../../common/Dropdown/Dropdown';
+// eslint-disable-next-line
+// @ts-ignore
 import { Menu } from '../../../common/Menu/Menu';
 import { BemWithSpecifiContext } from '../../../utils/bem';
 import { SidePanelsContext } from '../SidePanelsContext';
 import './ViewControls.styl';
+import { Filter } from '../../Filter/Filter';
+import { FF_DEV_3873, isFF } from '../../../utils/feature-flags';
 
 const { Block, Elem } = BemWithSpecifiContext();
 
@@ -19,6 +23,7 @@ interface ViewControlsProps {
   grouping: GroupingOptions;
   ordering: OrderingOptions;
   orderingDirection?: OrderingDirection;
+  regions: any;
   onOrderingChange: (ordering: OrderingOptions) => void;
   onGroupingChange: (grouping: GroupingOptions) => void;
 }
@@ -26,6 +31,7 @@ interface ViewControlsProps {
 export const ViewControls: FC<ViewControlsProps> = ({
   grouping,
   ordering,
+  regions,
   orderingDirection,
   onOrderingChange,
   onGroupingChange,
@@ -82,6 +88,32 @@ export const ViewControls: FC<ViewControlsProps> = ({
           onChange={value => onOrderingChange(value)}
           readableValueForKey={getOrderingLabels}
           allowClickSelected
+        />
+      )}
+      {isFF(FF_DEV_3873) && (
+        <Filter
+          filterData={regions.regions}
+          filteringPath={'labelName'}
+          availableFilters={[{
+            label: 'Annotation results',
+            path: 'labelName',
+            type: 'String',
+          },
+          {
+            label: 'Confidence score',
+            path: 'confidence',
+            type: 'Number',
+          },
+          {
+            label: 'Boolean',
+            path: 'confidence',
+            type: 'Boolean',
+          },
+          {
+            label: 'Common',
+            path: 'confidence',
+            type: 'Common',
+          }]}
         />
       )}
     </Block>
@@ -205,7 +237,7 @@ const DirectionIndicator: FC<DirectionIndicator> = ({
 }) => {
   const content = direction === 'asc' ? <IconSortUp/> : <IconSortDown/>;
 
-  if (!direction || value !== name) return null;
+  if (!direction || value !== name || isFF(FF_DEV_3873)) return null;
   if (!wrap) return content;
 
   return (<span>{content}</span>);
