@@ -7,15 +7,15 @@
     "types": ["cypress", "node"],
     "typeRoots": [
       "./types",
-      "./node_modules/ls-test/types",
+      "./node_modules/@heartexlabs/ls-test/types",
       "./node_modules/@types"
     ]
   },
   "exclude": [
-    "node_modules"
+    "./node_modules"
   ],
   "include": [
     "**/*.ts",
-    "node_modules/ls-test/**/*.ts"
+    "./node_modules/@heartexlabs/ls-test/**/*.ts"
   ]
 }
