@@ -10,7 +10,7 @@
     "@heartexlabs/ls-test": "https://github.com/heartexlabs/ls-frontend-test.git"
   },
   "scripts": {
-    "test": "lstest run",
+    "test": "./node_modules/.bin/cypress run",
     "test:ui": "lstest open"
   },
   "devDependencies": {
