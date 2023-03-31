@@ -309,7 +309,7 @@
 
 "@heartexlabs/ls-test@git+ssh://git@github.com/heartexlabs/ls-frontend-test.git":
   version "1.0.0"
-  resolved "git+ssh://git@github.com/heartexlabs/ls-frontend-test.git#d8f428674604cf03bbe5709034dade08206a61f0"
+  resolved "git+ssh://git@github.com/heartexlabs/ls-frontend-test.git#5c6dfeadfc5928a5c726401febca297a3a24ea3b"
   dependencies:
     "@cypress/code-coverage" "^3.10.0"
     "@cypress/webpack-preprocessor" "^5.17.0"
