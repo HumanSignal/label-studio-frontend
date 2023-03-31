@@ -87,6 +87,9 @@ export { ReactComponent as IconSpeed } from './speed.svg';
 export { ReactComponent as IconTagAlt } from './tag-alt.svg';
 export { ReactComponent as IconSortUp } from './sort-up.svg';
 export { ReactComponent as IconSortDown } from './sort-down.svg';
+export { ReactComponent as IconFilter } from './filter.svg';
+export { ReactComponent as IconDelete } from './delete.svg';
+
 export { ReactComponent as IconArrowLeft } from './arrow-left.svg';
 export { ReactComponent as IconArrowRight } from './arrow-right.svg';
 
