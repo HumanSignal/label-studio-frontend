@@ -12,5 +12,17 @@ describe('Feature Flags', () => {
 
     LabelStudio.shouldHaveFeatureFlag(flagName);
   });
+
+  it('can set feature flags before navigation', () => {
+    const flagName = 'customFeatureFlag';
+
+    LabelStudio.setFeatureFlagsOnPageLoad({
+      [flagName]: true,
+    });
+
+    cy.visit('/');
+
+    LabelStudio.shouldHaveFeatureFlag(flagName);
+  });
 });
 
