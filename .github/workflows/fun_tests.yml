@@ -36,13 +36,15 @@ jobs:
         id: "cpu-info"
         run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
 
-      - name: Start SSH agent
-        run: eval 'ssh-agent -s'
+      - name: Setup SSH agent
+        run: |
+          eval "$(ssh-agent -s)"
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
 
-      - name: Set up ssh-agent
-        uses: yakuhzi/action-ssh-agent@v2
-        with:
-          ssh-private-key: ${{ secrets.ssh_private_key }}
+      # - name: Set up ssh-agent
+      #   uses: yakuhzi/action-ssh-agent@v2
+      #   with:
+      #     ssh-private-key: ${{ secrets.ssh_private_key }}
 
       - name: Upgrade Yarn
         run: npm install -g yarn@1.22
@@ -109,7 +111,7 @@ jobs:
         if: ${{ failure() }}
         with:
           name: failure-result
-          path: __tests__/functional
+          path: __tests__/functional/output
 
       # - name: Merge coverage reports
       #   if: ${{ success() }}
