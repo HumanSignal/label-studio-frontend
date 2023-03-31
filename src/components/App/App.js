@@ -247,7 +247,7 @@ class App extends Component {
               viewAll: viewingAll,
               bsp: settings.bottomSidePanel,
               outliner: outlinerEnabled,
-              showingBottomBar: isFF(FF_DEV_3873),
+              showingBottomBar: newUIEnabled,
             }}
           >
             {outlinerEnabled ? (
@@ -294,7 +294,7 @@ class App extends Component {
                   </Block>
                 )}
 
-                {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+                {newUIEnabled && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
               </>
             )}
           </Block>
