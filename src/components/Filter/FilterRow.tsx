@@ -33,9 +33,9 @@ export const FilterRow: FC<FilterRowInterface> = ({
   const [_inputComponent, setInputComponent] = useState(null);
 
   useEffect(() => {
-    onChange(index, { field:availableFilters[_selectedField].label });
+    onChange(index, { field:availableFilters[_selectedField].label, path: availableFilters[_selectedField].path });
 
-    const pos = FilterInputs?.[availableFilters[_selectedField].type].map((e:any) => e.label).indexOf(operation);
+    const pos = FilterInputs?.[availableFilters[_selectedField].type].map((e:any) => e.key).indexOf(operation);
 
     setSelectedOperation(pos);
   }, [_selectedField]);
@@ -44,7 +44,7 @@ export const FilterRow: FC<FilterRowInterface> = ({
     if(!isDefined(_selectedOperation) || _selectedOperation < 0) return;
     const _filterInputs = FilterInputs?.[availableFilters[_selectedField].type][_selectedOperation];
 
-    onChange(index, { operation: _filterInputs?.label });
+    onChange(index, { operation: _filterInputs?.key });
     setInputComponent(_filterInputs?.input);
   }, [_selectedOperation, _selectedField]);
 
