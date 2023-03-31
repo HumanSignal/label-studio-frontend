@@ -8,11 +8,11 @@ import { IconFilter } from '../../assets/icons';
 import './Filter.styl';
 import { FilterInterface, FilterListInterface } from './FilterInterfaces';
 import { FilterRow } from './FilterRow';
+import { FilterItems } from './filter-util';
 
 export const Filter: FC<FilterInterface> = ({
   availableFilters,
-  // filterData,
-  // filteringPath,
+  filterData,
   // onChange,
 }) => {
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
@@ -24,6 +24,7 @@ export const Filter: FC<FilterInterface> = ({
       field: availableFilters[0].label,
       operation: '',
       value: '',
+      path: '',
     });
 
     setFilterList(_oldFilterList);
@@ -33,16 +34,19 @@ export const Filter: FC<FilterInterface> = ({
     const _oldFilterList = [...filterList];
 
     _oldFilterList[index] = { ..._oldFilterList[index], ...obj };
+
+    FilterItems(filterData, _oldFilterList[index]);
+
     setFilterList(_oldFilterList);
   }, [filterList]);
 
-  const onDeleteRow = (index: number) => {
+  const onDeleteRow = useCallback((index: number) => {
     const _oldFilterList = [...filterList];
 
     _oldFilterList.splice(index, 1);
 
     setFilterList(_oldFilterList);
-  };
+  }, [filterList]);
 
   const renderFilterList = useMemo(() => {
     return filterList.map((filter: FilterListInterface, index) => {

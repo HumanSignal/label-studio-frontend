@@ -2,13 +2,13 @@ export interface FilterInterface {
   availableFilters: AvailableFiltersInterface[];
   onChange?: () => void;
   filterData: any;
-  filteringPath?: string;
 }
 
 export interface FilterListInterface {
   field?: string | string[] | undefined;
   operation?: string | string[] | undefined;
   value?: string | string[] | undefined;
+  path: string;
 }
 
 export interface AvailableFiltersInterface {
