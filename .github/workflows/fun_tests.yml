@@ -36,6 +36,9 @@ jobs:
         id: "cpu-info"
         run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
 
+      - name: Start SSH agent
+        run: eval 'ssh-agent -s'
+
       - name: Set up ssh-agent
         uses: yakuhzi/action-ssh-agent@v2
         with:
