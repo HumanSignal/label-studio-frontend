@@ -54,8 +54,8 @@ describe('FilterItems', () => {
     expect(filteredItems).toEqual(items);
   });
 
-  test('should return all items when value is empty', () => {
-    const filterItem = { operation: 'contains', path: 'item.name', value: '' };
+  test('should return all items when operation is invalid', () => {
+    const filterItem = { operation: 'invalid_operation', path: 'item.name', value: 'Doe' };
     const filteredItems = FilterItems(items, filterItem);
 
     expect(filteredItems).toEqual(items);
