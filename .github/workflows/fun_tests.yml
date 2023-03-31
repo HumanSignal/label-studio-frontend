@@ -39,7 +39,7 @@ jobs:
       - name: Setup SSH agent
         run: |
           eval "$(ssh-agent -s)"
-          echo "${{ secrets.ssh_private_key }}" | ssh-add -
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
 
       # - name: Set up ssh-agent
       #   uses: yakuhzi/action-ssh-agent@v2
