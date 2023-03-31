@@ -36,15 +36,19 @@ jobs:
         id: "cpu-info"
         run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
 
-      # - name: Setup SSH agent
-      #   run: |
-      #     eval "$(ssh-agent -s)"
-      #     echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
-
-      - name: Set up ssh-agent
-        uses: yakuhzi/action-ssh-agent@v2
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup SSH agent
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+          SSH_DIR: /home/runner/.ssh
+          ID_FILE: $SSH_DIR/package_rsa
+          HOSTS_FILE: $SSH_DIR/known_hosts
+        run: |
+          mkdir $SSH_DIR
+          ssh-keyscan github.com >> $HOSTS_FILE
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > $ID_FILE
+          chmod 600 $ID_FILE
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add $ID_FILE
 
       - name: Upgrade Yarn
         run: npm install -g yarn@1.22
@@ -90,6 +94,8 @@ jobs:
 
       - name: "Setup e2e"
         timeout-minutes: 1
+        env: 
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           set -euo pipefail
           cd ./__tests__/functional
