@@ -215,10 +215,11 @@ class App extends Component {
       </Block>
     );
 
-    const newUIEnabled = isFF(FF_DEV_1170);
+    const outlinerEnabled = isFF(FF_DEV_1170);
+    const newUIEnabled = isFF(FF_DEV_3873);
 
     return (
-      <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !newUIEnabled }}>
+      <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !outlinerEnabled }}>
         <Settings store={store} />
         <Provider store={store}>
           {newUIEnabled ? (
@@ -239,26 +240,26 @@ class App extends Component {
             </>
           )}
 
-          {isDefined(store) && store.hasInterface("topbar") && <TopBar store={store} />}
+          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store} />}
           <Block
             name="wrapper"
             mod={{
               viewAll: viewingAll,
               bsp: settings.bottomSidePanel,
-              outliner: newUIEnabled,
+              outliner: outlinerEnabled,
               showingBottomBar: isFF(FF_DEV_3873),
             }}
           >
-            {newUIEnabled ? (
+            {outlinerEnabled ? (
               isFF(FF_DEV_3873) ? (
                 <SideTabsPanels
                   panelsHidden={viewingAll}
                   currentEntity={as.selectedHistory ?? as.selected}
                   regions={as.selected.regionStore}
-                  showComments={!store.hasInterface("annotations:comments")}
+                  showComments={!store.hasInterface('annotations:comments')}
                 >
                   {mainContent}
-                  {isDefined(store) && store.hasInterface("topbar") && <BottomBar store={store} />}
+                  {isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
                 </SideTabsPanels>
               ) : (
                 <SidePanels
@@ -268,7 +269,7 @@ class App extends Component {
                 >
                   {mainContent}
 
-                  {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface("topbar") && <BottomBar store={store} />}
+                  {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
                 </SidePanels>
               )
             ) : (
@@ -277,7 +278,7 @@ class App extends Component {
 
                 {viewingAll === false && (
                   <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
-                    {store.hasInterface("side-column") && (
+                    {store.hasInterface('side-column') && (
                       <SidebarTabs active="annotation">
                         <SidebarPage name="annotation" title="Annotation">
                           <AnnotationTab store={store} />
@@ -293,12 +294,12 @@ class App extends Component {
                   </Block>
                 )}
 
-                {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface("topbar") && <BottomBar store={store} />}
+                {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
               </>
             )}
           </Block>
         </Provider>
-        {store.hasInterface("debug") && <Debug store={store} />}
+        {store.hasInterface('debug') && <Debug store={store} />}
       </Block>
     );
   }
