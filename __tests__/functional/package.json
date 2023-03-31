@@ -6,15 +6,17 @@
   "license": "MIT",
   "private": true,
   "type": "module",
+  "scripts": {
+    "test": "./node_modules/.bin/cypress run",
+    "test:ui": "./node_modules/.bin/cypress open"
+  },
   "dependencies": {
     "@heartexlabs/ls-test": "https://github.com/heartexlabs/ls-frontend-test.git"
   },
-  "scripts": {
-    "test": "./node_modules/.bin/cypress run",
-    "test:ui": "lstest open"
-  },
   "devDependencies": {
     "ts-loader": "^9.4.2",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.2",
+    "webpack": "^5.77.0",
+    "webpack-cli": "^5.0.1"
   }
 }
