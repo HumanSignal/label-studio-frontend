@@ -92,7 +92,8 @@ export const ViewControls: FC<ViewControlsProps> = ({
       )}
       {isFF(FF_DEV_3873) && (
         <Filter
-          filterData={regions.regions}
+          filterData={regions?.regions}
+          filteringPath={'labelName'}
           availableFilters={[{
             label: 'Annotation results',
             path: 'labeling.from_name.name',
