@@ -40,15 +40,13 @@ jobs:
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
           SSH_DIR: /home/runner/.ssh
-          ID_FILE: $SSH_DIR/package_rsa
-          HOSTS_FILE: $SSH_DIR/known_hosts
         run: |
           mkdir $SSH_DIR
-          ssh-keyscan github.com >> $HOSTS_FILE
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > $ID_FILE
-          chmod 600 $ID_FILE
+          ssh-keyscan github.com >> $SSH_DIR/known_hosts
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > $SSH_DIR/package_rsa
+          chmod 600 $SSH_DIR/package_rsa
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-          ssh-add $ID_FILE
+          ssh-add $SSH_DIR/package_rsa
 
       - name: Upgrade Yarn
         run: npm install -g yarn@1.22
