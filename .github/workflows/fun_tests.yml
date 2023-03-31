@@ -36,6 +36,11 @@ jobs:
         id: "cpu-info"
         run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
 
+      - name: "Setup SSH"
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+            ssh-private-key: ${{ secrets.GIT_SSH }}
+
       - name: Upgrade Yarn
         run: npm install -g yarn@1.22
 
