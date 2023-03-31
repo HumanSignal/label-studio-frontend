@@ -301,7 +301,7 @@ module.exports = {
     I.pressKey('V');
   },
 
-  async multiImageGoForwartWithHotkey() {
+  async multiImageGoForwardWithHotkey() {
     I.say('Attempting to go to the next image');
     I.pressKey('Ctrl+d');
 
