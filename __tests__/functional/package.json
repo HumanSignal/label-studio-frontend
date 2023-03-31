@@ -7,8 +7,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "./node_modules/.bin/cypress run",
-    "test:ui": "./node_modules/.bin/cypress open"
+    "test": "./node_modules/.bin/cypress run --quiet",
+    "test:ui": "./node_modules/.bin/cypress open",
+    "test:parallel": "cypress-parallel -s test -t $CPU_NUMBER -d ./specs/"
   },
   "dependencies": {
     "@heartexlabs/ls-test": "https://github.com/heartexlabs/ls-frontend-test.git"

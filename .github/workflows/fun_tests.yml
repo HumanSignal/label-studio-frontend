@@ -90,10 +90,11 @@ jobs:
         env:
           NODE_ENV: 'production'
           TEST_ENV: true
+          CPU_NUMBER: ${{ steps.cpu-info.outputs.cores-count }}
         run: |
           set -euo pipefail
           cd __tests__/functional
-          yarn run test:ci ${{ steps.cpu-info.outputs.cores-count }}
+          yarn run test:parallel 
 
       - name: "Upload e2e output" 
         uses: actions/upload-artifact@v3
