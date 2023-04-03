@@ -41,7 +41,6 @@ export const Filter: FC<FilterInterface> = ({
           value: value ?? newList[index].value,
           path: path ?? newList[index].path,
         };
-        console.log(FilterItems(filterData, newList[index]));
         return newList;
       });
     },
