@@ -60,4 +60,34 @@ describe('FilterItems', () => {
 
     expect(filteredItems).toEqual(items);
   });
+
+  test('should filter items that is equal as the specified value', () => {
+    const filterItem = { operation: 'equal', path: 'item.value', value: '25' };
+    const filteredItems = FilterItems(items, filterItem);
+
+    expect(filteredItems).toEqual([
+      {
+        item: {
+          name: 'Car', value: 25,
+        },
+      },
+    ]);
+  });
+
+  test('should filter items that is not equal as the specified value', () => {
+    const filterItem = { operation: 'not_equal', path: 'item.value', value: '25' };
+    const filteredItems = FilterItems(items, filterItem);
+
+    expect(filteredItems).toEqual([
+      {
+        item: {
+          name: 'AirPlane', value: 30,
+        },
+      },{
+        item: {
+          name: 'Car Flower', value: 40,
+        },
+      },
+    ]);
+  });
 });
