@@ -14,6 +14,10 @@ export const FilterItems = (items: any[], filterItem: FilterListInterface) => {
       return lessOrEqual(items, filterItem);
     case 'greater_or_equal':
       return greaterOrEqual(items, filterItem);
+    case 'equal':
+      return equal(items, filterItem);
+    case 'not_equal':
+      return notequal(items, filterItem);
     default:
       return items;
   }
@@ -86,6 +90,30 @@ const lessOrEqual = (items: any[], filterItem: FilterListInterface) => {
       const item = getFilteredPath(filterItem.path, obj);
 
       return item <= filterItem.value;
+    });
+  } else {
+    return items;
+  }
+};
+
+const equal = (items: any[], filterItem: FilterListInterface) => {
+  if (filterItem.value) {
+    return items.filter((obj) => {
+      const item = getFilteredPath(filterItem.path, obj);
+
+      return item.toString().toLowerCase() === filterItem.value.toLowerCase();
+    });
+  } else {
+    return items;
+  }
+};
+
+const notequal = (items: any[], filterItem: FilterListInterface) => {
+  if (filterItem.value) {
+    return items.filter((obj) => {
+      const item = getFilteredPath(filterItem.path, obj);
+
+      return item.toString().toLowerCase() !== filterItem.value.toLowerCase();
     });
   } else {
     return items;
