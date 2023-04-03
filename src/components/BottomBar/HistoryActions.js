@@ -9,7 +9,7 @@ export const EditingHistory = observer(({ entity }) => {
   const { history } = entity;
   
   return (
-    <Block name="history">
+    <Block name="history-buttons">
       <Tooltip title="Undo">
         <Elem
           tag={Button}
