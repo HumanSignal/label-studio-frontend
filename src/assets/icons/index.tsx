@@ -18,6 +18,7 @@ export { ReactComponent as LsVisible } from './visible.svg';
 export { ReactComponent as LsInvisible } from './invisible.svg';
 export { ReactComponent as LsChevron } from './chevron.svg';
 export { ReactComponent as LsExpand } from './expand.svg';
+export { ReactComponent as LsExpandAlt } from './expand-alt.svg';
 export { ReactComponent as LsCollapse } from './collapse.svg';
 export { ReactComponent as LsDate } from './date.svg';
 export { ReactComponent as IconPlusCircle } from './plus_circle.svg';
@@ -75,6 +76,7 @@ export { ReactComponent as IconPlusAlt } from './plus-alt.svg';
 export { ReactComponent as IconTrash } from './trash.svg';
 export { ReactComponent as IconTrashRect } from './trash-rect.svg';
 export { ReactComponent as IconMenu } from './menu.svg';
+export { ReactComponent as IconMinus } from './minus.svg';
 export { ReactComponent as IconHamburger } from './hamburger.svg';
 export { ReactComponent as IconDetails } from './details.svg';
 export { ReactComponent as IconLockLocked } from './locked.svg';
@@ -85,6 +87,9 @@ export { ReactComponent as IconSpeed } from './speed.svg';
 export { ReactComponent as IconTagAlt } from './tag-alt.svg';
 export { ReactComponent as IconSortUp } from './sort-up.svg';
 export { ReactComponent as IconSortDown } from './sort-down.svg';
+export { ReactComponent as IconFilter } from './filter.svg';
+export { ReactComponent as IconDelete } from './delete.svg';
+
 export { ReactComponent as IconArrowLeft } from './arrow-left.svg';
 export { ReactComponent as IconArrowRight } from './arrow-right.svg';
 
