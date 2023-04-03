@@ -95,22 +95,22 @@ export const ViewControls: FC<ViewControlsProps> = ({
           filterData={regions?.regions}
           availableFilters={[{
             label: 'Annotation results',
-            path: 'labeling.from_name.name',
+            path: 'labelName',
             type: 'String',
           },
           {
             label: 'Confidence score',
-            path: 'confidence',
+            path: 'score',
             type: 'Number',
           },
           {
             label: 'Boolean',
-            path: 'confidence',
+            path: 'score',
             type: 'Boolean',
           },
           {
             label: 'Common',
-            path: 'confidence',
+            path: 'score',
             type: 'Common',
           }]}
         />

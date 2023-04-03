@@ -74,7 +74,7 @@ export const FilterRow: FC<FilterRowInterface> = ({
         />
       </Elem>
       <Elem name={'column'}>
-        {_inputComponent && (
+        {(_inputComponent && operation !== 'empty') && (
           <Elem
             tag={_inputComponent}
             value={value}
