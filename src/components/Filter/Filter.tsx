@@ -18,8 +18,8 @@ export const Filter: FC<FilterInterface> = ({
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
 
   const addNewFilterListItem = useCallback(() => {
-    setFilterList((oldList) => [
-      ...oldList,
+    setFilterList((filterList) => [
+      ...filterList,
       {
         field: availableFilters[0]?.label ?? '',
         operation: '',
@@ -31,8 +31,8 @@ export const Filter: FC<FilterInterface> = ({
 
   const onChangeRow = useCallback(
     (index: number, { field, operation, value, path }: Partial<FilterListInterface>) => {
-      setFilterList((filterList: FilterListInterface[]) => {
-        const newList = [...filterList];
+      setFilterList((oldList) => {
+        const newList = [...oldList];
 
         newList[index] = {
           ...newList[index],
