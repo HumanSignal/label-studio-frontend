@@ -1,5 +1,4 @@
 import { FilterListInterface } from './FilterInterfaces';
-import { Filter } from './Filter';
 
 export const FilterItems = (items: any[], filterItem: FilterListInterface) => {
   switch (filterItem.operation) {
@@ -26,7 +25,7 @@ const contains = (items: any[], filterItem: FilterListInterface) => {
     return items.filter((obj) => {
       const item = getFilteredPath(filterItem.path, obj);
 
-      return item.toLowerCase().includes(filterItem.value.toLowerCase());
+      return item?.toLowerCase().includes(filterItem.value.toLowerCase());
     });
   } else {
     return items;
@@ -38,7 +37,7 @@ const notcontains = (items: any[], filterItem: FilterListInterface) => {
     return items.filter((obj) => {
       const item = getFilteredPath(filterItem.path, obj);
 
-      return !item.toLowerCase().includes(filterItem.value.toLowerCase());
+      return !item?.toLowerCase().includes(filterItem.value.toLowerCase());
     });
   } else {
     return items;
