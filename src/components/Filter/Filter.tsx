@@ -30,7 +30,7 @@ export const Filter: FC<FilterInterface> = ({
   }, [setFilterList, availableFilters]);
 
   const onChangeRow = useCallback(
-    (index: number, { field, operation, value }: Partial<FilterListInterface>) => {
+    (index: number, { field, operation, value, path }: Partial<FilterListInterface>) => {
       setFilterList((oldList) => {
         const newList = [...oldList];
 
@@ -39,8 +39,9 @@ export const Filter: FC<FilterInterface> = ({
           field: field ?? newList[index].field,
           operation: operation ?? newList[index].operation,
           value: value ?? newList[index].value,
+          path: path ?? newList[index].path,
         };
-        FilterItems(filterData, newList[index]);
+        console.log(FilterItems(filterData, newList[index]));
         return newList;
       });
     },
@@ -57,8 +58,8 @@ export const Filter: FC<FilterInterface> = ({
   }, [setFilterList]);
 
   const renderFilterList = useMemo(() => {
-    return filterList.map(({ field, operation, value, path }, index) => (
-      <Block key={path} name="filter-item">
+    return filterList.map(({ field, operation, value }, index) => (
+      <Block key={index} name="filter-item">
         <FilterRow
           index={index}
           availableFilters={availableFilters}
