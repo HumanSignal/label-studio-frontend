@@ -6,6 +6,14 @@ export const FilterItems = (items: any[], filterItem: FilterListInterface) => {
       return contains(items, filterItem);
     case 'not_contains':
       return notcontains(items, filterItem);
+    case 'in':
+      return between(items, filterItem);
+    case 'not_in':
+      return notbetween(items, filterItem);
+    case 'regex':
+      return regex(items, filterItem);
+    case 'empty':
+      return empty(items, filterItem);
     case 'greater':
       return greater(items, filterItem);
     case 'less':
@@ -118,6 +126,51 @@ const notequal = (items: any[], filterItem: FilterListInterface) => {
   } else {
     return items;
   }
+};
+
+const between = (items: any[], filterItem: FilterListInterface) => {
+  if (filterItem.value) {
+    return items.filter((obj) => {
+      const item = getFilteredPath(filterItem.path, obj);
+
+      return filterItem.value.min <= item && item <= filterItem.value.max;
+    });
+  } else {
+    return items;
+  }
+};
+
+const notbetween = (items: any[], filterItem: FilterListInterface) => {
+  if (filterItem.value) {
+    return items.filter((obj) => {
+      const item = getFilteredPath(filterItem.path, obj);
+
+      return item <= filterItem.value.min || filterItem.value.max <= item;
+    });
+  } else {
+    return items;
+  }
+};
+
+const regex = (items: any[], filterItem: FilterListInterface) => {
+  try{
+    return items.filter((obj) => {
+      const item = getFilteredPath(filterItem.path, obj);
+      const regex = new RegExp(filterItem.value, 'g');
+
+      return item.match(regex);
+    });
+  } catch(e) {
+    return items;
+  }
+};
+
+const empty = (items: any[], filterItem: FilterListInterface) => {
+  return items.filter((obj) => {
+    const item = getFilteredPath(filterItem.path, obj);
+
+    return item === '' || !item || item === null || item === undefined;
+  });
 };
 
 const getFilteredPath = (path: string | string[], items: any[], separator='.') => {

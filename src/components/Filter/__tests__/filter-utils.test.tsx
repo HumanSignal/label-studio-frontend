@@ -47,6 +47,74 @@ describe('FilterItems', () => {
     ]);
   });
 
+  test('should filter items that value is between the specified values', () => {
+    const filterItem = { operation: 'in', path: 'item.value', value: { min:26, max:35 } };
+    const filteredItems = FilterItems(items, filterItem);
+
+    expect(filteredItems).toEqual([{
+      item: {
+        name: 'AirPlane', value: 30,
+      },
+    }]);
+  });
+
+  test('should filter items that value is not between the specified values', () => {
+    const filterItem = { operation: 'not_in', path: 'item.value', value: { min:26, max:35 } };
+    const filteredItems = FilterItems(items, filterItem);
+
+    expect(filteredItems).toEqual([{
+      item: {
+        name: 'Car', value: 25,
+      },
+    },{
+      item: {
+        name: 'Car Flower', value: 40,
+      },
+    }]);
+  });
+
+  test('should filter items that value match with regex specified value', () => {
+    const filterItem = { operation: 'regex', path: 'item.name', value: '[C-O]' };
+    const filteredItems = FilterItems(items, filterItem);
+
+    expect(filteredItems).toEqual([{
+      item: {
+        name: 'Car', value: 25,
+      },
+    }, {
+      item: {
+        name: 'Car Flower', value: 40,
+      },
+    }]);
+  });
+
+  test('should filter items that value is empty', () => {
+    const filterItem = { operation: 'empty', path: 'item.name', value: '' };
+    const filteredItems = FilterItems([{
+      item: {
+        name: 'Car', value: 25,
+      },
+    },{
+      item: {
+        name: '', value: 30,
+      },
+    },{
+      item: {
+        name: null, value: 40,
+      },
+    }], filterItem);
+
+    expect(filteredItems).toEqual([{
+      item: {
+        name: '', value: 30,
+      },
+    },{
+      item: {
+        name: null, value: 40,
+      },
+    }]);
+  });
+
   test('should return all items when value is empty', () => {
     const filterItem = { operation: 'contains', path: 'item.name', value: '' };
     const filteredItems = FilterItems(items, filterItem);
