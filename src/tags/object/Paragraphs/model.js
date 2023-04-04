@@ -146,6 +146,9 @@ const Model = types
     filterByAuthor: [],
     searchAuthor: '',
     playingId: -1,
+    audioRef: createRef(),
+    audioDuration: null,
+    audioStopHandler: null,
   }))
   .views(self => ({
     regionIdxByTime(time) {
@@ -157,16 +160,27 @@ const Model = types
         return (end ?? start + duration) > time;
       });
     },
+    // memoized and with no external dependencies, so will be computed only once
+    get regionsStartEnd() {
+      if (!self.audioDuration) return [];
+
+      return self._value?.map(value => {
+        const start = clamp(value.start ?? 0, 0, self.audioDuration);
+        const _end = value.duration ? start + value.duration : (value.end ?? self.audioDuration);
+        const end = clamp(_end, start, self.audioDuration);
+
+        return { start, end };
+      });
+    },
   }))
   .actions(self => ({
-
     /**
-     * Wrapper to always send some important data
-     * @param {string} event 
-     * @param {any} data 
+     * Wrapper to always send important data during sync
+     * @param {string} event
+     * @param {object} data
      */
     triggerSync(event, data) {
-      const audio = self.getRef().current;
+      const audio = self.audioRef.current;
 
       if (!audio) return;
 
@@ -178,146 +192,113 @@ const Model = types
     },
 
     registerSyncHandlers() {
-      self.syncHandlers.set('pause', () => self.stop({ forced: true }));
-      self.syncHandlers.set('seek', ({ time }) => {
-        const audio = self.getRef().current;
-
-        if (!audio) return;
-
-        // seek to given time only if it's inside current region.
-        // otherwise it will be paused immediately.
-        // if time is correct, audio will be paused at the end of current region.
-        audio.currentTime = time;
-        self.stop();
-      });
+      self.syncHandlers.set('pause', self.stopNow);
+      self.syncHandlers.set('seek', self.handleSyncSeek);
       self.syncHandlers.set('speed', self.handleSyncSpeed);
     },
 
+    handleSyncSeek({ time }) {
+      const audio = self.audioRef.current;
+
+      if (!audio) return;
+
+      // seek to given time only if it's inside current region.
+      // otherwise it will be paused immediately.
+      // if time is correct, audio will be paused at the end of current region.
+      // @todo don't play if time is not inside current region
+      audio.currentTime = time;
+      self.stopAtTheEnd();
+    },
+
     handleSyncSpeed({ speed }) {
-      const audio = self.getRef().current;
+      const audio = self.audioRef.current;
 
       if (audio) {
         audio.playbackRate = speed;
-
-        self.recalculateTimer();
       }
     },
   }))
-  .actions(self => {
-    const audioRef = createRef();
-    let audioStopHandler = null;
-    let endDuration = 0;
+  .actions(self => ({
+    handleAudioLoaded(e) {
+      const audio = e.target;
 
-    function stop({ forced = false } = {}) {
-      const audio = self.getRef().current;
+      self.audioDuration = audio.duration;
+    },
+
+    reset() {
+      self.playingId = -1;
+
+      if (self.audioStopHandler) {
+        cancelAnimationFrame(self.audioStopHandler);
+        self.audioStopHandler = null;
+      }
+    },
+
+    stopNow() {
+      const audio = self.audioRef.current;
 
       if (!audio) return;
       if (audio.paused) return;
 
-      const currentTime = audio.currentTime;
+      audio.pause();
+      self.reset();
+      self.triggerSync('pause');
+    },
 
-      if (!forced && currentTime < endDuration) {
-        stopLater();
+    /**
+     * Audio can be seeked to another time or speed can be changed,
+     * so we need to check if we already reached the end of current region
+     * and stop if needed.
+     */
+    stopAtTheEnd() {
+      const audio = self.audioRef.current;
+
+      if (!audio) return;
+      if (audio.paused) return;
+
+      const { end } = self.regionsStartEnd[self.playingId] ?? {};
+
+      if (audio.currentTime < end) {
+        self.audioStopHandler = requestAnimationFrame(self.stopAtTheEnd);
         return;
       }
-      self.stopTimer();
-      endDuration = 0;
-      audio.pause();
-      self.triggerSync('pause');
-      self.reset();
-    }
 
-    function stopLater() {
-      audioStopHandler = requestAnimationFrame(stop);
-    }
+      self.stopNow();
+    },
 
-    return {
-      getRef() {
-        return audioRef;
-      },
+    play(idx) {
+      const { start, end } = self.regionsStartEnd[idx] ?? {};
+      const audio = self.audioRef?.current;
 
-      reset() {
-        self.playingId = -1;
-      },
+      if (!isDefined(audio) || !isDefined(start) || !isDefined(end)) return;
 
-      currentTimeData(idx) {
-        const value = self._value[idx] || {};
-        const { duration } = value;
-        let { start } = value;
+      const isPlaying = !audio.paused;
+      const currentId = self.playingId;
 
-        const audioDuration = self.getRef()?.current?.duration ?? null;
+      if (isPlaying && currentId === idx) {
+        self.stopNow();
+        return;
+      }
 
-        if (!isDefined(audioDuration)) return {};
+      if (idx !== currentId) {
+        audio.currentTime = start;
+      }
 
-        start = start ? clamp(start, 0, audioDuration) : 0;
-        const _end = duration ? start + duration : (value.end ?? audioDuration);
-        const end = clamp(_end, start, audioDuration);
+      audio.play();
+      self.triggerSync('play');
+      self.playingId = idx;
+      self.stopAtTheEnd();
+    },
+  }))
+  .actions(self => ({
+    setAuthorSearch(value) {
+      self.searchAuthor = value;
+    },
 
-        endDuration = end;
-
-        return {
-          start,
-          end,
-        };
-      },
-
-      stopTimer() {
-        if (audioStopHandler) {
-          cancelAnimationFrame(audioStopHandler);
-          audioStopHandler = null;
-        }
-      },
-
-      recalculateTimer() {
-        if (self.playingId === -1) return;
-
-        self.stopTimer();
-
-        self.currentTimeData(self.playingId);
-
-        stopLater();
-      },
-
-      play(idx) {
-        const { start, end } = self.currentTimeData(idx);
-        const audio = self.getRef()?.current;
-
-        if (!isDefined(audio) || !isDefined(start) || !isDefined(end)) return;
-
-        self.stopTimer();
-
-        const isPlaying = !audio.paused;
-
-        const currentId = self.playingId;
-
-        if (isPlaying && currentId === idx) {
-          audio.pause();
-          self.triggerSync('pause');
-          self.reset();
-          return;
-        }
-
-        if (idx !== currentId) {
-          audio.currentTime = start;
-        }
-
-        audio.play();
-        self.triggerSync('play');
-        self.playingId = idx;
-        self.recalculateTimer();
-      },
-
-      setAuthorSearch(value) {
-        self.searchAuthor = value;
-      },
-
-      setAuthorFilter(value) {
-        self.filterByAuthor = value;
-      },
-
-      stop,
-    };
-  })
+    setAuthorFilter(value) {
+      self.filterByAuthor = value;
+    },
+  }))
   .actions(self => ({
     needsUpdate() {
       self._update = self._update + 1;

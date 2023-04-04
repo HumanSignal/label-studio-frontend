@@ -417,7 +417,8 @@ class HtxParagraphsView extends Component {
             controls={item.showplayer && !item.syncedAudio}
             className={styles.audio}
             src={item.audio}
-            ref={item.getRef()}
+            ref={item.audioRef}
+            onLoadedMetadata={item.handleAudioLoaded}
             onEnded={item.reset}
           />
         )}
