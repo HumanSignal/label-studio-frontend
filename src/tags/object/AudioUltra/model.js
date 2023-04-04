@@ -216,12 +216,12 @@ export const AudioModel = types.compose(
       handleSync(data) {
         if (!self._ws?.loaded) return;
 
+        self.handleSyncSeek(data);
         if (data.playing) {
           if (!self._ws.playing) self._ws?.play();
         } else {
           if (self._ws.playing) self._ws?.pause();
         }
-        self.handleSyncSeek(data);
       },
 
       // @todo remove both of these methods
@@ -242,7 +242,7 @@ export const AudioModel = types.compose(
 
         try {
           self._ws.setCurrentTime(time, true);
-          self._ws.syncCursor(); // sync cursor with other tags
+          self._ws.syncCursor(); // sync cursor with current time
         } catch (err) {
           console.log(err);
         }
