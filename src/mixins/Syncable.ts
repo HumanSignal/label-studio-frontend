@@ -34,13 +34,16 @@ export type SyncData = Partial<SyncDataFull>;
 export class SyncManager {
   syncTargets = new Map<string, Instance<typeof SyncableMixin>>();
   locked: string | null = null; // refers to the main tag, which locked this sync
+  audioTags = 0; // number of audio tags in the group to control muted state
 
   register(syncTarget: Instance<typeof SyncableMixin>) {
     this.syncTargets.set(syncTarget.name, syncTarget);
+    if (syncTarget.type === 'audio') this.audioTags += 1;
   }
 
   unregister(syncTarget: Instance<typeof SyncableMixin>) {
     this.syncTargets.delete(syncTarget.name);
+    if (syncTarget.type === 'audio') this.audioTags -= 1;
     // @todo remove manager on empty set
   }
 
@@ -114,6 +117,7 @@ interface SyncableProps {
 const SyncableMixin = types
   .model('SyncableMixin', {
     name: types.string,
+    type: types.string,
     sync: types.optional(types.string, ''),
   })
   /* eslint-disable @typescript-eslint/indent */
@@ -147,7 +151,9 @@ const SyncableMixin = types
       const notSuppressed = self.syncManager!.sync(data, event, self.name);
 
       if (notSuppressed && event === 'play') {
-        self.syncMuted(false);
+        // if that's audio, it should not be muted.
+        // if there are no audio tags, this tag is main and should not be muted.
+        self.syncMuted(self.type !== 'audio' && self.syncManager!.audioTags > 0);
       }
     },
 
@@ -155,7 +161,8 @@ const SyncableMixin = types
       const handler = self.syncHandlers.get(event);
 
       if (event === 'play') {
-        self.syncMuted(true);
+        // audio is the only tag with volume control, so don't mute it, but mute others.
+        self.syncMuted(self.type !== 'audio');
       }
 
       if (handler) {

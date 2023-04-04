@@ -213,9 +213,13 @@ const Model = types
     handleSyncSpeed({ speed }) {
       const audio = self.audioRef.current;
 
-      if (audio) {
-        audio.playbackRate = speed;
-      }
+      if (audio) audio.playbackRate = speed;
+    },
+
+    syncMuted(muted) {
+      const audio = self.audioRef.current;
+
+      if (audio) audio.muted = muted;
     },
   }))
   .actions(self => ({
