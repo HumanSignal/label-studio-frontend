@@ -24,7 +24,7 @@ describe('Basic Image scenario', () => {
       },
     });
 
-    ImageView.waitForImage(); 
+    ImageView.waitForImage();
     Sidebar.hasNoRegions();
 
     Labels.select('Planet');
@@ -32,5 +32,29 @@ describe('Basic Image scenario', () => {
     ImageView.drawRect(20, 20, 100, 100);
 
     Sidebar.hasRegions(1);
+  });
+
+  it('Should check that the canvas changed', () => {
+    LabelStudio.init({
+      config,
+      task: {
+        id: 1,
+        annotations: [{ id: 1001, result: [] }],
+        predictions: [],
+        data: { image },
+      },
+    });
+
+    ImageView.waitForImage();
+    Sidebar.hasNoRegions();
+
+    ImageView.capture('canvas');
+
+    Labels.select('Planet');
+
+    ImageView.drawRect(20, 20, 100, 100);
+
+    Sidebar.hasRegions(1);
+    ImageView.canvasShouldChange('canvas');
   });
 });
