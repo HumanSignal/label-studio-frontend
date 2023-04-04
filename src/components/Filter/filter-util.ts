@@ -133,7 +133,7 @@ const between = (items: any[], filterItem: FilterListInterface) => {
     return items.filter((obj) => {
       const item = getFilteredPath(filterItem.path, obj);
 
-      return item >= filterItem.value.min && item <= filterItem.value.max;
+      return filterItem.value.min <= item && item <= filterItem.value.max;
     });
   } else {
     return items;
