@@ -8,7 +8,7 @@ export interface FilterListInterface {
   field?: string | string[] | undefined;
   operation?: string | string[] | undefined;
   value?: any;
-  path: string;
+  path?: string;
 }
 
 export interface AvailableFiltersInterface {
