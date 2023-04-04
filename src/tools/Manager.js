@@ -39,6 +39,7 @@ class ToolsManager {
     this.name = name;
     this.tools = {};
     this._default_tool = null;
+    this._prefix = guidGenerator();
   }
 
   get preservedTool() {
@@ -55,7 +56,7 @@ class ToolsManager {
     // but not for finding tools, so may be there might
     // be an array instead of an object
     const name = tool.toolName ?? toolName;
-    const key = `${prefix}#${name}`;
+    const key = `${prefix ?? this._prefix}#${name}`;
 
     if (isFF(FF_DEV_4081) && removeDuplicatesNamed && toolName === removeDuplicatesNamed) {
       const findme = new RegExp(`^.*?#${name}.*$`);

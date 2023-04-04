@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 const assert = require('assert');
 
 Feature('Richtext cases').tag('@regress');
@@ -13,9 +11,8 @@ const createConfig = (tag = 'Text', granularity = 'symbol') => {
 </View>`;
 };
 
-Scenario('Broken limits', async ({ I, LabelStudio, AtSidebar, ErrorsCollector }) => {
+Scenario('Broken limits', async ({ I, LabelStudio, AtSidebar }) => {
   I.amOnPage('/');
-  await ErrorsCollector.run();
   LabelStudio.init({
     annotations: [
       {
@@ -34,16 +31,11 @@ Scenario('Broken limits', async ({ I, LabelStudio, AtSidebar, ErrorsCollector })
   });
   AtSidebar.seeRegions(1);
   AtSidebar.clickRegion('1');
-  const errors = await ErrorsCollector.grabErrors();
-
-  if (errors.length) {
-    assert.fail(`Got an error: ${errors[0]}`);
-  }
+  // The potential errors should be caught by `errorsCollector` plugin
 });
 
-Scenario('The selection in degenerate cases', async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
+Scenario('The selection in degenerate cases', async ({ I, LabelStudio, AtSidebar, AtRichText }) => {
   I.amOnPage('/');
-  await ErrorsCollector.run();
   LabelStudio.init({
     annotations: [{ id: 'test', result: [] }],
     config: createConfig(),
@@ -51,17 +43,12 @@ Scenario('The selection in degenerate cases', async ({ I, LabelStudio, AtSidebar
   });
   AtSidebar.seeRegions(0);
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(0, 2);
-  const errors = await ErrorsCollector.grabErrors();
-
-  if (errors.length) {
-    assert.fail(`Got an error: ${errors[0]}`);
-  }
+  await AtRichText.selectTextByGlobalOffset(0, 2);
+  // The potential errors should be caught by `errorsCollector` plugin
 });
 
-Scenario('Exactly 1 word', async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
+Scenario('Exactly 1 word', async ({ I, LabelStudio, AtSidebar, AtRichText }) => {
   I.amOnPage('/');
-  await ErrorsCollector.run();
   LabelStudio.init({
     annotations: [
       {
@@ -75,16 +62,11 @@ Scenario('Exactly 1 word', async ({ I, LabelStudio, AtSidebar, AtRichText, Error
   AtRichText.dblClickOnWord('Somé');
   AtSidebar.see('Somé');
   AtSidebar.dontSee('Somé wórds');
-  const errors = await ErrorsCollector.grabErrors();
-
-  if (errors.length) {
-    assert.fail(`Got an error: ${errors[0]}`);
-  }
+  // The potential errors should be caught by `errorsCollector` plugin
 });
 
-Scenario('Trim spaces around the word', async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
+Scenario('Trim spaces around the word', async ({ I, LabelStudio, AtSidebar, AtRichText }) => {
   I.amOnPage('/');
-  await ErrorsCollector.run();
   LabelStudio.init({
     annotations: [
       {
@@ -98,22 +80,17 @@ Scenario('Trim spaces around the word', async ({ I, LabelStudio, AtSidebar, AtRi
   AtRichText.dblClickOnWord('four');
   AtSidebar.see('four');
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(3,8);
+  await AtRichText.selectTextByGlobalOffset(3,8);
   AtSidebar.see('two');
   const result = await LabelStudio.serialize();
 
   assert.strictEqual(result[0].value.text,'four');
   assert.strictEqual(result[1].value.text,'two');
-  const errors = await ErrorsCollector.grabErrors();
-
-  if (errors.length) {
-    assert.fail(`Got an error: ${errors[0]}`);
-  }
+  // The potential errors should be caught by `errorsCollector` plugin
 });
 
-Scenario('Trim spaces with BRs', async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
+Scenario('Trim spaces with BRs', async ({ I, LabelStudio, AtSidebar, AtRichText }) => {
   I.amOnPage('/');
-  await ErrorsCollector.run();
   LabelStudio.init({
     annotations: [
       {
@@ -124,21 +101,16 @@ Scenario('Trim spaces with BRs', async ({ I, LabelStudio, AtSidebar, AtRichText,
   });
   AtSidebar.seeRegions(0);
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(5,14);
+  await AtRichText.selectTextByGlobalOffset(5,14);
   AtSidebar.see('BRs');
   const result = await LabelStudio.serialize();
 
   assert.strictEqual(result[0].value.text,'BRs');
-  const errors = await ErrorsCollector.grabErrors();
-
-  if (errors.length) {
-    assert.fail(`Got an error: ${errors[0]}`);
-  }
+  // The potential errors should be caught by `errorsCollector` plugin
 });
 
-Scenario('Overlap checks', async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
+Scenario('Overlap checks', async ({ I, LabelStudio, AtSidebar, AtRichText }) => {
   I.amOnPage('/');
-  await ErrorsCollector.run();
   LabelStudio.init({
     annotations: [
       {
@@ -149,21 +121,16 @@ Scenario('Overlap checks', async ({ I, LabelStudio, AtSidebar, AtRichText, Error
   });
   AtSidebar.seeRegions(0);
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(0,4);
+  await AtRichText.selectTextByGlobalOffset(0,4);
   AtSidebar.see('Half');
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(4,8);
+  await AtRichText.selectTextByGlobalOffset(4,8);
   I.seeNumberOfElements(AtRichText.locate('span.htx-highlight'), 2);
-  const errors = await ErrorsCollector.grabErrors();
-
-  if (errors.length) {
-    assert.fail(`Got an error: ${errors[0]}`);
-  }
+  // The potential errors should be caught by `errorsCollector` plugin
 });
 
-Scenario('Non-standard characters in words', async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
+Scenario('Non-standard characters in words', async ({ I, LabelStudio, AtSidebar, AtRichText }) => {
   I.amOnPage('/');
-  await ErrorsCollector.run();
   LabelStudio.init({
     annotations: [
       {
@@ -174,19 +141,14 @@ Scenario('Non-standard characters in words', async ({ I, LabelStudio, AtSidebar,
   });
   AtSidebar.seeRegions(0);
   I.pressKey('1');
-  AtRichText.selectTextByGlobalOffset(0,5);
+  await AtRichText.selectTextByGlobalOffset(0,5);
   AtSidebar.seeRegions(1);
   AtSidebar.see('Somé');
-  const errors = await ErrorsCollector.grabErrors();
-
-  if (errors.length) {
-    assert.fail(`Got an error: ${errors[0]}`);
-  }
+  // The potential errors should be caught by `errorsCollector` plugin
 });
 
-Scenario('Should not select words from next line', async ({ I, LabelStudio, AtSidebar, AtRichText, ErrorsCollector }) => {
+Scenario('Should not select words from next line', async ({ I, LabelStudio, AtSidebar, AtRichText }) => {
   I.amOnPage('/');
-  await ErrorsCollector.run();
   LabelStudio.init({
     annotations: [
       {
@@ -201,16 +163,11 @@ Scenario('Should not select words from next line', async ({ I, LabelStudio, AtSi
   AtSidebar.seeRegions(1);
   AtSidebar.see('Оne');
   AtSidebar.dontSee('line');
-  const errors = await ErrorsCollector.grabErrors();
-
-  if (errors.length) {
-    assert.fail(`Got an error: ${errors[0]}`);
-  }
+  // The potential errors should be caught by `errorsCollector` plugin
 });
 
-Scenario('Trying to select alt attr', async ({ I, LabelStudio, AtSidebar, ErrorsCollector, AtRichText }) => {
+Scenario('Trying to select alt attr', async ({ I, LabelStudio, AtSidebar, AtRichText }) => {
   I.amOnPage('/');
-  await ErrorsCollector.run();
   LabelStudio.init({
     annotations: [
       {
@@ -223,9 +180,5 @@ Scenario('Trying to select alt attr', async ({ I, LabelStudio, AtSidebar, Errors
   I.pressKey('1');
   AtRichText.dblClickOnElement('img[alt="image"]');
   AtSidebar.seeRegions(0);
-  const errors = await ErrorsCollector.grabErrors();
-
-  if (errors.length) {
-    assert.fail(`Got an error: ${errors[0]}`);
-  }
+  // The potential errors should be caught by `errorsCollector` plugin
 });

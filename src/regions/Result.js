@@ -4,7 +4,7 @@ import Registry from '../core/Registry';
 import Tree from '../core/Tree';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { isDefined } from '../utils/utilities';
-import { FF_DEV_1170, FF_DEV_1372, isFF } from '../utils/feature-flags';
+import { FF_DEV_1372, FF_LSDV_4583, isFF } from '../utils/feature-flags';
 
 const Result = types
   .model('Result', {
@@ -13,7 +13,7 @@ const Result = types
 
     score: types.maybeNull(types.number),
     // @todo to readonly mixin
-    // readonly: types.optional(types.boolean, false),
+    readonly: types.optional(types.boolean, false),
 
     // @why?
     // hidden: types.optional(types.boolean, false),
@@ -64,6 +64,7 @@ const Result = types
       datetime: types.maybe(types.string),
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
+      item_index: types.maybeNull(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
       choices: types.maybe(types.array(types.union(types.string, types.array(types.string)))),
       // pairwise
@@ -124,13 +125,15 @@ const Result = types
     },
 
     get editable() {
-      // @todo readonly is not defined here, so we have to fix this
-      // @todo and as it's used only in region list view of textarea get rid of this getter
-      if (isFF(FF_DEV_1170)) {
-        // The value of self.area.editable is always false whenever region is locked, so we need to check if it's explicitly readonly on the area.
-        return !self.readonly && self.annotation.editable === true && !self.area.readonly;
-      }
-      return !self.readonly && self.annotation.editable === true && self.area.editable === true;
+      throw new Error('Not implemented');
+    },
+
+    isReadOnly() {
+      return self.readonly || self.area.isReadOnly();
+    },
+
+    isSelfReadOnly() {
+      return self.readonly;
     },
 
     getSelectedString(joinstr = ' ') {
@@ -299,63 +302,20 @@ const Result = types
 
       if (typeof score === 'number') data.score = score;
 
-      if (!self.editable) data.readonly = true;
+      if (self.isSelfReadOnly()) data.readonly = true;
+
+      if (isFF(FF_LSDV_4583) && isDefined(self.area.item_index)) {
+        data.item_index = self.area.item_index;
+      }
 
       return data;
-    },
-
-    toStateJSON() {
-      const parent = self.parent;
-      const buildTree = control => {
-        const tree = {
-          id: self.pid,
-          from_name: control.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: control.type,
-          parent_id: self.parentID === '' ? null : self.parentID,
-        };
-
-        if (self.normalization) tree['normalization'] = self.normalization;
-
-        return tree;
-      };
-
-      if (self.states && self.states.length) {
-        return self.states
-          .map(s => {
-            const ser = self.serialize(s, parent);
-
-            if (!ser) return null;
-
-            const tree = {
-              ...buildTree(s),
-              ...ser,
-            };
-
-            // in case of labels it's gonna be, labels: ["label1", "label2"]
-
-            return tree;
-          })
-          .filter(Boolean);
-      } else {
-        const obj = self.annotation.toNames.get(parent.name);
-        const control = obj.length ? obj[0] : obj;
-
-        const tree = {
-          ...buildTree(control),
-          ...self.serialize(control, parent),
-        };
-
-        return tree;
-      }
     },
 
     /**
      * Remove region
      */
     deleteRegion() {
-      if (!self.annotation.editable) return;
+      if (self.annotation.isReadOnly()) return;
 
       self.unselectRegion();
 
@@ -383,4 +343,4 @@ const Result = types
     },
   }));
 
-export default types.compose(Result, AnnotationMixin);
+export default types.compose('Result', Result, AnnotationMixin);

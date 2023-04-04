@@ -197,7 +197,6 @@ export class Player extends Destructable {
 
   private playSource(start?: number, duration?: number) {
     this.stopWatch();
-    this.timestamp = performance.now();
     this.connectSource();
 
     if (!this.audio) return;
@@ -220,17 +219,22 @@ export class Player extends Destructable {
         this.bufferResolve = resolve;
       });
 
-      const promise = this.audio.el.play();
+      const time = this.currentTime;
 
-      // Ensure that the audio can play before invoking the timer updates
-      promise.then(() => {
-        if (this.bufferPromise) {
-          this.bufferPromise.then(() => {
+      this.audio.el.play().then(() => {
+        this.bufferPromise!.then(() => {
+          this.timestamp = performance.now();
+
+          // We need to compensate for the time it took to load the buffer
+          // otherwise the audio will be out of sync of the timer we use to
+          // render updates
+          if (this.audio?.el) {
+            // This must not be notifying of this adjustment otherwise it can cause sync issues and near infinite loops
+            this.setCurrentTime(time);
+            this.audio.el.currentTime = this.currentTime;
             this.watch();
-          });
-        } else {
-          this.watch();
-        }
+          }
+        });
       });
     }
   }

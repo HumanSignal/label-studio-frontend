@@ -1,4 +1,3 @@
-/* global locate */
 import Helper from '@codeceptjs/helper';
 
 class Annotations extends Helper {

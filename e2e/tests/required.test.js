@@ -1,5 +1,3 @@
-/* global Feature, Scenario, locate */
-
 const { initLabelStudio } = require('./helpers');
 
 Feature('Test required param');

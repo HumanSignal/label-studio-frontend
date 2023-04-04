@@ -36,7 +36,7 @@
     "copy-examples": "bash scripts/copy.sh",
     "docs:generate": "node scripts/create-docs.js",
     "lint:write": "eslint --debug src/ --fix",
-    "lint": "eslint --debug src/",
+    "lint": "eslint src/",
     "prepublishOnly": "yarn run test && yarn run build:final",
     "prettier-styles": "prettier --write src/**/*.{css,scss}",
     "prettier": "prettier --write src/**/*.js",
@@ -45,17 +45,17 @@
     "test:coverage": "yarn test -- --coverage",
     "test:watch": "react-scripts test",
     "test": "yarn jest src",
+    "coverage:merge": "npx nyc merge coverage/ coverage/coverage.json && rm -f coverage/*.coverage.json",
     "postinstall": "sh scripts/postinstall.sh"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged",
       "post-checkout": "bash scripts/copy.sh"
     }
   },
   "lint-staged": {
     "*.(js|ts|tsx)": [
-      "eslint --fix --quiet",
+      "eslint --quiet",
       "git add"
     ]
   },
@@ -134,7 +134,6 @@
     "babel-loader": "^8.2.2",
     "babel-plugin-import": "^1.13.5",
     "babel-plugin-remove-webpack": "^1.1.0",
-    "canvas": "^2.10.2",
     "chroma-js": "^2.1.1",
     "css-loader": "^5.0.2",
     "css-minimizer-webpack-plugin": "^3.0.2",
@@ -167,7 +166,6 @@
     "mobx-state-tree": "^3.16.0",
     "nanoid": "^3.3.0",
     "node-fetch": "^2.6.1",
-    "node-sass": "^6.0.1",
     "pleasejs": "^0.4.2",
     "postcss": "^8.4.6",
     "postcss-loader": "^6.2.1",

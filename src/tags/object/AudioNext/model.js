@@ -1,6 +1,6 @@
 import { getRoot, getType, types } from 'mobx-state-tree';
 import { customTypes } from '../../../core/CustomTypes';
-import { guidGenerator, restoreNewsnapshot } from '../../../core/Helpers.ts';
+import { guidGenerator } from '../../../core/Helpers.ts';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
@@ -27,7 +27,6 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  *   <Rating name="rate-1" toName="audio-1" />
  *   <Audio name="audio-1" value="$audio" />
  * </View>
- * @name Audio
  * @meta_title Audio Tag for Audio Labeling
  * @meta_description Customize Label Studio with the Audio tag for advanced audio annotation tasks for machine learning and data science projects.
  * @param {string} name - Name of the element
@@ -158,58 +157,6 @@ export const AudioModel = types.compose(
         return false;
       },
 
-      fromStateJSON(obj, fromModel) {
-        let r;
-        let m;
-
-        const fm = self.annotation.names.get(obj.from_name);
-
-        fm.fromStateJSON(obj);
-
-        if (!fm.perregion && fromModel.type !== 'labels') return;
-
-        /**
-       *
-       */
-        const tree = {
-          pid: obj.id,
-          start: obj.value.start,
-          end: obj.value.end,
-          normalization: obj.normalization,
-          score: obj.score,
-          readonly: obj.readonly,
-        };
-
-        r = self.findRegion({ start: obj.value.start, end: obj.value.end });
-
-        if (fromModel) {
-          m = restoreNewsnapshot(fromModel);
-          // m.fromStateJSON(obj);
-
-          if (!r) {
-          // tree.states = [m];
-            r = self.createRegion(tree, [m]);
-          // r = self.addRegion(tree);
-          } else {
-            r.states.push(m);
-          }
-        }
-
-        if (self._ws) {
-          self._ws.addRegion({
-            start: r.start,
-            end: r.end,
-          });
-        }
-
-        // if (fm.perregion)
-        //     fm.perRegionCleanup();
-
-        r.updateAppearenceFromState();
-
-        return r;
-      },
-
       setRangeValue(val) {
         self.rangeValue = val;
       },
@@ -247,7 +194,7 @@ export const AudioModel = types.compose(
       },
 
       selectRange(ev, ws_region) {
-        const selectedRegions = self.regs.filter(r=>r.start >= ws_region.start && r.end <= ws_region.end);
+        const selectedRegions = self.regs.filter(r => r.start >= ws_region.start && r.end <= ws_region.end);
 
         ws_region.remove && ws_region.remove();
         if (!selectedRegions.length) return;
@@ -273,7 +220,7 @@ export const AudioModel = types.compose(
         const states = self.getAvailableStates();
 
         if (states.length === 0) {
-          wsRegion.on('update-end', ev=>self.selectRange(ev,wsRegion));
+          wsRegion.on('update-end', ev => self.selectRange(ev,wsRegion));
           return;
         }
 
@@ -307,6 +254,13 @@ export const AudioModel = types.compose(
       },
 
       createWsRegion(region) {
+        const _regionOptions = region.wsRegionOptions;
+
+        if (region.annotation.isReadOnly()) {
+          _regionOptions.drag = false;
+          _regionOptions.resize = false;
+        }
+
         const r = self._ws.addRegion(region.wsRegionOptions);
 
         region._ws_region = r;

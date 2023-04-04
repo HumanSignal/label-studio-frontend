@@ -1,7 +1,7 @@
 import { Events } from '../Common/Events';
 import { __DEBUG__ } from '../Common/Utils';
-import { AudioDecoder, DEFAULT_FREQUENCY_HZ } from './AudioDecoder';
 import { audioDecoderPool } from './AudioDecoderPool';
+import { BaseAudioDecoder, DEFAULT_FREQUENCY_HZ } from './BaseAudioDecoder';
 
 export interface WaveformAudioOptions {
   src?: string;
@@ -9,6 +9,7 @@ export interface WaveformAudioOptions {
   muted?: boolean;
   rate?: number;
   splitChannels?: boolean;
+  decoderType?: 'ffmpeg' | 'webaudio';
 }
 
 interface WaveformAudioEvents {
@@ -17,9 +18,10 @@ interface WaveformAudioEvents {
 }
 
 export class WaveformAudio extends Events<WaveformAudioEvents> {
-  decoder?: AudioDecoder;
+  decoder?: BaseAudioDecoder;
   decoderPromise?: Promise<void>;
   mediaPromise?: Promise<void>;
+  mediaReject?: (err: any) => void;
   el?: HTMLAudioElement;
 
   // private backed by audio element and getters/setters
@@ -28,6 +30,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private _volume = 1;
   private _savedVolume = 1;
   private splitChannels = false;
+  private decoderType: 'ffmpeg' | 'webaudio' = 'ffmpeg';
   private src?: string;
   private mediaResolve?: () => void;
 
@@ -37,6 +40,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this._savedVolume = options.volume ?? this._volume;
     this._volume = options.muted ? 0 : this._savedVolume;
     this.splitChannels = options.splitChannels ?? false;
+    this.decoderType = options.decoderType ?? this.decoderType;
     this.src = options.src;
     this.createAudioDecoder();
     this.createMediaElement();
@@ -106,10 +110,12 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.disconnect();
 
     delete this.mediaResolve;
+    delete this.mediaReject;
     delete this.mediaPromise;
     delete this.decoderPromise;
     this.decoder?.destroy();
     delete this.decoder;
+    this.el?.removeEventListener('error', this.mediaReady);
     this.el?.removeEventListener('canplaythrough', this.mediaReady);
     this.el?.remove();
     delete this.el;
@@ -138,14 +144,19 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
   async sourceDecoded() {
     if (!this.decoder) return false;
-    if (this.mediaPromise) {
-      await this.mediaPromise;
-    }
-    if (this.decoderPromise) {
-      await this.decoderPromise;
-    }
+    try {
+      if (this.mediaPromise) {
+        await this.mediaPromise;
+      }
+      if (this.decoderPromise) {
+        await this.decoderPromise;
+      }
 
-    return this.decoder.sourceDecoded;
+      return this.decoder.sourceDecoded;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
   }
 
   async initDecoder(arraybuffer?: ArrayBuffer) {
@@ -169,26 +180,30 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
     this.el = document.createElement('audio');
     this.el.preload = 'auto';
-    this.el.muted = true;
     this.el.setAttribute('data-testid', 'waveform-audio');
     this.el.style.display = 'none';
     document.body.appendChild(this.el);
 
-    this.mediaPromise = new Promise((resolve) => {
+    this.mediaPromise = new Promise((resolve, reject) => {
       this.mediaResolve = resolve;
+      this.mediaReject = reject;
     });
 
     this.el.addEventListener('canplaythrough', this.mediaReady);
+    this.el.addEventListener('error', this.mediaReady);
     this.loadMedia();
   }
 
-  mediaReady = async () => {
-    if (this.mediaResolve) {
-      this.mediaResolve?.();
-      this.mediaResolve = undefined;
-      await this.forceBuffer();
+  mediaReady = async (e: any) => {
+    if (e.type === 'error') {
+      this.mediaReject?.(this.el?.error);
+    } else {
+      if (this.mediaResolve) {
+        this.mediaResolve?.();
+        this.mediaResolve = undefined;
+      }
+      this.invoke('canplay');
     }
-    this.invoke('canplay');
   };
 
   /**
@@ -198,33 +213,12 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     if (!this.src || !this.el) return;
     
     this.el.src = this.src;
-    this.el.load();
-  }
-
-  /**
-   * In order for the audio to playback sound immediately, we need to force the browser to buffer the audio.
-   * This works by just playing the audio and then immediately pausing it.
-   */
-  private async forceBuffer() {
-    if (!this.el) return;
-
-    try {
-      await this.el.play();
-      this.el.pause();
-    } catch {
-      // ignore
-    } finally {
-      if (this.el) {
-        this.el.currentTime = 0;
-        this.el.muted = false;
-      }
-    }
   }
 
   private createAudioDecoder() {
     if (!this.src || this.decoder) return;
 
-    this.decoder = audioDecoderPool.getDecoder(this.src, this.splitChannels);
+    this.decoder = audioDecoderPool.getDecoder(this.src, this.splitChannels, this.decoderType);
 
     this.decoder.on('progress', (chunk, total) => {
       this.invoke('decodingProgress', [chunk, total]);

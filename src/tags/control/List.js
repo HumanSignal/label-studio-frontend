@@ -124,68 +124,6 @@ const Model = types
       self.regions = arrayMove(self.regions, oldIndex, newIndex);
       self.setUpdate();
     },
-
-    toStateJSON() {
-      const map = {};
-
-      self._value.forEach((v, idx) => {
-        map[self.regions[idx].idx] = 1 / (1 + idx);
-      });
-
-      const ranked = Object.keys(map)
-        .sort((a, b) => a - b)
-        .map(function(v) {
-          return map[v];
-        });
-
-      const selected = [];
-
-      for (let i = 0; i < Object.keys(map).length; i++) {
-        selected[self.regions[i].idx] = self.regions[i].selected ? 1 : 0;
-      }
-
-      return {
-        from_name: self.name,
-        to_name: self.name,
-        value: {
-          weights: ranked,
-          selected,
-        },
-      };
-    },
-
-    fromStateJSON(obj) {
-      const ranked = [];
-      const regions = [];
-      const item_weight = {};
-
-      obj.value.weights.forEach((v, idx) => {
-        if (item_weight[v]) {
-          item_weight[v].push(idx);
-        } else {
-          item_weight[v] = [idx];
-        }
-      });
-
-      Object.keys(item_weight)
-        .sort((a, b) => b - a)
-        .forEach(v => {
-          const idxes = item_weight[v];
-
-          idxes.forEach(idx => {
-            regions.push(self.regions[idx]);
-            ranked.push(self._value[idx]);
-          });
-        });
-
-      regions.forEach((r, idx) => r.setIdx(idx));
-
-      self._value = ranked;
-      self.regions = regions;
-
-      // self.regions = ranked;
-      self.setUpdate();
-    },
   }));
 
 const ListModel = types.compose('ListModel', TagAttrs, Model);

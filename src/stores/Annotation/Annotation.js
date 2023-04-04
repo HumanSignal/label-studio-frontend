@@ -19,6 +19,7 @@ import {
   FF_DEV_2432,
   FF_DEV_3391,
   FF_LSDV_3009,
+  FF_LSDV_4583,
   isFF
 } from '../../utils/feature-flags';
 import { delay, isDefined } from '../../utils/utilities';
@@ -239,6 +240,10 @@ export const Annotation = types
         return res && ['text', 'hypertext', 'paragraphs'].includes(obj.type);
       }, true);
     },
+
+    isReadOnly() {
+      return self.readonly || !self.editable;
+    },
   }))
   .volatile(() => ({
     hidden: false,
@@ -421,16 +426,6 @@ export const Annotation = types
       }
     },
 
-    loadRegionState(region) {
-      region.states &&
-        region.states.forEach(s => {
-          const mainViewTag = self.names.get(s.name);
-
-          mainViewTag.unselectAll && mainViewTag.unselectAll();
-          mainViewTag.copyState(s);
-        });
-    },
-
     unloadRegionState(region) {
       region.states &&
         region.states.forEach(s => {
@@ -484,6 +479,8 @@ export const Annotation = types
      * @param {*} region
      */
     deleteRegion(region) {
+      if (region.isReadOnly()) return;
+
       const { regions } = self.regionStore;
       // move all children into the parent region of the given one
       const children = regions.filter(r => r.parentID === region.id);
@@ -621,7 +618,7 @@ export const Annotation = types
     startAutosave: flow(function *() {
       if (!getEnv(self).events.hasEvent('submitDraft')) return;
       // view all must never trigger autosave
-      if (!self.editable) return;
+      if (self.isReadOnly()) return;
 
       // some async tasks should be performed after deserialization
       // so start autosave on next tick
@@ -716,19 +713,6 @@ export const Annotation = types
         // on other elements in the tree.
         if (node.annotationAttached) node.annotationAttached();
 
-        // copy tools from control tags into object tools manager
-        // [DOCS] each object tag may have an assigned tools
-        // manager. This assignment may happen because user asked
-        // for it through the config, or because the attached
-        // control tags are complex and require additional UI
-        // interfaces. Each control tag defines a set of tools it
-        // supports
-        if (node && node.getToolsManager) {
-          const tools = node.getToolsManager();
-          const states = self.toNames.get(node.name);
-
-          states && states.forEach(s => tools.addToolsFromControl(s));
-        }
 
         // @todo special place to init such predefined values; `afterAttach` of the tag?
         // preselected choices
@@ -855,8 +839,11 @@ export const Annotation = types
       };
 
 
-      //TODO: MST is crashing if we don't validate areas?, this problem isn't happening locally. So to reproduce you have to test in production or environment
+      // TODO: MST is crashing if we don't validate areas?, this problem isn't
+      // happening locally. So to reproduce you have to test in production or environment
       const area = self?.areas?.put(areaRaw);
+
+      object?.afterResultCreated?.(area);
 
       if (!area) return;
 
@@ -886,7 +873,7 @@ export const Annotation = types
       const prevSize = self.regionStore.regions.length;
 
       // Generate new ids to prevent collisions
-      results.forEach((result)=>{
+      results.forEach((result) => {
         const regionId = result.id;
 
         if (!regionIdMap[regionId]) {
@@ -919,7 +906,7 @@ export const Annotation = types
     // And this problems are fixable, so better to fix them on start
     fixBrokenAnnotation(json) {
       return (json ?? []).reduce((res, objRaw) => {
-        const obj = JSON.parse(JSON.stringify(objRaw));
+        const obj = structuredClone(objRaw) ?? {};
 
         if (obj.type === 'relation') {
           res.push(objRaw);
@@ -994,6 +981,23 @@ export const Annotation = types
         if (tagNames.has(obj.from_name) && tagNames.has(obj.to_name)) {
           res.push(obj);
         }
+        
+        // Insert image dimensions from result 
+        (() => {
+          if (!isDefined(obj.original_width)) return;
+          if (!tagNames.has(obj.to_name)) return;
+
+          const tag = tagNames.get(obj.to_name);
+
+          if (tag.type !== 'image') return;
+
+          const imageEntity = tag.findImageEntity(obj.item_index ?? 0); 
+
+          if (!imageEntity) return;
+
+          imageEntity.setNaturalWidth(obj.original_width);
+          imageEntity.setNaturalHeight(obj.original_height);
+        })();
 
         return res;
       }, []);
@@ -1067,12 +1071,6 @@ export const Annotation = types
         self._initialAnnotationObj = objAnnotation;
 
         objAnnotation.forEach(obj => {
-          const { readonly } = obj;
-
-          if(readonly) {
-            self.setReadonly(true);
-          }
-
           self.deserializeSingleResult(obj,
             (id) => areas.get(id),
             (snapshot) => areas.put(snapshot),
@@ -1159,6 +1157,16 @@ export const Annotation = types
           };
 
           area = createArea(areaSnapshot);
+
+          if (isFF(FF_LSDV_4583)) {
+            // store copy of the original result inside the area
+            // useful when you need to serialize a result without
+            // updating it from current/actual data
+            // For safety reasons this object is always readonly
+            Object.defineProperty(area, '_rawResult', {
+              value: Object.freeze(structuredClone(obj)),
+            });
+          }
         }
 
         area.addResult({ ...data, id: resultId, type, value, from_name, to_name });

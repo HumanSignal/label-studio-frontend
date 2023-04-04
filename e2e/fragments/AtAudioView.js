@@ -1,4 +1,3 @@
-/* global inject */
 const { I } = inject();
 const assert = require('assert');
 
@@ -22,7 +21,8 @@ module.exports = {
   _seekBackwardButtonSelector: '.lsf-audio-tag .lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(1)',
   _playButtonSelector: '.lsf-audio-tag .lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(2)',
   _seekForwardButtonSelector: '.lsf-audio-tag .lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(3)',
-  _choiceSelector: '.lsf-choices.lsf-choices_layout_inline',
+  _errorSelector: '[data-testid="error:audio"]',
+  _httpErrorSelector: '[data-testid="error:http"]',
 
   _stageBbox: { x: 0, y: 0, width: 0, height: 0 },
 
@@ -36,6 +36,7 @@ module.exports = {
     await I.executeScript(Helpers.waitForAudio);
     I.waitForInvisible(this._progressBarSelector);
   },
+
   getCurrentAudioTime() {
     return I.executeScript(Helpers.getCurrentAudioTime);
   },
@@ -47,11 +48,12 @@ module.exports = {
    * @param x {number}
    * @param shiftX {number}
    */
-  dragAudioRegion(x, shiftX) {
+  dragAudioRegion(x, shiftX, shouldRelease = true) {
     I.scrollPageToTop();
     I.moveMouse(this._stageBbox.x + x, this._stageBbox.y + this._stageBbox.height / 2);
     I.pressMouseDown();
     I.moveMouse(this._stageBbox.x + x + shiftX, this._stageBbox.y + this._stageBbox.height / 2, 3);
+    if (shouldRelease === false) return;
     I.pressMouseUp();
     I.wait(1);
   },
@@ -69,6 +71,52 @@ module.exports = {
     I.scrollPageToTop();
     I.clickAt(this._stageBbox.x + x, this._stageBbox.y + y);
     I.wait(1); // We gotta  wait here because clicks on the canvas are not processed immediately
+  },
+
+  async createRegion(tagName, start, length) {
+    const { x, y, height } = await this.getWrapperPosition(tagName);
+
+    return I.dragAndDropMouse({
+      x: x + start,
+      y: y + height / 2,
+    }, {
+      x: x + start + length,
+      y: y + height / 2,
+    });
+  },
+
+  async getWrapperPosition(tagName) {
+    const wrapperPosition = await I.executeScript((tagName) => {
+      const wrapper = Htx.annotationStore.selected.names.get(tagName)._ws.container;
+      const bbox = wrapper.getBoundingClientRect();
+
+      return {
+        x: bbox.x,
+        y: bbox.y,
+        width: bbox.width,
+        height: bbox.height,
+      };
+    }, tagName);
+
+    return wrapperPosition;
+  },
+
+  async moveRegion(regionId, offset = 30) {
+    const regionPosition = await I.executeScript((regionId) => {
+      const region = Htx.annotationStore.selected.regions.find(r => r.cleanId === regionId);
+      const element = region.getRegionElement();
+      const rect = element.getBoundingClientRect();
+
+      return {
+        x: rect.x + rect.width / 2,
+        y: rect.y + rect.height / 2,
+      };
+    }, regionId);
+
+    return I.dragAndDropMouse(regionPosition, {
+      x: regionPosition.x + offset,
+      y: regionPosition.y,
+    });
   },
 
   /**
@@ -226,10 +274,12 @@ module.exports = {
     I.click(this._playButtonSelector);
   },
 
-  async dontSeeGhostRegion() {
-    const selectedChoice = await I.grabTextFrom(this._choiceSelector);
+  async seeErrorHandler(value, selector = null) {
+    selector = selector ? this[selector] : this._errorSelector;
+    const error = await I.grabTextFrom(selector);
+    const matcher = new RegExp(value);
 
-    assert.equal(selectedChoice, 'Positive');
+    assert.match(error, matcher);
   },
   
   /**

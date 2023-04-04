@@ -2,59 +2,29 @@ import React, { Fragment, useContext } from 'react';
 import { Circle } from 'react-konva';
 import { getRoot, types } from 'mobx-state-tree';
 
+import Registry from '../core/Registry';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import Registry from '../core/Registry';
-import { ImageModel } from '../tags/object/Image';
-import { guidGenerator } from '../core/Helpers';
-import { LabelOnKP } from '../components/ImageView/LabelOnRegion';
-import { AreaMixin } from '../mixins/AreaMixin';
-import { useRegionStyles } from '../hooks/useRegionColor';
-import { AliveRegion } from './AliveRegion';
-import { KonvaRegionMixin } from '../mixins/KonvaRegion';
-import { createDragBoundFunc } from '../utils/image';
+
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
+import { LabelOnKP } from '../components/ImageView/LabelOnRegion';
+import { guidGenerator } from '../core/Helpers';
+import { useRegionStyles } from '../hooks/useRegionColor';
+import { AreaMixin } from '../mixins/AreaMixin';
+import { KonvaRegionMixin } from '../mixins/KonvaRegion';
+import { ImageModel } from '../tags/object/Image';
+import { FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { createDragBoundFunc } from '../utils/image';
+import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
 
-const Model = types
+const KeyPointRegionAbsoluteCoordsDEV3793 = types
   .model({
-    id: types.optional(types.identifier, guidGenerator),
-    pid: types.optional(types.string, guidGenerator),
-    type: 'keypointregion',
-    object: types.late(() => types.reference(ImageModel)),
-
-    x: types.number,
-    y: types.number,
-
-    width: types.number,
     coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
-    negative: false,
   })
   .volatile(() => ({
     relativeX: 0,
     relativeY: 0,
-    hideable: true,
-    _supportsTransform: true,
-    useTransformer: false,
-    supportsRotate: false,
-    supportsScale: false,
-    editableFields: [
-      { property: 'x', label: 'X' },
-      { property: 'y', label: 'Y' },
-    ],
-  }))
-  .views(self => ({
-    get store() {
-      return getRoot(self);
-    },
-    get bboxCoords() {
-      return {
-        left: self.x - self.width,
-        top: self.y - self.width,
-        right: self.x + self.width,
-        bottom: self.y + self.width,
-      };
-    },
   }))
   .actions(self => ({
     afterCreate() {
@@ -72,13 +42,6 @@ const Model = types
           self.relativeY = (self.y / height) * 100;
         }
       }
-    },
-
-    // @todo not used
-    rotate(degree) {
-      const p = self.rotatePoint(self, degree);
-
-      self.setPosition(p.x, p.y);
     },
 
     setPosition(x, y) {
@@ -102,6 +65,61 @@ const Model = types
         self.coordstype = 'px';
       }
     },
+  }));
+
+const Model = types
+  .model({
+    id: types.optional(types.identifier, guidGenerator),
+    pid: types.optional(types.string, guidGenerator),
+    type: 'keypointregion',
+    object: types.late(() => types.reference(ImageModel)),
+
+    x: types.number,
+    y: types.number,
+
+    width: types.number,
+    negative: false,
+  })
+  .volatile(() => ({
+    hideable: true,
+    _supportsTransform: true,
+    useTransformer: false,
+    supportsRotate: false,
+    supportsScale: false,
+    editableFields: [
+      { property: 'x', label: 'X' },
+      { property: 'y', label: 'Y' },
+    ],
+  }))
+  .views(self => ({
+    get store() {
+      return getRoot(self);
+    },
+    get bboxCoords() {
+      return {
+        left: self.x - self.width,
+        top: self.y - self.width,
+        right: self.x + self.width,
+        bottom: self.y + self.width,
+      };
+    },
+    get canvasX() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
+    },
+    get canvasY() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
+    },
+    get canvasWidth() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.width) : self.width;
+    },
+  }))
+  .actions(self => ({
+    setPosition(x, y) {
+      self.x = self.parent.canvasToInternalX(x);
+      self.y = self.parent.canvasToInternalY(y);
+    },
+
+    updateImageSize() {},
 
     /**
      * @example
@@ -130,16 +148,13 @@ const Model = types
      * @return {KeyPointRegionResult}
      */
     serialize() {
-      const result = {
-        original_width: self.parent.naturalWidth,
-        original_height: self.parent.naturalHeight,
-        image_rotation: self.parent.rotation,
-        value: {
-          x: self.convertXToPerc(self.x),
-          y: self.convertYToPerc(self.y),
-          width: self.convertHDimensionToPerc(self.width),
-        },
+      const value = {
+        x: isFF(FF_DEV_3793) ? self.x : self.convertXToPerc(self.x),
+        y: isFF(FF_DEV_3793) ? self.y : self.convertYToPerc(self.y),
+        width: isFF(FF_DEV_3793) ? self.width : self.convertHDimensionToPerc(self.width),
       };
+
+      const result = self.parent.createSerializedResult(self, value);
 
       if (self.dynamic) {
         result.is_positive = !self.negative;
@@ -158,14 +173,12 @@ const KeyPointRegionModel = types.compose(
   KonvaRegionMixin,
   EditableRegion,
   Model,
+  ...(isFF(FF_DEV_3793) ? [] : [KeyPointRegionAbsoluteCoordsDEV3793]),
 );
 
 const HtxKeyPointView = ({ item }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
-
-  const x = item.x;
-  const y = item.y;
 
   const regionStyles = useRegionStyles(item, {
     includeFill: true,
@@ -180,7 +193,7 @@ const HtxKeyPointView = ({ item }) => {
     opacity: 1,
     fill: regionStyles.fillColor,
     stroke: regionStyles.strokeColor,
-    strokeWidth: Math.max(2, regionStyles.strokeWidth),
+    strokeWidth: Math.max(1, regionStyles.strokeWidth),
     strokeScaleEnabled: false,
     shadowBlur: 0,
   };
@@ -190,10 +203,11 @@ const HtxKeyPointView = ({ item }) => {
   return (
     <Fragment>
       <Circle
-        x={x}
-        y={y}
+        x={item.canvasX}
+        y={item.canvasY}
+        ref={el => item.setShapeRef(el)}
         // keypoint should always be the same visual size
-        radius={Math.max(item.width, 2) / item.parent.zoomScale}
+        radius={Math.max(item.canvasWidth, 2) / item.parent.zoomScale}
         // fixes performance, but opactity+borders might look not so good
         perfectDrawEnabled={false}
         // for some reason this scaling doesn't work, so moved this to radius
@@ -253,7 +267,7 @@ const HtxKeyPointView = ({ item }) => {
           item.onClickRegion(e);
         }}
         {...props}
-        draggable={item.editable}
+        draggable={!item.isReadOnly()}
         listening={!suggestion}
       />
       <LabelOnKP item={item} color={regionStyles.strokeColor}/>

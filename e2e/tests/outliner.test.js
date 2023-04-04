@@ -1,4 +1,3 @@
-/* global Feature Scenario */
 const assert = require('assert');
 const { centerOfBbox } = require('./helpers');
 
@@ -190,6 +189,13 @@ Scenario('Basic details', async ({ I, LabelStudio, AtOutliner, AtDetails }) => {
   I.say('Select image region');
   AtOutliner.clickRegion(3);
 
+  const isRelativeCoords = await LabelStudio.hasFF('fflag_fix_front_dev_3793_relative_coords_short');
+
+  if (isRelativeCoords) {
+    AtDetails.seeFieldWithValue('X', '25');
+    AtDetails.seeFieldWithValue('H', '50');
+  }
+
   I.say('Check perregions displaying');
 
   AtDetails.seeResultRating(4);
@@ -205,7 +211,7 @@ Scenario('Basic details', async ({ I, LabelStudio, AtOutliner, AtDetails }) => {
 
   I.say('Add line to meta');
   AtDetails.clickMeta();
-  fillByPressKeyDown( [['Shift', 'Enter'], ['3'], ['Enter']]);
+  fillByPressKeyDown([['Shift', 'Enter'], ['3'], ['Enter']]);
   AtDetails.seeMeta('3');
   AtDetails.dontSeeMeta('23');
 
@@ -507,4 +513,4 @@ Scenario('Panels manipulations', async ({ I, LabelStudio, AtPanels }) => {
     AtDetailsPanel.seeСollapseButton();
     AtDetailsPanel.dontSeeExpandButton();
   }
-});
+});

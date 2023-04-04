@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 Feature('Undoing drawing in one step').tag('@regress');
 
 const IMAGE =
