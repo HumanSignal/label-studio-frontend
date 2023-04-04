@@ -303,12 +303,14 @@ const Model = types.model({
 
     if (!self.imageCrossOrigin) {
       return value;
-    } else if (isFF(FF_DEV_4081) && /^https?:.*?s3\.amazonaws\.com\//g.test(value)){
-      // AWS S3 inconsistently sends back the Origin HTTP header, between images in an <img>
-      // tag and a JavaScript CORS request, breaking cross domain images.
+    } else if (isFF(FF_DEV_4081) &&
+               /^https?:.*?s3\.amazonaws\.com\//g.test(value) &&
+               !(new URL(value)).searchParams.has('X-Amz-Signature')) {
+      // Unsigned AWS S3 inconsistently sends back the Origin HTTP header, between
+      // images in an <img> tag and a JavaScript CORS request, breaking cross domain images.
       // Details: https://bugs.chromium.org/p/chromium/issues/detail?id=409090
-      // Fix is to break the cache for this image only if its cross origin and on
-      // S3.
+      // Fix is to break the cache for this image only if its cross origin, on
+      // S3, and not a signed AWS URL with X-Amz-Signature in its query params.
       return value + '?v=1';
     } else {
       return value;
