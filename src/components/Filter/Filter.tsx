@@ -18,53 +18,62 @@ export const Filter: FC<FilterInterface> = ({
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
 
   const addNewFilterListItem = useCallback(() => {
-    const _oldFilterList = [...filterList];
+    setFilterList((filterList) => [
+      ...filterList,
+      {
+        field: availableFilters[0]?.label ?? '',
+        operation: '',
+        value: '',
+        path: '',
+      },
+    ]);
+  }, [setFilterList, availableFilters]);
 
-    _oldFilterList.push({
-      field: availableFilters[0].label,
-      operation: '',
-      value: '',
-      path: '',
-    });
+  const onChangeRow = useCallback(
+    (index: number, { field, operation, value, path }: Partial<FilterListInterface>) => {
+      setFilterList((oldList) => {
+        const newList = [...oldList];
 
-    setFilterList(_oldFilterList);
-  }, [setFilterList, filterList]);
+        newList[index] = {
+          ...newList[index],
+          field: field ?? newList[index].field,
+          operation: operation ?? newList[index].operation,
+          value: value ?? newList[index].value,
+          path: path ?? newList[index].path,
+        };
 
-  const onChangeRow = useCallback((index: number, obj: any) => {
-    const _oldFilterList = [...filterList];
+        FilterItems(filterData, newList[index]);
 
-    _oldFilterList[index] = { ..._oldFilterList[index], ...obj };
-
-    FilterItems(filterData, _oldFilterList[index]);
-
-    setFilterList(_oldFilterList);
-  }, [filterList]);
+        return newList;
+      });
+    },
+    [setFilterList, filterData],
+  );
 
   const onDeleteRow = useCallback((index: number) => {
-    const _oldFilterList = [...filterList];
+    setFilterList((oldList) => {
+      const newList = [...oldList];
 
-    _oldFilterList.splice(index, 1);
-
-    setFilterList(_oldFilterList);
-  }, [filterList]);
+      newList.splice(index, 1);
+      return newList;
+    });
+  }, [setFilterList]);
 
   const renderFilterList = useMemo(() => {
-    return filterList.map((filter: FilterListInterface, index) => {
-      return (
-        <Block key={index} name={'filter-item'}>
-          <FilterRow
-            index={index}
-            availableFilters={availableFilters}
-            field={filter.field}
-            operation={filter.operation}
-            value={filter.value}
-            onDelete={onDeleteRow}
-            onChange={onChangeRow}
-          />
-        </Block>
-      );
-    });
-  }, [filterList, onChangeRow, onDeleteRow]);
+    return filterList.map(({ field, operation, value }, index) => (
+      <Block key={index} name="filter-item">
+        <FilterRow
+          index={index}
+          availableFilters={availableFilters}
+          field={field}
+          operation={operation}
+          value={value}
+          onDelete={onDeleteRow}
+          onChange={onChangeRow}
+        />
+      </Block>
+    ));
+  }, [filterList, availableFilters, onDeleteRow, onChangeRow]);
 
   const renderFilter = useMemo(() => {
     return (
