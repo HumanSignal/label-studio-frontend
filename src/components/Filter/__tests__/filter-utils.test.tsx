@@ -218,5 +218,4 @@ describe('FilterItems', () => {
       },
     ]);
   });
-
 });
