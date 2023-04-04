@@ -145,7 +145,7 @@ const notbetween = (items: any[], filterItem: FilterListInterface) => {
     return items.filter((obj) => {
       const item = getFilteredPath(filterItem.path, obj);
 
-      return item <= filterItem.value.min || item >= filterItem.value.max;
+      return item <= filterItem.value.min || filterItem.value.max <= item;
     });
   } else {
     return items;
