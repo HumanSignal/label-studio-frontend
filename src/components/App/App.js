@@ -5,6 +5,7 @@ import React, { Component } from 'react';
 import { Result, Spin } from 'antd';
 import { getEnv, getRoot } from 'mobx-state-tree';
 import { observer, Provider } from 'mobx-react';
+import { InstructionsModal } from '../InstructionsModal/InstructionsModal';
 
 /**
  * Core
@@ -37,6 +38,7 @@ import Grid from './Grid';
 import { SidebarPage, SidebarTabs } from '../SidebarTabs/SidebarTabs';
 import { AnnotationTab } from '../AnnotationTab/AnnotationTab';
 import { SidePanels } from '../SidePanels/SidePanels';
+import { SideTabsPanels } from '../SidePanels/TabPanels/SideTabsPanels';
 import { Block, Elem } from '../../utils/bem';
 import './App.styl';
 import { Space } from '../../common/Space/Space';
@@ -213,45 +215,78 @@ class App extends Component {
       </Block>
     );
 
-    const newUIEnabled = isFF(FF_DEV_1170);
+    const outlinerEnabled = isFF(FF_DEV_1170);
+    const newUIEnabled = isFF(FF_DEV_3873);
 
     return (
-      <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !newUIEnabled }}>
+      <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !outlinerEnabled }}>
         <Settings store={store} />
         <Provider store={store}>
-          {store.showingDescription && (
-            <Segment>
-              <div dangerouslySetInnerHTML={{ __html: store.description }} />
-            </Segment>
+          {newUIEnabled ? (
+            <InstructionsModal
+              visible={store.showingDescription}
+              onCancel={() => store.toggleDescription()}
+              title="Labeling Instructions"
+            >
+              {store.description}
+            </InstructionsModal>
+          ) : (
+            <>
+              {store.showingDescription && (
+                <Segment>
+                  <div dangerouslySetInnerHTML={{ __html: store.description }} />
+                </Segment>
+              )}
+            </>
           )}
 
-          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
-          <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled, showingBottomBar: isFF(FF_DEV_3873) }}>
-            {newUIEnabled ? (
-              <SidePanels
-                panelsHidden={viewingAll}
-                currentEntity={as.selectedHistory ?? as.selected}
-                regions={as.selected.regionStore}
-              >
-                {mainContent}
+          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store} />}
+          <Block
+            name="wrapper"
+            mod={{
+              viewAll: viewingAll,
+              bsp: settings.bottomSidePanel,
+              outliner: outlinerEnabled,
+              showingBottomBar: newUIEnabled,
+            }}
+          >
+            {outlinerEnabled ? (
+              isFF(FF_DEV_3873) ? (
+                <SideTabsPanels
+                  panelsHidden={viewingAll}
+                  currentEntity={as.selectedHistory ?? as.selected}
+                  regions={as.selected.regionStore}
+                  showComments={!store.hasInterface('annotations:comments')}
+                >
+                  {mainContent}
+                  {isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+                </SideTabsPanels>
+              ) : (
+                <SidePanels
+                  panelsHidden={viewingAll}
+                  currentEntity={as.selectedHistory ?? as.selected}
+                  regions={as.selected.regionStore}
+                >
+                  {mainContent}
 
-                {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store}/>}
-              </SidePanels>
+                  {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+                </SidePanels>
+              )
             ) : (
               <>
                 {mainContent}
 
-                {(viewingAll === false) && (
+                {viewingAll === false && (
                   <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
                     {store.hasInterface('side-column') && (
                       <SidebarTabs active="annotation">
                         <SidebarPage name="annotation" title="Annotation">
-                          <AnnotationTab store={store}/>
+                          <AnnotationTab store={store} />
                         </SidebarPage>
 
                         {this.props.panels.map(({ name, title, Component }) => (
                           <SidebarPage key={name} name={name} title={title}>
-                            <Component/>
+                            <Component />
                           </SidebarPage>
                         ))}
                       </SidebarTabs>
@@ -259,7 +294,7 @@ class App extends Component {
                   </Block>
                 )}
 
-                {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store}/>}
+                {newUIEnabled && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
               </>
             )}
           </Block>
