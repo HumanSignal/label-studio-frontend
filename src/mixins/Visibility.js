@@ -43,7 +43,7 @@ const VisibilityMixin = types
 
             const tag = self.annotation.names.get(tagName);
 
-            if (!tag?.hasChoiceSelection) return false;
+            if (!tag?.hasChoiceSelection || !choiceValue?.length) return false;
 
             return tag.hasChoiceSelection(choiceValue.split(','), tag.selectedValues());
           },
