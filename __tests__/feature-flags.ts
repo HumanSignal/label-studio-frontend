@@ -1,4 +1,4 @@
-import * as FLAGS from '../../src/utils/feature-flags';
+import * as FLAGS from '../src/utils/feature-flags';
 
 export const CURRENT_FLAGS = {
   ...(window.APP_SETTINGS?.feature_flags ?? {}),

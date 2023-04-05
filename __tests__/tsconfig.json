@@ -6,14 +6,11 @@
     "lib": ["es5", "dom"],
     "types": ["cypress", "node"],
     "typeRoots": [
-      "./types",
-      "./node_modules/@heartexlabs/ls-test/types",
-      "./node_modules/@types"
+      "./node_modules/@types",
+      "./node_modules/@heartexlabs",
+      "./types"
     ]
   },
-  "exclude": [
-    "./node_modules"
-  ],
   "include": [
     "**/*.ts",
     "./node_modules/@heartexlabs/ls-test/**/*.ts"
