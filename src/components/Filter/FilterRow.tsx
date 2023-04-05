@@ -33,11 +33,7 @@ export const FilterRow: FC<FilterRowInterface> = ({
   const [_inputComponent, setInputComponent] = useState(null);
 
   useEffect(() => {
-    onChange(index, { field:availableFilters[_selectedField].label, path: availableFilters[_selectedField].path });
-
-    const pos = FilterInputs?.[availableFilters[_selectedField].type].map((e:any) => e.key).indexOf(operation);
-
-    setSelectedOperation(pos);
+    onChange(index, { field:availableFilters[_selectedField].label, path: availableFilters[_selectedField].path, operation:'' });
   }, [_selectedField]);
 
   useEffect(() => {
@@ -74,7 +70,7 @@ export const FilterRow: FC<FilterRowInterface> = ({
         />
       </Elem>
       <Elem name={'column'}>
-        {_inputComponent && (
+        {(_inputComponent && operation !== 'empty') && (
           <Elem
             tag={_inputComponent}
             value={value}
