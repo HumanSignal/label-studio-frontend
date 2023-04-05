@@ -14,7 +14,7 @@ env:
 
 jobs:
   run:
-    name: "Functional Tests"
+    name: "Cypress Tests"
     runs-on: ubuntu-latest
 
     # ci can be skipped with `[skip ci]` prefix in message
@@ -103,8 +103,7 @@ jobs:
         timeout-minutes: 40
         env:
           NODE_ENV: 'production'
-          TEST_ENV: true
-          COVERAGE: true
+          COLLECT_COVERAGE: true
           CPU_NUMBER: ${{ steps.cpu-info.outputs.cores-count }}
         run: |
           set -euo pipefail
