@@ -122,5 +122,5 @@ jobs:
         if: ${{ success() }}
         with:
           name: cypress-tests-coverage
-          path: coverage/
+          path: __tests__/coverage/
 
