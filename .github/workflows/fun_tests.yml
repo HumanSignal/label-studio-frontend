@@ -96,7 +96,7 @@ jobs:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           set -euo pipefail
-          cd ./__tests__/functional
+          cd ./__tests__
           yarn install --frozen-lockfile
 
       - name: Run Cypress test suite
@@ -104,10 +104,11 @@ jobs:
         env:
           NODE_ENV: 'production'
           TEST_ENV: true
+          COVERAGE: true
           CPU_NUMBER: ${{ steps.cpu-info.outputs.cores-count }}
         run: |
           set -euo pipefail
-          cd __tests__/functional
+          cd __tests__
           yarn run test:parallel 
 
       - name: "Upload suite output" 
@@ -115,18 +116,12 @@ jobs:
         if: ${{ failure() }}
         with:
           name: failure-result
-          path: __tests__/functional/output
+          path: __tests__/output
 
-      # - name: Merge coverage reports
-      #   if: ${{ success() }}
-      #   run: |
-      #     set -euo pipefail
-      #     yarn coverage:merge 
-      # 
-      # - name: Upload coverage to Artifact
-      #   uses: actions/upload-artifact@v3
-      #   if: ${{ success() }}
-      #   with:
-      #     name: e2e-tests-coverage
-      #     path: coverage/
+      - name: Upload coverage to Artifact
+        uses: actions/upload-artifact@v3
+        if: ${{ success() }}
+        with:
+          name: cypress-tests-coverage
+          path: __tests__/coverage/
 
