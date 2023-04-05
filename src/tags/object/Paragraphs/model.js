@@ -146,6 +146,7 @@ const Model = types
     filterByAuthor: [],
     searchAuthor: '',
     playingId: -1,
+    playing: false, // just internal state for UI
     audioRef: createRef(),
     audioDuration: null,
     audioStopHandler: null,
@@ -193,21 +194,28 @@ const Model = types
 
     registerSyncHandlers() {
       self.syncHandlers.set('pause', self.stopNow);
-      self.syncHandlers.set('seek', self.handleSyncSeek);
+      self.syncHandlers.set('play', self.handleSyncPlay);
+      self.syncHandlers.set('seek', self.handleSyncPlay);
       self.syncHandlers.set('speed', self.handleSyncSpeed);
     },
 
-    handleSyncSeek({ time }) {
+    handleSyncPlay({ time, playing }) {
       const audio = self.audioRef.current;
+      const idx = self.regionIdxByTime(time);
 
       if (!audio) return;
+      // if we left current region's time, reset
+      if (idx === -1 || idx !== self.playingId) {
+        self.stopNow();
+        self.reset();
+        return;
+      }
 
-      // seek to given time only if it's inside current region.
-      // otherwise it will be paused immediately.
-      // if time is correct, audio will be paused at the end of current region.
-      // @todo don't play if time is not inside current region
+      // so we are changing time inside current region only
       audio.currentTime = time;
-      self.stopAtTheEnd();
+      if (audio.paused && playing) {
+        self.play(idx);
+      }
     },
 
     handleSyncSpeed({ speed }) {
@@ -245,7 +253,7 @@ const Model = types
       if (audio.paused) return;
 
       audio.pause();
-      self.reset();
+      self.playing = false;
       self.triggerSync('pause');
     },
 
@@ -253,6 +261,7 @@ const Model = types
      * Audio can be seeked to another time or speed can be changed,
      * so we need to check if we already reached the end of current region
      * and stop if needed.
+     * Runs timer to check this every frame.
      */
     stopAtTheEnd() {
       const audio = self.audioRef.current;
@@ -268,6 +277,7 @@ const Model = types
       }
 
       self.stopNow();
+      self.reset();
     },
 
     play(idx) {
@@ -289,8 +299,9 @@ const Model = types
       }
 
       audio.play();
-      self.triggerSync('play');
+      self.playing = true;
       self.playingId = idx;
+      self.triggerSync('play');
       self.stopAtTheEnd();
     },
   }))

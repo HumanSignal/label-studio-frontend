@@ -25,7 +25,7 @@ export const Phrases = observer(({ item }) => {
           <Button
             type="text"
             className={styles.play}
-            icon={item.playingId === idx ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+            icon={item.playingId === idx && item.playing ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
             onClick={() => item.play(idx)}
           />
         )}
