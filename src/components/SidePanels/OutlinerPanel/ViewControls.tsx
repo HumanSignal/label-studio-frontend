@@ -92,8 +92,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
       )}
       {isFF(FF_DEV_3873) && (
         <Filter
-          filterData={regions.regions}
-          filteringPath={'labelName'}
+          filterData={regions?.regions}
           availableFilters={[{
             label: 'Annotation results',
             path: 'labelName',
@@ -101,17 +100,17 @@ export const ViewControls: FC<ViewControlsProps> = ({
           },
           {
             label: 'Confidence score',
-            path: 'confidence',
+            path: 'score',
             type: 'Number',
           },
           {
             label: 'Boolean',
-            path: 'confidence',
+            path: 'score',
             type: 'Boolean',
           },
           {
             label: 'Common',
-            path: 'confidence',
+            path: 'score',
             type: 'Common',
           }]}
         />

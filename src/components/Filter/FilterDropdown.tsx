@@ -12,7 +12,7 @@ interface FilterDropdownInterface {
 }
 
 const renderOptions = (item: any, index:number) => {
-  const value = item.label;
+  const value = item.key ?? item.label;
   const key = index;
 
   return (
@@ -22,7 +22,7 @@ const renderOptions = (item: any, index:number) => {
       style={{ fontSize: 12 }}
       title={value}
     >
-      {value}
+      {item.label}
     </Select.Option>
   );
 };
@@ -46,7 +46,7 @@ export const FilterDropdown: FC<FilterDropdownInterface> = ({
         backgroundColor: '#fafafa',
         ...(style ?? {}),
       }}
-      onChange={(value) => onChange(items.findIndex((item) => item.label === value))}
+      onChange={(value) => onChange(items.findIndex((item) => (item.key ?? item.label) === value))}
       size='small'
     >
       {items.map(renderOptions)}

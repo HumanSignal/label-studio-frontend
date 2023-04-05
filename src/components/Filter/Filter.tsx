@@ -8,59 +8,72 @@ import { IconFilter } from '../../assets/icons';
 import './Filter.styl';
 import { FilterInterface, FilterListInterface } from './FilterInterfaces';
 import { FilterRow } from './FilterRow';
+import { FilterItems } from './filter-util';
 
 export const Filter: FC<FilterInterface> = ({
   availableFilters,
-  // filterData,
-  // filteringPath,
+  filterData,
   // onChange,
 }) => {
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
 
   const addNewFilterListItem = useCallback(() => {
-    const _oldFilterList = [...filterList];
+    setFilterList((filterList) => [
+      ...filterList,
+      {
+        field: availableFilters[0]?.label ?? '',
+        operation: '',
+        value: '',
+        path: '',
+      },
+    ]);
+  }, [setFilterList, availableFilters]);
 
-    _oldFilterList.push({
-      field: availableFilters[0].label,
-      operation: '',
-      value: '',
+  const onChangeRow = useCallback(
+    (index: number, { field, operation, value, path }: Partial<FilterListInterface>) => {
+      setFilterList((oldList) => {
+        const newList = [...oldList];
+
+        newList[index] = {
+          ...newList[index],
+          field: field ?? newList[index].field,
+          operation: operation ?? newList[index].operation,
+          value: value ?? newList[index].value,
+          path: path ?? newList[index].path,
+        };
+
+        FilterItems(filterData, newList[index]);
+
+        return newList;
+      });
+    },
+    [setFilterList, filterData],
+  );
+
+  const onDeleteRow = useCallback((index: number) => {
+    setFilterList((oldList) => {
+      const newList = [...oldList];
+
+      newList.splice(index, 1);
+      return newList;
     });
-
-    setFilterList(_oldFilterList);
-  }, [setFilterList, filterList]);
-
-  const onChangeRow = useCallback((index: number, obj: any) => {
-    const _oldFilterList = [...filterList];
-
-    _oldFilterList[index] = { ..._oldFilterList[index], ...obj };
-    setFilterList(_oldFilterList);
-  }, [filterList]);
-
-  const onDeleteRow = (index: number) => {
-    const _oldFilterList = [...filterList];
-
-    _oldFilterList.splice(index, 1);
-
-    setFilterList(_oldFilterList);
-  };
+  }, [setFilterList]);
 
   const renderFilterList = useMemo(() => {
-    return filterList.map((filter: FilterListInterface, index) => {
-      return (
-        <Block key={index} name={'filter-item'}>
-          <FilterRow
-            index={index}
-            availableFilters={availableFilters}
-            field={filter.field}
-            operation={filter.operation}
-            value={filter.value}
-            onDelete={onDeleteRow}
-            onChange={onChangeRow}
-          />
-        </Block>
-      );
-    });
-  }, [filterList, onChangeRow, onDeleteRow]);
+    return filterList.map(({ field, operation, value }, index) => (
+      <Block key={index} name="filter-item">
+        <FilterRow
+          index={index}
+          availableFilters={availableFilters}
+          field={field}
+          operation={operation}
+          value={value}
+          onDelete={onDeleteRow}
+          onChange={onChangeRow}
+        />
+      </Block>
+    ));
+  }, [filterList, availableFilters, onDeleteRow, onChangeRow]);
 
   const renderFilter = useMemo(() => {
     return (
