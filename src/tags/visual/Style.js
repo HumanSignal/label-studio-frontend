@@ -6,8 +6,7 @@ import Registry from '../../core/Registry';
 import { guidGenerator } from '../../utils/unique';
 
 /**
- * The `Style` tag is used in combination with the View tag to apply custom CSS properties to the labeling interface.
- * See the [CSS Reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference) on the MDN page for a full list of available properties that you can reference. You can also adjust default Label Studio CSS classes. Use the browser developer tools to inspect the element on the UI and locate the class name, then specify that class name in the `Style` tag.
+ * The `Style` tag is used in combination with the View tag to apply custom CSS properties to the labeling interface. See the [CSS Reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference) on the MDN page for a full list of available properties that you can reference. You can also adjust default Label Studio CSS classes. Use the browser developer tools to inspect the element on the UI and locate the class name, then specify that class name in the `Style` tag.
  *
  * @example
  * <!-- Use CSS styling to make a header appear with a red background on the labeling interface -->
