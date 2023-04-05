@@ -19,13 +19,18 @@ const phrases = [
     author: 'Cheshire Cat',
     text: 'We\'re all mad here. I\'m mad. You\'re mad.',
     start: 1.2,
-    end: 2.5,
+    end: 4.1, // overlapping with the next phrase
   },
   {
     author: 'Alice',
     text: 'How do you know I\'m mad?',
     start: 3.2,
     duration: 1.5,
+  },
+  {
+    // just a phrase with no timing
+    author: 'Lewis Carroll',
+    text: '<cat is smiling>',
   },
   {
     author: 'Cheshire Cat',
@@ -52,12 +57,13 @@ describe('Paragraphs phrases', () => {
     const expected = [
       {
         start: 1.2,
-        end: 2.5,
+        end: 4.1,
       },
       {
         start: 3.2,
         end: 4.7,
       },
+      {},
       {
         start: 6,
         end: duration,
@@ -68,12 +74,12 @@ describe('Paragraphs phrases', () => {
   });
 
   it('should detect phrase id by time', () => {
-    expect(model.regionIdxByTime(1)).toEqual(-1);
-    expect(model.regionIdxByTime(2)).toEqual(0);
-    expect(model.regionIdxByTime(3)).toEqual(-1);
-    expect(model.regionIdxByTime(4)).toEqual(1);
-    expect(model.regionIdxByTime(5)).toEqual(-1);
-    expect(model.regionIdxByTime(6)).toEqual(2);
-    expect(model.regionIdxByTime(7)).toEqual(2);
+    expect(model.regionIndicesByTime(1)).toEqual([]);
+    expect(model.regionIndicesByTime(2)).toEqual([0]);
+    expect(model.regionIndicesByTime(3)).toEqual([0]);
+    expect(model.regionIndicesByTime(4)).toEqual([0, 1]);
+    expect(model.regionIndicesByTime(5)).toEqual([]);
+    expect(model.regionIndicesByTime(6)).toEqual([3]);
+    expect(model.regionIndicesByTime(7)).toEqual([3]);
   });
 });

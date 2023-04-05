@@ -152,20 +152,34 @@ const Model = types
     audioStopHandler: null,
   }))
   .views(self => ({
-    regionIdxByTime(time) {
-      return self._value?.findIndex(({ start, duration, end }) => {
+    /**
+     * All regions indices that are active at the given time.
+     * @param {number} time
+     * @returns {Array<number>}
+     */
+    regionIndicesByTime(time) {
+      const indices = [];
+
+      self._value?.forEach(({ start, duration, end }, idx) => {
         if (start === undefined) return false;
         if (start > time) return false;
-        if (duration === undefined && end === undefined) return true;
-
-        return (end ?? start + duration) > time;
+        if (duration === undefined && end === undefined) indices.push(idx);
+        else if ((end ?? start + duration) > time) indices.push(idx);
       });
+
+      return indices;
     },
-    // memoized and with no external dependencies, so will be computed only once
+    /**
+     * Returns regions start and end times.
+     * Memoized and with no external dependencies, so will be computed only once.
+     * @returns {Array<{start: number, end: number}>}
+     */
     get regionsStartEnd() {
       if (!self.audioDuration) return [];
 
       return self._value?.map(value => {
+        if (value.start === undefined) return {};
+
         const start = clamp(value.start ?? 0, 0, self.audioDuration);
         const _end = value.duration ? start + value.duration : (value.end ?? self.audioDuration);
         const end = clamp(_end, start, self.audioDuration);
@@ -201,11 +215,11 @@ const Model = types
 
     handleSyncPlay({ time, playing }) {
       const audio = self.audioRef.current;
-      const idx = self.regionIdxByTime(time);
+      const indices = self.regionIndicesByTime(time);
 
       if (!audio) return;
       // if we left current region's time, reset
-      if (idx === -1 || idx !== self.playingId) {
+      if (!indices.includes(self.playingId)) {
         self.stopNow();
         self.reset();
         return;
@@ -214,7 +228,7 @@ const Model = types
       // so we are changing time inside current region only
       audio.currentTime = time;
       if (audio.paused && playing) {
-        self.play(idx);
+        self.play(self.playingId);
       }
     },
 
