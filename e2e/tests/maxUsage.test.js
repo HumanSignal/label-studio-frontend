@@ -211,7 +211,7 @@ Data(maxUsageDataTable).Scenario('Max usages of labels in Audio on region creati
     <Label value="Label_0" />
     <Label value="Label_1" hotkey="1"/>
   </Labels>
-  <AudioPlus name="audio" value="$audio" />
+  <Audio name="audio" value="$audio" />
 </View>`,
     data: {
       audio: 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3',

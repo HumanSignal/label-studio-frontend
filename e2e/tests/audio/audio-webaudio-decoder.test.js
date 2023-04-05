@@ -16,13 +16,13 @@ const config = `
     <Choice value="Pop" />
   </Choices>
   <Header value="Listen the audio:"></Header>
-  <AudioPlus name="audio" value="$url"></AudioPlus>
+  <Audio name="audio" value="$url"></Audio>
 </View>
 `;
 
 const configSpeech = `
 <View>
-    <AudioPlus name="audio" value="$url" decoder="webaudio"></AudioPlus>
+    <Audio name="audio" value="$url" decoder="webaudio"></Audio>
     <Labels name="label" toName="audio">
       <Label value="Speech"/>
       <Label value="Noise" background="grey"/>

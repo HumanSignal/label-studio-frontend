@@ -4,7 +4,7 @@ Feature('Audio Paragraphs');
 
 const config = `
 <View>
-  <AudioPlus name="audio" value="$url" hotkey="space" sync="text" />
+  <Audio name="audio" value="$url" hotkey="space" sync="text" />
   <Header value="Sentiment"/>
   <ParagraphLabels name="label" toName="text">
     <Label value="General: Positive" background="#00ff00"/>
@@ -109,18 +109,18 @@ Scenario('Check audio clip is played when using the new sync option', async func
 
   AtSidebar.seeRegions(2);
 
-  const [startingAudioPlusTime, startingParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
+  const [startingAudioTime, startingParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
 
-  assert.equal(startingAudioPlusTime, startingParagraphAudioTime);
+  assert.equal(startingAudioTime, startingParagraphAudioTime);
   assert.equal(startingParagraphAudioTime, 0);
 
   I.click('[aria-label="play-circle"]');
 
   I.click('[aria-label="pause-circle"]');
 
-  const [seekAudioPlusTime, seekParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
+  const [seekAudioTime, seekParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
 
-  const expectedSeekTime = Math.round(seekAudioPlusTime);
+  const expectedSeekTime = Math.round(seekAudioTime);
 
   assert.equal(expectedSeekTime, Math.round(seekParagraphAudioTime), `Expected seek time to be ${expectedSeekTime} but was ${Math.round(seekParagraphAudioTime)}`);
 });
