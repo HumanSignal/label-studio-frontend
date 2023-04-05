@@ -115,15 +115,3 @@ jobs:
           name: e2e-tests-coverage
           path: coverage/
 
-      # - name: Upload coverage to Codecov
-      #   uses: codecov/codecov-action@v3.1.1
-      #   if: ${{ !github.event.pull_request.head.repo.fork }}
-      #   with:
-      #     fail_ci_if_error: true
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-
-      #- name: Upload coverage to artifact
-        #uses: actions/upload-artifact@v3
-        #with:
-          #name: e2e-tests-coverage
-          #path: coverage/

@@ -103,7 +103,7 @@ jobs:
         timeout-minutes: 40
         env:
           NODE_ENV: 'production'
-          COLLECT_COVERAGE: true
+          COLLECT_COVERAGE: 'true'
           CPU_NUMBER: ${{ steps.cpu-info.outputs.cores-count }}
         run: |
           set -euo pipefail
@@ -122,5 +122,5 @@ jobs:
         if: ${{ success() }}
         with:
           name: cypress-tests-coverage
-          path: __tests__/coverage/
+          path: coverage/
 
