@@ -90,7 +90,7 @@ jobs:
             echo "=> Waiting for service to become available" && sleep 2s
           done
 
-      - name: "Setup e2e"
+      - name: "Setup Cypress"
         timeout-minutes: 1
         env: 
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
@@ -99,7 +99,7 @@ jobs:
           cd ./__tests__/functional
           yarn install --frozen-lockfile
 
-      - name: Run e2e test suite
+      - name: Run Cypress test suite
         timeout-minutes: 40
         env:
           NODE_ENV: 'production'
@@ -110,7 +110,7 @@ jobs:
           cd __tests__/functional
           yarn run test:parallel 
 
-      - name: "Upload e2e output" 
+      - name: "Upload suite output" 
         uses: actions/upload-artifact@v3
         if: ${{ failure() }}
         with:
