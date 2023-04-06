@@ -10,7 +10,7 @@ export const HistoryActions = observer(({ annotation }) => {
   const { history } = annotation;
 
   return (
-    <Block name="history">
+    <Block name="history-buttons">
       <Hotkey.Tooltip name="annotation:undo">
         <Elem
           tag={Button}

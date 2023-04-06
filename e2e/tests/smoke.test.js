@@ -76,10 +76,10 @@ examples.slice(1).forEach(example =>
       // so click the bin button in entity's info block
       I.click('.ls-entity-buttons span[aria-label=delete]');
       AtSidebar.seeRegions(count-1);
-      I.click('.lsf-history__action[aria-label=Reset]');
+      I.click('.lsf-history-buttons__action[aria-label=Reset]');
       AtSidebar.seeRegions(count);
       // Reset is undoable
-      I.click('.lsf-history__action[aria-label=Undo]');
+      I.click('.lsf-history-buttons__action[aria-label=Undo]');
 
       // so after all these manipulations first region should be deleted
       restored = await I.executeScript(serialize);

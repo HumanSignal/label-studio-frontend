@@ -30,34 +30,29 @@ const IMAGE_PRELOAD_COUNT = 3;
  * Use with the following data types: images.
  *
  * When you annotate image regions with this tag, the annotations are saved as percentages of the original size of the image, from 0-100.
+ *
  * @example
  * <!--Labeling configuration to display an image on the labeling interface-->
  * <View>
  *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
  *   <Image name="image" value="$url" rotateControl="true" zoomControl="true"></Image>
  * </View>
- *  * @example
+ *
+ * @example
  * <!--Labeling configuration to perform multi-image segmentation-->
  *
- * Config:
- * ```xml
  * <View>
  *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
  *   <Image name="image" valueList="$images" rotateControl="true" zoomControl="true"></Image>
  * </View>
- * ```
- *
- * Data:
- * ```json
- * {
+ * <!-- {
  *   "data": {
  *     "images": [
  *       "https://images.unsplash.com/photo-1556740734-7f3a7d7f0f9c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
  *       "https://images.unsplash.com/photo-1556740734-7f3a7d7f0f9c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
  *     ]
  *   }
- * }
- * ```
+ * } -->
  * @name Image
  * @meta_title Image Tags for Images
  * @meta_description Customize Label Studio with the Image tag to annotate images for computer vision machine learning and data science projects.
@@ -71,17 +66,17 @@ const IMAGE_PRELOAD_COUNT = 3;
  * @param {float=} [zoomBy=1.1]               - Scale factor
  * @param {boolean=} [grid=false]             - Whether to show a grid
  * @param {number=} [gridSize=30]             - Specify size of the grid
- * @param {string=} [gridColor="#EEEEF4"]     - Color of the grid in hex, opacity is 0.15
+ * @param {string=} [gridColor=#EEEEF4]       - Color of the grid in hex, opacity is 0.15
  * @param {boolean} [zoomControl=false]       - Show zoom controls in toolbar
  * @param {boolean} [brightnessControl=false] - Show brightness control in toolbar
  * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
  * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
  * @param {boolean} [crosshair=false]         - Show crosshair cursor
- * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
- * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
- * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
- * @param {string} [valuelist]                  - References a variable that holds a list of image URLs
- * @param {string} [crossOrigin="none"]         - Configures CORS cross domain behavior for this image, either "none", "anonymous", or "use-credentials", similar to [DOM `img` crossOrigin property](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/crossOrigin).
+ * @param {string} [horizontalAlignment=left] - Where to align image horizontally. Can be one of "left", "center" or "right"
+ * @param {string} [verticalAlignment=top]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
+ * @param {string} [defaultZoom=fit]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
+ * @param {string} [valuelist]                - References a variable that holds a list of image URLs
+ * @param {string} [crossOrigin=none]         - Configures CORS cross domain behavior for this image, either "none", "anonymous", or "use-credentials", similar to [DOM `img` crossOrigin property](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/crossOrigin).
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
