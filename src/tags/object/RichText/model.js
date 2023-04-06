@@ -262,7 +262,9 @@ const Model = types
 
       beforeDestroy() {
         self.regsObserverDisposer?.();
-        self.removeStyles(self.name);
+        if (isFF(FF_LSDV_4620_3)) {
+          self.removeStyles(self.name);
+        }
       },
 
       // callbacks to switch render to working node for better performance
