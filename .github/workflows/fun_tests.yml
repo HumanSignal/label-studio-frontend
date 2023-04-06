@@ -108,7 +108,7 @@ jobs:
         run: |
           set -euo pipefail
           cd __tests__
-          yarn run test 
+          yarn run test:parallel
 
       - name: "Upload suite output" 
         uses: actions/upload-artifact@v3
