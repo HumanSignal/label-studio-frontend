@@ -13,7 +13,7 @@ export const CurrentTask = observer(({ store }) => {
     return store.taskHistory.findIndex((x) => x.taskId === store.task.id) + 1;
   }, [store.taskHistory]);
 
-  const historyEnabled = store.hasInterface('topbar:prevnext');
+  const historyEnabled = store.hasInterface('topbar:prev-next-history');
   // @todo some interface?
   const canPostpone = isFF(FF_DEV_3034)
     && !isDefined(store.annotationStore.selected.pk)

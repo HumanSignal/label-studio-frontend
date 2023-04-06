@@ -1,5 +1,5 @@
 .current-task
-  padding 0 8px 0 16px
+  padding-left 8px
   display flex
   align-content center
   align-items center
@@ -7,7 +7,6 @@
   &_with-history
     height 100%
     display grid
-    width 220px
     grid-template-columns 1fr min-content
     grid-template-areas 'id buttons' 'id buttons'
     grid-template-rows 1fr 1fr
@@ -30,6 +29,7 @@
   &__history-controls
     display flex
     grid-area buttons
+    padding-left 8px
 
   &__prevnext
     width 32px
