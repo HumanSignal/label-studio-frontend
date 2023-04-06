@@ -100,6 +100,7 @@ const RegionAction: FC<any> = observer(({
         }
       }}
       hotkey="region:relation"
+      aria-label="Create Relation"
     />
   ));
 

@@ -207,6 +207,15 @@ export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ff
  */
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
 
+/**
+ * Reworking of RichText to optimize its work with DOM and decrease  response time with a large number of regions.
+ * It also fixes scenarios of working with hidden regions
+ * and edge cases for creating spans inside other spans.
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4620_richtext_opimization_060423_short
+ */
+export const FF_LSDV_4620_3 = 'fflag_feat_front_lsdv_4620_richtext_opimization_060423_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),

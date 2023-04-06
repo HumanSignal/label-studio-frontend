@@ -29,6 +29,9 @@ module.exports.config = {
       trace: false,
       keepTraceForPassedTests: false,
     },
+    PlaywrightAddon: {
+      require: './helpers/PlaywrightAddon.js',
+    },
     MouseActions: {
       require: './helpers/MouseActions.js',
     },
