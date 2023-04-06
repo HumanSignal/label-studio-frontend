@@ -4,6 +4,9 @@ import Utils from '../utils';
 import { guidGenerator } from '../utils/unique';
 import Constants, { defaultStyle } from '../core/Constants';
 import { isDefined } from '../utils/utilities';
+import { FF_LSDV_4620_3, isFF } from '../utils/feature-flags';
+
+const HIGHLIGHT_CN = 'htx-highlight';
 
 export const HighlightMixin = types
   .model()
@@ -14,12 +17,62 @@ export const HighlightMixin = types
         self._spans.every(span => span.isConnected)
       ) : false;
     },
+    get identifier() {
+      return self.id.split('#')[0];
+    },
+    get className() {
+      return `${HIGHLIGHT_CN}-${self.identifier}`;
+    },
+    get classNames() {
+      const classNames = [HIGHLIGHT_CN, self.className];
+
+      if (!(self.parent.showlabels ?? self.store.settings.showLabels)) {
+        classNames.push('htx-no-label');
+      }
+
+      // in this case labels presence can't be changed from settings — manual mode
+      if (isDefined(self.parent.showlabels)) {
+        classNames.push('htx-manual-label');
+      }
+
+      return classNames;
+    },
+    get styles() {
+      const { className } = self;
+      const activeColorOpacity = 0.8;
+      const color = self.getLabelColor();
+      const initialActiveColor = Utils.Colors.rgbaChangeAlpha(color, activeColorOpacity);
+
+      return `
+        .${className} {
+          background-color: ${color} !important;
+          border: 1px dashed transparent;
+        }
+        .${className}.${stateClass.active}:not(.${stateClass.hidden}) {
+          color: ${Utils.Colors.contrastColor(initialActiveColor)} !important;
+          background-color: ${initialActiveColor} !important;
+        }
+      `;
+    },
   }))
   .actions(self => ({
     /**
      * Create highlights from the stored `Range`
      */
-    applyHighlight() {
+    applyHighlight(init = false) {
+      if (isFF(FF_LSDV_4620_3)) {
+        // skip re-initing
+        if (self._hasSpans) return;
+
+        self._spans = self.parent.createSpansByGlobalOffsets(self.globalOffsets);
+        self._spans?.forEach(span => span.className = self.classNames.join(' '));
+        self.updateSpans();
+        if (!init) {
+          self.parent.setStyles({ [self.identifier]: self.styles });
+        }
+        return;
+      }
+
       if (self.parent.isLoaded === false) return;
 
       // spans in iframe disappear on every annotation switch, so check for it
@@ -68,6 +121,10 @@ export const HighlightMixin = types
 
     updateHighlightedText() {
       if (!self.text) {
+        if (isFF(FF_LSDV_4620_3)) {
+          self.text = self.parent.getTextFromGlobalOffsets(self.globalOffsets);
+          return;
+        }
         // Concatenating of spans' innerText is up to 10 times faster, but loses "\n"
         const range = self.getRangeToHighlight();
         const root = self._getRootNode();
@@ -85,7 +142,7 @@ export const HighlightMixin = types
     },
 
     updateSpans() {
-      if (self._hasSpans) {
+      if (self._hasSpans || (isFF(FF_LSDV_4620_3) && self._spans?.length)) {
         const lastSpan = self._spans[self._spans.length - 1];
         const label = self.getLabels();
 
@@ -99,7 +156,12 @@ export const HighlightMixin = types
      * Removes current highlights
      */
     removeHighlight() {
-      Utils.Selection.removeRange(self._spans);
+      if (isFF(FF_LSDV_4620_3)) {
+        self.parent.removeSpansInGlobalOffsets(self._spans, self.globalOffsets);
+        self.parent.removeStyles([self.identifier]);
+      } else {
+        Utils.Selection.removeRange(self._spans);
+      }
     },
 
     /**
@@ -110,7 +172,11 @@ export const HighlightMixin = types
 
       const lastSpan = self._spans[self._spans.length - 1];
 
-      self._stylesheet.setColor(self.getLabelColor());
+      if (isFF(FF_LSDV_4620_3)) {
+        self.parent.setStyles?.({ [self.identifier]: self.styles });
+      } else {
+        self._stylesheet.setColor(self.getLabelColor());
+      }
       Utils.Selection.applySpanStyles(lastSpan, { label: self.getLabels() });
     },
 
@@ -137,16 +203,20 @@ export const HighlightMixin = types
      * Unselect text region
      */
     afterUnselectRegion() {
-      self.removeClass(self._stylesheet?.state.active);
+      self.removeClass(isFF(FF_LSDV_4620_3) ? stateClass.active : self._stylesheet?.state.active);
     },
 
     /**
      * Remove stylesheet before removing the highlight itself
      */
     beforeDestroy() {
-      try {
-        self._stylesheet.remove();
-      } catch(e) { /* somthing went wrong */ }
+      if (isFF(FF_LSDV_4620_3)) {
+        self.parent.removeStyles([self.identifier]);
+      } else {
+        try {
+          self._stylesheet.remove();
+        } catch (e) { /* something went wrong */ }
+      }
     },
 
     /**
@@ -154,7 +224,7 @@ export const HighlightMixin = types
      * @param {import("prettier").CursorOptions} cursor
      */
     setCursor(cursor) {
-      self._stylesheet.setCursor(cursor);
+      self._stylesheet?.setCursor(cursor);
     },
 
     /**
@@ -162,16 +232,24 @@ export const HighlightMixin = types
      * @param {boolean} val
      */
     setHighlight(val) {
-      if (!self._stylesheet) return;
+      if (!self._stylesheet && !(isFF(FF_LSDV_4620_3) && self._spans)) return;
 
       self._highlighted = val;
 
       if (self.highlighted) {
-        self.addClass(self._stylesheet.state.highlighted);
-        self._stylesheet.setCursor(Constants.RELATION_MODE_CURSOR);
+        if (isFF(FF_LSDV_4620_3)) {
+          self.addClass(stateClass.highlighted);
+        } else {
+          self.addClass(self._stylesheet.state.highlighted);
+          self._stylesheet?.setCursor(Constants.RELATION_MODE_CURSOR);
+        }
       } else {
-        self.removeClass(self._stylesheet.state.highlighted);
-        self._stylesheet.setCursor(Constants.POINTER_CURSOR);
+        if (isFF(FF_LSDV_4620_3)) {
+          self.removeClass(stateClass.highlighted);
+        } else {
+          self.removeClass(self._stylesheet.state.highlighted);
+          self._stylesheet?.setCursor(Constants.POINTER_CURSOR);
+        }
       }
     },
 
@@ -229,7 +307,7 @@ export const HighlightMixin = types
 
 
 
-const stateClass = {
+export const stateClass = {
   active: '__active',
   highlighted: '__highlighted',
   collapsed: '__collapsed',
@@ -359,3 +437,4 @@ const createSpanStylesheet = (document, identifier, color) => {
     remove,
   };
 };
+
