@@ -1,3 +1,4 @@
+import { FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
 import { Events } from '../Common/Events';
 import { __DEBUG__ } from '../Common/Utils';
 import { audioDecoderPool } from './AudioDecoderPool';
@@ -182,6 +183,9 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.el.preload = 'auto';
     this.el.setAttribute('data-testid', 'waveform-audio');
     this.el.style.display = 'none';
+
+    if (isFF(FF_LSDV_4711)) this.el.crossOrigin = 'anonymous';
+
     document.body.appendChild(this.el);
 
     this.mediaPromise = new Promise((resolve, reject) => {

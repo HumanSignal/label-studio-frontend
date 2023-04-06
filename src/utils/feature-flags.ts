@@ -207,6 +207,11 @@ export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ff
  */
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
 
+/**
+ * Fixes how presigned urls are generated and accessed to remove possibility of CORS errors.
+ */
+export const FF_LSDV_4711 = 'fflag_fix_all_lsdv_4711_cors_errors_accessing_task_data_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
