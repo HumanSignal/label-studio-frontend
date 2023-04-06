@@ -53,7 +53,7 @@ jobs:
           token: ${{ secrets.codecov_token }}
 
   run_cypress_coverage_upload:
-    name: Upload E2E coverage
+    name: Upload Cypress coverage
     runs-on: ubuntu-latest
 
     if: "!contains(github.event.head_commit.message, 'skip ci')"
