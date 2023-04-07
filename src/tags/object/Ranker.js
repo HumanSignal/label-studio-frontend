@@ -40,6 +40,8 @@ const Model = types
   })
   .views(self => ({
     get dataSource() {
+      if (!self.result) return null;
+
       const data = self._value;
       const result = self.result.value.ranker;
       let columns = [];
@@ -67,15 +69,19 @@ const Model = types
     },
   }))
   .actions(self => ({
-    updateValue: flow(function* (store) {
+    updateValue(store) {
       const value = parseValue(self.value, store.task.dataObj);
 
+      if (!Array.isArray(value)) return;
+
       self._value = value;
-      yield Promise.resolve(true);
-    }),
+    },
     needsUpdate() {
       // if annotation was already deserialized but has no result for Ranker — create it
-      if (self.annotation?._initialAnnotationObj && !self.result && self._value) {
+      // or if annotation is a fresh one with no data — create result as well;
+      const isAnnotationReady = self.annotation?._initialAnnotationObj || !self.annotation.pk;
+
+      if (isAnnotationReady && !self.result && self._value) {
         if (self.mode === 'rank') {
           self.annotation.createResult({}, { ranker: self._value.map(item => item.id) }, self, self);
         } else {
@@ -97,8 +103,12 @@ const RankerModel = types.compose('RankerModel', Base, ProcessAttrsMixin, Annota
 
 const HtxRanker = inject('store')(
   observer(({ item }) => {
+    const data = item.dataSource;
+
+    if (!data) return null;
+
     return (
-      <Ranker inputData={item.dataSource} handleChange={item.updateResult} />
+      <Ranker inputData={data} handleChange={item.updateResult} />
     );
   }),
 );
