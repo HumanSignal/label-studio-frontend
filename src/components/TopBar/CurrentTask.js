@@ -50,7 +50,6 @@ export const CurrentTask = observer(({ store }) => {
   if (isFF(FF_DEV_4174)) {
     canPostpone = canPostpone && store.commentStore.addedCommentThisSession && (visibleComments >= initialCommentLength);
   }
-  
   return (
     <Elem name="section">
       <Block name="current-task" mod={{ 'with-history': historyBasedTaskList }}>
