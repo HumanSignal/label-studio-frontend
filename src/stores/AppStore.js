@@ -746,9 +746,7 @@ export default types
         const { taskId, annotationId } = self.taskHistory[length];
 
         getEnv(self).events.invoke('prevTask', taskId, annotationId);
-      } else {
-        if (self.adjacentTaskIds.prevTaskId) getEnv(self).events.invoke('prevTask', self.adjacentTaskIds.prevTaskId, null);
-      }
+      } else if (self.adjacentTaskIds.prevTaskId) getEnv(self).events.invoke('prevTask', self.adjacentTaskIds.prevTaskId, null);
     }
 
     function setUsers(users) {
