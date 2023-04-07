@@ -736,9 +736,7 @@ export default types
 
         getEnv(self).events.invoke('nextTask', taskId, annotationId);
       }
-      else {
-        if (self.adjacentTaskIds.nextTaskId) getEnv(self).events.invoke('nextTask', self.adjacentTaskIds.nextTaskId, null);
-      }
+      else if (self.adjacentTaskIds.nextTaskId) getEnv(self).events.invoke('nextTask', self.adjacentTaskIds.nextTaskId, null);
     }
 
     function prevTask(e, shouldGoBack = false) {
