@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import { flow, types } from 'mobx-state-tree';
+import { types } from 'mobx-state-tree';
 
 import Registry from '../../core/Registry';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
