@@ -1,9 +1,23 @@
 import { types } from 'mobx-state-tree';
+
+jest.mock('../../../../regions/ParagraphsRegion', () => ({}));
+// @todo should be in a helper
+jest.mock('../../../../utils/feature-flags', () => {
+  const originalModule = jest.requireActual('../../../../utils/feature-flags');
+
+  return {
+    ...originalModule,
+    isFF(id: string) {
+      if (id === originalModule.FF_LSDV_3012) return true;
+
+      return originalModule.isFF(id);
+    },
+  };
+});
+
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { ParagraphsModel } from '../model';
-
-jest.mock('../../../../regions/ParagraphsRegion', () => ({}));
 
 const MockStore = types
   .model({
