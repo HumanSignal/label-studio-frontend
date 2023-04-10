@@ -96,6 +96,7 @@ Scenario('Play/pause is synced between audio, video and paragraphs when interact
   LabelStudio.setFeatureFlags({
     fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
     ff_front_dev_2715_audio_3_280722_short: true,
+    fflag_feat_front_lsdv_3012_syncable_tags_070423_short: true,
   });
 
   I.amOnPage('/');
@@ -151,6 +152,7 @@ Scenario('Play/pause is synced between audio, video when interacting with audio 
   LabelStudio.setFeatureFlags({
     fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
     ff_front_dev_2715_audio_3_280722_short: true,
+    fflag_feat_front_lsdv_3012_syncable_tags_070423_short: true,
   });
 
   I.amOnPage('/');
@@ -200,6 +202,7 @@ Scenario('Play/pause is synced between audio, video when interacting with video 
   LabelStudio.setFeatureFlags({
     fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
     ff_front_dev_2715_audio_3_280722_short: true,
+    fflag_feat_front_lsdv_3012_syncable_tags_070423_short: true,
   });
 
   I.amOnPage('/');
@@ -250,6 +253,7 @@ Scenario('Seeking is synced between audio, video when interacting with audio int
   LabelStudio.setFeatureFlags({
     fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
     ff_front_dev_2715_audio_3_280722_short: true,
+    fflag_feat_front_lsdv_3012_syncable_tags_070423_short: true,
   });
 
   I.amOnPage('/');
@@ -326,6 +330,7 @@ Scenario('Playback speed is synced between audio, video, paragraph audio when in
   LabelStudio.setFeatureFlags({
     fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
     ff_front_dev_2715_audio_3_280722_short: true,
+    fflag_feat_front_lsdv_3012_syncable_tags_070423_short: true,
   });
 
   I.amOnPage('/');
@@ -374,11 +379,10 @@ Scenario('Playback speed is synced between audio, video, paragraph audio when in
   AtAudioView.clickPauseButton();
   {
     I.say('Audio, video and paragraph audio played to the same time');
-    const [{ currentTime: currentParagraphAudioTime },{ currentTime: currentAudioTime }] = await AtAudioView.getCurrentAudio();
+    const [_, { currentTime: currentAudioTime }] = await AtAudioView.getCurrentAudio();
     const [{ currentTime: currentVideoTime }] = await AtVideoView.getCurrentVideo();
 
+    // Played time will be out of any Paragraphs regions and its currentTime will be 0, so don't check it
     AtAudioView.seeTimesInSync(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
-    AtAudioView.seeTimesInSync(currentAudioTime, currentParagraphAudioTime, `Audio currentTime and paragraph audio currentTime drifted too far. Got audio=${currentAudioTime} video=${currentParagraphAudioTime}`);
-    AtAudioView.seeTimesInSync(currentParagraphAudioTime, currentVideoTime, `Paragraph audio currentTime and video currentTime drifted too far. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
   }
 });

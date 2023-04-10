@@ -95,6 +95,7 @@ Scenario('Check audio clip is played when using the new sync option', async func
   LabelStudio.setFeatureFlags({
     fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
     ff_front_dev_2715_audio_3_280722_short: true,
+    fflag_feat_front_lsdv_3012_syncable_tags_070423_short: true,
   });
 
   I.amOnPage('/');
