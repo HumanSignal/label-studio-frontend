@@ -307,7 +307,7 @@ const HtxVideoView = ({ item, store }) => {
     item.setOnlyFrame(1);
     item.setLength(length);
     item.setReady(true);
-    if (isFFDev2715) {
+    if (isFFDev2715 && !isFF(FF_LSDV_3012)) {
       item.setSyncedDuration(item.ref.current?.duration);
     }
   }, [item, setVideoLength]);
