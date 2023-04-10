@@ -127,7 +127,7 @@ const SyncableMixin = types
   }))
   .actions(() => ({
     syncMuted(_muted: boolean) {
-      // should be overriden in models, that can be and should be muted
+      // Should be overriden in models, that can be muted, with simple code like this:
       // self.muted = muted;
     },
   }))
@@ -151,8 +151,10 @@ const SyncableMixin = types
       const notSuppressed = self.syncManager!.sync(data, event, self.name);
 
       if (notSuppressed && event === 'play') {
-        // if that's audio, it should not be muted.
-        // if there are no audio tags, this tag is main and should not be muted.
+        // Only Audio has volume controls, so Audio should not be muted,
+        // while other synced tags should be muted, otherwise volume can't be controlled.
+        // But if there are no Audio tags in group, the tag triggered sync
+        // should be the main tag with volume active, and others should be muted.
         self.syncMuted(self.type !== 'audio' && self.syncManager!.audioTags > 0);
       }
     },
