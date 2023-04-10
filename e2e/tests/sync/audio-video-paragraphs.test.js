@@ -142,9 +142,9 @@ Scenario('Play/pause is synced between audio, video and paragraphs when interact
     assert.equal(audioPaused, paragraphAudioPaused);
     assert.equal(paragraphAudioPaused, true);
 
-    AtAudioView.seeTimesInSync(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime to be the same. Got audio=${currentAudioTime} video=${currentVideoTime}`);
-    AtAudioView.seeTimesInSync(currentAudioTime, currentParagraphAudioTime, `Audio currentTime and paragraph audio currentTime to be the same. Got audio=${currentAudioTime} paragraph audio=${currentParagraphAudioTime}`);
-    AtAudioView.seeTimesInSync(currentParagraphAudioTime, currentVideoTime, `Paragraph audio currentTime and video currentTime to be the same. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
+    I.assertTimesInSync(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime to be the same. Got audio=${currentAudioTime} video=${currentVideoTime}`);
+    I.assertTimesInSync(currentAudioTime, currentParagraphAudioTime, `Audio currentTime and paragraph audio currentTime to be the same. Got audio=${currentAudioTime} paragraph audio=${currentParagraphAudioTime}`);
+    I.assertTimesInSync(currentParagraphAudioTime, currentVideoTime, `Paragraph audio currentTime and video currentTime to be the same. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
   }
 });
 
@@ -194,7 +194,7 @@ Scenario('Play/pause is synced between audio, video when interacting with audio 
 
     assert.equal(audioPaused, videoPaused);
     assert.equal(audioPaused, true);
-    AtAudioView.seeTimesInSync(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
+    I.assertTimesInSync(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
   }
 });
 
@@ -245,7 +245,7 @@ Scenario('Play/pause is synced between audio, video when interacting with video 
     assert.equal(audioPaused, videoPaused);
     assert.equal(audioPaused, true);
 
-    AtAudioView.seeTimesInSync(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
+    I.assertTimesInSync(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
   }
 });
 
@@ -320,9 +320,9 @@ Scenario('Seeking is synced between audio, video when interacting with audio int
     assert.equal(audioPaused, paragraphAudioPaused);
     assert.equal(paragraphAudioPaused, true);
 
-    AtAudioView.seeTimesInSync(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime to be the same. Got audio=${currentAudioTime} video=${currentVideoTime}`);
-    AtAudioView.seeTimesInSync(currentAudioTime, currentParagraphAudioTime, `Audio currentTime and paragraph audio currentTime to be the same. Got audio=${currentAudioTime} paragraph audio=${currentParagraphAudioTime}`);
-    AtAudioView.seeTimesInSync(currentParagraphAudioTime, currentVideoTime, `Paragraph audio currentTime and video currentTime to be the same. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
+    I.assertTimesInSync(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime to be the same. Got audio=${currentAudioTime} video=${currentVideoTime}`);
+    I.assertTimesInSync(currentAudioTime, currentParagraphAudioTime, `Audio currentTime and paragraph audio currentTime to be the same. Got audio=${currentAudioTime} paragraph audio=${currentParagraphAudioTime}`);
+    I.assertTimesInSync(currentParagraphAudioTime, currentVideoTime, `Paragraph audio currentTime and video currentTime to be the same. Got audio=${currentParagraphAudioTime} video=${currentVideoTime}`);
   }
 });
 
@@ -383,6 +383,6 @@ Scenario('Playback speed is synced between audio, video, paragraph audio when in
     const [{ currentTime: currentVideoTime }] = await AtVideoView.getCurrentVideo();
 
     // Played time will be out of any Paragraphs regions and its currentTime will be 0, so don't check it
-    AtAudioView.seeTimesInSync(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
+    I.assertTimesInSync(currentAudioTime, currentVideoTime, `Audio currentTime and video currentTime drifted too far. Got audio=${currentAudioTime} video=${currentVideoTime}`);
   }
 });
