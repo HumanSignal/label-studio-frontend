@@ -122,7 +122,7 @@ jobs:
         run: |
           cd __tests__
           rm -rf coverage
-          yarn coverage:report
+          yarn cvg:report
 
       - name: Upload coverage to Artifact
         uses: actions/upload-artifact@v3
