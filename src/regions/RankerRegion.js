@@ -25,7 +25,6 @@ const Model = types
 
   }))
   .actions(() => ({
-
     serialize() {
       return {};
     },

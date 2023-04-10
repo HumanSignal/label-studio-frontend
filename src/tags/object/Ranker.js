@@ -21,7 +21,7 @@ import { transformData } from '../../components/Ranker/createData';
  * @name Ranker
  * @meta_title Ranker Tag displays items that can be dragged and dropped between columns
  * @meta_description Customize Label Studio by displaying and sorting results for machine learning and data science projects.
- * @param {string} value Data field value containing JSON type for Ranker
+ * @param {string} value Data field containing a JSON with array of objects (id, title, body) to rank
  * @param {string} [valueType] Value to define the data type in Ranker
  */
 const Model = types
@@ -53,13 +53,15 @@ const Model = types
           result.map(id => data.find(d => d.id === id)),
         ];
       }
-      //grabs data from the createData file
+      // transforms columns with data items into Ranker component format
       return transformData(columns, self.title.split('|'));
     },
     get result() {
       return self.annotation.results.find(r => r.from_name === self);
     },
     get resultType() {
+      // this tag isn't a control tag but behaves like one, 
+      // so we we need to emulate `type`s logic to generate results.
       return 'ranker';
     },
     get valueType() {
