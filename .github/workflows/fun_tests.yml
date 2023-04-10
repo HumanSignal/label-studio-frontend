@@ -117,6 +117,13 @@ jobs:
           name: failure-result
           path: __tests__/output
 
+      - name: Prepare coverage report
+        if: ${{ success() }}
+        run:
+          cd __tests__
+          yarn coverage:merge
+          yarn coverage:report
+
       - name: Upload coverage to Artifact
         uses: actions/upload-artifact@v3
         if: ${{ success() }}
