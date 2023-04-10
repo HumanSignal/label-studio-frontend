@@ -119,7 +119,7 @@ jobs:
 
       - name: Prepare coverage report
         if: ${{ success() }}
-        run:
+        run: |
           cd __tests__
           yarn coverage:merge
           yarn coverage:report
