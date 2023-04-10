@@ -121,7 +121,7 @@ jobs:
         if: ${{ success() }}
         run: |
           cd __tests__
-          yarn coverage:merge
+          rm -rf coverage
           yarn coverage:report
 
       - name: Upload coverage to Artifact

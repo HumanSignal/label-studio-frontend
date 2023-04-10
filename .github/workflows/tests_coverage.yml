@@ -27,7 +27,6 @@ jobs:
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           fail_ci_if_error: true
-          directory: coverage/
           token: ${{ secrets.codecov_token }}
 
   run_e2e_coverage_upload:
@@ -48,7 +47,6 @@ jobs:
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           fail_ci_if_error: true
-          directory: coverage/
           token: ${{ secrets.codecov_token }}
 
   run_cypress_coverage_upload:
@@ -69,5 +67,4 @@ jobs:
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           fail_ci_if_error: true
-          directory: coverage/
           token: ${{ secrets.codecov_token }}

@@ -11,11 +11,11 @@
     "test:ui": "cypress open",
     "test:with-coverage": "COLLECT_COVERAGE=true yarn test:parallel",
     "test:parallel": "cypress-parallel -r spec -b -m -s test -t ${CPU_NUMBER:=2} -d ./specs/",
-    "test:reset": "rm -rf output && yarn run coverage:reset",
-    "coverage:reset": "rm -rf coverage .nyc_output",
-    "coverage:merge": "rm -rf coverage && nyc merge ./.nyc_output ./coverage/coverage.json --cwd=. --exclude-after-remap false",
-    "coverage:report": "nyc report --temp-dir=.nyc_output --report-dir=coverage --reporter=json --cwd=. --exclude-after-remap false",
-    "coverage:summary": "nyc report --temp-dir=.nyc_output --reporter=text-summary --cwd=. --exclude-after-remap false"
+    "test:reset": "rm -rf output && yarn run cvg:reset",
+    "cvg:reset": "rm -rf coverage .nyc_output",
+    "cvg:merge": "rm -rf coverage && nyc merge ./.nyc_output ./coverage/coverage.json --cwd=. --exclude-after-remap false",
+    "cvg:report": "nyc report --temp-dir=.nyc_output --report-dir=coverage --reporter=clover --reporter=text --reporter=json --cwd=. --exclude-after-remap false",
+    "cvg:summary": "nyc report --temp-dir=.nyc_output --reporter=text-summary --cwd=. --exclude-after-remap false"
   },
   "dependencies": {
     "@heartexlabs/ls-test": "git+ssh://git@github.com/heartexlabs/ls-frontend-test#08a11ec"
