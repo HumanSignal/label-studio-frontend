@@ -69,6 +69,11 @@ const Model = types
     get valueType() {
       return 'ranker';
     },
+    isReadOnly() {
+      // tmp fix for infinite recursion in isReadOnly() in ReadOnlyMixin
+      // should not affect anything, this object is self-contained
+      return true;
+    },
   }))
   .actions(self => ({
     updateValue(store) {
@@ -79,15 +84,8 @@ const Model = types
       self._value = value;
     },
 
-    needsUpdate() {
-      if (self.result) {
-        // tmp fix for infinite recursion in isReadOnly() in ReadOnlyMixin
-        self.result.area.readonly = true;
-      }
-    },
-
     createResult(data) {
-      self.annotation.createResult({ readonly: true }, { ranker: data }, self, self);
+      self.annotation.createResult({}, { ranker: data }, self, self);
     },
 
     updateResult(newData) {
