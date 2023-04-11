@@ -48,6 +48,7 @@ const { TextArea } = Input;
  * <!--
  *  You can keep submissions unique
  *  - `fflag_feat_front_lsdv_4659_skipduplicates_060323_short` should be enabled to use `skipDuplicates` attribute.
+ *  - `fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short` should be enabled to keep submissions unique during editing existed results
  * -->
  * <View>
  *   <Audio name="audio" value="$audio"/>
