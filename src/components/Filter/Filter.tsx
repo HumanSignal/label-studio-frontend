@@ -13,7 +13,7 @@ import { FilterItems } from './filter-util';
 export const Filter: FC<FilterInterface> = ({
   availableFilters,
   filterData,
-  // onChange,
+  onChange,
 }) => {
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
 
@@ -42,7 +42,7 @@ export const Filter: FC<FilterInterface> = ({
           path: path ?? newList[index].path,
         };
 
-        FilterItems(filterData, newList[index]);
+        onChange(FilterItems(filterData, newList[index]) || []);
 
         return newList;
       });
