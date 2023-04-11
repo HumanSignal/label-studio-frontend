@@ -138,3 +138,60 @@ Scenario('Image with perRegion tags', async function({ I, AtImageView, AtSidebar
   assert.strictEqual(result.length, 1);
   assert.deepStrictEqual(result[0].value.rectanglelabels, ['Moonwalker']);
 });
+
+Scenario('Can\'t create region outside of canvas', async ({ I, AtLabels, AtSidebar, AtImageView, LabelStudio }) => {
+  I.amOnPage('/');
+
+  LabelStudio.init({
+    config,
+    data: { image },
+    task: {
+      id: 0,
+      annotations: [{ id: 1001, result: [] }],
+      predictions: [],
+    },
+  });
+
+  await AtImageView.lookForStage();
+  await AtImageView.waitForImage();
+
+  const stage = AtImageView.stageBBox();
+
+  I.say('Drawing region in the upper left corner');
+  AtLabels.clickLabel('Planet');
+  AtImageView.drawByDrag(100, 100, -200, -200);
+
+  I.say('Drawing region in the upper right corner');
+  AtLabels.clickLabel('Planet');
+  AtImageView.drawByDrag(stage.width - 100, 100, stage.width + 100, -100);
+
+  I.say('Drawing region in the bottom left corner');
+  AtLabels.clickLabel('Planet');
+  AtImageView.drawByDrag(100, stage.height - 100, -100, stage.height + 100);
+
+  I.say('Drawing region in the bottom right corner');
+  AtLabels.clickLabel('Planet');
+  AtImageView.drawByDrag(stage.width - 100, stage.height - 100, stage.width + 100, stage.height + 100);
+
+  AtSidebar.seeRegions(4);
+
+  const result = await LabelStudio.serialize();
+
+  const [r1, r2, r3, r4] = result.map(r => r.value);
+
+  I.say('First region should be in the corner'); 
+  assert.strictEqual(r1.x, 0);
+  assert.strictEqual(r1.y, 0);
+
+  I.say('Second region should be in the corner'); 
+  assert.strictEqual(Math.round(r2.x + r2.width), 100);
+  assert.strictEqual(r2.y, 0);
+
+  I.say('Third region should be in the corner'); 
+  assert.strictEqual(r3.x, 0);
+  assert.strictEqual(Math.round(r3.y + r3.height), 100);
+
+  I.say('Fourth region should be in the corner'); 
+  assert.strictEqual(Math.round(r4.x + r4.width), 100);
+  assert.strictEqual(Math.round(r4.y + r4.height), 100);
+});
