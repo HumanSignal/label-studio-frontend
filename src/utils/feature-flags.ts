@@ -196,6 +196,11 @@ export const FF_LSDV_4583_6 = 'fflag_feat_front_lsdv_4583_6_images_preloading_sh
 export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short';
 
 /**
+ * New Syncable mixin for better sync
+ */
+export const FF_LSDV_3012 = 'fflag_feat_front_lsdv_3012_syncable_tags_070423_short';
+
+/**
  * Enables the ffmpeg audio decoder to be the default.
  */
 export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ffmpeg_long';

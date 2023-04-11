@@ -35,20 +35,20 @@ module.exports = {
   async waitForAudio() {
     await I.executeScript(Helpers.waitForAudio);
     I.waitForInvisible(this._progressBarSelector);
+    I.waitForDetached('loading-progress-bar', 10);
   },
-
-  getCurrentAudioTime() {
-    return I.executeScript(Helpers.getCurrentAudioTime);
+  getCurrentAudio() {
+    return I.executeScript(Helpers.getCurrentMedia, 'audio');
   },
   /**
    * Mousedown - mousemove - mouseup drawing on the AudioView. Works in couple of lookForStage.
    * @example
    * await AtAudioView.lookForStage();
-   * AtAudioView.dragAudioRegion(50, 200);
+   * AtAudioView.dragAudioElement(50, 200);
    * @param x {number}
    * @param shiftX {number}
    */
-  dragAudioRegion(x, shiftX, shouldRelease = true) {
+  dragAudioElement(x, shiftX, shouldRelease = true) {
     I.scrollPageToTop();
     I.moveMouse(this._stageBbox.x + x, this._stageBbox.y + this._stageBbox.height / 2);
     I.pressMouseDown();
@@ -73,6 +73,17 @@ module.exports = {
     I.wait(1); // We gotta  wait here because clicks on the canvas are not processed immediately
   },
 
+  clickAtBeginning() {
+    this.clickAt(0);
+  },
+
+  clickAtEnd() {
+    // Clicking on the end of the canvas doesn't quite work, so we click a bit before the end
+    // to make sure we're it is not clicking outside the canvas, and move the cursor over.
+    this.clickAt(this._stageBbox.width - 1);
+    this.dragAudioElement(this._stageBbox.width - 1, 1);
+  },
+
   async createRegion(tagName, start, length) {
     const { x, y, height } = await this.getWrapperPosition(tagName);
 
@@ -87,7 +98,9 @@ module.exports = {
 
   async getWrapperPosition(tagName) {
     const wrapperPosition = await I.executeScript((tagName) => {
-      const wrapper = Htx.annotationStore.selected.names.get(tagName)._ws.container;
+      const _ws = Htx.annotationStore.selected.names.get(tagName)._ws;
+      // `visualizer.wrapper` is for Audio v3
+      const wrapper = _ws.visualizer?.wrapper ?? _ws.container;
       const bbox = wrapper.getBoundingClientRect();
 
       return {
@@ -112,6 +125,31 @@ module.exports = {
         y: rect.y + rect.height / 2,
       };
     }, regionId);
+
+    return I.dragAndDropMouse(regionPosition, {
+      x: regionPosition.x + offset,
+      y: regionPosition.y,
+    });
+  },
+
+  async moveRegionV3(regionId, offset = 30) {
+    const regionPosition = await I.executeScript(({ regionId, stageBbox }) => {
+      const region = Htx.annotationStore.selected.regions.find(r => r.cleanId === regionId);
+
+      const wsRegion = region._ws_region;
+
+      if (!wsRegion.inViewport) {
+        return null;
+      }
+      const { height } = wsRegion.visualizer;
+
+      return {
+        x: (wsRegion.xStart + wsRegion.xEnd) / 2 + stageBbox.x,
+        y: height / 2 + stageBbox.y,
+      };
+    }, { regionId, stageBbox: this._stageBbox });
+
+    if (!regionPosition) return;
 
     return I.dragAndDropMouse(regionPosition, {
       x: regionPosition.x + offset,
@@ -193,6 +231,7 @@ module.exports = {
    */
   setVolumeInput(value) {
     this.toggleControlsMenu();
+    I.clearField(this._volumeInputSelector);
     I.fillField(this._volumeInputSelector, value);
     this.toggleControlsMenu();
   },
@@ -210,6 +249,7 @@ module.exports = {
 
     I.seeInField(this._playbackSpeedInputSelector, value);
     I.seeInField(this._playbackSpeedSliderSelector, value);
+
     const playbackSpeed = await I.grabAttributeFrom(this._audioElementSelector, 'playbackRate');
 
     assert.equal(playbackSpeed, value, 'Playback speed doesn\'t match in audio element');
@@ -226,6 +266,9 @@ module.exports = {
    */
   setPlaybackSpeedInput(value) {
     this.toggleSettingsMenu();
+    // it was not easy to set this field, so we have to carefully remove value and put it
+    I.doubleClick(locate(this._playbackSpeedInputSelector));
+    I.pressKey('Backspace');
     I.fillField(this._playbackSpeedInputSelector, value);
     this.toggleSettingsMenu();
   },
@@ -256,6 +299,7 @@ module.exports = {
    */
   setAmplitudeInput(value) {
     this.toggleSettingsMenu();
+    I.clearField(this._amplitudeInputSelector);
     I.fillField(this._amplitudeInputSelector, value);
     this.toggleSettingsMenu();
   },
