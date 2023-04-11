@@ -141,9 +141,22 @@ Scenario('Image with perRegion tags', async function({ I, AtImageView, AtSidebar
 
 Scenario('Can\'t create region outside of canvas', async ({ I, AtLabels, AtSidebar, AtImageView, LabelStudio }) => {
   I.amOnPage('/');
+  const cfg = `
+<View>
+  <Image name="img" value="$image"></Image>
+  <RectangleLabels name="tag" toName="img" fillOpacity="0.5" strokeWidth="5">
+    <Label value="Planet"></Label>
+    <Label value="Moonwalker" background="blue"></Label>
+  </RectangleLabels>
+</View>
+`;
+
+  LabelStudio.setFeatureFlags({
+    fflag_fix_front_dev_3793_relative_coords_short: true,
+  });
 
   LabelStudio.init({
-    config,
+    config: cfg,
     data: { image },
     task: {
       id: 0,
@@ -181,17 +194,17 @@ Scenario('Can\'t create region outside of canvas', async ({ I, AtLabels, AtSideb
 
   I.say('First region should be in the corner'); 
   assert.strictEqual(r1.x, 0);
-  assert.strictEqual(r1.y, 0);
+  assert.equal(r1.y, 0);
 
   I.say('Second region should be in the corner'); 
-  assert.strictEqual(Math.round(r2.x + r2.width), 100);
-  assert.strictEqual(r2.y, 0);
+  assert.equal(Math.round(r2.x + r2.width), 100);
+  assert.equal(r2.y, 0);
 
   I.say('Third region should be in the corner'); 
-  assert.strictEqual(r3.x, 0);
-  assert.strictEqual(Math.round(r3.y + r3.height), 100);
+  assert.equal(r3.x, 0);
+  assert.equal(Math.round(r3.y + r3.height), 100);
 
   I.say('Fourth region should be in the corner'); 
-  assert.strictEqual(Math.round(r4.x + r4.width), 100);
-  assert.strictEqual(Math.round(r4.y + r4.height), 100);
+  assert.equal(Math.round(r4.x + r4.width), 100);
+  assert.equal(Math.round(r4.y + r4.height), 100);
 });
