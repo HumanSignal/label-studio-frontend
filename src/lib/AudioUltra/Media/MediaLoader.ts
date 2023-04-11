@@ -77,6 +77,7 @@ export class MediaLoader extends Destructable {
       ...options,
       src: this.options.src,
       splitChannels: this.wf.params.splitChannels,
+      decoderType: this.wf.params.decoderType,
     });
 
     // If this failed to allocate an audio decoder, we can't continue
@@ -94,7 +95,10 @@ export class MediaLoader extends Destructable {
     }
 
     // Get the audio data from the url src
-    const req = await this.performRequest(this.options.src);
+    const req = await this.performRequest(this.options.src).catch((err: any) => {
+      console.error('An audio loading error occurred', err);
+      return null;
+    });
 
     if (req) {
       try {
@@ -115,8 +119,8 @@ export class MediaLoader extends Destructable {
         await this.decodeAudioData();
 
         return this.audio ?? null;
-      } catch (err) {
-        this.wf.setError('An error occurred while decoding the audio file. Please select another file or try again.');
+      } catch (err: any) {
+        this.wf.setError(`An error occurred while decoding the audio file. Please select another file or try again. ${err.message}`);
         console.error('An audio decoding error occurred', err);
       }
     }
@@ -147,6 +151,15 @@ export class MediaLoader extends Destructable {
     return new Promise<MediaResponse>((resolve, reject) => {
       xhr.responseType = 'arraybuffer';
 
+      const errorHandler = () => {
+        const error = new Error('HTTP error status: ' + xhr.status);
+
+        error.name = 'HTTPError';
+
+        this.wf.setError('HTTP error status: ' + xhr.status, error);
+        reject(xhr);
+      };
+
       xhr.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
           this.loadingProgressType = 'determinate';
@@ -163,11 +176,34 @@ export class MediaLoader extends Destructable {
       });
 
       xhr.addEventListener('error', () => {
-        this.wf.setError('An error occurred while loading the audio file. Please select another file or try again.');
-        reject(xhr);
+        errorHandler();
       });
 
-      xhr.open('GET', url);
+      xhr.addEventListener('readystatechange', () => {
+        if (xhr.readyState === 4 && xhr.status !== 200 && xhr.status !== 0) {
+          errorHandler();
+        }
+      });
+
+      // Handle relative urls, by converting them to absolute so any query params can be preserved
+      const newUrl = new URL(url, /^https?/.exec(url) ? undefined : window.location.href);
+
+      const signedUrlParams = [
+        'X-Goog-Signature', // Google Cloud Storage
+        'X-Amz-Signature', // S3|Minio|DigitalOcean|Backblaze
+        'sig', // Azure
+      ];
+
+      // If the url is signed, we need to preserve the query params otherwise the signature will be invalid
+      if (!signedUrlParams.some(p => newUrl.searchParams.has(p))) {
+        // Arbitrary setting of query param to stop caching from reusing any media requests which may have less headers
+        // cached than this request. This is to prevent a CORS error when the headers are different between partial
+        // content and full content requests.
+        newUrl.searchParams.set('lsref', '1');
+      }
+
+
+      xhr.open('GET', newUrl.toString(), true);
       xhr.send();
     });
   }

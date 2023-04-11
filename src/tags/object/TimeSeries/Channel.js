@@ -6,11 +6,12 @@ import * as d3 from 'd3';
 import Registry from '../../../core/Registry';
 import Types from '../../../core/Types';
 import { cloneNode, guidGenerator } from '../../../core/Helpers';
-import { checkD3EventLoop, fixMobxObserve, getOptimalWidth, getRegionColor, sparseValues } from './helpers';
+import { checkD3EventLoop, getOptimalWidth, getRegionColor, sparseValues } from './helpers';
 import { markerSymbol } from './symbols';
 import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
 import { TagParentMixin } from '../../../mixins/TagParentMixin';
 import { FF_DEV_3391, isFF } from '../../../utils/feature-flags';
+import { fixMobxObserve } from '../../../utils/utilities';
 
 /**
  * Channel tag can be used to label time series data
@@ -35,7 +36,7 @@ import { FF_DEV_3391, isFF } from '../../../utils/feature-flags';
  * @param {number=} [markerSymbol=circle] plot stroke width
  * @param {string=} [timeRange] data range of x-axis / time axis
  * @param {string=} [dataRange] data range of y-axis / data axis
- * @param {string=} [showAxis] show or bide both axis 
+ * @param {string=} [showAxis] show or bide both axis
  * @param {boolean} [fixedScale] if false current view scales to fit only displayed values; if given overwrites TimeSeries' fixedScale
  */
 
@@ -185,8 +186,11 @@ class ChannelD3 extends React.Component {
       ranges,
       item: { parent },
     } = this.props;
+
     const activeStates = parent?.activeStates();
     const statesSelected = activeStates && activeStates.length;
+    const readonly = parent?.annotation?.isReadOnly();
+
     // skip if event fired by .move() - prevent recursion and bugs
 
     if (checkD3EventLoop('end')) return;
@@ -234,7 +238,7 @@ class ChannelD3 extends React.Component {
     this.brushCreator.move(this.gCreator, null);
     const additionalSelection = d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.metaKey;
 
-    if (additionalSelection || !statesSelected) {
+    if (additionalSelection || !statesSelected || readonly) {
       const regions = ranges.filter(r => r.start >= region.start && r.end <= region.end);
 
       if (additionalSelection) {
@@ -244,6 +248,7 @@ class ChannelD3 extends React.Component {
       }
       return;
     }
+
     parent?.addRegion(region.start, region.end);
   };
 
@@ -298,9 +303,10 @@ class ChannelD3 extends React.Component {
         // all other space is taken by brushCreator
         group.selectAll('.overlay').style('pointer-events', 'none');
 
-        if(r.readonly)
+        if(r.isReadOnly()) {
           group.selectAll('.handle').remove();
-          
+        }
+
         if (r._brushRef === undefined || !r._brushRef.isConnected) {
           r._brushRef = group.select('.selection').node();
         }
@@ -461,7 +467,7 @@ class ChannelD3 extends React.Component {
     const { item } = this.props;
 
     if (!item.showaxis) return;
-    
+
     // @todo usual .data([0]) trick doesn't work for some reason :(
     let g = this.main.select('.yaxis');
 
@@ -534,7 +540,7 @@ class ChannelD3 extends React.Component {
     let { series } = this.props;
 
     const optimizedWidthWithZoom = getOptimalWidth() * this.zoomStep;
-    
+
     this.useOptimizedData = series.length > optimizedWidthWithZoom;
 
     if (this.useOptimizedData) {
@@ -553,7 +559,7 @@ class ChannelD3 extends React.Component {
     const times = series.map(x => {
       return x[time];
     });
-    
+
     const values = series.map(x => {
       return x[column];
     });
@@ -726,7 +732,7 @@ class ChannelD3 extends React.Component {
       const timerange = item.timerange.split(',').map(Number);
 
       this.x.domain(timerange);
-    } 
+    }
 
     if (!fixedscale) {
       // array slice may slow it down, so just find a min-max by ourselves
@@ -746,7 +752,7 @@ class ChannelD3 extends React.Component {
 
       if (item.datarange) {
         const datarange = item.datarange.split(',');
-  
+
         if (datarange[0] !== '') min = new Number(datarange[0]);
         if (datarange[1] !== '') max = new Number(datarange[1]);
       }

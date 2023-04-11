@@ -10,6 +10,7 @@ export const useWaveform = (
     onSeek?: (time: number) => void,
     onPlaying?: (playing: boolean) => void,
     onRateChange?: (rate: number) => void,
+    onError?: (error: Error) => void,
     autoLoad?: boolean,
     showLabels?: boolean,
   },
@@ -45,6 +46,9 @@ export const useWaveform = (
     });
     wf.on('pause', () => {
       setPlaying(false);
+    });
+    wf.on('error', (error) => {
+      options?.onError?.(error);
     });
     wf.on('playing', (time: number) => {
       if (playing && !isTimeRelativelySimilar(time, currentTime, duration)) {

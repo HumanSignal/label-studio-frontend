@@ -1,7 +1,7 @@
 /**
  * libraries
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 
 /**
@@ -26,6 +26,11 @@ interface BoardProps {
 //component for a drag and drop board with 2 columns as defined in createData.ts
 const Ranker = ({ inputData, handleChange }: BoardProps) => {
   const [data, setData] = useState(inputData);
+
+  // update data when inputData changes
+  useEffect(() => {
+    setData(inputData);
+  }, [inputData]);
 
   const handleDragEnd = (result: any) => {
     //handle reordering of items

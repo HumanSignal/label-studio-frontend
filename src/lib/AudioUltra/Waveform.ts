@@ -73,6 +73,11 @@ export interface WaveformOptions {
   splitChannels?: boolean;
 
   /**
+   * Decoder used to decode the audio to waveform data.
+   */
+  decoderType?: 'webaudio' | 'ffmpeg';
+
+  /**
    * Center the view to the cursor when zoomin
    * @default false
    */
@@ -150,6 +155,7 @@ export interface WaveformOptions {
 }
 interface WaveformEventTypes extends RegionsGlobalEvents, RegionGlobalEvents {
   'load': () => void;
+  'error': (error: Error) => void;
   'resize': (wf: Waveform, width: number, height: number) => void;
   'pause': () => void;
   'play': () => void;
@@ -295,7 +301,7 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   scrollToRegion(time: number) {
-    if(this.zoom === 1) return;
+    if (this.zoom === 1) return;
 
     const offset = (this.visualizer.width / 2) / this.visualizer.zoomedWidth;
 
@@ -340,8 +346,9 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.visualizer.setDecodingProgress(chunk, total);
   }
 
-  setError(error: string) {
-    this.visualizer.setError(error);
+  setError(errorMessage: string, error?: Error) {
+    this.invoke('error', [error || new Error(errorMessage)]);
+    this.visualizer.setError(errorMessage);
   }
 
   /**
@@ -375,7 +382,7 @@ export class Waveform extends Events<WaveformEventTypes> {
     return this.regions.updateRegion(options, render);
   }
 
-  updateLabelVisibility(visible: boolean){
+  updateLabelVisibility(visible: boolean) {
     this.regions.updateLabelVisibility(visible);
   }
 

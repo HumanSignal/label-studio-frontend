@@ -1,5 +1,3 @@
-/* global Feature, Scenario, locate */
-
 const { initLabelStudio, serialize } = require('./helpers');
 const Utils = require('../examples/utils');
 const examples = [
@@ -34,7 +32,8 @@ function assertWithTolerance(actual, expected) {
 
 Feature('Smoke test through all the examples');
 
-examples.slice(-1).forEach(example =>
+// old audio is broken, so skipping it
+examples.slice(1).forEach(example =>
   Scenario(example.title || 'Noname smoke test', async function({ I, AtImageView, AtAudioView, AtSidebar, AtTopbar }) {
     // @todo optional predictions in example
     const { annotations, config, data, result = annotations[0].result } = example;

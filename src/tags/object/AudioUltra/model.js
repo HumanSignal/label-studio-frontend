@@ -1,14 +1,14 @@
 import { observe } from 'mobx';
-import { getRoot, getType, types } from 'mobx-state-tree';
+import { getEnv, getRoot, getType, types } from 'mobx-state-tree';
 import { customTypes } from '../../../core/CustomTypes';
-import { guidGenerator, restoreNewsnapshot } from '../../../core/Helpers.ts';
+import { guidGenerator } from '../../../core/Helpers.ts';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import { SyncMixin } from '../../../mixins/SyncMixin';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_DEV_2461, FF_LSDV_3028, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2461, FF_LSDV_3028, FF_LSDV_4701, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
 import { isTimeSimilar } from '../../../lib/AudioUltra';
 import ObjectBase from '../Base';
@@ -19,7 +19,32 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  *
  * Use with the following data types: audio
  * @example
- * <!--Labeling configuration to label regions of audio and rate the audio sample-->
+ * <!-- Play audio on the labeling interface -->
+ * <View>
+ *   <Audio name="audio" value="$audio" />
+ * </View>
+ * @example
+ * <!-- Play audio with multichannel support -->
+ * <View>
+ *   <Audio name="audio" value="$audio" splitchannels="true" />
+ * </View>
+ * @example
+ * <!-- Audio classification -->
+ * <View>
+ *   <Audio name="audio" value="$audio" />
+ *   <Choices name="ch" toName="audio">
+ *     <Choice value="Positive" />
+ *     <Choice value="Negative" />
+ *   </Choices>
+ * </View>
+ * @example
+ * <!-- Audio transcription -->
+ * <View>
+ *   <Audio name="audio" value="$audio" />
+ *   <TextArea name="ta" toName="audio" />
+ * </View>
+ * @example
+ * <!-- Labeling configuration to label regions of audio and rate the audio sample-->
  * <View>
  *   <Labels name="lbl-1" toName="audio-1">
  *     <Label value="Guitar" />
@@ -28,27 +53,42 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  *   <Rating name="rate-1" toName="audio-1" />
  *   <Audio name="audio-1" value="$audio" />
  * </View>
- * @name Audio
+ * @example
+ * <!-- Sync with video -->
+ * <View>
+ *   <Video name="video-1" value="$video" sync="audio-1" />
+ *   <Labels name="lbl-1" toName="audio-1">
+ *     <Label value="Guitar" />
+ *     <Label value="Drums" />
+ *   </Labels>
+ *   <Audio name="audio-1" value="$video" sync="video-1" />
+ * </View>
+ * @example
+ * <!-- Sync with paragraphs -->
+ * <View>
+ *   <Labels name="lbl-1" toName="audio-1">
+ *     <Label value="Guitar" />
+ *     <Label value="Drums" />
+ *   </Labels>
+ *   <Audio name="audio-1" value="$audio" sync="txt-1" />
+ *   <Paragraphs audioUrl="$audio" sync="audio-1" name="txt-1" value="$text" layout="dialogue" showplayer="true" />
+ * </View>
+ * @regions AudioRegion
  * @meta_title Audio Tag for Audio Labeling
  * @meta_description Customize Label Studio with the Audio tag for advanced audio annotation tasks for machine learning and data science projects.
+ * @name Audio
  * @param {string} name - Name of the element
- * @param {string} value - Data field containing path or a URL to the audio
- * @param {boolean=} [volume=false] - Whether to show a volume slider (from 0 to 1)
- * @param {string} [defaultvolume=1] - Default volume level (from 0 to 1)
- * @param {boolean} [speed=false] - Whether to show a speed slider (from 0.5 to 3)
- * @param {string} [defaultspeed=1] - Default speed level (from 0.5 to 2)
- * @param {boolean} [zoom=true] - Whether to show the zoom slider
- * @param {string} [defaultzoom=1] - Default zoom level (from 1 to 1500)
- * @param {string} [hotkey] - Hotkey used to play or pause audio
- * @param {string} [sync] object name to sync with
- * @param {string} [height=96] - Total height of the audio player
- * @param {string} [waveheight=32] - Minimum height of a waveform when in splitchannel mode with multiple channels
- * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
- * @param {string} [cursorcolor=#333] - Audio pane cursor color. Color should be specify in hex decimal string
- * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform
- * @param {boolean} [autocenter=true] – Always place cursor in the middle of the view
- * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
- * @param {boolean} [splitchannels=true] – Display stereo channels separately
+ * @param {string} value - Data field containing path or a URL to the audio.
+ * @param {string} [defaultspeed=1] - Default speed level (from 0.5 to 2).
+ * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform.
+ * @param {string} [defaultzoom=1] - Default zoom level for waveform. (from 1 to 1500).
+ * @param {string} [defaultvolume=1] - Default volume level (from 0 to 1).
+ * @param {string} [hotkey] - Hotkey used to play or pause audio.
+ * @param {string} [sync] Object name to sync with.
+ * @param {string} [height=96] - Total height of the audio player.
+ * @param {string} [waveheight=32] - Minimum height of a waveform when in `splitchannels` mode with multiple channels to display.
+ * @param {boolean} [splitchannels=false] - Display multiple audio channels separately, if the audio file has more than one channel. (**NOTE: Requires more memory to operate.**)
+ * @param {string} [decoder=webaudio] - Decoder type to use to decode audio data. (`"webaudio"` or `"ffmpeg"`)
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -71,6 +111,7 @@ const TagAttrs = types.model({
   autocenter: types.optional(types.boolean, true),
   scrollparent: types.optional(types.boolean, true),
   splitchannels: types.optional(types.boolean, isFF(FF_LSDV_3028)), // FF_LSDV_3028: true by default when on
+  decoder: types.optional(types.enumeration(['ffmpeg', 'webaudio']), isFF(FF_LSDV_4701) ? 'ffmpeg' : 'webaudio'), // FF_LSDV_4701: 'ffmpeg' by default when on, 'webaudio' otherwise
 });
 
 export const AudioModel = types.compose(
@@ -262,48 +303,6 @@ export const AudioModel = types.compose(
           return false;
         },
 
-        fromStateJSON(obj, fromModel) {
-          let r;
-          let m;
-
-          const fm = self.annotation.names.get(obj.from_name);
-
-          fm.fromStateJSON(obj);
-
-          if (!fm.perregion && fromModel.type !== 'labels') return;
-
-          const tree = {
-            pid: obj.id,
-            start: obj.value.start,
-            end: obj.value.end,
-            normalization: obj.normalization,
-            score: obj.score,
-            readonly: obj.readonly,
-          };
-
-          r = self.findRegion({ start: obj.value.start, end: obj.value.end });
-
-          if (fromModel) {
-            m = restoreNewsnapshot(fromModel);
-
-            if (!r) {
-              r = self.createRegion(tree, [m]);
-            } else {
-              r.states.push(m);
-            }
-          }
-
-          if (self._ws) {
-            self._ws.addRegion({
-              start: r.start,
-              end: r.end,
-              color: r.getColor(),
-            });
-          }
-
-          return r;
-        },
-
         setRangeValue(val) {
           self.rangeValue = val;
         },
@@ -355,6 +354,10 @@ export const AudioModel = types.compose(
 
           if (states.length === 0) {
           // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
+            if (wsRegion.isRegion){
+              wsRegion.convertToSegment().handleSelected();
+            }
+
             return;
           }
 
@@ -442,7 +445,17 @@ export const AudioModel = types.compose(
         },
 
         onError(error) {
-          self.errors = [error];
+          let messageHandler;
+
+          if (error.name === 'HTTPError') {
+            messageHandler = 'ERR_LOADING_HTTP';
+          } else {
+            messageHandler = 'ERR_LOADING_AUDIO';
+          }
+
+          const message = getEnv(self.store).messages[messageHandler]({ attr: self.value, url: self._value, error: error.message });
+
+          self.errors = [message];
         },
 
         beforeDestroy() {

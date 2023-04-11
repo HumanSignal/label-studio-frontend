@@ -1,4 +1,3 @@
-/* global Feature Scenario */
 const assert = require('assert');
 const { emulateKeypress } = require('../helpers');
 
@@ -22,10 +21,10 @@ Scenario('Check Numpad numbers working as hotkeys', async ({ I, LabelStudio }) =
   I.see('Click me');
   I.executeScript(emulateKeypress,{
     charCode: 0,
-    code:'Numpad5',
+    code: 'Numpad5',
     composed: true,
     key: '5',
-    keyCode:101,
+    keyCode: 101,
     which: 101,
     location: 3,
   });

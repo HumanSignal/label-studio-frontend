@@ -9,10 +9,22 @@
   display flex
   align-items center
   width 100%
-  border-top: 1px solid rgba(0,0,0,0.1);
   padding: 14px 0 0;
   box-sizing: initial;
   justify-content flex-end;
+
+  &_outline
+    border-top: 1px solid rgba(0,0,0,0.1);
+
+  &_align
+    &_left
+      justify-content flex-start
+
+    &_right
+      justify-content flex-end
+
+  &_noPadding
+    padding 0
 
   &_size
     &_small
@@ -118,7 +130,7 @@
     margin 1px 0
 
     ~/_size_small &
-      width 70px
+      min-width 70px
 
     input
       width 100%

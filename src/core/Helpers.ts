@@ -27,23 +27,3 @@ export function cloneNode(node: IStateTreeNode) {
   return snapshotRandomId;
 }
 
-/**
- *
- * @param {*} fromModel
- */
-export function restoreNewsnapshot(fromModel: IStateTreeNode) {
-  const snapshot = getSnapshot(fromModel);
-
-  /**
-   * Need to modify ID
-   */
-  const modifySnapshot = getType(fromModel).create({
-    ...snapshot,
-    id: guidGenerator(),
-  });
-
-  /**
-   * Update state
-   */
-  return modifySnapshot;
-}

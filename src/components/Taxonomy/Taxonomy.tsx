@@ -123,19 +123,19 @@ const SelectedList = ({ isEditable, flatItems } : { isEditable: boolean, flatIte
     selectedItem.map(
       (value: string) => {
         const label = flatItems.find(taxonomyItem => taxonomyItem.path[taxonomyItem.path.length - 1] === value)?.label;
-        
-        return label ?? value;  
+
+        return label ?? value;
       }),
   );
-  
+
   return (
-    <div className={styles.taxonomy__selected}>
+    <div className={['htx-taxonomy-selected', styles.taxonomy__selected].join(' ')}>
       {selectedLabels.map((path, index) => (
         <div key={path.join('|')}>
           <span>{showFullPath ? path.join(pathSeparator) : path[path.length - 1]}</span>
           {isEditable ? (
             <input type="button" onClick={() => setSelected(selected[index], false)} value="×" />
-          ): null}
+          ) : null}
         </div>
       ))}
     </div>
@@ -162,7 +162,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth, is
   const isChildSelected = selected.some(current => isSubArray(current, path));
   const onlyLeafsAllowed = leafsOnly && !isLeaf;
   const limitReached = maxUsagesReached && !checked;
-  const disabled = onlyLeafsAllowed || limitReached;
+  const disabled = onlyLeafsAllowed || limitReached || !isEditable;
 
   const onClick = () => onlyLeafsAllowed && toggle(id);
   const arrowStyle = !isLeaf ? { transform: isOpen ? 'rotate(180deg)' : 'rotate(90deg)' } : { display: 'none' };
@@ -199,16 +199,16 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth, is
   const itemContainer = useRef<any>();
   const scrollSpace = maxWidth - itemContainer.current?.parentElement.offsetWidth || 0;
   const labelMaxWidth = maxWidth - padding - scrollSpace - 90;
-  
+
   useEffect(() => {
     const container = itemContainer?.current;
-    
+
     if (container) {
       container.toggle = toggle;
       dimensionCallback(container);
     }
   }, []);
-  
+
 
   return (
     <div ref={itemContainer} style={{ paddingLeft: padding, maxWidth, ...style, width: 'fit-content' }}>
@@ -229,6 +229,7 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth, is
             <input
               className="item"
               id={id}
+              name={id}
               type="checkbox"
               disabled={disabled}
               checked={checked}
@@ -303,7 +304,7 @@ const filterTreeByPredicate = (flatten: TaxonomyItem[], predicate: (item: Taxono
   const childs: TaxonomyItem[][] = [];
   let d = -1;
 
-  for (let i = flatten.length; i--; ) {
+  for (let i = flatten.length; i--;) {
     const item = flatten[i];
 
     if (item.depth === d) {
@@ -412,7 +413,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef, isEditable }: Tax
             <div className={styles.taxonomy__add}>
               <button onClick={addInside}>Add</button>
             </div>
-          ): null}
+          ) : null}
         </div>
       )}
     </div>
@@ -439,7 +440,7 @@ const Taxonomy = ({
     if ([e.target, e.target.parentNode].some(n => n?.classList?.contains(cn))) return;
     if (!taxonomyRef.current?.contains(e.target)) close();
   }, []);
- 
+
   const isOpenClassName = isOpen ? styles.taxonomy_open : '';
 
   const flatten = useMemo(() => {
@@ -454,7 +455,7 @@ const Taxonomy = ({
   }, [items]);
 
   const [selected, setInternalSelected] = useState(externalSelected);
-  
+
   const contextValue: TaxonomySelectedContextValue = useMemo(() => {
     const setSelected = (path: TaxonomyPath, value: boolean) => {
       const newSelected = value ? [...selected, path] : selected.filter(current => !isArraysEqual(current, path));
@@ -475,7 +476,7 @@ const Taxonomy = ({
   const onKeyDown = useCallback(e => {
     const taxonomyList: NodeListOf<HTMLElement> | undefined = taxonomyRef.current?.querySelectorAll('.item');
     const searchInput = taxonomyRef.current?.querySelector('input');
-    const focusedElement: HTMLInputElement | Element | any  = document.activeElement || undefined;
+    const focusedElement: HTMLInputElement | Element | any = document.activeElement || undefined;
     const taxonomyHasItems = taxonomyList && taxonomyList.length > 0;
     const index = (taxonomyList && focusedElement)
       ? Array.from(taxonomyList).findIndex((taxonomyItem => taxonomyItem.id === focusedElement.id))
@@ -511,7 +512,7 @@ const Taxonomy = ({
         break;
       default:
         break;
-    }   
+    }
   }, []);
 
   useEffect(() => {
@@ -531,7 +532,7 @@ const Taxonomy = ({
     <TaxonomySelectedContext.Provider value={contextValue}>
       <TaxonomyOptionsContext.Provider value={optionsWithMaxUsages}>
         <SelectedList isEditable={isEditable} flatItems={flatten} />
-        <div className={[styles.taxonomy, isOpenClassName].join(' ')} ref={taxonomyRef}>
+        <div className={['htx-taxonomy', styles.taxonomy, isOpenClassName].join(' ')} ref={taxonomyRef}>
           <span onClick={() => setOpen(val => !val)}>
             {options.placeholder || 'Click to add...'}
             <LsChevron stroke="#09f" />

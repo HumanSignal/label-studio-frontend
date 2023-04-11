@@ -38,12 +38,12 @@ const _Tool = types.model('SelectionTool', {
 
     mousemoveEv(ev, [x, y]) {
       if (!isSelecting) return;
-      self.obj.setSelectionEnd({ x,y });
+      self.obj.setSelectionEnd({ x, y });
     },
 
     mouseupEv(ev, [x, y]) {
       if (!isSelecting) return;
-      self.obj.setSelectionEnd({ x,y });
+      self.obj.setSelectionEnd({ x, y });
       const { regionsInSelectionArea } = self.obj;
 
       self.obj.resetSelection();

@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import { flow, types } from 'mobx-state-tree';
+import { types } from 'mobx-state-tree';
 
 import Registry from '../../core/Registry';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
@@ -41,23 +41,27 @@ const Model = types
   .views(self => ({
     get dataSource() {
       const data = self._value;
-      const result = self.result.value.ranker;
+      // if result was not created yet, return data as is
+      const result = self.result?.value.ranker;
       let columns = [];
 
       if (self.mode === 'rank') {
-        columns = [result.map(id => data.find(d => d.id === id))];
-      }
-      else {
-        columns = [
-          data.filter(d => !result.includes(d.id)),
-          result.map(id => data.find(d => d.id === id)),
-        ];
+        columns = result
+          ? [result.map(id => data.find(d => d.id === id))]
+          : [data];
+      } else {
+        columns = result
+          ? [
+            data.filter(d => !result.includes(d.id)),
+            result.map(id => data.find(d => d.id === id)),
+          ]
+          : [data, []];
       }
       // transforms columns with data items into Ranker component format
       return transformData(columns, self.title.split('|'));
     },
     get result() {
-      return self.annotation.results.find(r => r.from_name === self);
+      return self.annotation?.results.find(r => r.from_name === self);
     },
     get resultType() {
       // this tag isn't a control tag but behaves like one, 
@@ -67,30 +71,42 @@ const Model = types
     get valueType() {
       return 'ranker';
     },
+    isReadOnly() {
+      // tmp fix for infinite recursion in isReadOnly() in ReadOnlyMixin
+      // should not affect anything, this object is self-contained
+      return true;
+    },
   }))
   .actions(self => ({
-    updateValue: flow(function* (store) {
+    updateValue(store) {
       const value = parseValue(self.value, store.task.dataObj);
 
+      if (!Array.isArray(value)) return;
+
       self._value = value;
-      yield Promise.resolve(true);
-    }),
-    needsUpdate() {
-      // if annotation was already deserialized but has no result for Ranker — create it
-      if (self.annotation?._initialAnnotationObj && !self.result && self._value) {
-        if (self.mode === 'rank') {
-          self.annotation.createResult({}, { ranker: self._value.map(item => item.id) }, self, self);
-        } else {
-          self.annotation.createResult({}, { ranker: [] }, self, self);
-        }
-      }
     },
+
+    createResult(data) {
+      self.annotation.createResult({}, { ranker: data }, self, self);
+    },
+
     updateResult(newData) {
-      //check if result exists already, since only one instance of it can exist at a time
+      // check if result exists already, since only one instance of it can exist at a time
       if (self.result) {
         self.result.setValue(newData);
       } else {
-        self.annotation.createResult({}, { ranker: newData }, self, self);
+        self.createResult(newData);
+      }
+    },
+
+    // Create result on submit if it doesn't exist
+    beforeSend() {
+      if (self.result) return;
+
+      if (self.mode === 'rank') {
+        self.createResult(self._value.map(item => item.id));
+      } else {
+        self.createResult([]);
       }
     },
   }));
@@ -99,8 +115,12 @@ const RankerModel = types.compose('RankerModel', Base, ProcessAttrsMixin, Annota
 
 const HtxRanker = inject('store')(
   observer(({ item }) => {
+    const data = item.dataSource;
+
+    if (!data) return null;
+
     return (
-      <Ranker inputData={item.dataSource} handleChange={item.updateResult} />
+      <Ranker inputData={data} handleChange={item.updateResult} />
     );
   }),
 );

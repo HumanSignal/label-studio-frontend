@@ -1,5 +1,3 @@
-/* global Feature, DataTable, Data, locate, locate */
-
 Feature('Shortcuts functional');
 
 const createConfig = ({ rows = '1' }) => {
@@ -162,7 +160,7 @@ Data(configParams).Scenario('Should work with existent regions.', async ({ I, La
   AtSidebar.seeRegions(1);
 
   // Start editing
-  I.click('[aria-label="edit"]');
+  I.click('[aria-label="Edit Region"]');
 
   // Try to use shortcuts
   // A B|
@@ -285,7 +283,7 @@ Data(configParams).Scenario('Should work with existent regions.', async ({ I, La
     I.pressKey(['Shift', 'Enter']);
 
     I.say('Check that shortcuts still work in the edit mode');
-    I.click('[aria-label="edit"]');
+    I.click('[aria-label="Edit Region"]');
     I.click(locate('.ant-tag').withText('Shortcut'));
     I.waitForValue('[name^="comment:"]', 'ShortcutShortcut');
 

@@ -53,10 +53,10 @@ const SelectionMap = types.model(
     afterUnselect(region) {
       region.afterUnselectRegion?.();
     },
-    drawingSelect(region){
+    drawingSelect(region) {
       self.drawingSelected.put(region);
     },
-    drawingUnselect(){
+    drawingUnselect() {
       Array.from(self.drawingSelected.values()).forEach(region => {
         self.drawingSelected.delete(region.id);
       });
@@ -73,6 +73,9 @@ const SelectionMap = types.model(
       } else {
         updateResultsFromSelection();
       }
+
+      // hook for side effects after region selected
+      region.object?.afterRegionSelected?.(region);
     },
     _updateResultsFromSelection() {
       self._updateResultsFromRegions(self.selected.values());
@@ -121,7 +124,6 @@ const SelectionMap = types.model(
     highlight(region) {
       self.clear();
       self.select(region);
-      region?.shapeRef?.parent?.canvas?._canvas?.scrollIntoView?.();
     },
   };
 });
@@ -153,7 +155,7 @@ export default types.model('RegionStore', {
     const regions = [];
     let clickedRegionsFound = 0;
 
-    Tree.traverseTree({ children:tree }, (node) => {
+    Tree.traverseTree({ children: tree }, (node) => {
       if (!node.isArea) return;
       if (node.item === lastClickedItem || node.item === item || clickedRegionsFound === 1) {
         if (node.item) regions.push(node.item);
@@ -192,7 +194,7 @@ export default types.model('RegionStore', {
     };
   };
 
-  return{
+  return {
     get annotation() {
       return getParent(self);
     },
@@ -302,7 +304,7 @@ export default types.model('RegionStore', {
         const groupId = group.id;
         const labelHotKey = getRegionLabel(region)?.[0]?.hotkey;
 
-        if( isFF( FF_DEV_2755 ) ) {
+        if (isFF(FF_DEV_2755)) {
           group.hotkey = labelHotKey;
           group.pos = groupId.slice(0, groupId.indexOf('#'));
         }
@@ -314,7 +316,7 @@ export default types.model('RegionStore', {
       };
       const addRegionsToLabelGroup = (labels, region) => {
         if (labels) {
-          for(const label of labels) {
+          for (const label of labels) {
             addToLabelGroup(`${label.value}#${label.id}`, label, region);
           }
         } else {
@@ -330,7 +332,7 @@ export default types.model('RegionStore', {
 
       const groupsArray = Object.values(groups);
 
-      if( isFF( FF_DEV_2755 ) ) {
+      if (isFF(FF_DEV_2755)) {
         groupsArray.sort((a, b) => a.hotkey > b.hotkey ? 1 : a.hotkey < b.hotkey ? -1 : 0);
       }
       result.push(
@@ -420,7 +422,7 @@ export default types.model('RegionStore', {
   },
 
   setView(view) {
-    if( isFF( FF_DEV_2755 ) ) {
+    if (isFF(FF_DEV_2755)) {
       window.localStorage.setItem(localStorageKeys.view, view);
       console.log('setView', window.localStorage.getItem(localStorageKeys.view));
     }
