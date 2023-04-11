@@ -1,4 +1,4 @@
-import React, { createRef, forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { createRef, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from 'antd/lib/button/index';
 import Form from 'antd/lib/form/index';
 import Input from 'antd/lib/input/index';
@@ -19,7 +19,7 @@ import styles from '../../../components/HtxTextBox/HtxTextBox.module.scss';
 import { Block, Elem } from '../../../utils/bem';
 import './TextArea.styl';
 import { IconTrash } from '../../../assets/icons';
-import { FF_DEV_1564_DEV_1565, FF_DEV_3730, FF_LSDV_4659, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_1564_DEV_1565, FF_DEV_3730, FF_LSDV_4659, FF_LSDV_4712, isFF } from '../../../utils/feature-flags';
 import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
 
 const { TextArea } = Input;
@@ -425,31 +425,59 @@ const HtxTextArea = observer(({ item }) => {
   );
 });
 
-const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, control, collapsed }, ref) => {
+const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, validate, control, collapsed }, ref) => {
   const rows = parseInt(control.rows);
   const isTextarea = rows > 1;
-  const inputRef = useRef();
+  const [stateValue, setStateValue] = useState(value ?? '');
+
+  if (isFF(FF_LSDV_4712)) {
+    useEffect(() => {
+      if (value !== stateValue) {
+        setStateValue(value);
+      }
+    }, [value]);
+  }
+
   const displayValue = useMemo(() => {
     if (collapsed) {
       return (value ?? '').split(/\n/)[0] ?? '';
     }
 
-    return value;
-  }, [value, collapsed]);
+    return isFF(FF_LSDV_4712) ? stateValue : value;
+  }, [value, collapsed, ...(isFF(FF_LSDV_4712) ? [stateValue] : [])]);
+
+  const changeHandler = isFF(FF_LSDV_4712)
+    ? useCallback(e => {
+      setStateValue(e.target.value);
+    }, [])
+    : e => {
+      if (!collapsed) onChange(idx, e.target.value);
+    };
+
+  const blurHandler = useCallback((e) => {
+    if (value === e.target.value || collapsed) return;
+
+    if (validate && !validate(e.target.value)) {
+      setStateValue(value);
+    } else {
+      onChange?.(idx, e.target.value);
+    }
+  },[idx, value, onChange, validate, collapsed]);
 
   const inputProps = {
-    ref: inputRef,
     className: 'ant-input ' + styles.input,
     value: displayValue,
     autoSize: isTextarea ? { minRows: 1 } : null,
-    onChange: e => {
-      if (!collapsed) onChange(idx, e.target.value);
-    },
+    onChange: changeHandler,
     readOnly: readOnly || collapsed,
     onFocus,
   };
 
-  if (isTextarea) {
+  if (isFF(FF_LSDV_4712)) {
+    inputProps.onBlur = blurHandler;
+  }
+
+  if (isFF(FF_LSDV_4712) || isTextarea) {
     inputProps.onKeyDown = e => {
       if ((e.key === 'Enter' && !e.shiftKey) || e.key === 'Escape') {
         e.preventDefault();
@@ -465,6 +493,7 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDe
       { (!collapsed && !readOnly) && (
         <Elem
           name="action"
+          aria-label="Delete Region"
           tag={Button}
           icon={<IconTrash />}
           size="small"
@@ -515,6 +544,7 @@ const HtxTextAreaResult = observer(({
         ref={idx === 0 ? firstResultInputRef : null}
         onFocus={onFocus}
         collapsed={collapsed}
+        validate={isFF(FF_LSDV_4712) ? item.from_name.validateValue : null}
       />
     );
   });

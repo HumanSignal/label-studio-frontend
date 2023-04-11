@@ -207,6 +207,15 @@ export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ff
  */
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
 
+/**
+ * Preventing creating duplicates in TextArea results with "skipDuplicates" parameter during editing.
+ * It also prevent creating new history steps on every change during editing textarea results.
+ *
+ * @see FF_LSDV_4659: To enable `skipDuplicates` parameter
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short
+ */
+export const FF_LSDV_4712 = 'fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
