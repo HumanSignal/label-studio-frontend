@@ -407,13 +407,23 @@ export const Annotation = types
     },
 
     deleteAllRegions({ deleteReadOnly = false } = {}) {
-      let regions = Array.from(self.areas.values());
+      const regions = Array.from(self.areas.values());
 
-      // @todo classifiactions have `readonly===undefined` so they won't be deleted with `false`
-      // @todo check this later for consistency
-      if (deleteReadOnly === false) regions = regions.filter(r => r.readonly === false);
+      if (deleteReadOnly) {
+        // remove everything unconditionally
 
-      regions.forEach(r => r.deleteRegion());
+        self.unselectAll(true);
+        self.setIsDrawing(false);
+        self.relationStore.deleteAllRelations();
+
+        regions.forEach(r => {
+          r.destroyRegion?.();
+          destroy(r);
+        });
+      } else {
+        regions.filter(r => r.readonly === false).forEach(r => r.deleteRegion());
+      }
+
       self.updateObjects();
     },
 
