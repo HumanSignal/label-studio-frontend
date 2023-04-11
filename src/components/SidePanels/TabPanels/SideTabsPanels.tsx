@@ -35,7 +35,9 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel(showComments));
   const [breakPointActiveTab, setBreakPointActiveTab] = useState(0);
   const localSnap = useRef(snap);
+  const collapsedSideRef = useRef(collapsedSide);
 
+  collapsedSideRef.current = collapsedSide;
   localSnap.current = snap;
   useRegionsCopyPaste(currentEntity);
 
@@ -87,24 +89,27 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     left: number,
     top: number,
   ) => { 
+    if (localSnap.current) {
+      const snapSide = localSnap.current.split('-');
+      const side = snapSide[0] as Side;
 
-    setPanelData((state) => {
-      return newPanelInState(state, name, movingPanel, movingTab, left, top, viewportSize);    
-    });
-    localSnap.current &&
-      setPanelData(state => {
-        if (!localSnap.current) return state;
-        const snapSide = localSnap.current.split('-');
-        const side = snapSide[0] as Side;
-        const joinOrder = snapSide[1] === 'top' ? JoinOrder.top : JoinOrder.bottom;
-        const height = viewportSize.current.height;
-        const joined = joinPanelColumns(state, name, side, DEFAULT_PANEL_WIDTH, height, joinOrder);
+      if (collapsedSideRef.current?.[side]) return;
+      const joinOrder = snapSide[1] === 'top' ? JoinOrder.top : JoinOrder.bottom;
+      const height = viewportSize.current.height;
 
-        setSnap(undefined);
-        return joined;
+      setPanelData((state) => {
+        const newPanel = newPanelInState(state, name, movingPanel, movingTab, left, top, viewportSize);
+
+        return joinPanelColumns(newPanel, name, side, DEFAULT_PANEL_WIDTH, height, joinOrder);
       });
-
-  }, [panelData]);
+    } else {
+      setPanelData((state) => {
+        return newPanelInState(state, name, movingPanel, movingTab, left, top, viewportSize);
+      });
+    }
+    setSnap(undefined);
+  }, [panelData, collapsedSide, collapsedSide[Side.left], collapsedSide[Side.right]]);
+  
 
   const setActiveTab = useCallback(
     (key: string, tabIndex: number) => setPanelData(state => setActive(state, key, tabIndex)),
@@ -143,18 +148,20 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     const bottomHit = bottom >= parentHeight - snapThreshold;
     let snap: DropSide | undefined = undefined;
 
-    if (!collapsedSide[Side.left] && panelLeftHit) { 
+    if (!collapsedSideRef.current?.[Side.left] && panelLeftHit) { 
       if (left <= snapThreshold) snap = DropSide.left;
       if (topHit) snap = DropSide.topLeft;
       if (bottomHit) snap = DropSide.bottomLeft;
     }
-    if (!collapsedSide[Side.right] && panelRightHit) {
+    if (!collapsedSideRef.current?.[Side.right] && panelRightHit) {
       if (right >= parentWidth - snapThreshold) snap = DropSide.right;
       if (topHit) snap = DropSide.topRight;
       if (bottomHit) snap = DropSide.bottomRight;
     }
     setSnap(snap);
   }, [panelData]);
+
+  // console.log(collapsedSide[Side.left]);
 
   const normalizeOffsets = useCallback((key: string, top: number, left: number, visible?: boolean) => {
     const panel = panelData[key];
@@ -354,6 +361,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         locked: panelBreakPoint,
         attachedKeys,
         lockPanelContents,
+        breakPointActiveTab,
         sidePanelCollapsed: collapsedSide,
         setSidePanelCollapsed: setCollapsedSide,
         dragTop: alignment === Side.left ? snap === DropSide.topLeft : snap === DropSide.topRight,

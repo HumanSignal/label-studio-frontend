@@ -54,7 +54,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
   const handlers = useRef({ onResize, onGroupHeightResize, onResizeStart, onResizeEnd, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
   const [resizing, setResizing] = useState<string | undefined>();
   const keyRef = useRef(key);
-  const collapsed = sidePanelCollapsed[alignment as Side];
+  const collapsed = sidePanelCollapsed[alignment as Side] && !detached;
   const isParentOfCollapsedPanel = attachedKeys && attachedKeys[0] === key;
   const isChildOfGroup = attachedKeys && attachedKeys.includes(key) && attachedKeys[0] !== key;
   const collapsedHeader = !(collapsed && !isParentOfCollapsedPanel);
