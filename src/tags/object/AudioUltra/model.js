@@ -6,9 +6,10 @@ import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import { SyncMixin } from '../../../mixins/SyncMixin';
+import { SyncableMixin } from '../../../mixins/Syncable';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_DEV_2461, FF_LSDV_3028, FF_LSDV_4701, isFF } from '../../../utils/feature-flags';
+import { FF_LSDV_3012, FF_LSDV_3028, FF_LSDV_4701, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
 import { isTimeSimilar } from '../../../lib/AudioUltra';
 import ObjectBase from '../Base';
@@ -117,7 +118,7 @@ const TagAttrs = types.model({
 export const AudioModel = types.compose(
   'AudioModel',
   TagAttrs,
-  SyncMixin,
+  isFF(FF_LSDV_3012) ? SyncableMixin : SyncMixin,
   ProcessAttrsMixin,
   ObjectBase,
   AnnotationMixin,
@@ -167,14 +168,155 @@ export const AudioModel = types.compose(
         return state?.selectedValues()?.[0];
       },
     }))
+    ////// Sync actions
+    .actions(!isFF(FF_LSDV_3012) ? (() => ({})) : self => ({
+      ////// Outgoing
+
+      triggerSync(event, data) {
+        if (!self._ws) return;
+
+        self.syncSend({
+          playing: self._ws.playing,
+          time: self._ws.currentTime,
+          speed: self._ws.rate,
+          ...data,
+        }, event);
+      },
+
+      triggerSyncSpeed(speed) {
+        self.triggerSync('speed', { speed });
+      },
+
+      triggerSyncPlay() {
+        // @todo should not be handled like this
+        self.handleSyncPlay();
+        // trigger play only after it actually started to play
+        self.triggerSync('play', { playing: true });
+      },
+
+      triggerSyncPause() {
+        // @todo should not be handled like this
+        self.handleSyncPause();
+        self.triggerSync('pause', { playing: false });
+      },
+
+      triggerSyncSeek(time) {
+        self.triggerSync('seek', { time });
+      },
+
+      ////// Incoming
+
+      registerSyncHandlers() {
+        ['play', 'pause', 'seek'].forEach(event => {
+          self.syncHandlers.set(event, self.handleSync);
+        });
+        self.syncHandlers.set('speed', self.handleSyncSpeed);
+      },
+
+      handleSync(data) {
+        if (!self._ws?.loaded) return;
+
+        self.handleSyncSeek(data);
+        if (data.playing) {
+          if (!self._ws.playing) self._ws?.play();
+        } else {
+          if (self._ws.playing) self._ws?.pause();
+        }
+      },
+
+      // @todo remove both of these methods
+      handleSyncPlay() {
+        if (self._ws?.playing) return;
+
+        self._ws?.play();
+      },
+
+      handleSyncPause() {
+        if (!self._ws?.playing) return;
+
+        self._ws?.pause();
+      },
+
+      handleSyncSeek({ time }) {
+        if (!self._ws?.loaded || !isDefined(time)) return;
+
+        try {
+          self._ws.setCurrentTime(time, true);
+          self._ws.syncCursor(); // sync cursor with current time
+        } catch (err) {
+          console.log(err);
+        }
+      },
+
+      handleSyncSpeed({ speed }) {
+        if (!self._ws) return;
+        self._ws.rate = speed;
+      },
+
+      syncMuted(muted) {
+        if (!self._ws) return;
+        self._ws.muted = muted;
+      },
+    }))
     .actions(self => {
-      let dispose;
-      let updateTimeout = null;
+      if (isFF(FF_LSDV_3012)) return {};
 
       const Super = {
         triggerSyncPlay: self.triggerSyncPlay,
         triggerSyncPause: self.triggerSyncPause,
       };
+
+      return {
+        triggerSyncPlay() {
+          if (self.syncedObject) {
+            Super.triggerSyncPlay();
+          } else {
+            self.handleSyncPlay();
+          }
+        },
+
+        triggerSyncPause() {
+          if (self.syncedObject) {
+            Super.triggerSyncPause();
+          } else {
+            self.handleSyncPause();
+          }
+        },
+
+        handleSyncPlay() {
+          if (!self._ws) return;
+          if (self._ws.playing && self.isCurrentlyPlaying) return;
+
+          self.isCurrentlyPlaying = true;
+          self._ws?.play();
+        },
+
+        handleSyncPause() {
+          if (!self._ws) return;
+          if (!self._ws.playing && !self.isCurrentlyPlaying) return;
+
+          self.isCurrentlyPlaying = false;
+          self._ws?.pause();
+        },
+
+        handleSyncSpeed() {},
+        handleSyncDuration() {},
+
+        handleSyncSeek(time) {
+          if (!self._ws?.loaded || isTimeSimilar(time, self._ws.currentTime)) return;
+
+          try {
+            self._ws.currentTime = time;
+            self._ws.syncCursor(); // sync cursor with other tags
+          } catch (err) {
+            console.log(err);
+          }
+        },
+      };
+    })
+    .actions(self => {
+      let dispose;
+      let updateTimeout = null;
 
       return {
         afterCreate() {
@@ -223,52 +365,6 @@ export const AudioModel = types.compose(
 
         onRateChange(rate) {
           self.triggerSyncSpeed(rate);
-        },
-
-        triggerSyncPlay() {
-          if (self.syncedObject) {
-            Super.triggerSyncPlay();
-          } else {
-            self.handleSyncPlay();
-          }
-        },
-
-        triggerSyncPause() {
-          if (self.syncedObject) {
-            Super.triggerSyncPause();
-          } else {
-            self.handleSyncPause();
-          }
-        },
-
-        handleSyncPlay() {
-          if (!self._ws) return;
-          if (self._ws.playing && self.isCurrentlyPlaying) return;
-
-          self.isCurrentlyPlaying = true;
-          self._ws?.play();
-        },
-
-        handleSyncPause() {
-          if (!self._ws) return;
-          if (!self._ws.playing && !self.isCurrentlyPlaying) return;
-
-          self.isCurrentlyPlaying = false;
-          self._ws?.pause();
-        },
-
-        handleSyncSpeed() {},
-        handleSyncDuration() {},
-
-        handleSyncSeek(time) {
-          if (!self._ws?.loaded || isTimeSimilar(time, self._ws.currentTime)) return;
-
-          try {
-            self._ws.currentTime = time;
-            self._ws.syncCursor(); // sync cursor with other tags
-          } catch (err) {
-            console.log(err);
-          }
         },
 
         handleNewRegions() {
@@ -380,21 +476,6 @@ export const AudioModel = types.compose(
           return r;
         },
 
-        /**
-         * Play and stop
-         */
-        handlePlay() {
-          if (self._ws) {
-            self.isCurrentlyPlaying ? self.triggerSyncPlay() : self.triggerSyncPause();
-          }
-        },
-
-        handleSeek() {
-          if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === 'paragraphs')) return;
-
-          self.triggerSyncSeek(self._ws.currentTime);
-        },
-
         createWsRegion(region) {
           if (!self._ws) return;
 
@@ -427,7 +508,7 @@ export const AudioModel = types.compose(
           self.clearRegionMappings();
           self._ws = ws;
 
-          self.setSyncedDuration(self._ws.duration);
+          if (!isFF(FF_LSDV_3012)) self.setSyncedDuration(self._ws.duration);
           self.onReady();
           self.needsUpdate();
         },
@@ -438,8 +519,10 @@ export const AudioModel = types.compose(
 
         onPlaying(playing) {
           if (playing) {
+            // @todo self.play();
             self.triggerSyncPlay();
           } else {
+            // @todo self.pause();
             self.triggerSyncPause();
           }
         },

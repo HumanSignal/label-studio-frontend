@@ -475,7 +475,15 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   set currentTime(value: number) {
-    this.player.seek(value);
+    this.setCurrentTime(value, true);
+  }
+
+  setCurrentTime(value: number, notify = false) {
+    if (notify) {
+      this.player.seek(value);
+    } else {
+      this.player.seekSilent(value);
+    }
   }
 
   /**

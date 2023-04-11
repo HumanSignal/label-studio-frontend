@@ -1,16 +1,21 @@
 Feature('Readonly Regions');
 
-const imageExamples = new DataTable(['example', 'regionName']);
+const imageExamples = new DataTable(['example', 'regionIndex']);
 
-imageExamples.add([require('../../../examples/audio-regions'), 'Beat']);
+imageExamples.add([require('../../../examples/audio-regions'), 1]);
 
 Data(imageExamples).Scenario('Audio Readonly Regions', async ({
   I,
   current,
   LabelStudio,
-  AtSidebar,
+  AtOutliner,
   AtAudioView,
 }) => {
+  LabelStudio.setFeatureFlags({
+    ff_front_dev_2715_audio_3_280722_short: true,
+    ff_front_1170_outliner_030222_short: true,
+  });
+
   I.amOnPage('/');
   const { config, result: r, data } = current.example;
 
@@ -30,35 +35,34 @@ Data(imageExamples).Scenario('Audio Readonly Regions', async ({
   });
 
   await AtAudioView.waitForAudio();
+  await AtAudioView.lookForStage();
 
   I.say('Check region is selectable');
-  AtSidebar.seeRegions(regions.length);
-  AtSidebar.clickRegion(current.regionName);
+  AtOutliner.seeRegions(regions.length);
+  AtOutliner.clickRegion(current.regionIndex);
 
   I.say('Attempt to move a readonly region');
   const readonlyRegionId = regions[0].id;
 
-  await AtAudioView.moveRegion(readonlyRegionId, 100);
+  await AtAudioView.moveRegionV3(readonlyRegionId, 100);
 
   I.say('Results are equal after modification attempt');
   await LabelStudio.resultsNotChanged(result);
 
-  I.say('Attempt to move a non-readonly region');
+  I.say('Attempt to move a non-readonly region (and it will be selected after this)');
   const nonReadonlyRegionId = regions[1].id;
 
-  await AtAudioView.moveRegion(nonReadonlyRegionId, 100);
+  await AtAudioView.moveRegionV3(nonReadonlyRegionId, 100);
 
   I.say('Results are not equal after modification attempt');
   await LabelStudio.resultsChanged(result);
 
   I.pressKey('CommandOrControl+z');
+  AtOutliner.clickRegion(current.regionIndex);
   I.pressKey('Backspace');
-  I.say('Results are equal after deletion attempt');
+  I.say('Results are equal after attempt to delete readonly region');
   await LabelStudio.resultsNotChanged(result);
 
-  I.say('Can draw new shape');
-  I.pressKey('1');
-
-  await AtAudioView.createRegion('audio', 100, 150);
-  AtSidebar.seeRegions(regions.length);
+  // There was a test that we can draw over readonly region,
+  // but that's not the case fo v3 anymore, so it was removed.
 });

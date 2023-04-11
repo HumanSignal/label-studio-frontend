@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-Feature('Audio Paragraphs');
+Feature('Sync: Audio Paragraphs');
 
 const config = `
 <View>
@@ -95,6 +95,7 @@ Scenario('Check audio clip is played when using the new sync option', async func
   LabelStudio.setFeatureFlags({
     fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
     ff_front_dev_2715_audio_3_280722_short: true,
+    fflag_feat_front_lsdv_3012_syncable_tags_070423_short: true,
   });
 
   I.amOnPage('/');
@@ -102,26 +103,24 @@ Scenario('Check audio clip is played when using the new sync option', async func
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   AtSidebar.seeRegions(2);
 
-  const [startingAudioPlusTime, startingParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
+  const [{ currentTime: startingAudioPlusTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
 
   assert.equal(startingAudioPlusTime, startingParagraphAudioTime);
   assert.equal(startingParagraphAudioTime, 0);
 
   I.click('[aria-label="play-circle"]');
+  I.wait(1);
 
   I.click('[aria-label="pause-circle"]');
+  I.wait(1);
 
-  const [seekAudioPlusTime, seekParagraphAudioTime] = await AtAudioView.getCurrentAudioTime();
+  const [{ currentTime: seekAudioPlusTime }, { currentTime: seekParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
 
-  const expectedSeekTime = Math.round(seekAudioPlusTime);
-
-  assert.equal(expectedSeekTime, Math.round(seekParagraphAudioTime), `Expected seek time to be ${expectedSeekTime} but was ${Math.round(seekParagraphAudioTime)}`);
+  assert.notEqual(seekAudioPlusTime, 0);
+  I.assertTimesInSync(seekAudioPlusTime, seekParagraphAudioTime, `Expected seek time to be ${seekAudioPlusTime} but was ${seekParagraphAudioTime}`);
 });
 
