@@ -55,6 +55,6 @@ describe('Basic Image scenario', () => {
     ImageView.drawRect(20, 20, 100, 100);
 
     Sidebar.hasRegions(1);
-    ImageView.canvasShouldChange('canvas');
+    ImageView.canvasShouldChange('canvas', 0);
   });
 });
