@@ -50,7 +50,7 @@ describe('Basic Image scenario', () => {
 
     ImageView.capture('canvas');
 
-    Labels.select('Planet');
+    Labels.select('Moonwalker');
 
     ImageView.drawRect(20, 20, 100, 100);
 
