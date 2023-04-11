@@ -40,26 +40,28 @@ const Model = types
   })
   .views(self => ({
     get dataSource() {
-      if (!self.result) return null;
-
       const data = self._value;
-      const result = self.result.value.ranker;
+      // if result was not created yet, return data as is
+      const result = self.result?.value.ranker;
       let columns = [];
 
       if (self.mode === 'rank') {
-        columns = [result.map(id => data.find(d => d.id === id))];
-      }
-      else {
-        columns = [
-          data.filter(d => !result.includes(d.id)),
-          result.map(id => data.find(d => d.id === id)),
-        ];
+        columns = result
+          ? [result.map(id => data.find(d => d.id === id))]
+          : [data];
+      } else {
+        columns = result
+          ? [
+            data.filter(d => !result.includes(d.id)),
+            result.map(id => data.find(d => d.id === id)),
+          ]
+          : [data, []];
       }
       //grabs data from the createData file
       return transformData(columns, self.title.split('|'));
     },
     get result() {
-      return self.annotation.results.find(r => r.from_name === self);
+      return self.annotation?.results.find(r => r.from_name === self);
     },
     get resultType() {
       return 'ranker';
@@ -76,25 +78,35 @@ const Model = types
 
       self._value = value;
     },
-    needsUpdate() {
-      // if annotation was already deserialized but has no result for Ranker — create it
-      // or if annotation is a fresh one with no data — create result as well;
-      const isAnnotationReady = self.annotation?._initialAnnotationObj || !self.annotation.pk;
 
-      if (isAnnotationReady && !self.result && self._value) {
-        if (self.mode === 'rank') {
-          self.annotation.createResult({}, { ranker: self._value.map(item => item.id) }, self, self);
-        } else {
-          self.annotation.createResult({}, { ranker: [] }, self, self);
-        }
+    needsUpdate() {
+      if (self.result) {
+        // tmp fix for infinite recursion in isReadOnly() in ReadOnlyMixin
+        self.result.area.readonly = true;
       }
     },
+
+    createResult(data) {
+      self.annotation.createResult({ readonly: true }, { ranker: data }, self, self);
+    },
+
     updateResult(newData) {
-      //check if result exists already, since only one instance of it can exist at a time
+      // check if result exists already, since only one instance of it can exist at a time
       if (self.result) {
         self.result.setValue(newData);
       } else {
-        self.annotation.createResult({}, { ranker: newData }, self, self);
+        self.createResult(newData);
+      }
+    },
+
+    // Create result on submit if it doesn't exist
+    beforeSend() {
+      if (self.result) return;
+
+      if (self.mode === 'rank') {
+        self.createResult(self._value.map(item => item.id));
+      } else {
+        self.createResult([]);
       }
     },
   }));
