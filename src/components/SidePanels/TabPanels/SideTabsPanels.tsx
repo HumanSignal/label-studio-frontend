@@ -408,7 +408,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       if (root) observer.unobserve(root);
       observer.disconnect();
     };
-  }, []);
+  }, [panelData]);
 
   const contextValue = useMemo(() => {
     return {
