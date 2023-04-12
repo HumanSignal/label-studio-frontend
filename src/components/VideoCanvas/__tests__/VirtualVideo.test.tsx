@@ -98,4 +98,13 @@ describe('VirtualVideo', () => {
 
     expect(canPlayType).toBeCalledWith(false);
   });
+
+  it('should not leave behind any elements or null after unmount', async () => {
+    const { unmount } = render(<VirtualVideo.VirtualVideo src="https://app.heartex.ai/static/samples/opossum_snow.mp4" />);
+
+    unmount();
+
+    await new Promise(resolve => setTimeout(resolve, 300));
+    expect(document.body.innerHTML).toBe('<div></div>');
+  });
 });
