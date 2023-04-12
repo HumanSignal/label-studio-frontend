@@ -6,11 +6,11 @@ import { observer } from 'mobx-react';
 const BaseInput = observer((props) => (
   <FilterDropdown
     onChange={(value) => {
-      props.onChange(value);
+      props.onChange(!value);
     }}
     items={[
-      { label: 'yes' },
-      { label: 'no' },
+      { label: 'true', key: true },
+      { label: 'false', key: false },
     ]}
   />
 ));
