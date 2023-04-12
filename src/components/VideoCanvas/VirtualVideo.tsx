@@ -180,7 +180,7 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
     createVideoElement();
     attachEventListeners();
     canPlayType(props.src ?? '').then((canPlay) => {
-      if (canPlay) {
+      if (canPlay && video.current) {
         attachSource();
         attachRef(video.current);
 
