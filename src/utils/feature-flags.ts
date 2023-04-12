@@ -217,7 +217,7 @@ Object.assign(window, {
     ...(window.APP_SETTINGS ?? {}),
     feature_flags: {
       ...(window.APP_SETTINGS?.feature_flags ?? {}),
-      ...(window.__FEATURE_FLAGS__ ?? {}),
+      ...(window.FEATURE_FLAGS ?? {}),
     },
   },
 });
