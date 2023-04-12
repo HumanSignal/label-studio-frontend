@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { IconZoomIn } from '../../../assets/icons';
 import { Button } from '../../../common/Button/Button';
 import { Dropdown } from '../../../common/Dropdown/Dropdown';
 import { Menu } from '../../../common/Menu/Menu';
@@ -6,18 +8,16 @@ import { ErrorMessage } from '../../../components/ErrorMessage/ErrorMessage';
 import ObjectTag from '../../../components/Tags/Object';
 import { Timeline } from '../../../components/Timeline/Timeline';
 import { clampZoom, VideoCanvas } from '../../../components/VideoCanvas/VideoCanvas';
+import { MAX_ZOOM_WHEEL, MIN_ZOOM_WHEEL, ZOOM_STEP, ZOOM_STEP_WHEEL } from '../../../components/VideoCanvas/VideoConstants';
 import { defaultStyle } from '../../../core/Constants';
+import { useFullscreen } from '../../../hooks/useFullscreen';
 import { useToggle } from '../../../hooks/useToggle';
 import { Block, Elem } from '../../../utils/bem';
-import { clamp, isDefined } from '../../../utils/utilities';
-
-import { IconZoomIn } from '../../../assets/icons';
-import { MAX_ZOOM_WHEEL, MIN_ZOOM_WHEEL, ZOOM_STEP, ZOOM_STEP_WHEEL } from '../../../components/VideoCanvas/VideoConstants';
-import { useFullscreen } from '../../../hooks/useFullscreen';
+import { FF_DEV_2715, FF_LSDV_3012, isFF } from '../../../utils/feature-flags';
 import ResizeObserver from '../../../utils/resize-observer';
+import { clamp, isDefined } from '../../../utils/utilities';
 import './Video.styl';
 import { VideoRegions } from './VideoRegions';
-import { FF_DEV_2715, isFF } from '../../../utils/feature-flags';
 
 const isFFDev2715 = isFF(FF_DEV_2715);
 
@@ -307,7 +307,7 @@ const HtxVideoView = ({ item, store }) => {
     item.setOnlyFrame(1);
     item.setLength(length);
     item.setReady(true);
-    if (isFFDev2715) {
+    if (isFFDev2715 && !isFF(FF_LSDV_3012)) {
       item.setSyncedDuration(item.ref.current?.duration);
     }
   }, [item, setVideoLength]);
@@ -324,8 +324,17 @@ const HtxVideoView = ({ item, store }) => {
   // TIMELINE EVENT HANDLERS
   const handlePlay = useCallback(() => {
     setPlaying((_playing) => {
+      // Audio v3 & Syncable
+      if (isFFDev2715 && isFF(FF_LSDV_3012)) {
+        if (!item.ref.current.playing) {
+          // @todo item.ref.current.playing? could be buffering and other states
+          item.ref.current.play();
+          item.triggerSyncPlay();
+        }
+        return true;
+      }
       // Audio v3
-      if (isFFDev2715) {
+      else if (isFFDev2715) {
         if (item.isCurrentlyPlaying === false) {
           item.triggerSyncPlay();
           return true;
@@ -346,14 +355,22 @@ const HtxVideoView = ({ item, store }) => {
 
   const handlePause = useCallback(() => {
     setPlaying((_playing) => {
+      // Audio v3 & Syncable
+      if (isFFDev2715 && isFF(FF_LSDV_3012)) {
+        if (item.ref.current.playing) {
+          item.ref.current.pause();
+          item.triggerSyncPause();
+        }
+        return false;
+      }
       // Audio v3
-      if (isFFDev2715) {
+      else if (isFFDev2715) {
         if (item.isCurrentlyPlaying === true) {
           item.triggerSyncPause();
           return false;
         }
         return item.isCurrentlyPlaying;
-      } 
+      }
       // Audio v1,v2
       else {
         if (_playing === true) {
@@ -504,6 +521,7 @@ const HtxVideoView = ({ item, store }) => {
                 component: () => {
                   return (
                     <Dropdown.Trigger
+                      key="dd"
                       inline={isFullScreen}
                       content={(
                         <Menu size="auto" closeDropdownOnItemClick={false}>
