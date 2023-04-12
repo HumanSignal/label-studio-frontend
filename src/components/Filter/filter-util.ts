@@ -109,7 +109,7 @@ const equal = (items: any[], filterItem: FilterListInterface) => {
     return items.filter((obj) => {
       const item = getFilteredPath(filterItem.path, obj);
 
-      return item.toString().toLowerCase() === filterItem.value.toLowerCase();
+      return item?.toString().toLowerCase() === filterItem.value.toLowerCase();
     });
   } else {
     return items;
@@ -121,7 +121,7 @@ const notequal = (items: any[], filterItem: FilterListInterface) => {
     return items.filter((obj) => {
       const item = getFilteredPath(filterItem.path, obj);
 
-      return item.toString().toLowerCase() !== filterItem.value.toLowerCase();
+      return item?.toString().toLowerCase() !== filterItem.value.toLowerCase();
     });
   } else {
     return items;
