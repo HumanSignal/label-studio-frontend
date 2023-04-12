@@ -140,7 +140,6 @@ Scenario('Image with perRegion tags', async function({ I, AtImageView, AtSidebar
 });
 
 Scenario('Can\'t create region outside of canvas', async ({ I, AtLabels, AtSidebar, AtImageView, LabelStudio }) => {
-  I.amOnPage('/');
   const cfg = `
 <View>
   <Image name="img" value="$image"></Image>
@@ -151,8 +150,14 @@ Scenario('Can\'t create region outside of canvas', async ({ I, AtLabels, AtSideb
 </View>
 `;
 
+  I.amOnPage('/');
+
   LabelStudio.setFeatureFlags({
     fflag_fix_front_dev_3793_relative_coords_short: true,
+  });
+
+  I.executeScript(() => {
+    window.LabelStudio.destroyAll();
   });
 
   LabelStudio.init({
@@ -192,19 +197,19 @@ Scenario('Can\'t create region outside of canvas', async ({ I, AtLabels, AtSideb
 
   const [r1, r2, r3, r4] = result.map(r => r.value);
 
-  I.say('First region should be in the corner'); 
+  I.say('First region should be in the corner');
   assert.strictEqual(r1.x, 0);
   assert.equal(r1.y, 0);
 
-  I.say('Second region should be in the corner'); 
+  I.say('Second region should be in the corner');
   assert.equal(Math.round(r2.x + r2.width), 100);
   assert.equal(r2.y, 0);
 
-  I.say('Third region should be in the corner'); 
+  I.say('Third region should be in the corner');
   assert.equal(r3.x, 0);
   assert.equal(Math.round(r3.y + r3.height), 100);
 
-  I.say('Fourth region should be in the corner'); 
+  I.say('Fourth region should be in the corner');
   assert.equal(Math.round(r4.x + r4.width), 100);
   assert.equal(Math.round(r4.y + r4.height), 100);
 });
