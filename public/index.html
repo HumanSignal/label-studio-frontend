@@ -149,8 +149,6 @@
           history: annotationHistory,
         };
 
-        Object.assign(lsfConfig, window.LSF_CONFIG ?? {});
-
         var ls = new LabelStudio("label-studio", lsfConfig);
 
         ls.on("storageInitialized", (store) => {
