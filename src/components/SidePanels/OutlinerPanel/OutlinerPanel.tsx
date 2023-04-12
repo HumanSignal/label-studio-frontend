@@ -21,6 +21,10 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
     setGroup(value);
   }, [regions]);
 
+  const onFilterChange = useCallback((value) => {
+    regions.setFilteredRegions(value);
+  }, [regions]);
+
   useEffect(() => {
     setGroup(regions.group);
   }, []);
@@ -36,6 +40,7 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
         orderingDirection={regions.sortOrder}
         onOrderingChange={onOrderingChange}
         onGroupingChange={onGroupingChange}
+        onFilterChange={onFilterChange}
       />
       {regions?.regions?.length > 0 ? (
         <OutlinerTree
@@ -60,6 +65,10 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
     regions.setGrouping(value);
   }, [regions]);
 
+  const onFilterChange = useCallback((value) => {
+    regions.setFilteredRegions(value);
+  }, [regions]);
+
   return (
     <Block name="outliner">
       <ViewControls
@@ -69,6 +78,7 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
         orderingDirection={regions.sortOrder}
         onOrderingChange={onOrderingChange}
         onGroupingChange={onGroupingChange}
+        onFilterChange={onFilterChange}
       />
       {regions?.regions?.length > 0 ? (
         <OutlinerTree
