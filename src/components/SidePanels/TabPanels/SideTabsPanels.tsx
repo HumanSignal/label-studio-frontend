@@ -164,8 +164,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     setSnap(snap);
   }, [panelData]);
 
-  // console.log(collapsedSide[Side.left]);
-
   const normalizeOffsets = useCallback((key: string, top: number, left: number, visible?: boolean) => {
     const panel = panelData[key];
     const parentWidth = rootRef.current?.clientWidth ?? 0;
@@ -209,6 +207,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
         storedLeft: undefined,
         storedTop: undefined,
         detached: setDetached,
+        zIndex: Object.keys(panelData).length + 12,
         maxHeight,
         alignment: setDetached ? undefined : panel.alignment,
       });
