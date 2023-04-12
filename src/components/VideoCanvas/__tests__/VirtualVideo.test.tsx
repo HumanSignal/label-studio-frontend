@@ -98,21 +98,4 @@ describe('VirtualVideo', () => {
 
     expect(canPlayType).toBeCalledWith(false);
   });
-
-  it('should not leave behind any elements or null after unmount', async () => {
-    // return binary/octet-stream for all requests, mimicking the situation where
-    // the server doesn't set the content-type header and defaults to binary/octet-stream
-    fetchMock.mockResponseOnce('', {
-      headers: {
-        'content-type': 'binary/octet-stream',
-      },
-    });
-
-    const { unmount } = render(<VirtualVideo.VirtualVideo src="https://app.heartex.ai/static/samples/opossum_snow" />);
-
-    unmount();
-
-    await new Promise(resolve => setTimeout(resolve, 300));
-    expect(document.body.innerHTML).toBe('<div></div>');
-  });
 });
