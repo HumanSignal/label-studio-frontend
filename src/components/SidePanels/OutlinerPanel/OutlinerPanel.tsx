@@ -51,18 +51,14 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
   );
 };
 
-const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
-  const [group, setGroup] = useState(regions.group);
+const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
   const onOrderingChange = useCallback((value) => {
     regions.setSort(value);
   }, [regions]);
 
   const onGroupingChange = useCallback((value) => {
     regions.setGrouping(value);
-    setGroup(value);
   }, [regions]);
-
-  regions.setGrouping(group);
 
   return (
     <Block name="outliner">
@@ -76,7 +72,6 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
       />
       {regions?.regions?.length > 0 ? (
         <OutlinerTree
-          {...props }
           regions={regions}
           selectedKeys={regions.selection.keys}
         />
