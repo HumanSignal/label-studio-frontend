@@ -100,7 +100,15 @@ describe('VirtualVideo', () => {
   });
 
   it('should not leave behind any elements or null after unmount', async () => {
-    const { unmount } = render(<VirtualVideo.VirtualVideo src="https://app.heartex.ai/static/samples/opossum_snow.mp4" />);
+    // return binary/octet-stream for all requests, mimicking the situation where
+    // the server doesn't set the content-type header and defaults to binary/octet-stream
+    fetchMock.mockResponseOnce('', {
+      headers: {
+        'content-type': 'binary/octet-stream',
+      },
+    });
+
+    const { unmount } = render(<VirtualVideo.VirtualVideo src="https://app.heartex.ai/static/samples/opossum_snow" />);
 
     unmount();
 
