@@ -102,22 +102,6 @@ const _Tool = types
     let brush, isFirstBrushStroke;
 
     return {
-      fromStateJSON(json, controlTag) {
-        const region = self.createFromJSON(json, controlTag);
-
-        if (json.value.points) {
-          const p = region.addPoints({ type: 'add' });
-
-          p.addPoints(json.value.points);
-        }
-
-        if (json.value.format === 'rle') {
-          region._rle = json.value.rle;
-        }
-
-        return region;
-      },
-
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
         const source = currentArea.toJSON();
@@ -154,14 +138,14 @@ const _Tool = types
         brush.addPoint(Math.floor(x), Math.floor(y));
       },
 
-      mouseupEv(ev, [x, y]) {
+      mouseupEv(ev, _, [x, y]) {
         if (self.mode !== 'drawing') return;
         self.addPoint(x, y);
         self.mode = 'viewing';
         brush.setDrawing(false);
         brush.endPath();
         if (isFirstBrushStroke) {
-          setTimeout(()=>{
+          setTimeout(() => {
             const newBrush = self.commitDrawingRegion();
 
             self.obj.annotation.selectArea(newBrush);
@@ -174,7 +158,7 @@ const _Tool = types
         }
       },
 
-      mousemoveEv(ev, [x, y]) {
+      mousemoveEv(ev, _, [x, y]) {
         if (self.mode !== 'drawing') return;
         if (
           !findClosestParent(
@@ -188,7 +172,7 @@ const _Tool = types
         self.addPoint(x, y);
       },
 
-      mousedownEv(ev, [x, y]) {
+      mousedownEv(ev, _, [x, y]) {
         if (
           !findClosestParent(
             ev.target,
@@ -198,9 +182,15 @@ const _Tool = types
         )
           return;
         const c = self.control;
+        const o = self.obj;
+
+        brush = self.getSelectedShape;
+
+        // prevent drawing when current image is
+        // different from image where the brush was started
+        if (o && brush && o.multiImage && o.currentImage !== brush.item_index) return;
 
         // Reset the timer if a user started drawing again
-        brush = self.getSelectedShape;
         if (brush && brush.type === 'brushregion') {
           self.annotation.history.freeze();
           self.mode = 'drawing';

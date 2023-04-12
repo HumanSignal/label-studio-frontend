@@ -24,11 +24,13 @@ import { TranscribeAudio } from '../examples/transcribe_audio';
 import { VideoRectangles } from '../examples/video_bboxes';
 import { VideoClassification } from '../examples/video';
 import { VideoAudio } from '../examples/video_audio';
+import { AudioVideoParagraph } from '../examples/audio_video_paragraphs';
 
 /**
  * Image
  */
 import { ImageBbox } from '../examples/image_bbox';
+import { ImageList } from '../examples/image_list';
 import { ImageBboxLarge } from '../examples/image_bbox_large';
 import { ImageKeyPoint } from '../examples/image_keypoints';
 import { ImageMultilabel } from '../examples/image_multilabel';
@@ -65,13 +67,14 @@ import { TableCsv } from '../examples/table_csv';
 
 import { TimeSeries } from '../examples/timeseries';
 import { TimeSeriesSingle } from '../examples/timeseries_single';
+import { ClassificationMixed } from '../examples/classification_mixed';
 
 /**
  * Custom Data
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = VideoRectangles;
+const data = AudioVideoParagraph;
 
 function getData(task) {
   if (task && task.data) {

@@ -1,5 +1,3 @@
-/* global Feature, Scenario, locate */
-
 const { serialize, selectText } = require('./helpers');
 
 const assert = require('assert');
@@ -67,7 +65,7 @@ Scenario('Check DateTime holds state between annotations and saves result', asyn
   results.filter(result => result.value.labels).forEach((result, index) => {
     const input = annotations[index];
     const expected = { end: input.rangeEnd, labels: [input.label], start: input.rangeStart, text: input.text };
-    
+
     assert.deepEqual(result.value, expected);
   });
 

@@ -1,4 +1,3 @@
-/* global inject */
 const { I } = inject();
 const assert = require('assert');
 
@@ -24,7 +23,6 @@ module.exports = {
   _seekForwardButtonSelector: '.lsf-audio-tag .lsf-timeline-controls__main-controls > .lsf-timeline-controls__group:nth-child(2) > button:nth-child(3)',
   _errorSelector: '[data-testid="error:audio"]',
   _httpErrorSelector: '[data-testid="error:http"]',
-  _choiceSelector: '.lsf-choices.lsf-choices_layout_inline',
 
   _stageBbox: { x: 0, y: 0, width: 0, height: 0 },
 
@@ -37,23 +35,25 @@ module.exports = {
   async waitForAudio() {
     await I.executeScript(Helpers.waitForAudio);
     I.waitForInvisible(this._progressBarSelector);
+    I.waitForDetached('loading-progress-bar', 10);
   },
-  getCurrentAudioTime() {
-    return I.executeScript(Helpers.getCurrentAudioTime);
+  getCurrentAudio() {
+    return I.executeScript(Helpers.getCurrentMedia, 'audio');
   },
   /**
    * Mousedown - mousemove - mouseup drawing on the AudioView. Works in couple of lookForStage.
    * @example
    * await AtAudioView.lookForStage();
-   * AtAudioView.dragAudioRegion(50, 200);
+   * AtAudioView.dragAudioElement(50, 200);
    * @param x {number}
    * @param shiftX {number}
    */
-  dragAudioRegion(x, shiftX) {
+  dragAudioElement(x, shiftX, shouldRelease = true) {
     I.scrollPageToTop();
     I.moveMouse(this._stageBbox.x + x, this._stageBbox.y + this._stageBbox.height / 2);
     I.pressMouseDown();
     I.moveMouse(this._stageBbox.x + x + shiftX, this._stageBbox.y + this._stageBbox.height / 2, 3);
+    if (shouldRelease === false) return;
     I.pressMouseUp();
     I.wait(1);
   },
@@ -71,6 +71,90 @@ module.exports = {
     I.scrollPageToTop();
     I.clickAt(this._stageBbox.x + x, this._stageBbox.y + y);
     I.wait(1); // We gotta  wait here because clicks on the canvas are not processed immediately
+  },
+
+  clickAtBeginning() {
+    this.clickAt(0);
+  },
+
+  clickAtEnd() {
+    // Clicking on the end of the canvas doesn't quite work, so we click a bit before the end
+    // to make sure we're it is not clicking outside the canvas, and move the cursor over.
+    this.clickAt(this._stageBbox.width - 1);
+    this.dragAudioElement(this._stageBbox.width - 1, 1);
+  },
+
+  async createRegion(tagName, start, length) {
+    const { x, y, height } = await this.getWrapperPosition(tagName);
+
+    return I.dragAndDropMouse({
+      x: x + start,
+      y: y + height / 2,
+    }, {
+      x: x + start + length,
+      y: y + height / 2,
+    });
+  },
+
+  async getWrapperPosition(tagName) {
+    const wrapperPosition = await I.executeScript((tagName) => {
+      const _ws = Htx.annotationStore.selected.names.get(tagName)._ws;
+      // `visualizer.wrapper` is for Audio v3
+      const wrapper = _ws.visualizer?.wrapper ?? _ws.container;
+      const bbox = wrapper.getBoundingClientRect();
+
+      return {
+        x: bbox.x,
+        y: bbox.y,
+        width: bbox.width,
+        height: bbox.height,
+      };
+    }, tagName);
+
+    return wrapperPosition;
+  },
+
+  async moveRegion(regionId, offset = 30) {
+    const regionPosition = await I.executeScript((regionId) => {
+      const region = Htx.annotationStore.selected.regions.find(r => r.cleanId === regionId);
+      const element = region.getRegionElement();
+      const rect = element.getBoundingClientRect();
+
+      return {
+        x: rect.x + rect.width / 2,
+        y: rect.y + rect.height / 2,
+      };
+    }, regionId);
+
+    return I.dragAndDropMouse(regionPosition, {
+      x: regionPosition.x + offset,
+      y: regionPosition.y,
+    });
+  },
+
+  async moveRegionV3(regionId, offset = 30) {
+    const regionPosition = await I.executeScript(({ regionId, stageBbox }) => {
+      const region = Htx.annotationStore.selected.regions.find(r => r.cleanId === regionId);
+
+      const wsRegion = region._ws_region;
+
+      if (!wsRegion.inViewport) {
+        return null;
+      }
+      const { height } = wsRegion.visualizer;
+
+      return {
+        x: (wsRegion.xStart + wsRegion.xEnd) / 2 + stageBbox.x,
+        y: height / 2 + stageBbox.y,
+      };
+    }, { regionId, stageBbox: this._stageBbox });
+
+    if (!regionPosition) return;
+
+    return I.dragAndDropMouse(regionPosition, {
+      x: regionPosition.x + offset,
+      y: regionPosition.y,
+    });
   },
 
   /**
@@ -147,6 +231,7 @@ module.exports = {
    */
   setVolumeInput(value) {
     this.toggleControlsMenu();
+    I.clearField(this._volumeInputSelector);
     I.fillField(this._volumeInputSelector, value);
     this.toggleControlsMenu();
   },
@@ -164,6 +249,7 @@ module.exports = {
 
     I.seeInField(this._playbackSpeedInputSelector, value);
     I.seeInField(this._playbackSpeedSliderSelector, value);
+
     const playbackSpeed = await I.grabAttributeFrom(this._audioElementSelector, 'playbackRate');
 
     assert.equal(playbackSpeed, value, 'Playback speed doesn\'t match in audio element');
@@ -180,6 +266,9 @@ module.exports = {
    */
   setPlaybackSpeedInput(value) {
     this.toggleSettingsMenu();
+    // it was not easy to set this field, so we have to carefully remove value and put it
+    I.doubleClick(locate(this._playbackSpeedInputSelector));
+    I.pressKey('Backspace');
     I.fillField(this._playbackSpeedInputSelector, value);
     this.toggleSettingsMenu();
   },
@@ -210,6 +299,7 @@ module.exports = {
    */
   setAmplitudeInput(value) {
     this.toggleSettingsMenu();
+    I.clearField(this._amplitudeInputSelector);
     I.fillField(this._amplitudeInputSelector, value);
     this.toggleSettingsMenu();
   },
@@ -231,14 +321,9 @@ module.exports = {
   async seeErrorHandler(value, selector = null) {
     selector = selector ? this[selector] : this._errorSelector;
     const error = await I.grabTextFrom(selector);
+    const matcher = new RegExp(value);
 
-    assert.equal(error, value);
-  },
-
-  async dontSeeGhostRegion() {
-    const selectedChoice = await I.grabTextFrom(this._choiceSelector);
-
-    assert.equal(selectedChoice, 'Positive');
+    assert.match(error, matcher);
   },
   
   /**

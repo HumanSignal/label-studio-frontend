@@ -92,7 +92,16 @@ function getNextNode(node) {
   }
 }
 
-function getNodesInRange(range) {
+export function isValidTreeNode(node, commonAncestor) {
+  while(node) {
+    if (commonAncestor && node === commonAncestor) return true;
+    if (node.nodeType === Node.ELEMENT_NODE && node.dataset.skipNode === 'true') return false;
+    node = node.parentNode;
+  }
+  return true;
+}
+
+export function getNodesInRange(range) {
   const start = range.startContainer;
   const end = range.endContainer;
   const commonAncestor = range.commonAncestorContainer;
@@ -101,18 +110,22 @@ function getNodesInRange(range) {
 
   // walk parent nodes from start to common ancestor
   for (node = start.parentNode; node; node = node.parentNode) {
-    nodes.push(node);
+    if (isValidTreeNode(node, commonAncestor)) nodes.push(node);
     if (node === commonAncestor) break;
   }
   nodes.reverse();
 
   // walk children and siblings from start until end is found
   for (node = start; node; node = getNextNode(node)) {
-    nodes.push(node);
+    if (isValidTreeNode(node, commonAncestor)) nodes.push(node);
     if (node === end) break;
   }
 
   return nodes;
+}
+
+export function getTextNodesInRange(range) {
+  return getNodesInRange(range).filter(n => isTextNode(n));
 }
 
 function documentReverse(node) {
@@ -192,8 +205,7 @@ function highlightRange(normedRange, cssClass, cssStyle) {
     cssClass = 'htx-annotation';
   }
 
-  const allNodes = getNodesInRange(normedRange._range);
-  const textNodes = allNodes.filter(n => isTextNode(n));
+  const textNodes = getTextNodesInRange(normedRange._range);
 
   const white = /^\s*$/;
 

@@ -1,5 +1,3 @@
-/* global Feature, DataTable, Data, locate */
-
 const { serialize } = require('./helpers');
 
 const assert = require('assert');
@@ -215,6 +213,8 @@ Data(windowSizesTable).Scenario('Rotation with different window sizes', async fu
   assert(Math.abs(canvasSize.height - imageSize.height) < 1);
   for (const rotate of rotationQueue) {
     I.click(locate(`[aria-label='rotate-${rotate}']`));
+    // Just checking that we see image, to get some time for rotating to be finished and correctly rendered
+    I.seeElement('[alt="LS"]');
     const rotatedCanvasSize = await AtImageView.getCanvasSize();
     const rotatedImageSize = await AtImageView.getImageFrameSize();
 

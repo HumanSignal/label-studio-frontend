@@ -17,6 +17,7 @@ export class Player extends Destructable {
   private _rate = 1;
 
   playing = false;
+  hasPlayed = false;
 
   constructor(wf: Waveform) {
     super();
@@ -92,8 +93,15 @@ export class Player extends Destructable {
   }
 
   setCurrentTime(value: number, notify = false) {
+    const timeChanged = this.time !== value;
+
     this.time = value;
-    if (notify) {
+
+    if (timeChanged && this.audio?.el) {
+      this.audio.el.currentTime = this.time;
+    }
+
+    if (notify && timeChanged) {
       this.wf.invoke('seek', [this.time]);
     }
   }
@@ -115,15 +123,34 @@ export class Player extends Destructable {
     this.wf.invoke('muted', [this.audio.muted]);
   }
 
+  get canPause() {
+    return !!(this.audio?.el && !this.audio.el.paused && this.hasPlayed);
+  }
+
   init(audio: WaveformAudio) {
     this.audio = audio;
     this.audio.on('canplay', this.handleCanPlay);
+    if (this.audio.el) {
+      this.audio.el.addEventListener('play', this.handlePlayed);
+      this.audio.el.addEventListener('pause', this.handlePaused);
+    }
   }
 
   seek(time: number) {
     const newTime = clamp(time, 0, this.duration);
 
     this.currentTime = newTime;
+
+    if (this.playing) {
+      this.updatePlayback();
+    }
+  }
+
+  seekSilent(time: number) {
+    const newTime = clamp(time, 0, this.duration);
+
+    this.ended = false;
+    this.setCurrentTime(newTime);
 
     if (this.playing) {
       this.updatePlayback();
@@ -140,12 +167,20 @@ export class Player extends Destructable {
     this.playRange(start, end);
   }
 
-  handleEnded = () => {
+  private handlePlayed = () => {
+    this.hasPlayed = true;
+  };
+
+  private handlePaused = () => {
+    this.hasPlayed = false;
+  };
+
+  private handleEnded = () => {
     if (this.loop) return;
     this.updateCurrentTime(true);
   };
 
-  handleCanPlay = () => {
+  private handleCanPlay = () => {
     this.bufferResolve?.();
   };
 
@@ -178,6 +213,10 @@ export class Player extends Destructable {
     this.cleanupSource();
     this.bufferPromise = undefined;
     this.bufferResolve = undefined;
+    if (this.audio?.el) {
+      this.audio.el.removeEventListener('play', this.handlePlayed);
+      this.audio.el.removeEventListener('pause', this.handlePaused);
+    }
     super.destroy();
   }
 
@@ -197,7 +236,6 @@ export class Player extends Destructable {
 
   private playSource(start?: number, duration?: number) {
     this.stopWatch();
-    this.timestamp = performance.now();
     this.connectSource();
 
     if (!this.audio) return;
@@ -220,15 +258,18 @@ export class Player extends Destructable {
         this.bufferResolve = resolve;
       });
 
-      const promise = this.audio.el.play();
+      const time = this.currentTime;
 
-      // Ensure that the audio can play before invoking the timer updates
-      promise.then(() => {
-        if (this.bufferPromise) {
-          this.bufferPromise.then(() => {
-            this.watch();
-          });
-        } else {
+      this.audio.el.play().then(() => this.bufferPromise!.then()).then(() => {
+        this.timestamp = performance.now();
+
+        // We need to compensate for the time it took to load the buffer
+        // otherwise the audio will be out of sync of the timer we use to
+        // render updates
+        if (this.audio?.el) {
+          // This must not be notifying of this adjustment otherwise it can cause sync issues and near infinite loops
+          this.setCurrentTime(time);
+          this.audio.el.currentTime = this.currentTime;
           this.watch();
         }
       });
@@ -262,7 +303,12 @@ export class Player extends Destructable {
   private connectSource() {
     if (this.isDestroyed || !this.audio || this.connected) return;
     this.connected = true;
-    this.audio.disconnect();
+
+    // Control pausing playback with checks to whether the audio has been asynchronously played already
+    // This is to prevent DomException: The play() request was interrupted by a call to pause()
+    if (this.canPause) {
+      this.audio.disconnect();
+    }
   }
 
   private disconnectSource() {
@@ -272,7 +318,12 @@ export class Player extends Destructable {
     if (this.audio.el) {
       this.audio.el.removeEventListener('ended', this.handleEnded);
     }
-    this.audio.disconnect();
+
+    // Control pausing playback with checks to whether the audio has been asynchronously played already
+    // This is to prevent DomException: The play() request was interrupted by a call to pause()
+    if (this.canPause) {
+      this.audio.disconnect();
+    }
   }
 
   private cleanupSource() {

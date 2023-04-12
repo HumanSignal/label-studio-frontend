@@ -73,6 +73,11 @@ export interface WaveformOptions {
   splitChannels?: boolean;
 
   /**
+   * Decoder used to decode the audio to waveform data.
+   */
+  decoderType?: 'webaudio' | 'ffmpeg';
+
+  /**
    * Center the view to the cursor when zoomin
    * @default false
    */
@@ -470,7 +475,15 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   set currentTime(value: number) {
-    this.player.seek(value);
+    this.setCurrentTime(value, true);
+  }
+
+  setCurrentTime(value: number, notify = false) {
+    if (notify) {
+      this.player.seek(value);
+    } else {
+      this.player.seekSilent(value);
+    }
   }
 
   /**

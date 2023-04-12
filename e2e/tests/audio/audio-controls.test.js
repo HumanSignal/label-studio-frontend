@@ -1,8 +1,3 @@
-
-/* global Feature, Scenario */
-
-const assert = require('assert');
-
 Feature('Audio Controls');
 
 const config = `
@@ -58,14 +53,10 @@ const annotations = [
 
 const params = { annotations: [{ id: 'test', result: annotations }], config, data };
 
-Scenario('Check the audio controls work', async function({ I, LabelStudio, ErrorsCollector, AtAudioView, AtSidebar }) {
+Scenario('Check the audio controls work', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
   async function doNotSeeErrors() {
     await I.wait(2);
-    const errors = await ErrorsCollector.grabErrors();
-
-    if (errors.length) {
-      assert.fail(`Got an error: ${errors[0]}`);
-    }
+    // The potential errors should be caught by `errorsCollector` plugin
   }
 
   LabelStudio.setFeatureFlags({
@@ -73,14 +64,9 @@ Scenario('Check the audio controls work', async function({ I, LabelStudio, Error
   });
   I.amOnPage('/');
 
-  await ErrorsCollector.run();
-
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   AtSidebar.seeRegions(1);

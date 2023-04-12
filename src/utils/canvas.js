@@ -3,6 +3,7 @@ import chroma from 'chroma-js';
 import Constants from '../core/Constants';
 
 import * as Colors from './colors';
+import { FF_LSDV_4583, isFF } from './feature-flags';
 
 /**
  * Given a single channel UInt8 image data mask with non-zero values indicating the
@@ -24,7 +25,7 @@ function mask2DataURL(singleChannelData, w, h, color) {
   const numChannels = 1;
 
   setMaskPixelColors(ctx, singleChannelData, w, h, color, numChannels);
-  
+
   const url = canvas.toDataURL();
 
   return url;
@@ -36,7 +37,7 @@ function mask2DataURL(singleChannelData, w, h, color) {
  * @param {string} maskDataURL Data URL, such as returned from mask2DataURL, containing
  *  an image.
  * @param {string} color The fill color of the image produced from the Data URL.
- * @returns {Image} DOM Image filled out with the resulting mask data URL.
+ * @returns {Promise<Image>} DOM Image filled out with the resulting mask data URL.
  */
 function maskDataURL2Image(maskDataURL, { color = Constants.FILL_COLOR } = {}) {
   return new Promise((resolve, _reject) => {
@@ -133,11 +134,12 @@ function setMaskPixelColors(ctx, data, nw, nh, color, numChannels) {
  * @param {string} rle RLE encoded image to be turned into a Region object.
  * @param {tags.object.Image} image Image the region will be interacting with.
  * @param {string} color Fill color for the region that will be produced.
- * @returns @returns {Image} DOM image filled in with RLE contents.
+ * @returns {Image} DOM image filled in with RLE contents.
  */
-function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
-  const nw = image.naturalWidth,
-    nh = image.naturalHeight;
+function RLE2Region(item, { color = Constants.FILL_COLOR } = {}) {
+  const { rle } = item;
+  const nw = item.currentImageEntity.naturalWidth,
+    nh = item.currentImageEntity.naturalHeight;
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -146,17 +148,20 @@ function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
   canvas.height = nh;
 
   const newdata = ctx.createImageData(nw, nh);
+  const decoded = decode(rle);
 
-  newdata.data.set(decode(rle));
+  newdata.data.set(decoded, 0);
+
   const rgb = chroma(color).rgb();
 
-  for (let i = newdata.data.length / 4; i--; ) {
+  for (let i = newdata.data.length / 4; i--;) {
     if (newdata.data[i * 4 + 3]) {
       newdata.data[i * 4] = rgb[0];
       newdata.data[i * 4 + 1] = rgb[1];
       newdata.data[i * 4 + 2] = rgb[2];
     }
   }
+
   ctx.putImageData(newdata, 0, 0);
 
   const new_image = new Image();
@@ -166,14 +171,107 @@ function RLE2Region(rle, image, { color = Constants.FILL_COLOR } = {}) {
 }
 
 /**
+* Exports region using canvas. Doesn't require Konva#Stage access
+* @param {Region} region Brush region
+*/
+function exportRLE(region) {
+  const {
+    naturalWidth,
+    naturalHeight,
+  } = region.currentImageEntity;
+
+  // Prepare the canvas with sizes of image and stage
+  const canvas = document.createElement('canvas');
+
+  // We only care about physical size, so set canvas dimensions to 
+  // image's natural dimensions
+  canvas.width = naturalWidth;
+  canvas.height = naturalHeight;
+
+  // Make canvas offscreen and invisible
+  canvas.style.setProperty('position', 'absolute');
+  canvas.style.setProperty('bottom', '200%');
+  canvas.style.setProperty('right', '200%');
+  canvas.style.setProperty('opacity', '0');
+
+  const ctx = canvas.getContext('2d');
+
+  document.body.appendChild(canvas);
+
+  // Restore original RLE if available
+  if (region.rle && region.rle.length > 0) {
+    // Apply RLE to existing image data
+    const imageData = ctx.createImageData(naturalWidth, naturalHeight);
+
+    imageData.data.set(decode(region.rle));
+
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  // If the region was changed manually, we'll have access to user tuoches
+  // Render those on the canvas after RLE
+  if (region.touches.length > 0) {
+    region.touches.forEach(touch => {
+      // We're using relative coordinates to calculate points
+      // This way we don't need to have access to Konva#Stage and
+      // render relatively to the image's natural dimensions
+      const { relativePoints: points } = touch.toJSON();
+
+      /**
+        * Converts any given relative (x, y) to absolute position on an image
+        * @param {number} x
+        * @param {number} y
+        */
+      const relativeToAbsolutePoint = (x, y) => {
+        return [
+          naturalWidth * (x / 100),
+          naturalHeight * (y / 100),
+        ];
+      };
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(...relativeToAbsolutePoint(points[0], points[1]));
+
+      for (let i = 0; i < points.length / 2; i++) {
+        ctx.lineTo(...relativeToAbsolutePoint(points[2 * i], points[2 * i + 1]));
+      }
+
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = touch.relativeStrokeWidth / 100 * naturalWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.globalCompositeOperation = touch.compositeOperation;
+      ctx.stroke();
+    });
+  }
+
+  const imageData = ctx.getImageData(0, 0, naturalWidth, naturalHeight).data;
+
+  // Grayscale pixels respecting the opacity
+  for (let i = imageData.length / 4; i--;) {
+    imageData[i * 4] = imageData[i * 4 + 1] = imageData[i * 4 + 2] = imageData[i * 4 + 3];
+  }
+
+  // When finished, remove the canvas
+  canvas.remove();
+
+  return encode(imageData, imageData.length);
+}
+
+/**
  * Given a brush region return the RLE encoded array.
  * @param {BrushRegion} region BrushRegtion to turn into RLE array.
  * @param {tags.object.Image} image Image the region will be interacting with.
  * @returns {string} RLE encoded contents.
  */
-function Region2RLE(region, image) {
-  const nw = image.naturalWidth,
-    nh = image.naturalHeight;
+function Region2RLE(region) {
+  // New way of exporting brush regions
+  if (isFF(FF_LSDV_4583)) return exportRLE(region);
+
+  // Legacy encoder
+  const nw = region.currentImageEntity.naturalWidth,
+    nh = region.currentImageEntity.naturalHeight;
   const stage = region.object?.stageRef;
   const parent = region.parent;
 
@@ -183,12 +281,13 @@ function Region2RLE(region, image) {
   }
 
   const layer = stage.findOne(`#${region.cleanId}`);
-  const isVisible = layer.visible();
 
   if (!layer) {
     console.error(`Layer #${region.id} was not found on Stage`);
     return [];
   }
+  const isVisible = layer.visible();
+
   !isVisible && layer.show();
   // hide labels on regions and show them later
   layer.findOne('.highlight').hide();
@@ -215,13 +314,13 @@ function Region2RLE(region, image) {
     .setRotation(0);
   stage.drawScene();
   // resize to original size
-  const canvas = layer.toCanvas({ pixelRatio: nw / image.stageWidth });
+  const canvas = layer.toCanvas({ pixelRatio: nw / region.currentImageEntity.stageWidth });
   const ctx = canvas.getContext('2d');
 
   // get the resulting raw data and encode into RLE format
   const data = ctx.getImageData(0, 0, nw, nh);
 
-  for (let i = data.data.length / 4; i--; ) {
+  for (let i = data.data.length / 4; i--;) {
     data.data[i * 4] = data.data[i * 4 + 1] = data.data[i * 4 + 2] = data.data[i * 4 + 3];
   }
   layer.findOne('.highlight').show();
@@ -388,7 +487,7 @@ const trim = (canvas) => {
     let i, x, y;
 
     for (i = 0; i < l; i += 4) {
-      if (pixels.data[i+3] !== 0) {
+      if (pixels.data[i + 3] !== 0) {
         x = (i / 4) % canvas.width;
         y = ~ ~ ((i / 4) / canvas.width);
 

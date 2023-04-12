@@ -33,6 +33,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       height: item.height && !isNaN(Number(item.height)) ? Number(item.height) : 96,
       waveHeight: item.waveheight && !isNaN(Number(item.waveheight)) ? Number(item.waveheight) : 32,
       splitChannels: item.splitchannels,
+      decoderType: item.decoder,
       volume: item.defaultvolume ? Number(item.defaultvolume) : 1,
       amp: item.defaultscale ? Number(item.defaultscale) : 1,
       zoom: item.defaultzoom ? Number(item.defaultzoom) : 1,

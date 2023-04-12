@@ -1,4 +1,3 @@
-/* global Feature, Scenario */
 const assert = require('assert');
 const Helpers = require('../helpers');
 
@@ -18,9 +17,15 @@ async function getStrokeColor() {
   return circle.attrs.stroke;
 }
 
-Scenario('Zoomed image should keep center image in center of canvas on resizes', async ({ I, LabelStudio, AtImageView, AtOutliner, AtPanels }) => {
+const relativeCoordsFF = new DataTable(['enabled']);
+
+relativeCoordsFF.add([true]);
+relativeCoordsFF.add([false]);
+
+Data(relativeCoordsFF).Scenario('Zoomed image should keep center image in center of canvas on resizes', async ({ I, LabelStudio, AtImageView, AtOutliner, AtDetails, AtPanels, current }) => {
   const AtDetailsPanel = AtPanels.usePanel(AtPanels.PANEL.DETAILS);
   const AtOutlinerPanel = AtPanels.usePanel(AtPanels.PANEL.OUTLINER);
+  const FF3793 = current;
 
   const params = {
     config,
@@ -70,6 +75,7 @@ Scenario('Zoomed image should keep center image in center of canvas on resizes',
     ff_front_dev_2394_zoomed_transforms_260522_short: true,
     ff_front_1170_outliner_030222_short: true,
     fflag_fix_front_dev_3377_image_regions_shift_on_resize_280922_short: true,
+    fflag_fix_front_dev_3793_relative_coords_short: FF3793.enabled,
   });
 
   I.amOnPage('/');
@@ -97,6 +103,9 @@ Scenario('Zoomed image should keep center image in center of canvas on resizes',
   I.say('Check that there is a region at the center of visible area');
   AtImageView.clickAt(AtImageView.percToX(50), AtImageView.percToY(50));
   AtOutliner.seeSelectedRegion();
+  // these values depend on screen size, interface elements size, etc.
+  // so if they were changed slightly, just replace them with actual data.
+  AtDetails.seeFieldWithValue('X', FF3793.enabled ? '88.567' : '435.75');
   I.pressKey('U');
 
   I.say('Collapse the details panel');
@@ -152,6 +161,7 @@ Scenario('Zoomed image should keep center image in center of canvas on resizes',
   I.say('Check that there is a region at the center of visible area');
   AtImageView.clickAt(AtImageView.percToX(50), AtImageView.percToY(50));
   AtOutliner.seeSelectedRegion();
+  AtDetails.seeFieldWithValue('X', FF3793.enabled ? '68.75' : '338.25');
   I.pressKey('U');
 
   I.say('Collapse the details panel');

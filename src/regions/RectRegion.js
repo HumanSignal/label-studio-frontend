@@ -9,15 +9,81 @@ import Registry from '../core/Registry';
 import { useRegionStyles } from '../hooks/useRegionColor';
 import { AreaMixin } from '../mixins/AreaMixin';
 import { KonvaRegionMixin } from '../mixins/KonvaRegion';
-import { default as DisabledMixin, default as NormalizationMixin } from '../mixins/Normalization';
+import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import { ImageModel } from '../tags/object/Image';
 import { rotateBboxCoords } from '../utils/bboxCoords';
+import { FF_DEV_3793, isFF } from '../utils/feature-flags';
 import { createDragBoundFunc } from '../utils/image';
 import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
 import { RegionWrapper } from './RegionWrapper';
 
+const RectRegionAbsoluteCoordsDEV3793 = types
+  .model({
+    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
+  })
+  .volatile(() => ({
+    relativeX: 0,
+    relativeY: 0,
+
+    relativeWidth: 0,
+    relativeHeight: 0,
+  }))
+  .actions(self => ({
+    afterCreate() {
+      switch (self.coordstype)  {
+        case 'perc': {
+          self.relativeX = self.x;
+          self.relativeY = self.y;
+          self.relativeWidth = self.width;
+          self.relativeHeight = self.height;
+          break;
+        }
+        case 'px': {
+          const { stageWidth, stageHeight } = self.parent;
+
+          if (stageWidth && stageHeight) {
+            self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+          }
+          break;
+        }
+      }
+      self.checkSizes();
+      self.updateAppearenceFromState();
+    },
+    setPosition(x, y, width, height, rotation) {
+      self.x = x;
+      self.y = y;
+      self.width = width;
+      self.height = height;
+
+      self.relativeX = (x / self.parent?.stageWidth) * 100;
+      self.relativeY = (y / self.parent?.stageHeight) * 100;
+
+      self.relativeWidth = (width / self.parent?.stageWidth) * 100;
+      self.relativeHeight = (height / self.parent?.stageHeight) * 100;
+
+      self.rotation = (rotation + 360) % 360;
+    },
+    setPositionInternal(x, y, width, height, rotation) {
+      return self.setPosition(x, y, width, height, rotation);
+    },
+    updateImageSize(wp, hp, sw, sh) {
+      if (self.coordstype === 'px') {
+        self.x = (sw * self.relativeX) / 100;
+        self.y = (sh * self.relativeY) / 100;
+        self.width = (sw * self.relativeWidth) / 100;
+        self.height = (sh * self.relativeHeight) / 100;
+      } else if (self.coordstype === 'perc') {
+        self.x = (sw * self.x) / 100;
+        self.y = (sh * self.y) / 100;
+        self.width = (sw * self.width) / 100;
+        self.height = (sh * self.height) / 100;
+        self.coordstype = 'px';
+      }
+    },
+  }));
 
 /**
  * Rectangle object for Bounding Box
@@ -38,15 +104,8 @@ const Model = types
 
     rotation: 0,
     rotationAtCreation: 0,
-    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
   })
   .volatile(() => ({
-    relativeX: 0,
-    relativeY: 0,
-
-    relativeWidth: 0,
-    relativeHeight: 0,
-
     startX: 0,
     startY: 0,
 
@@ -91,41 +150,34 @@ const Model = types
       return self.object;
     },
     get bboxCoords() {
-      const bboxCoords= {
+      const bboxCoords = {
         left: self.x,
         top: self.y,
         right: self.x + self.width,
         bottom: self.y + self.height,
       };
 
-      return self.rotation !== 0 ? rotateBboxCoords(bboxCoords, self.rotation) : bboxCoords;
+      if (self.rotation === 0) return bboxCoords;
+
+      return rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y: self.y }, self.parent.whRatio);
+    },
+    get canvasX() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
+    },
+    get canvasY() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
+    },
+    get canvasWidth() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.width) : self.width;
+    },
+    get canvasHeight() {
+      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.height) : self.height;
     },
   }))
   .actions(self => ({
-
     afterCreate() {
       self.startX = self.x;
       self.startY = self.y;
-
-      switch (self.coordstype)  {
-        case 'perc': {
-          self.relativeX = self.x;
-          self.relativeY = self.y;
-          self.relativeWidth = self.width;
-          self.relativeHeight = self.height;
-          break;
-        }
-        case 'px': {
-          const { stageWidth, stageHeight } = self.parent;
-
-          if (stageWidth && stageHeight) {
-            self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
-          }
-          break;
-        }
-      }
-      self.checkSizes();
-      self.updateAppearenceFromState();
     },
 
     getDistanceBetweenPoints(pointA, pointB) {
@@ -150,8 +202,8 @@ const Model = types
       return Math.abs(h);
     },
 
-    isAboveTheLine(a, b, c){
-      return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) < 0;
+    isAboveTheLine(a, b, c) {
+      return ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) < 0;
     },
 
     draw(x, y, points) {
@@ -159,7 +211,7 @@ const Model = types
 
       if (points.length === 1) {
         self.width = self.getDistanceBetweenPoints({ x, y }, self);
-        self.rotation = self.rotationAtCreation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
+        self.rotation = self.rotationAtCreation = Math.atan2(y - self.y, x - self.x) * (180 / Math.PI);
       } else if (points.length === 2) {
         const { y: firstPointY, x: firstPointX } = points[0];
         const { y: secondPointY, x: secondPointX } = points[1];
@@ -174,7 +226,6 @@ const Model = types
           self.rotation = self.rotationAtCreation;
         }
         self.height = self.getHeightOnPerpendicular(points[0], points[1], { x, y });
-
       }
 
       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
@@ -192,15 +243,6 @@ const Model = types
     },
 
     // @todo not used
-    rotate(degree) {
-      const p = self.rotatePoint(self, degree);
-
-      if (degree === -90) p.y -= self.width;
-      if (degree === 90) p.x -= self.height;
-      self.setPosition(p.x, p.y, self.height, self.width, self.rotation);
-    },
-
-    // @todo not used
     coordsInside(x, y) {
       // check if x and y are inside the rectangle
       const rx = self.x;
@@ -213,6 +255,14 @@ const Model = types
       return false;
     },
 
+    setPositionInternal(x, y, width, height, rotation) {
+      self.x = x;
+      self.y = y;
+      self.width = width;
+      self.height = height;
+      self.rotation = (rotation + 360) % 360;
+    },
+
     /**
      * Bounding Box set position on canvas
      * @param {number} x
@@ -222,18 +272,13 @@ const Model = types
      * @param {number} rotation
      */
     setPosition(x, y, width, height, rotation) {
-      self.x = x;
-      self.y = y;
-      self.width = width;
-      self.height = height;
-
-      self.relativeX = (x / self.parent?.stageWidth) * 100;
-      self.relativeY = (y / self.parent?.stageHeight) * 100;
-
-      self.relativeWidth = (width / self.parent?.stageWidth) * 100;
-      self.relativeHeight = (height / self.parent?.stageHeight) * 100;
-
-      self.rotation = (rotation + 360) % 360;
+      self.setPositionInternal(
+        self.parent.canvasToInternalX(x),
+        self.parent.canvasToInternalY(y),
+        self.parent.canvasToInternalX(width),
+        self.parent.canvasToInternalY(height),
+        rotation,
+      );
     },
 
     setScale(x, y) {
@@ -249,20 +294,7 @@ const Model = types
       self.fill = color;
     },
 
-    updateImageSize(wp, hp, sw, sh) {
-      if (self.coordstype === 'px') {
-        self.x = (sw * self.relativeX) / 100;
-        self.y = (sh * self.relativeY) / 100;
-        self.width = (sw * self.relativeWidth) / 100;
-        self.height = (sh * self.relativeHeight) / 100;
-      } else if (self.coordstype === 'perc') {
-        self.x = (sw * self.x) / 100;
-        self.y = (sh * self.y) / 100;
-        self.width = (sw * self.width) / 100;
-        self.height = (sh * self.height) / 100;
-        self.coordstype = 'px';
-      }
-    },
+    updateImageSize() {},
 
     /**
      * @example
@@ -294,18 +326,15 @@ const Model = types
      * @return {RectRegionResult}
      */
     serialize() {
-      return {
-        original_width: self.parent.naturalWidth,
-        original_height: self.parent.naturalHeight,
-        image_rotation: self.parent.rotation,
-        value: {
-          x: (self.parent.stageWidth > 1) ? self.convertXToPerc(self.x) : self.x,
-          y: (self.parent.stageWidth > 1) ? self.convertYToPerc(self.y) : self.y,
-          width: (self.parent.stageWidth > 1) ? self.convertHDimensionToPerc(self.width) : self.width,
-          height: (self.parent.stageWidth > 1) ? self.convertVDimensionToPerc(self.height) : self.height,
-          rotation: self.rotation,
-        },
+      const value = {
+        x: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertXToPerc(self.x) : self.x,
+        y: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertYToPerc(self.y) : self.y,
+        width: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertHDimensionToPerc(self.width) : self.width,
+        height: (self.parent.stageWidth > 1 && !isFF(FF_DEV_3793)) ? self.convertVDimensionToPerc(self.height) : self.height,
+        rotation: self.rotation,
       };
+
+      return self.parent.createSerializedResult(self, value);
     },
   }));
 
@@ -313,11 +342,11 @@ const RectRegionModel = types.compose(
   'RectRegionModel',
   RegionsMixin,
   NormalizationMixin,
-  DisabledMixin,
   AreaMixin,
   KonvaRegionMixin,
   EditableRegion,
   Model,
+  ...(isFF(FF_DEV_3793) ? [] : [RectRegionAbsoluteCoordsDEV3793]),
 );
 
 const HtxRectangleView = ({ item }) => {
@@ -329,7 +358,7 @@ const HtxRectangleView = ({ item }) => {
 
   const eventHandlers = {};
 
-  if (!suggestion && item.editable) {
+  if (!suggestion && !item.isReadOnly()) {
     eventHandlers.onTransform = ({ target }) => {
       // resetting the skew makes transformations weird but predictable
       target.setAttr('skewX', 0);
@@ -382,11 +411,11 @@ const HtxRectangleView = ({ item }) => {
   return (
     <RegionWrapper item={item}>
       <Rect
-        x={item.x}
-        y={item.y}
+        x={item.canvasX}
+        y={item.canvasY}
         ref={node => item.setShapeRef(node)}
-        width={item.width}
-        height={item.height}
+        width={item.canvasWidth}
+        height={item.canvasHeight}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}
@@ -397,7 +426,7 @@ const HtxRectangleView = ({ item }) => {
         scaleY={item.scaleY}
         opacity={1}
         rotation={item.rotation}
-        draggable={item.editable}
+        draggable={!item.isReadOnly()}
         name={`${item.id} _transformable`}
         {...eventHandlers}
         onMouseOver={() => {

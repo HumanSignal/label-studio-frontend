@@ -7,25 +7,24 @@ import { Spin } from 'antd';
 
 import ObjectBase from './Base';
 import ObjectTag from '../../components/Tags/Object';
+import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
 import Registry from '../../core/Registry';
 import Tree from '../../core/Tree';
 import Types from '../../core/Types';
-import { restoreNewsnapshot } from '../../core/Helpers';
 import {
   checkD3EventLoop,
-  fixMobxObserve,
   formatTrackerTime,
   getOptimalWidth,
   getRegionColor,
   idFromValue,
   sparseValues
 } from './TimeSeries/helpers';
-import { parseCSV, tryToParseJSON } from '../../utils/data';
-import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import PersistentStateMixin from '../../mixins/PersistentState';
+import { parseCSV, tryToParseJSON } from '../../utils/data';
+import { fixMobxObserve } from '../../utils/utilities';
 
 import './TimeSeries/Channel';
-import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 
 /**
  * The `TimeSeries` tag can be used to label time series data. Read more about Time Series Labeling on [the time series template page](../templates/time_series.html).
@@ -168,7 +167,7 @@ const Model = types
         data = { ...data, [self.keyColumn]: indices };
 
         // Require a timeformat for non numeric values
-      } else if(!self.timeformat && isNaN(data[self.keyColumn][0])) {
+      } else if (!self.timeformat && isNaN(data[self.keyColumn][0])) {
         const message = [
           `Looks like your <b>timeColumn</b> (${self.timecolumn}) contains non-numbers.`,
           'You have to use <b>timeFormat</b> parameter if your values are datetimes.',
@@ -383,22 +382,6 @@ const Model = types
 
     throttledRangeUpdate() {
       return throttle(self.updateTR, 100);
-    },
-
-    fromStateJSON(obj, fromModel) {
-      if (obj.value.choices) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-      }
-
-      if ('timeserieslabels' in obj.value) {
-        const states = restoreNewsnapshot(fromModel);
-
-        states.fromStateJSON(obj);
-
-        self.createRegion(obj.value.start, obj.value.end, [states]);
-
-        self.updateView();
-      }
     },
 
     addRegion(start, end) {

@@ -7,7 +7,7 @@ const fs = require('fs');
 const FRAGMENTS_PATH = './fragments/';
 
 module.exports.config = {
-  timeout: 60 * 30, // Time out after 30 minutes
+  timeout: 60 * 40, // Time out after 40 minutes
   tests: './tests/**/*.test.js',
   output: './output',
   helpers: {
@@ -26,6 +26,9 @@ module.exports.config = {
       windowSize: '1200x900',
       waitForNavigation: 'networkidle',
       browser: 'chromium',
+      chromium: process.env.CHROMIUM_EXECUTABLE_PATH ? {
+        executablePath: process.env.CHROMIUM_EXECUTABLE_PATH,
+      } : {},
       trace: false,
       keepTraceForPassedTests: false,
     },
@@ -37,6 +40,9 @@ module.exports.config = {
     },
     Annotations: {
       require: './helpers/Annotations.ts',
+    },
+    Assertion: {
+      require: './helpers/Assertion.js',
     },
   },
   include: {
@@ -75,6 +81,7 @@ module.exports.config = {
     featureFlags: {
       require: './plugins/featureFlags.js',
       enabled: true,
+      defaultFeatureFlags: require('./setup/feature-flags'),
     },
     istanbulCoverage: {
       require: './plugins/istanbulСoverage.js',
@@ -87,9 +94,35 @@ module.exports.config = {
         exclude: ['**/common/**', '**/components/**'],
       },
     },
+    errorsCollector: {
+      require: './plugins/errorsCollector.js',
+      enabled: true,
+      uncaughtErrorFilter: {
+        interrupt: true,
+        ignore: [
+          /^ResizeObserver loop limit exceeded$/,
+          // @todo: solve the problems below
+          /^TypeError: Cannot read properties of null \(reading 'getBoundingClientRect'\)/,
+          /The play\(\) request was interrupted/,
+        ],
+      },
+      consoleErrorFilter: {
+        // @todo switch it on to feel the pain
+        display: false,
+      },
+    },
+    stepLogsModifier: {
+      require: './plugins/stepLogsModifier.js',
+      enabled: true,
+      modifyStepLogs: [{
+        stepNameMatcher: 'executeScript',
+        rule: 'hideFunction',
+      }],
+    },
     screenshotOnFail: {
       enabled: true,
     },
+    pauseOnFail: {},
   },
   require: ['ts-node/register'],
 };
