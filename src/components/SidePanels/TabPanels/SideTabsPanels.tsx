@@ -11,7 +11,7 @@ import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
 import { PanelTabsBase } from './PanelTabsBase';
 import { Tabs } from './Tabs';
 import { CommonProps, DropSide, EventHandlers, JoinOrder, PanelBBox, Result, Side, SidePanelsProps, ViewportSize } from './types';
-import { getAttachedPerSide, getLeftKeys, getRightKeys, getSnappedHeights, joinPanelColumns, newPanelInState, partialEmptyBaseProps, redistributeHeights, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
+import { findZIndices, getAttachedPerSide, getLeftKeys, getRightKeys, getSnappedHeights, joinPanelColumns, newPanelInState, partialEmptyBaseProps, redistributeHeights, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
 
 const maxWindowWidth = 980;
 const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
@@ -73,13 +73,16 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
       if (movingTabComponent) movingTabComponent.active = true;
       const stateWithRemovals = stateRemovedTab(state, movingPanel, movingTab);
       const panelsWithRemovals = stateRemovePanelEmptyViews(stateWithRemovals); 
-      const stateWithAdditions = stateAddedTab(panelsWithRemovals, movingPanel, receivingPanel, movingTabComponent, receivingTab, dropSide);      
-      const renamedKeys = renameKeys(stateWithAdditions);
+      const stateWithAdditions = stateAddedTab(panelsWithRemovals, movingPanel, receivingPanel, movingTabComponent, receivingTab, dropSide);     
+      const adjustZIndex = findZIndices(stateWithAdditions, receivingPanel);
+      const renamedKeys = renameKeys(adjustZIndex);
       const activeDefaults = setActiveDefaults(renamedKeys);
+
       const restorePanelHeights = getSnappedHeights(activeDefaults, viewportSize.current.height);
 
       return restorePanelHeights;
     });
+    setSnap(undefined);
   }, [panelData]);
 
   const createNewPanel = useCallback((
@@ -180,9 +183,8 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
   const onPositionChangeBegin = useCallback((key: string) => {
     setLockPanelContents(() => true);
-    Object.keys(panelData).forEach(panelKey => updatePanel(panelKey, {
-      zIndex: panelKey === key ? 12 : 10,
-    }));
+    setPanelData((state) => findZIndices(state, key));
+
   }, [panelData]);
 
   const onPositionChange = useCallback((key: string, t: number, l: number, setDetached: boolean) => { 
