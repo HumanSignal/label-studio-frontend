@@ -108,12 +108,12 @@ export const ViewControls: FC<ViewControlsProps> = ({
           },
           {
             label: 'Boolean',
-            path: 'score',
+            path: 'hidden',
             type: 'Boolean',
           },
           {
             label: 'Common',
-            path: 'score',
+            path: 'isDrawing',
             type: 'Common',
           }]}
         />
