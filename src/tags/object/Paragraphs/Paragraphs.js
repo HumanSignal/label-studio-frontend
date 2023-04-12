@@ -424,6 +424,8 @@ class HtxParagraphsView extends Component {
             src={item.audio}
             ref={item.getRef()}
             onEnded={item.reset}
+            onError={item.handleError}
+            onCanPlay={item.handleCanPlay}
           />
         )}
         {isFF(FF_DEV_2669) && <AuthorFilter item={item} />}
