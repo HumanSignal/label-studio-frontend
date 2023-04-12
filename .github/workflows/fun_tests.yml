@@ -96,7 +96,7 @@ jobs:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           set -euo pipefail
-          cd ./__tests__
+          cd ./tests/functional
           yarn install --frozen-lockfile
 
       - name: Run Cypress test suite
@@ -107,7 +107,7 @@ jobs:
           CPU_NUMBER: ${{ steps.cpu-info.outputs.cores-count }}
         run: |
           set -euo pipefail
-          cd __tests__
+          cd ./tests/functional
           yarn run test:parallel
 
       - name: "Upload suite output" 
@@ -115,12 +115,12 @@ jobs:
         if: ${{ failure() }}
         with:
           name: failure-result
-          path: __tests__/output
+          path: ./tests/functional
 
       - name: Prepare coverage report
         if: ${{ success() }}
         run: |
-          cd __tests__
+          cd ./tests/functional
           rm -rf coverage
           yarn cvg:report
 
@@ -129,5 +129,5 @@ jobs:
         if: ${{ success() }}
         with:
           name: cypress-tests-coverage
-          path: __tests__/coverage/
+          path: ./tests/functional/coverage/
 
