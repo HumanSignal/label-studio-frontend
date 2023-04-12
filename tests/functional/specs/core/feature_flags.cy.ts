@@ -3,6 +3,7 @@ import { LabelStudio } from '@heartexlabs/ls-test/helpers/LSF';
 describe('Feature Flags', () => {
   it('can set feature flags on the global object', () => {
     const flagName = 'customFeatureFlag';
+    const anotherFlag = 'anotherFlag';
 
     cy.visit('/');
 
@@ -10,11 +11,14 @@ describe('Feature Flags', () => {
       [flagName]: true,
     });
 
-    LabelStudio.shouldHaveFeatureFlag(flagName);
+    LabelStudio.featureFlag(flagName).should('be.true');
+    LabelStudio.featureFlag(anotherFlag).should('be.false');
   });
 
   it('can set feature flags before navigation', () => {
+    // setting only this flag
     const flagName = 'customFeatureFlag';
+    const anotherFlag = 'anotherFlag';
 
     LabelStudio.setFeatureFlagsOnPageLoad({
       [flagName]: true,
@@ -22,7 +26,8 @@ describe('Feature Flags', () => {
 
     cy.visit('/');
 
-    LabelStudio.shouldHaveFeatureFlag(flagName);
+    LabelStudio.featureFlag(flagName).should('be.true');
+    LabelStudio.featureFlag(anotherFlag).should('be.false');
   });
 });
 
