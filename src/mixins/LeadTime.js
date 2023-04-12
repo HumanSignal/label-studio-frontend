@@ -15,7 +15,7 @@ const LeadTimeMixin = types
   }))
   .actions(self => ({
     internalCountTime(callTime) {
-      const now = +new Date();
+      const now = +Date.now();
       // leading call called immediately, debounced call called after INTERVAL
       const leadingCall = now - callTime < DEBOUNCE_INTERVAL / 2;
 
