@@ -1,7 +1,7 @@
 import { Block, Elem } from '../../utils/bem';
 import { Dropdown } from '../../common/Dropdown/Dropdown';
 
-import { FC, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '../../common/Button/Button';
 import { IconFilter } from '../../assets/icons';
 
@@ -16,6 +16,11 @@ export const Filter: FC<FilterInterface> = ({
   onChange,
 }) => {
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
+
+  useEffect(() => {
+    if(filterList.length > 0)
+      onChange(FilterItems(filterData, filterList[0]));
+  }, [filterData]);
 
   const addNewFilterListItem = useCallback(() => {
     setFilterList((filterList) => [
@@ -42,7 +47,7 @@ export const Filter: FC<FilterInterface> = ({
           path: path ?? newList[index].path,
         };
 
-        onChange(FilterItems(filterData, newList[index]) || []);
+        onChange(FilterItems(filterData, newList[index]));
 
         return newList;
       });

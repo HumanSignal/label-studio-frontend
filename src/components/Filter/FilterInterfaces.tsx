@@ -1,6 +1,6 @@
 export interface FilterInterface {
   availableFilters: AvailableFiltersInterface[];
-  onChange?: (filter: any) => void;
+  onChange: (filter: any) => void;
   filterData: any;
 }
 
