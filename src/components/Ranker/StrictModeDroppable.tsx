@@ -20,7 +20,6 @@ export const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
 
     return () => {
       cancelAnimationFrame(animation);
-      setEnabled(false);
     };
   }, []);
   if (!enabled) {

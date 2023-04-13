@@ -49,13 +49,15 @@ const Model = types
           ]
           : [data, []];
       }
-      //grabs data from the createData file
+      // transforms columns with data items into Ranker component format
       return transformData(columns, self.title.split('|'));
     },
     get result() {
       return self.annotation?.results.find(r => r.from_name === self);
     },
     get resultType() {
+      // this tag isn't a control tag but behaves like one, 
+      // so we we need to emulate `type`s logic to generate results.
       return 'ranker';
     },
     get valueType() {
