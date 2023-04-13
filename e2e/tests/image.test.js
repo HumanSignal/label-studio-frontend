@@ -150,15 +150,11 @@ Scenario('Can\'t create region outside of canvas', async ({ I, AtLabels, AtSideb
 </View>
 `;
 
-  I.amOnPage('/');
-
   LabelStudio.setFeatureFlags({
     fflag_fix_front_dev_3793_relative_coords_short: true,
   });
 
-  I.executeScript(() => {
-    window.LabelStudio.destroyAll();
-  });
+  I.amOnPage('/');
 
   LabelStudio.init({
     config: cfg,
