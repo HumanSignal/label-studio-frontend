@@ -15,8 +15,18 @@ type SequenceItem = {
 
 /** 
  * interpolate prop between two sequence items
+ * @return {any} propValue
+ * @example
+ * interpolateProp({frame: 0, x: -10}, {frame: 100, x: 10}, 25, 'x'); // will return -5
+ * @example
+ * interpolateProp(
+ *   {frame: 0, rotation: -170},
+ *   {frame: 20, rotation: 170},
+ *   5,
+ *   'rotation'
+ * ); // will return -175
  */
-export const interpolateProp = (start: SequenceItem, end: SequenceItem, frame: number, prop: string) => {
+export const interpolateProp = (start: SequenceItem, end: SequenceItem, frame: number, prop: string): any => {
   // @todo edge cases
   const r = (frame - start.frame) / (end.frame - start.frame);
 
