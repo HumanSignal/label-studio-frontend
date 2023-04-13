@@ -839,8 +839,11 @@ export const Annotation = types
       };
 
 
-      //TODO: MST is crashing if we don't validate areas?, this problem isn't happening locally. So to reproduce you have to test in production or environment
+      // TODO: MST is crashing if we don't validate areas?, this problem isn't
+      // happening locally. So to reproduce you have to test in production or environment
       const area = self?.areas?.put(areaRaw);
+
+      object?.afterResultCreated?.(area);
 
       if (!area) return;
 

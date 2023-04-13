@@ -2,6 +2,7 @@ import { observer } from 'mobx-react';
 import { getRoot } from 'mobx-state-tree';
 import { Button } from 'antd';
 import { PauseCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import { FF_LSDV_3012, isFF } from '../../../utils/feature-flags';
 import styles from './Paragraphs.module.scss';
 
 export const Phrases = observer(({ item }) => {
@@ -14,22 +15,23 @@ export const Phrases = observer(({ item }) => {
     const style = item.layoutStyles(v);
     const classNames = [cls.phrase];
     const isContentVisible = item.isVisibleForAuthorFilter(v);
+    const isPlaying = item.playingId === idx && (!isFF(FF_LSDV_3012) || item.playing);
 
     if (withAudio) classNames.push(styles.withAudio);
     if (!isContentVisible) classNames.push(styles.collapsed);
     if (getRoot(item).settings.showLineNumbers) classNames.push(styles.numbered);
 
     return (
-      <div key={`${item.name}-${idx}`} className={classNames.join(' ')} style={style.phrase}>
+      <div key={`${item.name}-${idx}`} data-testid={`phrase:${idx}`} className={classNames.join(' ')} style={style.phrase}>
         {isContentVisible && withAudio && !isNaN(v.start) && (
           <Button
             type="text"
             className={styles.play}
-            icon={item.playingId === idx ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+            icon={isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
             onClick={() => item.play(idx)}
           />
         )}
-        <span className={cls.name}>{v[item.namekey]}</span>
+        <span className={cls.name} data-skip-node="true">{v[item.namekey]}</span>
         <span className={cls.text}>{v[item.textkey]}</span>
       </div>
     );

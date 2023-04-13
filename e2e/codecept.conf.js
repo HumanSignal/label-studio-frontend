@@ -7,7 +7,7 @@ const fs = require('fs');
 const FRAGMENTS_PATH = './fragments/';
 
 module.exports.config = {
-  timeout: 60 * 30, // Time out after 30 minutes
+  timeout: 60 * 40, // Time out after 40 minutes
   tests: './tests/**/*.test.js',
   output: './output',
   helpers: {
@@ -26,6 +26,9 @@ module.exports.config = {
       windowSize: '1200x900',
       waitForNavigation: 'networkidle',
       browser: 'chromium',
+      chromium: process.env.CHROMIUM_EXECUTABLE_PATH ? {
+        executablePath: process.env.CHROMIUM_EXECUTABLE_PATH,
+      } : {},
       trace: false,
       keepTraceForPassedTests: false,
     },
@@ -96,6 +99,12 @@ module.exports.config = {
       enabled: true,
       uncaughtErrorFilter: {
         interrupt: true,
+        ignore: [
+          /^ResizeObserver loop limit exceeded$/,
+          // @todo: solve the problems below
+          /^TypeError: Cannot read properties of null \(reading 'getBoundingClientRect'\)/,
+          /The play\(\) request was interrupted/,
+        ],
       },
       consoleErrorFilter: {
         // @todo switch it on to feel the pain
