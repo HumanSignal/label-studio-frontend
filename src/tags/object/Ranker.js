@@ -1,6 +1,3 @@
-/**
- * libraries
- */
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { types } from 'mobx-state-tree';
@@ -8,35 +5,30 @@ import { types } from 'mobx-state-tree';
 import Registry from '../../core/Registry';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import ProcessAttrsMixin from '../../mixins/ProcessAttrs';
-import Base from './Base';
 import { parseValue } from '../../utils/data';
+import Base from './Base';
 
-/**
- * components
- */
 import Ranker from '../../components/Ranker/Ranker';
 import { transformData } from '../../components/Ranker/createData';
 
 /**
  * @name Ranker
+ * The `Ranker` tag is used to rank items in a list or pick relevant items from a list, depending on `mode` parameter. Task data referred in `value` parameter should be an array of objects with `id`, `title`, and `body` fields.
+ * Results are saved as an array of `id`s in `result` field.
+ * Columns and items can be styled in `Style` tag by using respective `.htx-ranker-column` and `.htx-ranker-item` classes. Titles of one or two columns are defined in single `title` parameter.
  * @meta_title Ranker Tag displays items that can be dragged and dropped between columns
  * @meta_description Customize Label Studio by displaying and sorting results for machine learning and data science projects.
- * @param {string} value Data field value containing JSON type for Ranker
- * @param {string} [valueType] Value to define the data type in Ranker
+ * @param {string} value Data field containing a JSON with array of objects (id, title, body) to rank
+ * @param {rank|select} [mode] rank: 1 column, reorder to rank, select: 2 columns, drag results to second column to select
+ * @param {string} [title] Title(s) of the column(s), separate them by `|` symbol for `mode="select"
  */
 const Model = types
   .model({
     type: 'ranker',
     value: types.maybeNull(types.string),
     _value: types.frozen([]),
-    valuetype: types.optional(types.string, 'json'),
-    /**
-     * rank: 1 column, reorder to rank
-     * select: 2 columns, drag results to second column to select
-     */
     mode: types.optional(types.enumeration(['rank', 'select']), 'select'),
     title: types.optional(types.string, ''),
-
   })
   .views(self => ({
     get dataSource() {
