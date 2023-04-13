@@ -124,9 +124,6 @@ const SelectionMap = types.model(
     highlight(region) {
       self.clear();
       self.select(region);
-
-      if (region?.type === 'polygonregion') return;
-      region?.shapeRef?.parent?.canvas?._canvas?.scrollIntoView?.();
     },
   };
 });
@@ -146,6 +143,8 @@ export default types.model('RegionStore', {
     types.enumeration(['type', 'label', 'manual']),
     () => window.localStorage.getItem(localStorageKeys.group) ?? 'manual',
   ),
+
+  filter: types.maybeNull(types.array(types.safeReference(AllRegionsType)), null),
 
   view: types.optional(
     types.enumeration(['regions', 'labels']),
@@ -215,6 +214,10 @@ export default types.model('RegionStore', {
       return Array.from(self.annotation.areas.values()).filter(area => !area.classification);
     },
 
+    get filteredRegions() {
+      return self.filter || self.regions;
+    },
+
     get suggestions() {
       return Array.from(self.annotation.suggestions.values()).filter(area => !area.classification);
     },
@@ -225,8 +228,8 @@ export default types.model('RegionStore', {
 
     get sortedRegions() {
       const sorts = {
-        date: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.ouid - a.ouid : (a, b) => a.ouid - b.ouid),
-        score: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.score - a.score : (a, b) => a.score - b.score),
+        date: isDesc => [...self.filteredRegions].sort(isDesc ? (a, b) => b.ouid - a.ouid : (a, b) => a.ouid - b.ouid),
+        score: isDesc => [...self.filteredRegions].sort(isDesc ? (a, b) => b.score - a.score : (a, b) => a.score - b.score),
       };
 
       const sorted = sorts[self.sort](self.sortOrder === 'desc');
@@ -449,6 +452,10 @@ export default types.model('RegionStore', {
   setGrouping(group) {
     self.group = group;
     window.localStorage.setItem(localStorageKeys.group, self.group);
+  },
+
+  setFilteredRegions(filter) {
+    self.filter = filter;
   },
 
   /**
