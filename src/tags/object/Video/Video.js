@@ -5,9 +5,10 @@ import { isTimeRelativelySimilar } from '../../../lib/AudioUltra';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
+import { SyncableMixin } from '../../../mixins/Syncable';
 import { SyncMixin } from '../../../mixins/SyncMixin';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_2715, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2715, FF_LSDV_3012, isFF } from '../../../utils/feature-flags';
 import ObjectBase from '../Base';
 
 const isFFDev2715 = isFF(FF_DEV_2715);
@@ -107,21 +108,91 @@ const Model = types
       return states && states.length > 0;
     },
   }))
+  .actions(self => ({
+    afterCreate() {
+      // normalize framerate — should be string with number of frames per second
+      const framerate = Number(parseValue(self.framerate, self.store.task?.dataObj));
+
+      if (!framerate || isNaN(framerate)) self.framerate = '24';
+      else if (framerate < 1) self.framerate = String(1 / framerate);
+      else self.framerate = String(framerate);
+    },
+  }))
+  ////// Sync actions
+  .actions(!isFF(FF_LSDV_3012) ? (() => ({})) : self => ({
+    ////// Outgoing
+
+    /**
+     * Wrapper to always send important data
+     * @param {string} event 
+     * @param {any} data 
+     */
+    triggerSync(event, data) {
+      if (!self.ref.current) return;
+
+      self.syncSend({
+        playing: self.ref.current.playing,
+        time: self.ref.current.currentTime,
+        ...data,
+      }, event);
+    },
+
+    triggerSyncPlay() {
+      self.triggerSync('play', { playing: true });
+    },
+
+    triggerSyncPause() {
+      self.triggerSync('pause', { playing: false });
+    },
+
+    ////// Incoming
+
+    registerSyncHandlers() {
+      ['play', 'pause', 'seek'].forEach(event => {
+        self.syncHandlers.set(event, self.handleSync);
+      });
+      self.syncHandlers.set('speed', self.handleSyncSpeed);
+    },
+
+    handleSync(data) {
+      if (!self.ref.current) return;
+
+      const video = self.ref.current;
+
+      if (data.playing) {
+        if (!video.playing) video.play();
+      } else {
+        if (video.playing) video.pause();
+      }
+
+      if (data.speed) {
+        self.speed = data.speed;
+      }
+
+      video.currentTime = data.time;
+    },
+
+    handleSyncSpeed({ speed }) {
+      self.speed = speed;
+    },
+
+    handleSeek() {
+      self.triggerSync('seek');
+    },
+
+    syncMuted(muted) {
+      self.muted = muted;
+    },
+  }))
   .actions(self => {
+    if (isFF(FF_LSDV_3012)) return {};
+
     const Super = {
       triggerSyncPlay: self.triggerSyncPlay,
       triggerSyncPause: self.triggerSyncPause,
     };
 
     return {
-      afterCreate() {
-        const framerate = Number(parseValue(self.framerate, self.store.task?.dataObj));
-
-        if (!framerate || isNaN(framerate)) self.framerate = '24';
-        else if (framerate < 1) self.framerate = String(1 / framerate);
-        else self.framerate = String(framerate);
-      },
-
       triggerSyncPlay() {
         // Audio v3
         if (isFFDev2715) {
@@ -231,7 +302,10 @@ const Model = types
           }
         }
       },
-
+    };
+  })
+  .actions(self => {
+    return {
       setLength(length) {
         self.length = length;
       },
@@ -287,7 +361,7 @@ const Model = types
   });
 
 export const VideoModel = types.compose('VideoModel',
-  SyncMixin,
+  isFF(FF_LSDV_3012) ? SyncableMixin : SyncMixin,
   TagAttrs,
   ProcessAttrsMixin,
   ObjectBase,

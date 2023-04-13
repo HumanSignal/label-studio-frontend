@@ -149,7 +149,9 @@
               store.setHistory(annotationHistory)
             }
           })
-
+          ls.on("updateAnnotation", (_, annotation) => {
+            console.log(annotation.serializeAnnotation());
+          })
           ls.on("regionFinishedDrawing", (region, list) => {
             console.log("finish drawing", {region, list})
           })
