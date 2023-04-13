@@ -32,7 +32,7 @@ export const ConfigControl: FC<ConfigControlProps> = ({
   toggleVisibility,
   layerVisibility,
 }) => {
-  const [playbackSpeed, setplaybackSpeed] = useState(speed ?? 1);
+  const playbackSpeed = speed ?? 1;
   const [isTimeline, setTimeline] = useState(true);
   const [isAudioWave, setAudioWave] = useState(true);
 
@@ -62,7 +62,6 @@ export const ConfigControl: FC<ConfigControlProps> = ({
 
     if (isNaN(_playbackSpeed)) return;
 
-    setplaybackSpeed(_playbackSpeed);
     onSpeedChange(_playbackSpeed);
   };
 

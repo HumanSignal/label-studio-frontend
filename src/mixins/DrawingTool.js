@@ -3,7 +3,7 @@ import { types } from 'mobx-state-tree';
 import Utils from '../utils';
 import throttle from 'lodash.throttle';
 import { MIN_SIZE } from '../tools/Base';
-import { FF_DEV_3666, FF_DEV_3793, FF_LSDV_4583, isFF } from '../utils/feature-flags';
+import { FF_DEV_3666, FF_DEV_3793, isFF } from '../utils/feature-flags';
 
 const DrawingTool = types
   .model('DrawingTool', {
@@ -111,8 +111,6 @@ const DrawingTool = types
         self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
 
-        if (isFF(FF_LSDV_4583)) self.currentArea.setItemIndex?.(self.obj.currentImage);
-
         self.applyActiveStates(self.currentArea);
         self.annotation.setIsDrawing(true);
         return self.currentArea;
@@ -137,8 +135,6 @@ const DrawingTool = types
         }, { coordstype: 'px', dynamic: self.dynamic });
 
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
-
-        if (isFF(FF_LSDV_4583)) newArea.setItemIndex?.(obj.currentImage);
 
         currentArea.setDrawing(false);
         self.applyActiveStates(newArea);
@@ -347,6 +343,11 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
         return Super.canStartDrawing() && !self.annotation.regionStore.hasSelection;
       },
       nextPoint(x, y) {
+        const area = self.getCurrentArea();
+        const object = self.obj;
+
+        if (area && object && object.multiImage && area.item_index !== object.currentImage) return;
+
         self.getCurrentArea().addPoint(x, y);
         pointsCount++;
       },
