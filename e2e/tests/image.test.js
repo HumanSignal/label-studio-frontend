@@ -165,8 +165,8 @@ Scenario('Can\'t create rectangles outside of canvas', async ({ I, AtLabels, AtS
     },
   });
 
-  await AtImageView.lookForStage();
   await AtImageView.waitForImage();
+  await AtImageView.lookForStage();
 
   const stage = AtImageView.stageBBox();
 
