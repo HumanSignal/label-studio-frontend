@@ -2,19 +2,19 @@ import { createRef } from 'react';
 import { getRoot, types } from 'mobx-state-tree';
 import ColorScheme from 'pleasejs';
 
-import ObjectBase from '../Base';
-import RegionsMixin from '../../../mixins/Regions';
-import Utils from '../../../utils';
-import { ParagraphsRegionModel } from '../../../regions/ParagraphsRegion';
-import { parseValue } from '../../../utils/data';
-import messages from '../../../utils/messages';
-import styles from './Paragraphs.module.scss';
 import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
-import { isValidObjectURL } from '../../../utils/utilities';
-import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, FF_DEV_3666, isFF } from '../../../utils/feature-flags';
+import RegionsMixin from '../../../mixins/Regions';
+import { SyncableMixin } from '../../../mixins/Syncable';
 import { SyncMixin } from '../../../mixins/SyncMixin';
-
+import { ParagraphsRegionModel } from '../../../regions/ParagraphsRegion';
+import Utils from '../../../utils';
+import { parseValue } from '../../../utils/data';
+import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, FF_DEV_3666, FF_LSDV_3012, isFF } from '../../../utils/feature-flags';
+import messages from '../../../utils/messages';
+import { clamp, isDefined, isValidObjectURL } from '../../../utils/utilities';
+import ObjectBase from '../Base';
+import styles from './Paragraphs.module.scss';
 
 const isFFDev2461 = isFF(FF_DEV_2461);
 
@@ -147,7 +147,198 @@ const Model = types
 
       return !self.filterByAuthor.length || self.filterByAuthor.includes(data[self.namekey]);
     },
+  }));
+
+const PlayableAndSyncable = types.model()
+  .volatile(() => ({
+    _value: null,
+    filterByAuthor: [],
+    searchAuthor: '',
+    playingId: -1,
+    playing: false, // just internal state for UI
+    audioRef: createRef(),
+    audioDuration: null,
+    audioStopHandler: null,
   }))
+  .views(self => ({
+    /**
+     * All regions indices that are active at the given time.
+     * @param {number} time
+     * @returns {Array<number>}
+     */
+    regionIndicesByTime(time) {
+      const indices = [];
+
+      self._value?.forEach(({ start, duration, end }, idx) => {
+        if (start === undefined) return false;
+        if (start > time) return false;
+        if (duration === undefined && end === undefined) indices.push(idx);
+        else if ((end ?? start + duration) > time) indices.push(idx);
+      });
+
+      return indices;
+    },
+    /**
+     * Returns regions start and end times.
+     * Memoized and with no external dependencies, so will be computed only once.
+     * @returns {Array<{start: number, end: number}>}
+     */
+    get regionsStartEnd() {
+      if (!self.audioDuration) return [];
+
+      return self._value?.map(value => {
+        if (value.start === undefined) return {};
+
+        const start = clamp(value.start ?? 0, 0, self.audioDuration);
+        const _end = value.duration ? start + value.duration : (value.end ?? self.audioDuration);
+        const end = clamp(_end, start, self.audioDuration);
+
+        return { start, end };
+      });
+    },
+  }))
+  .actions(self => ({
+    /**
+     * Wrapper to always send important data during sync
+     * @param {string} event
+     * @param {object} data
+     */
+    triggerSync(event, data) {
+      const audio = self.audioRef.current;
+
+      if (!audio) return;
+
+      self.syncSend({
+        playing: !audio.paused,
+        time: audio.currentTime,
+        ...data,
+      }, event);
+    },
+
+    registerSyncHandlers() {
+      self.syncHandlers.set('pause', self.stopNow);
+      self.syncHandlers.set('play', self.handleSyncPlay);
+      self.syncHandlers.set('seek', self.handleSyncPlay);
+      self.syncHandlers.set('speed', self.handleSyncSpeed);
+    },
+
+    handleSyncPlay({ time, playing }) {
+      const audio = self.audioRef.current;
+      const indices = self.regionIndicesByTime(time);
+
+      if (!audio) return;
+      // if we left current region's time, reset
+      if (!indices.includes(self.playingId)) {
+        self.stopNow();
+        self.reset();
+        return;
+      }
+
+      // so we are changing time inside current region only
+      audio.currentTime = time;
+      if (audio.paused && playing) {
+        self.play(self.playingId);
+      }
+    },
+
+    handleSyncSpeed({ speed }) {
+      const audio = self.audioRef.current;
+
+      if (audio) audio.playbackRate = speed;
+    },
+
+    syncMuted(muted) {
+      const audio = self.audioRef.current;
+
+      if (audio) audio.muted = muted;
+    },
+  }))
+  .actions(self => ({
+    handleAudioLoaded(e) {
+      const audio = e.target;
+
+      self.audioDuration = audio.duration;
+    },
+
+    reset() {
+      self.playingId = -1;
+
+      if (self.audioStopHandler) {
+        cancelAnimationFrame(self.audioStopHandler);
+        self.audioStopHandler = null;
+      }
+    },
+
+    stopNow() {
+      const audio = self.audioRef.current;
+
+      if (!audio) return;
+      if (audio.paused) return;
+
+      audio.pause();
+      self.playing = false;
+      self.triggerSync('pause');
+    },
+
+    /**
+     * Audio can be seeked to another time or speed can be changed,
+     * so we need to check if we already reached the end of current region
+     * and stop if needed.
+     * Runs timer to check this every frame.
+     */
+    stopAtTheEnd() {
+      const audio = self.audioRef.current;
+
+      if (!audio) return;
+      if (audio.paused) return;
+
+      const { end } = self.regionsStartEnd[self.playingId] ?? {};
+
+      if (audio.currentTime < end) {
+        self.audioStopHandler = requestAnimationFrame(self.stopAtTheEnd);
+        return;
+      }
+
+      self.stopNow();
+      self.reset();
+    },
+
+    play(idx) {
+      const { start, end } = self.regionsStartEnd[idx] ?? {};
+      const audio = self.audioRef?.current;
+
+      if (!isDefined(audio) || !isDefined(start) || !isDefined(end)) return;
+
+      const isPlaying = !audio.paused;
+      const currentId = self.playingId;
+
+      if (isPlaying && currentId === idx) {
+        self.stopNow();
+        return;
+      }
+
+      if (idx !== currentId) {
+        audio.currentTime = start;
+      }
+
+      audio.play();
+      self.playing = true;
+      self.playingId = idx;
+      self.triggerSync('play');
+      self.stopAtTheEnd();
+    },
+  }))
+  .actions(self => ({
+    setAuthorSearch(value) {
+      self.searchAuthor = value;
+    },
+
+    setAuthorFilter(value) {
+      self.filterByAuthor = value;
+    },
+  }));
+
+const OldPlayAndSync = types.model()
   .volatile(() => ({
     _value: '',
     filterByAuthor: [],
@@ -317,7 +508,9 @@ const Model = types
         self.filterByAuthor = value;
       },
     };
-  })
+  });
+
+const ParagraphsLoadingModel = types.model()
   .actions(self => ({
     needsUpdate() {
       self._update = self._update + 1;
@@ -459,10 +652,14 @@ const Model = types
 const paragraphModelMixins = [
   RegionsMixin,
   TagAttrs,
-  isFFDev2461 ? SyncMixin : undefined,
-  Model,
+  isFFDev2461 && !isFF(FF_LSDV_3012) && SyncMixin,
+  isFF(FF_LSDV_3012) && SyncableMixin,
   ObjectBase,
   AnnotationMixin,
+  Model,
+  !isFF(FF_LSDV_3012) && OldPlayAndSync,
+  isFF(FF_LSDV_3012) && PlayableAndSyncable,
+  ParagraphsLoadingModel,
 ].filter(Boolean);
 
 export const ParagraphsModel = types.compose('ParagraphsModel',
