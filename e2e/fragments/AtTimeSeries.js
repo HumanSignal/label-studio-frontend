@@ -6,8 +6,13 @@ module.exports = {
   _overviewSelector: '.htx-timeseries-overview .overlay',
   _westHandleSelector: '.htx-timeseries-overview .handle--w',
   _eastHandleSelector: '.htx-timeseries-overview .handle--e',
+  _stickSelector: '[text-anchor="start"]',
+
   get _channelStageSelector() {
     return `${this._rootSelector} .htx-timeseries-channel .new_brush`;
+  },
+  get _channelStickSelector() {
+    return `${this._rootSelector} .htx-timeseries-channel [text-anchor="start"]`;
   },
   _stageBBox: { x: 0, y: 0, width: 0, height: 0 },
 
@@ -19,6 +24,11 @@ module.exports = {
     const bbox = await I.grabElementBoundingRect(this._channelStageSelector);
 
     this._stageBBox = bbox;
+  },
+
+  seeStickTime(time) {
+    // xPath cannot find `text` tag so we exchange it with `*`
+    I.seeElement(locate(this._channelStickSelector).find('*').at(2).withText(`${time}`));
   },
 
   /**
@@ -93,7 +103,28 @@ module.exports = {
     const channelBBox = await I.grabElementBoundingRect(this._channelSelector);
 
     I.moveMouse(channelBBox.x + channelBBox.width * x, channelBBox.y + channelBBox.height * y);
+    I.pressKeyDown('Control');
     I.mouseWheel({ deltaY });
+    I.pressKeyUp('Control');
+  },
+
+  /**
+   * Move mouse over the channel
+   * @param {Object} [atPoint] - Point where will be called wheel action
+   * @param {number} [atPoint.x=0.5] - relative X coordinate
+   * @param {number} [atPoint.y=0.5] - relative Y coordinate
+   * @returns {Promise<void>}
+   *
+   * @example
+   * await AtTimeSeries.moveMouseOverChannel({ x: .01 });
+   */
+  async moveMouseOverChannel(atPoint) {
+    const { x = 0.5, y = 0.5 } = atPoint;
+
+    I.scrollPageToTop();
+    const channelBBox = await I.grabElementBoundingRect(this._channelSelector);
+
+    I.moveMouse(channelBBox.x + channelBBox.width * x, channelBBox.y + channelBBox.height * y);
   },
 
   /**

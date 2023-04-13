@@ -268,4 +268,18 @@ Scenario('TimeSeries with optimized data', async ({ I, LabelStudio, AtTimeSeries
   await doNotSeeProblems();
   await AtTimeSeries.selectOverviewRange(.9, .8999);
   await doNotSeeProblems();
+
+  I.say('check that every timestamps from timeseries data is available to display');
+  await AtTimeSeries.selectOverviewRange(.001, .000);
+  for (let i = 0; i < 20; i++) {
+    await AtTimeSeries.zoomByMouse(-100, { x: .001 });
+  }
+  await AtTimeSeries.moveMouseOverChannel({ x: .01 });
+  AtTimeSeries.seeStickTime(0);
+  await AtTimeSeries.moveMouseOverChannel({ x: .05 });
+  AtTimeSeries.seeStickTime(1);
+  await AtTimeSeries.moveMouseOverChannel({ x: .10 });
+  AtTimeSeries.seeStickTime(2);
+  await AtTimeSeries.moveMouseOverChannel({ x: .15 });
+  AtTimeSeries.seeStickTime(3);
 });
