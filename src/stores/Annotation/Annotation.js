@@ -20,6 +20,7 @@ import {
   FF_DEV_3391,
   FF_LSDV_3009,
   FF_LSDV_4583,
+  FF_LSDV_4832,
   isFF
 } from '../../utils/feature-flags';
 import { delay, isDefined } from '../../utils/utilities';
@@ -407,11 +408,10 @@ export const Annotation = types
     },
 
     deleteAllRegions({ deleteReadOnly = false } = {}) {
-      const regions = Array.from(self.areas.values());
+      let regions = Array.from(self.areas.values());
 
-      if (deleteReadOnly) {
-        // remove everything unconditionally
-
+      // remove everything unconditionally
+      if (deleteReadOnly && isFF(FF_LSDV_4832)) {
         self.unselectAll(true);
         self.setIsDrawing(false);
         self.relationStore.deleteAllRelations();
@@ -420,10 +420,15 @@ export const Annotation = types
           r.destroyRegion?.();
           destroy(r);
         });
-      } else {
-        regions.filter(r => r.readonly === false).forEach(r => r.deleteRegion());
+
+        self.updateObjects();
+
+        return;
       }
 
+      if (deleteReadOnly === false) regions = regions.filter(r => r.readonly === false);
+
+      regions.forEach(r => r.deleteRegion());
       self.updateObjects();
     },
 
