@@ -212,6 +212,11 @@ export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ff
  */
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
 
+/**
+ * New Ranker tag; flag is used for `deleteAllRegions()` optimization
+ */
+export const FF_LSDV_4832 = 'fflag_feat_front_lsdv_4832_new_ranker_tag_120423_short';
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
