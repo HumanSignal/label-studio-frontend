@@ -26,6 +26,7 @@ interface ViewControlsProps {
   regions: any;
   onOrderingChange: (ordering: OrderingOptions) => void;
   onGroupingChange: (grouping: GroupingOptions) => void;
+  onFilterChange: (filter: any) => void;
 }
 
 export const ViewControls: FC<ViewControlsProps> = ({
@@ -35,6 +36,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
   orderingDirection,
   onOrderingChange,
   onGroupingChange,
+  onFilterChange,
 }) => {
   const context = useContext(SidePanelsContext);
   const getGrouppingLabels = useCallback((value: GroupingOptions): LabelInfo => {
@@ -92,6 +94,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
       )}
       {isFF(FF_DEV_3873) && (
         <Filter
+          onChange={onFilterChange}
           filterData={regions?.regions}
           availableFilters={[{
             label: 'Annotation results',
@@ -105,12 +108,12 @@ export const ViewControls: FC<ViewControlsProps> = ({
           },
           {
             label: 'Boolean',
-            path: 'score',
+            path: 'hidden',
             type: 'Boolean',
           },
           {
             label: 'Common',
-            path: 'score',
+            path: 'isDrawing',
             type: 'Common',
           }]}
         />
