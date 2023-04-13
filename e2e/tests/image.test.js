@@ -13,6 +13,15 @@ const config = `
     </RectangleLabels>
   </View>`;
 
+const configEllipse = `
+  <View>
+    <Image name="img" value="$image"></Image>
+    <EllipseLabels name="tag" toName="img">
+      <Label value="Planet"></Label>
+      <Label value="Moonwalker" background="blue"></Label>
+    </EllipseLabels>
+  </View>`;
+
 const perRegionConfig = `
   <View>
     <Image name="img" value="$image"></Image>
@@ -139,17 +148,7 @@ Scenario('Image with perRegion tags', async function({ I, AtImageView, AtSidebar
   assert.deepStrictEqual(result[0].value.rectanglelabels, ['Moonwalker']);
 });
 
-Scenario('Can\'t create region outside of canvas', async ({ I, AtLabels, AtSidebar, AtImageView, LabelStudio }) => {
-  const cfg = `
-<View>
-  <Image name="img" value="$image"></Image>
-  <RectangleLabels name="tag" toName="img" fillOpacity="0.5" strokeWidth="5">
-    <Label value="Planet"></Label>
-    <Label value="Moonwalker" background="blue"></Label>
-  </RectangleLabels>
-</View>
-`;
-
+Scenario('Can\'t create rectangles outside of canvas', async ({ I, AtLabels, AtSidebar, AtImageView, LabelStudio }) => {
   LabelStudio.setFeatureFlags({
     fflag_fix_front_dev_3793_relative_coords_short: true,
   });
@@ -157,7 +156,7 @@ Scenario('Can\'t create region outside of canvas', async ({ I, AtLabels, AtSideb
   I.amOnPage('/');
 
   LabelStudio.init({
-    config: cfg,
+    config,
     data: { image },
     task: {
       id: 0,
@@ -209,3 +208,68 @@ Scenario('Can\'t create region outside of canvas', async ({ I, AtLabels, AtSideb
   assert.equal(Math.round(r4.x + r4.width), 100);
   assert.equal(Math.round(r4.y + r4.height), 100);
 });
+
+Scenario('Can\'t create ellipses outside of canvas', async ({ I, AtLabels, AtSidebar, AtImageView, LabelStudio }) => {
+  LabelStudio.setFeatureFlags({
+    fflag_fix_front_dev_3793_relative_coords_short: true,
+  });
+
+  I.amOnPage('/');
+
+  LabelStudio.init({
+    config: configEllipse,
+    data: { image },
+    task: {
+      id: 0,
+      annotations: [{ id: 1001, result: [] }],
+      predictions: [],
+    },
+  });
+
+  await AtImageView.lookForStage();
+  await AtImageView.waitForImage();
+
+  const stage = AtImageView.stageBBox();
+  const ellipses = [
+    // top-left corner
+    [100, 100, -200, -200],
+    // top-right corner
+    [stage.width - 100, 100, stage.width + 100, -100],
+    // bottom-left corner
+    [100, stage.height - 100, -100, stage.height + 100],
+    // bottom-right corner
+    [stage.width - 100, stage.height - 100, stage.width + 100, stage.height + 100],
+  ];
+
+  for (const ellipse of ellipses) {
+    I.say('Drawing region in the upper left corner');
+    AtLabels.clickLabel('Planet');
+    AtImageView.drawByDrag(...ellipse);
+  }
+
+  AtSidebar.seeRegions(4);
+
+  const result = await LabelStudio.serialize();
+  const radiusX = 100 / stage.width * 100;
+  const radiusY = 100 / stage.height * 100;
+
+  for (let i = 0; i < result.length; i++) {
+    const res = result[i].value;
+    const region = ellipses[i];
+
+    I.say('Make sure ellipse radius is correct (should be same for all)');
+    // toFixed is to bypass JS floating point precision limitations (f32 sucks)
+    assert.strictEqual(res.radiusX.toFixed(3), radiusX.toFixed(3));
+    assert.strictEqual(res.radiusY.toFixed(3), radiusY.toFixed(3));
+
+    I.say('Make sure that center is in correct spot');
+    const [expectedX, expectedY] = [
+      region[0] / stage.width * 100,
+      region[1] / stage.height * 100,
+    ];
+
+    assert.strictEqual(res.x.toFixed(3), expectedX.toFixed(3));
+    assert.strictEqual(res.y.toFixed(3), expectedY.toFixed(3));
+  }
+});
+

@@ -12,7 +12,7 @@ const DrawingTool = types
     unselectRegionOnToolChange: true,
   })
   .volatile(() => {
-    return { 
+    return {
       currentArea: null,
     };
   })
@@ -231,15 +231,28 @@ const TwoPointsDrawingTool = DrawingTool.named('TwoPointsDrawingTool')
 
         if (!shape) return;
         const { stageWidth, stageHeight } = self.obj;
+        const isEllipse = shape.type.includes('ellipse');
 
-        let { x1, y1, x2, y2 } = Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x, y });
+        let { x1, y1, x2, y2 } = isEllipse ? {
+          x1: shape.startX,
+          y1: shape.startY,
+          x2: x,
+          y2: y,
+        } : Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x, y });
 
         x1 = Math.max(0, x1);
         y1 = Math.max(0, y1);
-        x2 = Math.min(isFF(FF_DEV_3793) ? 100 : stageWidth, x2);
-        y2 = Math.min(isFF(FF_DEV_3793) ? 100 : stageHeight, y2);
+        x2 = Math.min(stageWidth, x2);
+        y2 = Math.min(stageHeight, y2);
 
-        shape.setPositionInternal(x1, y1, x2 - x1, y2 - y1, shape.rotation);
+        let [distX, distY] = [x2 - x1, y2 - y1].map(Math.abs);
+
+        if (isEllipse) {
+          distX = Math.min(distX, Math.min(x1, 100 - x1));
+          distY = Math.min(distY, Math.min(y1, 100 - y1));
+        }
+
+        shape.setPositionInternal(x1, y1, distX, distY, shape.rotation);
       },
 
       finishDrawing(x, y) {
