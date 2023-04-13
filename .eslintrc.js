@@ -3,7 +3,7 @@ module.exports = {
     process: true,
     module: true,
     require: true,
-    __FEATURE_FLAGS__: true,
+    DISABLE_DEFAULT_LSF_INIT: true,
     __dirname: true,
   },
   extends: ['plugin:@heartexlabs/frontend/recommended'],

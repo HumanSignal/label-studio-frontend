@@ -5,7 +5,7 @@ beforeEach(() => {
   cy.on('window:before:load', (win) => {
     console.log('Setting feature flags', CURRENT_FLAGS);
     Object.assign(win, {
-      DEFAULT_LSF_INIT: false,
+      DISABLE_DEFAULT_LSF_INIT: true,
       APP_SETTINGS: {
         ...(win.APP_SETTINGS ?? {}),
         feature_flags: CURRENT_FLAGS,
@@ -14,4 +14,3 @@ beforeEach(() => {
   });
   cy.log('Feature flags set');
 });
-
