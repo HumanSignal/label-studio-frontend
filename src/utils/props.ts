@@ -1,9 +1,11 @@
 /**
  * project any angle onto the interval (-180;180]
  */
-export function normalizeAngle(x: number) {
-  while (x > 0) x -= 360;
-  return (x - 180) % 360 + 180;
+export function normalizeAngle(angle: number) {
+  let a = angle;
+
+  while (a > 0) a -= 360;
+  return (a - 180) % 360 + 180;
 }
 
 type SequenceItem = {
