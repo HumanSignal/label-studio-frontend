@@ -217,6 +217,16 @@ export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_sh
  */
 export const FF_LSDV_4832 = 'fflag_feat_front_lsdv_4832_new_ranker_tag_120423_short';
 
+Object.assign(window, {
+  APP_SETTINGS: {
+    ...(window.APP_SETTINGS ?? {}),
+    feature_flags: {
+      ...(window.APP_SETTINGS?.feature_flags ?? {}),
+      ...(window.FEATURE_FLAGS ?? {}),
+    },
+  },
+});
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),

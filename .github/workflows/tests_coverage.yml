@@ -55,3 +55,25 @@ jobs:
           fail_ci_if_error: true
           token: ${{ secrets.codecov_token }}
 
+  run_cypress_coverage_upload:
+    name: Upload Cypress coverage
+    runs-on: ubuntu-latest
+
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+
+    steps:
+      - name: "Checkout codebase"
+        uses: actions/checkout@v3
+
+      - name: "Download Cypress coverage from Artifact"
+        uses: actions/download-artifact@v3
+        with:
+          name: cypress-tests-coverage
+          path: coverage/
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3.1.1
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        with:
+          fail_ci_if_error: true
+          token: ${{ secrets.codecov_token }}
