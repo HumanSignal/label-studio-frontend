@@ -26,13 +26,25 @@ module.exports = {
     this._stageBBox = bbox;
   },
 
-  seeStickTime(time) {
+  /**
+   * Retrieves timestamp value from a text element of timeseries' stick (cursor).
+   * **should be used inside async with `await`** operator.
+   *
+   * ```js
+   * let timestamp = await I.grabStickTime();
+   * ```
+   * @returns timestamp value
+   *
+   * {{ react }}
+   */
+  grabStickTime() {
     // xPath cannot find `text` tag so we exchange it with `*`
-    I.seeElement(locate(this._channelStickSelector).find('*').at(2).withText(`${time}`));
+    return I.grabTextFrom(locate(this._channelStickSelector).find('*').at(2));
   },
 
   /**
    * Select range on overview to zoom in
+   * **should be used inside async with `await`** operator.
    * @param {number} from - relative position of start between 0 and 1
    * @param {number} to - relative position of finish between 0 and 1
    * @returns {Promise<void>}
@@ -64,6 +76,7 @@ module.exports = {
 
   /**
    * Move overview handle by mouse drag
+   * **should be used inside async with `await`** operator.
    * @param {number} where - position between 0 and 1
    * @param {"west"|"east"} [which="west"] - handler name
    * @returns {Promise<void>}
@@ -84,6 +97,7 @@ module.exports = {
 
   /**
    *  Zoom by mouse wheel over the channel
+   *  **should be used inside async with `await`** operator.
    * @param {number} deltaY
    * @param {Object} [atPoint] - Point where will be called wheel action
    * @param {number} [atPoint.x=0.5] - relative X coordinate
@@ -110,6 +124,7 @@ module.exports = {
 
   /**
    * Move mouse over the channel
+   * **should be used inside async with `await`** operator.
    * @param {Object} [atPoint] - Point where will be called wheel action
    * @param {number} [atPoint.x=0.5] - relative X coordinate
    * @param {number} [atPoint.y=0.5] - relative Y coordinate

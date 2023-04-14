@@ -274,12 +274,20 @@ Scenario('TimeSeries with optimized data', async ({ I, LabelStudio, AtTimeSeries
   for (let i = 0; i < 20; i++) {
     await AtTimeSeries.zoomByMouse(-100, { x: .001 });
   }
-  await AtTimeSeries.moveMouseOverChannel({ x: .01 });
-  AtTimeSeries.seeStickTime(0);
-  await AtTimeSeries.moveMouseOverChannel({ x: .05 });
-  AtTimeSeries.seeStickTime(1);
-  await AtTimeSeries.moveMouseOverChannel({ x: .10 });
-  AtTimeSeries.seeStickTime(2);
-  await AtTimeSeries.moveMouseOverChannel({ x: .15 });
-  AtTimeSeries.seeStickTime(3);
+
+  let lastTimestamp;
+
+  for (let i = 0; i < 15;i++) {
+    AtTimeSeries.moveMouseOverChannel({ x: .01 + .025 * i });
+    const timestamp = await AtTimeSeries.grabStickTime();
+
+    if (lastTimestamp !== undefined) {
+      I.say(`I see ${timestamp}`);
+    
+      assert(timestamp === lastTimestamp || timestamp - lastTimestamp === 1,
+        `Timestamps should not be skipped. Got ${lastTimestamp} and ${timestamp} but ${timestamp -  1} is missed`);
+    }
+    lastTimestamp = timestamp;
+  }
+
 });
