@@ -453,6 +453,7 @@ describe('joinPanelColumns', () => {
       panel3,
       panel4: {
         width: 300,
+        zIndex:10,
         height: 400,
         top: 0,
         left: 500,
@@ -473,6 +474,7 @@ describe('joinPanelColumns', () => {
       panel3,
       panel4: {
         width: 250,
+        zIndex:10,
         height: 400,
         top: 0,
         left: 500,
