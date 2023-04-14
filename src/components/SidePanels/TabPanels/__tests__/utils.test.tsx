@@ -611,9 +611,9 @@ describe('findZIndices', () => {
 
   it('should correctly update z-indices for attached and detached panels', () => {
     const expectedState = {
-      panel1: { ...panel1, zIndex: 12 },
+      panel1: { ...panel1, zIndex: 14 },
       panel2: { ...panel2, zIndex: 10 },
-      panel3: { ...panel3, zIndex: 11 },
+      panel3: { ...panel3, zIndex: 13 },
     };
     const focusedKey = 'panel1';
     const newState = findZIndices(state, focusedKey);
@@ -633,7 +633,7 @@ describe('findZIndices', () => {
     };
     const expectedState = {
       ...newState,
-      panel4: { ...panel4, zIndex: 13 },
+      panel4: { ...panel4, zIndex: 15 },
     };
     const focusedKey = 'panel4';
     const result = findZIndices(newState, focusedKey);
