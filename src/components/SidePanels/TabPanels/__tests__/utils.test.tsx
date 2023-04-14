@@ -1,6 +1,6 @@
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH } from '../../constants';
 import { JoinOrder, PanelBBox, Side } from '../types';
-import { determineDroppableArea, determineLeftOrRight, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
+import { determineDroppableArea, determineLeftOrRight, findZIndices, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
 
 
 const dummyPanels: Record<string, PanelBBox> = {
@@ -453,6 +453,7 @@ describe('joinPanelColumns', () => {
       panel3,
       panel4: {
         width: 300,
+        zIndex:10,
         height: 400,
         top: 0,
         left: 500,
@@ -473,6 +474,7 @@ describe('joinPanelColumns', () => {
       panel3,
       panel4: {
         width: 250,
+        zIndex:10,
         height: 400,
         top: 0,
         left: 500,
@@ -584,5 +586,60 @@ describe('getSnappedHeights', () => {
     const expectedState = {};
 
     expect(getSnappedHeights({}, totalHeight)).toEqual(expectedState);
+  });
+});
+
+describe('findZIndices', () => {
+  const panel1 = {
+    panelViews: [{ title: 'Tab 1', name: 'Tab1', component: () => null, active: true }],
+    detached: true,
+    zIndex: 5,
+  };
+  const panel2 = {
+    panelViews: [{ title: 'Tab 2', name: 'Tab2', component: () => null, active: false }],
+    detached: false,
+    zIndex: 8,
+  };
+  const panel3 = {
+    panelViews: [{ title: 'Tab 3', name: 'Tab3', component: () => null, active: false }],
+    detached: true,
+    zIndex: 7,
+  };
+  const state = {
+    panel1,
+    panel2,
+    panel3,
+  };
+
+  it('should correctly update z-indices for attached and detached panels', () => {
+    const expectedState = {
+      panel1: { ...panel1, zIndex: 14 },
+      panel2: { ...panel2, zIndex: 10 },
+      panel3: { ...panel3, zIndex: 13 },
+    };
+    const focusedKey = 'panel1';
+    const newState = findZIndices(state, focusedKey);
+
+    expect(newState).toEqual(expectedState);
+  });
+
+  it('should correctly update z-index for focused detached panel', () => {
+    const panel4 = {
+      panelViews: [{ title: 'Tab 4', name: 'Tab4', component: () => null, active: true }],
+      detached: true,
+      zIndex: 6,
+    };
+    const newState = {
+      ...state,
+      panel4,
+    };
+    const expectedState = {
+      ...newState,
+      panel4: { ...panel4, zIndex: 15 },
+    };
+    const focusedKey = 'panel4';
+    const result = findZIndices(newState, focusedKey);
+
+    expect(result).toEqual(expectedState);
   });
 });
