@@ -172,6 +172,11 @@ const RelationStore = types
       rl.length && rl.forEach(self.deleteRelation);
     },
 
+    deleteAllRelations() {
+      self._relations.forEach(rl => destroy(rl));
+      self._relations = [];
+    },
+
     serializeAnnotation() {
       return self.relations.map(r => {
         const s = {

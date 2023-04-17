@@ -224,11 +224,11 @@ Data(maxUsageDataTable).Scenario('Max usages of labels in Audio on region creati
 
   for (let k = 0; k < maxUsage; k++) {
     I.pressKey('1');
-    AtAudioView.dragAudioRegion(10 + 40 * k,30);
+    AtAudioView.dragAudioElement(10 + 40 * k,30);
     I.pressKey('u');
   }
   I.pressKey('1');
-  AtAudioView.dragAudioRegion(10 + 40 * maxUsage,30);
+  AtAudioView.dragAudioElement(10 + 40 * maxUsage,30);
 
   AtSidebar.seeRegions(maxUsage);
   I.see(`You can't use Label_1 more than ${maxUsage} time(s)`);

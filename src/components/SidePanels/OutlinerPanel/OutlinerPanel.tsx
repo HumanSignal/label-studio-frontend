@@ -21,6 +21,10 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
     setGroup(value);
   }, [regions]);
 
+  const onFilterChange = useCallback((value) => {
+    regions.setFilteredRegions(value);
+  }, [regions]);
+
   useEffect(() => {
     setGroup(regions.group);
   }, []);
@@ -36,6 +40,7 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
         orderingDirection={regions.sortOrder}
         onOrderingChange={onOrderingChange}
         onGroupingChange={onGroupingChange}
+        onFilterChange={onFilterChange}
       />
       {regions?.regions?.length > 0 ? (
         <OutlinerTree
@@ -51,35 +56,32 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
   );
 };
 
-const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
-  const [group, setGroup] = useState();
+const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
   const onOrderingChange = useCallback((value) => {
     regions.setSort(value);
   }, [regions]);
 
   const onGroupingChange = useCallback((value) => {
     regions.setGrouping(value);
-    setGroup(value);
   }, [regions]);
 
-  useEffect(() => {
-    setGroup(regions.group);
-  }, []);
-
-  regions.setGrouping(group);
+  const onFilterChange = useCallback((value) => {
+    regions.setFilteredRegions(value);
+  }, [regions]);
 
   return (
     <Block name="outliner">
       <ViewControls
         grouping={regions.group}
         ordering={regions.sort}
+        regions={regions}
         orderingDirection={regions.sortOrder}
         onOrderingChange={onOrderingChange}
         onGroupingChange={onGroupingChange}
+        onFilterChange={onFilterChange}
       />
       {regions?.regions?.length > 0 ? (
         <OutlinerTree
-          {...props }
           regions={regions}
           selectedKeys={regions.selection.keys}
         />

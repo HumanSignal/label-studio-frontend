@@ -11,7 +11,6 @@ import { NumberModel } from './Number';
 import { PairwiseModel } from './Pairwise';
 import { PolygonLabelsModel } from './PolygonLabels';
 import { PolygonModel } from './Polygon';
-import { RankerModel } from './Ranker';
 import { RatingModel } from './Rating';
 import { RectangleLabelsModel } from './RectangleLabels';
 import { RectangleModel } from './Rectangle';
@@ -44,7 +43,6 @@ export {
   PairwiseModel,
   PolygonLabelsModel,
   PolygonModel,
-  RankerModel,
   RatingModel,
   RectangleLabelsModel,
   RectangleModel,
