@@ -82,16 +82,13 @@ Scenario('Check if regions are selected', async function({ I, LabelStudio, AtAud
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   AtSidebar.seeRegions(1);
 
   // creating a new region
   I.pressKey('1');
-  AtAudioView.dragAudioRegion(160,80);
+  AtAudioView.dragAudioElement(160,80);
   I.pressKey('u');
 
   AtSidebar.seeRegions(2);
@@ -100,7 +97,7 @@ Scenario('Check if regions are selected', async function({ I, LabelStudio, AtAud
   AtSidebar.seeSelectedRegion();
   AtAudioView.clickAt(170);
   AtSidebar.dontSeeSelectedRegion();
-  AtAudioView.dragAudioRegion(170,40);
+  AtAudioView.dragAudioElement(170,40);
   AtSidebar.seeSelectedRegion();
   AtAudioView.clickAt(220);
   AtSidebar.dontSeeSelectedRegion();
@@ -115,15 +112,12 @@ Scenario('Check if multiple regions are working changing labels', async function
   LabelStudio.init(paramsSpeech);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   for (let i = 0; i < 20; i++) {
     // creating a new region
     I.pressKey('1');
-    AtAudioView.dragAudioRegion((40 * i) + 10,30);
+    AtAudioView.dragAudioElement((40 * i) + 10,30);
     AtAudioView.clickAt((40 * i) + 20);
     I.pressKey('2');
     I.pressKey('1');
@@ -155,21 +149,18 @@ Scenario('Can select a region below a hidden region', async function({ I, LabelS
   LabelStudio.init(paramsSpeech);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   // create a new region
   I.pressKey('1');
-  AtAudioView.dragAudioRegion(50, 80);
+  AtAudioView.dragAudioElement(50, 80);
   I.pressKey('u');
 
   AtSidebar.seeRegions(1);
 
   // create a new region above the first one
   I.pressKey('2');
-  AtAudioView.dragAudioRegion(49, 81);
+  AtAudioView.dragAudioElement(49, 81);
   I.pressKey('u');
 
   AtSidebar.seeRegions(2);
@@ -195,15 +186,12 @@ Scenario('Delete region by pressing delete hotkey', async function({ I, LabelStu
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   AtSidebar.seeRegions(1);
 
   // creating a new region
-  AtAudioView.dragAudioRegion(160,80);
+  AtAudioView.dragAudioElement(160,80);
 
   I.pressKey('Delete');
 
@@ -221,20 +209,17 @@ Scenario('Check if there are ghost regions', async function({ I, LabelStudio, At
   LabelStudio.init(paramsSpeech);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   // creating a new region
   I.pressKey('1');
-  AtAudioView.dragAudioRegion(300,80);
+  AtAudioView.dragAudioElement(300,80);
   I.pressKey('u');
 
 
   // creating a ghost region
   I.pressKey('1');
-  AtAudioView.dragAudioRegion(160,80, false);
+  AtAudioView.dragAudioElement(160,80, false);
   I.pressKey('1');
   I.wait(1);
   I.pressMouseUp();

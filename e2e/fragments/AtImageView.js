@@ -10,6 +10,28 @@ module.exports = {
   _toolBarSelector: '.lsf-toolbar',
   _zoomPresetsSelector: '[title^="Zoom presets"]',
 
+  _rootSelector: '[class^="lsf-object wrapperComponent--"]',
+  _paginationSelector: '[class^="pagination--"]',
+  _paginationPrevBtnSelector: '.lsf-pagination__btn_arrow-left:not(.lsf-pagination__btn_arrow-left-double)',
+  _paginationNextBtnSelector: '.lsf-pagination__btn_arrow-right:not(.lsf-pagination__btn_arrow-right-double)',
+
+
+  locateRoot() {
+    return locate(this._rootSelector);
+  },
+
+  locate(locator) {
+    const rootLocator = this.locateRoot();
+
+    return locator ? rootLocator.find(locator) : rootLocator;
+  },
+
+  locatePagination(locator) {
+    const paginationLocator = this.locate(this._paginationSelector);
+
+    return locator ? paginationLocator.find(locator) : paginationLocator;
+  },
+
   percToX(xPerc) {
     return this._stageBBox.width * xPerc / 100;
   },
@@ -311,6 +333,18 @@ module.exports = {
   async multiImageGoBackwardWithHotkey() {
     I.say('Attempting to go to the next image');
     I.pressKey('Ctrl+a');
+
+    await this.waitForImage();
+  },
+
+  async multiImageGoForward() {
+    I.click(this.locatePagination(this._paginationNextBtnSelector));
+
+    await this.waitForImage();
+  },
+
+  async multiImageGoBackward() {
+    I.click(this.locatePagination(this._paginationPrevBtnSelector));
 
     await this.waitForImage();
   },

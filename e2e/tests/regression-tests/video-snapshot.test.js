@@ -61,7 +61,7 @@ Scenario('Restoring video regions from snapshots', async ({ I, LabelStudio, AtSi
     I.say('delete region');
     I.pressKey('Backspace');
     I.say('undo action');
-    I.click('.lsf-history__action[aria-label=Undo]');
+    I.click('.lsf-history-buttons__action[aria-label=Undo]');
     const result = await LabelStudio.serialize();
 
     assert.notStrictEqual(result[0].value.sequence.length, 0);

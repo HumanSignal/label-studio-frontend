@@ -67,9 +67,6 @@ Scenario('Check the audio controls work', async function({ I, LabelStudio, AtAud
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   AtSidebar.seeRegions(1);

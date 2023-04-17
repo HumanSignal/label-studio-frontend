@@ -117,7 +117,7 @@ export type BaseProps = PanelBBox & CommonProps & {
   panelViews: PanelView[],
   attachedKeys: string[] | undefined,
   sidePanelCollapsed: PanelsCollapsed,
-  breakPointActiveTab?: number,
+  breakPointActiveTab: number,
   setBreakPointActiveTab?: React.Dispatch<React.SetStateAction<number>>,
   setSidePanelCollapsed: React.Dispatch<React.SetStateAction<PanelsCollapsed>>,
   dragTop: boolean,
