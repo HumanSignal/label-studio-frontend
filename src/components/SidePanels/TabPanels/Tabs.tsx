@@ -181,8 +181,8 @@ const Tab = ({
 
 export const Tabs = (props: BaseProps) => {
 
-  const ActiveComponent = props.panelViews?.find(view => view.active)?.component;
-
+  const ActiveComponent = props.locked ? props.panelViews[props.breakPointActiveTab].component : props.panelViews?.find(view => view.active)?.component;
+  
   return (
     <>
       <Block name="tabs">
