@@ -8,7 +8,7 @@ const createConfig = ({ rows = '1' }) => {
     <Shortcut alias="[!]" value="!" hotkey="3" />
     <Shortcut alias="[make a ninja]" value="‍👤" hotkey="4" />
   </TextArea>
-  <AudioPlus name="audio" value="$audio"/>
+  <Audio name="audio" value="$audio"/>
   <Labels name="labels" toName="audio" allowempty="true">
     <Label value="Label1"/>
     <Label value="Label2"/>
