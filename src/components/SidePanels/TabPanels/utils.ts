@@ -383,8 +383,9 @@ export const joinPanelColumns = (
   };
   const newColumns = getAttachedPerSide(addedPanel, alignment) as string[];
   const orderedState = setOrder(addedPanel, panelAddKey, newColumns, order);
+  const adjustZIndex = findZIndices(orderedState, panelAddKey);
 
-  return redistributeHeights(orderedState, totalHeight, alignment);
+  return redistributeHeights(adjustZIndex, totalHeight, alignment);
 };
 
 export const splitPanelColumns = (
@@ -486,11 +487,43 @@ export const newPanelInState = (
   const newPanel = newPanelFromTab(state, name, movingPanel, movingTab, left, top, viewportSize);
   const stateWithRemovals = stateRemovedTab(state, movingPanel, movingTab);
 
-  Object.keys(stateWithRemovals).forEach(panelKey => (stateWithRemovals[panelKey].zIndex = 10));
+  // Object.keys(stateWithRemovals).forEach(panelKey => (stateWithRemovals[panelKey].zIndex = 10));
   const panelsWithRemovals = stateRemovePanelEmptyViews(stateWithRemovals);
   const panelWithAdditions = { ...panelsWithRemovals, [`${newPanel.name}`]: newPanel };
   const renamedKeys = renameKeys(panelWithAdditions);
   const activeDefaults = setActiveDefaults(renamedKeys);
+  const adjustZIndex = findZIndices(activeDefaults, newPanel.name);
 
-  return getSnappedHeights(activeDefaults, viewportSize.current.height);
+  return getSnappedHeights(adjustZIndex, viewportSize.current.height);
+};
+
+const partitionByAttached = (state: Record<string, PanelBBox>) => {
+  return Object.keys(state).reduce(
+    (result: [{ zIndex: number, panelKey: string }[], { zIndex: number, panelKey: string }[]], panelKey) => {
+      state[panelKey].detached
+        ? result[0].push({ zIndex: state[panelKey].zIndex, panelKey })
+        : result[1].push({ zIndex: state[panelKey].zIndex, panelKey });
+
+      return result;
+    },
+    [[], []],
+  );
+};
+
+export const findZIndices = (state: Record<string, PanelBBox>, focusedKey: string) => {
+  const newState = { ...state };
+  const [detached, attached] = partitionByAttached(newState);
+
+  let detachedCounter = 12;
+
+  attached.forEach(panel => (newState[panel.panelKey].zIndex = 10));
+  detached
+    .sort((a, b) => a.zIndex - b.zIndex)
+    .forEach(panel => {
+      newState[panel.panelKey].zIndex = detachedCounter;
+      detachedCounter++;
+    });
+  if (newState[focusedKey].detached) newState[focusedKey].zIndex = detached.length + 12;
+
+  return newState;
 };

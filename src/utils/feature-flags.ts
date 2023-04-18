@@ -224,6 +224,16 @@ export const FF_LSDV_4832 = 'fflag_feat_front_lsdv_4832_new_ranker_tag_120423_sh
  */
 export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing_140423_short';
 
+Object.assign(window, {
+  APP_SETTINGS: {
+    ...(window.APP_SETTINGS ?? {}),
+    feature_flags: {
+      ...(window.APP_SETTINGS?.feature_flags ?? {}),
+      ...(window.FEATURE_FLAGS ?? {}),
+    },
+  },
+});
+
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
