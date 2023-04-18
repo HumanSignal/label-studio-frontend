@@ -46,6 +46,16 @@ jobs:
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
 
+  run_functional:
+    name: "Tests"
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    uses: heartexlabs/label-studio-frontend/.github/workflows/fun_tests.yml@master
+    needs:
+      - build_for_coverage
+    with:
+      sha: ${{ github.event.pull_request.head.sha || github.event.after }}
+    secrets: inherit
+
   run_unit:
     name: "Tests"
     if: github.event_name == 'push' || github.event.pull_request.draft == false
