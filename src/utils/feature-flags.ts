@@ -217,6 +217,13 @@ export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_sh
  */
 export const FF_LSDV_4832 = 'fflag_feat_front_lsdv_4832_new_ranker_tag_120423_short';
 
+/**
+ * Fixing issue with missed steps in timeseries with optimized data and zoom
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4881_timeseties_points_missing_140423_short
+ */
+export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing_140423_short';
+
 Object.assign(window, {
   APP_SETTINGS: {
     ...(window.APP_SETTINGS ?? {}),
