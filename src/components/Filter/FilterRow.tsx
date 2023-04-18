@@ -19,10 +19,16 @@ interface FilterRowInterface extends FilterListInterface {
   onDelete: (index: number) => void;
 }
 
+const LOGIC = [
+  { key: 'and', label: 'And' },
+  { key: 'or', label: 'Or' },
+];
+
 export const FilterRow: FC<FilterRowInterface> = ({
   field,
   operation,
   value,
+  logic,
   availableFilters,
   index,
   onChange,
@@ -33,7 +39,7 @@ export const FilterRow: FC<FilterRowInterface> = ({
   const [_inputComponent, setInputComponent] = useState(null);
 
   useEffect(() => {
-    onChange(index, { field:availableFilters[_selectedField].label, path: availableFilters[_selectedField].path, operation:'', value:'' });
+    onChange(index, { field:availableFilters[_selectedField].label, path: availableFilters[_selectedField].path });
   }, [_selectedField]);
 
   useEffect(() => {
@@ -47,7 +53,17 @@ export const FilterRow: FC<FilterRowInterface> = ({
   return (
     <Block name={'filter-row'}>
       <Elem name={'column'}>
-        Where
+        {index === 0 ? <Elem name={'title-row'}>Where</Elem>: (
+          <FilterDropdown
+            value={logic}
+            items={LOGIC}
+            dataTestid={'logic-dropdown'}
+            style={{ width: '60px' }}
+            onChange={(value: any) => {
+              onChange(index, { logic:LOGIC[value].key });
+            }}
+          />
+        )}
       </Elem>
       <Elem name={'column'}>
         <FilterDropdown
@@ -56,6 +72,8 @@ export const FilterRow: FC<FilterRowInterface> = ({
           style={{ width: '140px' }}
           onChange={(value: any) => {
             setSelectedField(value);
+
+            onChange(index, { value:'' });
           }}
         />
       </Elem>

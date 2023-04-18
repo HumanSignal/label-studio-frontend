@@ -1,7 +1,9 @@
 import { FilterListInterface } from './FilterInterfaces';
 import { isDefined } from '../../utils/utilities';
 
-export const FilterItems = (items: any[], filterItem: FilterListInterface) => {
+export const FilterItemsByOperation = (items: any[], filterItem: FilterListInterface) => {
+  if((!filterItem.value || filterItem.value === '') && filterItem.operation !== 'empty') return items;
+
   switch (filterItem.operation) {
     case 'contains':
       return contains(items, filterItem);
@@ -30,6 +32,23 @@ export const FilterItems = (items: any[], filterItem: FilterListInterface) => {
     default:
       return items;
   }
+};
+
+export const FilterItems = (items: any[], filterList: FilterListInterface[]) => {
+  const _filteredList = [[...items]];
+
+  for(let i = 0; i < filterList.length; i++) {
+    if (filterList[i].logic === 'and') { // 0 is equal to AND, 1 is equal to OR
+      _filteredList[_filteredList.length - 1] = FilterItemsByOperation(_filteredList[_filteredList.length - 1], filterList[i]);
+    } else {
+      _filteredList.push(FilterItemsByOperation(items, filterList[i]));
+    }
+  }
+
+  return _filteredList.flat(1).reduce(
+    (unique, item) => (unique.includes(item) ? unique : [...unique, item]),
+    [],
+  );
 };
 
 

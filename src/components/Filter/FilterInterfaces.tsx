@@ -9,6 +9,7 @@ export interface FilterListInterface {
   operation?: string | string[] | undefined;
   value?: any;
   path?: string;
+  logic?: string;
 }
 
 export interface AvailableFiltersInterface {
