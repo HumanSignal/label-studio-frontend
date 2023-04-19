@@ -455,14 +455,15 @@ export default types.model('RegionStore', {
   },
 
   setFilteredRegions(filter) {
-    const filteredIds = filter.map((filter) => filter.id);
+    self.filter = filter;
 
+    const filteredIds = filter.map((filter) => filter.id);
+    
     self.regions.forEach((region) => {
-      if (self.isAllHidden || !region.hideable) return;
+      if (!region.hideable) return;
       if (filteredIds.includes(region.id)) region.hidden && region.toggleHidden();
       else if (!region.hidden) region.toggleHidden();
     });
-    self.filter = filter;
   },
 
   /**
