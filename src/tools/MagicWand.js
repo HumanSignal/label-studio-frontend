@@ -250,7 +250,7 @@ const _Tool = types
           msg = 'The Magic Wand is not supported on rotated images';
         } else {
           msg = 'The Magic Wand is not supported if the crosshair is turned on';
-        } 
+        }
 
         alert(msg);
         throw msg;
@@ -408,7 +408,7 @@ const _Tool = types
      * once the user is done with the Magic Wand by releasing the mouse button.
      */
     initCurrentRegion() {
-      if (self.isFirstWand){
+      if (self.isFirstWand) {
         const regionOpts = {
           id: guidGenerator(),
           strokewidth: 1,

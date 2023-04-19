@@ -11,6 +11,7 @@ export const Image = observer(forwardRef(({
   updateImageSize,
   usedValue,
   size,
+  overlay,
 }, ref) => {
   const imageSize = useMemo(() => {
     return {
@@ -26,6 +27,7 @@ export const Image = observer(forwardRef(({
 
   return (
     <Block name="image" style={imageSize}>
+      {overlay}
       <ImageProgress
         downloading={imageEntity.downloading}
         progress={imageEntity.progress}
@@ -57,7 +59,7 @@ const ImageProgress = observer(({
   return downloading ? (
     <Block name="image-progress">
       <Elem name="message">Downloading image</Elem>
-      <Elem tag="progress" name="bar" value={progress} min="0" max={1} step={0.0001}/>
+      <Elem tag="progress" name="bar" value={progress} min="0" max={1} step={0.0001} />
     </Block>
   ) : error ? (
     <ImageLoadingError src={src} value={usedValue} />
@@ -97,6 +99,6 @@ const ImageLoadingError = ({ src, value }) => {
   }, [src]);
 
   return (
-    <ErrorMessage error={error}/>
+    <ErrorMessage error={error} />
   );
 };
