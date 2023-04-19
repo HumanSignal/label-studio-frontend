@@ -40,7 +40,7 @@ examples.forEach(example => {
     if (Utils.xmlTreeHasTag(configTree, 'Image')) {
       AtImageView.waitForImage();
     }
-    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'AudioPlus' || node['#name'] === 'Audio')) {
+    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'Audio')) {
       await AtAudioView.waitForAudio();
     }
 
@@ -80,7 +80,7 @@ examples.forEach(example => {
     if (Utils.xmlTreeHasTag(configTree, 'Image')) {
       AtImageView.waitForImage();
     }
-    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'AudioPlus' || node['#name'] === 'Audio')) {
+    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'Audio')) {
       await AtAudioView.waitForAudio();
     }
 
