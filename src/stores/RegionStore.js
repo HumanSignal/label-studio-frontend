@@ -455,6 +455,13 @@ export default types.model('RegionStore', {
   },
 
   setFilteredRegions(filter) {
+    const visibleLabels = filter.map((filter) => filter.labelName);
+    const allLabels = self.regions.map((regions) => regions.labelName);
+
+    allLabels.forEach((label) => {
+      if (visibleLabels.includes(label)) this.setHiddenByLabel(false, label);
+      else this.setHiddenByLabel(true, label);
+    });
     self.filter = filter;
   },
 
