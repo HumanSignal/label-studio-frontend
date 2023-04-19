@@ -69,6 +69,7 @@ export const FilterRow: FC<FilterRowInterface> = ({
         <FilterDropdown
           value={field}
           items={availableFilters}
+          dataTestid={'field-dropdown'}
           style={{ width: '140px' }}
           onChange={(value: any) => {
             setSelectedField(value);
@@ -81,6 +82,7 @@ export const FilterRow: FC<FilterRowInterface> = ({
         <FilterDropdown
           value={operation}
           items={FilterInputs?.[availableFilters[_selectedField].type]}
+          dataTestid={'operation-dropdown'}
           style={{ width: '110px' }}
           onChange={(value: any) => {
             setSelectedOperation(value);
