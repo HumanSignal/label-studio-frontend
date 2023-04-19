@@ -468,7 +468,7 @@ const CanvasOverlay = observer(({ item }) => {
       }}
       style={item.imageTransform}
     />
-  ) : null
+  ) : null;
 });
 
 export default observer(
@@ -995,7 +995,7 @@ export default observer(
                   item.setStageRef(ref);
                 }}
                 className={[styles['image-element'],
-                ...imagePositionClassnames,
+                  ...imagePositionClassnames,
                 ].join(' ')}
                 width={item.canvasSize.width}
                 height={item.canvasSize.height}
