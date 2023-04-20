@@ -104,7 +104,7 @@ export const Filter: FC<FilterInterface> = ({
     <Dropdown.Trigger
       content={renderFilter}
     >
-      <Button type="text" style={{ padding: 0, whiteSpace: 'nowrap' }}>
+      <Button data-cy={'filter-button'} type="text" style={{ padding: 0, whiteSpace: 'nowrap' }}>
         <Elem name={'icon'}>
           <IconFilter />
         </Elem>

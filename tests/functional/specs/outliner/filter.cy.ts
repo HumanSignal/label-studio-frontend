@@ -88,7 +88,7 @@ const task = {
 };
 
 describe('Filter outliner scenario', () => {
-  it('test', () => {
+  it('Check if filter is visible', () => {
     LabelStudio.setFeatureFlagsOnPageLoad({
       'fflag_feat_front_dev_3873_labeling_ui_improvements_short': true,
     });
@@ -99,10 +99,6 @@ describe('Filter outliner scenario', () => {
     });
 
 
-    // Sidebar.hasRegions(2);
-    /* ==== Generated with Cypress Studio ==== */
-    cy.contains('Filter').click();
-
-    /* ==== End Cypress Studio ==== */
+    cy.get('[data-cy="filter-button"]').should('be.visible');
   });
 });
