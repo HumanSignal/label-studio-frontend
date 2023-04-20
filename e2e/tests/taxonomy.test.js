@@ -722,3 +722,240 @@ Scenario('Taxonomy maxUsages', async ({ I, LabelStudio, AtTaxonomy }) => {
   AtTaxonomy.dontSeeCheckedItemByText('One');
   AtTaxonomy.dontSeeSelectedValues('One');
 });
+
+Scenario('Taxonomy visibleWhen', async ({ I, LabelStudio, AtTaxonomy }) => {
+  const createConfig = ({ showFullPath = false, visibleWhen = 'choice-selected', whenChoiceValue = 'Four' } = {}) => `
+<View>
+  <Text name="text" value="$text"/>
+  <Taxonomy required="true" name="taxonomy" toName="text" leafsOnly="true" placeholder="Select something..." showFullPath="${showFullPath}">
+    <Choice value="One to three">
+      <Choice value="One" />
+      <Choice value="Two" />
+      <Choice value="Three" />
+    </Choice>
+    <Choice value="Four to seven">
+      <Choice value="Four" />
+      <Choice value="Five" />
+      <Choice value="Six" />
+      <Choice value="Seven" />
+    </Choice>
+  </Taxonomy>
+  <Choices name="other" toName="text"
+    showInline="true"
+    visibleWhen="${visibleWhen}"
+    whenTagName="taxonomy"
+    whenChoiceValue="${whenChoiceValue}"
+  >
+    <Choice value="Eight" />
+    <Choice value="Nine" />
+  </Choices>
+</View>
+`;
+
+  I.amOnPage('/');
+  LabelStudio.init({
+    config: createConfig(),
+    data: {
+      text: 'A text',
+    },
+  });
+  I.say('Should see values of choices and work with them');
+  AtTaxonomy.clickTaxonomy();
+  AtTaxonomy.toggleGroupWithText('One to three');
+  AtTaxonomy.toggleGroupWithText('Four to seven');
+  AtTaxonomy.seeItemByText('Two');
+  AtTaxonomy.seeItemByText('Five');
+  AtTaxonomy.clickItemByText('Three');
+  AtTaxonomy.clickItemByText('Four');
+  AtTaxonomy.seeSelectedValues(['Three', 'Four']);
+  AtTaxonomy.clickTaxonomy();
+  I.click('Eight'); // click on the choice
+  I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
+  I.say('Should get results for taxonomy and choices');
+
+  let result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(result[0].value.taxonomy, [['One to three', 'Three'], ['Four to seven', 'Four']]);
+  assert.deepStrictEqual(result[1].value.choices, ['Eight']);
+
+  I.say('Should get results for only taxonomy when visibleWhen is not met');
+  AtTaxonomy.clickTaxonomy();
+  AtTaxonomy.clickItemByText('Four');
+  AtTaxonomy.clickTaxonomy();
+  I.dontSeeElement('.ant-checkbox-checked [name=\'Eight\']');
+
+  result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(result[0].value.taxonomy, [['One to three', 'Three']]);
+  assert.deepStrictEqual(result?.[1]?.value?.choices, undefined);
+
+  I.say('Should get results for taxonomy and choices when visibleWhen is met');
+  AtTaxonomy.clickTaxonomy();
+  AtTaxonomy.clickItemByText('Four');
+  AtTaxonomy.clickTaxonomy();
+  I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
+
+  result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(result[0].value.taxonomy, [['One to three', 'Three'], ['Four to seven', 'Four']]);
+  assert.deepStrictEqual(result[1].value.choices, ['Eight']);
+
+  await session('Deserialization', async () => {
+    I.amOnPage('/');
+    LabelStudio.init({
+      config: createConfig(),
+      data: {
+        text: 'A text',
+      },
+      annotations: [{
+        id: 'test',
+        result,
+      }],
+    });
+    I.say('Should see the same result');
+    AtTaxonomy.clickTaxonomy();
+    AtTaxonomy.toggleGroupWithText('One to three');
+    AtTaxonomy.toggleGroupWithText('Four to seven');
+    AtTaxonomy.seeCheckedItemByText('Three');
+    AtTaxonomy.seeCheckedItemByText('Four');
+    AtTaxonomy.seeSelectedValues(['Three', 'Four']);
+    I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
+  });
+
+  await session('ShowFullPath', async () => {
+    //showFullPath
+    I.amOnPage('/');
+    LabelStudio.init({
+      config: createConfig({ showFullPath: true }),
+      data: {
+        text: 'A text',
+      },
+      annotations: [{
+        id: 'test',
+        result,
+      }],
+    });
+    I.say('Should see the full paths');
+    AtTaxonomy.clickTaxonomy();
+    AtTaxonomy.seeSelectedValues(['One to three / Three', 'Four to seven / Four']);
+    I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
+  });
+});
+
+Scenario('Taxonomy visibleWhen with aliases', async ({ I, LabelStudio, AtTaxonomy }) => {
+  const createConfig = ({ showFullPath = false, visibleWhen = 'choice-selected', whenChoiceValue = 'Four' } = {}) => `
+<View>
+  <Text name="text" value="$text"/>
+  <Taxonomy required="true" name="taxonomy" toName="text" leafsOnly="true" placeholder="Select something..." showFullPath="${showFullPath}">
+    <Choice alias="1-3" value="One to three">
+      <Choice alias="1" value="One" />
+      <Choice alias="2" value="Two" />
+      <Choice alias="3" value="Three" />
+    </Choice>
+    <Choice alias="4-7" value="Four to seven">
+      <Choice alias="4" value="Four" />
+      <Choice alias="5" value="Five" />
+      <Choice alias="6" value="Six" />
+      <Choice alias="7" value="Seven" />
+    </Choice>
+  </Taxonomy>
+  <Choices name="choices" toName="text"
+    visibleWhen="${visibleWhen}"
+    whenTagName="taxonomy"
+    whenChoiceValue="${whenChoiceValue}"
+  >
+    <Choice alias="8" value="Eight"></Choice>
+    <Choice alias="9" value="Nine"></Choice>
+  </Choices>
+</View>
+`;
+
+  I.amOnPage('/');
+  LabelStudio.init({
+    config: createConfig(),
+    data: {
+      text: 'A text',
+    },
+  });
+  I.say('Should see values of choices and work with them');
+  AtTaxonomy.clickTaxonomy();
+  AtTaxonomy.toggleGroupWithText('One to three');
+  AtTaxonomy.toggleGroupWithText('Four to seven');
+  AtTaxonomy.seeItemByText('Two');
+  AtTaxonomy.seeItemByText('Five');
+  AtTaxonomy.clickItemByText('Three');
+  AtTaxonomy.clickItemByText('Four');
+  AtTaxonomy.seeSelectedValues(['Three', 'Four']);
+  AtTaxonomy.clickTaxonomy();
+  I.click('Eight'); // click on the choice
+  I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
+  I.say('Should get aliases as results');
+
+  let result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(result[0].value.taxonomy, [['1-3', '3'], ['4-7', '4']]);
+  assert.deepStrictEqual(result[1].value.choices, ['8']);
+
+  I.say('Should get alias results for only taxonomy when visibleWhen is not met');
+  AtTaxonomy.clickTaxonomy();
+  AtTaxonomy.clickItemByText('Four');
+  AtTaxonomy.clickTaxonomy();
+  I.dontSeeElement('.ant-checkbox-checked [name=\'Eight\']');
+
+  result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(result[0].value.taxonomy, [['1-3', '3']]);
+  assert.deepStrictEqual(result?.[1]?.value?.choices, undefined);
+
+  I.say('Should get alias results for taxonomy and choices when visibleWhen is met');
+  AtTaxonomy.clickTaxonomy();
+  AtTaxonomy.clickItemByText('Four');
+  AtTaxonomy.clickTaxonomy();
+  I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
+
+  result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(result[0].value.taxonomy, [['1-3', '3'], ['4-7', '4']]);
+  assert.deepStrictEqual(result[1].value.choices, ['8']);
+
+  await session('Deserialization', async () => {
+    I.amOnPage('/');
+    LabelStudio.init({
+      config: createConfig(),
+      data: {
+        text: 'A text',
+      },
+      annotations: [{
+        id: 'test',
+        result,
+      }],
+    });
+    I.say('Should see the same result');
+    AtTaxonomy.clickTaxonomy();
+    AtTaxonomy.toggleGroupWithText('One to three');
+    AtTaxonomy.toggleGroupWithText('Four to seven');
+    AtTaxonomy.seeCheckedItemByText('Three');
+    AtTaxonomy.seeCheckedItemByText('Four');
+    AtTaxonomy.seeSelectedValues(['Three', 'Four']);
+    I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
+  });
+
+  await session('ShowFullPath', async () => {
+    //showFullPath
+    I.amOnPage('/');
+    LabelStudio.init({
+      config: createConfig({ showFullPath: true }),
+      data: {
+        text: 'A text',
+      },
+      annotations: [{
+        id: 'test',
+        result,
+      }],
+    });
+    I.say('Should see the full paths');
+    AtTaxonomy.clickTaxonomy();
+    AtTaxonomy.seeSelectedValues(['One to three / Three', 'Four to seven / Four']);
+    I.seeElement('.ant-checkbox-checked [name=\'Eight\']');
+  });
+});

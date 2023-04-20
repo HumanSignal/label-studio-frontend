@@ -1,6 +1,6 @@
 const config = `
 <View>
-  <AudioPlus name="audio" value="$url" hotkey="space" sync="text" />
+  <Audio name="audio" value="$url" hotkey="space" sync="text" />
   <Header value="Sentiment"/>
   <ParagraphLabels name="label" toName="text">
     <Label value="General: Positive" background="#00ff00"/>

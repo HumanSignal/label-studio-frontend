@@ -18,6 +18,7 @@ import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
 import { Spin } from 'antd';
 import './Taxonomy.styl';
 import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
+import SelectedChoiceMixin from '../../../mixins/SelectedChoiceMixin';
 
 /**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
@@ -170,6 +171,37 @@ const Model = types
     get defaultChildType() {
       return 'choice';
     },
+
+    selectedValues() {
+      return self.selected;
+    },
+
+    findItemByValueOrAlias(valueOrAlias) {
+      // search the tree of items for the given
+      // value or alias match
+      const findItem = (items) => {
+        for (const item of items) {
+          const label = item.label;
+          const value = item.path[item.path.length - 1];
+
+          item.value = label;
+          if (value !== label) {
+            item.alias = value;
+          }
+
+          if (item.value === valueOrAlias || item.alias === valueOrAlias) {
+            return item;
+          }
+          if (item.children) {
+            const found = findItem(item.children, valueOrAlias);
+
+            if (found) return found;
+          }
+        }
+      };
+
+      return findItem(self.items);
+    },
   }))
   .actions(self => ({
     afterAttach() {
@@ -205,18 +237,13 @@ const Model = types
       self.maxUsagesReached = self.selected.length >= self.maxusages;
     },
 
-    selectedValues() {
-      return self.selected;
-    },
-
     updateFromResult() {
       self.needsUpdate();
     },
 
-    onChange(node, checked) {
+    onChange(_node, checked) {
       self.selected = checked.map(s => s.path ?? s);
       self.maxUsagesReached = self.selected.length >= self.maxusages;
-
       if (self.result) {
         self.result.area.setValue(self);
       } else {
@@ -264,6 +291,7 @@ const TaxonomyModel = types.compose('TaxonomyModel',
   RequiredMixin,
   PerRegionMixin,
   ReadOnlyControlMixin,
+  SelectedChoiceMixin,
   VisibilityMixin,
   AnnotationMixin,
 );

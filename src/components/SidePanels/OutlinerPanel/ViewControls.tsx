@@ -63,12 +63,12 @@ export const ViewControls: FC<ViewControlsProps> = ({
     switch(value) {
       case 'date': return {
         label: 'Order by Time',
-        selectedLabel: 'Ordered by Time',
+        selectedLabel: 'By Time',
         icon: <IconDetails/>,
       };
       case 'score': return {
         label: 'Order by Score',
-        selectedLabel: 'Ordered by Score',
+        selectedLabel: 'By Score',
         icon: <IconSpeed/>,
       };
     }
