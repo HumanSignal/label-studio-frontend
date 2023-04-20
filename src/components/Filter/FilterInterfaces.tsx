@@ -1,3 +1,8 @@
+export enum Logic {
+  and = 'And',
+  or = 'Or',
+}
+
 export interface FilterInterface {
   availableFilters: AvailableFiltersInterface[];
   onChange: (filter: any) => void;
@@ -9,7 +14,7 @@ export interface FilterListInterface {
   operation?: string | string[] | undefined;
   value?: any;
   path?: string;
-  logic?: string;
+  logic?: Logic;
 }
 
 export interface AvailableFiltersInterface {

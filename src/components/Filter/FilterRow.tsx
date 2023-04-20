@@ -8,7 +8,7 @@ import { Block, Elem } from '../../utils/bem';
 import { FilterDropdown } from './FilterDropdown';
 
 import './FilterRow.styl';
-import { FilterListInterface } from './FilterInterfaces';
+import { FilterListInterface, Logic } from './FilterInterfaces';
 import { isDefined } from '../../utils/utilities';
 import { IconDelete } from '../../assets/icons';
 
@@ -19,10 +19,7 @@ interface FilterRowInterface extends FilterListInterface {
   onDelete: (index: number) => void;
 }
 
-const LOGIC = [
-  { key: 'and', label: 'And' },
-  { key: 'or', label: 'Or' },
-];
+const logicItems = Object.entries(Logic).map(([key, label]) => ({ key, label }));
 
 export const FilterRow: FC<FilterRowInterface> = ({
   field,
@@ -56,11 +53,11 @@ export const FilterRow: FC<FilterRowInterface> = ({
         {index === 0 ? <Elem name={'title-row'}>Where</Elem>: (
           <FilterDropdown
             value={logic}
-            items={LOGIC}
+            items={logicItems}
             dataTestid={'logic-dropdown'}
             style={{ width: '60px' }}
             onChange={(value: any) => {
-              onChange(index, { logic:LOGIC[value].key });
+              onChange(index, { logic:logicItems[value].key });
             }}
           />
         )}
