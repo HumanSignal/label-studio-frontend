@@ -902,15 +902,21 @@ export const Annotation = types
       return self.regionStore.regions.slice(prevSize);
     },
 
-    serializeAnnotation(options) {
+    async serializeAnnotation(options) {
       // return self.serialized;
 
       document.body.style.cursor = 'wait';
+      let result = [];
 
-      const result = self.results
-        .map(r => r.serialize(options))
-        .filter(Boolean)
-        .concat(self.relationStore.serializeAnnotation(options));
+      for (const singleResult of self.results) {
+        const serialized = await singleResult.serialize(); 
+
+        console.log({ serialized });
+      
+        if (serialized) result.push(serialized);
+      }
+
+      result = result.concat(self.relationStore.serializeAnnotation(options));      
 
       document.body.style.cursor = 'default';
 

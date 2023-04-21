@@ -262,10 +262,10 @@ const Result = types
     // label, becuase it takes color from the label
     updateAppearenceFromState() { },
 
-    serialize(options) {
+    async serialize(options) {
       const { type, score, value, ...sn } = getSnapshot(self);
       const { valueType } = self.from_name;
-      const data = self.area ? self.area.serialize(options) : {};
+      const data = self.area ? await self.area.serialize(options) : {};
       // cut off annotation id
       const id = self.area?.cleanId;
       const from_name = Tree.cleanUpId(sn.from_name);
