@@ -2,12 +2,16 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 
 import ObjectTag from '../../../components/Tags/Object';
+import { FF_DEV_2669, FF_DEV_2918, FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
 import { findNodeAt, matchesSelector, splitBoundaries } from '../../../utils/html';
 import { isSelectionContainsSpan } from '../../../utils/selection-tools';
 import styles from './Paragraphs.module.scss';
 import { AuthorFilter } from './AuthorFilter';
 import { Phrases } from './Phrases';
-import { FF_DEV_2669, FF_DEV_2918, isFF } from '../../../utils/feature-flags';
+
+const audioDefaultProps = {};
+
+if (isFF(FF_LSDV_4711)) audioDefaultProps.crossOrigin = 'anonymous';
 
 class HtxParagraphsView extends Component {
   _regionSpanSelector = '.htx-highlight';
@@ -374,11 +378,14 @@ class HtxParagraphsView extends Component {
       <ObjectTag item={item} className={'lsf-paragraphs'}>
         {withAudio && (
           <audio
+            {...audioDefaultProps} 
             controls={item.showplayer && !item.syncedAudio}
             className={styles.audio}
             src={item.audio}
             ref={item.getRef()}
             onEnded={item.reset}
+            onError={item.handleError}
+            onCanPlay={item.handleCanPlay}
           />
         )}
         {isFF(FF_DEV_2669) && <AuthorFilter item={item} />}

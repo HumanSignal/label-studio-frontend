@@ -1,3 +1,4 @@
+import { FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
 import { Events } from '../Common/Events';
 import { __DEBUG__ } from '../Common/Utils';
 import { audioDecoderPool } from './AudioDecoderPool';
@@ -15,6 +16,7 @@ export interface WaveformAudioOptions {
 interface WaveformAudioEvents {
   decodingProgress: (chunk: number, total: number) => void;
   canplay: () => void;
+  resetSource: () => void;
 }
 
 export class WaveformAudio extends Events<WaveformAudioEvents> {
@@ -33,6 +35,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private decoderType: 'ffmpeg' | 'webaudio' = 'ffmpeg';
   private src?: string;
   private mediaResolve?: () => void;
+  private hasLoadedSource = false;
 
   constructor(options: WaveformAudioOptions) {
     super();
@@ -182,6 +185,9 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.el.preload = 'auto';
     this.el.setAttribute('data-testid', 'waveform-audio');
     this.el.style.display = 'none';
+
+    if (isFF(FF_LSDV_4711)) this.el.crossOrigin = 'anonymous';
+
     document.body.appendChild(this.el);
 
     this.mediaPromise = new Promise((resolve, reject) => {
@@ -190,20 +196,29 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     });
 
     this.el.addEventListener('canplaythrough', this.mediaReady);
-    this.el.addEventListener('error', this.mediaReady);
+    this.el.addEventListener('error', this.mediaError);
     this.loadMedia();
   }
 
-  mediaReady = async (e: any) => {
-    if (e.type === 'error') {
-      this.mediaReject?.(this.el?.error);
+  mediaError = () => {
+    // If this source has already loaded, we will retry the source url
+    if (isFF(FF_LSDV_4711) && this.hasLoadedSource && this.el) {
+      this.hasLoadedSource = false;
+      this.invoke('resetSource');
     } else {
-      if (this.mediaResolve) {
-        this.mediaResolve?.();
-        this.mediaResolve = undefined;
-      }
-      this.invoke('canplay');
+      // otherwise it's an unrecoverable error
+      this.mediaReject?.(this.el?.error);
     }
+  };
+
+  mediaReady = () => {
+    if (this.mediaResolve) {
+      this.mediaResolve?.();
+      this.mediaResolve = undefined;
+    }
+
+    this.hasLoadedSource = true;
+    this.invoke('canplay');
   };
 
   /**
