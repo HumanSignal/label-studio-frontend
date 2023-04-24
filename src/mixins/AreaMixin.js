@@ -125,7 +125,7 @@ export const AreaMixinBase = types
     },
 
     get isInSelectionArea() {
-      return (isFF(FF_LSDV_4930) && !self.hidden)
+      return (!isFF(FF_LSDV_4930) || !self.hidden)
         && self.parent?.selectionArea?.isActive ? self.parent.selectionArea.intersectsBbox(self.bboxCoords) : false;
     },
   }))
