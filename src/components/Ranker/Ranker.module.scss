@@ -1,0 +1,89 @@
+.rankerBoard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: lightgray;
+  border: 1px solid rgba(34, 36, 38, 0.15);
+}
+
+.buttonContainer {
+  display: flex;
+}
+
+.buttonStyle {
+  margin: 2px;
+  cursor: pointer;
+}
+
+#buttonStyle__removeButton {
+  background-color: white;
+  color: #e30615;
+}
+
+#buttonStyle__addButton {
+  background-color: #1a9bf1;
+  color: white;
+}
+
+.boardStyle {
+  display: flex;
+  width: 100%;
+  margin-top: 10px;
+  background-color: lightgray;
+}
+
+.columnsStyle {
+  display: flex;
+  justify-content: space-evenly;
+  width: 100%;
+}
+
+.columnStyle {
+  margin: 10px;
+  border: 1px solid rgba(34, 36, 38, 0.15);
+  background-color: white;
+  padding: 8px;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: scroll;
+  box-shadow: 2px 2px 8px #aaa;
+}
+
+.itemStyle {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(34, 36, 38, 0.15);
+  margin-top: 20px;
+  padding: 8px;
+  border-radius: 2px;
+  background-color: lightgray;
+  color: black;
+  width: 250px;
+  box-shadow: 2px 2px 8px #aaa;
+}
+
+.itemLineStyle {
+  margin: 0;
+}
+
+.dropAreaStyle {
+  min-height: 50%;
+  min-width: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media screen and (max-width: 1520px) {
+  .itemStyle {
+    width: 200px;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .itemStyle {
+    width: 100px;
+  }
+}

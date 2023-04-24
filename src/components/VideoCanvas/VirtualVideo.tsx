@@ -155,7 +155,6 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
       video.current?.pause();
       source.current?.setAttribute('src', '');
       video.current?.load();
-      video.current = null;
     }
   };
 
@@ -184,23 +183,29 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
     createVideoElement();
     attachEventListeners();
     canPlayType(props.src ?? '').then((canPlay) => {
-      if (canPlay) {
+      if (canPlay && video.current) {
         attachSource();
         attachRef(video.current);
 
         document.body.append(video.current!);
       }
     });
+
+    return () => {
+      // Handle video cleanup
+      detachEventListeners();
+      unloadSource();
+      attachRef(null);
+      video.current?.remove();
+      video.current = null;
+    };
   }, []);
 
-  // Handle video cleanup
-  useEffect(() => () => {
-    detachEventListeners();
-    unloadSource();
-    attachRef(null);
-    video.current?.remove();
-    video.current = null;
-  }, []);
+  useEffect(() => {
+    if (video.current && props.muted !== undefined) {
+      video.current.muted = props.muted;
+    }
+  }, [props.muted]);
 
   return null;
 });

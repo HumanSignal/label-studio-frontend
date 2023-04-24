@@ -14,7 +14,7 @@ const config = `
     <Choice value="Pop" />
   </Choices>
   <Header value="Listen the audio:"></Header>
-  <AudioPlus name="audio" value="$url"></AudioPlus>
+  <Audio name="audio" value="$url"></Audio>
 </View>
 `;
 
