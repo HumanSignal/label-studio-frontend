@@ -608,7 +608,7 @@ const switchRegionTreeView = (viewName) => {
   Htx.annotationStore.selected.regionStore.setView(viewName);
 };
 
-const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
+const serialize = async () => await window.Htx.annotationStore.selected.serializeAnnotation();
 
 const selectText = async ({ selector, rangeStart, rangeEnd }) => {
   let [doc, win] = [document, window];

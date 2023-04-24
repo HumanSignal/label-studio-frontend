@@ -159,7 +159,7 @@
             }
           })
           ls.on("updateAnnotation", (_, annotation) => {
-            console.log(annotation.serializeAnnotation());
+            annotation.serializeAnnotation().then(r => console.log(r));
           })
           ls.on("regionFinishedDrawing", (region, list) => {
             console.log("finish drawing", {region, list})

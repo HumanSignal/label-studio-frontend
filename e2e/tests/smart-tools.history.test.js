@@ -22,7 +22,7 @@ function createRectangleConfig(params = {}) {
 
 const IMAGE = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Html_headers.png/640px-Html_headers.png';
 
-function getRectangleSuggestions(reg, group) {
+async function getRectangleSuggestions(reg, group) {
   const allSuggestions = [{
     'original_width': 640,
     'original_height': 507,
@@ -451,7 +451,7 @@ function getRectangleSuggestions(reg, group) {
   }];
   const annotation = window.labelStudio.store.annotationStore.selected;
   const ids = group.map(r => r.id);
-  const results = annotation.serializeAnnotation().filter((res) => ids.includes(res.id));
+  const results = await (annotation.serializeAnnotation()).filter((res) => ids.includes(res.id));
   const suggestions = allSuggestions.filter(predictionResult => {
     const targetCenterX = predictionResult.value.x + predictionResult.value.width / 2;
     const targetCenterY = predictionResult.value.y + predictionResult.value.height / 2;
@@ -473,6 +473,9 @@ function getRectangleSuggestions(reg, group) {
 }
 
 Scenario('Undo regions auto-annotated from predictions', async function({ I, LabelStudio, AtImageView, AtSidebar }) {
+  LabelStudio.setFeatureFlags({
+    fflag_fix_front_dev_1284_auto_detect_undo_281022_short: true,
+  });
   I.amOnPage('/');
   LabelStudio.init({
     config: createRectangleConfig({
@@ -491,9 +494,6 @@ Scenario('Undo regions auto-annotated from predictions', async function({ I, Lab
       forceAutoAnnotation: true,
       forceAutoAcceptSuggestions: true,
     },
-  });
-  LabelStudio.setFeatureFlags({
-    fflag_fix_front_dev_1284_auto_detect_undo_281022_short: true,
   });
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);

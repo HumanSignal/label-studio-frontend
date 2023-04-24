@@ -181,16 +181,6 @@ export const Annotation = types
       return results;
     },
 
-    get serialized() {
-      // Dirty hack to force MST track changes
-      self.areas.toJSON();
-
-      return self.results
-        .map(r => r.serialize())
-        .filter(Boolean)
-        .concat(self.relationStore.serializeAnnotation());
-    },
-
     get serializedSelection() {
       // Dirty hack to force MST track changes
       self.areas.toJSON();
@@ -660,11 +650,11 @@ export const Annotation = types
       onSnapshot(self.areas, self.autosave);
     }),
 
-    saveDraft() {
+    saveDraft: flow(function*() {
       // if this is now a history item or prediction don't save it
       if (!self.editable) return;
 
-      const result = self.serializeAnnotation({ fast: true });
+      const result = yield self.serializeAnnotation({ fast: true });
       // if this is new annotation and no regions added yet
 
       if (!isFF(FF_LSDV_3009) && !self.pk && !result.length) return;
@@ -674,7 +664,7 @@ export const Annotation = types
       self.setDraftSaving(true);
 
       self.store.submitDraft(self).then(self.onDraftSaved);
-    },
+    }),
 
     saveDraftImmediately() {
       if (self.autosave) self.autosave.flush();
@@ -903,15 +893,11 @@ export const Annotation = types
     },
 
     async serializeAnnotation(options) {
-      // return self.serialized;
-
       document.body.style.cursor = 'wait';
       let result = [];
 
       for (const singleResult of self.results) {
         const serialized = await singleResult.serialize(); 
-
-        console.log({ serialized });
       
         if (serialized) result.push(serialized);
       }
