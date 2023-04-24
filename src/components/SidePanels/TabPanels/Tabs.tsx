@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { IconOutlinerDrag } from '../../../assets/icons';
 import { useDrag } from '../../../hooks/useDrag';
 import { Block, Elem } from '../../../utils/bem';
@@ -56,6 +56,7 @@ const Tab = ({
   const ghostTabRef = useRef<HTMLDivElement>();
   const dragging = useRef(false);
   const location = useRef({ panelKey, tabIndex });
+  const [shouldShowGhostTab, setShouldShowGhostTab] = useState(false);
 
   location.current = { panelKey, tabIndex };
 
@@ -93,6 +94,7 @@ const Tab = ({
         const newX = event.pageX - (x - oX);
 
         if (ghostTabRef.current) {
+          setShouldShowGhostTab(true);
           ghostTabRef.current!.style.display = 'block';
           ghostTabRef.current!.style.top = `${newY}px`;
           ghostTabRef.current!.style.left = `${newX}px`;
@@ -113,7 +115,10 @@ const Tab = ({
         removeHoverClasses();
         classAddedTabs.length = 0;
         tabRef.current?.append(ghostTabRef.current!);
-        if (ghostTabRef.current?.style) ghostTabRef.current.style.display = 'none';
+        if (ghostTabRef.current?.style) {
+          ghostTabRef.current.style.display = 'none';
+          setShouldShowGhostTab(false);
+        }
         document.body.style.cursor = 'auto';
 
         if (!data || !dragging.current) return;
@@ -173,7 +178,7 @@ const Tab = ({
         }}
       >
         <Label />
-        <Elem name="contents">{children}</Elem>
+        {shouldShowGhostTab && <Elem name="contents">{children}</Elem>}
       </Elem>
     </Block>
   );
@@ -211,7 +216,7 @@ export const Tabs = (props: BaseProps) => {
                   setBreakPointActiveTab={props.setBreakPointActiveTab}
                 >
                   <Elem name="content">
-                    <Component key={`${view.title}-${index}-ghost`} {...props} />
+                    <Component key={`${view.title}-${index}-ghost`} {...props} name={'outliner'} />
                   </Elem>
                 </Tab>
               </Elem>
@@ -223,6 +228,7 @@ export const Tabs = (props: BaseProps) => {
           />
         </Elem>
         <Elem  name="contents">
+          {console.log('props', props)}
           {ActiveComponent && <ActiveComponent {...props} />}
         </Elem>
           
