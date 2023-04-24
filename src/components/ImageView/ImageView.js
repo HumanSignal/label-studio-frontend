@@ -28,6 +28,7 @@ import {
   FF_DEV_4081,
   FF_LSDV_4583,
   FF_LSDV_4583_6,
+  FF_LSDV_4711,
   FF_LSDV_4930,
   isFF
 } from '../../utils/feature-flags';
@@ -37,6 +38,9 @@ import { Image } from './Image';
 Konva.showWarnings = false;
 
 const hotkeys = Hotkey('Image');
+const imgDefaultProps = {};
+
+if (isFF(FF_LSDV_4711)) imgDefaultProps.crossOrigin = 'anonymous';
 
 const splitRegions = (regions) => {
   const brushRegions = [];
@@ -1116,6 +1120,7 @@ export default observer(
             <div className={styles.gallery}>
               {item.images.map((src, i) => (
                 <img
+                  {...imgDefaultProps}
                   alt=""
                   key={src}
                   src={src}
