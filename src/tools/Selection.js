@@ -4,6 +4,7 @@ import BaseTool from './Base';
 import ToolMixin from '../mixins/Tool';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { IconMoveTool } from '../assets/icons';
+import { FF_LSDV_4930, isFF } from '../utils/feature-flags';
 
 const _Tool = types.model('SelectionTool', {
   shortcut: 'V',
@@ -53,6 +54,11 @@ const _Tool = types.model('SelectionTool', {
         self.annotation.selectAreas(regionsInSelectionArea);
       }
       isSelecting = false;
+    },
+    clickEv() {
+      if (isFF(FF_LSDV_4930)) {
+        isSelecting = false;
+      }
     },
   };
 });

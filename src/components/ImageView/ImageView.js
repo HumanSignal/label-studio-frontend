@@ -20,7 +20,17 @@ import ResizeObserver from '../../utils/resize-observer';
 import { debounce } from '../../utils/debounce';
 import Constants from '../../core/Constants';
 import { fixRectToFit } from '../../utils/image';
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, isFF } from '../../utils/feature-flags';
+import {
+  FF_DEV_1285,
+  FF_DEV_1442,
+  FF_DEV_3077,
+  FF_DEV_3793,
+  FF_DEV_4081,
+  FF_LSDV_4583,
+  FF_LSDV_4583_6,
+  FF_LSDV_4930,
+  isFF
+} from '../../utils/feature-flags';
 import { Pagination } from '../../common/Pagination/Pagination';
 import { Image } from './Image';
 
@@ -277,7 +287,11 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
 
   return (
     <>
-      <TransformerBack item={item}/>
+      {
+        isFF(FF_LSDV_4930)
+          ? null
+          : <TransformerBack item={item}/>
+      }
       {brushRegions.length > 0 && (
         <Regions
           key="brushes"
@@ -472,6 +486,7 @@ export default observer(
     handleDeferredMouseDown = null;
     deferredClickTimeout = [];
     skipMouseUp = false;
+    mouseDownPoint = null;
 
     constructor(props) {
       super(props);
@@ -492,8 +507,19 @@ export default observer(
       }
 
       const evt = e.evt || e;
+      const { offsetX: x, offsetY: y } = evt;
 
-      return item.event('click', evt, evt.offsetX, evt.offsetY);
+      if (isFF(FF_LSDV_4930)) {
+        // false trigger preventing
+        if (
+          !this.mouseDownPoint
+          || Math.abs(this.mouseDownPoint.x - x) > 0.01
+          || Math.abs(this.mouseDownPoint.y - y) > 0.01) {
+          this.mouseDownPoint = null;
+          return;
+        }
+      }
+      return item.event('click', evt, x, y);
     };
 
     resetDeferredClickTimeout = () => {
@@ -521,6 +547,10 @@ export default observer(
     handleMouseDown = e => {
       const { item } = this.props;
       const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
+
+      if (isFF(FF_LSDV_4930)) {
+        this.mouseDownPoint = { x: e.evt.offsetX, y: e.evt.offsetY };
+      }
 
       item.updateSkipInteractions(e);
 
@@ -1038,6 +1068,12 @@ export default observer(
                   </Layer>
                 )}
                 {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
+
+                {
+                  isFF(FF_LSDV_4930)
+                    ? <TransformerBack item={item}/>
+                    : null
+                }
 
                 {renderableRegions.map(([groupName, list]) => {
                   const isBrush = groupName.match(/brush/i) !== null;
