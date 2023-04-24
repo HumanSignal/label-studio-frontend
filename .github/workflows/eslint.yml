@@ -47,4 +47,19 @@ jobs:
           restore-keys: |
             yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
-      - run: yarn install --frozen-lockfile && yarn lint
+      - name: "Install dependencies"
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          yarn install --frozen-lockfile
+
+      - name: Run ESLint
+        uses: tj-actions/eslint-changed-files@v18
+        with:
+          config_path: ".eslintrc.js"
+          ignore_path: ".eslintignore"
+          extra_args: "--max-warnings=0"
+          file_extensions: |
+            **/*.js
+            **/*.ts
+            **/*.tsx
