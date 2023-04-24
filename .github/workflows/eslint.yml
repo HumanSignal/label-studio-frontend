@@ -51,7 +51,6 @@ jobs:
         timeout-minutes: 1
         run: |
           set -euo pipefail
-          cd e2e
           yarn install --frozen-lockfile
 
       - name: Run ESLint
