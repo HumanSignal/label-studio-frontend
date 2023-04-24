@@ -60,6 +60,6 @@ jobs:
           ignore_path: ".eslintignore"
           extra_args: "--max-warnings=0"
           file_extensions: |
-            **/*.js
-            **/*.ts
-            **/*.tsx
+            src/**/*.js
+            src/**/*.ts
+            src/**/*.tsx
