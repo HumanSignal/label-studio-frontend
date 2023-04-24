@@ -48,7 +48,7 @@ export const FilterRow: FC<FilterRowInterface> = ({
   }, [_selectedOperation, _selectedField]);
 
   return (
-    <Block name={'filter-row'}>
+    <Block name={'filter-row'} data-testid={'filter-row'}>
       <Elem name={'column'}>
         {index === 0 ? <Elem name={'title-row'}>Where</Elem>: (
           <FilterDropdown
@@ -102,6 +102,7 @@ export const FilterRow: FC<FilterRowInterface> = ({
           onClick={() => {
             onDelete(index);
           }}
+          data-testid={`delete-row-${index}`}
           name={'delete'}>
           <IconDelete />
         </Elem>

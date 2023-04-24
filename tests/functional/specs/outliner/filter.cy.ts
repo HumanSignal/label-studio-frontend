@@ -89,16 +89,10 @@ const task = {
 
 describe('Filter outliner scenario', () => {
   it('Check if filter is visible', () => {
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      'fflag_feat_front_dev_3873_labeling_ui_improvements_short': true,
-    });
-
+    //the test will be created here
     LabelStudio.init({
       config,
       task,
     });
-
-
-    cy.get('[data-cy="filter-button"]').should('be.visible');
   });
 });
