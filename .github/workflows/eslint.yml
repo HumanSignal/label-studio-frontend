@@ -47,6 +47,13 @@ jobs:
           restore-keys: |
             yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
+      - name: "Install dependencies"
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          cd e2e
+          yarn install --frozen-lockfile
+
       - name: Run ESLint
         uses: tj-actions/eslint-changed-files@v18
         with:
