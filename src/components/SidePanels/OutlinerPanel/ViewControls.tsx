@@ -63,16 +63,18 @@ export const ViewControls: FC<ViewControlsProps> = ({
     switch(value) {
       case 'date': return {
         label: 'Order by Time',
-        selectedLabel: 'Ordered by Time',
+        selectedLabel: 'By Time',
         icon: <IconDetails/>,
       };
       case 'score': return {
         label: 'Order by Score',
-        selectedLabel: 'Ordered by Score',
+        selectedLabel: 'By Score',
         icon: <IconSpeed/>,
       };
     }
   }, []);
+
+  console.log('regions?.regions', regions?.regions);
 
   return (
     <Block name="view-controls" mod={{ collapsed: context.locked }}>
@@ -105,16 +107,6 @@ export const ViewControls: FC<ViewControlsProps> = ({
             label: 'Confidence score',
             path: 'score',
             type: 'Number',
-          },
-          {
-            label: 'Boolean',
-            path: 'hidden',
-            type: 'Boolean',
-          },
-          {
-            label: 'Common',
-            path: 'isDrawing',
-            type: 'Common',
           }]}
         />
       )}

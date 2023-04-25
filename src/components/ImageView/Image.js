@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { Block, Elem } from '../../utils/bem';
+import { FF_LSDV_4711, isFF } from '../../utils/feature-flags';
 import messages from '../../utils/messages';
 import { ErrorMessage } from '../ErrorMessage/ErrorMessage';
 import './Image.styl';
@@ -64,6 +65,10 @@ const ImageProgress = observer(({
   ) : null;
 });
 
+const imgDefaultProps = {};
+
+if (isFF(FF_LSDV_4711)) imgDefaultProps.crossOrigin = 'anonymous';
+
 const ImageRenderer = observer(forwardRef(({
   src,
   onLoad,
@@ -78,6 +83,7 @@ const ImageRenderer = observer(forwardRef(({
 
   return (
     <img
+      {...imgDefaultProps}
       ref={ref}
       alt="image"
       src={src}
