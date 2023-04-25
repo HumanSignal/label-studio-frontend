@@ -63,6 +63,9 @@ export const Filter: FC<FilterInterface> = ({
       const newList = [...oldList];
 
       newList.splice(index, 1);
+
+      onChange(FilterItems(filterData, newList));
+
       return newList;
     });
   }, [setFilterList]);
