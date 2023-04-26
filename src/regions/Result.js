@@ -150,7 +150,7 @@ const Result = types
     /**
      * Checks perRegion and Visibility params
      */
-    get isSubmitable() {
+    get canBeSubmitted() {
       const control = self.from_name;
 
       if (control.perregion) {
@@ -159,10 +159,13 @@ const Result = types
         if (label && !self.area.hasLabel(label)) return false;
       }
 
+      const innerResults = (r) =>
+        r.map(s => Array.isArray(s) ? s.at(-1) : s);
+
       const isChoiceSelected = () => {
         const tagName = control.whentagname;
         const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(',') : null;
-        const results = self.annotation.results.filter(r => r.type === 'choices' && r !== self);
+        const results = self.annotation.results.filter(r => ['choices', 'taxonomy'].includes(r.type) && r !== self);
 
         if (tagName) {
           const result = results.find(r => {
@@ -172,11 +175,11 @@ const Result = types
           });
 
           if (!result) return false;
-          if (choiceValues && !choiceValues.some(v => result.mainValue.includes(v))) return false;
+          if (choiceValues && !choiceValues.some(v => innerResults(result.mainValue).some(vv => result.from_name.selectedChoicesMatch(v, vv)))) return false;
         } else {
           if (!results.length) return false;
           // if no given choice value is selected in any choice result
-          if (choiceValues && !choiceValues.some(v => results.some(r => r.mainValue.includes(v)))) return false;
+          if (choiceValues && !results.some(r => choiceValues.some(v => innerResults(r.mainValue).some(vv => r.from_name.selectedChoicesMatch(v, vv))))) return false;
         }
         return true;
       };
@@ -269,7 +272,7 @@ const Result = types
       const to_name = Tree.cleanUpId(sn.to_name);
 
       if (!data) return null;
-      if (!self.isSubmitable) return null;
+      if (!self.canBeSubmitted) return null;
 
       if (!isDefined(data.value)) data.value = {};
       // with `mergeLabelsAndResults` control uses only one result even with external `Labels`

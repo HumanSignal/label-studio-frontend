@@ -63,7 +63,7 @@ examples.slice(1).forEach(example =>
       AtImageView.waitForImage();
     }
 
-    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'AudioPlus' || node['#name'] === 'Audio')) {
+    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'Audio')) {
       await AtAudioView.waitForAudio();
     }
 

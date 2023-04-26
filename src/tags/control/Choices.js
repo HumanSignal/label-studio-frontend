@@ -21,6 +21,7 @@ import './Choice';
 import DynamicChildrenMixin from '../../mixins/DynamicChildrenMixin';
 import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from '../../utils/feature-flags';
 import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
+import SelectedChoiceMixin from '../../mixins/SelectedChoiceMixin';
 
 const { Option } = Select;
 
@@ -246,6 +247,7 @@ const ChoicesModel = types.compose(
   RequiredMixin,
   PerRegionMixin,
   ReadOnlyControlMixin,
+  SelectedChoiceMixin,
   VisibilityMixin,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
   Model,

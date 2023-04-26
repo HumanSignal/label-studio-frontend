@@ -7,5 +7,5 @@
     <Label value="Trick" background="#358EF3"/>
   </Labels>
 
-  <AudioPlus name="audio" value="$video" sync="video" zoom="true" speed="true" volume="true"/>
+  <Audio name="audio" value="$video" sync="video" zoom="true" speed="true" volume="true"/>
 </View>

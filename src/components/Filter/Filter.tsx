@@ -28,6 +28,7 @@ export const Filter: FC<FilterInterface> = ({
       ...filterList,
       {
         field: availableFilters[0]?.label ?? '',
+        logic: 'and',
         operation: '',
         value: '',
         path: '',
@@ -36,7 +37,7 @@ export const Filter: FC<FilterInterface> = ({
   }, [setFilterList, availableFilters]);
 
   const onChangeRow = useCallback(
-    (index: number, { field, operation, value, path }: Partial<FilterListInterface>) => {
+    (index: number, { field, operation, value, path, logic }: Partial<FilterListInterface>) => {
       setFilterList((oldList) => {
         const newList = [...oldList];
 
@@ -44,11 +45,12 @@ export const Filter: FC<FilterInterface> = ({
           ...newList[index],
           field: field ?? newList[index].field,
           operation: operation ?? newList[index].operation,
+          logic: logic ?? newList[index].logic,
           value: value ?? newList[index].value,
           path: path ?? newList[index].path,
         };
 
-        onChange(FilterItems(filterData, newList[index]));
+        onChange(FilterItems(filterData, newList));
 
         return newList;
       });
@@ -66,12 +68,13 @@ export const Filter: FC<FilterInterface> = ({
   }, [setFilterList]);
 
   const renderFilterList = useMemo(() => {
-    return filterList.map(({ field, operation, value }, index) => (
+    return filterList.map(({ field, operation, logic, value }, index) => (
       <Block key={index} name="filter-item">
         <FilterRow
           index={index}
           availableFilters={availableFilters}
           field={field}
+          logic={logic}
           operation={operation}
           value={value}
           onDelete={onDeleteRow}
@@ -101,7 +104,7 @@ export const Filter: FC<FilterInterface> = ({
     <Dropdown.Trigger
       content={renderFilter}
     >
-      <Button type="text" style={{ padding: 0, whiteSpace: 'nowrap' }}>
+      <Button data-cy={'filter-button'} type="text" style={{ padding: 0, whiteSpace: 'nowrap' }}>
         <Elem name={'icon'}>
           <IconFilter />
         </Elem>
