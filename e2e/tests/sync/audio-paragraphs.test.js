@@ -4,7 +4,7 @@ Feature('Sync: Audio Paragraphs');
 
 const config = `
 <View>
-  <AudioPlus name="audio" value="$url" hotkey="space" sync="text" />
+  <Audio name="audio" value="$url" hotkey="space" sync="text" />
   <Header value="Sentiment"/>
   <ParagraphLabels name="label" toName="text">
     <Label value="General: Positive" background="#00ff00"/>
@@ -107,9 +107,9 @@ Scenario('Check audio clip is played when using the new sync option', async func
 
   AtSidebar.seeRegions(2);
 
-  const [{ currentTime: startingAudioPlusTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
+  const [{ currentTime: startingAudioTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
 
-  assert.equal(startingAudioPlusTime, startingParagraphAudioTime);
+  assert.equal(startingAudioTime, startingParagraphAudioTime);
   assert.equal(startingParagraphAudioTime, 0);
 
   I.click('[aria-label="play-circle"]');
@@ -118,9 +118,9 @@ Scenario('Check audio clip is played when using the new sync option', async func
   I.click('[aria-label="pause-circle"]');
   I.wait(1);
 
-  const [{ currentTime: seekAudioPlusTime }, { currentTime: seekParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
+  const [{ currentTime: seekAudioTime }, { currentTime: seekParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
 
-  assert.notEqual(seekAudioPlusTime, 0);
-  I.assertTimesInSync(seekAudioPlusTime, seekParagraphAudioTime, `Expected seek time to be ${seekAudioPlusTime} but was ${seekParagraphAudioTime}`);
+  assert.notEqual(seekAudioTime, 0);
+  I.assertTimesInSync(seekAudioTime, seekParagraphAudioTime, `Expected seek time to be ${seekAudioTime} but was ${seekParagraphAudioTime}`);
 });
 

@@ -1,5 +1,6 @@
 import { DetailedHTMLProps, forwardRef, useCallback, useEffect, useRef, VideoHTMLAttributes } from 'react';
 import InfoModal from '../../components/Infomodal/Infomodal';
+import { FF_LSDV_4711, isFF } from '../../utils/feature-flags';
 
 
 type VirtualVideoProps = DetailedHTMLProps<VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement> & {
@@ -91,6 +92,8 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
     videoEl.controls = false;
     videoEl.preload = 'auto';
 
+    if (isFF(FF_LSDV_4711)) videoEl.crossOrigin = 'anonymous';
+
     Object.assign(videoEl.style, {
       top: '-9999px',
       width: 0,
@@ -180,7 +183,7 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
     createVideoElement();
     attachEventListeners();
     canPlayType(props.src ?? '').then((canPlay) => {
-      if (canPlay) {
+      if (canPlay && video.current) {
         attachSource();
         attachRef(video.current);
 

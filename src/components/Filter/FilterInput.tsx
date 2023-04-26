@@ -34,6 +34,7 @@ export const FilterInput: FC<FilterInputInterface> = ({
       value={value ?? ''}
       ref={inputRef}
       placeholder={placeholder}
+      data-testid={'filter-input'}
       onChange={onChangeHandler}
       style={style}
       {...(schema ?? {})}

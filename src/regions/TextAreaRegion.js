@@ -11,7 +11,7 @@ import { guidGenerator } from '../core/Helpers';
 import styles from './TextAreaRegion/TextAreaRegion.module.scss';
 import { HtxTextBox } from '../components/HtxTextBox/HtxTextBox';
 import LeadTimeMixin from '../mixins/LeadTime';
-import { FF_DEV_1566, isFF } from '../utils/feature-flags';
+import { FF_DEV_1566, FF_LSDV_4712, isFF } from '../utils/feature-flags';
 
 const Model = types
   .model('TextAreaRegionModel', {
@@ -42,6 +42,8 @@ const Model = types
   }))
   .actions(self => ({
     setValue(val) {
+      if (isFF(FF_LSDV_4712) && (self._value === val || !self.parent.validateValue(val))) return;
+
       self._value = val;
       self.parent.onChange();
     },
