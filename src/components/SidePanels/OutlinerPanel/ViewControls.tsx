@@ -74,6 +74,8 @@ export const ViewControls: FC<ViewControlsProps> = ({
     }
   }, []);
 
+  console.log('regions?.regions', regions?.regions);
+
   return (
     <Block name="view-controls" mod={{ collapsed: context.locked }}>
       <Grouping
@@ -105,16 +107,6 @@ export const ViewControls: FC<ViewControlsProps> = ({
             label: 'Confidence score',
             path: 'score',
             type: 'Number',
-          },
-          {
-            label: 'Boolean',
-            path: 'hidden',
-            type: 'Boolean',
-          },
-          {
-            label: 'Common',
-            path: 'isDrawing',
-            type: 'Common',
           }]}
         />
       )}
