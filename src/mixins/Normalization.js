@@ -18,9 +18,14 @@ const NormalizationMixin = types
     };
   })
   .actions(self => ({
+    setMetaValue(key, value) {
+      self.meta = { ...self.meta, [key]: value };
+    },
+
     /**
      * Set meta text
      * @param {*} val
+     * @todo it's text, not any info
      */
     setMetaInfo(val) {
       if (val) {

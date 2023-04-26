@@ -91,6 +91,7 @@ const TagAttrs = types.model({
 
 const Model = types.model({
   type: 'textarea',
+  // @todo rename to textarearegions to avoid confusion, they are not real regions or results
   regions: types.array(TextAreaRegionModel),
   _value: types.optional(types.string, ''),
   children: Types.unionArray(['shortcut']),
@@ -131,7 +132,18 @@ const Model = types.model({
     }
   },
 
+  /**
+   * For per-regions we store `lead_time` inside connected result,
+   * we don't store it in TextAreaRegions,
+   *   because TextAreaRegions are recreated every time user selects main region
+   *   and they don't store any info except the text;
+   * and we don't store it in TextArea itself, just temporarily,
+   *   because it's shared between all main regions.
+   * For global claassification we store it in TextArea itself,
+   * becase TextAreaRegions are permanent.
+   */
   get metaValue() {
+    if (!self.perregion) return null;
     return {
       lead_time: self.regions.reduce((sum, reg) => sum + reg.leadTime, 0) / 1000,
     };
@@ -267,9 +279,22 @@ const Model = types.model({
       if (!self.validateValue(text)) return;
 
       self.createRegion(text, pid, self.leadTime);
-      self.leadTime = 0;
+      self.updateLeadTime();
 
       self.onChange();
+    },
+
+    // @todo maybe move description from meatValue getter here
+    updateLeadTime() {
+      if (self.perregion) {
+        const area = self.annotation.highlightedNode;
+
+        // add current stored leadTime to the main stored lead_time
+        // @todo rename leadTime to lead_time after full separation of per-region and global classification
+        area.setMetaValue('leadTime', (area.meta.leadTime ?? 0) + self.leadTime / 1000);
+      }
+
+      self.leadTime = 0;
     },
 
     addTextToResult(text, result) {
