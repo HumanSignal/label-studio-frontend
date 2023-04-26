@@ -451,7 +451,7 @@ async function getRectangleSuggestions(reg, group) {
   }];
   const annotation = window.labelStudio.store.annotationStore.selected;
   const ids = group.map(r => r.id);
-  const results = await (annotation.serializeAnnotation()).filter((res) => ids.includes(res.id));
+  const results = (await annotation.serializeAnnotation()).filter((res) => ids.includes(res.id));
   const suggestions = allSuggestions.filter(predictionResult => {
     const targetCenterX = predictionResult.value.x + predictionResult.value.width / 2;
     const targetCenterY = predictionResult.value.y + predictionResult.value.height / 2;
