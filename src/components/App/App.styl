@@ -14,9 +14,6 @@
   flex-direction column
   background-color var(--main-bg-color)
 
-  &__auto_height
-    height: auto
-
   &_fullscreen
     position absolute
     background white
@@ -41,11 +38,7 @@
   align-items stretch
   max-width 100%
   height calc(100% - var(--topbar-height))
-
-  // view all and new UI have only one children, so no grid required
-  &_view_all
-  &_outliner
-    grid-template-columns 100%
+  grid-template-columns 100%
     
     & .menu 
       padding-bottom 8px
