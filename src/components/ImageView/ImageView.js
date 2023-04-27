@@ -541,6 +541,8 @@ export default observer(
           handleDeselection();
         }
         handleDeferredMouseDownCallback();
+        // mousedown should be called only once especially if it is called from mousemove interaction.
+        this.handleDeferredMouseDown = null;
       };
       this.resetDeferredClickTimeout();
       this.deferredClickTimeout.push(setTimeout(() => {
