@@ -2,7 +2,6 @@ import chroma from 'chroma-js';
 import { observer } from 'mobx-react';
 import { FC, useMemo, useState } from 'react';
 import { IconLink, IconPlusAlt, IconTrash, IconWarning } from '../../../assets/icons';
-import { IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
 import { Button, ButtonProps } from '../../../common/Button/Button';
 import { Block, Elem } from '../../../utils/bem';
 import { NodeIcon } from '../../Node/Node';
