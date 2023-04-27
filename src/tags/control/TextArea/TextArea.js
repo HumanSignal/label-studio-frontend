@@ -132,16 +132,6 @@ const Model = types.model({
     }
   },
 
-  /**
-   * For per-regions we store `lead_time` inside connected result,
-   * we don't store it in TextAreaRegions,
-   *   because TextAreaRegions are recreated every time user selects main region
-   *   and they don't store any info except the text;
-   * and we don't store it in TextArea itself, just temporarily,
-   *   because it's shared between all main regions.
-   * For global claassification we store it in TextArea itself,
-   * becase TextAreaRegions are permanent.
-   */
   get metaValue() {
     if (!self.perregion) return null;
     return {
@@ -284,14 +274,22 @@ const Model = types.model({
       self.onChange();
     },
 
-    // @todo maybe move description from meatValue getter here
+    /**
+     * For per-regions we store `lead_time` inside connected result,
+     * we don't store it in TextAreaRegions,
+     *   because TextAreaRegions are recreated every time user selects main region
+     *   and they don't store any info except the text;
+     * and we don't store it in TextArea itself, just temporarily,
+     *   because it's shared between all main regions.
+     * For global claassification we store it in TextArea itself,
+     * becase TextAreaRegions are permanent.
+     */
     updateLeadTime() {
       if (self.perregion) {
         const area = self.annotation.highlightedNode;
 
         // add current stored leadTime to the main stored lead_time
-        // @todo rename leadTime to lead_time after full separation of per-region and global classification
-        area.setMetaValue('leadTime', (area.meta.leadTime ?? 0) + self.leadTime / 1000);
+        area.setMetaValue('lead_time', (area.meta.leadTime ?? 0) + self.leadTime / 1000);
       }
 
       self.leadTime = 0;
