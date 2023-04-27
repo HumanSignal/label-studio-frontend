@@ -3,6 +3,7 @@ import { fourRectanglesResult, simpleEllipseConfig, simpleEllipseResult,
   simpleImageData,
   simplePointConfig,
   simplePointResult, simplePolygonConfig, simplePolygonResult, simpleRectangleConfig, simpleRectangleResult } from 'data/image_segmentstion/tools/selection-tool';
+import { FF_DEV_1442 } from '../../../../../src/utils/feature-flags';
 
 describe('Image segmentation - Tools - Selection tool', () => {
   describe('Сlick interactions', () => {
@@ -270,6 +271,32 @@ describe('Image segmentation - Tools - Selection tool', () => {
       ImageView.drawRectRelative(.9, .9, .01, .01, { ctrlKey: true, metaKey: true });
       Sidebar.hasSelectedRegions(4);
 
+    });
+
+    it.only('Should select and area even if the region was just added @regression', () => {
+      LabelStudio.addFeatureFlagsOnPageLoad({
+        [FF_DEV_1442]: true,
+      });
+
+      LabelStudio.params()
+        .config(simpleRectangleConfig)
+        .data(simpleImageData)
+        .withResult([])
+        .init();
+
+      ImageView.waitForImage();
+      ImageView.selectRectangleToolByButton();
+
+      cy.log('Draw two new regions');
+      ImageView.drawRectRelative(.2, .2, .2, .6);
+      Sidebar.hasRegions(1);
+      ImageView.drawRectRelative(.6, .2, .2, .6);
+      Sidebar.hasRegions(2);
+      Sidebar.hasSelectedRegions(0);
+
+      ImageView.selectMoveToolByButton();
+      ImageView.drawRectRelative(.1, .1, .8, .8);
+      Sidebar.hasSelectedRegions(2);
     });
   });
 });
