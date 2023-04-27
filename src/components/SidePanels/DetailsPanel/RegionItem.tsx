@@ -131,11 +131,6 @@ const RegionAction: FC<any> = observer(({
           style={{ width: 36, height: 32 }}
         />
         <RegionActionButton
-          icon={region.hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
-          onClick={region.toggleHidden}
-          hotkey="region:visibility"
-        />
-        <RegionActionButton
           danger
           disabled={region.isReadOnly()}
           icon={<IconTrash/>}
