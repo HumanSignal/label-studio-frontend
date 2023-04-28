@@ -68,7 +68,7 @@ export const Filter: FC<FilterInterface> = ({
 
       return newList;
     });
-  }, [setFilterList]);
+  }, [setFilterList, filterData]);
 
   const renderFilterList = useMemo(() => {
     return filterList.map(({ field, operation, logic, value }, index) => (
