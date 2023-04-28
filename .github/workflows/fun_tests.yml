@@ -105,10 +105,11 @@ jobs:
           NODE_ENV: 'production'
           COLLECT_COVERAGE: 'true'
           CPU_NUMBER: ${{ steps.cpu-info.outputs.cores-count }}
+          CYPRESS_RUN_BINARY: /Downloads/Cypress/Cypress
         run: |
           set -euo pipefail
           cd ./tests/functional
-          yarn run test
+          yarn run test:parallel
 
       - name: "Upload suite output" 
         uses: actions/upload-artifact@v3
