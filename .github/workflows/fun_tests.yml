@@ -10,7 +10,7 @@ on:
 env:
   # increment it in case if you need to reset cache
   CACHE_NAME_PREFIX: v3
-  NODE: '14'
+  NODE: "14"
 
 jobs:
   run:
@@ -92,7 +92,7 @@ jobs:
 
       - name: "Setup Cypress"
         timeout-minutes: 1
-        env: 
+        env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           set -euo pipefail
@@ -102,16 +102,15 @@ jobs:
       - name: Run Cypress test suite
         timeout-minutes: 40
         env:
-          NODE_ENV: 'production'
-          COLLECT_COVERAGE: 'true'
+          NODE_ENV: "production"
+          COLLECT_COVERAGE: "true"
           CPU_NUMBER: ${{ steps.cpu-info.outputs.cores-count }}
-          CYPRESS_RUN_BINARY: /Downloads/Cypress/Cypress
         run: |
           set -euo pipefail
           cd ./tests/functional
           yarn run test:parallel
 
-      - name: "Upload suite output" 
+      - name: "Upload suite output"
         uses: actions/upload-artifact@v3
         if: ${{ failure() }}
         with:
@@ -131,4 +130,3 @@ jobs:
         with:
           name: cypress-tests-coverage
           path: ./tests/functional/coverage/
-
