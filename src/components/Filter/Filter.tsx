@@ -6,7 +6,7 @@ import { Button } from '../../common/Button/Button';
 import { IconFilter } from '../../assets/icons';
 
 import './Filter.styl';
-import { FilterInterface, FilterListInterface, Logic } from './FilterInterfaces';
+import { FilterInterface, FilterListInterface } from './FilterInterfaces';
 import { FilterRow } from './FilterRow';
 import { FilterItems } from './filter-util';
 
@@ -28,7 +28,7 @@ export const Filter: FC<FilterInterface> = ({
       ...filterList,
       {
         field: availableFilters[0]?.label ?? '',
-        logic: Logic.and,
+        logic: 'and',
         operation: '',
         value: '',
         path: '',
