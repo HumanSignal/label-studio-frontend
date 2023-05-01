@@ -43,7 +43,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
     switch(value) {
       case 'manual': return {
         label: 'Group Manually',
-        selectedLabel: isFF(FF_DEV_3873) ? 'Grouping': 'Manual Grouping',
+        selectedLabel: isFF(FF_DEV_3873) ? 'Manual': 'Manual Grouping',
         icon: <IconList/>,
       };
       case 'label': return {
