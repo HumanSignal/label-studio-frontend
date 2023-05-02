@@ -66,9 +66,9 @@ describe('Video segmentation', () => {
       VideoView.captureCanvas('canvas');
 
       VideoView.clickAtFrame(3);
-      Sidebar.hasSelectedRegions(1);
       cy.log('Select region');
       VideoView.clickAtRelative(.5,.5);
+      Sidebar.hasSelectedRegions(1);
       VideoView.clickAtFrame(4);
       Sidebar.hasSelectedRegions(1);
       VideoView.canvasShouldNotChange('canvas', 0);
