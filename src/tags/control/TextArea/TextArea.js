@@ -261,7 +261,7 @@ const Model = types.model({
 
     addText(text, pid) {
       if (self.startTime) {
-        const now = +new Date();
+        const now = +Date.now();
 
         self.leadTime += now - self.startTime;
         self.startTime = 0;
