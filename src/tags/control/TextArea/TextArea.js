@@ -344,25 +344,6 @@ const Model = types.model({
       }
     },
 
-    toStateJSON() {
-      if (!self.regions.length) return;
-
-      const toname = self.toname || self.name;
-
-      const tree = {
-        id: self.pid,
-        from_name: self.name,
-        to_name: toname,
-        type: 'textarea',
-        meta: self.metaValue,
-        value: {
-          text: self.regions.map(r => r._value),
-        },
-      };
-
-      return tree;
-    },
-
     fromStateJSON(obj) {
       let { text } = obj.value;
 
