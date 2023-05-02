@@ -41,7 +41,7 @@ const LeadTimeMixin = types
     countTime(trailingCall = false) {
       const emulateDebounced = trailingCall === true ? -LEAD_TIME_CALCULATION_INTERVAL : 0;
 
-      self.debouncedCountTime(+new Date() + emulateDebounced);
+      self.debouncedCountTime(+Date.now() + emulateDebounced);
     },
   }));
 
