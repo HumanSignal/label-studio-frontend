@@ -1,9 +1,11 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Filter } from '../Filter';
+import { act } from 'react-dom/test-utils';
 
 describe('Filter', () => {
   const mockOnChange = jest.fn();
+
   const filterData = [
     {
       'labelName': 'AirPlane',
@@ -123,5 +125,45 @@ describe('Filter', () => {
 
 
     expect(filteredContent).toStrictEqual([{ labelName: 'Car' }, { labelName: 'AirCar' }]) ;
+  });
+
+  test('Should hide dropdown filter', async () => {
+    const filter = render(<Filter
+      onChange={mockOnChange}
+      filterData={filterData}
+      animated={false}
+      availableFilters={[{
+        label: 'Annotation results',
+        path: 'labelName',
+        type: 'String',
+      },
+      {
+        label: 'Confidence score',
+        path: 'score',
+        type: 'Number',
+      }]}
+    />);
+
+    const FilterButton = await filter.getByText('Filter');
+
+    fireEvent.click(FilterButton);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const dropdown = await filter.getByTestId('dropdown');
+
+    expect(dropdown.classList.contains('dm-visible')).toBe(true);
+
+    const AddButton = await filter.getByText('Add Filter');
+
+    fireEvent.click(AddButton);
+
+    fireEvent.click(FilterButton);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(dropdown.classList.contains('dm-before-appear')).toBe(false);
+    expect(dropdown.classList.contains('dm-visible')).toBe(false);
+    expect(dropdown.classList.contains('dm-before-disappear')).toBe(false);
   });
 });
