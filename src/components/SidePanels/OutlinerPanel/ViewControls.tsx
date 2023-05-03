@@ -74,7 +74,6 @@ export const ViewControls: FC<ViewControlsProps> = ({
     }
   }, []);
 
-
   return (
     <Block name="view-controls" mod={{ collapsed: context.locked }}>
       <Grouping

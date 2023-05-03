@@ -63,9 +63,12 @@ export const Filter: FC<FilterInterface> = ({
       const newList = [...oldList];
 
       newList.splice(index, 1);
+
+      onChange(FilterItems(filterData, newList));
+
       return newList;
     });
-  }, [setFilterList]);
+  }, [setFilterList, filterData]);
 
   const renderFilterList = useMemo(() => {
     return filterList.map(({ field, operation, logic, value }, index) => (
