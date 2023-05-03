@@ -200,7 +200,7 @@ describe('Image segmentation - Tools - Selection tool', () => {
       Sidebar.hasSelectedRegions(0);
     });
 
-    it.only('Should not deselect regions by clicking outside with Ctrl pressed @regression', () => {
+    it('Should not deselect regions by clicking outside with Ctrl pressed @regression', () => {
       LabelStudio.addFeatureFlagsOnPageLoad({
         [FF_DEV_1442]: true,
       });
