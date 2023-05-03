@@ -13,6 +13,7 @@ const RequiredMixin = types
         // every bbox
         const objectTag = self.annotation.names.get(self.toname);
 
+        // if regions don't meet visibility conditions skip validation
         for (const reg of objectTag.regs) {
           const s = reg.results.find(s => s.from_name === self);
 
