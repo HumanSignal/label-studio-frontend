@@ -131,20 +131,6 @@ const Model = LabelMixin.views(self => ({
       empty.setEmpty();
     }
   },
-  validate() {
-    const regions = self.annotation.regionStore.regions;
-
-    for (const r of regions) {
-      for (const s of r.states) {
-        if (s.name === self.name) {
-          return true;
-        }
-      }
-    }
-
-    InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
-    return false;
-  },
 }));
 
 const LabelsModel = types.compose(
