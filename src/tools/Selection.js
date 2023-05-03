@@ -55,9 +55,13 @@ const _Tool = types.model('SelectionTool', {
       }
       isSelecting = false;
     },
-    clickEv() {
+    clickEv(ev) {
       if (isFF(FF_LSDV_4930)) {
         isSelecting = false;
+        self.obj.resetSelection();
+        if (!ev.ctrlKey && !ev.metaKey) {
+          self.annotation.unselectAreas();
+        }
       }
     },
   };
