@@ -11,13 +11,13 @@ export const BottomBar = observer(({ store }) => {
 
   const isViewAll = annotationStore?.viewingAll === true;
 
-  return store ? (
+  return store && !isViewAll ? (
     <Block name="bottombar">
       <Elem name="group">
         <Actions store={store}/>
       </Elem>
       <Elem name="group">
-        {!isViewAll && store.hasInterface('controls') && (store.hasInterface('review') || !isPrediction) && (
+        {store.hasInterface('controls') && (store.hasInterface('review') || !isPrediction) && (
           <Elem name="section" mod={{ flat: true }}>
             <Controls annotation={entity} />
           </Elem>
