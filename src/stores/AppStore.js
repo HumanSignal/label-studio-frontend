@@ -381,8 +381,8 @@ export default types
       hotkeys.addNamed('region:visibility', function() {
         const c = self.annotationStore.selected;
 
-        if (c && c.highlightedNode && !c.relationMode) {
-          c.highlightedNode.toggleHidden();
+        if (c && !c.relationMode) {
+          c.hideSelectedRegions();
         }
       });
 
