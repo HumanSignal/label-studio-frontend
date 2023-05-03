@@ -15,8 +15,9 @@ import Settings from './SettingsStore';
 import Task from './TaskStore';
 import { UserExtended } from './UserStore';
 import { UserLabels } from './UserLabels';
-import { FF_DEV_1536, FF_DEV_2715, isFF } from '../utils/feature-flags';
+import { FF_DEV_1536, FF_DEV_2715, FF_LSDV_4998, isFF } from '../utils/feature-flags';
 import { CommentStore } from './Comment/CommentStore';
+import { destroy as destroySharedStore } from '../mixins/SharedChoiceStore/mixin';
 
 const hotkeys = Hotkey('AppStore', 'Global Hotkeys');
 
@@ -600,6 +601,9 @@ export default types
 
       if (oldAnnotationStore) {
         oldAnnotationStore.beforeReset?.();
+        if (isFF(FF_LSDV_4998)) {
+          destroySharedStore();
+        }
         detach(oldAnnotationStore);
         destroy(oldAnnotationStore);
       }
