@@ -80,10 +80,8 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
             setVisibility(visible ? 'before-appear' : 'before-disappear');
           },
           afterTransition: () => {
-            setTimeout(() => {
-              setVisibility(visible ? 'visible' : null);
-              resolve();
-            }, 100);
+            setVisibility(visible ? 'visible' : null);
+            resolve();
           },
         });
       });
