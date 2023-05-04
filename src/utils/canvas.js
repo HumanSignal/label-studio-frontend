@@ -204,13 +204,11 @@ async function exportRLE(region) {
       const image = new Image();
 
       image.onload = () => {
-        console.log('image loaded');
         ctx.drawImage(image, 0, 0);
         resolve();
       };
 
       image.src = region.maskDataURL;
-      image.load();
     });
   }
 
