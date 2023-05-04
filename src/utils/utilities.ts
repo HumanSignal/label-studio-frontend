@@ -192,9 +192,14 @@ export const userDisplayName = (user: Record<string, string> = {}) => {
     : (user.username || user.email);
 };
 
-// createdBy is a string like "[<username> ]<email>, <id>"
+/**
+ * This name supposed to be username, but most likely it's first_name and last_name
+ * @param {string} createdBy string like "[<name> ]<email>, <id>"
+ * @returns {string} email
+ */
 export const emailFromCreatedBy = (createdBy: string) => {
-  return createdBy?.replace(/,\s*\d+$/, '').replace(/^\S*\s+/, '');
+  // get the email followed by id and cut off the id
+  return createdBy?.match(/([^@,\s]+@[^@,\s]+)(,\s*\d+)?$/)?.[1];
 };
 
 export const camelizeKeys = (object: any): Record<string, unknown> => {

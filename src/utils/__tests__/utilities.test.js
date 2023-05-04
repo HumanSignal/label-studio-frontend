@@ -6,9 +6,11 @@ describe('Helper function emailFromCreatedBy', () => {
   // empty username, not a rare case
   expect(emailFromCreatedBy(' abc@def.com, 12')).toBe('abc@def.com');
   expect(emailFromCreatedBy('usrnm abc@def.com, 12')).toBe('abc@def.com');
+  // first and last name
+  expect(emailFromCreatedBy('Abc Def ab.c+12@def.com.pt, 12')).toBe('ab.c+12@def.com.pt');
   // complex case
-  expect(emailFromCreatedBy('us3rN4ME ab.c+12@def.com.pt, 12')).toBe('ab.c+12@def.com.pt');
-  // just a email
+  expect(emailFromCreatedBy('Ab.C D@E.F ab.c+12@def.com.pt, 12')).toBe('ab.c+12@def.com.pt');
+  // just a email, should not be a real case though
   expect(emailFromCreatedBy('ab.c+12@def.com.pt')).toBe('ab.c+12@def.com.pt');
 });
 
