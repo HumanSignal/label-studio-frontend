@@ -1,5 +1,16 @@
 /* global it, describe, expect, test */
-import { getUrl, isString, isStringEmpty, isStringJSON, toTimeString } from '../utilities';
+import { emailFromCreatedBy, getUrl, isString, isStringEmpty, isStringJSON, toTimeString } from '../utilities';
+
+describe('Helper function emailFromCreatedBy', () => {
+  expect(emailFromCreatedBy('abc@def.com, 12')).toBe('abc@def.com');
+  // empty username, not a rare case
+  expect(emailFromCreatedBy(' abc@def.com, 12')).toBe('abc@def.com');
+  expect(emailFromCreatedBy('usrnm abc@def.com, 12')).toBe('abc@def.com');
+  // complex case
+  expect(emailFromCreatedBy('us3rN4ME ab.c+12@def.com.pt, 12')).toBe('ab.c+12@def.com.pt');
+  // just a email
+  expect(emailFromCreatedBy('ab.c+12@def.com.pt')).toBe('ab.c+12@def.com.pt');
+});
 
 /**
  * isString

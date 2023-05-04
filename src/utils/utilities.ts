@@ -184,15 +184,17 @@ export const chunks = <T extends any[]>(source: T, chunkSize: number): T[][] => 
   return result;
 };
 
-export const userDisplayName = (user: any = {}) => {
-  const firstName = user.firstName ?? user.firstName;
-  const lastName = user.lastName ?? user.lastName;
+export const userDisplayName = (user: Record<string, string> = {}) => {
+  const { firstName, lastName } = user;
 
   return (firstName || lastName)
     ? [firstName, lastName].filter(n => !!n).join(' ').trim()
-    : (user.username)
-      ? user.username
-      : user.email;
+    : (user.username || user.email);
+};
+
+// createdBy is a string like "[<username> ]<email>, <id>"
+export const emailFromCreatedBy = (createdBy: string) => {
+  return createdBy?.replace(/,\s*\d+$/, '').replace(/^\S*\s+/, '');
 };
 
 export const camelizeKeys = (object: any): Record<string, unknown> => {
