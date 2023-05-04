@@ -83,7 +83,7 @@ const TagAttrs = types.model({
   valuelist: types.maybeNull(types.string),
   resize: types.maybeNull(types.number),
   width: types.optional(types.string, '100%'),
-  height: types.maybeNull(types.string),
+  height: types.optional(types.string, 'calc(100vh - 194px)'),
   maxwidth: types.optional(types.string, '100%'),
   maxheight: types.optional(types.string, 'calc(100vh - 194px)'),
   smoothing: types.maybeNull(types.boolean),
