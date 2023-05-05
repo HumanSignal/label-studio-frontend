@@ -465,15 +465,14 @@ export const Annotation = types
       let ok = true;
 
       self.traverseTree(function(node) {
-        // if (node.required === true) {
         ok = node.validate?.();
         if (ok === false) {
           return TRAVERSE_STOP;
         }
-        // }
       });
 
-      return ok;
+      // should be true or false
+      return ok ?? true;
     },
 
     traverseTree(cb) {
