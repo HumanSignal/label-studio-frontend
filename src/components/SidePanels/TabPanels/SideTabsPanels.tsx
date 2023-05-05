@@ -319,8 +319,8 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     const panelRightWidth = rightKeys.length && panelData[rightKeys[0]].width || 0;
     const visibilityLeft = allLeftNotVisible ? 0 : panelLeftWidth;
     const visibilityRight = allRightNotVisible ? 0 : panelRightWidth;
-    const paddingLeft = panelBreakPoint ? 0 : leftCollapsed ?  PANEL_HEADER_HEIGHT : visibilityLeft ;
-    const paddingRight = panelBreakPoint ? 0 :  rightCollapsed ? PANEL_HEADER_HEIGHT : visibilityRight;
+    const paddingLeft = panelBreakPoint || panelsHidden ? 0 : leftCollapsed ?  PANEL_HEADER_HEIGHT : visibilityLeft ;
+    const paddingRight = panelBreakPoint || panelsHidden ? 0 :  rightCollapsed ? PANEL_HEADER_HEIGHT : visibilityRight;
 
     return ({
       paddingLeft,

@@ -367,6 +367,12 @@ export const Annotation = types
       self.regionStore.clearSelection();
     },
 
+    hideSelectedRegions() {
+      self.selectedRegions.forEach(region => {
+        region.toggleHidden();
+      });
+    },
+
     deleteSelectedRegions() {
       self.selectedRegions.forEach(region => {
         region.deleteRegion();
