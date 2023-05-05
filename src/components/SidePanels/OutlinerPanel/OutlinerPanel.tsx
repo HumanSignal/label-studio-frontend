@@ -5,6 +5,7 @@ import { PanelBase, PanelProps } from '../PanelBase';
 import { OutlinerTree } from './OutlinerTree';
 import { ViewControls } from './ViewControls';
 import './OutlinerPanel.styl';
+import { IconInfo } from '../../../assets/icons/outliner';
 
 interface OutlinerPanelProps extends PanelProps {
   regions: any;
@@ -69,6 +70,10 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
     regions.setFilteredRegions(value);
   }, [regions]);
 
+  useEffect(() => {
+    console.log('regions', regions?.filter);
+  }, [regions?.filter?.length]);
+
   return (
     <Block name="outliner">
       <ViewControls
@@ -80,7 +85,13 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
         onGroupingChange={onGroupingChange}
         onFilterChange={onFilterChange}
       />
-      {regions?.regions?.length > 0 ? (
+      {(regions?.regions?.length > 0 && regions?.filter?.length === 0) ? (
+        <Elem name="filters-empty">
+          <IconInfo width={21} height={20} />
+          <Elem name="filters-title">All regions hidden</Elem>
+          <Elem name="filters-description">Adjust or remove the flters to view</Elem>
+        </Elem>
+      ) : regions?.regions?.length > 0 ? (
         <OutlinerTree
           regions={regions}
           selectedKeys={regions.selection.keys}
