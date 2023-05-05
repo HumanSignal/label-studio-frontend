@@ -7,6 +7,8 @@ const RequiredMixin = types
   })
   .actions(self => ({
     validate() {
+      if (!self.required) return true;
+
       if (self.perregion) {
         // validating when choices labeling is done per region,
         // for example choice may be required to be selected for
