@@ -2,7 +2,6 @@ import React from 'react';
 import { observer } from 'mobx-react';
 import { cast, types } from 'mobx-state-tree';
 
-import InfoModal from '../../../components/Infomodal/Infomodal';
 import { defaultStyle } from '../../../core/Constants';
 import { customTypes } from '../../../core/CustomTypes';
 import { guidGenerator } from '../../../core/Helpers';
