@@ -89,7 +89,7 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
         <Elem name="filters-empty">
           <IconInfo width={21} height={20} />
           <Elem name="filters-title">All regions hidden</Elem>
-          <Elem name="filters-description">Adjust or remove the flters to view</Elem>
+          <Elem name="filters-description">Adjust or remove the filters to view</Elem>
         </Elem>
       ) : regions?.regions?.length > 0 ? (
         <OutlinerTree
