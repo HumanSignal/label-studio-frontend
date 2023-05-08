@@ -10,13 +10,14 @@ import { SyncMixin } from '../../../mixins/SyncMixin';
 import { ParagraphsRegionModel } from '../../../regions/ParagraphsRegion';
 import Utils from '../../../utils';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, FF_DEV_3666, FF_LSDV_3012, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, FF_DEV_3666, FF_LSDV_3012, FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
 import messages from '../../../utils/messages';
 import { clamp, isDefined, isValidObjectURL } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import styles from './Paragraphs.module.scss';
 
 const isFFDev2461 = isFF(FF_DEV_2461);
+const isFFLsdv4711 = isFF(FF_LSDV_4711);
 
 /**
  * The `Paragraphs` tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
@@ -350,6 +351,10 @@ const OldPlayAndSync = types.model()
     let audioStopHandler = null;
     let endDuration = 0;
     let currentId = -1;
+    let currentSourceTime = 0;
+    let hasLoadedSource = false;
+    let reloadingSource = false;
+    let wasPlayingId = -1;
 
     function stop() {
       const audio = audioRef.current;
@@ -393,8 +398,41 @@ const OldPlayAndSync = types.model()
         }
       },
 
+      handleError() {
+        if (!isFFLsdv4711) return;
+
+        const audio = audioRef.current;
+
+        // if the source has succesfully loaded before, we can try to reload it
+        // as it may be an expired presigned url or temporary network issue
+        if (audio && hasLoadedSource) {
+          hasLoadedSource = false;
+          reloadingSource = true;
+          wasPlayingId = self.playingId;
+          currentSourceTime = isNaN(audio.currentTime) ? currentSourceTime : audio.currentTime;
+          stop();
+          audio.load();
+        }
+      },
+
+      handleCanPlay() {
+        if (!isFFLsdv4711) return;
+
+        const audio = audioRef.current;
+
+        hasLoadedSource = true;
+
+        if (audio && reloadingSource) {
+          reloadingSource = false;
+          audio.currentTime = currentSourceTime;
+
+          if (wasPlayingId > -1) self.play(wasPlayingId);
+        }
+      },
+
       handleSyncSeek(time) {
         if (audioRef.current) {
+          currentSourceTime = time;
           audioRef.current.currentTime = time;
         }
       },
@@ -662,6 +700,4 @@ const paragraphModelMixins = [
   ParagraphsLoadingModel,
 ].filter(Boolean);
 
-export const ParagraphsModel = types.compose('ParagraphsModel',
-  ...paragraphModelMixins,
-);
+export const ParagraphsModel = types.compose('ParagraphsModel', ...paragraphModelMixins);
