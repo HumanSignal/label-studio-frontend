@@ -56,16 +56,23 @@ export const ViewControls: FC<ViewControlsProps> = ({
         label: 'Group Manually',
         selectedLabel: isFF(FF_DEV_3873) ? 'Manual': 'Manual Grouping',
         icon: <IconList/>,
+        tooltip: 'Manually Grouped',
       };
       case 'label': return {
         label: 'Group by Label',
-        selectedLabel:  isFF(FF_DEV_3873) ? 'Label': 'Grouped by Label',
+        selectedLabel:  isFF(FF_DEV_3873) ?
+          (isFF(FF_LSDV_4992) ? 'By Label' :'Label')
+          : 'Grouped by Label',
         icon: <IconTagAlt/>,
+        tooltip: 'Grouped by Label',
       };
       case 'type': return {
         label: 'Group by Tool',
-        selectedLabel:  isFF(FF_DEV_3873) ? 'Tool': 'Grouped by Tool',
+        selectedLabel:  isFF(FF_DEV_3873) ?
+          (isFF(FF_LSDV_4992) ? 'By Tool' :'Tool')
+          : 'Grouped by Tool',
         icon: <IconCursor/>,
+        tooltip: 'Grouped by Tool',
       };
     }
   }, []);
@@ -155,6 +162,7 @@ interface LabelInfo {
   label: string;
   selectedLabel: string;
   icon: JSX.Element;
+  tooltip?: string;
 }
 
 interface GroupingProps<T extends string> {
@@ -207,14 +215,17 @@ const Grouping = <T extends string>({
 
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" icon={readableValue.icon} style={{ padding: 0, whiteSpace: 'nowrap' }} extra={(
+      <Button type="text" icon={readableValue.icon} style={isFF(FF_LSDV_4992) ? {} : { padding: 0, whiteSpace: 'nowrap' }} extra={(
         <DirectionIndicator
           direction={direction}
           name={value}
           value={value}
           wrap={false}
         />
-      )}>
+      )}
+      tooltip={isFF(FF_LSDV_4992) && readableValue.tooltip || undefined}
+      tooltipTheme="dark"
+      >
         {readableValue.selectedLabel}
       </Button>
     </Dropdown.Trigger>
