@@ -120,7 +120,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
 
   if (tooltip) {
     return (
-      <Tooltip title={tooltip} theme="light">
+      <Tooltip title={tooltip} theme={tooltipTheme} ref={ref}>
         {buttonBody}
       </Tooltip>
     );
