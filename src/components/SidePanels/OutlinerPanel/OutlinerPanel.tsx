@@ -70,6 +70,10 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
     regions.setFilteredRegions(value);
   }, [regions]);
 
+  const hiddenRegions = useCallback(() => {
+    return regions?.regions?.length - regions?.filter?.length;
+  }, [regions?.regions?.length, regions?.filter?.length]);
+
   return (
     <Block name="outliner">
       <ViewControls
@@ -87,10 +91,10 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
             regions={regions}
             selectedKeys={regions.selection.keys}
           />
-          {(regions?.regions?.length - regions?.filter?.length) > 0 && (
+          {hiddenRegions() > 0 && (
             <Elem name="filters-empty">
               <IconInfo width={21} height={20} />
-              <Elem name="filters-title">There {regions?.filter?.length === 1 ? 'is' : 'are'} {regions?.filter?.length} hidden region{regions?.filter?.length > 1 && 's'}</Elem>
+              <Elem name="filters-title">There {hiddenRegions() === 1 ? 'is' : 'are'} {hiddenRegions()} hidden region{hiddenRegions() > 1 && 's'}</Elem>
               <Elem name="filters-description">Adjust or remove the filters to view</Elem>
             </Elem>
           )}
