@@ -71,7 +71,7 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
   }, [regions]);
 
   const hiddenRegions = useMemo(() => {
-    return regions?.regions?.length - regions?.filter?.length;
+    return (regions?.regions?.length ?? 0) - (regions?.filter?.length ?? 0);
   }, [regions?.regions?.length, regions?.filter?.length]);
 
   return (
