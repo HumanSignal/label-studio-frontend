@@ -1,5 +1,15 @@
 import { FC, useCallback, useContext, useMemo } from 'react';
-import { IconCursor, IconDetails, IconList, IconSortDown, IconSortUp, IconSpeed, IconTagAlt } from '../../../assets/icons';
+import {
+  IconCursor,
+  IconDetails,
+  IconList,
+  IconOutlinerEyeClosed,
+  IconOutlinerEyeOpened,
+  IconSortDown,
+  IconSortUp,
+  IconSpeed,
+  IconTagAlt
+} from '../../../assets/icons';
 import { Button } from '../../../common/Button/Button';
 import { Dropdown } from '../../../common/Dropdown/Dropdown';
 // eslint-disable-next-line
@@ -9,7 +19,8 @@ import { BemWithSpecifiContext } from '../../../utils/bem';
 import { SidePanelsContext } from '../SidePanelsContext';
 import './ViewControls.styl';
 import { Filter } from '../../Filter/Filter';
-import { FF_DEV_3873, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_3873, FF_LSDV_4992, isFF } from '../../../utils/feature-flags';
+import { observer } from 'mobx-react';
 
 const { Block, Elem } = BemWithSpecifiContext();
 
@@ -75,7 +86,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
   }, []);
 
   return (
-    <Block name="view-controls" mod={{ collapsed: context.locked }}>
+    <Block name="view-controls" mod={{ 'collapsed': context.locked, 'FF_LSDV_4992': isFF(FF_LSDV_4992) }}>
       <Grouping
         value={grouping}
         options={['manual', 'type', 'label']}
@@ -102,7 +113,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
                   <IconSortDown style={{ color: '#898098' }} />
                 )
               }
-              style={{ padding: 0, whiteSpace: 'nowrap' }}
+              style={isFF(FF_LSDV_4992) ? {} : { padding: 0, whiteSpace: 'nowrap' }}
               onClick={() => onOrderingChange(ordering)}
             />
           )}
@@ -126,6 +137,16 @@ export const ViewControls: FC<ViewControlsProps> = ({
           ]}
         />
       )}
+      {
+        isFF(FF_LSDV_4992)
+          ? (
+            <ToggleRegionsVisibilityButton
+              regions={regions}
+            />
+          )
+          : null
+      }
+
     </Block>
   );
 };
@@ -252,3 +273,34 @@ const DirectionIndicator: FC<DirectionIndicator> = ({
 
   return (<span>{content}</span>);
 };
+
+interface ToggleRegionsVisibilityButton {
+  regions: any;
+}
+
+const ToggleRegionsVisibilityButton = observer<FC<ToggleRegionsVisibilityButton>>(({
+  regions,
+}) => {
+  const toggleRegionsVisibility = useCallback(e => {
+    e.preventDefault();
+    e.stopPropagation();
+    regions.toggleVisibility();
+  }, [regions]);
+
+  const isDisabled = !regions?.regions?.length;
+  const isAllHidden = !isDisabled && regions.isAllHidden;
+
+  return (
+    <Elem
+      tag={Button}
+      type="text"
+      disabled={isDisabled}
+      onClick={toggleRegionsVisibility}
+      mod={{ hidden: isAllHidden }}
+      aria-label={isAllHidden ? 'Show all regions' : 'Hide all regions'}
+      icon={isAllHidden ? <IconOutlinerEyeClosed /> : <IconOutlinerEyeOpened/>}
+      tooltip={ isAllHidden ? 'Show all regions' : 'Hide all regions' }
+      tooltipTheme="dark"
+    />
+  );
+});

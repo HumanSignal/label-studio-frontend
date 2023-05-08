@@ -24,6 +24,7 @@ export interface ButtonProps extends HTMLButtonProps {
   style?: CSSProperties;
   hotkey?: keyof typeof Hotkey.keymap;
   tooltip?: string;
+  tooltipTheme?: 'light' | 'dark';
   nopadding?: boolean;
 }
 
@@ -50,6 +51,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
   danger,
   hotkey,
   tooltip,
+  tooltipTheme = 'light',
   nopadding,
   ...rest
 }, ref) => {
