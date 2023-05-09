@@ -92,7 +92,6 @@ export class WebAudioPlayer extends Player {
   }
 
   protected connectSource() {
-    console.log('connectSource', this.audio?.buffer, this.gainNode, this.connected);
     if (this.isDestroyed || !this.audioContext || !this.audio?.buffer || !this.gainNode || this.connected) return;
     this.connected = true;
     this.audioBufferSource = this.audioContext.createBufferSource();
@@ -105,6 +104,7 @@ export class WebAudioPlayer extends Player {
     if (this.isDestroyed || !this.connected || !this.audioBufferSource) return false;
     this.connected = false;
 
+    this.audioBufferSource.stop();
     this.audioBufferSource.disconnect();
     this.audioBufferSource.onended = null;
     this.audioBufferSource = undefined;
@@ -112,11 +112,16 @@ export class WebAudioPlayer extends Player {
     return true;
   }
 
+  protected playSource(start?: number, end?: number) {
+    this.disconnectSource();
+    super.playSource(start, end);
+  }
+
   protected updateCurrentSourceTime(timeChanged: boolean) {
     if (timeChanged && this.audioBufferSource) {
-      this.audioBufferSource.stop();
       this.disconnectSource();
-      this.playRange(this.time);
+      this.connectSource();
+      this.audioBufferSource.start(0, this.time);
     }
   }
 
