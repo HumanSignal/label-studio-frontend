@@ -14,6 +14,8 @@ export interface TooltipProps {
   mouseEnterDelay?: number;
   enabled?: boolean;
   style?: CSSProperties;
+  // allows to convert triggerElementRef into a real HTMLElement for listeners and getting bbox
+  triggerElementGetter?: (refValue:any)=>HTMLElement;
 }
 
 export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
@@ -24,6 +26,7 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
   enabled = true,
   theme = 'dark',
   style,
+  triggerElementGetter = refValue => refValue as HTMLElement,
 }, ref) => {
   if (!children || Array.isArray(children)) {
     throw new Error('Tooltip does accept a single child only');
@@ -38,7 +41,7 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
 
   const calculatePosition = useCallback(() => {
     const { left, top, align: resultAlign } = alignElements(
-      triggerElement.current,
+      triggerElementGetter(triggerElement.current),
       tooltipElement.current!,
       align,
       10,
@@ -113,7 +116,7 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
   }, [injected]);
 
   useEffect(() => {
-    const el = triggerElement.current;
+    const el = triggerElementGetter(triggerElement.current);
 
     const handleTooltipAppear = () => {
       if (enabled === false) return;
