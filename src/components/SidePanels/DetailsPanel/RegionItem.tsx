@@ -133,7 +133,6 @@ const RegionAction: FC<any> = observer(({
         <RegionActionButton
           icon={region.hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
           onClick={region.toggleHidden}
-          hotkey="region:visibility"
         />
         <RegionActionButton
           danger
