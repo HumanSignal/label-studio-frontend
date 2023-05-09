@@ -72,8 +72,9 @@ export class WebAudioPlayer extends Player {
     super.destroy();
 
     if (this.audioContext) {
-      this.audioContext.close();
-      delete this.audioContext;
+      this.audioContext.close().finally(() => {
+        delete this.audioContext;
+      });
     }
   }
 
@@ -91,6 +92,7 @@ export class WebAudioPlayer extends Player {
   }
 
   protected connectSource() {
+    console.log('connectSource', this.audio?.buffer, this.gainNode, this.connected);
     if (this.isDestroyed || !this.audioContext || !this.audio?.buffer || !this.gainNode || this.connected) return;
     this.connected = true;
     this.audioBufferSource = this.audioContext.createBufferSource();

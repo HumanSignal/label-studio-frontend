@@ -19,6 +19,7 @@ export abstract class BaseAudioDecoder extends Events<AudioDecoderEvents> {
 
   protected decodingResolve?: () => void;
   decodingPromise: Promise<void> | undefined;
+  buffer?: AudioBuffer | void;
 
   /**
    * Timeout for removal of the decoder from the cache.

@@ -161,6 +161,10 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
         await this.decoderPromise;
       }
 
+      if (this.playerType === 'webaudio' && this.decoder.buffer) {
+        this.buffer = this.decoder.buffer;
+      }
+
       return this.decoder.sourceDecoded;
     } catch (e) {
       console.error(e);
@@ -178,18 +182,20 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     return this.decoderPromise;
   }
 
-  async decodeAudioData(options?: { multiChannel?: boolean }) {
+  async decodeAudioData(options: { multiChannel?: boolean, captureAudioBuffer?: boolean } = {}) {
     if (!this.decoder) return;
 
     // need to capture the actual AudioBuffer from the decoder
     // so we can use it in the audio element
+    options.captureAudioBuffer = this.playerType === 'webaudio';
+
     const buffer = await this.decoder.decode(options);
 
-    if (this.playerType === 'webaudio') {
+    if (options.captureAudioBuffer && buffer) {
       this.buffer = buffer;
     }
 
-    return buffer;
+    return;
   }
 
   private createMediaElement() {

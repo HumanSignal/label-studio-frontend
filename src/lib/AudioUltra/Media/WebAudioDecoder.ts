@@ -19,7 +19,7 @@ export class WebAudioDecoder extends BaseAudioDecoder {
   /**
    * Decode the audio file using the WebAudio API.
    */
-  async decode(options?: { multiChannel?: boolean }): Promise<void | AudioBuffer> {
+  async decode(options?: { multiChannel?: boolean, captureAudioBuffer?: boolean }): Promise<void | AudioBuffer> {
     // If the worker has cached data we can skip the decode step
     if (this.sourceDecoded) {
       info('decode:cached', this.src);
@@ -77,6 +77,10 @@ export class WebAudioDecoder extends BaseAudioDecoder {
       this.chunks = chunks;
 
       info('decode:complete', this.src);
+
+      if (options?.captureAudioBuffer) {
+        this.buffer = buffer;
+      }
 
       return buffer;
     } finally {
