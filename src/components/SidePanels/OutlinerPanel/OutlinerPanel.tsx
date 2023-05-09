@@ -70,10 +70,6 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
     regions.setFilteredRegions(value);
   }, [regions]);
 
-  useEffect(() => {
-    console.log('regions', regions?.filter);
-  }, [regions?.filter?.length]);
-
   return (
     <Block name="outliner">
       <ViewControls
