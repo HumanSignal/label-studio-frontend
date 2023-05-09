@@ -11,6 +11,7 @@ export interface WaveformAudioOptions {
   rate?: number;
   splitChannels?: boolean;
   decoderType?: 'ffmpeg' | 'webaudio';
+  playerType?: 'html5' | 'webaudio';
 }
 
 interface WaveformAudioEvents {
@@ -25,6 +26,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   mediaPromise?: Promise<void>;
   mediaReject?: (err: any) => void;
   el?: HTMLAudioElement;
+  buffer?: AudioBuffer | void;
 
   // private backed by audio element and getters/setters
   // underscored to keep the public API clean
@@ -33,6 +35,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   private _savedVolume = 1;
   private splitChannels = false;
   private decoderType: 'ffmpeg' | 'webaudio' = 'ffmpeg';
+  private playerType: 'html5' | 'webaudio' = 'html5';
   private src?: string;
   private mediaResolve?: () => void;
   private hasLoadedSource = false;
@@ -44,6 +47,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this._volume = options.muted ? 0 : this._savedVolume;
     this.splitChannels = options.splitChannels ?? false;
     this.decoderType = options.decoderType ?? this.decoderType;
+    this.playerType = options.playerType ?? this.playerType;
     this.src = options.src;
     this.createAudioDecoder();
     this.createMediaElement();
@@ -54,7 +58,8 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
   }
 
   get duration() {
-    return this.el?.duration ?? 0;
+    if (this.el) return this.el?.duration ?? 0;
+    return this.decoder?.duration ?? 0;
   }
 
   get sampleRate() {
@@ -107,7 +112,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     }
     this.decoder?.cancel();
   }
-  
+
   destroy() {
     super.destroy();
     this.disconnect();
@@ -122,6 +127,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.el?.removeEventListener('canplaythrough', this.mediaReady);
     this.el?.remove();
     delete this.el;
+    delete this.buffer;
   }
 
   mute() {
@@ -139,7 +145,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     }
   }
 
-  get chunks(): Float32Array[][]|undefined {
+  get chunks(): Float32Array[][] | undefined {
     if (!this.decoder) return;
 
     return this.decoder.chunks;
@@ -172,14 +178,22 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     return this.decoderPromise;
   }
 
-  async decodeAudioData(options?: {multiChannel?: boolean}) {
+  async decodeAudioData(options?: { multiChannel?: boolean }) {
     if (!this.decoder) return;
 
-    return this.decoder.decode(options);
+    // need to capture the actual AudioBuffer from the decoder
+    // so we can use it in the audio element
+    const buffer = await this.decoder.decode(options);
+
+    if (this.playerType === 'webaudio') {
+      this.buffer = buffer;
+    }
+
+    return buffer;
   }
 
   private createMediaElement() {
-    if (!this.src || this.el) return;
+    if (!this.src || this.el || this.playerType !== 'html5') return;
 
     this.el = document.createElement('audio');
     this.el.preload = 'auto';
@@ -226,7 +240,7 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
    */
   private loadMedia() {
     if (!this.src || !this.el) return;
-    
+
     this.el.src = this.src;
   }
 
