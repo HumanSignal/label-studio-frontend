@@ -215,6 +215,10 @@ const Model = types
       }
     },
 
+    beforeDestroy() {
+      ChildrenSnapshots.delete(self.name);
+    },
+
     updateChildren() {
       const children = ChildrenSnapshots.get(self.name) ?? [];
 
