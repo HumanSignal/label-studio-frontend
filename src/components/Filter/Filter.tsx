@@ -19,7 +19,7 @@ export const Filter: FC<FilterInterface> = ({
 
   useEffect(() => {
     if(filterList.length > 0) {
-      onChange(FilterItems(filterData, filterList[0]));
+      onChange(FilterItems(filterData, filterList));
     }
   }, [filterData]);
 
