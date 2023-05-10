@@ -112,6 +112,7 @@ export const Filter: FC<FilterInterface> = ({
           <IconFilter />
         </Elem>
         <Elem name={'text'}>Filter</Elem>
+        {filterList.length > 0 && <Elem name={'filter-length'} data-testid={'filter-length'}>{filterList.length}</Elem>}
       </Button>
     </Dropdown.Trigger>
   );
