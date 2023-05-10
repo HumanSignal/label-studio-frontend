@@ -133,8 +133,7 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
       if (enabled === false) return;
 
       if (mouseEnterTimeoutRef.current) {
-        window.clearTimeout(mouseEnterTimeoutRef.current);
-        mouseEnterTimeoutRef.current = undefined;
+        mouseEnterTimeoutRef.current = window.clearTimeout(mouseEnterTimeoutRef.current);
       }
       performAnimation(false);
     };
