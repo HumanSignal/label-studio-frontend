@@ -11,6 +11,7 @@ export interface TooltipProps {
   children: JSX.Element;
   theme?: 'light' | 'dark';
   defaultVisible?: boolean;
+  // activates intent detecting mode
   mouseEnterDelay?: number;
   enabled?: boolean;
   style?: CSSProperties;
@@ -38,6 +39,7 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
   const [visibility, setVisibility] = useState(defaultVisible ? 'visible' : null);
   const [injected, setInjected] = useState(false);
   const [align, setAlign] = useState<ElementAlignment>('top-center');
+  const mouseEnterTimeoutRef = useRef<number|undefined>();
 
   const calculatePosition = useCallback(() => {
     const { left, top, align: resultAlign } = alignElements(
@@ -121,7 +123,8 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
     const handleTooltipAppear = () => {
       if (enabled === false) return;
 
-      setTimeout(() => {
+      mouseEnterTimeoutRef.current = window.setTimeout(() => {
+        mouseEnterTimeoutRef.current = undefined;
         setInjected(true);
       }, mouseEnterDelay);
     };
@@ -129,6 +132,10 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
     const handleTooltipHiding = () => {
       if (enabled === false) return;
 
+      if (mouseEnterTimeoutRef.current) {
+        window.clearTimeout(mouseEnterTimeoutRef.current);
+        mouseEnterTimeoutRef.current = undefined;
+      }
       performAnimation(false);
     };
 

@@ -180,7 +180,7 @@ export const HintTooltip: React.FC<HintTooltipProps>  = ({
 
   if (title) {
     return (
-      <Tooltip title={title} {...rest}>
+      <Tooltip title={title} mouseEnterDelay={500} {...rest}>
         {content}
       </Tooltip>
     );
