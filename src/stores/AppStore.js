@@ -740,7 +740,7 @@ export default types
 
         getEnv(self).events.invoke('nextTask', taskId, annotationId);
       }
-      else if (self.adjacentTaskIds.nextTaskId) getEnv(self).events.invoke('nextTask', self.adjacentTaskIds.nextTaskId, null);
+      else if (self.adjacentTaskIds.nextTaskId) getEnv(self).events.invoke('nextTask', self.adjacentTaskIds.nextTaskId, null, true);
     }
 
     function prevTask(e, shouldGoBack = false) {
@@ -750,7 +750,7 @@ export default types
         const { taskId, annotationId } = self.taskHistory[length];
 
         getEnv(self).events.invoke('prevTask', taskId, annotationId);
-      } else if (self.adjacentTaskIds.prevTaskId) getEnv(self).events.invoke('prevTask', self.adjacentTaskIds.prevTaskId, null);
+      } else if (self.adjacentTaskIds.prevTaskId) getEnv(self).events.invoke('prevTask', self.adjacentTaskIds.prevTaskId, null, true);
     }
 
     function setUsers(users) {
