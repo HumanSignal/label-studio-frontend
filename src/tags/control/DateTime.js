@@ -94,22 +94,34 @@ const Model = types
       return self.only?.includes('year');
     },
 
+    /**
+     * Results store only formatted values and we need ISO for validation
+     * @param {string} value already formatted value from result
+     * @returns {string} ISO date
+     */
     getISODate(value) {
       if (self.onlyYear) return value;
       if (self.onlyTime) return undefined;
 
+      /** @type {Date} parsed date in local timezone */
       const date = self.parseDateTime(value);
 
-      return date.toISOString().slice(0, 10);
+      // we can't use toISOString() because it may shift timezone and return different day
+      return [date.getFullYear(), zero(date.getMonth() + 1), zero(date.getDate())].join('-');
     },
 
+    /**
+     * @returns {string} current year or date in ISO format
+     */
     get date() {
       if (self.only?.includes('year')) return self.year;
       if (!self.month || !self.year) return undefined;
       return [self.year, zero(self.month), zero(self.day)].join('-');
     },
 
-    // main value stored in result
+    /**
+     * @returns {string} main value stored in result, already formatted
+     */
     get datetime() {
       const timeStr = self.time || '00:00';
 
@@ -147,8 +159,6 @@ const Model = types
     month: undefined,
     year: undefined,
     time: undefined,
-    formatDate: d3.timeFormat(FORMAT_DATE),
-    formatTime: d3.timeFormat(FORMAT_TIME),
   }))
   .volatile(self => {
     let format;
@@ -160,6 +170,7 @@ const Model = types
     else format = FORMAT_FULL;
 
     return {
+      formatTime: d3.timeFormat(FORMAT_TIME),
       formatDateTime: d3.timeFormat(format),
       parseDateTime: d3.timeParse(format),
     };

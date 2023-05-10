@@ -12,7 +12,7 @@ const config = `<View>
   <Label value="event" background="orange"/>
 </Labels>
 <Text name="text" value="$text"/>
-<DateTime name="created" toName="text" required="true" only="date" format="%d.%m.%Y" max="1999-12-31"/>
+<DateTime name="created" toName="text" required="true" only="date" format="%d.%m.%Y" min="1988-01-13" max="1999-12-31"/>
 <View visibleWhen="region-selected">
   <Header>Date in this fragment, required, stored as ISO date</Header>
   <DateTime name="date" toName="text" perRegion="true" only="date" required="true" format="%Y-%m-%d"/>
@@ -26,7 +26,13 @@ const data = {
   text: 'Albert Einstein (/ˈaɪnstaɪn/ EYEN-styne;[6] German: [ˈalbɛʁt ˈʔaɪnʃtaɪn] (listen); 14 March 1879 – 18 April 1955) was a German-born theoretical physicist,[7] widely acknowledged to be one of the greatest and most influential physicists of all time. Einstein is best known for developing the theory of relativity, but he also made important contributions to the development of the theory of quantum mechanics. Relativity and quantum mechanics are together the two pillars of modern physics.[3][8] His mass–energy equivalence formula E = mc2, which arises from relativity theory, has been dubbed "the world\'s most famous equation".[9] His work is also known for its influence on the philosophy of science.[10][11] He received the 1921 Nobel Prize in Physics "for his services to theoretical physics, and especially for his discovery of the law of the photoelectric effect",[12] a pivotal step in the development of quantum theory. His intellectual achievements and originality resulted in "Einstein" becoming synonymous with "genius".[13]',
 };
 
-const createdDate = { incorrect: '2020-01-01', correct: '1999-12-31', result: '31.12.1999' };
+const createdDate = {
+  incorrectMin: '1988-01-12',
+  correctMin: '1988-01-13',
+  incorrectMax: '2000-01-01',
+  correctMax: '1999-12-31',
+  result: '31.12.1999',
+};
 
 const regions = [
   { label: 'birth', rangeStart: 83, rangeEnd: 96, text: '14 March 1879', dateValue: '1879-03-14', year: '2022' },
@@ -37,6 +43,8 @@ const regions = [
 const params = { config, data };
 
 Scenario('Check DateTime holds state between annotations and saves result', async function({ I, AtDateTime, AtLabels, AtSidebar, LabelStudio }) {
+  // +1/+2 timezone, so date with midnight (00:00) will be always in previous day in ISO
+  I.restartBrowser({ timezoneId: 'Europe/Paris' });
   I.amOnPage('/');
 
   LabelStudio.init(params);
@@ -46,23 +54,43 @@ Scenario('Check DateTime holds state between annotations and saves result', asyn
 
   I.say(`System format is ${format}`);
 
+  ////// GLOBAL
   I.say('Check validation of required global date control');
   I.updateAnnotation();
   I.see('DateTime "created" is required');
   I.click('OK');
 
-  I.fillField('input[type=date]', formatDateValue(createdDate.incorrect, format));
-  I.updateAnnotation();
-  I.see('is not valid');
-  I.see('max date is 1999-12-31');
-  I.click('OK');
-  assert.strictEqual(await I.grabCssPropertyFrom('[type=date]', 'border-color'), 'rgb(255, 0, 0)');
+  const checks = {
+    incorrect: [
+      [createdDate.incorrectMin, 'min date is 1988-01-13'],
+      [createdDate.incorrectMax, 'max date is 1999-12-31'],
+    ],
+    correct: [
+      [createdDate.correctMin],
+      [createdDate.correctMax],
+    ],
+  };
 
-  I.fillField('input[type=date]', formatDateValue(createdDate.correct, format));
-  I.updateAnnotation();
-  I.dontSee('Warning');
-  I.dontSee('is not valid');
+  for (const [incorrect, error] of checks.incorrect) {
+    I.fillField('input[type=date]', formatDateValue(incorrect, format));
+    I.updateAnnotation();
+    I.see('is not valid');
+    I.see(error);
+    I.click('OK');
+    assert.strictEqual(await I.grabCssPropertyFrom('[type=date]', 'border-color'), 'rgb(255, 0, 0)');
+  }
 
+  for (const [correct] of checks.correct) {
+    I.fillField('input[type=date]', formatDateValue(correct, format));
+    I.updateAnnotation();
+    I.dontSee('Warning');
+    I.dontSee('is not valid');
+  }
+
+  // this value will be asserted at the end
+  I.fillField('input[type=date]', formatDateValue(createdDate.correctMax, format));
+
+  ////// PER-REGION
   I.say('Create regions but leave dates empty');
   for (const region of regions) {
     AtLabels.clickLabel(region.label);
@@ -119,4 +147,7 @@ Scenario('Check DateTime holds state between annotations and saves result', asyn
   });
 
   assert.strictEqual(results[0].value.datetime, createdDate.result);
+
+  // reset back to normal
+  I.restartBrowser();
 });
