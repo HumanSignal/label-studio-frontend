@@ -8,7 +8,7 @@ const config = `
     <Label value="Other"></Label>
   </Labels>
   <Header value="Listen the audio:"></Header>
-  <AudioPlus name="audio" value="$url"></AudioPlus>
+  <Audio name="audio" value="$url"></Audio>
 </View>
 `;
 

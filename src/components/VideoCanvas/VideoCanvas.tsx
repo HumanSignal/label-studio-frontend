@@ -1,5 +1,6 @@
 import { forwardRef, memo, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
+import { FF_LSDV_4711, isFF } from '../../utils/feature-flags';
 import { clamp, isDefined } from '../../utils/utilities';
 import './VideoCanvas.styl';
 import { MAX_ZOOM, MIN_ZOOM } from './VideoConstants';
@@ -35,6 +36,7 @@ type VideoProps = {
   onFrameChange?: (frame: number, length: number) => void,
   onEnded?: () => void,
   onResize?: (dimensions: VideoDimentions) => void,
+  onError?: (error: any) => void,
 }
 
 type PanOptions = {
@@ -92,6 +94,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
   const contextRef = useRef<CanvasRenderingContext2D | null>();
   const videoRef = useRef<HTMLVideoElement>();
   const supportedFileTypeRef = useRef<boolean|null>(null);
+  const hasLoadedRef = useRef<boolean>(false);
 
   const canvasWidth = useMemo(() => props.width ?? 600, [props.width]);
   const canvasHeight = useMemo(() => props.height ?? 600, [props.height]);
@@ -187,6 +190,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
       if (!playing) updateFrame(true);
 
       if (video.networkState === video.NETWORK_IDLE) {
+        hasLoadedRef.current = true;
         setBuffering(false);
       } else {
         setBuffering(true);
@@ -223,6 +227,24 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
     props.onEnded?.();
     props.onPause?.();
   }, [props.onEnded]);
+
+  const handleVideoError = useCallback(() => {
+    if (!isFF(FF_LSDV_4711)) return;
+
+    const video = videoRef.current;
+
+    if (video?.error && hasLoadedRef.current) {
+      hasLoadedRef.current = false;
+
+      // If the video errored after loading, we can try to reload it
+      // as it may have been a temporary network issue or signed url that expired
+      video.load();
+    } else if (video) {
+      // If the video never loaded and errored, we can't do anything about it
+      // so report it to the consumer
+      props.onError?.(video.error);
+    }
+  }, [props.onError]);
 
   const handleAnimationFrame = () => {
     updateFrame();
@@ -551,6 +573,7 @@ export const VideoCanvas = memo(forwardRef<VideoRef, VideoProps>((props, ref) =>
         onPlaying={handleVideoPlaying}
         onWaiting={handleVideoWaiting}
         onEnded={handleVideoEnded}
+        onError={handleVideoError}
       />
     </Block>
   );

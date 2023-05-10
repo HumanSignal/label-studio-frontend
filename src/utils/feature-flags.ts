@@ -213,9 +213,49 @@ export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ff
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
 
 /**
+ * Fixes how presigned urls are generated and accessed to remove possibility of CORS errors.
+ */
+export const FF_LSDV_4711 = 'fflag_fix_all_lsdv_4711_cors_errors_accessing_task_data_short';
+
+/**
+ * Preventing creating duplicates in TextArea results with "skipDuplicates" parameter during editing.
+ * It also prevent creating new history steps on every change during editing textarea results.
+ *
+ * @see FF_LSDV_4659: To enable `skipDuplicates` parameter
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short
+ */
+export const FF_LSDV_4712 = 'fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short';
+
+/**
  * New Ranker tag; flag is used for `deleteAllRegions()` optimization
  */
 export const FF_LSDV_4832 = 'fflag_feat_front_lsdv_4832_new_ranker_tag_120423_short';
+
+/**
+ * Fixing issue with missed steps in timeseries with optimized data and zoom
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4881_timeseties_points_missing_140423_short
+ */
+export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing_140423_short';
+
+/**
+ * Resetting shared stores on task change to correctly generate dynamic children
+ *
+ * @see: ff_dev_2007_dev_2008_dynamic_tag_children_250322_short: To enable dynamic children
+ * @see: fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix: To enable shared store
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
+ */
+export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short';
+
+Object.assign(window, {
+  APP_SETTINGS: {
+    ...(window.APP_SETTINGS ?? {}),
+    feature_flags: {
+      ...(window.APP_SETTINGS?.feature_flags ?? {}),
+      ...(window.FEATURE_FLAGS ?? {}),
+    },
+  },
+});
 
 function getFeatureFlags() {
   return {

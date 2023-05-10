@@ -14,7 +14,7 @@ import { RectRegionModel } from '../../../regions/RectRegion';
 import * as Tools from '../../../tools';
 import ToolsManager from '../../../tools/Manager';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
 import { guidGenerator } from '../../../utils/unique';
 import { clamp, isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
@@ -281,6 +281,8 @@ const Model = types.model({
 
   get imageCrossOrigin() {
     const value = self.crossorigin.toLowerCase();
+
+    if (isFF(FF_LSDV_4711) && (!value || value === 'none')) return 'anonymous';
 
     if (!isFF(FF_DEV_4081)) {
       return null;

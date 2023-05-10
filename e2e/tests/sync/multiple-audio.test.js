@@ -6,8 +6,8 @@ Feature('Sync: Multiple Audio');
 
 const config = `
 <View>
-  <AudioPlus name="audio" value="$url" hotkey="space" sync="v1" />
-  <AudioPlus name="audio2" value="$url" hotkey="space" sync="v1" />
+  <Audio name="audio" value="$url" hotkey="space" sync="v1" />
+  <Audio name="audio2" value="$url" hotkey="space" sync="v1" />
 </View>
 `;
 

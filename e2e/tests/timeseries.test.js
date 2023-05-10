@@ -268,4 +268,26 @@ Scenario('TimeSeries with optimized data', async ({ I, LabelStudio, AtTimeSeries
   await doNotSeeProblems();
   await AtTimeSeries.selectOverviewRange(.9, .8999);
   await doNotSeeProblems();
+
+  I.say('check that every timestamps from timeseries data is available to display');
+  await AtTimeSeries.selectOverviewRange(.001, .000);
+  for (let i = 0; i < 20; i++) {
+    await AtTimeSeries.zoomByMouse(-100, { x: .001 });
+  }
+
+  let lastTimestamp;
+
+  for (let i = 0; i < 15;i++) {
+    AtTimeSeries.moveMouseOverChannel({ x: .01 + .025 * i });
+    const timestamp = await AtTimeSeries.grabStickTime();
+
+    if (lastTimestamp !== undefined) {
+      I.say(`I see ${timestamp}`);
+    
+      assert(timestamp === lastTimestamp || timestamp - lastTimestamp === 1,
+        `Timestamps should not be skipped. Got ${lastTimestamp} and ${timestamp} but ${timestamp -  1} is missed`);
+    }
+    lastTimestamp = timestamp;
+  }
+
 });

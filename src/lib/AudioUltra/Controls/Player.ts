@@ -130,6 +130,7 @@ export class Player extends Destructable {
   init(audio: WaveformAudio) {
     this.audio = audio;
     this.audio.on('canplay', this.handleCanPlay);
+    this.audio.on('resetSource', this.handleResetSource);
     if (this.audio.el) {
       this.audio.el.addEventListener('play', this.handlePlayed);
       this.audio.el.addEventListener('pause', this.handlePaused);
@@ -179,6 +180,18 @@ export class Player extends Destructable {
     if (this.loop) return;
     this.updateCurrentTime(true);
   };
+
+  private handleResetSource = async () => {
+    if (!this.audio?.el) return;
+
+    const wasPlaying = this.playing;
+
+    this.stop();
+    this.audio.el.load();
+
+    if (wasPlaying) this.play();
+  };
+
 
   private handleCanPlay = () => {
     this.bufferResolve?.();
