@@ -121,7 +121,7 @@ const panelViews = [
     name: 'history',
     title: 'History',
     component: panelComponents['history'] as FC<PanelProps>,
-    active: true,
+    active: false,
   },
 
   {
@@ -134,7 +134,7 @@ const panelViews = [
     name: 'info',
     title: 'Info',
     component: panelComponents['info'] as FC<PanelProps>,
-    active: false,
+    active: true,
   },
   {
     name: 'comments',
@@ -145,22 +145,7 @@ const panelViews = [
 ];
 
 export const enterprisePanelDefault: Record<string, PanelBBox> = {
-  'regions-info': {
-    order: 1,
-    top: 0,
-    left: 0,
-    relativeLeft: 0,
-    relativeTop: 0,
-    zIndex: 10,
-    width: DEFAULT_PANEL_WIDTH,
-    height: DEFAULT_PANEL_HEIGHT,
-    visible: true,
-    detached: false,
-    alignment: Side.left,
-    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[0], panelViews[4]],
-  },
-  'history-comments-relations': {
+  'info-comments-history': {
     order: 1,
     top: 0,
     left: 0,
@@ -173,27 +158,27 @@ export const enterprisePanelDefault: Record<string, PanelBBox> = {
     detached: false,
     alignment: Side.right,
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[1], panelViews[2], panelViews[3]],
+    panelViews: [panelViews[3], panelViews[4], panelViews[1]],
+  },
+  'regions-relations': {
+    order: 2,
+    top: 0,
+    left: 0,
+    relativeLeft: 0,
+    relativeTop: 0,
+    zIndex: 10,
+    width: DEFAULT_PANEL_WIDTH,
+    height: DEFAULT_PANEL_HEIGHT,
+    visible: true,
+    detached: false,
+    alignment: Side.right,
+    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
+    panelViews: [panelViews[0], panelViews[2]],
   },
 };
 
 export const openSourcePanelDefault: Record<string, PanelBBox> = {
-  'regions-info': {
-    order: 1,
-    top: 0,
-    left: 0,
-    relativeLeft: 0,
-    relativeTop: 0,
-    zIndex: 10,
-    width: DEFAULT_PANEL_WIDTH,
-    height: DEFAULT_PANEL_HEIGHT,
-    visible: true,
-    detached: false,
-    alignment: Side.left,
-    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[0]],
-  },
-  'history-comments-relations': {
+  'info-history': {
     order: 1,
     top: 0,
     left: 0,
@@ -206,7 +191,22 @@ export const openSourcePanelDefault: Record<string, PanelBBox> = {
     detached: false,
     alignment: Side.right,
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[1], panelViews[2], panelViews[3]],
+    panelViews: [panelViews[3], panelViews[1]],
+  },
+  'regions-relations': {
+    order: 2,
+    top: 0,
+    left: 0,
+    relativeLeft: 0,
+    relativeTop: 0,
+    zIndex: 10,
+    width: DEFAULT_PANEL_WIDTH,
+    height: DEFAULT_PANEL_HEIGHT,
+    visible: true,
+    detached: false,
+    alignment: Side.right,
+    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
+    panelViews: [panelViews[0], panelViews[2]],
   },
 };
 
