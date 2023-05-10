@@ -1,11 +1,9 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { Filter } from '../Filter';
-import { act } from 'react-dom/test-utils';
 
 describe('Filter', () => {
   const mockOnChange = jest.fn();
-
   const filterData = [
     {
       'labelName': 'AirPlane',
@@ -165,5 +163,37 @@ describe('Filter', () => {
     expect(dropdown.classList.contains('dm-before-appear')).toBe(false);
     expect(dropdown.classList.contains('dm-visible')).toBe(false);
     expect(dropdown.classList.contains('dm-before-disappear')).toBe(false);
+  });
+
+  test('Should show filter length badge', () => {
+    const filter = render(<Filter
+      onChange={mockOnChange}
+      filterData={filterData}
+      availableFilters={[{
+        label: 'Annotation results',
+        path: 'labelName',
+        type: 'String',
+      },
+      {
+        label: 'Confidence score',
+        path: 'score',
+        type: 'Number',
+      }]}
+    />);
+
+    const FilterButton = filter.getByText('Filter');
+
+    fireEvent.click(FilterButton);
+
+    expect(screen.getByText('No filters applied')).toBeDefined();
+
+    const AddButton = filter.getByText('Add Filter');
+
+    fireEvent.click(AddButton);
+    fireEvent.click(AddButton);
+
+    const filterLength = filter.getByTestId('filter-length');
+
+    expect(filterLength.textContent).toBe('2');
   });
 });

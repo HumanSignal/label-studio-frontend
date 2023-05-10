@@ -16,7 +16,7 @@ export interface FilterListInterface {
   operation?: string | string[] | undefined;
   value?: any;
   path?: string;
-  logic?: Logic;
+  logic?: 'and' | 'or';
 }
 
 export interface AvailableFiltersInterface {
