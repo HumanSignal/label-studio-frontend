@@ -33,9 +33,10 @@ export class Html5Player extends Player {
 
     const time = this.currentTime;
 
-    this.audio.el
-      .play()
-      .then(() => this.bufferPromise!.then())
+    Promise.all([
+      this.audio.el.play(),
+      this.bufferPromise,
+    ])
       .then(() => {
         this.timestamp = performance.now();
 
