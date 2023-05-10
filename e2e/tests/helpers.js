@@ -22,7 +22,6 @@ async function initLabelStudio({
     'update',
     'submit',
     'controls',
-    'side-column',
     'topbar',
     'annotations:history',
     'annotations:current',

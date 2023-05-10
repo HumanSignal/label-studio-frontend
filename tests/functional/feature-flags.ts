@@ -1,6 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as FLAGS from '../../src/utils/feature-flags';
 
-export const CURRENT_FLAGS = {
-  [FLAGS.FF_DEV_1170]: true,
-};
+export const CURRENT_FLAGS = {};
 
