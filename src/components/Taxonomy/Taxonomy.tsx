@@ -171,7 +171,8 @@ type HintTooltipProps = {
 
 export const HintTooltip: React.FC<HintTooltipProps>  = ({
   title,
-  wrapper: Wrapper, children,
+  wrapper: Wrapper,
+  children,
   ...rest
 }) => {
   if (!isFF(FF_PROD_309)) return children;
