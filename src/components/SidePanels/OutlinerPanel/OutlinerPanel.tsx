@@ -85,7 +85,13 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
         onGroupingChange={onGroupingChange}
         onFilterChange={onFilterChange}
       />
-      {regions?.regions?.length > 0 ? (
+      {(regions?.regions?.length > 0 && regions?.filter?.length === 0) ? (
+        <Elem name="filters-empty">
+          <IconInfo width={21} height={20} />
+          <Elem name="filters-title">All regions hidden</Elem>
+          <Elem name="filters-description">Adjust or remove the filters to view</Elem>
+        </Elem>
+      ) : regions?.regions?.length > 0 ? (
         <>
           <OutlinerTree
             regions={regions}
