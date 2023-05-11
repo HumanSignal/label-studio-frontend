@@ -19,7 +19,7 @@ export const Filter: FC<FilterInterface> = ({
 
   useEffect(() => {
     if(filterList.length > 0) {
-      onChange(FilterItems(filterData, filterList[0]));
+      onChange(FilterItems(filterData, filterList));
     }
   }, [filterData]);
 
@@ -112,6 +112,7 @@ export const Filter: FC<FilterInterface> = ({
           <IconFilter />
         </Elem>
         <Elem name={'text'}>Filter</Elem>
+        {filterList.length > 0 && <Elem name={'filter-length'} data-testid={'filter-length'}>{filterList.length}</Elem>}
       </Button>
     </Dropdown.Trigger>
   );
