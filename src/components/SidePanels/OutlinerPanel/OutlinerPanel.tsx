@@ -1,10 +1,11 @@
 import { observer } from 'mobx-react';
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { Block, Elem } from '../../../utils/bem';
 import { PanelBase, PanelProps } from '../PanelBase';
 import { OutlinerTree } from './OutlinerTree';
 import { ViewControls } from './ViewControls';
 import './OutlinerPanel.styl';
+import { IconInfo } from '../../../assets/icons/outliner';
 
 interface OutlinerPanelProps extends PanelProps {
   regions: any;
@@ -69,6 +70,10 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
     regions.setFilteredRegions(value);
   }, [regions]);
 
+  const hiddenRegions = useMemo(() => {
+    return (regions?.regions?.length ?? 0) - (regions?.filter?.length ?? 0);
+  }, [regions?.regions?.length, regions?.filter?.length]);
+
   return (
     <Block name="outliner">
       <ViewControls
@@ -81,10 +86,19 @@ const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
         onFilterChange={onFilterChange}
       />
       {regions?.regions?.length > 0 ? (
-        <OutlinerTree
-          regions={regions}
-          selectedKeys={regions.selection.keys}
-        />
+        <>
+          <OutlinerTree
+            regions={regions}
+            selectedKeys={regions.selection.keys}
+          />
+          {hiddenRegions > 0 && (
+            <Elem name="filters-empty">
+              <IconInfo width={21} height={20} />
+              <Elem name="filters-title">There {hiddenRegions === 1 ? 'is' : 'are'} {hiddenRegions} hidden region{hiddenRegions > 1 && 's'}</Elem>
+              <Elem name="filters-description">Adjust or remove filters to view</Elem>
+            </Elem>
+          )}
+        </>
       ) : (
         <Elem name="empty">
           Regions not added

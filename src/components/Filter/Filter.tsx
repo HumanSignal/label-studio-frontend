@@ -19,9 +19,7 @@ export const Filter: FC<FilterInterface> = ({
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
 
   useEffect(() => {
-    if(filterList.length > 0) {
-      onChange(FilterItems(filterData, filterList));
-    }
+    onChange(FilterItems(filterData, filterList));
   }, [filterData]);
 
   const addNewFilterListItem = useCallback(() => {
