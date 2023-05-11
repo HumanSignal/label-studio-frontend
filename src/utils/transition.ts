@@ -36,6 +36,6 @@ export const aroundTransition = (element: HTMLElement, {
 
     await beforeTransition?.(element);
 
-    setTimeout(() => transition?.(element), 30);
+    setTimeout(() => transition?.(element), 0);
   });
 };

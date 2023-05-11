@@ -7,12 +7,15 @@ const RequiredMixin = types
   })
   .actions(self => ({
     validate() {
+      if (!self.required) return true;
+
       if (self.perregion) {
         // validating when choices labeling is done per region,
         // for example choice may be required to be selected for
         // every bbox
         const objectTag = self.annotation.names.get(self.toname);
 
+        // if regions don't meet visibility conditions skip validation
         for (const reg of objectTag.regs) {
           const s = reg.results.find(s => s.from_name === self);
 
