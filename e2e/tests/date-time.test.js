@@ -17,7 +17,7 @@ const config = `<View>
   <Header>Date in this fragment, required, stored as ISO date</Header>
   <DateTime name="date" toName="text" perRegion="true" only="date" required="true" format="%Y-%m-%d"/>
   <Header>Year this happened, but stored also as ISO date</Header>
-  <DateTime name="year" toName="text" perRegion="true" only="year" format="%Y-%m-%d" min="2020"/>
+  <DateTime name="year" toName="text" perRegion="true" only="year" format="%Y-%m-%d" min="2020" max="2022"/>
 </View>
 </View>
 `;
@@ -123,6 +123,22 @@ Scenario('Check DateTime holds state between annotations and saves result', asyn
   regions.forEach(region => {
     I.click(locate('li').withText(region.text));
     I.fillField('input[name=date-date]', formatDateValue(region.dateValue, format));
+  });
+
+  I.click(locate('li').withText(regions[0].text));
+  // less than min
+  I.selectOption('select[name=year-year]', '1999');
+  assert.strictEqual('', await I.grabValueFrom('select[name=year-year]'));
+  // more than max
+  I.selectOption('select[name=year-year]', '2023');
+  assert.strictEqual('', await I.grabValueFrom('select[name=year-year]'));
+  // exactly the same as max, should be correct
+  I.selectOption('select[name=year-year]', '2022');
+  assert.strictEqual('2022', await I.grabValueFrom('select[name=year-year]'));
+  I.pressKey('Escape');
+
+  regions.forEach(region => {
+    I.click(locate('li').withText(region.text));
     I.selectOption('select[name=year-year]', region.year);
   });
 
@@ -139,9 +155,16 @@ Scenario('Check DateTime holds state between annotations and saves result', asyn
 
   const results = await I.executeScript(serialize);
 
-  results.filter(result => result.value.labels).forEach((result, index) => {
-    const input = regions[index];
-    const expected = { end: input.rangeEnd, labels: [input.label], start: input.rangeStart, text: input.text };
+  results.filter(result => result.value.start).forEach(result => {
+    const input = regions.find(reg => reg.text === result.value.text);
+    const expected = { end: input.rangeEnd, start: input.rangeStart, text: input.text };
+
+    switch (result.from_name) {
+      case 'label': expected.labels = [input.label]; break;
+      case 'date': expected.datetime = input.dateValue; break;
+      // year is formatted in config to be an ISO date
+      case 'year': expected.datetime = input.year + '-01-01'; break;
+    }
 
     assert.deepStrictEqual(result.value, expected);
   });

@@ -246,6 +246,7 @@ const Model = types
 
       if (!date) return self.resetDateTime();
 
+      // @todo month and year inputs may need only one value to be set
       self.day = date.getDate();
       self.month = date.getMonth() + 1;
       self.year = date.getFullYear();
@@ -323,7 +324,9 @@ const Model = types
 
           if (!value) return true;
 
-          const date = self.getISODate(value);
+          let date = self.getISODate(value);
+
+          if (self.only?.includes('year')) date = date.slice(0, 4);
 
           if (min && date < min) errors.push(`min date is ${min}`);
           if (max && date > max) errors.push(`max date is ${max}`);
