@@ -14,6 +14,7 @@ export const Filter: FC<FilterInterface> = ({
   availableFilters,
   filterData,
   onChange,
+  animated = true,
 }) => {
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
 
@@ -104,12 +105,15 @@ export const Filter: FC<FilterInterface> = ({
   return (
     <Dropdown.Trigger
       content={renderFilter}
+      dataTestId={'dropdown'}
+      animated={animated}
     >
       <Button data-cy={'filter-button'} type="text" style={{ padding: 0, whiteSpace: 'nowrap' }}>
         <Elem name={'icon'}>
           <IconFilter />
         </Elem>
         <Elem name={'text'}>Filter</Elem>
+        {filterList.length > 0 && <Elem name={'filter-length'} data-testid={'filter-length'}>{filterList.length}</Elem>}
       </Button>
     </Dropdown.Trigger>
   );

@@ -28,6 +28,7 @@ interface DropdownTriggerProps extends DropdownProps {
   tag?: string;
   dropdown?: RefObject<JSX.Element>;
   content?: JSX.Element;
+  dataTestId?: string;
   toggle?: boolean;
   closeOnClickOutside?: boolean;
   disabled?: boolean;
