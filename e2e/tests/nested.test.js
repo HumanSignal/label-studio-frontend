@@ -1,5 +1,3 @@
-/* global Feature, Scenario, locate */
-
 const { initLabelStudio, serialize, selectText } = require('./helpers');
 
 const assert = require('assert');
@@ -129,14 +127,16 @@ Scenario('Check good nested Choice for Text', async function({ I, AtLabels, AtSi
 
   // the only element of regions tree list
   const regionInList = locate('.lsf-entities__regions').find('.ant-list-item');
-  // select this region
 
+  // select this region
   I.click(regionInList);
 
   AtSidebar.seeRegions(1);
   I.see('More details'); // View with visibleWhen
 
   I.click('Female');
+  // second click on already assigned label should do nothing
+  I.click(personTag);
 
   const result = await I.executeScript(serialize);
 

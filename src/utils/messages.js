@@ -3,6 +3,7 @@
 import React from 'react';
 
 const URL_CORS_DOCS = 'https://labelstud.io/guide/storage.html#Troubleshoot-CORS-and-access-problems';
+const URL_TAGS_DOCS = 'https://labelstud.io/tags';
 
 export default {
   DONE: 'Done!',
@@ -49,18 +50,20 @@ export default {
 
   // Object loading errors
   URL_CORS_DOCS,
+  URL_TAGS_DOCS,
 
-  ERR_LOADING_AUDIO: ({ attr, url, error }) => (
-    <p>
-      Error while loading audio. Check <code>{attr}</code> field in task.
-      <br />
-      Technical description: {error}
-      <br />
-      URL: {url}
-    </p>
-  ),
+  ERR_LOADING_AUDIO({ attr, url, error }) {
+    return (
+      <div data-testid="error:audio">
+        <p>Error while loading audio. Check <code>{attr}</code> field in task.</p>
+        <p>Technical description: {error}</p>
+        <p>URL: {url}</p>
+      </div>
+    );
+  },
 
-  ERR_LOADING_S3: ({ attr, url }) => `
+  ERR_LOADING_S3({ attr, url }) {
+    return `
     <div>
       <p>
         There was an issue loading URL from <code>${attr}</code> value.
@@ -68,15 +71,16 @@ export default {
         If you are using S3, make sure you’ve specified the right bucket region name.
       </p>
       <p>URL: <code><a href=${url} target="_blank">${url}</a></code></p>
-    </div>
-  `,
+    </div>`;
+  },
 
-  ERR_LOADING_CORS: ({ attr, url }) => `
+  ERR_LOADING_CORS({ attr, url }) {
+    return `
     <div>
       <p>
         There was an issue loading URL from <code>${attr}</code> value.
         Most likely that's because static server has wide-open CORS.
-        <a href=${URL_CORS_DOCS} target="_blank">Read more on that here.</a>
+        <a href=${this.URL_CORS_DOCS} target="_blank">Read more on that here.</a>
       </p>
       <p>
         Also check that:
@@ -86,11 +90,12 @@ export default {
         </ul>
       </p>
       <p>URL: <code><a href=${url} target="_blank">${url}</a></code></p>
-    </div>
-  `,
+    </div>`;
+  },
 
-  ERR_LOADING_HTTP: ({ attr, url, error }) => `
-    <div>
+  ERR_LOADING_HTTP({ attr, url, error }) {
+    return `
+    <div data-testid="error:http">
       <p>
         There was an issue loading URL from <code>${attr}</code> value
       </p>
@@ -101,7 +106,7 @@ export default {
           <li>URL scheme matches the service scheme, i.e. https and https</li>
           <li>
             The static server has wide-open CORS,
-            <a href=${URL_CORS_DOCS} target="_blank">more on that here</a>
+            <a href=${this.URL_CORS_DOCS} target="_blank">more on that here</a>
           </li>
         </ul>
       </p>
@@ -110,6 +115,6 @@ export default {
         <br />
         URL: <code><a href=${url} target="_blank">${url}</a></code>
       </p>
-    </div>
-  `,
+    </div>`;
+  },
 };

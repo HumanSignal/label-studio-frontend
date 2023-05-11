@@ -8,8 +8,9 @@ import Canvas from '../utils/canvas';
 import { clamp, findClosestParent } from '../utils/utilities';
 import { DrawingTool } from '../mixins/DrawingTool';
 import { Tool } from '../components/Toolbar/Tool';
-import { Range } from '../common/Range/Range';
+import { Range } from '../common/Range/Range'; 
 import { NodeViews } from '../components/Node/Node';
+import { FF_DEV_3666, FF_DEV_4081, isFF } from '../utils/feature-flags';
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 50;
@@ -52,7 +53,7 @@ const _Tool = types
     group: 'segmentation',
     shortcut: 'B',
     smart: true,
-    isDrawingTool: true,
+    unselectRegionOnToolChange: isFF(FF_DEV_4081) ? false : true,
   })
   .views(self => ({
     get viewClass() {
@@ -101,22 +102,6 @@ const _Tool = types
     let brush, isFirstBrushStroke;
 
     return {
-      fromStateJSON(json, controlTag) {
-        const region = self.createFromJSON(json, controlTag);
-
-        if (json.value.points) {
-          const p = region.addPoints({ type: 'add' });
-
-          p.addPoints(json.value.points);
-        }
-
-        if (json.value.format === 'rle') {
-          region._rle = json.value.rle;
-        }
-
-        return region;
-      },
-
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
         const source = currentArea.toJSON();
@@ -132,7 +117,7 @@ const _Tool = types
       },
 
       updateCursor() {
-        if (!self.selected || !self.obj.stageRef) return;
+        if (!self.selected || !self.obj?.stageRef) return;
         const val = self.strokeWidth;
         const stage = self.obj.stageRef;
         const base64 = Canvas.brushSizeCircle(val);
@@ -153,14 +138,14 @@ const _Tool = types
         brush.addPoint(Math.floor(x), Math.floor(y));
       },
 
-      mouseupEv(ev, [x, y]) {
+      mouseupEv(ev, _, [x, y]) {
         if (self.mode !== 'drawing') return;
         self.addPoint(x, y);
         self.mode = 'viewing';
         brush.setDrawing(false);
         brush.endPath();
         if (isFirstBrushStroke) {
-          setTimeout(()=>{
+          setTimeout(() => {
             const newBrush = self.commitDrawingRegion();
 
             self.obj.annotation.selectArea(newBrush);
@@ -173,7 +158,7 @@ const _Tool = types
         }
       },
 
-      mousemoveEv(ev, [x, y]) {
+      mousemoveEv(ev, _, [x, y]) {
         if (self.mode !== 'drawing') return;
         if (
           !findClosestParent(
@@ -187,7 +172,7 @@ const _Tool = types
         self.addPoint(x, y);
       },
 
-      mousedownEv(ev, [x, y]) {
+      mousedownEv(ev, _, [x, y]) {
         if (
           !findClosestParent(
             ev.target,
@@ -197,9 +182,15 @@ const _Tool = types
         )
           return;
         const c = self.control;
+        const o = self.obj;
+
+        brush = self.getSelectedShape;
+
+        // prevent drawing when current image is
+        // different from image where the brush was started
+        if (o && brush && o.multiImage && o.currentImage !== brush.item_index) return;
 
         // Reset the timer if a user started drawing again
-        brush = self.getSelectedShape;
         if (brush && brush.type === 'brushregion') {
           self.annotation.history.freeze();
           self.mode = 'drawing';
@@ -213,6 +204,7 @@ const _Tool = types
 
           self.addPoint(x, y);
         } else {
+          if (isFF(FF_DEV_3666) && !self.canStartDrawing()) return;
           if (self.tagTypes.stateTypes === self.control.type && !self.control.isSelected) return;
           self.annotation.history.freeze();
           self.mode = 'drawing';

@@ -43,18 +43,9 @@ const VisibilityMixin = types
 
             const tag = self.annotation.names.get(tagName);
 
-            if (!tag) return false;
+            if (!tag?.hasChoiceSelection && !choiceValue?.length) return false;
 
-            if (choiceValue) {
-              const choicesSelected = choiceValue
-                .split(',')
-                .map(v => tag.findLabel(v))
-                .some(c => c && c.sel);
-
-              return choicesSelected;
-            }
-
-            return tag.isSelected;
+            return tag.hasChoiceSelection(choiceValue?.split(','), tag.selectedValues());
           },
 
           'no-region-selected': () => !self.annotation.highlightedNode,

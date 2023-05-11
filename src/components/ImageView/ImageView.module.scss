@@ -88,8 +88,8 @@
   width: 100%;
   height: 100%;
 
-    // padding hack to fill the empty space with given aspect ratio
-    // see ImageView.render()
+  // padding hack to fill the empty space with given aspect ratio
+  // see ImageView.render()
   .frame {
     position: absolute;
     overflow: hidden;
@@ -103,6 +103,12 @@
     position: relative;
     overflow: hidden;
   }
+  .overlay {
+    position: absolute;
+    top: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
 
   img {
     position: absolute;
@@ -112,6 +118,10 @@
 
 .withGallery {
   margin-bottom: 80px;
+}
+
+.withPagination {
+  padding-top: 30px; // pagination height 24px + 6px offset
 }
 
 .gallery {
@@ -138,4 +148,12 @@
       border-color: #1890ff;
     }
   }
+}
+
+.pagination {
+  position: absolute;
+  top: 0;
+  display: flex;
+  width: 100%;
+  padding-right: 40px; // for toolbar
 }

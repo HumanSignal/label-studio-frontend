@@ -1,5 +1,3 @@
-/* global Feature, Scenario, locate */
-
 const Helpers = require('./helpers');
 const Asserts = require('../utils/asserts');
 const assert = require('assert');
@@ -19,6 +17,10 @@ examples.forEach(example => {
   const { annotations, config, data, result = annotations[0].result, title } = example;
 
   Scenario(`Nonexistent label -> ${title}`, async ({ I, LabelStudio, AtSidebar, AtImageView, AtAudioView }) => {
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_2715_audio_3_280722_short: true,
+    });
+
     let { result = annotations[0].result } = example;
 
     result = result.filter(res => isLabelType(res.type));
@@ -38,8 +40,8 @@ examples.forEach(example => {
     if (Utils.xmlTreeHasTag(configTree, 'Image')) {
       AtImageView.waitForImage();
     }
-    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'AudioPlus' || node['#name'] === 'Audio')) {
-      AtAudioView.waitForAudio();
+    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'Audio')) {
+      await AtAudioView.waitForAudio();
     }
 
     if (regionsCount) {
@@ -54,6 +56,10 @@ examples.forEach(example => {
 
   Scenario(`Different from_name -> ${title}`, async ({ I, LabelStudio, AtSidebar, AtImageView, AtAudioView }) => {
     let { result = annotations[0].result } = example;
+
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_2715_audio_3_280722_short: true,
+    });
 
     result = result.filter(res => isLabelType(res.type));
     const params = { annotations: [{ id: 'test', result }], data };
@@ -74,8 +80,8 @@ examples.forEach(example => {
     if (Utils.xmlTreeHasTag(configTree, 'Image')) {
       AtImageView.waitForImage();
     }
-    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'AudioPlus' || node['#name'] === 'Audio')) {
-      AtAudioView.waitForAudio();
+    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'Audio')) {
+      await AtAudioView.waitForAudio();
     }
 
     if (regionsCount) {
@@ -156,7 +162,7 @@ const MULTIPLE_TYPE = 'multiple';
 
     I.amOnPage('/');
     LabelStudio.init(params);
-    AtAudioView.waitForAudio();
+    await AtAudioView.waitForAudio();
     AtSidebar.seeRegions(regionsCount);
 
     I.click(locate('.lsf-region-item'));

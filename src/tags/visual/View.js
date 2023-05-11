@@ -62,6 +62,7 @@ const Model = types
       'polygon',
       'keypoint',
       'brush',
+      'magicwand',
       'rectanglelabels',
       'ellipselabels',
       'polygonlabels',
@@ -91,6 +92,7 @@ const Model = types
       'paragraphlabels',
       'video',
       'videorectangle',
+      'ranker',
     ]),
   });
 

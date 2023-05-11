@@ -2,10 +2,10 @@ import { types } from 'mobx-state-tree';
 
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import WithStatesMixin from '../mixins/WithStates';
 import Registry from '../core/Registry';
 import { AreaMixin } from '../mixins/AreaMixin';
-import { interpolateProp, onlyProps, VideoRegion } from './VideoRegion';
+import { onlyProps, VideoRegion } from './VideoRegion';
+import { interpolateProp } from '../utils/props';
 
 const Model = types
   .model('VideoRectangleRegionModel', {
@@ -75,7 +75,6 @@ const Model = types
 
 const VideoRectangleRegionModel = types.compose(
   'VideoRectangleRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   VideoRegion,
   AreaMixin,

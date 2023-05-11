@@ -1,22 +1,33 @@
 import { destroy, detach, flow, getEnv, getParent, getRoot, isAlive, onSnapshot, types } from 'mobx-state-tree';
 
+import throttle from 'lodash.throttle';
 import Constants from '../../core/Constants';
+import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
+import { guidGenerator } from '../../core/Helpers';
 import { Hotkey } from '../../core/Hotkey';
-import RegionStore from '../RegionStore';
-import RelationStore from '../RelationStore';
 import TimeTraveller from '../../core/TimeTraveller';
 import Tree, { TRAVERSE_STOP } from '../../core/Tree';
 import Types from '../../core/Types';
-import Utils from '../../utils';
-import { delay, isDefined } from '../../utils/utilities';
-import { guidGenerator } from '../../core/Helpers';
-import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
 import Area from '../../regions/Area';
-import throttle from 'lodash.throttle';
-import { UserExtended } from '../UserStore';
-import { FF_DEV_1284, FF_DEV_1598, FF_DEV_2100, FF_DEV_2100_A, FF_DEV_2432, FF_DEV_3391, isFF } from '../../utils/feature-flags';
 import Result from '../../regions/Result';
+import Utils from '../../utils';
+import {
+  FF_DEV_1284,
+  FF_DEV_1598,
+  FF_DEV_2100,
+  FF_DEV_2100_A,
+  FF_DEV_2432,
+  FF_DEV_3391,
+  FF_LSDV_3009,
+  FF_LSDV_4583,
+  FF_LSDV_4832,
+  isFF
+} from '../../utils/feature-flags';
+import { delay, isDefined } from '../../utils/utilities';
 import { CommentStore } from '../Comment/CommentStore';
+import RegionStore from '../RegionStore';
+import RelationStore from '../RelationStore';
+import { UserExtended } from '../UserStore';
 
 const hotkeys = Hotkey('Annotations', 'Annotations');
 
@@ -230,6 +241,10 @@ export const Annotation = types
         return res && ['text', 'hypertext', 'paragraphs'].includes(obj.type);
       }, true);
     },
+
+    isReadOnly() {
+      return self.readonly || !self.editable;
+    },
   }))
   .volatile(() => ({
     hidden: false,
@@ -308,7 +323,7 @@ export const Annotation = types
 
     updatePersonalKey(value) {
       self.pk = value;
-      getRoot(self).addAnnotationToTaskHistory(self.pk);
+      getRoot(self).addAnnotationToTaskHistory?.(self.pk);
     },
 
     toggleVisibility(visible) {
@@ -350,6 +365,12 @@ export const Annotation = types
     unselectAreas() {
       if (!self.selectionSize) return;
       self.regionStore.clearSelection();
+    },
+
+    hideSelectedRegions() {
+      self.selectedRegions.forEach(region => {
+        region.toggleHidden();
+      });
     },
 
     deleteSelectedRegions() {
@@ -395,8 +416,22 @@ export const Annotation = types
     deleteAllRegions({ deleteReadOnly = false } = {}) {
       let regions = Array.from(self.areas.values());
 
-      // @todo classifiactions have `readonly===undefined` so they won't be deleted with `false`
-      // @todo check this later for consistency
+      // remove everything unconditionally
+      if (deleteReadOnly && isFF(FF_LSDV_4832)) {
+        self.unselectAll(true);
+        self.setIsDrawing(false);
+        self.relationStore.deleteAllRelations();
+
+        regions.forEach(r => {
+          r.destroyRegion?.();
+          destroy(r);
+        });
+
+        self.updateObjects();
+
+        return;
+      }
+
       if (deleteReadOnly === false) regions = regions.filter(r => r.readonly === false);
 
       regions.forEach(r => r.deleteRegion());
@@ -410,16 +445,6 @@ export const Annotation = types
         self.addRelation(reg);
         self.stopRelationMode();
       }
-    },
-
-    loadRegionState(region) {
-      region.states &&
-        region.states.forEach(s => {
-          const mainViewTag = self.names.get(s.name);
-
-          mainViewTag.unselectAll && mainViewTag.unselectAll();
-          mainViewTag.copyState(s);
-        });
     },
 
     unloadRegionState(region) {
@@ -440,16 +465,14 @@ export const Annotation = types
       let ok = true;
 
       self.traverseTree(function(node) {
-        if (node.required === true) {
-          ok = node.validate();
-          if (ok === false) {
-            ok = false;
-            return TRAVERSE_STOP;
-          }
+        ok = node.validate?.();
+        if (ok === false) {
+          return TRAVERSE_STOP;
         }
       });
 
-      return ok;
+      // should be true or false
+      return ok ?? true;
     },
 
     traverseTree(cb) {
@@ -475,6 +498,8 @@ export const Annotation = types
      * @param {*} region
      */
     deleteRegion(region) {
+      if (region.isReadOnly()) return;
+
       const { regions } = self.regionStore;
       // move all children into the parent region of the given one
       const children = regions.filter(r => r.parentID === region.id);
@@ -612,7 +637,7 @@ export const Annotation = types
     startAutosave: flow(function *() {
       if (!getEnv(self).events.hasEvent('submitDraft')) return;
       // view all must never trigger autosave
-      if (!self.editable) return;
+      if (self.isReadOnly()) return;
 
       // some async tasks should be performed after deserialization
       // so start autosave on next tick
@@ -627,18 +652,10 @@ export const Annotation = types
       // mobx will modify methods, so add it directly to have cancel() method
       self.autosave = throttle(
         () => {
+          // if autosave is paused, do nothing
           if (self.autosave.paused) return;
 
-          const result = self.serializeAnnotation({ fast: true });
-          // if this is new annotation and no regions added yet
-
-          if (!self.pk && !result.length) return;
-
-          self.setDraftSelected();
-          self.versions.draft = result;
-          self.setDraftSaving(true);
-
-          self.store.submitDraft(self).then(self.onDraftSaved);
+          self.saveDraft();
         },
         self.autosaveDelay,
         { leading: false },
@@ -646,6 +663,22 @@ export const Annotation = types
 
       onSnapshot(self.areas, self.autosave);
     }),
+
+    saveDraft() {
+      // if this is now a history item or prediction don't save it
+      if (!self.editable) return;
+
+      const result = self.serializeAnnotation({ fast: true });
+      // if this is new annotation and no regions added yet
+
+      if (!isFF(FF_LSDV_3009) && !self.pk && !result.length) return;
+
+      self.setDraftSelected();
+      self.versions.draft = result;
+      self.setDraftSaving(true);
+
+      self.store.submitDraft(self).then(self.onDraftSaved);
+    },
 
     saveDraftImmediately() {
       if (self.autosave) self.autosave.flush();
@@ -699,19 +732,6 @@ export const Annotation = types
         // on other elements in the tree.
         if (node.annotationAttached) node.annotationAttached();
 
-        // copy tools from control tags into object tools manager
-        // [DOCS] each object tag may have an assigned tools
-        // manager. This assignment may happen because user asked
-        // for it through the config, or because the attached
-        // control tags are complex and require additional UI
-        // interfaces. Each control tag defines a set of tools it
-        // supports
-        if (node && node.getToolsManager) {
-          const tools = node.getToolsManager();
-          const states = self.toNames.get(node.name);
-
-          states && states.forEach(s => tools.addToolsFromControl(s));
-        }
 
         // @todo special place to init such predefined values; `afterAttach` of the tag?
         // preselected choices
@@ -838,8 +858,11 @@ export const Annotation = types
       };
 
 
-      //TODO: MST is crashing if we don't validate areas?, this problem isn't happening locally. So to reproduce you have to test in production or environment
+      // TODO: MST is crashing if we don't validate areas?, this problem isn't
+      // happening locally. So to reproduce you have to test in production or environment
       const area = self?.areas?.put(areaRaw);
+
+      object?.afterResultCreated?.(area);
 
       if (!area) return;
 
@@ -863,11 +886,13 @@ export const Annotation = types
     },
 
     appendResults(results) {
+      if (!self.editable || self.readonly) return;
+
       const regionIdMap = {};
       const prevSize = self.regionStore.regions.length;
 
       // Generate new ids to prevent collisions
-      results.forEach((result)=>{
+      results.forEach((result) => {
         const regionId = result.id;
 
         if (!regionIdMap[regionId]) {
@@ -900,7 +925,7 @@ export const Annotation = types
     // And this problems are fixable, so better to fix them on start
     fixBrokenAnnotation(json) {
       return (json ?? []).reduce((res, objRaw) => {
-        const obj = JSON.parse(JSON.stringify(objRaw));
+        const obj = structuredClone(objRaw) ?? {};
 
         if (obj.type === 'relation') {
           res.push(objRaw);
@@ -975,6 +1000,23 @@ export const Annotation = types
         if (tagNames.has(obj.from_name) && tagNames.has(obj.to_name)) {
           res.push(obj);
         }
+        
+        // Insert image dimensions from result 
+        (() => {
+          if (!isDefined(obj.original_width)) return;
+          if (!tagNames.has(obj.to_name)) return;
+
+          const tag = tagNames.get(obj.to_name);
+
+          if (tag.type !== 'image') return;
+
+          const imageEntity = tag.findImageEntity(obj.item_index ?? 0); 
+
+          if (!imageEntity) return;
+
+          imageEntity.setNaturalWidth(obj.original_width);
+          imageEntity.setNaturalHeight(obj.original_height);
+        })();
 
         return res;
       }, []);
@@ -1048,12 +1090,6 @@ export const Annotation = types
         self._initialAnnotationObj = objAnnotation;
 
         objAnnotation.forEach(obj => {
-          const { readonly } = obj;
-
-          if(readonly) {
-            self.setReadonly(true);
-          }
-
           self.deserializeSingleResult(obj,
             (id) => areas.get(id),
             (snapshot) => areas.put(snapshot),
@@ -1140,6 +1176,16 @@ export const Annotation = types
           };
 
           area = createArea(areaSnapshot);
+
+          if (isFF(FF_LSDV_4583)) {
+            // store copy of the original result inside the area
+            // useful when you need to serialize a result without
+            // updating it from current/actual data
+            // For safety reasons this object is always readonly
+            Object.defineProperty(area, '_rawResult', {
+              value: Object.freeze(structuredClone(obj)),
+            });
+          }
         }
 
         area.addResult({ ...data, id: resultId, type, value, from_name, to_name });

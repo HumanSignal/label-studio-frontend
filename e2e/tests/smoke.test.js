@@ -1,6 +1,4 @@
-/* global Feature, Scenario, locate */
-
-const { initLabelStudio, serialize } = require('./helpers');
+const { serialize } = require('./helpers');
 const Utils = require('../examples/utils');
 const examples = [
   require('../examples/audio-regions'),
@@ -34,8 +32,14 @@ function assertWithTolerance(actual, expected) {
 
 Feature('Smoke test through all the examples');
 
-examples.slice(-1).forEach(example =>
-  Scenario(example.title || 'Noname smoke test', async function({ I, AtImageView, AtAudioView, AtSidebar, AtTopbar }) {
+// old audio is broken, so skipping it
+examples.slice(1).forEach(example =>
+  Scenario(example.title || 'Noname smoke test', async function({ I, LabelStudio, AtImageView, AtAudioView, AtSidebar, AtTopbar }) {
+
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_2715_audio_3_280722_short: true,
+    });
+
     // @todo optional predictions in example
     const { annotations, config, data, result = annotations[0].result } = example;
     const params = { annotations: [{ id: 'test', result }], config, data };
@@ -48,7 +52,8 @@ examples.slice(-1).forEach(example =>
     const count = ids.length;
 
     await I.amOnPage('/');
-    await I.executeScript(initLabelStudio, params);
+
+    LabelStudio.init(params);
 
     AtSidebar.seeRegions(count);
 
@@ -58,8 +63,8 @@ examples.slice(-1).forEach(example =>
       AtImageView.waitForImage();
     }
 
-    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'AudioPlus' || node['#name'] === 'Audio')) {
-      AtAudioView.waitForAudio();
+    if (Utils.xmlFindBy(configTree, node => node['#name'] === 'Audio')) {
+      await AtAudioView.waitForAudio();
     }
 
     if (Utils.xmlFindBy(configTree, node => ['text', 'hypertext'].includes(node['#name'].toLowerCase()))) {
@@ -77,10 +82,10 @@ examples.slice(-1).forEach(example =>
       // so click the bin button in entity's info block
       I.click('.ls-entity-buttons span[aria-label=delete]');
       AtSidebar.seeRegions(count-1);
-      I.click('.lsf-history__action[aria-label=Reset]');
+      I.click('.lsf-history-buttons__action[aria-label=Reset]');
       AtSidebar.seeRegions(count);
       // Reset is undoable
-      I.click('.lsf-history__action[aria-label=Undo]');
+      I.click('.lsf-history-buttons__action[aria-label=Undo]');
 
       // so after all these manipulations first region should be deleted
       restored = await I.executeScript(serialize);

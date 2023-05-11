@@ -2,7 +2,6 @@ import React from 'react';
 import { observer } from 'mobx-react';
 import { getParentOfType, types } from 'mobx-state-tree';
 
-import WithStatesMixin from '../mixins/WithStates';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import Registry from '../core/Registry';
@@ -11,7 +10,7 @@ import { guidGenerator } from '../core/Helpers';
 
 import styles from './TextAreaRegion/TextAreaRegion.module.scss';
 import { HtxTextBox } from '../components/HtxTextBox/HtxTextBox';
-import { FF_DEV_1566, isFF } from '../utils/feature-flags';
+import { FF_DEV_1566, FF_LSDV_4712, isFF } from '../utils/feature-flags';
 
 const Model = types
   .model('TextAreaRegionModel', {
@@ -35,9 +34,14 @@ const Model = types
     getRegionElement() {
       return document.querySelector(`#TextAreaRegion-${self.id}`);
     },
+    getOneColor() {
+      return null;
+    },
   }))
   .actions(self => ({
     setValue(val) {
+      if (isFF(FF_LSDV_4712) && (self._value === val || !self.parent.validateValue(val))) return;
+
       self._value = val;
       self.parent.onChange();
     },
@@ -57,7 +61,6 @@ const Model = types
 
 const TextAreaRegionModel = types.compose(
   'TextAreaRegionModel',
-  WithStatesMixin,
   RegionsMixin,
   NormalizationMixin,
   Model,
@@ -68,8 +71,8 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
   const params = { onFocus: e => onFocus(e, item) };
   const { parent } = item;
   const { relationMode } = item.annotation;
-  const editable = parent.isEditable;
-  const deleteable = parent.isDeleteable;
+  const editable = parent.isEditable && !item.isReadOnly();
+  const deleteable = parent.isDeleteable && !item.isReadOnly();
 
   if (relationMode) {
     classes.push(styles.relation);
@@ -107,7 +110,7 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
     };
   }
 
-  const name = `${parent?.name?? ''}:${item.id}`;
+  const name = `${parent?.name ?? ''}:${item.id}`;
 
   return (
     <div {...divAttrs} className={styles.row} data-testid="textarea-region">

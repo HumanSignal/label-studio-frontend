@@ -11,7 +11,6 @@ const _Tool = types
   .model('PolygonTool', {
     group: 'segmentation',
     shortcut: 'P',
-    isDrawingTool: true,
   })
   .views(self => {
     const Super = {
@@ -50,13 +49,6 @@ const _Tool = types
 
       get defaultDimensions() {
         return DEFAULT_DIMENSIONS.polygon;
-      },
-
-      moreRegionParams(obj) {
-        return {
-          x: obj.value.points[0][0],
-          y: obj.value.points[0][1],
-        };
       },
 
       createRegionOptions({ x, y }) {

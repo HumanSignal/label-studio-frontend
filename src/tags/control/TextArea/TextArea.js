@@ -1,5 +1,7 @@
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Button, Form, Input } from 'antd';
+import React, { createRef, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Button from 'antd/lib/button/index';
+import Form from 'antd/lib/form/index';
+import Input from 'antd/lib/input/index';
 import { observer } from 'mobx-react';
 import { destroy, isAlive, types } from 'mobx-state-tree';
 
@@ -11,14 +13,14 @@ import Registry from '../../../core/Registry';
 import Tree from '../../../core/Tree';
 import Types from '../../../core/Types';
 import { HtxTextAreaRegion, TextAreaRegionModel } from '../../../regions/TextAreaRegion';
-import { cloneNode } from '../../../core/Helpers';
 import ControlBase from '../Base';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import styles from '../../../components/HtxTextBox/HtxTextBox.module.scss';
 import { Block, Elem } from '../../../utils/bem';
 import './TextArea.styl';
 import { IconTrash } from '../../../assets/icons';
-import { FF_DEV_1564_DEV_1565, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_1564_DEV_1565, FF_DEV_3730, FF_LSDV_4659, FF_LSDV_4712, isFF } from '../../../utils/feature-flags';
+import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
 
 const { TextArea } = Input;
 
@@ -42,6 +44,16 @@ const { TextArea } = Input;
  *   <Rectangle name="bbox" toName="image" strokeWidth="3"/>
  *   <TextArea name="transcription" toName="image" editable="true" perRegion="true" required="true" maxSubmissions="1" rows="5" placeholder="Recognized Text" displayMode="region-list"/>
  * </View>
+ * @example
+ * <!--
+ *  You can keep submissions unique
+ *  - `fflag_feat_front_lsdv_4659_skipduplicates_060323_short` should be enabled to use `skipDuplicates` attribute.
+ *  - `fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short` should be enabled to keep submissions unique during editing existed results
+ * -->
+ * <View>
+ *   <Audio name="audio" value="$audio"/>
+ *   <TextArea name="genre" toName="audio" skipDuplicates="true" />
+ * </View>
  * @name TextArea
  * @meta_title Textarea Tag for Text areas
  * @meta_description Customize Label Studio with the TextArea tag to support audio transcription, image captioning, and OCR tasks for machine learning and data science projects.
@@ -52,6 +64,7 @@ const { TextArea } = Input;
  * @param {string=} [placeholder]          - Placeholder text
  * @param {string=} [maxSubmissions]       - Maximum number of submissions
  * @param {boolean=} [editable=false]      - Whether to display an editable textarea
+ * @param {boolean} [skipDuplicates=false] - Prevent duplicates in textarea inputs (see example below)
  * @param {boolean=} [transcription=false] - If false, always show editor
  * @param {number} [rows]                  - Number of rows in the textarea
  * @param {boolean} [required=false]       - Validate whether content in textarea is required
@@ -70,6 +83,9 @@ const TagAttrs = types.model({
   maxsubmissions: types.maybeNull(types.string),
   editable: types.optional(types.boolean, false),
   transcription: false,
+  ...(isFF(FF_LSDV_4659) ? {
+    skipduplicates: types.optional(types.boolean, false),
+  } : {}),
 });
 
 const Model = types.model({
@@ -82,6 +98,7 @@ const Model = types.model({
 }).volatile(() => {
   return {
     focusable: true,
+    textareaRef: createRef(),
   };
 }).views(self => ({
   get isEditable() {
@@ -89,7 +106,7 @@ const Model = types.model({
   },
 
   get isDeleteable() {
-    return self.annotation.editable;
+    return !self.isReadOnly();
   },
 
   get valueType() {
@@ -133,9 +150,26 @@ const Model = types.model({
   get result() {
     return self.annotation.results.find(r => r.from_name === self && (!self.area || r.area === self.area));
   },
+
+  hasResult(text) {
+    if (!self.result) return false;
+    let value = self.result.mainValue;
+
+    if (!Array.isArray(value)) value = [value];
+    text = text.toLowerCase();
+    return value.some(val => val.toLowerCase() === text);
+  },
 })).actions(self => {
   let lastActiveElement = null;
   let lastActiveElementModel = null;
+
+  const isAvailableElement = (element, elementModel) => {
+    if (!element || !elementModel || !isAlive(elementModel)) return false;
+    // Not available if active element is disappeared
+    if (self === elementModel && !self.showSubmit) return false;
+    if (!element.parentElement) return false;
+    return true;
+  };
 
   return {
     getSerializableValue() {
@@ -152,6 +186,10 @@ const Model = types.model({
 
     requiredModal() {
       InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
+    },
+
+    uniqueModal() {
+      InfoModal.warning('There is already an entry with that text. Please enter unique text.');
     },
 
     setResult(value) {
@@ -176,10 +214,6 @@ const Model = types.model({
       self.regions.splice(index, 1);
       destroy(region);
       self.onChange();
-    },
-
-    copyState(obj) {
-      self.regions = obj.regions.map(r => cloneNode(r));
     },
 
     perRegionCleanup() {
@@ -209,9 +243,28 @@ const Model = types.model({
       }
     },
 
+    validateValue(text) {
+      if (isFF(FF_LSDV_4659) && self.skipduplicates && self.hasResult(text)) {
+        self.uniqueModal();
+        return false;
+      }
+      return true;
+    },
+
     addText(text, pid) {
+      if (!self.validateValue(text)) return;
+
       self.createRegion(text, pid);
       self.onChange();
+    },
+
+    addTextToResult(text, result) {
+      if (!self.validateValue(text)) return;
+
+      const newValue = result.mainValue.toJSON();
+
+      newValue.push(text);
+      result.setValue(newValue);
     },
 
     beforeSend() {
@@ -232,41 +285,26 @@ const Model = types.model({
 
     onShortcut(value) {
       if (isFF(FF_DEV_1564_DEV_1565)) {
-        if (!lastActiveElement || !lastActiveElementModel || !isAlive(lastActiveElementModel)) return;
-        // Do nothing if active element is disappeared
-        if (self === lastActiveElementModel && !self.showSubmit) return;
-        if (!lastActiveElement.parentElement) return;
+        if (!isAvailableElement(lastActiveElement, lastActiveElementModel)) {
+          if (isFF(FF_DEV_3730)) {
+          // Try to use main textarea element
+            const textareaElement = self.textareaRef.current?.input || self.textareaRef.current?.resizableTextArea?.textArea;
 
+            if (isAvailableElement(textareaElement, self)) {
+              lastActiveElement = textareaElement;
+              lastActiveElementModel = self;
+            } else {
+              return;
+            }
+          } else {
+            return;
+          }
+        }
         lastActiveElement.setRangeText(value, lastActiveElement.selectionStart, lastActiveElement.selectionEnd, 'end');
         lastActiveElementModel.setValue(lastActiveElement.value);
       } else {
         self.setValue(self._value + value);
       }
-    },
-
-    toStateJSON() {
-      if (!self.regions.length) return;
-
-      const toname = self.toname || self.name;
-      const tree = {
-        id: self.pid,
-        from_name: self.name,
-        to_name: toname,
-        type: 'textarea',
-        value: {
-          text: self.regions.map(r => r._value),
-        },
-      };
-
-      return tree;
-    },
-
-    fromStateJSON(obj) {
-      let { text } = obj.value;
-
-      if (!Array.isArray(text)) text = [text];
-
-      text.forEach(t => self.addText(t, obj.id));
     },
 
     setLastFocusedElement(element, model = self) {
@@ -288,6 +326,7 @@ const TextAreaModel = types.compose(
   RequiredMixin,
   PerRegionMixin,
   AnnotationMixin,
+  ReadOnlyControlMixin,
   Model,
 );
 
@@ -306,13 +345,16 @@ const HtxTextArea = observer(({ item }) => {
     className: 'is-search',
     label: item.label,
     placeholder: item.placeholder,
+    disabled: item.isReadOnly(),
+    readOnly: item.isReadOnly(),
     onChange: ev => {
-      if (!item.annotation.editable) return;
+      if (item.annotation.isReadOnly()) return;
       const { value } = ev.target;
 
       item.setValue(value);
     },
     onFocus,
+    ref: item.textareaRef,
   };
 
   if (rows > 1) {
@@ -323,7 +365,7 @@ const HtxTextArea = observer(({ item }) => {
         e.shiftKey &&
         item.allowsubmit &&
         item._value &&
-        item.annotation.editable
+        !item.annotation.isReadOnly()
       ) {
         e.preventDefault();
         e.stopPropagation();
@@ -333,11 +375,9 @@ const HtxTextArea = observer(({ item }) => {
     };
   }
 
-  if (item.annotation.readonly) props['disabled'] = true;
-
   const visibleStyle = item.perRegionVisible() ? {} : { display: 'none' };
 
-  const showAddButton = item.annotation.editable && (item.showsubmitbutton ?? rows !== 1);
+  const showAddButton = !item.isReadOnly() && (item.showsubmitbutton ?? rows !== 1);
   const itemStyle = {};
 
   if (showAddButton) itemStyle['marginBottom'] = 0;
@@ -345,13 +385,13 @@ const HtxTextArea = observer(({ item }) => {
   visibleStyle['marginTop'] = '4px';
 
   return (item.displaymode === PER_REGION_MODES.TAG ? (
-    <div style={visibleStyle}>
+    <div className='lsf-text-area' style={visibleStyle}>
       {Tree.renderChildren(item, item.annotation)}
 
       {item.showSubmit && (
         <Form
           onFinish={() => {
-            if (item.allowsubmit && item._value && item.annotation.editable) {
+            if (item.allowsubmit && item._value && !item.annotation.isReadOnly()) {
               item.addText(item._value);
               item.setValue('');
             }
@@ -360,7 +400,9 @@ const HtxTextArea = observer(({ item }) => {
           }}
         >
           <Form.Item style={itemStyle}>
-            {rows === 1 ? <Input {...props} /> : <TextArea {...props} />}
+            {rows === 1
+              ? <Input {...props} aria-label="TextArea Input"/>
+              : <TextArea {...props} aria-label="TextArea Input"/>}
             {showAddButton && (
               <Form.Item>
                 <Button style={{ marginTop: '10px' }} type="primary" htmlType="submit">
@@ -384,31 +426,59 @@ const HtxTextArea = observer(({ item }) => {
   );
 });
 
-const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, control, collapsed }, ref) => {
+const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, validate, control, collapsed }, ref) => {
   const rows = parseInt(control.rows);
   const isTextarea = rows > 1;
-  const inputRef = useRef();
+  const [stateValue, setStateValue] = useState(value ?? '');
+
+  if (isFF(FF_LSDV_4712)) {
+    useEffect(() => {
+      if (value !== stateValue) {
+        setStateValue(value);
+      }
+    }, [value]);
+  }
+
   const displayValue = useMemo(() => {
     if (collapsed) {
       return (value ?? '').split(/\n/)[0] ?? '';
     }
 
-    return value;
-  }, [value, collapsed]);
+    return isFF(FF_LSDV_4712) ? stateValue : value;
+  }, [value, collapsed, ...(isFF(FF_LSDV_4712) ? [stateValue] : [])]);
+
+  const changeHandler = isFF(FF_LSDV_4712)
+    ? useCallback(e => {
+      setStateValue(e.target.value);
+    }, [])
+    : e => {
+      if (!collapsed) onChange(idx, e.target.value);
+    };
+
+  const blurHandler = useCallback((e) => {
+    if (value === e.target.value || collapsed) return;
+
+    if (validate && !validate(e.target.value)) {
+      setStateValue(value);
+    } else {
+      onChange?.(idx, e.target.value);
+    }
+  },[idx, value, onChange, validate, collapsed]);
 
   const inputProps = {
-    ref: inputRef,
     className: 'ant-input ' + styles.input,
     value: displayValue,
     autoSize: isTextarea ? { minRows: 1 } : null,
-    onChange: e => {
-      if (!collapsed) onChange(idx, e.target.value);
-    },
+    onChange: changeHandler,
     readOnly: readOnly || collapsed,
     onFocus,
   };
 
-  if (isTextarea) {
+  if (isFF(FF_LSDV_4712)) {
+    inputProps.onBlur = blurHandler;
+  }
+
+  if (isFF(FF_LSDV_4712) || isTextarea) {
     inputProps.onKeyDown = e => {
       if ((e.key === 'Enter' && !e.shiftKey) || e.key === 'Escape') {
         e.preventDefault();
@@ -424,11 +494,12 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDe
       { (!collapsed && !readOnly) && (
         <Elem
           name="action"
+          aria-label="Delete Region"
           tag={Button}
           icon={<IconTrash />}
           size="small"
           type="text"
-          onClick={()=>{onDelete(idx);}}
+          onClick={() => { onDelete(idx); }}
         />
       ) }
     </Elem>
@@ -443,10 +514,10 @@ const HtxTextAreaResult = observer(({
   collapsed,
 }) => {
   const value = item.mainValue;
-  const editable = item.editable && item.from_name.editable && !item.area.readonly;
+  const editable = !item.isReadOnly() && item.from_name.editable && !item.area.isReadOnly();
 
   const changeHandler = useCallback((idx, val) => {
-    if (!item.from_name.isEditable) return;
+    if (item.from_name.isReadOnly()) return;
     const newValue = value.toJSON();
 
     newValue.splice(idx, 1, val);
@@ -474,6 +545,7 @@ const HtxTextAreaResult = observer(({
         ref={idx === 0 ? firstResultInputRef : null}
         onFocus={onFocus}
         collapsed={collapsed}
+        validate={isFF(FF_LSDV_4712) ? item.from_name.validateValue : null}
       />
     );
   });
@@ -499,10 +571,8 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
 
   const submitValue = useCallback(() => {
     if (result) {
-      const newValue = result.mainValue.toJSON();
 
-      newValue.push(item._value);
-      result.setValue(newValue);
+      item.addTextToResult(item._value, result);
       item.setValue('');
     } else {
       item.addText(item._value);
@@ -559,7 +629,7 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
   if (isTextArea) {
     // allow to add multiline text with shift+enter
     props.onKeyDown = e => {
-      if (((e.key === 'Enter' && !e.shiftKey) || e.key === 'Escape') && item.annotation.editable) {
+      if (((e.key === 'Enter' && !e.shiftKey) || e.key === 'Escape') && !item.annotation.isReadOnly()) {
         e.preventDefault();
         e.stopPropagation();
         if (item.allowsubmit && item._value) {
@@ -571,15 +641,15 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
     };
   }
 
-  if (item.annotation.readonly) props['disabled'] = true;
+  if (item.annotation.isReadOnly()) props['disabled'] = true;
 
-  const showAddButton = item.annotation.editable && (item.showsubmitbutton ?? rows !== 1);
+  const showAddButton = !item.annotation.isReadOnly() && (item.showsubmitbutton ?? rows !== 1);
   const itemStyle = {};
 
   if (showAddButton) itemStyle['marginBottom'] = 0;
 
   const showSubmit = (!result || !result?.mainValue?.length || (item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions)))
-  && !area.readonly;
+  && !area.isReadOnly();
 
   if (!isAlive(item) || !isAlive(area)) return null;
 
@@ -599,7 +669,7 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
         <Elem name="form"
           tag={Form}
           onFinish={() => {
-            if (item.allowsubmit && item._value && item.annotation.editable) {
+            if (item.allowsubmit && item._value && !item.annotation.isReadOnly()) {
               submitValue();
             }
             return false;

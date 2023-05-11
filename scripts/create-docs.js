@@ -124,7 +124,7 @@ fetch(currentTagsUrl)
         templateData = templateData.concat(getTemplateDataByGlob('/*/*.js'));
       }
       // tags inside nested dirs go after others, so we have to resort file list
-      templateData.sort((a, b) => a.name > b.name ? 1 : -1);
+      templateData.sort((a, b) => (a.name > b.name ? 1 : -1));
       for (const t of templateData) {
         const name = t.name.toLowerCase();
         const str = processTemplate(t, dir);

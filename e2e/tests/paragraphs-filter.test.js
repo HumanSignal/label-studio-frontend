@@ -1,11 +1,31 @@
-/* global Feature, Scenario */
-
 const assert = require('assert');
 const { omitBy } = require('./helpers');
 
 Feature('Paragraphs filter');
 
 const AUDIO = 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3';
+
+const ANNOTATIONS = [
+  {
+    'result': [
+      {
+        'id':'ryzr4QdL93',
+        'from_name':'ner',
+        'to_name':'text',
+        'source':'$dialogue',
+        'type':'paragraphlabels',
+        'value':{
+          'start':'2',
+          'end':'4',
+          'startOffset':0,
+          'endOffset':134,
+          'paragraphlabels': ['Important Stuff'],
+          'text': 'Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?I dont know. Thats a good question.Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+        },
+      },
+    ],
+  },
+];
 
 const DATA = {
   audio: AUDIO,
@@ -38,11 +58,13 @@ const DATA = {
     },
   ],
 };
+
 const CONFIG = `
 <View>
   <ParagraphLabels name="ner" toName="text">
     <Label value="Important Stuff"></Label>
     <Label value="Random talk"></Label>
+    <Label value="Other"></Label>
   </ParagraphLabels>
   <Paragraphs audioUrl="$audio" name="text" value="$dialogue" layout="dialogue" savetextresult="yes" />
 </View>`;
@@ -265,4 +287,314 @@ Scenario('Check different cases ', async ({ I, LabelStudio, AtSidebar, AtParagra
       'text': 'Message',
     });
   }
+});
+
+Scenario(
+  'Check start and end indices do not leak to other lines',
+  async ({ I, LabelStudio, AtSidebar, AtParagraphs, AtLabels }) => {
+    const dialogue = [
+      1, // 1
+      3, // 2
+      1, // 3
+      2, // 4
+      3, // 5
+      1, // 6
+      2, // 7
+      1, // 8
+      3, // 9
+      1, // 10
+      3, // 11
+      2, // 12
+      3, // 13
+      2, // 14
+    ].map((authorId, idx) => ({
+      start: idx + 1,
+      end: idx + 2,
+      author: `Author ${authorId}`,
+      text: `Message ${idx + 1}`,
+    }));
+    const params = {
+      config: CONFIG,
+      data: {
+        audio: AUDIO,
+        dialogue,
+      },
+    };
+
+    LabelStudio.setFeatureFlags(FEATURE_FLAGS);
+    I.amOnPage('/');
+
+    LabelStudio.init(params);
+    AtSidebar.seeRegions(0);
+
+    I.say(
+      'Test selection from the end of one turn to end of the one below correctly creates a single region with proper start,startOffset,end,endOffset',
+    );
+    AtLabels.clickLabel('Random talk');
+    AtParagraphs.setSelection(
+      AtParagraphs.locateText('Message 8'),
+      9,
+      AtParagraphs.locateText('Message 9'),
+      9,
+    );
+    AtSidebar.seeRegions(1);
+
+    {
+      const result = await LabelStudio.serialize();
+
+      assert.deepStrictEqual(
+        omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '8',
+          end: '8',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 9',
+        },
+      );
+    }
+
+    I.say(
+      'Test selection from the end of one turn to the very start of another below correctly creates a single region with proper start,startOffset,end,endOffset',
+    );
+    AtLabels.clickLabel('Random talk');
+    AtParagraphs.setSelection(
+      AtParagraphs.locateText('Message 8'),
+      9,
+      AtParagraphs.locateText('Message 10'),
+      0,
+    );
+    AtSidebar.seeRegions(2);
+
+    {
+      const result = await LabelStudio.serialize();
+
+      assert.deepStrictEqual(
+        omitBy(result[1].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '8',
+          end: '8',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 9',
+        },
+      );
+    }
+
+    I.say(
+      'Test selection from the end of one turn to end of ones below across collapsed text correctly creates regions with proper start,startOffset,end,endOffset',
+    );
+    AtParagraphs.clickFilter('Author 2', 'Author 3');
+    AtLabels.clickLabel('Important Stuff');
+    AtParagraphs.setSelection(
+      AtParagraphs.locateText('Message 2'),
+      9,
+      AtParagraphs.locateText('Message 8'),
+      9,
+    );
+    AtSidebar.seeRegions(4);
+
+    {
+      const result = await LabelStudio.serialize();
+
+      assert.deepStrictEqual(
+        omitBy(result[2].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '3',
+          end: '4',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 4\n\nMessage 5',
+        },
+      );
+      assert.deepStrictEqual(
+        omitBy(result[3].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '6',
+          end: '6',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 7',
+        },
+      );
+    }
+
+    I.say(
+      'Test selection from the end of one turn to very start of ones below across collapsed text correctly creates creates regions with proper start,startOffset,end,endOffset',
+    );
+    AtLabels.clickLabel('Other');
+    AtParagraphs.setSelection(
+      AtParagraphs.locateText('Message 2'),
+      9,
+      AtParagraphs.locateText('Message 8'),
+      0,
+    );
+    AtSidebar.seeRegions(6);
+
+    {
+      const result = await LabelStudio.serialize();
+
+      assert.deepStrictEqual(
+        omitBy(result[4].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '3',
+          end: '4',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 4\n\nMessage 5',
+        },
+      );
+      assert.deepStrictEqual(
+        omitBy(result[5].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '6',
+          end: '6',
+          startOffset: 0,
+          endOffset: 9,
+          text: 'Message 7',
+        },
+      );
+    }
+
+    I.say(
+      'Test selection from the end of Message 11 to the start of Message 14 to get region over Message 12 and Message 13',
+    );
+    AtLabels.clickLabel('Random talk');
+    AtParagraphs.setSelection(
+      AtParagraphs.locateText('Message 11'),
+      10,
+      AtParagraphs.locateText('Message 14'),
+      0,
+    );
+    AtSidebar.seeRegions(7);
+
+    {
+      const result = await LabelStudio.serialize();
+
+      assert.deepStrictEqual(
+        omitBy(result[6].value, (v, key) => key === 'paragraphlabels'),
+        {
+          start: '11',
+          end: '12',
+          startOffset: 0,
+          endOffset: 10,
+          text: 'Message 12\n\nMessage 13',
+        },
+      );
+    }
+  },
+);
+
+Scenario('Selecting the end character on a paragraph phrase to the very start of other phrases includes all selected phrases', async ({ I, LabelStudio, AtSidebar, AtParagraphs, AtLabels }) => {
+  const params = {
+    data: DATA,
+    config: CONFIG,
+  };
+
+  I.amOnPage('/');
+
+  LabelStudio.setFeatureFlags(FEATURE_FLAGS);
+  LabelStudio.init(params);
+  AtSidebar.seeRegions(0);
+
+  I.say('Select 2 regions in the consecutive phrases');
+
+  AtLabels.clickLabel('Random talk');
+  AtParagraphs.setSelection(
+    AtParagraphs.locateText('Dont you hate that?'),
+    18,
+    AtParagraphs.locateText('Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?'),
+    0,
+  );
+
+  AtSidebar.seeRegions(1);
+
+  const result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(
+    omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
+    {
+      start: '0',
+      end: '1',
+      startOffset: 18,
+      endOffset: 10,
+      text: '?\n\nHate what?',
+    },
+  );
+});
+
+Scenario('Selecting the end character on a paragraph phrase to the very start of other phrases includes all selected phrases except the very last one', async ({ I, LabelStudio, AtSidebar, AtParagraphs, AtLabels }) => {
+  const params = {
+    data: {
+      ...DATA,
+      dialogue: DATA.dialogue.map(d => [d, { ...d, text: `${d.text}2` }]).flat(), 
+    },
+    config: CONFIG,
+  };
+
+  I.amOnPage('/');
+
+  LabelStudio.setFeatureFlags(FEATURE_FLAGS);
+  LabelStudio.init(params);
+  AtSidebar.seeRegions(0);
+
+
+  I.say('Select 2 regions in the consecutive phrases of the one person');
+  AtParagraphs.clickFilter('Vincent Vega');
+  AtLabels.clickLabel('Random talk');
+  AtParagraphs.setSelection(
+    AtParagraphs.locateText('Hate what?2'),
+    10,
+    AtParagraphs.locateText('I dont know. Thats a good question.2'),
+    0,
+  );
+
+  AtSidebar.seeRegions(2);
+
+  const result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(
+    omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
+    {
+      start: '3',
+      end: '3',
+      startOffset: 10,
+      endOffset: 11,
+      text: '2',
+    },
+  );
+  assert.deepStrictEqual(
+    omitBy(result[1].value, (v, key) => key === 'paragraphlabels'),
+    {
+      start: '6',
+      end: '6',
+      startOffset: 0,
+      endOffset: 35,
+      text: 'I dont know. Thats a good question.',
+    },
+  );
+});
+
+Scenario('Initializing a paragraph region range should not include author names in text', async ({ I, LabelStudio, AtSidebar }) => {
+  const params = {
+    data: DATA,
+    annotations: ANNOTATIONS,
+    config: CONFIG,
+  };
+
+  I.amOnPage('/');
+  LabelStudio.setFeatureFlags(FEATURE_FLAGS);
+
+  const [{ result : [region] }] = ANNOTATIONS;
+  const { paragraphlabels: _paragraphlabels, ...value } = region.value;
+
+  LabelStudio.init(params);
+  AtSidebar.seeRegions(1);
+
+  const result = await LabelStudio.serialize();
+
+  assert.deepStrictEqual(
+    omitBy(result[0].value, (v, key) => key === 'paragraphlabels'),
+    value,
+  );
 });

@@ -251,7 +251,7 @@ class RichTextPieceView extends Component {
 
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
-    if (item.selectionenabled === false || !item.annotation.editable) return;
+    if (item.selectionenabled === false || item.annotation.isReadOnly()) return;
 
     Utils.Selection.captureSelection(({ selectionText, range }) => {
       if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {

@@ -4,7 +4,7 @@ import Registry from '../core/Registry';
 import Tree from '../core/Tree';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { isDefined } from '../utils/utilities';
-import { FF_DEV_1170, FF_DEV_1372, isFF } from '../utils/feature-flags';
+import { FF_DEV_1372, FF_LSDV_4583, isFF } from '../utils/feature-flags';
 
 const Result = types
   .model('Result', {
@@ -13,7 +13,7 @@ const Result = types
 
     score: types.maybeNull(types.number),
     // @todo to readonly mixin
-    // readonly: types.optional(types.boolean, false),
+    readonly: types.optional(types.boolean, false),
 
     // @why?
     // hidden: types.optional(types.boolean, false),
@@ -41,6 +41,7 @@ const Result = types
       'polygon',
       'brush',
       'ellipse',
+      'magicwand',
       'rectanglelabels',
       'keypointlabels',
       'polygonlabels',
@@ -55,12 +56,15 @@ const Result = types
       'rating',
       'pairwise',
       'videorectangle',
+      'ranker',
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
+      ranker: types.maybe(types.array(types.string)),
       datetime: types.maybe(types.string),
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
+      item_index: types.maybeNull(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
       choices: types.maybe(types.array(types.union(types.string, types.array(types.string)))),
       // pairwise
@@ -102,7 +106,7 @@ const Result = types
     },
 
     mergeMainValue(value) {
-      value =  value?.toJSON ? value.toJSON() : value;
+      value = value?.toJSON ? value.toJSON() : value;
       const mainValue = self.mainValue?.toJSON?.() ? self.mainValue?.toJSON?.() : self.mainValue;
 
       if (typeof value !== typeof mainValue) return null;
@@ -121,13 +125,15 @@ const Result = types
     },
 
     get editable() {
-      // @todo readonly is not defined here, so we have to fix this
-      // @todo and as it's used only in region list view of textarea get rid of this getter
-      if (isFF(FF_DEV_1170)) {
-        // The value of self.area.editable is always false whenever region is locked, so we need to check if it's explicitly readonly on the area.
-        return !self.readonly && self.annotation.editable === true && !self.area.readonly;
-      }
-      return !self.readonly && self.annotation.editable === true && self.area.editable === true;
+      throw new Error('Not implemented');
+    },
+
+    isReadOnly() {
+      return self.readonly || self.area.isReadOnly();
+    },
+
+    isSelfReadOnly() {
+      return self.readonly;
     },
 
     getSelectedString(joinstr = ' ') {
@@ -144,7 +150,7 @@ const Result = types
     /**
      * Checks perRegion and Visibility params
      */
-    get isSubmitable() {
+    get canBeSubmitted() {
       const control = self.from_name;
 
       if (control.perregion) {
@@ -153,10 +159,14 @@ const Result = types
         if (label && !self.area.hasLabel(label)) return false;
       }
 
+      // picks leaf's (last item in a path) value for Taxonomy or usual Choice value for Choices
+      const innerResults = (r) =>
+        r.map(s => Array.isArray(s) ? s.at(-1) : s);
+
       const isChoiceSelected = () => {
         const tagName = control.whentagname;
-        const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(',') : null;
-        const results = self.annotation.results.filter(r => r.type === 'choices' && r !== self);
+        const choiceValues = control.whenchoicevalue?.split(',') ?? null;
+        const results = self.annotation.results.filter(r => ['choices', 'taxonomy'].includes(r.type) && r !== self);
 
         if (tagName) {
           const result = results.find(r => {
@@ -166,11 +176,11 @@ const Result = types
           });
 
           if (!result) return false;
-          if (choiceValues && !choiceValues.some(v => result.mainValue.includes(v))) return false;
+          if (choiceValues && !choiceValues.some(v => innerResults(result.mainValue).some(vv => result.from_name.selectedChoicesMatch(v, vv)))) return false;
         } else {
           if (!results.length) return false;
           // if no given choice value is selected in any choice result
-          if (choiceValues && !choiceValues.some(v => results.some(r => r.mainValue.includes(v)))) return false;
+          if (choiceValues && !results.some(r => choiceValues.some(v => innerResults(r.mainValue).some(vv => r.from_name.selectedChoicesMatch(v, vv))))) return false;
         }
         return true;
       };
@@ -251,7 +261,7 @@ const Result = types
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
-    updateAppearenceFromState() {},
+    updateAppearenceFromState() { },
 
     serialize(options) {
       const { type, score, value, ...sn } = getSnapshot(self);
@@ -263,7 +273,7 @@ const Result = types
       const to_name = Tree.cleanUpId(sn.to_name);
 
       if (!data) return null;
-      if (!self.isSubmitable) return null;
+      if (!self.canBeSubmitted) return null;
 
       if (!isDefined(data.value)) data.value = {};
       // with `mergeLabelsAndResults` control uses only one result even with external `Labels`
@@ -296,63 +306,20 @@ const Result = types
 
       if (typeof score === 'number') data.score = score;
 
-      if (!self.editable) data.readonly = true;
+      if (self.isSelfReadOnly()) data.readonly = true;
+
+      if (isFF(FF_LSDV_4583) && isDefined(self.area.item_index)) {
+        data.item_index = self.area.item_index;
+      }
 
       return data;
-    },
-
-    toStateJSON() {
-      const parent = self.parent;
-      const buildTree = control => {
-        const tree = {
-          id: self.pid,
-          from_name: control.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: control.type,
-          parent_id: self.parentID === '' ? null : self.parentID,
-        };
-
-        if (self.normalization) tree['normalization'] = self.normalization;
-
-        return tree;
-      };
-
-      if (self.states && self.states.length) {
-        return self.states
-          .map(s => {
-            const ser = self.serialize(s, parent);
-
-            if (!ser) return null;
-
-            const tree = {
-              ...buildTree(s),
-              ...ser,
-            };
-
-            // in case of labels it's gonna be, labels: ["label1", "label2"]
-
-            return tree;
-          })
-          .filter(Boolean);
-      } else {
-        const obj = self.annotation.toNames.get(parent.name);
-        const control = obj.length ? obj[0] : obj;
-
-        const tree = {
-          ...buildTree(control),
-          ...self.serialize(control, parent),
-        };
-
-        return tree;
-      }
     },
 
     /**
      * Remove region
      */
     deleteRegion() {
-      if (!self.annotation.editable) return;
+      if (self.annotation.isReadOnly()) return;
 
       self.unselectRegion();
 
@@ -380,4 +347,4 @@ const Result = types
     },
   }));
 
-export default types.compose(Result, AnnotationMixin);
+export default types.compose('Result', Result, AnnotationMixin);

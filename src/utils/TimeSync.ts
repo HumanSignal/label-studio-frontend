@@ -1,7 +1,8 @@
 import { EventInvoker } from './events';
-import { FF_DEV_2461, isFF } from './feature-flags';
+import { FF_DEV_2461, FF_DEV_2715, isFF } from './feature-flags';
 
 const isFFDev2461 = isFF(FF_DEV_2461);
+const isFFDev2715 = isFF(FF_DEV_2715);
 
 let instance: TimeSync;
 
@@ -10,9 +11,10 @@ interface TimeSyncHandler {
   pause: () => void;
   seek: (time: number) => void;
   speed: (speed: number) => void;
+  syncedDuration: (duration: number) => void;
 }
 
-type TimeSyncEvent = 'play' | 'pause' | 'seek' | 'speed';
+type TimeSyncEvent = 'play' | 'pause' | 'seek' | 'speed' | 'syncedDuration';
 
 export class TimeSyncSubscriber {
   private name: string;
@@ -24,6 +26,7 @@ export class TimeSyncSubscriber {
   playing = false;
   currentTime = 0;
   currentSpeed = 1;
+  duration = 0;
 
   constructor(name: string, sync: TimeSync, object: any) {
     this.name = name;
@@ -32,8 +35,7 @@ export class TimeSyncSubscriber {
   }
 
   get subscribers(): TimeSyncSubscriber[] {
-    const result = Array
-      .from(this.sync.subscriptions.entries())
+    const result = Array.from(this.sync.subscriptions.entries())
       .filter(([_, subs]) => subs.has(this.name))
       .map(([name]) => this.sync.members.get(name))
       .filter(member => member !== undefined);
@@ -56,6 +58,7 @@ export class TimeSyncSubscriber {
     this.currentTime = this.sync.members.get(target)?.currentTime ?? this.currentTime;
     this.currentSpeed = this.sync.members.get(target)?.currentSpeed ?? this.currentSpeed;
     this.playing = this.sync.members.get(target)?.playing ?? this.playing;
+    this.duration = this.sync.members.get(target)?.duration ?? this.duration;
   }
 
   unsubscribe(target: string) {
@@ -81,7 +84,7 @@ export class TimeSyncSubscriber {
   }
 
   seek(time: number) {
-    if (!isFFDev2461 && time === this.currentTime){
+    if ((!isFFDev2461 || !isFFDev2715) && time === this.currentTime) {
       this.releaseEvent('seek');
       return;
     }
@@ -102,6 +105,15 @@ export class TimeSyncSubscriber {
     });
   }
 
+  syncedDuration(duration: number) {
+    this.duration = duration;
+
+    this.whenUnlocked('syncedDuration', () => {
+      this.events.invoke('syncedDuration', duration);
+      this.subscribers.forEach(sub => sub.syncedDuration(this.duration));
+    });
+  }
+
   private lockEvent(event: TimeSyncEvent) {
     this.lockedEvents.add(event);
   }
@@ -112,7 +124,7 @@ export class TimeSyncSubscriber {
 
   private whenUnlocked(event: TimeSyncEvent, fn: () => void) {
     if (this.lockedEvents.has(event)) {
-      if (!isFFDev2461) {
+      if (!isFFDev2461 || !isFFDev2715) {
         this.releaseEvent(event);
       }
       return;
@@ -120,7 +132,7 @@ export class TimeSyncSubscriber {
 
     this.lockEvent(event);
     fn();
-    if (isFFDev2461) {
+    if (isFFDev2461 || isFFDev2715) {
       this.releaseEvent(event);
     }
   }
@@ -132,7 +144,7 @@ export class TimeSync {
       return instance;
     }
 
-    return instance = new TimeSync();
+    return (instance = new TimeSync());
   }
 
   members = new Map<string, TimeSyncSubscriber>();
@@ -149,7 +161,7 @@ export class TimeSync {
     const evts = this.eventsCache.get(name) ?? [];
 
     if (evts.length > 0) {
-      evts.forEach((evt) => {
+      evts.forEach(evt => {
         Object.entries(evt).forEach(([event, cb]) => {
           member.on(event, cb);
         });

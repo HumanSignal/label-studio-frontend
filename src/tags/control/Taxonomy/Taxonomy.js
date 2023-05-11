@@ -17,6 +17,8 @@ import { FF_DEV_2007_DEV_2008, FF_DEV_3617, isFF } from '../../../utils/feature-
 import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
 import { Spin } from 'antd';
 import './Taxonomy.styl';
+import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
+import SelectedChoiceMixin from '../../../mixins/SelectedChoiceMixin';
 
 /**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
@@ -81,9 +83,10 @@ function traverse(root) {
 
   const visitNode = function(node, parents = []) {
     const label = node.value;
+    const hint = node.hint;
     const path = [...parents, node.alias ?? label];
     const depth = parents.length;
-    const obj = { label, path, depth };
+    const obj = { label, path, depth, hint };
 
     if (node.children) {
       obj.children = visitUnique(node.children, path);
@@ -102,8 +105,6 @@ const ChildrenSnapshots = new Map();
 const Model = types
   .model({
     pid: types.optional(types.string, guidGenerator),
-
-    readonly: types.optional(types.boolean, false),
 
     type: 'taxonomy',
     [isFF(FF_DEV_3617) ? '_children' : 'children']: Types.unionArray(['choice']),
@@ -171,6 +172,37 @@ const Model = types
     get defaultChildType() {
       return 'choice';
     },
+
+    selectedValues() {
+      return self.selected;
+    },
+
+    findItemByValueOrAlias(valueOrAlias) {
+      // search the tree of items for the given
+      // value or alias match
+      const findItem = (items) => {
+        for (const item of items) {
+          const label = item.label;
+          const value = item.path[item.path.length - 1];
+
+          item.value = label;
+          if (value !== label) {
+            item.alias = value;
+          }
+
+          if (item.value === valueOrAlias || item.alias === valueOrAlias) {
+            return item;
+          }
+          if (item.children) {
+            const found = findItem(item.children, valueOrAlias);
+
+            if (found) return found;
+          }
+        }
+      };
+
+      return findItem(self.items);
+    },
   }))
   .actions(self => ({
     afterAttach() {
@@ -181,6 +213,10 @@ const Model = types
       } else {
         self.loading = false;
       }
+    },
+
+    beforeDestroy() {
+      ChildrenSnapshots.delete(self.name);
     },
 
     updateChildren() {
@@ -206,18 +242,13 @@ const Model = types
       self.maxUsagesReached = self.selected.length >= self.maxusages;
     },
 
-    selectedValues() {
-      return self.selected;
-    },
-
     updateFromResult() {
       self.needsUpdate();
     },
 
-    onChange(node, checked) {
+    onChange(_node, checked) {
       self.selected = checked.map(s => s.path ?? s);
       self.maxUsagesReached = self.selected.length >= self.maxusages;
-
       if (self.result) {
         self.result.area.setValue(self);
       } else {
@@ -264,6 +295,8 @@ const TaxonomyModel = types.compose('TaxonomyModel',
   ...(isFF(FF_DEV_3617) ? [SharedStoreMixin] : []),
   RequiredMixin,
   PerRegionMixin,
+  ReadOnlyControlMixin,
+  SelectedChoiceMixin,
   VisibilityMixin,
   AnnotationMixin,
 );
@@ -282,7 +315,7 @@ const HtxTaxonomy = observer(({ item }) => {
   };
 
   return (
-    <div style={{ ...style, ...visibleStyle }}>
+    <div className="taxonomy" style={{ ...style, ...visibleStyle }}>
       {(item.loading && isFF(FF_DEV_3617)) ? (
         <div className="lsf-taxonomy">
           <Spin size="small"/>
@@ -295,7 +328,7 @@ const HtxTaxonomy = observer(({ item }) => {
           onAddLabel={item.userLabels && item.onAddLabel}
           onDeleteLabel={item.userLabels && item.onDeleteLabel}
           options={options}
-          isEditable={item.annotation.editable}
+          isEditable={!item.isReadOnly()}
         />
       )}
     </div>

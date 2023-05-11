@@ -6,64 +6,70 @@ on:
       sha:
         required: true
         type: string
-      branch_name:
-        required: true
-        type: string
+      build_for_coverage:
+        required: false
+        type: boolean
 
 env:
   # increment it in case if you need to reset cache
   CACHE_NAME_PREFIX: v3
-  NODE: '14'
+  NODE: '18'
 
 jobs:
   build:
-    name: "Build"
+    name: "Build${{ inputs.build_for_coverage && ' Coverage' || '' }}"
     runs-on: ubuntu-latest
-
     # ci can be skipped with `[skip ci]` prefix in message
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: "${{ env.NODE }}"
+      - uses: hmarr/debug-action@v2.1.0
 
-    - name: Get CPU info
-      id: "cpu-info"
-      run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
+      - name: "Checkout codebase"
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ inputs.sha }}
 
-    - name: Upgrade Yarn
-      run: npm install -g yarn@1.22
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "${{ env.NODE }}"
 
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+      - name: Get CPU info
+        id: "cpu-info"
+        run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
 
-    - name: Configure yarn cache
-      uses: actions/cache@v3
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
+      - name: Upgrade Yarn
+        run: npm install -g yarn@1.22
 
-    - name: Print Yarn cache size
-      run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
-    - name: Install dependencies
-      run: yarn install --frozen-lockfile
+      - name: Configure yarn cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
-    - name: Build distribution package
-      timeout-minutes: 10
-      run: yarn run build:module
-      env:
-        CI: false # on true webpack breaks on warnings, and we have them a lot
-        NODE_ENV: 'production'
+      - name: Print Yarn cache size
+        run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
-    # upload this build as artifact to current Action
-    - name: Upload bundle
-      uses: actions/upload-artifact@v3
-      with:
-        name: LSF-${{ github.event.pull_request.head.sha || github.sha }}
-        path: build/
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build distribution package
+        timeout-minutes: 10
+        run: yarn run build:module
+        env:
+          CI: false # on true webpack breaks on warnings, and we have them a lot
+          NODE_ENV: 'production'
+          TEST_ENV: ${{ inputs.build_for_coverage }} # needed to create a separate build with the counters for the coverage report
+
+      # upload this build as artifact to current Action
+      - name: Upload bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: LSF-${{ inputs.build_for_coverage && 'coverage-' || '' }}${{ inputs.sha }}
+          path: build/

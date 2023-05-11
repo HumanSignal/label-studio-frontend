@@ -1,6 +1,6 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import { types } from 'mobx-state-tree';
+import { getEnv, types } from 'mobx-state-tree';
 
 import AudioControls from './Audio/Controls';
 import ObjectBase from './Base';
@@ -39,7 +39,6 @@ import { customTypes } from '../../core/CustomTypes';
  * @regions AudioRegion
  * @meta_title Audio Tag for Labeling Audio
  * @meta_description Customize Label Studio to label audio data for machine learning and data science projects.
- * @name Audio
  * @param {string} name Name of the element
  * @param {string} value Data field containing path or a URL to the audio
  * @param {string} hotkey Hotkey used to play or pause audio
@@ -68,16 +67,6 @@ const Model = types
     errors: [],
   }))
   .actions(self => ({
-    fromStateJSON(obj) {
-      if (obj.value.choices) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-      }
-
-      if (obj.value.text) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-      }
-    },
-
     handlePlay() {
       self.playing = !self.playing;
     },
@@ -109,6 +98,7 @@ const AudioModel = types.compose('AudioModel', Model, TagAttrs, ProcessAttrsMixi
 
 const HtxAudioView = ({ store, item }) => {
   if (!item._value) return null;
+  const messages = getEnv(store).messages;
 
   return (
     <ObjectTag item={item}>
@@ -129,6 +119,7 @@ const HtxAudioView = ({ store, item }) => {
         height={item.height}
         cursorColor={item.cursorcolor}
         cursorWidth={item.cursorwidth}
+        messages={messages}
       />
       <AudioControls item={item} store={store} />
     </ObjectTag>

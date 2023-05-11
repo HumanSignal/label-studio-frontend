@@ -6,93 +6,112 @@ on:
       sha:
         required: true
         type: string
-      branch_name:
-        required: true
-        type: string
 
 env:
   # increment it in case if you need to reset cache
   CACHE_NAME_PREFIX: v3
-  NODE: '14'
+  NODE: '18'
 
 jobs:
   run:
     name: "E2E Tests"
     runs-on: ubuntu-latest
-
     # ci can be skipped with `[skip ci]` prefix in message
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: "${{ env.NODE }}"
+      - uses: hmarr/debug-action@v2.1.0
 
-    - name: Get CPU info
-      id: "cpu-info"
-      run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
+      - name: "Checkout codebase"
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ inputs.sha }}
 
-    - name: Upgrade Yarn
-      run: npm install -g yarn@1.22
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "${{ env.NODE }}"
 
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+      - name: Get CPU info
+        id: "cpu-info"
+        run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
 
-    - name: Configure yarn cache
-      uses: actions/cache@v3
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
+      - name: Upgrade Yarn
+        run: npm install -g yarn@1.22
 
-    - name: Print Yarn cache size
-      run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
-    - name: "Download bundle"
-      uses: actions/download-artifact@v3
-      with:
-        name: LSF-${{ github.event.pull_request.head.sha || github.sha }}
-        path: build/
+      - name: Configure yarn cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
-    # run http-server with build in background (will be killed after job ends)
-    # do this only for master branch (so only for push event)
-    # because pr can contain unfinished job
-    - name: "Run server"
-      run: |
-        cp -r public/files build/ &&
-        cp -r public/images build/ &&
-        cp -r public/styles build/ &&
-        npx serve -l tcp://localhost:3000 build &
+      - name: Print Yarn cache size
+        run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
-    - id: wait_for_npx_server
-      name: "Wait for server"
-      timeout-minutes: 1
-      run: |
-        while [ "$(curl -s -o /dev/null -L -w ''%{http_code}'' "http://localhost:3000/")" != "200" ]; do
-          echo "=> Waiting for service to become available" && sleep 2s
-        done
+      - name: "Download bundle"
+        uses: actions/download-artifact@v3
+        with:
+          name: LSF-coverage-${{ inputs.sha }}
 
-    - name: "Setup e2e"
-      if: github.event_name == 'push'
-      timeout-minutes: 1
-      run: |
-        set -euo pipefail
-        cd e2e
-        yarn install --frozen-lockfile
+          path: build/
 
-    - name: Run e2e test suite
-      if: github.event_name == 'push'
-      timeout-minutes: 20 # 8-10 minutes is enough to pass tests
-      run: |
-        set -euo pipefail
-        cd e2e
-        yarn run test:ci ${{ steps.cpu-info.outputs.cores-count }}
+      # run http-server with build in background (will be killed after job ends)
+      # do this only for master branch (so only for push event)
+      # because pr can contain unfinished job
+      - name: "Run server"
+        run: |
+          cp -r public/files build/ &&
+          cp -r public/images build/ &&
+          cp -r public/styles build/ &&
+          npx serve -l tcp://localhost:3000 build &
 
-    - uses: actions/upload-artifact@v3
-      if: ${{ failure() }}
-      with:
-        name: e2e output
-        path: e2e/output/
+      - id: wait_for_npx_server
+        name: "Wait for server"
+        timeout-minutes: 1
+        run: |
+          while [ "$(curl -s -o /dev/null -L -w ''%{http_code}'' "http://localhost:3000/")" != "200" ]; do
+            echo "=> Waiting for service to become available" && sleep 2s
+          done
+
+      - name: "Setup e2e"
+        timeout-minutes: 1
+        run: |
+          set -euo pipefail
+          cd e2e
+          yarn install --frozen-lockfile
+
+      - name: Run e2e test suite
+        timeout-minutes: 40
+        env:
+          NODE_ENV: 'production'
+          TEST_ENV: true
+        run: |
+          set -euo pipefail
+          cd e2e
+          yarn run test:ci ${{ steps.cpu-info.outputs.cores-count }}
+
+      - name: "Upload e2e output" 
+        uses: actions/upload-artifact@v3
+        if: ${{ failure() }}
+        with:
+          name: e2e output
+          path: e2e/output/
+
+      - name: Merge coverage reports
+        if: ${{ success() }}
+        run: |
+          set -euo pipefail
+          yarn coverage:merge 
+
+      - name: Upload coverage to Artifact
+        uses: actions/upload-artifact@v3
+        if: ${{ success() }}
+        with:
+          name: e2e-tests-coverage
+          path: coverage/
+

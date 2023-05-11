@@ -1,11 +1,13 @@
 import chroma from 'chroma-js';
 import { observer } from 'mobx-react';
 import { FC, useMemo, useState } from 'react';
-import { IconLink, IconLockLocked, IconLockUnlocked, IconPlusAlt, IconTrash, IconWarning } from '../../../assets/icons';
+import { IconLink, IconPlusAlt, IconTrash, IconWarning } from '../../../assets/icons';
 import { IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
 import { Button, ButtonProps } from '../../../common/Button/Button';
 import { Block, Elem } from '../../../utils/bem';
 import { NodeIcon } from '../../Node/Node';
+import { LockButton } from '../Components/LockButton';
+import { RegionLabels } from './RegionLabels';
 
 interface RegionItemProps {
   region: any;
@@ -29,25 +31,21 @@ export const RegionItem: FC<RegionItemProps> = observer(({
   const [editMode, setEditMode] = useState(false);
 
   const hasEditableRegions = useMemo(() => {
-    return !!nodes.find((node: any) => node.editable && !node.classification);
+    return !!nodes.find((node: any) => !node.isReadOnly() && !node.classification);
   }, [nodes]);
-
-  const title = useMemo(() => {
-    return region.labels.join(', ') || 'No label';
-  }, [region.labels]);
 
   const color = useMemo(() => {
     const bgColor = region.background ?? region.getOneColor() ?? '#666';
 
     return chroma(bgColor).alpha(1);
-  }, [region]);
+  }, [region.background, region.style]);
 
   return (
     <Block name="detailed-region" mod={{ compact }}>
       <Elem name="head" style={{ color: color.css() }}>
         <Elem name="title">
           <Elem name="icon"><NodeIcon node={region}/></Elem>
-          {title}
+          <RegionLabels region={region} />
         </Elem>
         {withIds && <span>{region.cleanId}</span>}
       </Elem>
@@ -55,7 +53,7 @@ export const RegionItem: FC<RegionItemProps> = observer(({
       {region?.isDrawing && (
         <Elem name="warning">
           <IconWarning />
-          <Elem name="warning-text">Incomplete polygon</Elem>
+          <Elem name="warning-text">Incomplete {region.type.replace('region', '')}</Elem>
         </Elem>
       )}
       {withActions && (
@@ -112,29 +110,33 @@ const RegionAction: FC<any> = observer(({
       primary={editMode}
       onClick={() => onEditModeChange(!editMode)}
       hotkey="region:meta"
+      aria-label="Edit region's meta"
     />
   ));
 
   return (
     <Block name="region-actions">
       <Elem name="group" mod={{ align: 'left' }}>
-        {!(region.readonly || region.locked || !region.editable) && entityButtons}
+        {!region.isReadOnly() && entityButtons}
       </Elem>
       <Elem name="group" mod={{ align: 'right' }}>
-        <RegionActionButton
-          icon={region.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
-          disabled={region.readonly}
+        <LockButton
+          item={region}
+          annotation={region?.annotation}
+          hovered={true}
+          locked={region?.locked}
           onClick={() => region.setLocked(!region.locked)}
           hotkey="region:lock"
+          look='alt'
+          style={{ width: 36, height: 32 }}
         />
         <RegionActionButton
           icon={region.hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
           onClick={region.toggleHidden}
-          hotkey="region:visibility"
         />
         <RegionActionButton
           danger
-          disabled={region.readonly || region.locked || !region.editable}
+          disabled={region.isReadOnly()}
           icon={<IconTrash/>}
           onClick={() => annotation.deleteRegion(region)}
         />

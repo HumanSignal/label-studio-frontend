@@ -123,7 +123,6 @@ export const HighlightMixin = types
      */
     selectRegion() {
       self.annotation.setHighlightedNode(self);
-      self.annotation.loadRegionState(self);
 
       self.addClass(stateClass.active);
 

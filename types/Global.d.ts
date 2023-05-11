@@ -5,5 +5,6 @@ declare type AnyComponent = FC<any> | keyof ReactHTML | keyof ReactSVG | Compone
 declare global {
   interface Window {
     APP_SETTINGS: Record<string, any>;
+    FEATURE_FLAGS?: Record<string, boolean>;
   }
 }

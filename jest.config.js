@@ -5,10 +5,17 @@ module.exports = {
     '<rootDir>/src',
   ],
   'preset': 'ts-jest',
+  'setupFilesAfterEnv': ['./jest.setup.js'],
   'testEnvironment': 'jsdom',
   'verbose': false,
+  'collectCoverageFrom': [
+    '**/*.{js,jsx,ts,tsx}',
+    '!**/*.d.ts',
+    '!**/node_modules/**',
+    '!**/examples/**',
+  ],
   'coverageDirectory': 'coverage',
-  'coverageReporters': ['json', 'lcov', 'clover'],
+  'coverageReporters': ['json'],
   'coverageThreshold': {
     'global': {
       'branches': 1,
@@ -59,6 +66,7 @@ module.exports = {
     '/node_modules/',
     '/e2e/',
   ],
+  'testRegex': '__tests__/.*.test.[tj]sx?',
   'transformIgnorePatterns': [
     'node_modules/?!(nanoid|konva)',
   ],

@@ -2,7 +2,6 @@ import React from 'react';
 import { observer } from 'mobx-react';
 import { cast, types } from 'mobx-state-tree';
 
-import InfoModal from '../../../components/Infomodal/Infomodal';
 import { defaultStyle } from '../../../core/Constants';
 import { customTypes } from '../../../core/CustomTypes';
 import { guidGenerator } from '../../../core/Helpers';
@@ -22,7 +21,7 @@ import './Labels.styl';
 /**
  * The `Labels` tag provides a set of labels for labeling regions in tasks for machine learning and data science projects. Use the `Labels` tag to create a set of labels that can be assigned to identified region and specify the values of labels to assign to regions.
  *
- * All types of Labels can have dynamic value to load labels from task. This task data should contain a list of options to create underlying <Label>s. All the parameters from options will be transferred to corresponding tags.
+ * All types of Labels can have dynamic value to load labels from task. This task data should contain a list of options to create underlying `<Label>`s. All the parameters from options will be transferred to corresponding tags.
  *
  * The Labels tag can be used with audio and text data types. Other data types have type-specific Labels tags.
  * @example
@@ -130,20 +129,6 @@ const Model = LabelMixin.views(self => ({
       }
       empty.setEmpty();
     }
-  },
-  validate() {
-    const regions = self.annotation.regionStore.regions;
-
-    for (const r of regions) {
-      for (const s of r.states) {
-        if (s.name === self.name) {
-          return true;
-        }
-      }
-    }
-
-    InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
-    return false;
   },
 }));
 

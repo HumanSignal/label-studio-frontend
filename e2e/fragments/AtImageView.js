@@ -1,11 +1,44 @@
-/* global inject */
 const { I } = inject();
 
+const assert = require('assert');
 const Helpers = require('../tests/helpers');
 
 module.exports = {
   _stageSelector: '.konvajs-content',
-  _stageBBox: { x: 0, y: 0, width: 0, height: 0 },
+  _stageBBox: null,
+
+  _toolBarSelector: '.lsf-toolbar',
+  _zoomPresetsSelector: '[title^="Zoom presets"]',
+
+  _rootSelector: '[class^="lsf-object wrapperComponent--"]',
+  _paginationSelector: '[class^="pagination--"]',
+  _paginationPrevBtnSelector: '.lsf-pagination__btn_arrow-left:not(.lsf-pagination__btn_arrow-left-double)',
+  _paginationNextBtnSelector: '.lsf-pagination__btn_arrow-right:not(.lsf-pagination__btn_arrow-right-double)',
+
+
+  locateRoot() {
+    return locate(this._rootSelector);
+  },
+
+  locate(locator) {
+    const rootLocator = this.locateRoot();
+
+    return locator ? rootLocator.find(locator) : rootLocator;
+  },
+
+  locatePagination(locator) {
+    const paginationLocator = this.locate(this._paginationSelector);
+
+    return locator ? paginationLocator.find(locator) : paginationLocator;
+  },
+
+  percToX(xPerc) {
+    return this._stageBBox.width * xPerc / 100;
+  },
+
+  percToY(yPerc) {
+    return this._stageBBox.height * yPerc / 100;
+  },
 
   async grabStageBBox() {
     const bbox = await I.grabElementBoundingRect(this._stageSelector);
@@ -14,15 +47,34 @@ module.exports = {
   },
 
   async lookForStage() {
-    I.scrollPageToTop();
-    const bbox = await I.grabElementBoundingRect(this._stageSelector);
+    await I.scrollPageToTop();
 
-    this._stageBBox = bbox;
+    this._stageBBox = await this.grabStageBBox();
   },
 
-  waitForImage() {
+  stageBBox() {
+    if (!this._stageBBox) console.log('Stage bbox wasn\'t grabbed');
+    return this._stageBBox ?? {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+    };
+  },
+
+  stageX() {
+    if (!this._stageBBox) console.log('Stage bbox wasn\'t grabbed');
+    return this._stageBBox?.x ?? 0;
+  },
+
+  stageY() {
+    if (!this._stageBBox) console.log('Stage bbox wasn\'t grabbed');
+    return this._stageBBox?.y ?? 0;
+  },
+
+  async waitForImage() {
     I.say('Waiting for image to be loaded');
-    I.executeScript(Helpers.waitForImage);
+    await I.executeScript(Helpers.waitForImage);
     I.waitForVisible('canvas', 5);
   },
 
@@ -84,7 +136,7 @@ module.exports = {
   },
 
   /**
-   * Get  pixel color at point
+   * Get pixel color at point
    * @param {number} x
    * @param {number} y
    * @param {number[]} rgbArray
@@ -123,9 +175,38 @@ module.exports = {
   },
 
   /**
+   * Returns the bounding box of the first found shape
+   * The coordinates are relative to the window
+   * @returns {Promise<{x: number, y: number, width: number, height: number}>}
+   */
+  async getRegionAbsoultePosition(regionId, includeStage = true) {
+    const [shapeId, coords] = await I.executeScript((regionId) => {
+      const annotation = Htx.annotationStore.selected;
+      const region = annotation.regions.find((r) => r.cleanId === regionId);
+
+      console.log(region);
+
+      return [region.shapeRef._id, region.bboxCoords];
+    }, regionId);
+
+    const position = coords ? {
+      x: coords.left + ((coords.right - coords.left) / 2),
+      y: coords.top + ((coords.bottom - coords.top) / 2),
+      width: coords.right - coords.left,
+      height: coords.bottom - coords.top,
+    } : await I.executeScript(Helpers.getRegionAbsoultePosition, shapeId);
+
+    return includeStage ? {
+      ...position,
+      x: position.x + this.stageX(),
+      y: position.y + this.stageY(),
+    } : position;
+  },
+
+  /**
    * Mousedown - mousemove - mouseup drawing on the ImageView. Works in couple of lookForStage.
    * @example
-   * async AtImageView.lookForStage();
+   * await  AtImageView.lookForStage();
    * AtImageView.drawByDrag(50, 30, 200, 200);
    * @param x
    * @param y
@@ -134,15 +215,15 @@ module.exports = {
    */
   drawByDrag(x, y, shiftX, shiftY) {
     I.scrollPageToTop();
-    I.moveMouse(this._stageBBox.x + x, this._stageBBox.y + y);
+    I.moveMouse(this.stageBBox().x + x, this.stageBBox().y + y);
     I.pressMouseDown();
-    I.moveMouse(this._stageBBox.x + x + shiftX, this._stageBBox.y + y + shiftY, 3);
+    I.moveMouse(this.stageBBox().x + x + shiftX, this.stageBBox().y + y + shiftY, 3);
     I.pressMouseUp();
   },
   /**
    * Click through the list of points on the ImageView. Works in couple of lookForStage.
    * @example
-   * async AtImageView.loolookkForStage();
+   * await  AtImageView.loolookkForStage();
    * AtImageView.drawByClickingPoints([[50,50],[100,50],[100,100],[50,100],[50,50]]);
    * @param {number[][]} points
    */
@@ -154,17 +235,17 @@ module.exports = {
 
     if (prevPoints.length) {
       for (const point of prevPoints) {
-        I.clickAt(this._stageBBox.x + point[0], this._stageBBox.y + point[1]);
+        I.clickAt(this.stageBBox().x + point[0], this.stageBBox().y + point[1]);
       }
       I.wait(0.5); // wait before last click to fix polygons creation
     }
 
-    I.clickAt(this._stageBBox.x + lastPoint[0], this._stageBBox.y + lastPoint[1]);
+    I.clickAt(this.stageBBox().x + lastPoint[0], this.stageBBox().y + lastPoint[1]);
   },
   /**
    * Mousedown - mousemove - mouseup drawing through the list of points on the ImageView. Works in couple of lookForStage.
    * @example
-   * async AtImageView.lookForStage();
+   * await  AtImageView.lookForStage();
    * AtImageView.drawThroughPoints([[50,50],[200,100],[50,200],[300,300]]);
    * @param {number[][]} points - list of pairs of coords
    * @param {"steps"|"rate"} mode - mode of firing mousemove event
@@ -178,28 +259,93 @@ module.exports = {
     }[mode];
     const startPoint = points[0];
 
-    I.moveMouse(this._stageBBox.x + startPoint[0], this._stageBBox.y + startPoint[1]);
+    I.moveMouse(this.stageBBox().x + startPoint[0], this.stageBBox().y + startPoint[1]);
     I.pressMouseDown();
     for (let i = 1; i < points.length; i++) {
       const prevPoint = points[i - 1];
       const curPoint = points[i];
 
-      I.moveMouse(this._stageBBox.x + curPoint[0], this._stageBBox.y + curPoint[1], calcSteps(prevPoint, curPoint));
+      I.moveMouse(this.stageBBox().x + curPoint[0], this.stageBBox().y + curPoint[1], calcSteps(prevPoint, curPoint));
     }
     I.pressMouseUp();
   },
   clickAt(x, y) {
     I.scrollPageToTop();
-    I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
+    I.clickAt(this.stageBBox().x + x, this.stageBBox().y + y);
     I.wait(1); // We gotta  wait here because clicks on the canvas are not processed immediately
   },
   dblClickAt(x, y) {
     I.scrollPageToTop();
-    I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
-    I.clickAt(this._stageBBox.x + x, this._stageBBox.y + y);
+    I.clickAt(this.stageBBox().x + x, this.stageBBox().y + y);
+    I.clickAt(this.stageBBox().x + x, this.stageBBox().y + y);
   },
   drawByClick(x, y) {
     I.scrollPageToTop();
     this.clickAt(x, y);
+  },
+  async clickOnRegion(regionIndex) {
+    const regionId = await I.executeScript((regionIndex) => {
+      const regions = Htx.annotationStore.selected.regions;
+
+      return regions[regionIndex]?.cleanId ?? undefined;
+    }, regionIndex);
+
+    assert.notEqual(regionId, undefined, 'Region not found');
+
+    const position = await this.getRegionAbsoultePosition(regionId, false);
+
+    I.say('Clicking on a region at', position.x + ' ' + position.y);
+
+    this.clickAt(position.x, position.y);
+  },
+
+  async dragRegion(regions, findIndex, shiftX = 50, shiftY = 50) {
+    const region = regions.find(findIndex);
+
+    assert.notEqual(region, undefined, 'Region not found');
+
+    const position = await this.getRegionAbsoultePosition(region.id);
+
+    I.say('Drag region by ' + shiftX + ' ' + shiftY);
+    await I.dragAndDropMouse(position, {
+      x: position.x + shiftX,
+      y: position.y + shiftY,
+    });
+  },
+
+  selectPanTool() {
+    I.say('Select pan tool');
+    I.pressKey('H');
+  },
+
+  selectMoveTool() {
+    I.say('Select move tool');
+    I.pressKey('V');
+  },
+
+  async multiImageGoForwardWithHotkey() {
+    I.say('Attempting to go to the next image');
+    I.pressKey('Ctrl+d');
+
+    await this.waitForImage();
+  },
+
+  async multiImageGoBackwardWithHotkey() {
+    I.say('Attempting to go to the next image');
+    I.pressKey('Ctrl+a');
+
+    await this.waitForImage();
+  },
+
+  async multiImageGoForward() {
+    I.click(this.locatePagination(this._paginationNextBtnSelector));
+
+    await this.waitForImage();
+  },
+
+  async multiImageGoBackward() {
+    I.click(this.locatePagination(this._paginationPrevBtnSelector));
+
+    await this.waitForImage();
   },
 };

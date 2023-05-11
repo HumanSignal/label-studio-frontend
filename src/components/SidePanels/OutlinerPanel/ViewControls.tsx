@@ -2,10 +2,14 @@ import { FC, useCallback, useContext, useMemo } from 'react';
 import { IconCursor, IconDetails, IconList, IconSortDown, IconSortUp, IconSpeed, IconTagAlt } from '../../../assets/icons';
 import { Button } from '../../../common/Button/Button';
 import { Dropdown } from '../../../common/Dropdown/Dropdown';
+// eslint-disable-next-line
+// @ts-ignore
 import { Menu } from '../../../common/Menu/Menu';
 import { BemWithSpecifiContext } from '../../../utils/bem';
 import { SidePanelsContext } from '../SidePanelsContext';
 import './ViewControls.styl';
+import { Filter } from '../../Filter/Filter';
+import { FF_DEV_3873, FF_LSDV_3025, isFF } from '../../../utils/feature-flags';
 
 const { Block, Elem } = BemWithSpecifiContext();
 
@@ -19,33 +23,37 @@ interface ViewControlsProps {
   grouping: GroupingOptions;
   ordering: OrderingOptions;
   orderingDirection?: OrderingDirection;
+  regions: any;
   onOrderingChange: (ordering: OrderingOptions) => void;
   onGroupingChange: (grouping: GroupingOptions) => void;
+  onFilterChange: (filter: any) => void;
 }
 
 export const ViewControls: FC<ViewControlsProps> = ({
   grouping,
   ordering,
+  regions,
   orderingDirection,
   onOrderingChange,
   onGroupingChange,
+  onFilterChange,
 }) => {
   const context = useContext(SidePanelsContext);
-  const getGrouppingLabels = useCallback((value: GroupingOptions): LabelInfo => {
+  const getGroupingLabels = useCallback((value: GroupingOptions): LabelInfo => {
     switch(value) {
       case 'manual': return {
         label: 'Group Manually',
-        selectedLabel: 'Manual Grouping',
+        selectedLabel: isFF(FF_DEV_3873) ? 'Manual': 'Manual Grouping',
         icon: <IconList/>,
       };
       case 'label': return {
         label: 'Group by Label',
-        selectedLabel: 'Grouped by Label',
+        selectedLabel:  isFF(FF_DEV_3873) ? 'Label': 'Grouped by Label',
         icon: <IconTagAlt/>,
       };
       case 'type': return {
         label: 'Group by Tool',
-        selectedLabel: 'Grouped by Tool',
+        selectedLabel:  isFF(FF_DEV_3873) ? 'Tool': 'Grouped by Tool',
         icon: <IconCursor/>,
       };
     }
@@ -55,12 +63,12 @@ export const ViewControls: FC<ViewControlsProps> = ({
     switch(value) {
       case 'date': return {
         label: 'Order by Time',
-        selectedLabel: 'Ordered by Time',
+        selectedLabel: 'By Time',
         icon: <IconDetails/>,
       };
       case 'score': return {
         label: 'Order by Score',
-        selectedLabel: 'Ordered by Score',
+        selectedLabel: 'By Score',
         icon: <IconSpeed/>,
       };
     }
@@ -72,16 +80,50 @@ export const ViewControls: FC<ViewControlsProps> = ({
         value={grouping}
         options={['manual', 'type', 'label']}
         onChange={value => onGroupingChange(value)}
-        readableValueForKey={getGrouppingLabels}
+        readableValueForKey={getGroupingLabels}
       />
       {grouping === 'manual' && (
-        <Grouping
-          value={ordering}
-          direction={orderingDirection}
-          options={['score', 'date']}
-          onChange={value => onOrderingChange(value)}
-          readableValueForKey={getOrderingLabels}
-          allowClickSelected
+        <Elem name="sort">
+          <Grouping
+            value={ordering}
+            direction={orderingDirection}
+            options={['score', 'date']}
+            onChange={value => onOrderingChange(value)}
+            readableValueForKey={getOrderingLabels}
+            allowClickSelected
+          />
+          {isFF(FF_DEV_3873) && (
+            <Button
+              type="text"
+              icon={
+                orderingDirection === 'asc' ? (
+                  <IconSortUp style={{ color: '#898098' }} />
+                ) : (
+                  <IconSortDown style={{ color: '#898098' }} />
+                )
+              }
+              style={{ padding: 0, whiteSpace: 'nowrap' }}
+              onClick={() => onOrderingChange(ordering)}
+            />
+          )}
+        </Elem>
+      )}
+      {isFF(FF_LSDV_3025) && (
+        <Filter
+          onChange={onFilterChange}
+          filterData={regions?.regions}
+          availableFilters={[
+            {
+              label: 'Annotation results',
+              path: 'labelName',
+              type: 'String',
+            },
+            {
+              label: 'Confidence score',
+              path: 'score',
+              type: 'Number',
+            },
+          ]}
         />
       )}
     </Block>
@@ -205,7 +247,7 @@ const DirectionIndicator: FC<DirectionIndicator> = ({
 }) => {
   const content = direction === 'asc' ? <IconSortUp/> : <IconSortDown/>;
 
-  if (!direction || value !== name) return null;
+  if (!direction || value !== name || isFF(FF_DEV_3873)) return null;
   if (!wrap) return content;
 
   return (<span>{content}</span>);

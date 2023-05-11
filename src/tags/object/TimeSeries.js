@@ -1,32 +1,30 @@
 import React from 'react';
 import * as d3 from 'd3';
 import { inject, observer } from 'mobx-react';
-import { getRoot, getType, types } from 'mobx-state-tree';
+import { getEnv, getRoot, getType, types } from 'mobx-state-tree';
 import throttle from 'lodash.throttle';
 import { Spin } from 'antd';
 
 import ObjectBase from './Base';
 import ObjectTag from '../../components/Tags/Object';
+import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
 import Registry from '../../core/Registry';
 import Tree from '../../core/Tree';
 import Types from '../../core/Types';
-import { restoreNewsnapshot } from '../../core/Helpers';
 import {
   checkD3EventLoop,
-  fixMobxObserve,
   formatTrackerTime,
   getOptimalWidth,
   getRegionColor,
   idFromValue,
   sparseValues
 } from './TimeSeries/helpers';
-import { parseCSV, tryToParseJSON } from '../../utils/data';
-import messages from '../../utils/messages';
-import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import PersistentStateMixin from '../../mixins/PersistentState';
+import { parseCSV, tryToParseJSON } from '../../utils/data';
+import { fixMobxObserve } from '../../utils/utilities';
 
 import './TimeSeries/Channel';
-import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 
 /**
  * The `TimeSeries` tag can be used to label time series data. Read more about Time Series Labeling on [the time series template page](../templates/time_series.html).
@@ -169,12 +167,12 @@ const Model = types
         data = { ...data, [self.keyColumn]: indices };
 
         // Require a timeformat for non numeric values
-      } else if(!self.timeformat && isNaN(data[self.keyColumn][0])) {
+      } else if (!self.timeformat && isNaN(data[self.keyColumn][0])) {
         const message = [
           `Looks like your <b>timeColumn</b> (${self.timecolumn}) contains non-numbers.`,
           'You have to use <b>timeFormat</b> parameter if your values are datetimes.',
           `First wrong values: ${data[self.keyColumn].slice(0, 3).join(', ')}`,
-          '<a href="https://labelstud.io/tags/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.',
+          `<a href="${getEnv(self).messages.URL_TAGS_DOCS}/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.`,
         ];
 
         throw new Error(message.join('<br/>'));
@@ -198,7 +196,7 @@ const Model = types
             throw new Error([
               `<b>timeColumn</b> (${self.timecolumn}) must be incremental and sequentially ordered.`,
               `First wrong values: ${nonSeqValues.join(', ')}`,
-              '<br/><a href="https://labelstud.io/tags/timeseries.html" target="_blank">Read Documentation</a> for details.',
+              `<br/><a href="${getEnv(self).messages.URL_TAGS_DOCS}/timeseries.html" target="_blank">Read Documentation</a> for details.`,
             ].join('<br/>'));
           }
 
@@ -217,7 +215,7 @@ const Model = types
             message.push('You have to use <b>timeFormat</b> parameter if your values are datetimes.');
           }
           message.push(
-            '<br/><a href="https://labelstud.io/tags/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.',
+            `<br/><a href="${getEnv(self).messages.URL_TAGS_DOCS}/timeseries.html#Parameters" target="_blank">Read Documentation</a> for details.`,
           );
           throw new Error(message.join('<br/>'));
         }
@@ -386,22 +384,6 @@ const Model = types
       return throttle(self.updateTR, 100);
     },
 
-    fromStateJSON(obj, fromModel) {
-      if (obj.value.choices) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-      }
-
-      if ('timeserieslabels' in obj.value) {
-        const states = restoreNewsnapshot(fromModel);
-
-        states.fromStateJSON(obj);
-
-        self.createRegion(obj.value.start, obj.value.end, [states]);
-
-        self.updateView();
-      }
-    },
-
     addRegion(start, end) {
       const states = self.getAvailableStates();
 
@@ -466,7 +448,7 @@ const Model = types
         if (!res.ok) {
           if (res.status === 400) {
             store.annotationStore.addErrors([
-              errorBuilder.loadingError(`${res.status} ${res.statusText}`, url, self.value, messages.ERR_LOADING_S3),
+              errorBuilder.loadingError(`${res.status} ${res.statusText}`, url, self.value, getEnv(store).messages.ERR_LOADING_S3),
             ]);
             return;
           }
@@ -485,7 +467,7 @@ const Model = types
           }
         }
         store.annotationStore.addErrors([
-          errorBuilder.loadingError(error, url, self.value, cors ? messages.ERR_LOADING_CORS : undefined),
+          errorBuilder.loadingError(error, url, self.value, cors ? getEnv(store).messages.ERR_LOADING_CORS : undefined),
         ]);
         return;
       }
@@ -615,6 +597,17 @@ const Overview = observer(({ item, data, series }) => {
   const defaultSelection = [0, width >> 2];
   const prevBrush = React.useRef(defaultSelection);
   const MIN_OVERVIEW = 10;
+  let startX;
+
+  function brushstarted() {
+    const [x1, x2] = d3.event.selection;
+
+    if (x1 === x2) {
+      startX = x1;
+    } else {
+      startX = null;
+    }
+  }
 
   function brushed() {
     if (d3.event.selection && !checkD3EventLoop('brush') && !checkD3EventLoop('wheel')) {
@@ -637,11 +630,31 @@ const Overview = observer(({ item, data, series }) => {
         end = mid + item.zoomedRange / 2;
         // if overview was resized
       } else if (overviewWidth < MIN_OVERVIEW) {
+        if (prev[0] !== x1 && prev[1] !== x2) {
+          if (prev[0] === x2 || prev[1] === x1) {
+            // This may happen after sides swap
+            // so we swap prev as well
+            [prev[0], prev[1]] = [prev[1], prev[0]];
+          } else {
+            // This may happen at begining when range was not enough wide yet
+            if (x1 === startX) {
+              x2 = Math.min(width, x1 + MIN_OVERVIEW);
+              x1 = Math.max(0, x2 - MIN_OVERVIEW);
+            } else {
+              x1 = Math.max(0, x2 - MIN_OVERVIEW);
+              x2 = Math.min(width, x1 + MIN_OVERVIEW);
+            }
+          }
+        }
         if (prev[0] === x1) {
           x2 = Math.min(width, x1 + MIN_OVERVIEW);
+          x1 = Math.max(0, x2 - MIN_OVERVIEW);
         } else if (prev[1] === x2) {
           x1 = Math.max(0, x2 - MIN_OVERVIEW);
+          x2 = Math.min(width, x1 + MIN_OVERVIEW);
         }
+        start = +x.invert(x1);
+        end = +x.invert(x2);
         // change the data range, but keep min-width for overview
         gb.current.call(brush.move, [x1, x2]);
       }
@@ -670,6 +683,7 @@ const Overview = observer(({ item, data, series }) => {
       [0, 0],
       [width, focusHeight],
     ])
+    .on('start', brushstarted)
     .on('brush', brushed)
     .on('end', brushended);
 

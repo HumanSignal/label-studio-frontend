@@ -1,5 +1,8 @@
 import React, { Component, useCallback, useState } from 'react';
-import { Button, Checkbox, Form, Radio } from 'antd';
+import Button from 'antd/lib/button/index';
+import Form from 'antd/lib/form/index';
+import Radio from 'antd/lib/radio/index';
+import Checkbox from 'antd/lib/checkbox/index';
 import { inject, observer } from 'mobx-react';
 import { types } from 'mobx-state-tree';
 
@@ -10,10 +13,11 @@ import Tree from '../../core/Tree';
 import Types from '../../core/Types';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import { TagParentMixin } from '../../mixins/TagParentMixin';
-import { FF_DEV_2007, FF_DEV_2244, FF_DEV_3391, isFF } from '../../utils/feature-flags';
+import { FF_DEV_2007, FF_DEV_2244, FF_DEV_3391, FF_PROD_309, isFF } from '../../utils/feature-flags';
 import { Block, Elem } from '../../utils/bem';
 import './Choice/Choice.styl';
 import { LsChevron } from '../../assets/icons';
+import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
 
 /**
  * The `Choice` tag represents a single choice for annotations. Use with the `Choices` tag or `Taxonomy` tag to provide specific choice options.
@@ -37,6 +41,7 @@ import { LsChevron } from '../../assets/icons';
  * @param {string} [alias]     - Alias for the choice. If used, the alias replaces the choice value in the annotation results. Alias does not display in the interface.
  * @param {style} [style]      - CSS style of the checkbox element
  * @param {string} [hotkey]    - Hotkey for the selection
+ * @param {string} [hint]      - Hint for choice on hover (it works when fflag_feat_front_prod_309_choice_hint_080523_short is enabled)
  */
 const TagAttrs = types.model({
   ...(isFF(FF_DEV_3391) ? { id: types.identifier } : {}),
@@ -45,7 +50,8 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   style: types.maybeNull(types.string),
-  ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {} ),
+  ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {}),
+  ...(isFF(FF_PROD_309) ? { hint: types.maybeNull(types.string) } : {}),
 });
 
 const Model = types
@@ -113,6 +119,10 @@ const Model = types
         return self._resultValue;
       }
     },
+
+    isReadOnly() {
+      return self.readonly || self.parent?.isReadOnly();
+    },
   }))
   .volatile(() => ({
     // `selected` is a predefined parameter, we cannot use it for state, so use `sel`
@@ -120,7 +130,7 @@ const Model = types
   }))
   .actions(self => ({
     toggleSelected() {
-      if (self.parent?.readonly || !self.annotation?.editable) return;
+      if (self.parent?.readonly || self.annotation?.isReadOnly()) return;
       const choices = self.parent;
       const selected = self.sel;
 
@@ -138,7 +148,7 @@ const Model = types
     setSelected(val) {
       self._sel = val;
       if (!self.isLeaf) {
-        self.children.forEach((child)=>{
+        self.children.forEach((child) => {
           child.setSelected(val);
         });
       }
@@ -155,9 +165,14 @@ const Model = types
 
 const ChoiceModel = types.compose('ChoiceModel', TagParentMixin, TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
 
+function triggerElementGetter(el) {
+  return el?.input?.parentNode?.parentNode;
+}
+
 class HtxChoiceView extends Component {
   render() {
     const { item, store } = this.props;
+
     let style = {};
 
     if (item.style) style = Tree.cssConverter(item.style);
@@ -173,9 +188,9 @@ class HtxChoiceView extends Component {
 
     const props = {
       checked: item.sel,
-      disabled: item.parent?.readonly,
+      disabled: item.parent?.isReadOnly(),
       onChange: ev => {
-        if (!item.annotation.editable) return;
+        if (item.isReadOnly()) return;
         item.toggleSelected();
         ev.nativeEvent.target.blur();
       },
@@ -186,19 +201,23 @@ class HtxChoiceView extends Component {
 
       return (
         <Form.Item style={cStyle}>
-          <Checkbox name={item._value} {...props}>
-            {item._value}
-            {showHotkey && <Hint>[{item.hotkey}]</Hint>}
-          </Checkbox>
+          <HintTooltip title={item.hint} triggerElementGetter={triggerElementGetter}>
+            <Checkbox name={item._value} {...props} disabled={item.isReadOnly()}>
+              {item._value}
+              {showHotkey && <Hint>[{item.hotkey}]</Hint>}
+            </Checkbox>
+          </HintTooltip>
         </Form.Item>
       );
     } else {
       return (
         <div style={style}>
-          <Radio value={item._value} style={{ display: 'inline-block', marginBottom: '0.5em' }} {...props}>
-            {item._value}
-            {showHotkey && <Hint>[{item.hotkey}]</Hint>}
-          </Radio>
+          <HintTooltip title={item.hint} triggerElementGetter={triggerElementGetter}>
+            <Radio value={item._value} style={{ display: 'inline-block', marginBottom: '0.5em' }} {...props}>
+              {item._value}
+              {showHotkey && <Hint>[{item.hotkey}]</Hint>}
+            </Radio>
+          </HintTooltip>
         </div>
       );
     }
@@ -221,7 +240,7 @@ const HtxNewChoiceView = ({ item, store }) => {
     item.hotkey;
 
   const changeHandler = useCallback((ev) => {
-    if (!item.annotation.editable) return;
+    if (item.isReadOnly()) return;
     item.toggleSelected();
     ev.nativeEvent.target.blur();
   }, []);
@@ -239,11 +258,13 @@ const HtxNewChoiceView = ({ item, store }) => {
           mod={{ notLeaf: !item.isLeaf }}
           checked={item.sel}
           indeterminate={!item.sel && item.indeterminate}
-          disabled={item.parent?.readonly}
+          disabled={item.isReadOnly()}
           onChange={changeHandler}
         >
-          {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
-          {showHotkey && (<Hint>[{item.hotkey}]</Hint>)}
+          <HintTooltip title={item.hint} wrapper="span">
+            {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> : item._value }
+            {showHotkey && (<Hint>[{item.hotkey}]</Hint>)}
+          </HintTooltip>
         </Elem>
         {!item.isLeaf ? (
           <Elem name="toggle" mod={{ collapsed }} component={Button} type="text" onClick={toogleCollapsed}>

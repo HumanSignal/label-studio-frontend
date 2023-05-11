@@ -1,4 +1,3 @@
-/* global inject, locate */
 const { I } = inject();
 
 module.exports = {
@@ -6,6 +5,8 @@ module.exports = {
   _regionGroupButton: locate('.lsf-radio-group__button'),
   _regionsCounterLocator: locate('.lsf-entities__counter'),
   _regionLocator: locate('.lsf-region-item'),
+  _regionSelectedLocator: locate('[data-testid="regionitem:selected=true"]'),
+  _regionUnselectedLocator: locate('[data-testid="regionitem:selected=false"]'),
   _selectedRegionsLocator: locate('.lsf-entity'),
   seeRegions(count) {
     if (count) {
@@ -30,14 +31,21 @@ module.exports = {
   dontSeeRelations() {
     I.dontSee('Relations', this._sideBarLocator);
   },
-  seeSelectedRegion() {
-    I.seeElement(this._selectedRegionsLocator);
+  seeSelectedRegion(text = undefined) {
+    if (text) {
+      I.seeElement(this._regionSelectedLocator.withText(text));
+    } else {
+      I.seeElement(this._selectedRegionsLocator);
+    }
   },
   dontSeeSelectedRegion() {
     I.dontSeeElement(this._selectedRegionsLocator);
   },
   locate(locator) {
     return locate(this._sideBarLocator).find(locator);
+  },
+  locateSelectedRegion(locator) {
+    return locate(this._regionSelectedLocator).find(locator);
   },
   see(text) {
     I.see(text, this._sideBarLocator);
@@ -50,6 +58,12 @@ module.exports = {
   },
   clickRegion(text) {
     I.click(this._regionLocator.withText(`${text}`));
+  },
+  hideRegion(text) {
+    I.click(this._regionLocator.withText(`${text}`).find('.lsf-region-item__toggle_active'));
+  },
+  showRegion(text) {
+    I.click(this._regionLocator.withText(`${text}`).find('.lsf-region-item__toggle:not(.lsf-region-item__toggle_active)'));
   },
   selectTool(tool) {
     I.click(`[aria-label=${tool}-tool]`);
