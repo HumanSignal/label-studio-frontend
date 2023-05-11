@@ -141,6 +141,12 @@ export const FF_DEV_3666 = 'fflag_fix_front_dev_3666_max_usages_on_region_creati
 export const FF_DEV_3873 = 'fflag_feat_front_dev_3873_labeling_ui_improvements_short';
 
 /**
+ * Filter component that filter regions on outliner component
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_3025_outliner_filter_short
+ */
+export const FF_LSDV_3025 = 'fflag_feat_front_lsdv_3025_outliner_filter_short';
+
+/**
  * Allow shourtcuts button to work with visible main textarea when there is no focus
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short
  */
