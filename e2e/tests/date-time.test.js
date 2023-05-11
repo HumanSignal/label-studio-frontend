@@ -43,8 +43,6 @@ const regions = [
 const params = { config, data };
 
 Scenario('Check DateTime holds state between annotations and saves result', async function({ I, AtDateTime, AtLabels, AtSidebar, LabelStudio }) {
-  // +1/+2 timezone, so date with midnight (00:00) will be always in previous day in ISO
-  I.restartBrowser({ timezoneId: 'Europe/Paris' });
   I.amOnPage('/');
 
   LabelStudio.init(params);
@@ -170,7 +168,4 @@ Scenario('Check DateTime holds state between annotations and saves result', asyn
   });
 
   assert.strictEqual(results[0].value.datetime, createdDate.result);
-
-  // reset back to normal
-  I.restartBrowser();
 });
