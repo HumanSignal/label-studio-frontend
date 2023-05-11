@@ -253,6 +253,12 @@ export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing
  */
 export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short';
 
+/**
+ * Add ability to show hints while hover over the choice
+ * @see: ff_dev_2007_rework_choices_280322_short: To enable alt version of <Choices/> (it's not necessary)
+ */
+export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
+
 Object.assign(window, {
   APP_SETTINGS: {
     ...(window.APP_SETTINGS ?? {}),
