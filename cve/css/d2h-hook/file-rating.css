@@ -1,0 +1,18 @@
+.file-rating
+{
+    border: none;
+
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+}
+
+.git-diff-del
+{
+    color: #ffb6ba !important;
+}
+
+.git-diff-ins
+{
+    color: #97f295 !important;
+}

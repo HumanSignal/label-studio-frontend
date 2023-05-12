@@ -1,0 +1,20 @@
+.line-rating
+{
+    width: 3em;
+    
+    border: none;
+
+    text-align: center;
+
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+}
+
+.line-rating-legend
+{        
+    border: none;
+
+    margin: 0.15em;
+    padding: 0.15em;
+}
