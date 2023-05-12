@@ -97,7 +97,8 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-konva-utils": "^0.2.0",
     "react-virtualized-auto-sizer": "^1.0.6",
-    "react-window": "^1.8.6"
+    "react-window": "^1.8.6",
+    "diff2html": "^3.4.35"
   },
   "devDependencies": {
     "@babel/core": "7.18.6",
