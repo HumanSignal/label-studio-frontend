@@ -25,47 +25,37 @@ export class WebAudioPlayer extends Player {
     }
   }
 
-  get volume() {
-    return this.gainNode?.gain.value ?? 1;
+  /**
+   * Get current playback speed
+   */
+  get rate() {
+    // restore the correct rate
+    if (this.audioBufferSource?.playbackRate && this._rate !== this.audioBufferSource.playbackRate.value) {
+      this.audioBufferSource.playbackRate.value = this._rate;
+    }
+    return this._rate;
   }
 
-  set volume(value: number) {
-    if (this.gainNode) {
-      const volumeChanged = this.volume !== value;
+  /**
+   * Set playback speed
+   */
+  set rate(value: number) {
+    const rateChanged = this._rate !== value;
 
-      if (volumeChanged) {
-        if (value === 0) {
-          this.muted = true;
-        } else if (this.muted) {
-          this.muted = false;
-        } else {
-          this.gainNode.gain.value = value;
-        }
+    this._rate = value;
 
-        this.wf.invoke('volumeChanged', [this.volume]);
+    if (rateChanged) {
+      if (this.audioBufferSource?.playbackRate) {
+        this.audioBufferSource.playbackRate.value = this._rate;
       }
+      this.wf.invoke('rateChanged', [value]);
     }
   }
 
-  get muted() {
-    return this.gainNode?.gain.value === 0 ?? false;
-  }
-
-  set muted(muted: boolean) {
-    if (!this.gainNode) return;
-    if (this.muted === muted) return;
-
-    if (muted) {
-      this.gainNode.gain.value = 0;
-    } else {
+  protected adjustVolume(): void {
+    if (this.gainNode) {
       this.gainNode.gain.value = this.volume;
     }
-
-    this.wf.invoke('muted', [this.muted]);
-  }
-
-  get duration() {
-    return this.audio?.buffer?.duration ?? 0;
   }
 
   destroy() {
@@ -78,13 +68,18 @@ export class WebAudioPlayer extends Player {
     }
   }
 
-  protected playAudio(start?: number, duration?: number) {
+  protected playAudio(start?: number, _duration?: number) {
     if (!this.audioBufferSource) return;
 
-    if (start) {
-      this.audioBufferSource.start(0, start);
-    } else {
-      this.audioBufferSource.start(0);
+    try {
+      if (start) {
+        this.audioBufferSource.start(0, start);
+      } else {
+        this.audioBufferSource.start(0);
+      }
+    } catch (err: any) {
+      // InvalidStateError is thrown when the audio is already playing
+      if (err.name !== 'InvalidStateError') throw err;
     }
 
     this.timestamp = performance.now();
@@ -104,7 +99,12 @@ export class WebAudioPlayer extends Player {
     if (this.isDestroyed || !this.connected || !this.audioBufferSource) return false;
     this.connected = false;
 
-    this.audioBufferSource.stop();
+    try {
+      this.audioBufferSource.stop();
+    } catch (err: any) {
+      // InvalidStateError is thrown when the audio is already stopped
+      if (err.name !== 'InvalidStateError') throw err;
+    }
     this.audioBufferSource.disconnect();
     this.audioBufferSource.onended = null;
     this.audioBufferSource = undefined;

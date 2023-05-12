@@ -2,6 +2,49 @@ import { WaveformAudio } from '../Media/WaveformAudio';
 import { Player } from './Player';
 
 export class Html5Player extends Player {
+  mute() {
+    super.mute();
+    if (this.audio?.el) {
+      this.audio.el.muted = true;
+    }
+  }
+
+  unmute() {
+    super.unmute();
+    if (this.audio?.el) {
+      this.audio.el.muted = false;
+    }
+  }
+
+  /**
+   * Get current playback speed
+   */
+  get rate() {
+    if (this.audio?.el) {
+      if (this.audio.el.playbackRate !== this._rate) {
+        this.audio.el.playbackRate = this._rate; // restore the correct rate
+      }
+    }
+
+    return this._rate;
+  }
+
+  /**
+   * Set playback speed
+   */
+  set rate(value: number) {
+    const rateChanged = this._rate !== value;
+
+    this._rate = value;
+
+    if (rateChanged) {
+      if (this.audio?.el) {
+        this.audio.el.playbackRate = value;
+      }
+      this.wf.invoke('rateChanged', [value]);
+    }
+  }
+
   init(audio: WaveformAudio) {
     super.init(audio);
 
@@ -22,7 +65,13 @@ export class Html5Player extends Player {
     }
   }
 
-  protected playAudio(start?: number, duration?: number): void {
+  protected adjustVolume(): void {
+    if (this.audio?.el) {
+      this.audio.el.volume = this.volume;
+    }
+  }
+
+  protected playAudio(_start?: number, _duration?: number): void {
     if (!this.audio || !this.audio.el) return;
 
     this.audio.el.currentTime = this.currentTime;

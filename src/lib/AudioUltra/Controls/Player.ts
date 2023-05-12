@@ -15,6 +15,8 @@ export abstract class Player extends Destructable {
   protected bufferResolve?: () => void;
   protected ended = false;
   protected _rate = 1;
+  protected _volume = 1;
+  protected _savedVolume = 1;
 
   playing = false;
   hasPlayed = false;
@@ -24,61 +26,10 @@ export abstract class Player extends Destructable {
 
     this.wf = wf;
     this._rate = wf.params.rate ?? this._rate;
-  }
-
-  /**
-   * Get current playback speed
-   */
-  get rate() {
-    if (this.audio) {
-      if (this.audio.speed !== this._rate) {
-        this.audio.speed = this._rate; // restore the correct rate
-      }
-    }
-
-    return this._rate;
-  }
-
-  /**
-   * Set playback speed
-   */
-  set rate(value: number) {
-    const rateChanged = this._rate !== value;
-
-    this._rate = value;
-
-    if (this.audio) {
-      this.audio.speed = value;
-
-      if (rateChanged) {
-        this.wf.invoke('rateChanged', [value]);
-      }
-    }
-  }
-
-  get duration() {
-    return this.audio?.duration ?? 0;
-  }
-
-  get volume() {
-    return this.audio?.volume ?? 1;
-  }
-
-  set volume(value: number) {
-    if (this.audio) {
-      const volumeChanged = this.volume !== value;
-
-      if (volumeChanged) {
-        if (value === 0) {
-          this.muted = true;
-        } else if (this.muted) {
-          this.muted = false;
-        } else {
-          this.audio.volume = value;
-        }
-
-        this.wf.invoke('volumeChanged', [this.volume]);
-      }
+    this.volume = wf.params.volume ?? this._volume;
+    this._savedVolume = this.volume;
+    if (wf.params.muted) {
+      this.muted = true;
     }
   }
 
@@ -105,25 +56,80 @@ export abstract class Player extends Destructable {
 
   protected abstract updateCurrentSourceTime(timeChanged: boolean): void;
 
+  protected canPause() {
+    return this.hasPlayed;
+  }
+
+  get volume() {
+    return this._volume ?? 1;
+  }
+
+  set volume(value: number) {
+    const volumeChanged = this.volume !== value;
+
+    if (volumeChanged) {
+      if (value === 0) {
+        this.muted = true;
+      } else if (this.muted) {
+        this.muted = false;
+      } else {
+        this._volume = value;
+      }
+      this.adjustVolume();
+
+      this.wf.invoke('volumeChanged', [this.volume]);
+    }
+  }
+
+  protected abstract adjustVolume(): void;
+
   get muted() {
-    return this.audio?.muted ?? false;
+    return this._volume === 0 ;
   }
 
   set muted(muted: boolean) {
-    if (!this.audio) return;
     if (this.muted === muted) return;
 
     if (muted) {
-      this.audio.mute();
+      this.mute();
     } else {
-      this.audio.unmute();
+      this.unmute();
     }
 
-    this.wf.invoke('muted', [this.audio.muted]);
+    this.wf.invoke('muted', [this.muted]);
   }
 
-  protected canPause() {
-    return this.hasPlayed;
+  mute() {
+    this._savedVolume = this.volume || 1;
+    this._volume = 0;
+  }
+
+  unmute() {
+    this._volume = this._savedVolume || 1; // 1 is the default volume, if manually muted this will be 0 and we want to restore to 1
+  }
+
+  /**
+   * Get current playback speed
+   */
+  get rate() {
+    return this._rate;
+  }
+
+  /**
+   * Set playback speed
+   */
+  set rate(value: number) {
+    const rateChanged = this._rate !== value;
+
+    this._rate = value;
+
+    if (rateChanged) {
+      this.wf.invoke('rateChanged', [value]);
+    }
+  }
+
+  get duration() {
+    return this.audio?.duration ?? 0;
   }
 
   init(audio: WaveformAudio) {

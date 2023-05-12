@@ -288,6 +288,15 @@ export class Waveform extends Events<WaveformEventTypes> {
 
     // Initialize the visualizer and player
     if (audio) {
+      // Draw the timeline once the audio is decoded.
+      // This is only required for webaudio as it requires the entire file to be decoded
+      // to render the timline with the correct duration.
+      if (this.params.playerType === 'webaudio') {
+        this.media.duration = audio.duration;
+        this.renderTimeline();
+        this.visualizer.draw(true);
+      }
+
       this.player.init(audio);
       this.visualizer.init(audio);
       this.loaded = true;

@@ -6,9 +6,6 @@ import { BaseAudioDecoder, DEFAULT_FREQUENCY_HZ } from './BaseAudioDecoder';
 
 export interface WaveformAudioOptions {
   src?: string;
-  volume?: number;
-  muted?: boolean;
-  rate?: number;
   splitChannels?: boolean;
   decoderType?: 'ffmpeg' | 'webaudio';
   playerType?: 'html5' | 'webaudio';
@@ -30,9 +27,6 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
   // private backed by audio element and getters/setters
   // underscored to keep the public API clean
-  private _rate = 1;
-  private _volume = 1;
-  private _savedVolume = 1;
   private splitChannels = false;
   private decoderType: 'ffmpeg' | 'webaudio' = 'ffmpeg';
   private playerType: 'html5' | 'webaudio' = 'html5';
@@ -42,9 +36,6 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
 
   constructor(options: WaveformAudioOptions) {
     super();
-    this._rate = options.rate ?? this._rate;
-    this._savedVolume = options.volume ?? this._volume;
-    this._volume = options.muted ? 0 : this._savedVolume;
     this.splitChannels = options.splitChannels ?? false;
     this.decoderType = options.decoderType ?? this.decoderType;
     this.playerType = options.playerType ?? this.playerType;
@@ -74,34 +65,6 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     return this.decoder?.dataSize || 0;
   }
 
-  get volume() {
-    return this._volume ?? 1;
-  }
-
-  set volume(value: number) {
-    this._volume = value;
-
-    if (this.el) {
-      this.el.volume = value;
-    }
-  }
-
-  get speed() {
-    return this._rate ?? 1;
-  }
-
-  set speed(value: number) {
-    this._rate = value;
-
-    if (this.el) {
-      this.el.playbackRate = this._rate;
-    }
-  }
-
-  get muted() {
-    return this.volume === 0;
-  }
-
   disconnect() {
     try {
       if (this.el && !this.el.paused) {
@@ -128,21 +91,6 @@ export class WaveformAudio extends Events<WaveformAudioEvents> {
     this.el?.remove();
     delete this.el;
     delete this.buffer;
-  }
-
-  mute() {
-    this._savedVolume = this.volume || 1;
-    this.volume = 0;
-    if (this.el) {
-      this.el.muted = true;
-    }
-  }
-
-  unmute() {
-    this.volume = this._savedVolume || 1; // 1 is the default volume, if manually muted this will be 0 and we want to restore to 1
-    if (this.el) {
-      this.el.muted = false;
-    }
   }
 
   get chunks(): Float32Array[][] | undefined {
