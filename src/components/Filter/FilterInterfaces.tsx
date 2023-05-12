@@ -7,6 +7,8 @@ export interface FilterInterface {
   availableFilters: AvailableFiltersInterface[];
   onChange: (filter: any) => void;
   filterData: any;
+
+  animated?: boolean;
 }
 
 export interface FilterListInterface {

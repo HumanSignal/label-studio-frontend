@@ -14,13 +14,12 @@ export const Filter: FC<FilterInterface> = ({
   availableFilters,
   filterData,
   onChange,
+  animated = true,
 }) => {
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
 
   useEffect(() => {
-    if(filterList.length > 0) {
-      onChange(FilterItems(filterData, filterList));
-    }
+    onChange(FilterItems(filterData, filterList));
   }, [filterData]);
 
   const addNewFilterListItem = useCallback(() => {
@@ -106,6 +105,8 @@ export const Filter: FC<FilterInterface> = ({
   return (
     <Dropdown.Trigger
       content={renderFilter}
+      dataTestId={'dropdown'}
+      animated={animated}
     >
       <Button data-cy={'filter-button'} type="text" style={{ padding: 0, whiteSpace: 'nowrap' }}>
         <Elem name={'icon'}>
