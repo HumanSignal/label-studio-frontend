@@ -137,7 +137,7 @@ describe('Filter outliner scenario', () => {
     cy.contains('Adjust or remove filters to view').should('not.exist');
   });
 
-  it('Check if filter message for 1 filter item is being shown', () => {
+  it('Check if filter message for 1 filter item is showing', () => {
     //the test will be created here
     LabelStudio.init({
       config,
@@ -156,7 +156,7 @@ describe('Filter outliner scenario', () => {
     cy.contains('There is 1 hidden region').should('be.visible');
   });
 
-  it('Check if filter message for 2 or more filter items is being shown', () => {
+  it('Check if filter message for 2 or more filter items is showing', () => {
     //the test will be created here
     LabelStudio.init({
       config,
@@ -175,7 +175,7 @@ describe('Filter outliner scenario', () => {
     cy.contains('There are 2 hidden regions').should('be.visible');
   });
 
-  it('Check if filter message for all items hidden is being shown', () => {
+  it('Check if filter message for all items hidden is showing', () => {
     //the test will be created here
     LabelStudio.init({
       config,
