@@ -47,7 +47,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     if (isInProgress) return;
     setIsInProgress(true);
-    if(addedCommentThisSession){
+    if(!inputRef.current || addedCommentThisSession){
       callback();
     } else if((currentComment ?? '').trim()) {
       e.preventDefault();
