@@ -91,7 +91,6 @@ describe('Filter outliner scenario', () => {
   const FF_LSDV_3025 = 'fflag_feat_front_lsdv_3025_outliner_filter_short';
 
   it('Check if filter is visible', () => {
-    //the test will be created here
     LabelStudio.init({
       config,
       task,
@@ -105,7 +104,6 @@ describe('Filter outliner scenario', () => {
   });
 
   it('Check if filter is filtering', () => {
-    //the test will be created here
     LabelStudio.init({
       config,
       task,
@@ -124,7 +122,6 @@ describe('Filter outliner scenario', () => {
   });
 
   it('Check if filter message is hidden', () => {
-    //the test will be created here
     LabelStudio.init({
       config,
       task,
@@ -138,7 +135,6 @@ describe('Filter outliner scenario', () => {
   });
 
   it('Check if filter message for 1 filter item is showing', () => {
-    //the test will be created here
     LabelStudio.init({
       config,
       task,
@@ -157,7 +153,6 @@ describe('Filter outliner scenario', () => {
   });
 
   it('Check if filter message for 2 or more filter items is showing', () => {
-    //the test will be created here
     LabelStudio.init({
       config,
       task,
@@ -176,7 +171,6 @@ describe('Filter outliner scenario', () => {
   });
 
   it('Check if filter message for all items hidden is showing', () => {
-    //the test will be created here
     LabelStudio.init({
       config,
       task,
