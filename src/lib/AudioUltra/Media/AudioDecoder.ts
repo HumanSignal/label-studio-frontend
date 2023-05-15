@@ -6,7 +6,6 @@ import { BaseAudioDecoder } from './BaseAudioDecoder';
 import { clamp, info } from '../Common/Utils';
 import { SplitChannel } from './SplitChannel';
 
-
 const DURATION_CHUNK_SIZE = 60 * 30; // 30 minutes
 
 export class AudioDecoder extends BaseAudioDecoder {
@@ -81,14 +80,15 @@ export class AudioDecoder extends BaseAudioDecoder {
       this._sampleRate = this.worker.sampleRate;
       this._duration = this.worker.duration;
 
-
       let chunkIndex = 0;
       const totalChunks = this.getTotalChunks();
       const chunkIterator = this.chunkDecoder(options);
 
       splitChannels = this._channelCount > 1 ? new SplitChannel(this._channelCount) : undefined;
 
-      const chunks = Array.from({ length: this._channelCount }).map(() => Array.from({ length: totalChunks }) as Float32Array[]);
+      const chunks = Array.from({ length: this._channelCount }).map(
+        () => Array.from({ length: totalChunks }) as Float32Array[],
+      );
 
       info('decode:chunk:start', this.src, chunkIndex, totalChunks);
 
@@ -111,7 +111,6 @@ export class AudioDecoder extends BaseAudioDecoder {
             if (this._channelCount === 1) {
               chunks[0][chunkIndex] = value;
             } else {
-
               if (!splitChannels) throw new Error('AudioDecoder: splitChannels not initialized');
 
               // Multiple channels, split the data into separate channels within a web worker

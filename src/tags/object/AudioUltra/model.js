@@ -9,7 +9,7 @@ import { SyncMixin } from '../../../mixins/SyncMixin';
 import { SyncableMixin } from '../../../mixins/Syncable';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_LSDV_3012, FF_LSDV_3028, FF_LSDV_4701, isFF } from '../../../utils/feature-flags';
+import { FF_LSDV_3012, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
 import { isTimeSimilar } from '../../../lib/AudioUltra';
 import ObjectBase from '../Base';
@@ -90,6 +90,7 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  * @param {string} [waveheight=32] - Minimum height of a waveform when in `splitchannels` mode with multiple channels to display.
  * @param {boolean} [splitchannels=false] - Display multiple audio channels separately, if the audio file has more than one channel. (**NOTE: Requires more memory to operate.**)
  * @param {string} [decoder=webaudio] - Decoder type to use to decode audio data. (`"webaudio"` or `"ffmpeg"`)
+ * @param {string} [player=html5] - Player type to use to play audio data. (`"html5"` or `"webaudio"`)
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -111,8 +112,8 @@ const TagAttrs = types.model({
   defaultscale: types.optional(types.string, '1'),
   autocenter: types.optional(types.boolean, true),
   scrollparent: types.optional(types.boolean, true),
-  splitchannels: types.optional(types.boolean, isFF(FF_LSDV_3028)), // FF_LSDV_3028: true by default when on
-  decoder: types.optional(types.enumeration(['ffmpeg', 'webaudio']), isFF(FF_LSDV_4701) ? 'ffmpeg' : 'webaudio'), // FF_LSDV_4701: 'ffmpeg' by default when on, 'webaudio' otherwise
+  decoder: types.optional(types.enumeration(['ffmpeg', 'webaudio']), 'webaudio'),
+  player: types.optional(types.enumeration(['html5', 'webaudio']), 'html5'),
 });
 
 export const AudioModel = types.compose(
@@ -299,8 +300,8 @@ export const AudioModel = types.compose(
           self._ws?.pause();
         },
 
-        handleSyncSpeed() {},
-        handleSyncDuration() {},
+        handleSyncSpeed() { },
+        handleSyncDuration() { },
 
         handleSyncSeek(time) {
           if (!self._ws?.loaded || isTimeSimilar(time, self._ws.currentTime)) return;
@@ -436,7 +437,7 @@ export const AudioModel = types.compose(
         },
 
         addRegion(wsRegion) {
-        // area id is assigned to WS region during deserealization
+          // area id is assigned to WS region during deserealization
           const find_r = self.annotation.areas.get(wsRegion.id);
 
 
@@ -449,8 +450,8 @@ export const AudioModel = types.compose(
           const states = self.getAvailableStates();
 
           if (states.length === 0) {
-          // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
-            if (wsRegion.isRegion){
+            // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
+            if (wsRegion.isRegion) {
               wsRegion.convertToSegment().handleSelected();
             }
 
