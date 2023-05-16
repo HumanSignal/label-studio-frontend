@@ -397,14 +397,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     } 
   },[focusTab]);
 
-  const findPanelViewByName = (state: Record<string, PanelBBox>, name: string): { panelName: string, tab: PanelView, panelViewIndex: number } | undefined => {
-    for (const key of Object.keys(state)) {
-      const panelViewIndex = state[key].panelViews.findIndex((view) => view.name === name);
-      
-      return panelViewIndex >= 0 ? { panelName: key, tab: state[key].panelViews[panelViewIndex], panelViewIndex } : undefined;
-    }
-  };
-
   useEffect(() => {
     const root = rootRef.current!;
     const checkContentFit = () => {

@@ -486,8 +486,6 @@ export const newPanelInState = (
 ) => {
   const newPanel = newPanelFromTab(state, name, movingPanel, movingTab, left, top, viewportSize);
   const stateWithRemovals = stateRemovedTab(state, movingPanel, movingTab);
-
-  // Object.keys(stateWithRemovals).forEach(panelKey => (stateWithRemovals[panelKey].zIndex = 10));
   const panelsWithRemovals = stateRemovePanelEmptyViews(stateWithRemovals);
   const panelWithAdditions = { ...panelsWithRemovals, [`${newPanel.name}`]: newPanel };
   const renamedKeys = renameKeys(panelWithAdditions);
@@ -526,4 +524,12 @@ export const findZIndices = (state: Record<string, PanelBBox>, focusedKey: strin
   if (newState[focusedKey].detached) newState[focusedKey].zIndex = detached.length + 12;
 
   return newState;
+};
+
+export const findPanelViewByName = (state: Record<string, PanelBBox>, name: string): { panelName: string, tab: PanelView, panelViewIndex: number } | undefined => {
+  for (const key of Object.keys(state)) {
+    const panelViewIndex = state[key].panelViews.findIndex((view) => view.name === name);
+    
+    return panelViewIndex >= 0 ? { panelName: key, tab: state[key].panelViews[panelViewIndex], panelViewIndex } : undefined;
+  }
 };
