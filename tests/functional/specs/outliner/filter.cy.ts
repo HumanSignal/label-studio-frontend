@@ -100,7 +100,7 @@ describe('Filter outliner scenario', () => {
       [FF_LSDV_3025]: true,
     });
 
-    cy.get('[data-cy="filter-button"]').should('be.visible');
+    cy.get('[data-testid="filter-button"]').should('be.visible');
   });
 
   it('Check if filter is filtering', () => {
@@ -113,7 +113,7 @@ describe('Filter outliner scenario', () => {
       [FF_LSDV_3025]: true,
     });
 
-    cy.get('[data-cy="filter-button"]').click();
+    cy.get('[data-testid="filter-button"]').click();
     cy.contains('Add Filter').click();
     cy.get('[data-testid="operation-dropdown"]').click();
     cy.contains('contains').click();
@@ -144,7 +144,7 @@ describe('Filter outliner scenario', () => {
       [FF_LSDV_3025]: true,
     });
 
-    cy.get('[data-cy="filter-button"]').click();
+    cy.get('[data-testid="filter-button"]').click();
     cy.contains('Add Filter').click();
     cy.get('[data-testid="operation-dropdown"]').click();
     cy.contains('contains').click();
@@ -162,7 +162,7 @@ describe('Filter outliner scenario', () => {
       [FF_LSDV_3025]: true,
     });
 
-    cy.get('[data-cy="filter-button"]').click();
+    cy.get('[data-testid="filter-button"]').click();
     cy.contains('Add Filter').click();
     cy.get('[data-testid="operation-dropdown"]').click();
     cy.contains('contains').click();
@@ -180,7 +180,7 @@ describe('Filter outliner scenario', () => {
       [FF_LSDV_3025]: true,
     });
 
-    cy.get('[data-cy="filter-button"]').click();
+    cy.get('[data-testid="filter-button"]').click();
     cy.contains('Add Filter').click();
     cy.get('[data-testid="operation-dropdown"]').click();
     cy.contains('contains').click();
