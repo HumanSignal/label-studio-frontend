@@ -5,6 +5,7 @@ import { ReactComponent as IconSend } from '../../assets/icons/send.svg';
 import './CommentForm.styl';
 import { TextArea } from '../../common/TextArea/TextArea';
 import { observer } from 'mobx-react';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 
 export type CommentFormProps = {
@@ -55,9 +56,18 @@ export const CommentForm: FC<CommentFormProps> = observer(({
 
 
   useEffect(() => {
-    commentStore.setAddedCommentThisSession(false);
-    clearTooltipMessage();
+    if(!isFF(FF_DEV_3873)){
+      commentStore.setAddedCommentThisSession(false);
+      clearTooltipMessage();
+    }
   }, []);
+
+  useEffect(() => {
+    if (isFF(FF_DEV_3873)) {
+      commentStore.tooltipMessage && actionRef.current?.el?.current?.focus();
+    }
+    return () => clearTooltipMessage();
+  }, [commentStore.tooltipMessage]);
 
   useEffect(() => {
     commentStore.setInputRef(actionRef.current.el);
