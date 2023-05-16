@@ -114,7 +114,7 @@ const OutlinerTreeComponent: FC<OutlinerTreeComponentProps> = observer(({ region
         </>
       ) : (
         <Elem name="empty">
-            Regions not added
+          Regions not added
         </Elem>
       )}
     </>
