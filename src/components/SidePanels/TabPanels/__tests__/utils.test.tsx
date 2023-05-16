@@ -1,6 +1,6 @@
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH } from '../../constants';
 import { JoinOrder, PanelBBox, Side } from '../types';
-import { determineDroppableArea, determineLeftOrRight, findZIndices, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
+import { determineDroppableArea, determineLeftOrRight, findPanelViewByName, findZIndices, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
 
 
 const dummyPanels: Record<string, PanelBBox> = {
@@ -641,5 +641,39 @@ describe('findZIndices', () => {
     const result = findZIndices(newState, focusedKey);
 
     expect(result).toEqual(expectedState);
+  });
+});
+
+
+describe('findPanelViewByName', () => {
+  const state = {
+    panel1: {
+      panelViews: [
+        { name: 'view1', tab: 'Tab 1' },
+        { name: 'view2', tab: 'Tab 2' },
+      ],
+    },
+    panel2: {
+      panelViews: [
+        { name: 'view3', tab: 'Tab 3' },
+        { name: 'view4', tab: 'Tab 4' },
+      ],
+    },
+  };
+
+  it('should return the panel view when found', () => {
+    const result = findPanelViewByName(state, 'view2');
+
+    expect(result).toEqual({
+      panelName: 'panel1',
+      tab: { name: 'view2', tab: 'Tab 2' },
+      panelViewIndex: 1,
+    });
+  });
+
+  it('should return undefined when the panel view is not found', () => {
+    const result = findPanelViewByName(state, 'view5');
+
+    expect(result).toBeUndefined();
   });
 });
