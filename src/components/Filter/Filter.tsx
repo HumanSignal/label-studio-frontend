@@ -17,7 +17,7 @@ export const Filter: FC<FilterInterface> = ({
   animated = true,
 }) => {
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
-  const [toggle, setToggle] = useState(false);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
     onChange(FilterItems(filterData, filterList));
@@ -104,7 +104,7 @@ export const Filter: FC<FilterInterface> = ({
   }, [filterList, renderFilterList, addNewFilterListItem]);
 
   const onToggle = useCallback((isOpen: boolean) => {
-    setToggle(isOpen);
+    setActive(isOpen);
   }, []);
 
   return (
@@ -114,7 +114,7 @@ export const Filter: FC<FilterInterface> = ({
       animated={animated}
       onToggle={onToggle}
     >
-      <Block data-testid={'filter-button'} name={'filter-button'} mod={{ 'active': toggle }}>
+      <Block data-testid={'filter-button'} name={'filter-button'} mod={{ active }}>
         <Elem name={'icon'}>
           <IconFilter />
         </Elem>
