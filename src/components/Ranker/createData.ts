@@ -23,6 +23,18 @@ export interface BoardData {
   columnOrder: string[];
 }
 
+//represents a column of data
+export interface NewColumnData {
+  id: string;
+  title: string;
+}
+//represents the entire board of columns and items
+export interface NewBoardData {
+  items: { [id: string]: InputItem };
+  columns: NewColumnData[];
+  itemIds: Record<string, string[]>;
+}
+
 /**
  * assumed input data structure:
  * id: string

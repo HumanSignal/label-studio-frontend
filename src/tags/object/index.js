@@ -6,7 +6,7 @@ import { TableModel } from './Table';
 import { TimeSeriesModel } from './TimeSeries';
 import { PagedViewModel } from './PagedView';
 import { VideoModel } from './Video';
-import { RankerModel } from './Ranker';
+import { ListModel } from './List';
 
 // stub files to keep docs of these tags
 import './HyperText';
@@ -21,5 +21,5 @@ export {
   VideoModel,
   TableModel,
   PagedViewModel,
-  RankerModel
+  ListModel
 };
