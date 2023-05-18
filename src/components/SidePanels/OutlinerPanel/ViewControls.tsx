@@ -167,7 +167,11 @@ const Grouping = <T extends string>({
     return (
       <Menu
         size="medium"
-        style={{ width: 200, minWidth: 200 }}
+        style={{
+          width: 200,
+          minWidth: 200,
+          borderRadius: isFF(FF_DEV_3873) ? 4 : 0,
+        }}
         selectedKeys={[value]}
         allowClickSelected={allowClickSelected}
       >
@@ -187,7 +191,7 @@ const Grouping = <T extends string>({
 
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" icon={readableValue.icon} style={{ padding: 0, whiteSpace: 'nowrap' }} extra={(
+      <Button type="text" icon={readableValue.icon} style={{ padding: 0, whiteSpace: 'nowrap', fontSize:isFF(FF_DEV_3873) ? 11 : 14 }} extra={(
         <DirectionIndicator
           direction={direction}
           name={value}

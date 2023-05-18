@@ -2,7 +2,7 @@ import { observer } from 'mobx-react';
 import { useMemo } from 'react';
 import { Button } from '../../common/Button/Button';
 import { Block, Elem } from '../../utils/bem';
-import { FF_DEV_3034, isFF } from '../../utils/feature-flags';
+import { FF_DEV_3034, FF_DEV_3873, isFF } from '../../utils/feature-flags';
 import { guidGenerator } from '../../utils/unique';
 import { isDefined } from '../../utils/utilities';
 import './CurrentTask.styl';

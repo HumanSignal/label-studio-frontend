@@ -141,7 +141,6 @@ const LayoutSettings = observer(({ store }) => {
 const Settings = {
   General: { name: 'General', component: GeneralSettings },
   Hotkeys: { name: 'Hotkeys', component: HotkeysDescription },
-  Layout: { name: 'Layout', component: LayoutSettings },
 };
 
 const DEFAULT_ACTIVE = Object.keys(Settings)[0];
