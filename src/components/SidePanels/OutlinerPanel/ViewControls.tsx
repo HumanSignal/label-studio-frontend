@@ -170,7 +170,7 @@ const Grouping = <T extends string>({
         style={{
           width: 200,
           minWidth: 200,
-          borderRadius: isFF(FF_DEV_3873) ? 4 : 0,
+          borderRadius: isFF(FF_DEV_3873) && 4,
         }}
         selectedKeys={[value]}
         allowClickSelected={allowClickSelected}

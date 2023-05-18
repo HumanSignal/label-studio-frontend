@@ -119,7 +119,7 @@ export const Filter: FC<FilterInterface> = ({
         <Elem name={'icon'}>
           <IconFilter />
         </Elem>
-        <Elem name={'text'} style={{ fontSize:isFF(FF_DEV_3873) ? 11 : 14 }}>Filter</Elem>
+        <Elem name={'text'} style={{ fontSize:isFF(FF_DEV_3873) && 11 }}>Filter</Elem>
         {filterList.length > 0 && <Elem name={'filter-length'} data-testid={'filter-length'}>{filterList.length}</Elem>}
       </Block>
     </Dropdown.Trigger>

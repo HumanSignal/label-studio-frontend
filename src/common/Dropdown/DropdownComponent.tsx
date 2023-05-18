@@ -203,7 +203,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
       mix={[props.className, visibilityClasses]}
       style={{
         ...compositeStyles,
-        borderRadius: isFF(FF_DEV_3873) ? 4 : 0,
+        borderRadius: isFF(FF_DEV_3873) && 4,
       }}
       onClick={(e: MouseEvent) => e.stopPropagation()}
     >
