@@ -10,7 +10,7 @@
   align-items center
   gap 8px
   cursor pointer
-  height calc(100% - 4px)
+  height calc(100% - 3px)
   &__mainSection
     display flex
     align-items center
@@ -24,6 +24,7 @@
     line-height 16px
     letter-spacing 0.4px
     text-align left
+    color: #898098;
   &__entity-id
     font-size 10px
     font-weight 400
@@ -38,12 +39,24 @@
     line-height 16px
     letter-spacing 0.4px
     text-align left
-    color #413C4A
+    color #898098
+
+  &:hover
+    background-color rgba(9, 109, 217, 0.08)
+    .annotation-button__ellipsisIcon
+      visibility visible
 
   &_selected
     background-color #FFFFFF
-  &:hover
-    background-color rgba(9, 109, 217, 0.08)
+    &:hover
+      background-color #FFFFFF
+    .annotation-button__ellipsisIcon
+      visibility visible
+    .annotation-button__created
+      color #413C4A
+    .annotation-button__name
+      color #413C4A
+
   &__icons
     display inline-flex
     align-items center
@@ -60,6 +73,7 @@
     transform rotate(90deg)
     display flex
     border-radius 4px
+    visibility hidden
   &__picSection
     position relative
   &__status
