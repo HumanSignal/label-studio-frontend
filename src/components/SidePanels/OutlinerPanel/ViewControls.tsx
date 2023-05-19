@@ -189,9 +189,16 @@ const Grouping = <T extends string>({
     );
   }, [value, optionsList, readableValue, direction]);
 
+
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" icon={readableValue.icon} style={{ padding: 0, whiteSpace: 'nowrap', fontSize:isFF(FF_DEV_3873) ? 11 : 14 }} extra={(
+      <Button type="text" icon={readableValue.icon} style={{
+        padding: 0,
+        whiteSpace: 'nowrap',
+        fontSize:isFF(FF_DEV_3873) && 12,
+        fontWeight:isFF(FF_DEV_3873) && 500,
+        lineHeight:isFF(FF_DEV_3873) && '24px',
+      }} extra={(
         <DirectionIndicator
           direction={direction}
           name={value}
