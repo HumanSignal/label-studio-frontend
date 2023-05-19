@@ -12,6 +12,9 @@ import RequiredMixin from '../../mixins/Required';
 import { isDefined } from '../../utils/utilities';
 import ControlBase from './Base';
 import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
+import ClassificationBase from './ClassificationBase';
+import PerItemMixin from '../../mixins/PerItem';
+import { FF_LSDV_4583, isFF } from '../../utils/feature-flags';
 
 const FORMAT_FULL = '%Y-%m-%dT%H:%M';
 const FORMAT_DATE = '%Y-%m-%d';
@@ -141,17 +144,6 @@ const Model = types
       if (self.max && self.date > self.max) return false;
       return true;
     },
-
-    get result() {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
-
-        if (!area) return null;
-
-        return self.annotation.results.find(r => r.from_name === self && r.area === area);
-      }
-      return self.annotation.results.find(r => r.from_name === self);
-    },
   }))
   .volatile(() => ({
     updateValue: false,
@@ -256,21 +248,6 @@ const Model = types
       }
     },
 
-    updateResult() {
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          self.annotation.createResult({}, { datetime: self.datetime }, self, self.toname);
-        }
-      }
-    },
-
     onMonthChange(e) {
       self.month = +e.target.value || undefined;
       self.updateResult();
@@ -340,9 +317,9 @@ const Model = types
 
         // per-region results are not visible, so we have to check their values
         if (self.perregion) {
-          const objectTag = self.annotation.names.get(self.toname);
+          const objectTag = self.toNameTag;
 
-          for (const reg of objectTag.regs) {
+          for (const reg of objectTag.allRegs) {
             const date = reg.results.find(s => s.from_name === self)?.mainValue;
             const isValid = validateValue(date);
 
@@ -363,9 +340,11 @@ const Model = types
 const DateTimeModel = types.compose(
   'DateTimeModel',
   ControlBase,
+  ClassificationBase,
   RequiredMixin,
   ReadOnlyControlMixin,
   PerRegionMixin,
+  ...(isFF(FF_LSDV_4583)?[PerItemMixin]:[]),
   AnnotationMixin,
   TagAttrs,
   Model,
@@ -404,7 +383,7 @@ const HtxDateTime = inject('store')(
     };
 
     return (
-      <div style={visibleStyle}>
+      <div className="htx-datetime" style={visibleStyle}>
         {item.showMonth && (
           <select
             {...visual}

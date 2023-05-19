@@ -19,6 +19,20 @@ const ObjectBase = types
     isObjectTag: true,
   })
   .views(self => ({
+    /**
+     * A list of all related regions
+     * it is using for validation purposes
+     */
+    get allRegs() {
+      return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
+    },
+    /**
+     * A list of regions related to the current object state
+     * (it could be overridden)
+     */
+    get regs() {
+      return self.allRegs;
+    },
     findRegion(params) {
       let obj = null;
 

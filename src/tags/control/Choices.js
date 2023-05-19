@@ -19,10 +19,12 @@ import './Choices/Choises.styl';
 
 import './Choice';
 import DynamicChildrenMixin from '../../mixins/DynamicChildrenMixin';
-import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from '../../utils/feature-flags';
+import { FF_DEV_2007, FF_DEV_2007_DEV_2008, FF_LSDV_4583, isFF } from '../../utils/feature-flags';
 import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 import SelectedChoiceMixin from '../../mixins/SelectedChoiceMixin';
 import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
+import ClassificationBase from './ClassificationBase';
+import PerItemMixin from '../../mixins/PerItem';
 
 const { Option } = Select;
 
@@ -133,17 +135,6 @@ const Model = types
       return null;
     },
 
-    get result() {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
-
-        if (!area) return null;
-
-        return self.annotation.results.find(r => r.from_name === self && r.area === area);
-      }
-      return self.annotation.results.find(r => r.from_name === self);
-    },
-
     get preselectedValues() {
       return self.tiedChildren.filter(c => c.selected === true && !c.isSkipped).map(c => c.resultValue);
     },
@@ -222,37 +213,23 @@ const Model = types
         choice.setSelected(isSelected);
       });
     },
-
-    // update result in the store with current selected choices
-    updateResult() {
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          self.annotation.createResult({}, { choices: self.selectedValues() }, self, self.toname);
-        }
-      }
-    },
   }));
 
 const ChoicesModel = types.compose(
   'ChoicesModel',
   ControlBase,
-  TagAttrs,
+  ClassificationBase,
   SelectedModelMixin.props({ _child: 'ChoiceModel' }),
   RequiredMixin,
   PerRegionMixin,
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin]:[]),
   ReadOnlyControlMixin,
   SelectedChoiceMixin,
   VisibilityMixin,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
-  Model,
   AnnotationMixin,
+  TagAttrs,
+  Model,
 );
 
 const ChoicesSelectLayout = observer(({ item }) => {

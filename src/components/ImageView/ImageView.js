@@ -842,7 +842,7 @@ export default observer(
 
       const containerClassName = styles.container;
 
-      const paginationEnabled = isFF(FF_LSDV_4583) && item.valuelist;
+      const paginationEnabled = !!item.isMultiItem;
 
       if (getRoot(item).settings.fullscreen === false) {
         containerStyle['maxWidth'] = item.maxwidth;

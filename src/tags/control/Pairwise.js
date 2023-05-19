@@ -64,10 +64,6 @@ const Model = types
     get valueType() {
       return 'selected';
     },
-
-    get result() {
-      return self.annotation.results.find(r => r.from_name === self);
-    },
   }))
   .actions(self => ({
     updateResult() {

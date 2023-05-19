@@ -19,8 +19,17 @@ import styles from '../../../components/HtxTextBox/HtxTextBox.module.scss';
 import { Block, Elem } from '../../../utils/bem';
 import './TextArea.styl';
 import { IconTrash } from '../../../assets/icons';
-import { FF_DEV_1564_DEV_1565, FF_DEV_3730, FF_LSDV_4659, FF_LSDV_4712, isFF } from '../../../utils/feature-flags';
+import {
+  FF_DEV_1564_DEV_1565,
+  FF_DEV_3730,
+  FF_LSDV_4583,
+  FF_LSDV_4659,
+  FF_LSDV_4712,
+  isFF
+} from '../../../utils/feature-flags';
 import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
+import ClassificationBase from '../ClassificationBase';
+import PerItemMixin from '../../../mixins/PerItem';
 
 const { TextArea } = Input;
 
@@ -140,17 +149,6 @@ const Model = types.model({
     return self.regions.map(r => r._value);
   },
 
-  get area() {
-    if (self.perregion) {
-      return self.annotation.highlightedNode;
-    }
-    return null;
-  },
-
-  get result() {
-    return self.annotation.results.find(r => r.from_name === self && (!self.area || r.area === self.area));
-  },
-
   hasResult(text) {
     if (!self.result) return false;
     let value = self.result.mainValue;
@@ -224,23 +222,11 @@ const Model = types.model({
       const r = TextAreaRegionModel.create({ pid, _value: text });
 
       self.regions.push(r);
-
       return r;
     },
 
     onChange() {
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          self.annotation.createResult({}, { text: self.selectedValues() }, self, self.toname);
-        }
-      }
+      self.updateResult();
     },
 
     validateValue(text) {
@@ -321,10 +307,12 @@ const Model = types.model({
 const TextAreaModel = types.compose(
   'TextAreaModel',
   ControlBase,
+  ClassificationBase,
   TagAttrs,
   ProcessAttrsMixin,
   RequiredMixin,
   PerRegionMixin,
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin]:[]),
   AnnotationMixin,
   ReadOnlyControlMixin,
   Model,

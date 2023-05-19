@@ -862,7 +862,7 @@ export const Annotation = types
       // happening locally. So to reproduce you have to test in production or environment
       const area = self?.areas?.put(areaRaw);
 
-      object?.afterResultCreated?.(area);
+      objectTag?.afterResultCreated?.(area);
 
       if (!area) return;
 

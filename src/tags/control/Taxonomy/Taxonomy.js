@@ -13,12 +13,14 @@ import RequiredMixin from '../../../mixins/Required';
 import VisibilityMixin from '../../../mixins/Visibility';
 import ControlBase from '../Base';
 import DynamicChildrenMixin from '../../../mixins/DynamicChildrenMixin';
-import { FF_DEV_2007_DEV_2008, FF_DEV_3617, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2007_DEV_2008, FF_DEV_3617, FF_LSDV_4583, isFF } from '../../../utils/feature-flags';
 import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
 import { Spin } from 'antd';
 import './Taxonomy.styl';
 import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
 import SelectedChoiceMixin from '../../../mixins/SelectedChoiceMixin';
+import ClassificationBase from '../ClassificationBase';
+import PerItemMixin from '../../../mixins/PerItem';
 
 /**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
@@ -135,17 +137,6 @@ const Model = types
       return 'taxonomy';
     },
 
-    get result() {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
-
-        if (!area) return null;
-
-        return self.annotation.results.find(r => r.from_name === self && r.area === area);
-      }
-      return self.annotation.results.find(r => r.from_name === self);
-    },
-
     get items() {
       const fromConfig = traverse(self.children);
       const fromUsers = self.userLabels?.controls[self.name] ?? [];
@@ -249,18 +240,7 @@ const Model = types
     onChange(_node, checked) {
       self.selected = checked.map(s => s.path ?? s);
       self.maxUsagesReached = self.selected.length >= self.maxusages;
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          self.annotation.createResult({}, { taxonomy: self.selected }, self, self.toname);
-        }
-      }
+      self.updateResult();
     },
 
     onAddLabel(path) {
@@ -289,12 +269,14 @@ const Model = types
 
 const TaxonomyModel = types.compose('TaxonomyModel',
   ControlBase,
+  ClassificationBase,
   TagAttrs,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
   Model,
   ...(isFF(FF_DEV_3617) ? [SharedStoreMixin] : []),
   RequiredMixin,
   PerRegionMixin,
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin] : []),
   ReadOnlyControlMixin,
   SelectedChoiceMixin,
   VisibilityMixin,
