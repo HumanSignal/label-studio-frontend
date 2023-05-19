@@ -8,7 +8,6 @@ import { isDefined } from '../../utils/utilities';
 import './CurrentTask.styl';
 import { reaction } from 'mobx';
 
-
 export const CurrentTask = observer(({ store }) => {
   const [initialCommentLength, setInitialCommentLength] = useState(0);
   const [visibleComments, setVisibleComments] = useState(0);
@@ -27,7 +26,7 @@ export const CurrentTask = observer(({ store }) => {
   }, []);
 
   const currentIndex = useMemo(() => {
-    return store.taskHistory.findIndex((x) => x.taskId === store.task.id) + 1;
+    return store.taskHistory.findIndex(x => x.taskId === store.task.id) + 1;
   }, [store.taskHistory]);
 
   useEffect(() => {
@@ -40,23 +39,27 @@ export const CurrentTask = observer(({ store }) => {
   const showCounter = store.hasInterface('topbar:task-counter');
 
   // @todo some interface?
-  let canPostpone = isFF(FF_DEV_3034)
-    && !isDefined(store.annotationStore.selected.pk)
-    && !store.canGoNextTask
-    && !store.hasInterface('review')
-    && store.hasInterface('postpone');
-
+  let canPostpone =
+    isFF(FF_DEV_3034) &&
+    !isDefined(store.annotationStore.selected.pk) &&
+    !store.canGoNextTask &&
+    !store.hasInterface('review') &&
+    store.hasInterface('postpone');
 
   if (isFF(FF_DEV_4174)) {
-    canPostpone = canPostpone && store.commentStore.addedCommentThisSession && (visibleComments >= initialCommentLength);
+    canPostpone = canPostpone && store.commentStore.addedCommentThisSession && visibleComments >= initialCommentLength;
   }
   return (
     <Elem name="section">
-      <Block name="current-task" mod={{ 'with-history': historyBasedTaskList }} style={{
-        padding:isFF(FF_DEV_3873) && 0,
-        width:isFF(FF_DEV_3873) && 'auto',
-      }}>
-        <Elem name="task-id" style={{ fontSize:isFF(FF_DEV_3873) ? 12 : 14 }}>
+      <Block
+        name="current-task"
+        mod={{ 'with-history': historyBasedTaskList }}
+        style={{
+          padding: isFF(FF_DEV_3873) && 0,
+          width: isFF(FF_DEV_3873) && 'auto',
+        }}
+      >
+        <Elem name="task-id" style={{ fontSize: isFF(FF_DEV_3873) ? 12 : 14 }}>
           {store.task.id ?? guidGenerator()}
           {historyBasedTaskList && showCounter && (
             <Elem name="task-count">
@@ -65,8 +68,8 @@ export const CurrentTask = observer(({ store }) => {
           )}
         </Elem>
         {historyBasedTaskList ? (
-        <Elem name="history-controls" mod={{ newui: isFF(FF_DEV_3873) }} >
-          <Elem
+          <Elem name="history-controls" mod={{ newui: isFF(FF_DEV_3873) }}>
+            <Elem
               tag={Button}
               name="prevnext"
               mod={{ prev: true, disabled: !store.canGoPrevHistoryTask, newui: isFF(FF_DEV_3873) }}
