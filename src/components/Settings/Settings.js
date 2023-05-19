@@ -6,10 +6,12 @@ import { Hotkey } from '../../core/Hotkey';
 
 import './Settings.styl';
 import { Block, Elem } from '../../utils/bem';
+import { triggerResizeEvent } from '../../utils/utilities';
 
 import EditorSettings from '../../core/settings/editorsettings';
 import * as TagSettings from './TagSettings';
 import { useMemo } from 'react';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 const HotkeysDescription = () => {
   const columns = [
@@ -75,10 +77,75 @@ const GeneralSettings = observer(({ store }) => {
   );
 });
 
+const LayoutSettings = observer(({ store }) => {
+  return (
+    <Block name="settings">
+      <Elem name="field">
+        <Checkbox
+          checked={store.settings.bottomSidePanel}
+          onChange={() => {
+            store.settings.toggleBottomSP();
+            setTimeout(triggerResizeEvent);
+          }}
+        >
+            Move sidepanel to the bottom
+        </Checkbox>
+      </Elem>
+
+      <Elem name="field">
+        <Checkbox checked={store.settings.displayLabelsByDefault} onChange={store.settings.toggleSidepanelModel}>
+            Display Labels by default in Results panel
+        </Checkbox>
+      </Elem>
+
+      <Elem name="field">
+        <Checkbox
+          value="Show Annotations panel"
+          defaultChecked={store.settings.showAnnotationsPanel}
+          onChange={() => {
+            store.settings.toggleAnnotationsPanel();
+          }}
+        >
+            Show Annotations panel
+        </Checkbox>
+      </Elem>
+
+      <Elem name="field">
+        <Checkbox
+          value="Show Predictions panel"
+          defaultChecked={store.settings.showPredictionsPanel}
+          onChange={() => {
+            store.settings.togglePredictionsPanel();
+          }}
+        >
+            Show Predictions panel
+        </Checkbox>
+      </Elem>
+
+      {/* Saved for future use */}
+      {/* <Elem name="field">
+        <Checkbox
+          value="Show image in fullsize"
+          defaultChecked={store.settings.imageFullSize}
+          onChange={() => {
+            store.settings.toggleImageFS();
+          }}
+        >
+          Show image in fullsize
+        </Checkbox>
+      </Elem> */}
+    </Block>
+  );
+});
+
 const Settings = {
   General: { name: 'General', component: GeneralSettings },
   Hotkeys: { name: 'Hotkeys', component: HotkeysDescription },
 };
+
+if (!isFF(FF_DEV_3873)) {
+  Settings.Layout = { name: 'Layout', component: LayoutSettings };
+}
 
 const DEFAULT_ACTIVE = Object.keys(Settings)[0];
 
