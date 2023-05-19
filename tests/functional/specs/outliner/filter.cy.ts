@@ -215,7 +215,7 @@ describe('Filter outliner scenario', () => {
 
     ImageView.drawRect(20, 20, 100, 100);
 
-    cy.get('[data-cy="filter-button"]').click();
+    cy.get('[data-testid="filter-button"]').click();
     cy.contains('Add Filter').click();
     cy.get('[data-testid="operation-dropdown"]').click();
     cy.contains('is empty').click();
@@ -232,7 +232,7 @@ describe('Filter outliner scenario', () => {
       [FF_LSDV_3025]: true,
     });
 
-    cy.get('[data-cy="filter-button"]').click();
+    cy.get('[data-testid="filter-button"]').click();
     cy.contains('Add Filter').click();
     cy.get('[data-testid="operation-dropdown"]').click();
     cy.contains('contains').click();
