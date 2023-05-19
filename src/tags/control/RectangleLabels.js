@@ -51,13 +51,13 @@ const ModelAttrs = types.model('RectangleLabelsModel', {
 });
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   RectangleModel,
   Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: 'LabelModel' }),
-  ControlBase,
 );
 
 const RectangleLabelsModel = types.compose('RectangleLabelsModel', Composition);

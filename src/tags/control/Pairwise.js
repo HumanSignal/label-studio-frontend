@@ -135,7 +135,7 @@ const Model = types
     },
   }));
 
-const PairwiseModel = types.compose('PairwiseModel', TagAttrs, ControlBase, Model, AnnotationMixin);
+const PairwiseModel = types.compose('PairwiseModel', ControlBase, TagAttrs,  Model, AnnotationMixin);
 
 const HtxPairwise = () => {
   return null;

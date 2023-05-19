@@ -45,12 +45,12 @@ const ModelAttrs = types.model('EllipseLabelsModel', {
 });
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   EllipseModel,
   LabelMixin,
   SelectedModelMixin.props({ _child: 'LabelModel' }),
-  ControlBase,
 );
 
 const EllipseLabelsModel = types.compose('EllipseLabelsModel', Composition);
