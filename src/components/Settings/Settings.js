@@ -6,7 +6,6 @@ import { Hotkey } from '../../core/Hotkey';
 
 import './Settings.styl';
 import { Block, Elem } from '../../utils/bem';
-import { triggerResizeEvent } from '../../utils/utilities';
 
 import EditorSettings from '../../core/settings/editorsettings';
 import * as TagSettings from './TagSettings';
