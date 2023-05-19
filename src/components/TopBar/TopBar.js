@@ -36,6 +36,7 @@ export const TopBar = observer(({ store }) => {
                   height: 36,
                   width: 36,
                   padding: 0,
+                  marginRight: isFF(FF_DEV_3873) && 8,
                 }}
               />
             </Tooltip>

@@ -9,6 +9,7 @@ import './Filter.styl';
 import { FilterInterface, FilterListInterface } from './FilterInterfaces';
 import { FilterRow } from './FilterRow';
 import { FilterItems } from './filter-util';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 export const Filter: FC<FilterInterface> = ({
   availableFilters,
@@ -118,7 +119,11 @@ export const Filter: FC<FilterInterface> = ({
         <Elem name={'icon'}>
           <IconFilter />
         </Elem>
-        <Elem name={'text'}>Filter</Elem>
+        <Elem name={'text'} style={{
+          fontSize:isFF(FF_DEV_3873) && 12,
+          fontWeight:isFF(FF_DEV_3873) && 500,
+          lineHeight:isFF(FF_DEV_3873) && '24px',
+        }}>Filter</Elem>
         {filterList.length > 0 && <Elem name={'filter-length'} data-testid={'filter-length'}>{filterList.length}</Elem>}
       </Block>
     </Dropdown.Trigger>
