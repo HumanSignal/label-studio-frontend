@@ -65,15 +65,15 @@ export const CurrentTask = observer(({ store }) => {
           )}
         </Elem>
         {historyBasedTaskList ? (
-          <Elem name="history-controls">
-            <Elem
+        <Elem name="history-controls" mod={{ newui: isFF(FF_DEV_3873) }} >
+          <Elem
               tag={Button}
               name="prevnext"
-              mod={{ prev: true, disabled: !store.canGoPrevHistoryTask }}
+              mod={{ prev: true, disabled: !store.canGoPrevHistoryTask, newui: isFF(FF_DEV_3873) }}
               type="link"
               disabled={!historyBasedTaskList || !store.canGoPrevHistoryTask}
               onClick={store.prevTask}
-              style={{ background: 'none', backgroundColor: 'none' }}
+              style={{ background: !isFF(FF_DEV_3873) && 'none', backgroundColor: isFF(FF_DEV_3873) && 'none' }}
             />
             <Elem
               tag={Button}
@@ -82,11 +82,12 @@ export const CurrentTask = observer(({ store }) => {
                 next: true,
                 disabled: !store.canGoNextHistoryTask && !canPostpone,
                 postpone: !store.canGoNextHistoryTask && canPostpone,
+                newui: isFF(FF_DEV_3873),
               }}
               type="link"
               disabled={!store.canGoNextHistoryTask && !canPostpone}
               onClick={store.canGoNextHistoryTask ? store.nextTask : store.postponeTask}
-              style={{ background: 'none', backgroundColor: 'none' }}
+              style={{ background: !isFF(FF_DEV_3873) && 'none', backgroundColor: isFF(FF_DEV_3873) && 'none' }}
             />
           </Elem>
         ) : (
@@ -97,6 +98,7 @@ export const CurrentTask = observer(({ store }) => {
               mod={{
                 prev: true,
                 disabled: !store.adjacentTaskIds?.prevTaskId,
+                newui: isFF(FF_DEV_3873),
               }}
               type="link"
               disabled={!store.adjacentTaskIds?.prevTaskId}
@@ -109,11 +111,12 @@ export const CurrentTask = observer(({ store }) => {
               mod={{
                 next: true,
                 disabled: !store.adjacentTaskIds?.nextTaskId,
+                newui: isFF(FF_DEV_3873),
               }}
               type="link"
               disabled={!store.adjacentTaskIds?.nextTaskId}
               onClick={store.nextTask}
-              style={{ background: 'none', backgroundColor: 'none' }}
+              style={{ background: !isFF(FF_DEV_3873) && 'none', backgroundColor: isFF(FF_DEV_3873) && 'none' }}
             />
           </Elem>
         )}
