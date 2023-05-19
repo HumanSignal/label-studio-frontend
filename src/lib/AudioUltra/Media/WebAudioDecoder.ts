@@ -3,7 +3,6 @@
 import { info } from '../Common/Utils';
 import { BaseAudioDecoder } from './BaseAudioDecoder';
 
-
 export class WebAudioDecoder extends BaseAudioDecoder {
   private arraybuffer?: ArrayBuffer;
   private context?: OfflineAudioContext;
@@ -20,7 +19,7 @@ export class WebAudioDecoder extends BaseAudioDecoder {
   /**
    * Decode the audio file using the WebAudio API.
    */
-  async decode(options?: { multiChannel?: boolean }): Promise<void> {
+  async decode(options?: { multiChannel?: boolean, captureAudioBuffer?: boolean }): Promise<void | AudioBuffer> {
     // If the worker has cached data we can skip the decode step
     if (this.sourceDecoded) {
       info('decode:cached', this.src);
@@ -44,11 +43,12 @@ export class WebAudioDecoder extends BaseAudioDecoder {
     this.decodingPromise = new Promise(resolve => (this.decodingResolve = resolve as any));
 
     try {
-      const buffer = await new Promise((resolve, reject) => {
+      const buffer = (await new Promise((resolve, reject) => {
         if (!this.context) {
           this.context = this.createOfflineAudioContext();
         }
-        if (!this.context || !this.arraybuffer) return reject(new Error('WebAudioDecoder not initialized, did you call decoder.init()?'));
+        if (!this.context || !this.arraybuffer)
+          return reject(new Error('WebAudioDecoder not initialized, did you call decoder.init()?'));
         // Safari doesn't support promise based decodeAudioData by default
         if ('webkitAudioContext' in window) {
           this.context?.decodeAudioData(
@@ -57,13 +57,12 @@ export class WebAudioDecoder extends BaseAudioDecoder {
             err => reject(err),
           );
         } else {
-          this.context?.decodeAudioData(this.arraybuffer).then(
-            resolve,
-          ).catch(
-            reject,
-          );
+          this.context
+            ?.decodeAudioData(this.arraybuffer)
+            .then(resolve)
+            .catch(reject);
         }
-      }) as AudioBuffer;
+      })) as AudioBuffer;
 
       this._channelCount = options?.multiChannel ? buffer.numberOfChannels : 1;
       this._sampleRate = buffer.sampleRate;
@@ -78,6 +77,12 @@ export class WebAudioDecoder extends BaseAudioDecoder {
       this.chunks = chunks;
 
       info('decode:complete', this.src);
+
+      if (options?.captureAudioBuffer) {
+        this.buffer = buffer;
+      }
+
+      return buffer;
     } finally {
       this.dispose();
     }
@@ -96,9 +101,8 @@ export class WebAudioDecoder extends BaseAudioDecoder {
   private createOfflineAudioContext(sampleRate?: number) {
     if (!(window as any).WebAudioOfflineAudioContext) {
       (window as any).WebAudioOfflineAudioContext = new (window.OfflineAudioContext ||
-                (window as any).webkitOfflineAudioContext)(1, 2, sampleRate ?? this.sampleRate);
+        (window as any).webkitOfflineAudioContext)(1, 2, sampleRate ?? this.sampleRate);
     }
     return (window as any).WebAudioOfflineAudioContext;
   }
 }
-

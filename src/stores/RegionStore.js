@@ -430,7 +430,6 @@ export default types.model('RegionStore', {
   setView(view) {
     if (isFF(FF_DEV_2755)) {
       window.localStorage.setItem(localStorageKeys.view, view);
-      console.log('setView', window.localStorage.getItem(localStorageKeys.view));
     }
     self.view = view;
   },
@@ -455,15 +454,21 @@ export default types.model('RegionStore', {
   },
 
   setFilteredRegions(filter) {
-    self.filter = filter;
 
-    const filteredIds = filter.map((filter) => filter.id);
-    
-    self.regions.forEach((region) => {
-      if (!region.hideable || (region.hidden && !region.filtered)) return;
-      if (filteredIds.includes(region.id)) region.hidden && region.toggleFiltered();
-      else if (!region.hidden) region.toggleFiltered();
-    });
+    if (self.regions.length === filter.length) {
+      self.filter = null;
+      self.regions.forEach((region) => region.filtered && region.toggleFiltered());
+    } else {
+      const filteredIds = filter.map((filter) => filter.id);
+      
+      self.filter = filter;
+
+      self.regions.forEach((region) => {
+        if (!region.hideable || (region.hidden && !region.filtered)) return;
+        if (filteredIds.includes(region.id)) region.hidden && region.toggleFiltered();
+        else if (!region.hidden) region.toggleFiltered();
+      });
+    }
   },
 
   /**

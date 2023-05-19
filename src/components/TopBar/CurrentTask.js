@@ -2,7 +2,7 @@ import { observer } from 'mobx-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../../common/Button/Button';
 import { Block, Elem } from '../../utils/bem';
-import { FF_DEV_3034, FF_DEV_4174, isFF } from '../../utils/feature-flags';
+import { FF_DEV_3034, FF_DEV_3873, FF_DEV_4174, isFF } from '../../utils/feature-flags';
 import { guidGenerator } from '../../utils/unique';
 import { isDefined } from '../../utils/utilities';
 import './CurrentTask.styl';
@@ -52,8 +52,11 @@ export const CurrentTask = observer(({ store }) => {
   }
   return (
     <Elem name="section">
-      <Block name="current-task" mod={{ 'with-history': historyBasedTaskList }}>
-        <Elem name="task-id">
+      <Block name="current-task" mod={{ 'with-history': historyBasedTaskList }} style={{
+        padding:isFF(FF_DEV_3873) && 0,
+        width:isFF(FF_DEV_3873) && 'auto',
+      }}>
+        <Elem name="task-id" style={{ fontSize:isFF(FF_DEV_3873) ? 12 : 14 }}>
           {store.task.id ?? guidGenerator()}
           {historyBasedTaskList && showCounter && (
             <Elem name="task-count">
@@ -98,7 +101,7 @@ export const CurrentTask = observer(({ store }) => {
               type="link"
               disabled={!store.adjacentTaskIds?.prevTaskId}
               onClick={store.prevTask}
-              style={{ background: 'none', backgroundColor: 'none' }}
+              style={{ background: !isFF(FF_DEV_3873) && 'none', backgroundColor: isFF(FF_DEV_3873) && 'none' }}
             />
             <Elem
               tag={Button}

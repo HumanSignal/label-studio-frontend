@@ -7,6 +7,8 @@ export interface FilterInterface {
   availableFilters: AvailableFiltersInterface[];
   onChange: (filter: any) => void;
   filterData: any;
+
+  animated?: boolean;
 }
 
 export interface FilterListInterface {
@@ -14,7 +16,7 @@ export interface FilterListInterface {
   operation?: string | string[] | undefined;
   value?: any;
   path?: string;
-  logic?: Logic;
+  logic?: 'and' | 'or';
 }
 
 export interface AvailableFiltersInterface {

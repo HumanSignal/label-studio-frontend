@@ -83,9 +83,10 @@ function traverse(root) {
 
   const visitNode = function(node, parents = []) {
     const label = node.value;
+    const hint = node.hint;
     const path = [...parents, node.alias ?? label];
     const depth = parents.length;
-    const obj = { label, path, depth };
+    const obj = { label, path, depth, hint };
 
     if (node.children) {
       obj.children = visitUnique(node.children, path);
@@ -212,6 +213,10 @@ const Model = types
       } else {
         self.loading = false;
       }
+    },
+
+    beforeDestroy() {
+      ChildrenSnapshots.delete(self.name);
     },
 
     updateChildren() {

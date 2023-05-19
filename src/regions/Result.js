@@ -159,12 +159,13 @@ const Result = types
         if (label && !self.area.hasLabel(label)) return false;
       }
 
+      // picks leaf's (last item in a path) value for Taxonomy or usual Choice value for Choices
       const innerResults = (r) =>
         r.map(s => Array.isArray(s) ? s.at(-1) : s);
 
       const isChoiceSelected = () => {
         const tagName = control.whentagname;
-        const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(',') : null;
+        const choiceValues = control.whenchoicevalue?.split(',') ?? null;
         const results = self.annotation.results.filter(r => ['choices', 'taxonomy'].includes(r.type) && r !== self);
 
         if (tagName) {
