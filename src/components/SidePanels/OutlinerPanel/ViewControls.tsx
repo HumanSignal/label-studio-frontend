@@ -192,12 +192,9 @@ const Grouping = <T extends string>({
 
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" icon={readableValue.icon} style={{
-        padding: 0,
+      <Button type="text" mod={{ newUI: isFF(FF_DEV_3873) }} icon={readableValue.icon} style={{
+        padding: isFF(FF_DEV_3873) ? '0 6px 0 2px': 0,
         whiteSpace: 'nowrap',
-        fontSize:isFF(FF_DEV_3873) && 12,
-        fontWeight:isFF(FF_DEV_3873) && 500,
-        lineHeight:isFF(FF_DEV_3873) && '24px',
       }} extra={(
         <DirectionIndicator
           direction={direction}
