@@ -84,7 +84,6 @@ const Ranker = ({ inputData, handleChange, readonly }: BoardProps) => {
       itemIds: newItemIds,
     };
 
-    console.log('HANDLE DRAG', newData, newItemIds);
 
     handleChange ? handleChange(newItemIds) : null;
     setData(newData);

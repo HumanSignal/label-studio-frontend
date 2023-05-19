@@ -116,7 +116,6 @@ const Model = types
       const result = self.result?.value.ranker;
       let itemIds = {};
 
-      console.log('PRE DATA', result, self.leftInList);
 
       if (!data) return [];
       // one array of items sitting in List tag, just reorder them if result is given
@@ -189,7 +188,6 @@ const HtxRanker = inject('store')(
   observer(({ item }) => {
     const data = item.dataSource;
 
-    console.log('DATA', data);
 
     if (!data) return null;
 
