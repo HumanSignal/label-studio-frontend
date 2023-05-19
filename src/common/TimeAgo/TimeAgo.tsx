@@ -51,13 +51,15 @@ export const TimeAgo = ({ date, ...rest }: TimeAgoProps) => {
     };
   }, [date, timestamp]);
 
+  const text = formatDistanceToNow(fromTS, { addSuffix: true }) === 'less than a minute ago' ? 'seconds ago' : formatDistanceToNow(fromTS, { addSuffix: true });
+
   return (
     <time
       dateTime={format(fromTS, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')}
       title={format(fromTS, 'PPpp')}
       {...rest}
     >
-      {formatDistanceToNow(fromTS, { addSuffix: true })}
+      {text}
     </time>
   );
 };
