@@ -95,7 +95,19 @@ fetch(currentTagsUrl)
         // move comments from examples to description
         .replace(/```html[\n\s]*<!--[\n\s]*([\w\W]*?)[\n\s]*-->[\n\s]*/g, '\n$1\n\n```html\n')
         // change example language if it looks like JSON
-        .replace(/```html[\n\s]*([[{])/g, '```json\n$1');
+        .replace(/```html[\n\s]*([[{])/g, '```json\n$1')
+        // normalize footnotes to be numbers (e.g. `[^FF_LSDV_0000]` => `[^1]`)
+        .replace(/\[\^([^\]]+)\]/g, (()=>{
+          let footnoteLastIndex = 0;
+          const footnoteIdToIdxMap = {};
+
+          return (match, footnoteId) => {
+            const footnoteIdx = footnoteIdToIdxMap[footnoteId] || ++footnoteLastIndex;
+
+            footnoteIdToIdxMap[footnoteId] = footnoteIdx;
+            return `[^${footnoteIdx}]`;
+          };
+        })());
 
       if (supertags.includes(t.name)) {
         console.log(`Fetching subtags of ${t.name}`);
