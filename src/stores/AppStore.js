@@ -545,7 +545,6 @@ export default types
     function skipTask(extraData) {
       if (self.isSubmitting) return;
       handleSubmittingFlag(() => {
-        console.log('skipTask');
         getEnv(self).events.invoke('skipTask', self, extraData);
       }, 'Error during skip, try again');
     }
