@@ -107,7 +107,9 @@ fetch(currentTagsUrl)
             footnoteIdToIdxMap[footnoteId] = footnoteIdx;
             return `[^${footnoteIdx}]`;
           };
-        })());
+        })())
+        // force adding new lines before footnote definitions
+        .replace(/(?<![\r\n])([\r\n])(\[\^[^\[]+\]:)/gm, '$1$1$2');
 
       if (supertags.includes(t.name)) {
         console.log(`Fetching subtags of ${t.name}`);
