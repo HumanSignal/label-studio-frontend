@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 
 import Column from './Column';
-import { ColumnData, NewBoardData } from './createData';
+import { NewBoardData } from './createData';
 
 import styles from './Ranker.module.scss';
 
