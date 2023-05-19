@@ -177,13 +177,6 @@ export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10
 export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short';
 
 /**
- * Default Audio v3 to use multichannel mode if the track has 2 or more channels.
- * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short
- *
- */
-export const FF_LSDV_3028 = 'fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short';
-
-/**
  * Multi-image segmentation support via `valueList`
  */
 export const FF_LSDV_4583 = 'feat_front_lsdv_4583_multi_image_segmentation_short';
@@ -205,11 +198,6 @@ export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_
  * New Syncable mixin for better sync
  */
 export const FF_LSDV_3012 = 'fflag_feat_front_lsdv_3012_syncable_tags_070423_short';
-
-/**
- * Enables the ffmpeg audio decoder to be the default.
- */
-export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ffmpeg_long';
 
 /**
  * Adding "skipDuplicates" parameter for <TextArea /> to preventing adding duplicate entries
