@@ -196,4 +196,27 @@ describe('Filter', () => {
 
     expect(filterLength.textContent).toBe('2');
   });
+
+  test('Filter button should be selected', () => {
+    const filter = render(<Filter
+      onChange={mockOnChange}
+      filterData={filterData}
+      availableFilters={[{
+        label: 'Annotation results',
+        path: 'labelName',
+        type: 'String',
+      },
+      {
+        label: 'Confidence score',
+        path: 'score',
+        type: 'Number',
+      }]}
+    />);
+
+    const FilterButton = filter.getByTestId('filter-button');
+
+    fireEvent.click(FilterButton);
+
+    expect(FilterButton.classList.contains('dm-filter-button_active')).toBe(true);
+  });
 });

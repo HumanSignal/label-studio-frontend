@@ -17,6 +17,7 @@ export const Filter: FC<FilterInterface> = ({
   animated = true,
 }) => {
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
     onChange(FilterItems(filterData, filterList));
@@ -102,19 +103,24 @@ export const Filter: FC<FilterInterface> = ({
     );
   }, [filterList, renderFilterList, addNewFilterListItem]);
 
+  const onToggle = useCallback((isOpen: boolean) => {
+    setActive(isOpen);
+  }, []);
+
   return (
     <Dropdown.Trigger
       content={renderFilter}
       dataTestId={'dropdown'}
       animated={animated}
+      onToggle={onToggle}
     >
-      <Button data-cy={'filter-button'} type="text" style={{ padding: 0, whiteSpace: 'nowrap' }}>
+      <Block data-testid={'filter-button'} name={'filter-button'} mod={{ active }}>
         <Elem name={'icon'}>
           <IconFilter />
         </Elem>
         <Elem name={'text'}>Filter</Elem>
         {filterList.length > 0 && <Elem name={'filter-length'} data-testid={'filter-length'}>{filterList.length}</Elem>}
-      </Button>
+      </Block>
     </Dropdown.Trigger>
   );
 };
