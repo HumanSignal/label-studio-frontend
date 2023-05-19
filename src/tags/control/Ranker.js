@@ -11,8 +11,10 @@ import { guidGenerator } from '../../utils/unique';
 import Base from './Base';
 
 /**
- * The `Ranker` tag is used to rank items in a list or pick relevant items from a list, depending on `mode` parameter. Task data referred in `value` parameter should be an array of objects with `id`, `title`, and `body` fields.
- * Results are saved as an array of `id`s in `result` field.
+ * The `Ranker` tag is used to rank items in a `List` tag or pick relevant items from a `List`, depending on using nested `Bucket` tags.
+ * In simple case of `List` + `Ranker` tags the first one becomes interactive and saved result is an array of ids in new order.
+ * With `Bucket`s any items from the `List` can be moved to these buckets, and resulting groups will be exported as a dict `{ bucket-name-1: [array of ids in this bucket], ... }`
+ * By default all items will sit in `List` and will not be exported, unless they are moved to a bucket. But with `useBucket` parameter you can specify a bucket where all items will be placed by default, so exported result will always have all items from the list, groupped by buckets.
  * Columns and items can be styled in `Style` tag by using respective `.htx-ranker-column` and `.htx-ranker-item` classes. Titles of columns are defined in `title` parameter of `Bucket` tag.
  * @example
  * <!-- Visual appearance can be changed via Style tag with these predefined classnames -->
@@ -21,7 +23,8 @@ import Base from './Base';
  *     .htx-ranker-column { background: cornflowerblue; }
  *     .htx-ranker-item { background: lightgoldenrodyellow; }
  *   </Style>
- *   <Ranker name="ranker" value="$items" mode="rank" title="Search Results"/>
+ *   <List name="results" value="$items" title="Search Results" />
+ *   <Ranker name="rank" toName="results" />
  * </View>
  * @example
  * <!-- Example data and result for Ranker tag -->
@@ -33,16 +36,36 @@ import Base from './Base';
  *   ]
  * }
  * {
- *   "from_name": "ranker",
- *   "to_name": "ranker",
+ *   "from_name": "rank",
+ *   "to_name": "results",
  *   "type": "ranker",
  *   "value": { "ranker": ["mdn", "wiki", "blog"] }
+ * }
+ * @example
+ * <!-- Example of using Buckets with Ranker tag -->
+ * <View>
+ *   <List name="results" value="$items" title="Search Results" />
+ *   <Ranker name="rank" toName="results">
+ *     <Bucket name="best" title="Best results" />
+ *     <Bucket name="ads" title="Paid results" />
+ *   </Ranker>
+ * </View>
+ * @example
+ * <!-- Example result for Ranker tag with Buckets; data is the same -->
+ * {
+ *   "from_name": "rank",
+ *   "to_name": "results",
+ *   "type": "ranker",
+ *   "value": { "ranker": {
+ *     "best": ["mdn"],
+ *     "ads": ["blog"]
+ *   } }
  * }
  * @name Ranker
  * @meta_title Ranker Tag allows you to rank items in a List or, if Buckets are used, pick relevant items from a List
  * @meta_description Customize Label Studio by sorting results for machine learning and data science projects.
- * @param {string} name Name of the element
- * @param {string} toName List tag name to connect to
+ * @param {string} name    Name of the element
+ * @param {string} toName  List tag name to connect to
  */
 const Model = types
   .model({
@@ -176,6 +199,13 @@ const HtxRanker = inject('store')(
   }),
 );
 
+/**
+ * Simple container for items in `Ranker` tag. Can be used to group items in `List` tag.
+ * @name Bucket
+ * @subtag
+ * @param {string} name   Name of the column; used as a key in resulting data
+ * @param {string} title  Title of the column
+ */
 const BucketModel = types.model('BucketModel', {
   id: types.optional(types.identifier, guidGenerator),
   type: 'bucket',
