@@ -38,7 +38,6 @@ import Base from './Base';
  * @param {string} name         Name of the element
  * @param {string} value        Data field containing a JSON with array of objects (id, title, body) to rank
  * @param {string} [title]      Title of the list
- * @param {string} [useBucket]  Which Bucket will be used to display results by default; see `Ranker` tag for more details
  */
 const Model = types
   .model({

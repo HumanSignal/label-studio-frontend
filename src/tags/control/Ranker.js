@@ -14,7 +14,7 @@ import Base from './Base';
  * The `Ranker` tag is used to rank items in a `List` tag or pick relevant items from a `List`, depending on using nested `Bucket` tags.
  * In simple case of `List` + `Ranker` tags the first one becomes interactive and saved result is an array of ids in new order.
  * With `Bucket`s any items from the `List` can be moved to these buckets, and resulting groups will be exported as a dict `{ bucket-name-1: [array of ids in this bucket], ... }`
- * By default all items will sit in `List` and will not be exported, unless they are moved to a bucket. But with `useBucket` parameter you can specify a bucket where all items will be placed by default, so exported result will always have all items from the list, groupped by buckets.
+ * By default all items will sit in `List` and will not be exported, unless they are moved to a bucket. But with `default="true"` parameter you can specify a bucket where all items will be placed by default, so exported result will always have all items from the list, groupped by buckets.
  * Columns and items can be styled in `Style` tag by using respective `.htx-ranker-column` and `.htx-ranker-item` classes. Titles of columns are defined in `title` parameter of `Bucket` tag.
  * @example
  * <!-- Visual appearance can be changed via Style tag with these predefined classnames -->
@@ -88,8 +88,8 @@ const Model = types
       return Tree.filterChildrenOfType(self, 'BucketModel');
     },
     /** @returns {string | undefined} */
-    get useBucket() {
-      return self.list?.useBucket;
+    get defaultBucket() {
+      return self.buckets.find(b => b.default)?.name;
     },
     get rankOnly() {
       return !self.buckets.length;
@@ -101,7 +101,7 @@ const Model = types
 
       const columns = self.buckets.map(b => ({ id: b.name, title: b.title ?? '' }));
 
-      if (!self.useBucket) columns.unshift({ id: '_', title: self.list.title });
+      if (!self.defaultBucket) columns.unshift({ id: '_', title: self.list.title });
 
       return columns;
     },
@@ -124,11 +124,11 @@ const Model = types
         // 
         itemIds = { [self.name]: result ?? ids };
       } else if (!result) {
-        itemIds = { [self.useBucket ?? '_']: ids };
+        itemIds = { [self.defaultBucket ?? '_']: ids };
       } else {
         itemIds = { ...result };
 
-        if (!self.useBucket) {
+        if (!self.defaultBucket) {
           const selected = Object.values(result).flat();
           const left = self.leftInList ?? ids.filter(id => !selected.includes(id));
           // @todo what if data has more items then in selected bucket?
@@ -171,14 +171,14 @@ const Model = types
 
     // Create result on submit if it doesn't exist
     beforeSend() {
-      if (self.result) return;
+      if (self.result || !self.list) return;
 
-      const ids = Object.keys(self.items);
+      const ids = Object.keys(self.list?.items);
 
       if (self.rankOnly) {
         self.createResult(ids);
-      } else if (self.useBucket) {
-        self.createResult({ [self.useBucket]: ids });
+      } else if (self.defaultBucket) {
+        self.createResult({ [self.defaultBucket]: ids });
       }
     },
   }));
@@ -203,14 +203,16 @@ const HtxRanker = inject('store')(
  * Simple container for items in `Ranker` tag. Can be used to group items in `List` tag.
  * @name Bucket
  * @subtag
- * @param {string} name   Name of the column; used as a key in resulting data
- * @param {string} title  Title of the column
+ * @param {string} name        Name of the column; used as a key in resulting data
+ * @param {string} title       Title of the column
+ * @param {boolean} [default]  This Bucket will be used to display results from `List` by default; see `Ranker` tag for more details
  */
 const BucketModel = types.model('BucketModel', {
   id: types.optional(types.identifier, guidGenerator),
   type: 'bucket',
   name: types.string,
   title: types.maybeNull(types.string),
+  default: types.optional(types.boolean, false),
 });
 
 const HtxBucket = inject('store')(observer(({ item }) => {
