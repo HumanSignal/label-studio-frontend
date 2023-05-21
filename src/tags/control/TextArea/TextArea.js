@@ -546,7 +546,7 @@ const HtxTextAreaResult = observer(({
 const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, outliner, color }) => {
   const rows = parseInt(item.rows);
   const isTextArea = rows > 1;
-  const isActive = item.area === area;
+  const isActive = item.perRegionArea === area;
   const shouldFocus = area.isCompleted && area.perRegionFocusTarget === item && area.perRegionFocusRequest;
   const value = isActive ? item._value : '';
   const result = area.results.find(r => r.from_name === item);
