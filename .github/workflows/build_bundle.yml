@@ -13,7 +13,7 @@ on:
 env:
   # increment it in case if you need to reset cache
   CACHE_NAME_PREFIX: v3
-  NODE: '14'
+  NODE: '18'
 
 jobs:
   build:

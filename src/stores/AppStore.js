@@ -15,8 +15,9 @@ import Settings from './SettingsStore';
 import Task from './TaskStore';
 import { UserExtended } from './UserStore';
 import { UserLabels } from './UserLabels';
-import { FF_DEV_1536, FF_DEV_2715, isFF } from '../utils/feature-flags';
+import { FF_DEV_1536, FF_DEV_2715, FF_LSDV_4998, isFF } from '../utils/feature-flags';
 import { CommentStore } from './Comment/CommentStore';
+import { destroy as destroySharedStore } from '../mixins/SharedChoiceStore/mixin';
 
 const hotkeys = Hotkey('AppStore', 'Global Hotkeys');
 
@@ -178,6 +179,7 @@ export default types
     /**
      * Get alert
      */
+
     get alert() {
       return getEnv(self).alert;
     },
@@ -188,7 +190,7 @@ export default types
 
       return Array.from(self.annotationStore.names.values()).some(isSegmentation);
     },
-    get canGoNextTask() {
+    get canGoNextHistoryTask() {
       const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
 
       if (hasHistory) {
@@ -198,7 +200,7 @@ export default types
       }
       return false;
     },
-    get canGoPrevTask() {
+    get canGoPrevHistoryTask() {
       const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
 
       if (hasHistory) {
@@ -381,8 +383,8 @@ export default types
       hotkeys.addNamed('region:visibility', function() {
         const c = self.annotationStore.selected;
 
-        if (c && c.highlightedNode && !c.relationMode) {
-          c.highlightedNode.toggleHidden();
+        if (c && !c.relationMode) {
+          c.hideSelectedRegions();
         }
       });
 
@@ -600,6 +602,9 @@ export default types
 
       if (oldAnnotationStore) {
         oldAnnotationStore.beforeReset?.();
+        if (isFF(FF_LSDV_4998)) {
+          destroySharedStore();
+        }
         detach(oldAnnotationStore);
         destroy(oldAnnotationStore);
       }
@@ -730,21 +735,22 @@ export default types
     }
 
     function nextTask() {
-      if (self.canGoNextTask) {
+      if (self.canGoNextHistoryTask && self.hasInterface('topbar:prev-next-history')) {
         const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
 
         getEnv(self).events.invoke('nextTask', taskId, annotationId);
       }
+      else if (self.adjacentTaskIds.nextTaskId) getEnv(self).events.invoke('nextTask', self.adjacentTaskIds.nextTaskId, null, true);
     }
 
     function prevTask(e, shouldGoBack = false) {
       const length = shouldGoBack ? self.taskHistory.length - 1 : self.taskHistory.findIndex((x) => x.taskId === self.task.id) - 1;
 
-      if (self.canGoPrevTask || shouldGoBack) {
+      if ((self.canGoPrevHistoryTask || shouldGoBack) &&  self.hasInterface('topbar:prev-next-history')) {
         const { taskId, annotationId } = self.taskHistory[length];
 
         getEnv(self).events.invoke('prevTask', taskId, annotationId);
-      }
+      } else if (self.adjacentTaskIds.prevTaskId) getEnv(self).events.invoke('prevTask', self.adjacentTaskIds.prevTaskId, null, true);
     }
 
     function setUsers(users) {

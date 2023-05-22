@@ -87,7 +87,6 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
 
   AtImageView.waitForImage();
   await AtImageView.lookForStage();
-  I.executeScript(waitForImage);
 
   I.say('Making sure magic wand button is present');
   I.seeElement('.lsf-toolbar__group button[aria-label="magicwand"]');
@@ -113,13 +112,13 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
   // magic wand pixel colors more robust.
   I.say('Ensuring cloud magic wand pixels are correctly filled color');
   await I.executeScript(setKonvaLayersOpacity, [1.0]);
-  assertMagicWandPixel(I, 0, 0, false, CLOUD.rgbArray,
+  await assertMagicWandPixel(I, 0, 0, false, CLOUD.rgbArray,
     'Far upper left corner should not have magic wand cloud class');
-  assertMagicWandPixel(I, 260, 50, true, CLOUD.rgbArray,
+  await assertMagicWandPixel(I, 260, 50, true, CLOUD.rgbArray,
     'Upper left should have magic wand cloud class');
-  assertMagicWandPixel(I, 300, 620, true, CLOUD.rgbArray,
+  await assertMagicWandPixel(I, 300, 620, true, CLOUD.rgbArray,
     'Lower left should have magic wand cloud class');
-  assertMagicWandPixel(I, 675, 650, false, CLOUD.rgbArray,
+  await assertMagicWandPixel(I, 675, 650, false, CLOUD.rgbArray,
     'Far lower right corner should not have magic wand cloud class');
 
   // Make sure the region made from this is correct.
@@ -139,17 +138,19 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
   // 1, then redo it and ensure its back and our region list is still 1 again.
   I.say('Undoing last cloud magic wand and ensuring it worked correctly');
   I.click('button[aria-label="Undo"]');
-  assertMagicWandPixel(I, 300, 620, false, CLOUD.rgbArray,
+  I.wait(1);
+  await assertMagicWandPixel(I, 300, 620, false, CLOUD.rgbArray,
     'Undone lower left should not have magic wand cloud class anymore');
-  assertMagicWandPixel(I, 260, 50, true, CLOUD.rgbArray,
+  await assertMagicWandPixel(I, 260, 50, true, CLOUD.rgbArray,
     'Upper left should still have magic wand cloud class');
   AtSidebar.seeRegions(1);
 
   I.say('Redoing last cloud magic wand and ensuring it worked correctly');
   I.click('button[aria-label="Redo"]');
-  assertMagicWandPixel(I, 300, 620, true, CLOUD.rgbArray,
+  I.wait(1);
+  await assertMagicWandPixel(I, 300, 620, true, CLOUD.rgbArray,
     'Redone lower left should have magic wand cloud class again');
-  assertMagicWandPixel(I, 260, 50, true, CLOUD.rgbArray,
+  await assertMagicWandPixel(I, 260, 50, true, CLOUD.rgbArray,
     'Upper left should still have magic wand cloud class');
   AtSidebar.seeRegions(1);
 
@@ -180,9 +181,9 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
 
   I.say('Ensuring cloud shadow magic wand pixels are correctly filled color');
   await I.executeScript(setKonvaLayersOpacity, [1.0]);
-  assertMagicWandPixel(I, 0, 0, false, CLOUDSHADOW.rgbArray,
+  await assertMagicWandPixel(I, 0, 0, false, CLOUDSHADOW.rgbArray,
     'Zoomed upper left corner should not have cloud shadow');
-  assertMagicWandPixel(I, 350, 360, true, CLOUDSHADOW.rgbArray,
+  await assertMagicWandPixel(I, 350, 360, true, CLOUDSHADOW.rgbArray,
     'Center area should have magic wand cloud shadow class');
 
   // Make sure if you have a region selected then change the class the region class changes.
@@ -192,6 +193,6 @@ Scenario('Make sure the magic wand works in a variety of scenarios', async funct
   AtSidebar.dontSee('Cloud Shadow');
   AtSidebar.see('Haze');
   await I.executeScript(setKonvaLayersOpacity, [1.0]);
-  assertMagicWandPixel(I, 350, 360, true, HAZE.rgbArray,
+  await assertMagicWandPixel(I, 350, 360, true, HAZE.rgbArray,
     'Center area should have magic wand haze class');
 });

@@ -1,17 +1,18 @@
 import { destroy, getEnv, getParent, getRoot, types } from 'mobx-state-tree';
 
+import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
+import { DataValidator, ValidationError, VALIDATORS } from '../../core/DataValidator';
+import { guidGenerator } from '../../core/Helpers';
 import Registry from '../../core/Registry';
 import Tree from '../../core/Tree';
 import Types from '../../core/Types';
-import Utils from '../../utils';
-import { guidGenerator } from '../../core/Helpers';
-import { DataValidator, ValidationError, VALIDATORS } from '../../core/DataValidator';
-import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
+import { StoreExtender } from '../../mixins/SharedChoiceStore/extender';
 import { ViewModel } from '../../tags/visual';
+import Utils from '../../utils';
 import { FF_DEV_1621, FF_DEV_3034, FF_DEV_3391, FF_DEV_3617, isFF } from '../../utils/feature-flags';
+import { emailFromCreatedBy } from '../../utils/utilities';
 import { Annotation } from './Annotation';
 import { HistoryItem } from './HistoryItem';
-import { StoreExtender } from '../../mixins/SharedChoiceStore/extender';
 
 const SelectedItem = types.union(Annotation, HistoryItem);
 
@@ -323,9 +324,9 @@ const AnnotationStoreModel = types
         let actual_user;
 
         if (isFF(FF_DEV_3034)) {
-        // drafts can be created by other user, but we don't have much info
-        // so parse "id", get email and find user by it
-          const email = item.createdBy?.replace(/,\s*\d+$/, '');
+          // drafts can be created by other user, but we don't have much info
+          // so parse "id", get email and find user by it
+          const email = emailFromCreatedBy(item.createdBy);
           const user = email && self.store.users.find(user => user.email === email);
 
           if (user) actual_user = user.id;

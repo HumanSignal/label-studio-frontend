@@ -145,7 +145,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       buttons.push(
         <ButtonTooltip key="submit" title={title}>
           <Elem name="tooltip-wrapper">
-            <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={async () => {
+            <Button aria-label="submit" disabled={disabled || submitDisabled} look={(disabled || submitDisabled) ? 'disabled' : 'primary'} onClick={async () => {
               await store.commentStore.commentFormSubmit();
               store.submitAnnotation();
             }}>
@@ -160,7 +160,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       const isUpdate = sentUserGenerate || versions.result;
       const button = (
         <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
-          <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={async () => {
+          <Button aria-label="submit" disabled={disabled || submitDisabled} look={(disabled || submitDisabled) ? 'disabled' : 'primary'} onClick={async () => {
             await store.commentStore.commentFormSubmit();
             store.updateAnnotation();
           }}>

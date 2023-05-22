@@ -13,6 +13,8 @@ const RegionsMixin = types
 
     hidden: types.optional(types.boolean, false),
 
+    filtered: types.optional(types.boolean, false),
+
     parentID: types.optional(types.string, ''),
 
     fromSuggestion: false,
@@ -230,7 +232,14 @@ const RegionsMixin = types
         self.setHighlight(!self._highlighted);
       },
 
-      toggleHidden(e) {
+      toggleFiltered(e) {
+        self.filtered = !self.filtered;
+        self.toggleHidden(e, true);
+        e && e.stopPropagation();
+      },
+
+      toggleHidden(e, isFiltered = false) {
+        if (!isFiltered) self.filtered = false;
         self.hidden = !self.hidden;
         e && e.stopPropagation();
       },
