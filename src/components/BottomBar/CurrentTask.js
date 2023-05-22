@@ -7,19 +7,19 @@ import { guidGenerator } from '../../utils/unique';
 import { isDefined } from '../../utils/utilities';
 import './CurrentTask.styl';
 
-
 export const CurrentTask = observer(({ store }) => {
   const currentIndex = useMemo(() => {
-    return store.taskHistory.findIndex((x) => x.taskId === store.task.id) + 1;
+    return store.taskHistory.findIndex(x => x.taskId === store.task.id) + 1;
   }, [store.taskHistory]);
 
-  const historyEnabled = store.hasInterface('topbar:prevnext');
+  const historyEnabled = store.hasInterface('topbar:prev-next-history');
   // @todo some interface?
-  const canPostpone = isFF(FF_DEV_3034)
-    && !isDefined(store.annotationStore.selected.pk)
-    && !store.canGoNextTask
-    && !store.hasInterface('review')
-    && store.hasInterface('postpone');
+  const canPostpone =
+    isFF(FF_DEV_3034) &&
+    !isDefined(store.annotationStore.selected.pk) &&
+    !store.canGoNextTask &&
+    !store.hasInterface('review') &&
+    store.hasInterface('postpone');
 
   return (
     <Elem name="section">
