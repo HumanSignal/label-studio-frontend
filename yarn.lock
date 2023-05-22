@@ -3418,8 +3418,9 @@ ansi-regex@^2.0.0:
   resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-2.1.1.tgz#c3b33ab5ee360d86e0e628f0468ae7ef27d654df"
 
 ansi-regex@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-3.0.0.tgz#ed0317c322064f79466c02966bddb605ab37d998"
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-3.0.1.tgz#123d6479e92ad45ad897d4054e3c7ca7db4944e1"
+  integrity "sha1-Ej1keekq1FrYl9QFTjx8p9tJROE= sha512-+O9Jct8wf++lXxxFc4hc8LsjaSq0HFzzL7cVsw8pRDIPdjKD2mT4ytDZlLuSBZ4cLKZFXIrMGO7DbQCtMJJMKw=="
 
 ansi-regex@^5.0.1:
   version "5.0.1"
@@ -4922,8 +4923,9 @@ decimal.js@^10.4.2:
   integrity sha512-ic1yEvwT6GuvaYwBLLY6/aFFgjZdySKTE8en/fkU3QICTmRtgtSlFn0u0BXN06InZwtfCelR7j8LRiDI/02iGA==
 
 decode-uri-component@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.2.tgz#e69dbe25d37941171dd540e024c444cd5188e1e9"
+  integrity "sha1-5p2+JdN5QRcd1UDgJMREzVGI4ek= sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ=="
 
 dedent@^0.7.0:
   version "0.7.0"
@@ -7353,8 +7355,9 @@ json2mq@^0.2.0:
     string-convert "^0.2.0"
 
 json5@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/json5/-/json5-1.0.1.tgz#779fb0018604fa854eacbf6252180d83543e3dbe"
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/json5/-/json5-1.0.2.tgz#63d98d60f21b313b77c4d6da18bfa69d80e1d593"
+  integrity sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA==
   dependencies:
     minimist "^1.2.0"
 
@@ -7525,8 +7528,9 @@ loader-utils@^1.1.0, loader-utils@^1.4.0:
     json5 "^1.0.1"
 
 loader-utils@^2.0.0:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/loader-utils/-/loader-utils-2.0.2.tgz#d6e3b4fb81870721ae4e0868ab11dd638368c129"
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/loader-utils/-/loader-utils-2.0.4.tgz#8b5cb38b5c34a9a018ee1fc0e6a066d1dfcc528c"
+  integrity "sha1-i1yzi1w0qaAY7h/A5qBm0d/MUow= sha512-xXqpXoINfFhgua9xiqD8fPFHgkoq1mmmpE92WlDbm9rNRd/EbRb+Gqf908T2DMfuHjjJlksiK2RbHVOdD/MqSw=="
   dependencies:
     big.js "^5.2.2"
     emojis-list "^3.0.0"
@@ -7805,11 +7809,7 @@ minimatch@^3.0.4, minimatch@^3.0.5, minimatch@^3.1.1, minimatch@^3.1.2:
   dependencies:
     brace-expansion "^1.1.7"
 
-minimist@^1.2.0:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-
-minimist@^1.2.5:
+minimist@^1.2.0, minimist@^1.2.5:
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
   integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
@@ -7853,8 +7853,9 @@ mobx@^5.15.4:
   resolved "https://registry.yarnpkg.com/mobx/-/mobx-5.15.7.tgz#b9a5f2b6251f5d96980d13c78e9b5d8d4ce22665"
 
 moment@^2.24.0, moment@^2.25.3:
-  version "2.29.1"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
+  version "2.29.4"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.4.tgz#3dbe052889fe7c1b2ed966fcb3a77328964ef108"
+  integrity "sha1-Pb4FKIn+fBsu2Wb8s6dzKJZO8Qg= sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w=="
 
 moo@^0.5.0:
   version "0.5.1"
@@ -10174,7 +10175,7 @@ source-map@^0.6.0, source-map@^0.6.1, source-map@~0.6.0, source-map@~0.6.1:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
-source-map@^0.7.3, source-map@~0.7.2:
+source-map@^0.7.3:
   version "0.7.3"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.7.3.tgz#5302f8169031735226544092e64981f751750383"
 
@@ -10580,12 +10581,13 @@ terser-webpack-plugin@^5.3.7:
     terser "^5.16.5"
 
 terser@^5.10.0, terser@^5.7.2:
-  version "5.12.0"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.12.0.tgz#728c6bff05f7d1dcb687d8eace0644802a9dae8a"
+  version "5.17.3"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.17.3.tgz#7f908f16b3cdf3f6c0f8338e6c1c674837f90d25"
+  integrity "sha1-f5CPFrPN8/bA+DOObBxnSDf5DSU= sha512-AudpAZKmZHkG9jueayypz4duuCFJMMNGRMwaPvQKWfxKedh8Z2x3OCoDqIIi1xx5+iwx1u6Au8XQcc9Lke65Yg=="
   dependencies:
+    "@jridgewell/source-map" "^0.3.2"
     acorn "^8.5.0"
     commander "^2.20.0"
-    source-map "~0.7.2"
     source-map-support "~0.5.20"
 
 terser@^5.16.5:
