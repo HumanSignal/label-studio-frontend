@@ -6,6 +6,7 @@ import { alignElements } from '../../utils/dom';
 import { aroundTransition } from '../../utils/transition';
 import './Dropdown.styl';
 import { DropdownContext } from './DropdownContext';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 let lastIndex = 1;
 
@@ -200,7 +201,10 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
       name="dropdown"
       data-testid={props.dataTestId}
       mix={[props.className, visibilityClasses]}
-      style={compositeStyles}
+      style={{
+        ...compositeStyles,
+        borderRadius: isFF(FF_DEV_3873) && 4,
+      }}
       onClick={(e: MouseEvent) => e.stopPropagation()}
     >
       {content}

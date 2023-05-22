@@ -11,6 +11,7 @@ import { triggerResizeEvent } from '../../utils/utilities';
 import EditorSettings from '../../core/settings/editorsettings';
 import * as TagSettings from './TagSettings';
 import { useMemo } from 'react';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 const HotkeysDescription = () => {
   const columns = [
@@ -87,7 +88,7 @@ const LayoutSettings = observer(({ store }) => {
             setTimeout(triggerResizeEvent);
           }}
         >
-              Move sidepanel to the bottom
+            Move sidepanel to the bottom
         </Checkbox>
       </Elem>
 
@@ -117,7 +118,7 @@ const LayoutSettings = observer(({ store }) => {
             store.settings.togglePredictionsPanel();
           }}
         >
-              Show Predictions panel
+            Show Predictions panel
         </Checkbox>
       </Elem>
 
@@ -132,7 +133,6 @@ const LayoutSettings = observer(({ store }) => {
         >
           Show image in fullsize
         </Checkbox>
-
       </Elem> */}
     </Block>
   );
@@ -141,8 +141,11 @@ const LayoutSettings = observer(({ store }) => {
 const Settings = {
   General: { name: 'General', component: GeneralSettings },
   Hotkeys: { name: 'Hotkeys', component: HotkeysDescription },
-  Layout: { name: 'Layout', component: LayoutSettings },
 };
+
+if (!isFF(FF_DEV_3873)) {
+  Settings.Layout = { name: 'Layout', component: LayoutSettings };
+}
 
 const DEFAULT_ACTIVE = Object.keys(Settings)[0];
 
