@@ -2,14 +2,13 @@
   display: flex;
   justify-content: space-evenly;
   width: 100%;
-  padding-top: 10px;
+  padding: 10px;
   background-color: lightgray;
   border: 1px solid rgba(34, 36, 38, 0.15);
 }
 
 .column {
   flex: 1;
-  margin: 10px;
   border: 1px solid rgba(34, 36, 38, 0.15);
   background-color: white;
   padding: 8px;
@@ -19,19 +18,28 @@
   align-items: center;
   overflow-y: scroll;
   box-shadow: 2px 2px 8px #aaa;
+
+  [data-rbd-droppable-id] {
+    // to spread column to the full height
+    flex: 1;
+  }
+
+  & + & {
+    margin-left: 10px;
+  }
 }
 
 .item {
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(34, 36, 38, 0.15);
-  margin-top: 20px;
+  margin: 10px 0 0;
   padding: 8px;
   border-radius: 2px;
   background-color: lightgray;
   color: black;
-  width: 250px;
   box-shadow: 2px 2px 8px #aaa;
+  max-width: 400px;
 }
 
 .itemLine {
@@ -43,17 +51,5 @@
   min-width: 80%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-}
-
-@media screen and (max-width: 1520px) {
-  .item {
-    width: 200px;
-  }
-}
-
-@media screen and (max-width: 1000px) {
-  .item {
-    width: 100px;
-  }
+  align-items: stretch;
 }
