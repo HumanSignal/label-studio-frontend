@@ -12,8 +12,9 @@ export interface ColumnData {
 //represents an item living in a column
 export interface InputItem {
   id: string;
-  title: string;
-  body: string;
+  title?: string;
+  body?: string;
+  html?: string;
 }
 
 //represents the entire board of columns and items
