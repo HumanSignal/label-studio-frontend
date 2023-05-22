@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 
 import Column from './Column';
-import { ColumnData, NewBoardData } from './createData';
+import { NewBoardData } from './createData';
 
 import styles from './Ranker.module.scss';
 
@@ -84,7 +84,6 @@ const Ranker = ({ inputData, handleChange, readonly }: BoardProps) => {
       itemIds: newItemIds,
     };
 
-    console.log('HANDLE DRAG', newData, newItemIds);
 
     handleChange ? handleChange(newItemIds) : null;
     setData(newData);
