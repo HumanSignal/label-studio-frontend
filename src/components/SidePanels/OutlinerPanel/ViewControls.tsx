@@ -9,7 +9,8 @@ import { BemWithSpecifiContext } from '../../../utils/bem';
 import { SidePanelsContext } from '../SidePanelsContext';
 import './ViewControls.styl';
 import { Filter } from '../../Filter/Filter';
-import { FF_DEV_3873, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_3873, FF_LSDV_3025, isFF } from '../../../utils/feature-flags';
+import { observer } from 'mobx-react';
 
 const { Block, Elem } = BemWithSpecifiContext();
 
@@ -29,7 +30,7 @@ interface ViewControlsProps {
   onFilterChange: (filter: any) => void;
 }
 
-export const ViewControls: FC<ViewControlsProps> = ({
+export const ViewControls: FC<ViewControlsProps> = observer(({
   grouping,
   ordering,
   regions,
@@ -39,21 +40,21 @@ export const ViewControls: FC<ViewControlsProps> = ({
   onFilterChange,
 }) => {
   const context = useContext(SidePanelsContext);
-  const getGrouppingLabels = useCallback((value: GroupingOptions): LabelInfo => {
+  const getGroupingLabels = useCallback((value: GroupingOptions): LabelInfo => {
     switch(value) {
       case 'manual': return {
         label: 'Group Manually',
-        selectedLabel: 'Manual Grouping',
+        selectedLabel: isFF(FF_DEV_3873) ? 'Manual': 'Manual Grouping',
         icon: <IconList/>,
       };
       case 'label': return {
         label: 'Group by Label',
-        selectedLabel: 'Grouped by Label',
+        selectedLabel:  isFF(FF_DEV_3873) ? 'Label': 'Grouped by Label',
         icon: <IconTagAlt/>,
       };
       case 'type': return {
         label: 'Group by Tool',
-        selectedLabel: 'Grouped by Tool',
+        selectedLabel:  isFF(FF_DEV_3873) ? 'Tool': 'Grouped by Tool',
         icon: <IconCursor/>,
       };
     }
@@ -74,45 +75,61 @@ export const ViewControls: FC<ViewControlsProps> = ({
     }
   }, []);
 
-  console.log('regions?.regions', regions?.regions);
-
   return (
     <Block name="view-controls" mod={{ collapsed: context.locked }}>
       <Grouping
         value={grouping}
         options={['manual', 'type', 'label']}
         onChange={value => onGroupingChange(value)}
-        readableValueForKey={getGrouppingLabels}
+        readableValueForKey={getGroupingLabels}
       />
       {grouping === 'manual' && (
-        <Grouping
-          value={ordering}
-          direction={orderingDirection}
-          options={['score', 'date']}
-          onChange={value => onOrderingChange(value)}
-          readableValueForKey={getOrderingLabels}
-          allowClickSelected
-        />
+        <Elem name="sort">
+          <Grouping
+            value={ordering}
+            direction={orderingDirection}
+            options={['score', 'date']}
+            onChange={value => onOrderingChange(value)}
+            readableValueForKey={getOrderingLabels}
+            allowClickSelected
+          />
+          {isFF(FF_DEV_3873) && (
+            <Button
+              type="text"
+              icon={
+                orderingDirection === 'asc' ? (
+                  <IconSortUp style={{ color: '#898098' }} />
+                ) : (
+                  <IconSortDown style={{ color: '#898098' }} />
+                )
+              }
+              style={{ padding: 0, whiteSpace: 'nowrap' }}
+              onClick={() => onOrderingChange(ordering)}
+            />
+          )}
+        </Elem>
       )}
-      {isFF(FF_DEV_3873) && (
+      {isFF(FF_LSDV_3025) && (
         <Filter
           onChange={onFilterChange}
           filterData={regions?.regions}
-          availableFilters={[{
-            label: 'Annotation results',
-            path: 'labelName',
-            type: 'String',
-          },
-          {
-            label: 'Confidence score',
-            path: 'score',
-            type: 'Number',
-          }]}
+          availableFilters={[
+            {
+              label: 'Annotation results',
+              path: 'labelName',
+              type: 'String',
+            },
+            {
+              label: 'Confidence score',
+              path: 'score',
+              type: 'Number',
+            },
+          ]}
         />
       )}
     </Block>
   );
-};
+});
 
 interface LabelInfo {
   label: string;
@@ -150,7 +167,11 @@ const Grouping = <T extends string>({
     return (
       <Menu
         size="medium"
-        style={{ width: 200, minWidth: 200 }}
+        style={{
+          width: 200,
+          minWidth: 200,
+          borderRadius: isFF(FF_DEV_3873) && 4,
+        }}
         selectedKeys={[value]}
         allowClickSelected={allowClickSelected}
       >
@@ -168,9 +189,13 @@ const Grouping = <T extends string>({
     );
   }, [value, optionsList, readableValue, direction]);
 
+
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" icon={readableValue.icon} style={{ padding: 0, whiteSpace: 'nowrap' }} extra={(
+      <Button type="text" mod={{ newUI: isFF(FF_DEV_3873) }} icon={readableValue.icon} style={{
+        padding: isFF(FF_DEV_3873) ? '0 6px 0 2px': 0,
+        whiteSpace: 'nowrap',
+      }} extra={(
         <DirectionIndicator
           direction={direction}
           name={value}

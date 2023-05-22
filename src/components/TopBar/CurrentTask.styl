@@ -31,11 +31,19 @@
     display flex
     grid-area buttons
 
+    &_newui
+      gap 8px
+      margin-left 8px
+
   &__prevnext
     width 32px
     height 32px
     align-self center
     justify-self center
+
+    &_newui
+      &:hover
+        background rgba(9, 109, 217, 0.08)
 
     &::before
       top 50%
@@ -65,7 +73,13 @@
     &_hidden
       display none
 
-    &_disabled::before
-      border 2px solid rgba(0, 0, 0, 0.3)
-      border-bottom none
-      border-right none
+    &_disabled
+
+      &:hover
+        background inherit
+
+      &::before
+        border 2px solid rgba(0, 0, 0, 0.3)
+        border-bottom none
+        border-right none
+

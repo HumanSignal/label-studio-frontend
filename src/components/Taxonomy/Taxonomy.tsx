@@ -1,4 +1,12 @@
-import React, { FormEvent, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  FormEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
 import { Dropdown, Menu } from 'antd';
 
 import { useToggle } from '../../hooks/useToggle';
@@ -7,7 +15,9 @@ import { LsChevron } from '../../assets/icons';
 import TreeStructure from '../TreeStructure/TreeStructure';
 
 import styles from './Taxonomy.module.scss';
-import { FF_DEV_4075, isFF } from '../../utils/feature-flags';
+import { FF_DEV_4075, FF_PROD_309, isFF } from '../../utils/feature-flags';
+import { Tooltip } from '../../common/Tooltip/Tooltip';
+import { CNTagName } from '../../utils/bem';
 
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
@@ -19,6 +29,7 @@ type TaxonomyItem = {
   depth: number,
   children?: TaxonomyItem[],
   origin?: 'config' | 'user' | 'session',
+  hint?: string,
 };
 
 type TaxonomyOptions = {
@@ -74,6 +85,7 @@ interface RowProps {
       padding: number,
       isLeaf: boolean,
       origin?: any,
+      hint?: string,
     },
     children?: any,
     toggle: (id: string) => void,
@@ -148,9 +160,38 @@ function isSubArray(item: string[], parent: string[]) {
   return parent.every((n, i) => item[i] === n);
 }
 
+type HintTooltipProps = {
+  // Without title there is no tooltip at all as a component
+  title?: string,
+  // wrapper is used as a tag in JSX to wrap child elements to make Tooltip to work with the single child element
+  // it can be a real tag or a component that provides real HTMLElement (not a text) as the result
+  wrapper?: CNTagName,
+  children: JSX.Element,
+}
+
+export const HintTooltip: React.FC<HintTooltipProps>  = ({
+  title,
+  wrapper: Wrapper,
+  children,
+  ...rest
+}) => {
+  if (!isFF(FF_PROD_309)) return children;
+  
+  const content = Wrapper ? <Wrapper>{children}</Wrapper> : children;
+
+  if (title) {
+    return (
+      <Tooltip title={title} mouseEnterDelay={500} {...rest}>
+        {content}
+      </Tooltip>
+    );
+  }
+  return content;
+};
+
 const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth, isEditable }: RowProps) => {
   const {
-    row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf },
+    row: { id, isOpen, childCount, isFiltering, name, path, padding, isLeaf, hint },
     toggle,
     addInside: addChild,
   } = item;
@@ -222,67 +263,69 @@ const Item: React.FC<RowProps> = ({ style, item, dimensionCallback, maxWidth, is
               </div>
             )}
           </div>
-          <div className={[styles.taxonomy__item, customClassname].join(' ')}>
-            <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
-              <LsChevron stroke="#09f" style={arrowStyle} />
-            </div>
-            <input
-              className="item"
-              id={id}
-              name={id}
-              type="checkbox"
-              disabled={disabled}
-              checked={checked}
-              ref={setIndeterminate}
-              onChange={e => {
-                if (isEditable) {
-                  setSelected(path, e.currentTarget.checked);
-                }
-              }}
-            />
-            <label
-              htmlFor={id}
-              style={isFF(FF_DEV_4075) ? {} : { maxWidth: `${labelMaxWidth}px` }}
-              onClick={isEditable ? onClick : undefined}
-              title={title}
-              className={disabled ? styles.taxonomy__collapsable : undefined}
-            >
-              {name}
-            </label>
-            {!isFiltering && (
-              <div className={styles.taxonomy__extra}>
-                <span className={styles.taxonomy__extra_count}>{childCount}</span>
-                {isEditable && onAddLabel && (
-                  <div className={styles.taxonomy__extra_actions}>
-                    <Dropdown
-                      destroyPopupOnHide // important for long interactions with huge taxonomy
-                      trigger={['click']}
-                      overlay={(
-                        <Menu>
-                          <Menu.Item
-                            key="add-inside"
-                            className={styles.taxonomy__action}
-                            onClick={() => {
-                              addChild(id);
-                            }}
-                          >
-                            Add Inside
-                          </Menu.Item>
-                          {item.row.origin === 'session' && (
-                            <Menu.Item key="delete" className={styles.taxonomy__action} onClick={onDelete}>
-                              Delete
-                            </Menu.Item>
-                          )}
-                        </Menu>
-                      )}
-                    >
-                      <div>...</div>
-                    </Dropdown>
-                  </div>
-                )}
+          <HintTooltip title={hint}>
+            <div className={[styles.taxonomy__item, customClassname].join(' ')}>
+              <div className={styles.taxonomy__grouping} onClick={() => toggle(id)}>
+                <LsChevron stroke="#09f" style={arrowStyle} />
               </div>
-            )}
-          </div>
+              <input
+                className="item"
+                id={id}
+                name={id}
+                type="checkbox"
+                disabled={disabled}
+                checked={checked}
+                ref={setIndeterminate}
+                onChange={e => {
+                  if (isEditable) {
+                    setSelected(path, e.currentTarget.checked);
+                  }
+                }}
+              />
+              <label
+                htmlFor={id}
+                style={isFF(FF_DEV_4075) ? {} : { maxWidth: `${labelMaxWidth}px` }}
+                onClick={isEditable ? onClick : undefined}
+                title={title}
+                className={disabled ? styles.taxonomy__collapsable : undefined}
+              >
+                {name}
+              </label>
+              {!isFiltering && (
+                <div className={styles.taxonomy__extra}>
+                  <span className={styles.taxonomy__extra_count}>{childCount}</span>
+                  {isEditable && onAddLabel && (
+                    <div className={styles.taxonomy__extra_actions}>
+                      <Dropdown
+                        destroyPopupOnHide // important for long interactions with huge taxonomy
+                        trigger={['click']}
+                        overlay={(
+                          <Menu>
+                            <Menu.Item
+                              key="add-inside"
+                              className={styles.taxonomy__action}
+                              onClick={() => {
+                                addChild(id);
+                              }}
+                            >
+                            Add Inside
+                            </Menu.Item>
+                            {item.row.origin === 'session' && (
+                              <Menu.Item key="delete" className={styles.taxonomy__action} onClick={onDelete}>
+                              Delete
+                              </Menu.Item>
+                            )}
+                          </Menu>
+                        )}
+                      >
+                        <div>...</div>
+                      </Dropdown>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </HintTooltip>
         </>
       ) : (
         <UserLabelForm key="" onAddLabel={onAddLabel} onFinish={() => addChild()} path={path} />
@@ -358,7 +401,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef, isEditable }: Tax
   }, [show]);
 
   const dataTransformation = ({
-    node: { children, depth, label, origin, path },
+    node: { children, depth, label, origin, path, hint },
     nestingLevel,
     isFiltering,
     isOpen,
@@ -381,6 +424,7 @@ const TaxonomyDropdown = ({ show, flatten, items, dropdownRef, isEditable }: Tax
     origin,
     padding: nestingLevel * 10 + 10,
     path,
+    hint,
   });
 
   return (
