@@ -2,7 +2,6 @@ import React from 'react';
 import { observer } from 'mobx-react';
 import { cast, types } from 'mobx-state-tree';
 
-import InfoModal from '../../../components/Infomodal/Infomodal';
 import { defaultStyle } from '../../../core/Constants';
 import { customTypes } from '../../../core/CustomTypes';
 import { guidGenerator } from '../../../core/Helpers';
@@ -130,20 +129,6 @@ const Model = LabelMixin.views(self => ({
       }
       empty.setEmpty();
     }
-  },
-  validate() {
-    const regions = self.annotation.regionStore.regions;
-
-    for (const r of regions) {
-      for (const s of r.states) {
-        if (s.name === self.name) {
-          return true;
-        }
-      }
-    }
-
-    InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
-    return false;
   },
 }));
 

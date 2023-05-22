@@ -79,7 +79,6 @@ jobs:
           done
 
       - name: "Setup e2e"
-        timeout-minutes: 1
         run: |
           set -euo pipefail
           cd e2e

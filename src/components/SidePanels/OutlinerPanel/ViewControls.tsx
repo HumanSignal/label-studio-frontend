@@ -17,9 +17,9 @@ import { Dropdown } from '../../../common/Dropdown/Dropdown';
 import { Menu } from '../../../common/Menu/Menu';
 import { BemWithSpecifiContext } from '../../../utils/bem';
 import { SidePanelsContext } from '../SidePanelsContext';
-import './ViewControls.styl';
+import './ViewControls.styl'; 
 import { Filter } from '../../Filter/Filter';
-import { FF_DEV_3873, FF_LSDV_4992, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_3873, FF_LSDV_3025, FF_LSDV_4992, isFF } from '../../../utils/feature-flags';
 import { observer } from 'mobx-react';
 
 const { Block, Elem } = BemWithSpecifiContext();
@@ -40,7 +40,7 @@ interface ViewControlsProps {
   onFilterChange: (filter: any) => void;
 }
 
-export const ViewControls: FC<ViewControlsProps> = ({
+export const ViewControls: FC<ViewControlsProps> = observer(({
   grouping,
   ordering,
   regions,
@@ -126,7 +126,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
           )}
         </Elem>
       )}
-      {isFF(FF_DEV_3873) && (
+      {isFF(FF_LSDV_3025) && (
         <Filter
           onChange={onFilterChange}
           filterData={regions?.regions}
@@ -156,7 +156,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
 
     </Block>
   );
-};
+});
 
 interface LabelInfo {
   label: string;
@@ -195,7 +195,11 @@ const Grouping = <T extends string>({
     return (
       <Menu
         size="medium"
-        style={{ width: 200, minWidth: 200 }}
+        style={{
+          width: 200,
+          minWidth: 200,
+          borderRadius: isFF(FF_DEV_3873) && 4,
+        }}
         selectedKeys={[value]}
         allowClickSelected={allowClickSelected}
       >
@@ -215,7 +219,12 @@ const Grouping = <T extends string>({
 
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" icon={readableValue.icon} style={isFF(FF_LSDV_4992) ? {} : { padding: 0, whiteSpace: 'nowrap' }} extra={(
+      <Button type="text" mod={{ newUI: isFF(FF_DEV_3873) }} icon={readableValue.icon} style={
+        isFF(FF_LSDV_4992) ? {} : {
+          padding: isFF(FF_DEV_3873) ? '0 6px 0 2px': 0,
+          whiteSpace: 'nowrap',
+        }
+      } extra={(
         <DirectionIndicator
           direction={direction}
           name={value}

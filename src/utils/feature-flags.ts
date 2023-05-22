@@ -141,6 +141,12 @@ export const FF_DEV_3666 = 'fflag_fix_front_dev_3666_max_usages_on_region_creati
 export const FF_DEV_3873 = 'fflag_feat_front_dev_3873_labeling_ui_improvements_short';
 
 /**
+ * Filter component that filter regions on outliner component
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_3025_outliner_filter_short
+ */
+export const FF_LSDV_3025 = 'fflag_feat_front_lsdv_3025_outliner_filter_short';
+
+/**
  * Allow shourtcuts button to work with visible main textarea when there is no focus
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short
  */
@@ -171,13 +177,6 @@ export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10
 export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short';
 
 /**
- * Default Audio v3 to use multichannel mode if the track has 2 or more channels.
- * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short
- *
- */
-export const FF_LSDV_3028 = 'fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short';
-
-/**
  * Multi-image segmentation support via `valueList`
  */
 export const FF_LSDV_4583 = 'feat_front_lsdv_4583_multi_image_segmentation_short';
@@ -199,11 +198,6 @@ export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_
  * New Syncable mixin for better sync
  */
 export const FF_LSDV_3012 = 'fflag_feat_front_lsdv_3012_syncable_tags_070423_short';
-
-/**
- * Enables the ffmpeg audio decoder to be the default.
- */
-export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ffmpeg_long';
 
 /**
  * Adding "skipDuplicates" parameter for <TextArea /> to preventing adding duplicate entries
@@ -253,6 +247,12 @@ export const FF_LSDV_4992 = 'fflag_fix_front_lsdv_4992_hide_all_regions_04052023
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
  */
 export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short';
+
+/**
+ * Add ability to show hints while hover over the choice
+ * @see: ff_dev_2007_rework_choices_280322_short: To enable alt version of <Choices/> (it's not necessary)
+ */
+export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
 
 Object.assign(window, {
   APP_SETTINGS: {

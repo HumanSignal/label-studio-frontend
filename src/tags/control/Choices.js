@@ -22,6 +22,7 @@ import DynamicChildrenMixin from '../../mixins/DynamicChildrenMixin';
 import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from '../../utils/feature-flags';
 import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 import SelectedChoiceMixin from '../../mixins/SelectedChoiceMixin';
+import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
 
 const { Option } = Select;
 
@@ -277,7 +278,9 @@ const ChoicesSelectLayout = observer(({ item }) => {
     >
       {item.tiedChildren.map(i => (
         <Option key={i._value} value={i._value}>
-          {i._value}
+          <HintTooltip title={i.hint} wrapper="div">
+            {i._value}
+          </HintTooltip>
         </Option>
       ))}
     </Select>
