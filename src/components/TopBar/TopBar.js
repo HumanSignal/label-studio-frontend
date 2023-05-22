@@ -27,6 +27,7 @@ export const TopBar = observer(({ store }) => {
           {store.hasInterface('annotations:view-all')  && (
             <Tooltip title="View all annotations">
               <Button
+                className={'topbar__button'}
                 icon={<IconViewAll />}
                 type="text"
                 aria-label="View All"
@@ -45,6 +46,7 @@ export const TopBar = observer(({ store }) => {
             <Tooltip placement="topLeft" title="Create a new annotation">
               <Button
                 icon={<LsPlus />}
+                className={'topbar__button'}
                 type="text"
                 aria-label="View All"
                 onClick={event => {
