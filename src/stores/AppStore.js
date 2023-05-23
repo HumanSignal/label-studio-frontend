@@ -179,7 +179,6 @@ export default types
     /**
      * Get alert
      */
-
     get alert() {
       return getEnv(self).alert;
     },
@@ -190,7 +189,7 @@ export default types
 
       return Array.from(self.annotationStore.names.values()).some(isSegmentation);
     },
-    get canGoNextHistoryTask() {
+    get canGoNextTask() {
       const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
 
       if (hasHistory) {
@@ -200,7 +199,7 @@ export default types
       }
       return false;
     },
-    get canGoPrevHistoryTask() {
+    get canGoPrevTask() {
       const hasHistory = self.task && self.taskHistory && self.taskHistory.length > 1;
 
       if (hasHistory) {
@@ -735,22 +734,21 @@ export default types
     }
 
     function nextTask() {
-      if (self.canGoNextHistoryTask && self.hasInterface('topbar:prev-next-history')) {
+      if (self.canGoNextTask) {
         const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
 
         getEnv(self).events.invoke('nextTask', taskId, annotationId);
       }
-      else if (self.adjacentTaskIds.nextTaskId) getEnv(self).events.invoke('nextTask', self.adjacentTaskIds.nextTaskId, null, true);
     }
 
     function prevTask(e, shouldGoBack = false) {
       const length = shouldGoBack ? self.taskHistory.length - 1 : self.taskHistory.findIndex((x) => x.taskId === self.task.id) - 1;
 
-      if ((self.canGoPrevHistoryTask || shouldGoBack) &&  self.hasInterface('topbar:prev-next-history')) {
+      if (self.canGoPrevTask || shouldGoBack) {
         const { taskId, annotationId } = self.taskHistory[length];
 
         getEnv(self).events.invoke('prevTask', taskId, annotationId);
-      } else if (self.adjacentTaskIds.prevTaskId) getEnv(self).events.invoke('prevTask', self.adjacentTaskIds.prevTaskId, null, true);
+      }
     }
 
     function setUsers(users) {
