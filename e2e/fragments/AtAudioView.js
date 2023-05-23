@@ -278,7 +278,7 @@ module.exports = {
     selector = selector ? this[selector] : this._errorSelector;
     const error = await I.grabTextFrom(selector);
 
-    assert.match(new RegExp(error, 'g'), value);
+    assert.match(error, new RegExp(value, 'g'));
   },
   
   /**
