@@ -37,8 +37,6 @@ export const CommentForm: FC<CommentFormProps> = observer(({
 
     if (!comment.trim()) return;
 
-    clearTooltipMessage();
-
     try {
       actionRef.current.update?.('');
 
@@ -60,19 +58,20 @@ export const CommentForm: FC<CommentFormProps> = observer(({
       commentStore.setAddedCommentThisSession(false);
       clearTooltipMessage();
     }
+    return () => clearTooltipMessage();
   }, []);
 
   useEffect(() => {
     if (isFF(FF_DEV_3873)) {
-      commentStore.tooltipMessage && actionRef.current?.el?.current?.focus();
+      commentStore.tooltipMessage && actionRef.current?.el?.current?.focus({ preventScroll: true });
     }
-    return () => clearTooltipMessage();
   }, [commentStore.tooltipMessage]);
 
   useEffect(() => {
     commentStore.setInputRef(actionRef.current.el);
     commentStore.setCommentFormSubmit(() => onSubmit());
   }, [actionRef, commentStore]);
+
 
   return (
     <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}>
