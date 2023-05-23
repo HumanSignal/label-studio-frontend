@@ -9,7 +9,7 @@ import { Tooltip } from '../../../common/Tooltip/Tooltip';
 import Registry from '../../../core/Registry';
 import { PER_REGION_MODES } from '../../../mixins/PerRegionModes';
 import { Block, cn, Elem } from '../../../utils/bem';
-import { FF_DEV_2755, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2755, FF_DEV_3873, isFF } from '../../../utils/feature-flags';
 import { flatten, isDefined, isMacOS } from '../../../utils/utilities';
 import { NodeIcon } from '../../Node/Node';
 import { LockButton } from '../Components/LockButton';
@@ -402,7 +402,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   }, []);
 
   return (
-    <Elem name="controls" mod={{ withControls: hasControls }}>
+    <Elem name="controls" mod={{ withControls: hasControls, newUI: isFF(FF_DEV_3873) }}>
       <Elem name="control" mod={{ type: 'score' }}>
         {isDefined(item?.score) && item.score.toFixed(2)}
       </Elem>

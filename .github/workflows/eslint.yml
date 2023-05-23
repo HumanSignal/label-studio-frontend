@@ -48,7 +48,6 @@ jobs:
             yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
       - name: "Install dependencies"
-        timeout-minutes: 1
         run: |
           set -euo pipefail
           yarn install --frozen-lockfile
