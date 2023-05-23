@@ -180,7 +180,7 @@ export const FF_LSDV_3028 = 'fflag_feat_front_lsdv_3028_audio_v3_multichannel_de
 /**
  * Multi-image segmentation support via `valueList`
  */
-export const FF_LSDV_4583 = 'feat_front_lsdv_4583_multi_image_segmentation_short';
+export const FF_LSDV_4583 = 'fflag_feat_front_lsdv_4583_multi_image_segmentation_short';
 
 /**
  * Enables new way of preloading/cacheing images
