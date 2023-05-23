@@ -4,6 +4,7 @@ import Utils from '../utils';
 import { guidGenerator } from '../utils/unique';
 import Constants, { defaultStyle } from '../core/Constants';
 import { isDefined } from '../utils/utilities';
+import { FF_DEV_2786, isFF } from '../utils/feature-flags';
 
 export const HighlightMixin = types
   .model()
@@ -99,7 +100,10 @@ export const HighlightMixin = types
      * Removes current highlights
      */
     removeHighlight() {
+      self._spans.forEach(span => span.querySelectorAll('area').forEach(area => area.remove()));
       Utils.Selection.removeRange(self._spans);
+      self._spans = undefined;
+      self.cachedRange = undefined;
     },
 
     /**
@@ -125,6 +129,22 @@ export const HighlightMixin = types
       const first = self._spans?.[0];
 
       if (!first) return;
+      if (isFF(FF_DEV_2786)) {
+        const { className, state: { resizeAreaRight, resizeAreaLeft } } = self._stylesheet;
+        const classes = [resizeAreaLeft, resizeAreaRight];
+        const spanStart = self._spans[0];
+        const spanEnd = self._spans[self._spans.length - 1];
+
+        classes.forEach((resizeClass, index) => {
+          const handleArea = document.createElement('area');
+
+          handleArea.classList.add(className);
+          handleArea.classList.add(resizeClass);
+          index === 0
+            ? spanStart.prepend(handleArea)
+            : spanEnd.append(handleArea);
+        });
+      }
 
       if (first.scrollIntoViewIfNeeded) {
         first.scrollIntoViewIfNeeded();
@@ -138,6 +158,9 @@ export const HighlightMixin = types
      */
     afterUnselectRegion() {
       self.removeClass(self._stylesheet?.state.active);
+      if (isFF(FF_DEV_2786)) {
+        self._spans?.forEach(span => span.querySelectorAll('area').forEach(area => area.remove()));
+      }
     },
 
     /**
@@ -195,7 +218,7 @@ export const HighlightMixin = types
 
     /**
      * Add classes to all spans
-     * @param {string[]} classNames
+     * @param {string | string[]} classNames
      */
     addClass(classNames) {
       if (!classNames || !self._spans) return;
@@ -206,7 +229,7 @@ export const HighlightMixin = types
 
     /**
      * Remove classes from all spans
-     * @param {string[]} classNames
+     * @param {string | string[]} classNames
      */
     removeClass(classNames) {
       if (!classNames || !self._spans) return;
@@ -231,7 +254,10 @@ export const HighlightMixin = types
 
 const stateClass = {
   active: '__active',
+  dragging: '__dragging',
   highlighted: '__highlighted',
+  resizeAreaRight: '__resizeAreaRight',
+  resizeAreaLeft: '__resizeAreaLeft',
   collapsed: '__collapsed',
   hidden: '__hidden',
   noLabel: 'htx-no-label',
@@ -250,8 +276,10 @@ const createSpanStylesheet = (document, identifier, color) => {
   };
 
   const classNames = {
-    active: `${className}.${stateClass.active}:not(.${stateClass.hidden})`,
+    active: `${className}.${stateClass.active}:not(.${stateClass.hidden}):not(.${stateClass.dragging})`,
     highlighted: `${className}.${stateClass.highlighted}`,
+    resizeAreaRight: `${className}.${stateClass.resizeAreaRight}`,
+    resizeAreaLeft: `${className}.${stateClass.resizeAreaLeft}`,
   };
 
   const activeColorOpacity = 0.8;
@@ -261,7 +289,72 @@ const createSpanStylesheet = (document, identifier, color) => {
 
   document.documentElement.style.setProperty(variables.color, color);
 
-  const rules = {
+  const rules = isFF(FF_DEV_2786) ? {
+    [className]: `
+      background-color: var(${variables.color}) !important;
+      border: 1px dashed transparent;
+      cursor: var(${variables.cursor}, pointer);
+    `,
+    [`${className}[data-label]::after`]: `
+      position: absolute;
+      display: inline-block;
+      transform: translate(-100%, 2px);
+      background-color: ${initialActiveColor};
+      color: ${Utils.Colors.contrastColor(initialActiveColor)};
+      padding: 2px;
+      font-size: 9.5px;
+      font-weight: bold;
+      font-family: Monaco;
+      content: attr(data-label);
+      line-height: 1;
+    `,
+    [`${className}[data-label]:hover::after`]: `
+      display: none;
+    `,
+    [classNames.active]: `
+      color: ${Utils.Colors.contrastColor(initialActiveColor)} !important;
+      ${variables.color}: ${initialActiveColor};
+    `,
+    [classNames.highlighted]: `
+      position: relative;
+      border-color: rgb(0, 174, 255);
+    `,
+    [classNames.resizeAreaRight]: `
+      opacity: 0;
+      position: absolute;
+      cursor: e-resize;
+      height: 1.2em;
+      width: 15px;
+    `,
+    [classNames.resizeAreaLeft]: `
+      opacity: 0;
+      position: absolute;
+      cursor: w-resize;
+      height: 1.2em;
+      width: 15px;
+      transform: translateX(-15px);
+    `,
+    [[
+      `.${stateClass.dragging} ${classNames.resizeAreaRight}`,
+      `.${stateClass.dragging} ${classNames.resizeAreaLeft}`,
+    ].join(',')]: `
+      pointer-events: none;
+    `,
+    [`${className}.${stateClass.hidden}`]: `
+      border: none;
+      background: none;
+      padding: 0;
+    `,
+    [`${className}.${stateClass.hidden}::before`]: `
+      display: none
+    `,
+    [`${className}.${stateClass.hidden}::after`]: `
+      display: none
+    `,
+    [`${className}.${stateClass.noLabel}::after`]: `
+      display: none
+    `,
+  } : {
     [className]: `
       background-color: var(${variables.color}) !important;
       cursor: var(${variables.cursor}, pointer);

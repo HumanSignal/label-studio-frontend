@@ -104,6 +104,17 @@ const Model = types
     get isReady() {
       return self.isLoaded  && self._isReady;
     },
+
+    get visibleRoot() {
+      const rootEl = self.visibleNodeRef.current;
+
+      return rootEl?.contentDocument?.body ?? rootEl;
+    },
+
+    get visibleDoc() {
+      // @todo we can get it directly
+      return self.visibleRoot.ownerDocument;
+    },
   }))
   .volatile(() => ({
     // the only visible iframe/div
@@ -190,6 +201,7 @@ const Model = types
 
         self._value = val;
 
+        // @todo not used
         self._regionsCache.forEach(({ region, annotation }) => {
           region.setText(self._value.substring(region.startOffset, region.endOffset));
           self.regions.push(region);
@@ -272,12 +284,23 @@ const Model = types
         const labels = { [control.valueType]: values };
 
         const area = self.annotation.createResult(range, labels, control, self);
+
+        self.highlightRegion(area, range);
+      },
+
+      highlightRegion(area, range) {
         const rootEl = self.visibleNodeRef.current;
         const root = rootEl?.contentDocument?.body ?? rootEl;
+        let soff, eoff;
 
-        area._range = range._range;
+        if (range.globalOffsets) {
+          // @todo format should be consistent or rename
+          [soff, eoff] = range.globalOffsets;
+        } else {
+          area._range = range._range;
 
-        const [soff, eoff] = rangeToGlobalOffset(range._range, root);
+          [soff, eoff] = rangeToGlobalOffset(range._range, root);
+        }
 
         area.updateGlobalOffsets(soff, eoff);
 

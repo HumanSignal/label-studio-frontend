@@ -95,6 +95,8 @@ export const FF_DEV_2715 = 'ff_front_dev_2715_audio_3_280722_short';
 
 export const FF_DEV_2755 = 'fflag_feat_dev_2755_regions_list_grouped_by_labels_with_ordered_collapse_short';
 
+export const FF_DEV_2786 = 'fflag_feat_front_dev_2758_adjustable_draggable_spans_short';
+
 /**
  * Creating separated regions if selection includes hidden phrases
  * @see FF_DEV_2669 (allows filtering)
@@ -267,6 +269,7 @@ function getFeatureFlags() {
 export function isFF(id: string) {
   const featureFlags = getFeatureFlags();
 
+  if (id === FF_DEV_2786) return true;
   if (id in featureFlags) {
     return featureFlags[id] === true;
   } else {

@@ -4,12 +4,15 @@ import ObjectTag from '../../../components/Tags/Object';
 import * as xpath from 'xpath-range';
 import { inject, observer } from 'mobx-react';
 import Utils from '../../../utils';
-import { fixCodePointsInRange } from '../../../utils/selection-tools';
+import { fixCodePointsInRange, getSelectionText } from '../../../utils/selection-tools';
 import './RichText.styl';
 import { isAlive } from 'mobx-state-tree';
 import { LoadingOutlined } from '@ant-design/icons';
 import { Block, cn, Elem } from '../../../utils/bem';
+import { findGlobalOffset, findRangeNative } from '../../../utils/selection-tools';
 import { observe } from 'mobx';
+import { FF_DEV_2786, isFF } from '../../../utils/feature-flags';
+import './RichText.styl';
 
 const DBLCLICK_TIMEOUT = 450; // ms
 const DBLCLICK_RANGE = 5; // px
@@ -21,6 +24,10 @@ class RichTextPieceView extends Component {
 
   // store value of first selected label during double click to apply it later
   doubleClickSelection;
+
+  get isAbleToDragRegion() {
+    return Boolean(window.document.caretRangeFromPoint);
+  }
 
   _selectRegions = (additionalMode) => {
     const { item } = this.props;
@@ -49,16 +56,202 @@ class RichTextPieceView extends Component {
     }
   };
 
+  _onMouseDown = (event) => {
+    const { item } = this.props;
+    const target = event.target;
+    const region = this._determineRegion(event.target);
+    
+    if (isFF(FF_DEV_2786) && event.buttons === 1 && region?.selected) {
+      const doc = item.visibleDoc;
+
+      region.annotation.setDragMode(true);
+      item.isDragging = true;
+      this.draggableRegion = region;
+      this.dragAnchor = doc.caretRangeFromPoint(event.clientX, event.clientY);
+      const freezeSideLeft = target?.classList.contains('__resizeAreaRight');
+      const freezeSideRight = target?.classList.contains('__resizeAreaLeft');
+      const isEdge = freezeSideRight || freezeSideLeft;
+
+      item.isFreezingEdge = isEdge && { left: freezeSideLeft, right: freezeSideRight };
+      item.isActive = isEdge || target?.classList.contains('__active');
+    }
+    else this.draggableRegion = undefined;
+  };
+
+  _setSelectionStyle = (target, root, doc) => {
+    const styleMap = target.computedStyleMap();
+    const background = styleMap.get('background-color').toString();
+    const color = styleMap.get('color').toString();
+
+    const rules = [
+      `background: ${background};`,
+      `color: ${color};`,
+    ];
+
+    if (!this.selectionStyle) {
+      this.selectionStyle = doc.createElement('style');
+      // style tag in body changes its inner text, so only head!
+      root.ownerDocument.head.appendChild(this.selectionStyle);
+    }
+
+    this.selectionStyle.innerText = `::selection {${rules.join('\n')}}`;
+  };
+
+  _removeSelectionStyle = () => {
+    if (this.selectionStyle) this.selectionStyle.innerText = '';
+  };
+
+  _initializeDrag = (event) => {
+    console.log('Initializing drag');
+    const { item } = this.props;
+    const root = item.visibleRoot;
+    const doc = item.visibleDoc;
+    const anchor = this.dragAnchor;
+
+    const offset = findGlobalOffset(anchor.startContainer, anchor.startOffset, root);
+    const region = this.draggableRegion;
+
+    const dragTarget = item.isFreezingEdge && event.path ? event.path[1] : event.target;
+
+    root.addEventListener('mouseleave', this._outOfBoundsDrag);
+    this.spanOffsets = [region.globalOffsets.start - offset, region.globalOffsets.end - offset];
+    this._setSelectionStyle(dragTarget, root, doc);
+    item.initializedDrag = true;
+
+    region.addClass(region._stylesheet.state.dragging);
+  };
+
+  _onMouseMove = (event) => {
+    const { item } = this.props;
+
+    if (item.isDragging && item.isActive) {
+      event.preventDefault();
+
+      if (!item.initializedDrag && item.isFreezingEdge) {
+        this._initializeDrag(event);
+      } else {
+        [this.adjustedOffsets, this.adjustedRange] = this._highlightSelection(
+          item.visibleRoot,
+          [event.clientX, event.clientY],
+          this.spanOffsets,
+        );
+      }
+    }
+  };
+
+  _highlightSelection = (root, cursor, offsets) => {
+    const { item } = this.props;
+    const doc = root.ownerDocument;
+
+    const current = doc.caretRangeFromPoint(cursor[0], cursor[1]);
+    const selection = doc.defaultView.getSelection();
+
+    const offset = findGlobalOffset(current.startContainer, current.startOffset, root);
+    const regionOffsets = this.draggableRegion.globalOffsets;
+
+    let globalOffsets = [offset + offsets[0], offset + offsets[1]];
+
+    if (item.isFreezingEdge) {
+      if (item.isFreezingEdge.left) {
+        globalOffsets = [regionOffsets.start, offset];
+      } else {
+        globalOffsets = [offset, regionOffsets.end];
+      }
+    }
+
+    if (globalOffsets[0] < 0) {
+      // don't allow to go beyond the starting point
+      globalOffsets = [0, offsets[1] - offsets[0]];
+    }
+
+    const range = findRangeNative(globalOffsets[0], globalOffsets[1], root);
+
+    if (!range) {
+      // don't allow to go beyond the document range
+      return [this.adjustedOffsets, this.adjustedRange];
+    }
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return [globalOffsets, range];
+  };
+
+  _outOfBoundsDrag = () => {
+    const { item } = this.props;
+    const rootEl = item.visibleNodeRef.current;
+    const root = rootEl?.contentDocument?.body ?? rootEl;
+    const region = this.draggableRegion;
+    const doc = root.ownerDocument;
+    const selection = doc.defaultView.getSelection();
+
+    root.removeEventListener('mouseleave', this._outOfBoundsDrag);
+
+    region.selectRegion();
+    region.annotation.setDragMode(false);
+    region.removeClass(region._stylesheet.state.dragging);
+
+    item.isDragging = false;
+    item.initializedDrag = false;
+
+    selection.empty();
+    selection.removeAllRanges();
+    this._removeSelectionStyle();
+  };
+
+  _onDragStop = () => {
+    const { item } = this.props;
+
+    if (!item.isDragging) return;
+
+    const rootEl = item.visibleNodeRef.current;
+    const root = rootEl?.contentDocument?.body ?? rootEl;
+    const doc = root.ownerDocument;
+    const selection = doc.defaultView.getSelection();
+    const text = getSelectionText(selection);
+    const region = this.draggableRegion;
+
+    region.annotation.setDragMode(false);
+    item.isDragging = false;
+    item.initializedDrag = false;
+    this.spanOffsets = null;
+    this._removeSelectionStyle();
+
+    region.removeClass(region._stylesheet.state.dragging);
+    
+    if (!selection.isCollapsed) {
+      region.removeHighlight();
+
+      const normedRange = {
+        isText: item.type === 'text',
+        globalOffsets: this.adjustedOffsets,
+      };
+
+      item.highlightRegion(region, normedRange);
+      region.updateText(text);
+      region.selectRegion();
+      this.draggableRegion = undefined;
+
+      selection.empty();
+      selection.removeAllRanges();
+    }
+  };
+
   _onMouseUp = (ev) => {
     const { item } = this.props;
     const states = item.activeStates();
     const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
+    const label = states[0]?.selectedLabels?.[0];
+    const value = states[0]?.selectedValues?.();
+
+    if (isFF(FF_DEV_2786) && item.isDragging) {
+      this._onDragStop();
+      return;
+    }
+
 
     if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
     if (item.selectionenabled === false || item.annotation.isReadOnly()) return;
-    const label = states[0]?.selectedLabels?.[0];
-    const value = states[0]?.selectedValues?.();
 
     Utils.Selection.captureSelection(({ selectionText, range }) => {
       if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {
@@ -83,7 +276,13 @@ class RichTextPieceView extends Component {
       normedRange.text = selectionText;
       normedRange.isText = item.type === 'text';
       normedRange.dynamic = this.props.store.autoAnnotation;
-      item.addRegion(normedRange, this.doubleClickSelection);
+
+      if (isFF(FF_DEV_2786) && this.draggableRegion) {
+        item.highlightRegion(this.draggableRegion, normedRange);
+        this.draggableRegion = undefined;
+      } else {
+        item.addRegion(normedRange, this.doubleClickSelection);
+      }
     }, {
       window: rootEl?.contentWindow ?? window,
       granularity: label?.granularity ?? item.granularity,
@@ -98,6 +297,11 @@ class RichTextPieceView extends Component {
       x: ev.pageX,
       y: ev.pageY,
     };
+
+    const selection = window.getSelection();
+
+    selection.empty();
+    selection.removeAllRanges();
   };
 
   /**
@@ -306,7 +510,16 @@ class RichTextPieceView extends Component {
     const doc = iframe?.contentDocument;
     const body = doc?.body;
     const htmlEl = body?.parentElement;
-    const eventHandlers = {
+    const eventHandlers = isFF(FF_DEV_2786) ? {
+      click: [this._onRegionClick, true],
+      keydown: [this._passHotkeys, false],
+      keyup: [this._passHotkeys, false],
+      keypress: [this._passHotkeys, false],
+      mousedown: [this._onMouseDown, true],
+      mouseup: [this._onMouseUp, false],
+      mousemove: [this._onMouseMove, true],
+      mouseover: [this._onRegionMouseOver, true],
+    } : {
       click: [this._onRegionClick, true],
       keydown: [this._passHotkeys, false],
       keyup: [this._passHotkeys, false],
@@ -359,12 +572,18 @@ class RichTextPieceView extends Component {
 
       val = htmlEscape(val)
         .split(/\n|\r/g)
-        .map(s => `<span class="${cnLine}">${s}</span>`)
+        .map(s => `<span draggable="false" class="${cnLine}">${s}</span>`)
         .join(newLineReplacement);
     }
 
     if (item.inline) {
-      const eventHandlers = {
+      const eventHandlers = isFF(FF_DEV_2786) ? {
+        onClickCapture: this._onRegionClick,
+        onMouseUp: this._onMouseUp,
+        onMouseDown: this._onMouseDown,
+        onMouseMove: this._onMouseMove,
+        onMouseOverCapture: this._onRegionMouseOver,
+      } : {
         onClickCapture: this._onRegionClick,
         onMouseUp: this._onMouseUp,
         onMouseOverCapture: this._onRegionMouseOver,

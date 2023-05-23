@@ -110,6 +110,10 @@ const Model = types
       return res;
     },
 
+    updateText(text) {
+      self.text = text;
+    },
+
     // text regions have only start/end, so we should update start/endOffsets with these values
     updateTextOffsets(startOffset, endOffset) {
       Object.assign(self, { startOffset, endOffset });
