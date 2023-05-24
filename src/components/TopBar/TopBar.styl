@@ -12,6 +12,10 @@
   position sticky
   top 0
 
+  &__button
+    &:hover
+      background-color rgba(9, 109, 217, 0.12)
+
   &__group
     display flex
     align-items stretch
@@ -30,8 +34,11 @@
   &_newLabelingUI
     display block
     background-color #FAFAFA
+    height 42px
+    border-bottom #D8D5DD 1px solid
+
     .topbar
       &__group
-        height var(--topbar-height)
+        height 42px
         flex 1
         align-items center

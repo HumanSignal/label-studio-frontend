@@ -33,7 +33,13 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
     throw new Error('Tooltip does accept a single child only');
   }
 
-  const triggerElement = (ref ?? useRef<HTMLElement>()) as MutableRefObject<HTMLElement>;
+  const refIsObject = !!ref && Object.hasOwnProperty.call(ref, 'current');
+  const refIsFunction = ref instanceof Function;
+  const triggerElement = (refIsObject ? ref : useRef<HTMLElement>()) as MutableRefObject<HTMLElement>;
+  const forwardingRef = !refIsFunction ? triggerElement : (el) => {
+    ref(el);
+    triggerElement.current = el;
+  };
   const tooltipElement = useRef<HTMLElement>();
   const [offset, setOffset] = useState({});
   const [visibility, setVisibility] = useState(defaultVisible ? 'visible' : null);
@@ -110,7 +116,7 @@ export const Tooltip = forwardRef<HTMLElement, TooltipProps>(({
   const child = Children.only(children);
   const clone = cloneElement(child, {
     ...child.props,
-    ref: triggerElement,
+    ref: forwardingRef,
   });
 
   useEffect(() => {

@@ -18,12 +18,13 @@ export interface ButtonProps extends HTMLButtonProps {
   waiting?: boolean;
   icon?: JSX.Element;
   tag?: CNTagName;
-  look?: 'primary' | 'danger' | 'destructive' | 'alt' | 'outlined' | 'active';
+  look?: 'primary' | 'danger' | 'destructive' | 'alt' | 'outlined' | 'active' | 'disabled';
   primary?: boolean;
   danger?: boolean;
   style?: CSSProperties;
   hotkey?: keyof typeof Hotkey.keymap;
   tooltip?: string;
+  tooltipTheme?: 'light' | 'dark';
   nopadding?: boolean;
 }
 
@@ -50,6 +51,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
   danger,
   hotkey,
   tooltip,
+  tooltipTheme = 'light',
   nopadding,
   ...rest
 }, ref) => {
@@ -118,7 +120,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
 
   if (tooltip) {
     return (
-      <Tooltip title={tooltip} theme="light">
+      <Tooltip title={tooltip} theme={tooltipTheme} ref={ref}>
         {buttonBody}
       </Tooltip>
     );
