@@ -1,23 +1,23 @@
 .board {
+  --ranker-gap: 8px;
+  --ranker-border-color: rgba(34, 36, 38, 0.15);
   display: flex;
   justify-content: space-evenly;
   width: 100%;
-  padding: 10px;
-  background-color: lightgray;
-  border: 1px solid rgba(34, 36, 38, 0.15);
+  padding: var(--ranker-gap);
+  border: 1px solid var(--ranker-border-color);
 }
 
 .column {
   flex: 1;
-  border: 1px solid rgba(34, 36, 38, 0.15);
+  border: 1px solid var(--ranker-border-color);
   background-color: white;
-  padding: 8px;
+  padding: var(--ranker-gap);
   border-radius: 2px;
   display: flex;
   flex-direction: column;
   align-items: center;
   overflow-y: scroll;
-  box-shadow: 2px 2px 8px #aaa;
 
   [data-rbd-droppable-id] {
     // to spread column to the full height
@@ -25,20 +25,19 @@
   }
 
   & + & {
-    margin-left: 10px;
+    margin-left: var(--ranker-gap);
   }
 }
 
 .item {
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(34, 36, 38, 0.15);
-  margin: 10px 0 0;
-  padding: 8px;
+  border: 1px solid var(--ranker-border-color);
+  margin: var(--ranker-gap) 0 0;
+  padding: var(--ranker-gap);
   border-radius: 2px;
-  background-color: lightgray;
+  background-color: #f5f5f5;
   color: black;
-  box-shadow: 2px 2px 8px #aaa;
   max-width: 400px;
 }
 
