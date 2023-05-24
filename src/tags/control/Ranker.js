@@ -94,7 +94,7 @@ const Model = types
     get rankOnly() {
       return !self.buckets.length;
     },
-    /** @returns {{ id: string, title: string }[]} */
+    /** @returns {Array<{ id: string, title: string }>} */
     get columns() {
       if (!self.list) return [];
       if (self.rankOnly) return [{ id: self.name, title: self.list.title }];
@@ -112,7 +112,7 @@ const Model = types
       const items = self.list?.items;
       const ids = Object.keys(items);
       const columns = self.columns;
-      /** @type {{ [bucket: string]: string[] }} */
+      /** @type {Record<string, string[]>} */
       const result = self.result?.value.ranker;
       let itemIds = {};
 
