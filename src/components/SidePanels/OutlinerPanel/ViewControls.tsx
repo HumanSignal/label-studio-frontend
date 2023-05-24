@@ -17,7 +17,7 @@ import { Dropdown } from '../../../common/Dropdown/Dropdown';
 import { Menu } from '../../../common/Menu/Menu';
 import { BemWithSpecifiContext } from '../../../utils/bem';
 import { SidePanelsContext } from '../SidePanelsContext';
-import './ViewControls.styl'; 
+import './ViewControls.styl';
 import { Filter } from '../../Filter/Filter';
 import { FF_DEV_3873, FF_LSDV_3025, FF_LSDV_4992, isFF } from '../../../utils/feature-flags';
 import { observer } from 'mobx-react';
@@ -217,9 +217,12 @@ const Grouping = <T extends string>({
     );
   }, [value, optionsList, readableValue, direction]);
 
+  // mods are already set in the button from type, so use it only in new UI
+  const extraStyles = isFF(FF_DEV_3873) ? { mod: { newUI: true } } : undefined;
+
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" mod={{ newUI: isFF(FF_DEV_3873) }} icon={readableValue.icon} style={
+      <Button type="text" {...extraStyles} icon={readableValue.icon} style={
         isFF(FF_LSDV_4992) ? {} : {
           padding: isFF(FF_DEV_3873) ? '0 6px 0 2px': 0,
           whiteSpace: 'nowrap',
