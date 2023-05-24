@@ -60,7 +60,7 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
       };
       case 'label': return {
         label: 'Group by Label',
-        selectedLabel:  isFF(FF_DEV_3873) ?
+        selectedLabel: isFF(FF_DEV_3873) ?
           (isFF(FF_LSDV_4992) ? 'By Label' :'Label')
           : 'Grouped by Label',
         icon: <IconTagAlt/>,
