@@ -18,7 +18,7 @@ export interface ButtonProps extends HTMLButtonProps {
   waiting?: boolean;
   icon?: JSX.Element;
   tag?: CNTagName;
-  look?: 'primary' | 'danger' | 'destructive' | 'alt' | 'outlined' | 'active';
+  look?: 'primary' | 'danger' | 'destructive' | 'alt' | 'outlined' | 'active' | 'disabled';
   primary?: boolean;
   danger?: boolean;
   style?: CSSProperties;
