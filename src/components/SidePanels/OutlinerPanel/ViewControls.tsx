@@ -60,7 +60,7 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
       };
       case 'label': return {
         label: 'Group by Label',
-        selectedLabel:  isFF(FF_DEV_3873) ?
+        selectedLabel: isFF(FF_DEV_3873) ?
           (isFF(FF_LSDV_4992) ? 'By Label' :'Label')
           : 'Grouped by Label',
         icon: <IconTagAlt/>,
@@ -219,15 +219,14 @@ const Grouping = <T extends string>({
 
   // mods are already set in the button from type, so use it only in new UI
   const extraStyles = isFF(FF_DEV_3873) ? { mod: { newUI: true } } : undefined;
+  const style = isFF(FF_LSDV_4992) ? {} : {
+    padding: isFF(FF_DEV_3873) ? '0 6px 0 2px': 0,
+    whiteSpace: 'nowrap',
+  };
 
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" {...extraStyles} icon={readableValue.icon} style={
-        isFF(FF_LSDV_4992) ? {} : {
-          padding: isFF(FF_DEV_3873) ? '0 6px 0 2px': 0,
-          whiteSpace: 'nowrap',
-        }
-      } extra={(
+      <Button type="text" {...extraStyles} icon={readableValue.icon} style={style} extra={(
         <DirectionIndicator
           direction={direction}
           name={value}
