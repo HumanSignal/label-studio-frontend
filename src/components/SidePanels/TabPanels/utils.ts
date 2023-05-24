@@ -527,9 +527,8 @@ export const findZIndices = (state: Record<string, PanelBBox>, focusedKey: strin
 };
 
 export const findPanelViewByName = (state: Record<string, PanelBBox>, name: string): { panelName: string, tab: PanelView, panelViewIndex: number } | undefined => {
-  for (const key of Object.keys(state)) {
-    const panelViewIndex = state[key].panelViews.findIndex((view) => view.name === name);
-    
-    return panelViewIndex >= 0 ? { panelName: key, tab: state[key].panelViews[panelViewIndex], panelViewIndex } : undefined;
-  }
+  const panelName = Object.keys(state).find(panelKey => panelKey.includes(name)) || '';
+  const panelViewIndex = state[panelName]?.panelViews.findIndex((view: { name: string }) => view.name === name);
+  
+  return panelViewIndex && panelViewIndex >= 0 ? { panelName, tab: state[panelName].panelViews[panelViewIndex], panelViewIndex } : undefined;
 };
