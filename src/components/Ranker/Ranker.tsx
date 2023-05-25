@@ -1,126 +1,108 @@
-/**
- * libraries
- */
 import React, { useEffect, useState } from 'react';
-import { DragDropContext } from 'react-beautiful-dnd';
+import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 
-/**
- * components
- */
 import Column from './Column';
-import { BoardData, ColumnData } from './createData';
+import { NewBoardData } from './createData';
 
-/**
- * styles
- */
 import styles from './Ranker.module.scss';
 
-/**
- * types
- */
 interface BoardProps {
-  inputData: BoardData;
-  handleChange?: (ids: string[]) => void;
+  inputData: NewBoardData;
+  handleChange?: (ids: Record<string, string[]>) => void;
+  readonly?: boolean;
 }
 
-//component for a drag and drop board with 2 columns as defined in createData.ts
-const Ranker = ({ inputData, handleChange }: BoardProps) => {
+// Component for a drag and drop board with 1+ columns
+const Ranker = ({ inputData, handleChange, readonly }: BoardProps) => {
   const [data, setData] = useState(inputData);
 
-  // update data when inputData changes
+  // Update data when inputData changes
   useEffect(() => {
     setData(inputData);
   }, [inputData]);
 
-  const handleDragEnd = (result: any) => {
-    //handle reordering of items
+  // Handle reordering of items
+  const handleDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result;
 
-    //check if user dropped item outside of columns or in same location as starting location
-    if (!destination || (destination.droppableId === source.draggableId && destination.index === source.index)) {
+    // Check if user dropped item outside of columns or in same location as starting location
+    if (!destination || (destination.droppableId === source.droppableId && destination.index === source.index)) {
       return;
     }
 
     //handle reorder when item was dragged to a new position
     //determine which column item was moved from
-    const startCol = data.columns[source.droppableId];
-    const endCol = data.columns[destination.droppableId];
+    const startCol = data.columns.find(col => col.id === source.droppableId);
+    const endCol = data.columns.find(col => col.id === destination.droppableId);
 
     if (startCol === endCol) {
       //get original items list
-      const newItemIds = Array.from(startCol.itemIds);
+      const newCol = [...data.itemIds[source.droppableId]];
 
       //reorder items list
-      newItemIds.splice(source.index, 1);
-      newItemIds.splice(destination.index, 0, draggableId);
-
-      //create newcolumn with correct order of items
-      const newCol = {
-        ...startCol,
-        itemIds: newItemIds,
-      };
+      newCol.splice(source.index, 1);
+      newCol.splice(destination.index, 0, draggableId);
 
       //update state
+      const newItemIds = {
+        ...data.itemIds,
+        [source.droppableId]: newCol,
+      };
+
+      // delete newItemIds['_'];
+
       const newData = {
         ...data,
-        columns: { ...data.columns, [newCol.id]: newCol },
+        itemIds: newItemIds,
       };
 
       setData(newData);
       //update results
-      handleChange ? handleChange(newData.columns[`${newData.columnOrder.length - 1}`].itemIds) : null;
+      handleChange ? handleChange(newItemIds) : null;
       return;
     }
 
     //handle case when moving from one column to a different column
-    const startItemIds = Array.from(startCol.itemIds);
+    const startItemIds = [...data.itemIds[source.droppableId]];
 
     startItemIds.splice(source.index, 1);
 
-    const newStartCol = {
-      ...startCol,
-      itemIds: startItemIds,
-    };
-
-    const endItemIds = Array.from(endCol.itemIds);
+    const endItemIds = [...(data.itemIds[destination.droppableId] ?? [])];
 
     endItemIds.splice(destination.index, 0, draggableId);
 
-    const newEndCol = {
-      ...endCol,
-      itemIds: endItemIds,
+    const newItemIds = {
+      ...data.itemIds,
+      [source.droppableId]: startItemIds,
+      [destination.droppableId]: endItemIds,
     };
 
-    //update state
+    // delete newItemIds['_'];
+
     const newData = {
       ...data,
-      columns: {
-        ...data.columns,
-        [newStartCol.id]: newStartCol,
-        [newEndCol.id]: newEndCol,
-      },
+      itemIds: newItemIds,
     };
-    //update results
 
-    handleChange ? handleChange(newData.columns[`${newData.columnOrder.length - 1}`].itemIds) : null;
+
+    handleChange ? handleChange(newItemIds) : null;
     setData(newData);
   };
 
   return (
-    <div className={styles.rankerBoard}>
+    <>
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className={styles.boardStyle}>
-          <div className={styles.columnsStyle}>
-            {data.columnOrder.map(columnId => {
-              const column = data.columns[columnId] as ColumnData;
-              const items = column.itemIds.map(itemId => data.items[itemId]);
+        <div className={styles.board}>
+          <>
+            {data.columns.map(column => {
+              const items = data.itemIds[column.id]?.map(itemId => data.items[itemId]) ?? [];
 
-              return <Column key={column.id} column={column} items={items} title={column.title} />;
+              return <Column key={column.id} column={column} items={items} readonly={readonly} />;
             })}
-          </div>
+          </>
         </div>
       </DragDropContext>
-    </div>
+    </>
   );
 };
 

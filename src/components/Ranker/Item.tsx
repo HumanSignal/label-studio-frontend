@@ -1,24 +1,14 @@
-/**
- * libraries
- */
+import { useMemo } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 
-/**
- * components
- */
+import { sanitizeHtml } from '../../utils/html';
 import { InputItem } from './createData';
-
-/**
- * styles
- */
 import styles from './Ranker.module.scss';
 
-/**
- * types
- */
 interface ItemProps {
   item: InputItem;
   index: number;
+  readonly?: boolean;
 }
 
 /**
@@ -26,21 +16,26 @@ interface ItemProps {
  * given column as well as between columns.
  */
 const Item = (props: ItemProps) => {
-  const { item, index } = props;
+  const { item, index, readonly } = props;
+
+  // @todo document html parameter later after proper tests
+  const html = useMemo(() => sanitizeHtml(item.html), [item.html]);
 
   return (
-    <Draggable draggableId={item.id} index={index}>
+    <Draggable draggableId={item.id} index={index} isDragDisabled={readonly}>
       {provided => {
         return (
           <div
             {...provided.draggableProps}
             {...provided.dragHandleProps}
-            className={[styles.itemStyle, 'htx-ranker-item'].join(' ')}
+            style={{ ...provided.draggableProps.style }}
+            className={[styles.item, 'htx-ranker-item'].join(' ')}
             ref={provided.innerRef}
           >
-            <h3 className={styles.itemLineStyle}>{item.title}</h3>
-            <p className={styles.itemLineStyle}>{item.body}</p>
-            <p className={styles.itemLineStyle}>{item.id}</p>
+            {item.title && <h3 className={styles.itemLine}>{item.title}</h3>}
+            {item.body && <p className={styles.itemLine}>{item.body}</p>}
+            {item.html && <p className={styles.itemLine} dangerouslySetInnerHTML={{ __html: html }} />}
+            <p className={styles.itemLine}>{item.id}</p>
           </div>
         );
       }}

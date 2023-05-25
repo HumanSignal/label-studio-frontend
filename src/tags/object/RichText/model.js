@@ -8,6 +8,7 @@ import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import RegionsMixin from '../../../mixins/Regions';
 import Utils from '../../../utils';
 import { parseValue } from '../../../utils/data';
+import { sanitizeHtml } from '../../../utils/html';
 import messages from '../../../utils/messages';
 import { findRangeNative, rangeToGlobalOffset } from '../../../utils/selection-tools';
 import { escapeHtml, isValidObjectURL } from '../../../utils/utilities';
@@ -177,18 +178,7 @@ const Model = types
 
         // clean up the html — remove scripts and iframes
         // nodes count better be the same, so replace them with stubs
-
-
-        val = val
-          .toString()
-          .replace(/(<head.*?>)(.*?)(<\/head>)/,(match, opener, body, closer) => {
-            return [opener,body.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi,'<!--ls-stub></ls-stub-->'),closer].join('');
-          })
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi, '<ls-stub></ls-stub>')
-          .replace(/<iframe\b.*?(?:\/>|<\/iframe>)/g, '<ls-stub></ls-stub>')
-          .replace(/\bon[a-z]+\s*=\s*(?:(['"])(?!\1).+?\1|(?:\S+?\(.*?\)(?=[\s>])))(.*?)/gi, '');
-
-        self._value = val;
+        self._value = sanitizeHtml(String(val), { useStub: true, useHeadStub: true });
 
         self._regionsCache.forEach(({ region, annotation }) => {
           region.setText(self._value.substring(region.startOffset, region.endOffset));
