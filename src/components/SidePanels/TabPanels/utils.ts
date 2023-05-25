@@ -210,7 +210,7 @@ export const openSourcePanelDefault: Record<string, PanelBBox> = {
   },
 };
 
-export const enterprisePartialEmptyBaseProps = {
+export const partialEmptyBaseProps = {
   ...emptyPanel,
   name: 'breakpointCollapsed',
   positioning: false,
@@ -229,27 +229,6 @@ export const enterprisePartialEmptyBaseProps = {
   dragTop: false,
   dragBottom: false,
   panelViews: [panelViews[0], panelViews[1], panelViews[2], panelViews[3], panelViews[4]],
-};
-
-export const openSourcePartialEmptyBaseProps = {
-  ...emptyPanel,
-  name: 'breakpointCollapsed',
-  positioning: false,
-  height: DEFAULT_PANEL_HEIGHT,
-  maxHeight: DEFAULT_PANEL_HEIGHT,
-  detached: false,
-  maxWidth: DEFAULT_PANEL_MAX_WIDTH,
-  zIndex: 10,
-  expanded: true,
-  locked: true,
-  alignment: Side.left,
-  lockPanelContents: false,
-  attachedKeys: [],
-  sidePanelCollapsed: { [Side.left]: false, [Side.right]: false },
-  setSidePanelCollapsed: () => { },
-  dragTop: false,
-  dragBottom: false,
-  panelViews: [panelViews[0], panelViews[1], panelViews[2], panelViews[3]],
 };
 
 export const resizers = [

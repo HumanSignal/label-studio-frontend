@@ -12,7 +12,6 @@ import { PanelTabsBase } from './PanelTabsBase';
 import { Tabs } from './Tabs';
 import { CommonProps, DropSide, EventHandlers, JoinOrder, PanelBBox, Result, Side, SidePanelsProps, ViewportSize } from './types';
 import {
-  enterprisePartialEmptyBaseProps,
   findZIndices,
   getAttachedPerSide,
   getLeftKeys,
@@ -20,7 +19,7 @@ import {
   getSnappedHeights,
   joinPanelColumns,
   newPanelInState,
-  openSourcePartialEmptyBaseProps,
+  partialEmptyBaseProps,
   redistributeHeights,
   renameKeys,
   resizePanelColumns,
@@ -438,8 +437,15 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     };
   }, []);
 
-  const partialEmptyBaseProps = showComments ? enterprisePartialEmptyBaseProps : openSourcePartialEmptyBaseProps;
-  const emptyBaseProps = { ...partialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
+  const getPartialEmptyBaseProps = useMemo(() => {
+    const updatedProps = { ...partialEmptyBaseProps };
+
+    updatedProps.panelViews = partialEmptyBaseProps.panelViews.filter((view) => view.name !== 'comments' && !showComments);
+
+    return updatedProps;
+  }, []);
+
+  const emptyBaseProps = { ...getPartialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
 
   return (
     <SidePanelsContext.Provider value={contextValue}>
