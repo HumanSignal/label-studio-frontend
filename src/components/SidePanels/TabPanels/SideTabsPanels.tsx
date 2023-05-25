@@ -440,10 +440,12 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const getPartialEmptyBaseProps = useMemo(() => {
     const updatedProps = { ...partialEmptyBaseProps };
 
-    updatedProps.panelViews = partialEmptyBaseProps.panelViews.filter((view) => view.name !== 'comments' && !showComments);
+    updatedProps.panelViews = partialEmptyBaseProps.panelViews.filter((view) => view.name !== 'comments' || showComments);
 
     return updatedProps;
-  }, []);
+  }, [partialEmptyBaseProps, showComments]);
+
+  console.log('heartex', getPartialEmptyBaseProps);
 
   const emptyBaseProps = { ...getPartialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
 
