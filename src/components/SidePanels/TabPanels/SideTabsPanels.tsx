@@ -425,8 +425,6 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     return updatedProps;
   }, [partialEmptyBaseProps, showComments]);
 
-  console.log('heartex', getPartialEmptyBaseProps);
-
   const emptyBaseProps = { ...getPartialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
 
   return (
