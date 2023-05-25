@@ -11,7 +11,28 @@ import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
 import { PanelTabsBase } from './PanelTabsBase';
 import { Tabs } from './Tabs';
 import { CommonProps, DropSide, EventHandlers, JoinOrder, PanelBBox, Result, Side, SidePanelsProps, ViewportSize } from './types';
-import { findZIndices, getAttachedPerSide, getLeftKeys, getRightKeys, getSnappedHeights, joinPanelColumns, newPanelInState, partialEmptyBaseProps, redistributeHeights, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
+import {
+  enterprisePartialEmptyBaseProps,
+  findZIndices,
+  getAttachedPerSide,
+  getLeftKeys,
+  getRightKeys,
+  getSnappedHeights,
+  joinPanelColumns,
+  newPanelInState,
+  openSourcePartialEmptyBaseProps,
+  redistributeHeights,
+  renameKeys,
+  resizePanelColumns,
+  restorePanel,
+  savePanels,
+  setActive,
+  setActiveDefaults,
+  splitPanelColumns,
+  stateAddedTab,
+  stateRemovedTab,
+  stateRemovePanelEmptyViews
+} from './utils';
 
 const maxWindowWidth = 980;
 const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
@@ -417,6 +438,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     };
   }, []);
 
+  const partialEmptyBaseProps = showComments ? enterprisePartialEmptyBaseProps : openSourcePartialEmptyBaseProps;
   const emptyBaseProps = { ...partialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
 
   return (
