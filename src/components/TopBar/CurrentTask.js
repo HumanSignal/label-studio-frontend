@@ -14,6 +14,8 @@ export const CurrentTask = observer(({ store }) => {
   const [visibleComments, setVisibleComments] = useState(0);
 
   useEffect(() => {
+    store.commentStore.setAddedCommentThisSession(false);
+
     const reactionDisposer = reaction(
       () => store.commentStore.comments.map(item => item.isDeleted),
       result => {
