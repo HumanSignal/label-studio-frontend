@@ -119,7 +119,7 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
                 ) : (
                   <IconSortDownNew style={{ color: '#898098' }} />
                 )
-              }I
+              }
               style={isFF(FF_LSDV_4992) ? {} : { padding: 0, whiteSpace: 'nowrap' }}
               onClick={() => onOrderingChange(ordering)}
             />
