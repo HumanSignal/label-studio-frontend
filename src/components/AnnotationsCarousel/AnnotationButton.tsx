@@ -92,7 +92,7 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
           entity.list.deleteAnnotation(entity);
         },
       });
-    }, []);
+    }, [entity]);
     const isPrediction = entity.type === 'prediction';
     const isDraft = !isDefined(entity.pk);
     const showGroundTruth = capabilities.groundTruthEnabled && !isPrediction && !isDraft;
