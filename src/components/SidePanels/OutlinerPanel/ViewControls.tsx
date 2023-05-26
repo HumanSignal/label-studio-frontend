@@ -5,8 +5,8 @@ import {
   IconList,
   IconOutlinerEyeClosed,
   IconOutlinerEyeOpened,
-  IconSortDown,
-  IconSortUp,
+  IconSortDown, IconSortDownNew,
+  IconSortUp, IconSortUpNew,
   IconSpeed,
   IconTagAlt
 } from '../../../assets/icons';
@@ -115,11 +115,11 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
               type="text"
               icon={
                 orderingDirection === 'asc' ? (
-                  <IconSortUp style={{ color: '#898098' }} />
+                  <IconSortUpNew style={{ color: '#898098' }} />
                 ) : (
-                  <IconSortDown style={{ color: '#898098' }} />
+                  <IconSortDownNew style={{ color: '#898098' }} />
                 )
-              }
+              }I
               style={isFF(FF_LSDV_4992) ? {} : { padding: 0, whiteSpace: 'nowrap' }}
               onClick={() => onOrderingChange(ordering)}
             />
