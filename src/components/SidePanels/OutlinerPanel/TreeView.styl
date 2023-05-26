@@ -124,6 +124,10 @@
     justify-content center
     grid-template-columns repeat(5, 32px)
 
+  &:hover &_newUI
+    .outliner-item__control_type_lock
+      display flex
+
     &_newUI
       display grid
 
@@ -132,10 +136,6 @@
 
       .outliner-item__control_type_lock
         display none
-
-      &:hover
-        .outliner-item__control_type_lock
-          display flex
 
     &_withControls
       grid-template-columns repeat(6, 32px)
