@@ -254,6 +254,12 @@ export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_0
  */
 export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
 
+/**
+ * Fix storing Image regions in history
+ * @see: fflag_fix_front_dev_3793_relative_coords_short: Solves this problem in better way and is preferable than the current one
+ */
+export const FF_LSDV_5177 = 'fflag_fix_front_lsdv_5177_image_regions_in_history_260523_short';
+
 Object.assign(window, {
   APP_SETTINGS: {
     ...(window.APP_SETTINGS ?? {}),

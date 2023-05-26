@@ -13,7 +13,7 @@ import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import { ImageModel } from '../tags/object/Image';
 import { rotateBboxCoords } from '../utils/bboxCoords';
-import { FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { FF_DEV_3793, FF_LSDV_5177, isFF } from '../utils/feature-flags';
 import { createDragBoundFunc } from '../utils/image';
 import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
@@ -22,17 +22,24 @@ import { RegionWrapper } from './RegionWrapper';
 const RectRegionAbsoluteCoordsDEV3793 = types
   .model({
     coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
+    ...(isFF(FF_LSDV_5177) ? {
+      relativeX: 0,
+      relativeY: 0,
+
+      relativeWidth: 0,
+      relativeHeight: 0,
+    } : {}),
   })
-  .volatile(() => ({
+  .volatile(() => (!isFF(FF_LSDV_5177) ? {
     relativeX: 0,
     relativeY: 0,
 
     relativeWidth: 0,
     relativeHeight: 0,
-  }))
+  } : {}))
   .actions(self => ({
     afterCreate() {
-      switch (self.coordstype)  {
+      switch (self.coordstype) {
         case 'perc': {
           self.relativeX = self.x;
           self.relativeY = self.y;
@@ -405,7 +412,10 @@ const HtxRectangleView = ({ item }) => {
       item.notifyDrawingFinished();
     };
 
-    eventHandlers.dragBoundFunc = createDragBoundFunc(item, { x: item.x - item.bboxCoords.left, y: item.y - item.bboxCoords.top });
+    eventHandlers.dragBoundFunc = createDragBoundFunc(item, {
+      x: item.x - item.bboxCoords.left,
+      y: item.y - item.bboxCoords.top,
+    });
   }
 
   return (

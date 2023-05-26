@@ -15,7 +15,7 @@ import { AreaMixin } from '../mixins/AreaMixin';
 import { KonvaRegionMixin } from '../mixins/KonvaRegion';
 import { ImageModel } from '../tags/object/Image';
 import { rotateBboxCoords } from '../utils/bboxCoords';
-import { FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { FF_DEV_3793, FF_LSDV_5177, isFF } from '../utils/feature-flags';
 import { createDragBoundFunc } from '../utils/image';
 import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
@@ -23,14 +23,28 @@ import { EditableRegion } from './EditableRegion';
 const EllipseRegionAbsoluteCoordsDEV3793 = types
   .model({
     coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
+    ...(isFF(FF_LSDV_5177)?
+      {
+        relativeX: 0,
+        relativeY: 0,
+        relativeWidth: 0,
+        relativeHeight: 0,
+        relativeRadiusX: 0,
+        relativeRadiusY: 0,
+      }:{}
+    ),
   })
   .volatile(() => ({
-    relativeX: 0,
-    relativeY: 0,
-    relativeWidth: 0,
-    relativeHeight: 0,
-    relativeRadiusX: 0,
-    relativeRadiusY: 0,
+    ...(!isFF(FF_LSDV_5177)?
+      {
+        relativeX: 0,
+        relativeY: 0,
+        relativeWidth: 0,
+        relativeHeight: 0,
+        relativeRadiusX: 0,
+        relativeRadiusY: 0,
+      }:{}
+    ),
   }))
   .actions(self => ({
     afterCreate() {

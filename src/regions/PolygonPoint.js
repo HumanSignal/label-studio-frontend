@@ -5,15 +5,22 @@ import { getParent, getRoot, hasParent, types } from 'mobx-state-tree';
 
 import { guidGenerator } from '../core/Helpers';
 import { useRegionStyles } from '../hooks/useRegionColor';
-import { FF_DEV_2431, FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { FF_DEV_2431, FF_DEV_3793, FF_LSDV_5177, isFF } from '../utils/feature-flags';
 
-const PolygonPointAbsoluteCoordsDEV3793 = types.model()
-  .volatile(() => ({
+const PolygonPointAbsoluteCoordsDEV3793 = types.model(
+  isFF(FF_LSDV_5177) ? {
     relativeX: 0,
     relativeY: 0,
     initX: 0,
     initY: 0,
-  }))
+  } : {},
+)
+  .volatile(() => (!isFF(FF_LSDV_5177) ? {
+    relativeX: 0,
+    relativeY: 0,
+    initX: 0,
+    initY: 0,
+  } : {}))
   .actions(self => ({
     afterCreate() {
       self.initX = self.x;
