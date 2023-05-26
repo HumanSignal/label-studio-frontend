@@ -83,6 +83,9 @@
   min-height 32px
   position relative
 
+  &__wrapper
+    display flex
+
   &__content
     display flex
     min-height 32px
@@ -131,6 +134,7 @@
       display flex
       width 100%
       position initial
+      justify-content space-between
 
       .outliner-item__control_type_dirty
         display none
@@ -156,9 +160,7 @@
 
     &-wrapper
       display flex
-      width 100%
       margin-left 13px
-
 
     &_type
       &_score
