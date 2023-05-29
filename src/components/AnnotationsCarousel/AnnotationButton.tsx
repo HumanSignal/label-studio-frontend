@@ -1,6 +1,6 @@
 import { Block, Elem } from '../../utils/bem';
 import { Userpic } from '../../common/Userpic/Userpic';
-import { IconAnnotationGroundTruth, IconAnnotationSkipped2, IconDraftCreated2, IconDuplicate, IconEllipsis, IconTrashRect, LsComment, LsCommentRed, LsSparks, LsStar, LsStarOutline } from '../../assets/icons';
+import { IconAnnotationGroundTruth, IconAnnotationSkipped2, IconDraftCreated2, IconDuplicate, IconEllipsis, IconTrashRect, LsCommentResolved, LsCommentUnresolved, LsSparks, LsStar, LsStarOutline } from '../../assets/icons';
 import { userDisplayName } from '../../utils/utilities'; 
 import { TimeAgo }  from '../../common/TimeAgo/TimeAgo';
 import './AnnotationButton.styl';
@@ -24,9 +24,9 @@ interface AnnotationButtonInterface {
 
 const renderCommentIcon = (ent : any) => {
   if (ent.unresolved_comment_count > 0) {
-    return LsCommentRed;
+    return LsCommentUnresolved;
   } else if (ent.comment_count > 0) {
-    return LsComment;
+    return LsCommentResolved;
   }
 
   return null;
