@@ -403,44 +403,63 @@ const RegionControls: FC<RegionControlsProps> = observer(({
 
   return (
     <Elem name="controls" mod={{ withControls: hasControls, newUI: isFF(FF_DEV_3873) }}>
-      <Elem name="control" mod={{ type: 'score' }}>
-        {isDefined(item?.score) && item.score.toFixed(2)}
-      </Elem>
-      <Elem name="control" mod={{ type: 'dirty' }}>
-        {/* dirtyness is not implemented yet */}
-      </Elem>
-      <Elem name="control" mod={{ type: 'predict' }}>
-        {item?.origin === 'prediction' && (
-          <LsSparks style={{ width: 18, height: 18 }}/>
-        )}
-      </Elem>
-      <Elem name="control" mod={{ type: 'lock' }}>
-        <LockButton
-          item={item}
-          annotation={item?.annotation}
-          hovered={hovered}
-          locked={item?.locked}
-          onClick={onToggleLocked}
-        />
-      </Elem>
-      <Elem name="control" mod={{ type: 'visibility' }}>
-        {(hovered || hidden) && (
-          <RegionControlButton onClick={onToggleHidden}>
-            {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
-          </RegionControlButton>
-        )}
-      </Elem>
-      {hasControls && (
-        <Elem name="control" mod={{ type: 'visibility' }}>
-          <RegionControlButton onClick={onToggleCollapsed}>
-            <IconChevronLeft
-              style={{
-                transform: `rotate(${collapsed ? -90 : 90}deg)`,
-              }}
-            />
-          </RegionControlButton>
-        </Elem>
+      {isFF(FF_DEV_3873) ? (
+        <Tooltip title={'Confidence Score'}>
+          <Elem name="control-wrapper">
+            <Elem name="control" mod={{ type: 'predict' }}>
+              {item?.origin === 'prediction' && (
+                <LsSparks style={{ width: 18, height: 18 }}/>
+              )}
+            </Elem>
+            <Elem name="control" mod={{ type: 'score' }}>
+              {isDefined(item?.score) && item.score.toFixed(2)}
+            </Elem>
+          </Elem>
+        </Tooltip>
+      ) : (
+        <>
+          <Elem name="control" mod={{ type: 'score' }}>
+            {isDefined(item?.score) && item.score.toFixed(2)}
+          </Elem>
+          <Elem name="control" mod={{ type: 'dirty' }}>
+            {/* dirtyness is not implemented yet */}
+          </Elem>
+          <Elem name="control" mod={{ type: 'predict' }}>
+            {item?.origin === 'prediction' && (
+              <LsSparks style={{ width: 18, height: 18 }}/>
+            )}
+          </Elem>
+        </>
       )}
+      <Elem name={'wrapper'}>
+        <Elem name="control" mod={{ type: 'lock' }}>
+          <LockButton
+            item={item}
+            annotation={item?.annotation}
+            hovered={hovered}
+            locked={item?.locked}
+            onClick={onToggleLocked}
+          />
+        </Elem>
+        <Elem name="control" mod={{ type: 'visibility' }}>
+          {(hovered || hidden) && (
+            <RegionControlButton onClick={onToggleHidden}>
+              {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
+            </RegionControlButton>
+          )}
+        </Elem>
+        {hasControls && (
+          <Elem name="control" mod={{ type: 'visibility' }}>
+            <RegionControlButton onClick={onToggleCollapsed}>
+              <IconChevronLeft
+                style={{
+                  transform: `rotate(${collapsed ? -90 : 90}deg)`,
+                }}
+              />
+            </RegionControlButton>
+          </Elem>
+        )}
+      </Elem>
     </Elem>
   );
 });
