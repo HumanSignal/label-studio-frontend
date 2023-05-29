@@ -119,7 +119,7 @@ const Model = types
       // one array of items sitting in List tag, just reorder them if result is given
       if (self.rankOnly) {
         // 
-        itemIds = { [self.name]: result ?? ids };
+        itemIds = { [self.name]: result ? [...result] : ids };
       } else if (!result) {
         itemIds = { [self.defaultBucket ?? '_']: ids };
       } else {
