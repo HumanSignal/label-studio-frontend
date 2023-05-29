@@ -90,7 +90,7 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
         icon: <IconSpeed/>,
       };
     }
-  }, [orderingDirection]);
+  }, []);
 
   const renderOrderingDirectionIcon = (
     orderingDirection === 'asc' ? (
