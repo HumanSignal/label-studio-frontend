@@ -7,6 +7,7 @@ import Registry from '../../core/Registry';
 import Tree from '../../core/Tree';
 import Types from '../../core/Types';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 import { guidGenerator } from '../../utils/unique';
 import Base from './Base';
 
@@ -141,11 +142,6 @@ const Model = types
     get result() {
       return self.annotation?.results.find(r => r.from_name === self);
     },
-    // isReadOnly() {
-    //   // tmp fix for infinite recursion in isReadOnly() in ReadOnlyMixin
-    //   // should not affect anything, this object is self-contained
-    //   return true;
-    // },
   }))
   .actions(self => ({
     createResult(data) {
@@ -182,7 +178,7 @@ const Model = types
     },
   }));
 
-const RankerModel = types.compose('RankerModel', Base, AnnotationMixin, Model);
+const RankerModel = types.compose('RankerModel', Base, AnnotationMixin, Model, ReadOnlyControlMixin);
 
 const HtxRanker = inject('store')(
   observer(({ item }) => {
@@ -192,7 +188,7 @@ const HtxRanker = inject('store')(
     if (!data) return null;
 
     return (
-      <Ranker inputData={data} handleChange={item.updateResult} />
+      <Ranker inputData={data} handleChange={item.updateResult} readonly={item.isReadOnly()} />
     );
   }),
 );
