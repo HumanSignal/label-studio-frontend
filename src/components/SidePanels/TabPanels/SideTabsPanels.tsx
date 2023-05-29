@@ -417,7 +417,15 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     };
   }, []);
 
-  const emptyBaseProps = { ...partialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
+  const getPartialEmptyBaseProps = useMemo(() => {
+    const updatedProps = { ...partialEmptyBaseProps };
+
+    updatedProps.panelViews = partialEmptyBaseProps.panelViews.filter((view) => view.name !== 'comments' || showComments);
+
+    return updatedProps;
+  }, [partialEmptyBaseProps, showComments]);
+
+  const emptyBaseProps = { ...getPartialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
 
   return (
     <SidePanelsContext.Provider value={contextValue}>
