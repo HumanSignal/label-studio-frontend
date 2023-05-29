@@ -8,8 +8,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { Dropdown } from '../../common/Dropdown/Dropdown';
 import { useDropdown } from '../../common/Dropdown/DropdownTrigger';
 import { isDefined } from '../../utils/utilities';
-import { Tooltip } from './../../common/Tooltip/Tooltip';
-
 
 // eslint-disable-next-line
 // @ts-ignore
@@ -30,16 +28,6 @@ const renderCommentIcon = (ent : any) => {
   }
 
   return null;
-};
-
-const renderCommentTooltip = (ent : any) => {
-  if (ent.unresolved_comment_count > 0) {
-    return 'Unresolved Comments';
-  } else if (ent.comment_count > 0) {
-    return 'All Comments Resolved';
-  }
-
-  return '';
 };
 
 export const AnnotationButton = observer(({ entity, capabilities, annotationStore, onAnnotationChange }: AnnotationButtonInterface) => {
@@ -187,26 +175,10 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
         </Elem>
         {!isPrediction && (
           <Elem name='icons'>
-            {entity.draftId > 0 && (
-              <Tooltip title={'Draft'}>
-                <Elem name='icon' mod={{ draft: true }}><IconDraftCreated2 color='#0099FF'/></Elem>
-              </Tooltip>
-            )}
-            {entity.skipped && (
-              <Tooltip title={'Skipped'}>
-                <Elem name='icon' mod={{ skipped: true }}><IconAnnotationSkipped2 color='#DD0000' /></Elem>
-              </Tooltip>
-            )}
-            {isGroundTruth && (
-              <Tooltip title={'Ground-truth'}>
-                <Elem name='icon' mod={{ groundTruth: true }}><IconAnnotationGroundTruth /></Elem>
-              </Tooltip>
-            )}
-            {CommentIcon && (
-              <Tooltip title={renderCommentTooltip(entity)}>
-                <Elem name='icon' mod={{ comments: true }}><CommentIcon /></Elem>
-              </Tooltip>
-            )}
+            {entity.draftId > 0 && <Elem name='icon' mod={{ draft: true }}><IconDraftCreated2 color='#0099FF'/></Elem>}
+            {entity.skipped && <Elem name='icon' mod={{ skipped: true }}><IconAnnotationSkipped2 color='#DD0000' /></Elem>}
+            {isGroundTruth && <Elem name='icon' mod={{ groundTruth: true }}><IconAnnotationGroundTruth /></Elem>}
+            {CommentIcon && <Elem name='icon' mod={{ comments: true }}><CommentIcon /></Elem>}
           </Elem>
         )}
       </Elem>
