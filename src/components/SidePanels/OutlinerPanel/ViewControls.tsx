@@ -1,4 +1,4 @@
-import { FC, useCallback, useContext, useMemo } from 'react';
+import { FC, useCallback, useContext, useEffect, useMemo } from 'react';
 import {
   IconCursor,
   IconDetails,
@@ -90,7 +90,15 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
         icon: <IconSpeed/>,
       };
     }
-  }, []);
+  }, [orderingDirection]);
+
+  const renderOrderingDirectionIcon = (
+    orderingDirection === 'asc' ? (
+      <IconSortUpNew style={{ color: '#898098' }} />
+    ) : (
+      <IconSortDownNew style={{ color: '#898098' }} />
+    )
+  );
 
   return (
     <Block name="view-controls" mod={{ 'collapsed': context.locked, 'FF_LSDV_4992': isFF(FF_LSDV_4992) }}>
@@ -109,21 +117,8 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
             onChange={value => onOrderingChange(value)}
             readableValueForKey={getOrderingLabels}
             allowClickSelected
+            extra={renderOrderingDirectionIcon}
           />
-          {isFF(FF_DEV_3873) && (
-            <Button
-              type="text"
-              icon={
-                orderingDirection === 'asc' ? (
-                  <IconSortUpNew style={{ color: '#898098' }} />
-                ) : (
-                  <IconSortDownNew style={{ color: '#898098' }} />
-                )
-              }
-              style={isFF(FF_LSDV_4992) ? {} : { padding: 0, whiteSpace: 'nowrap' }}
-              onClick={() => onOrderingChange(ordering)}
-            />
-          )}
         </Elem>
       )}
       {isFF(FF_LSDV_3025) && (
@@ -163,6 +158,7 @@ interface LabelInfo {
   selectedLabel: string;
   icon: JSX.Element;
   tooltip?: string;
+  extra?: JSX.Element;
 }
 
 interface GroupingProps<T extends string> {
@@ -181,6 +177,7 @@ const Grouping = <T extends string>({
   allowClickSelected,
   onChange,
   readableValueForKey,
+  extra,
 }: GroupingProps<T>) => {
 
   const readableValue = useMemo(() => {
@@ -220,19 +217,31 @@ const Grouping = <T extends string>({
   // mods are already set in the button from type, so use it only in new UI
   const extraStyles = isFF(FF_DEV_3873) ? { mod: { newUI: true } } : undefined;
   const style = isFF(FF_LSDV_4992) ? {} : {
-    padding: isFF(FF_DEV_3873) ? '0 6px 0 2px': 0,
+    paddingRight:  0,
+    paddingLeft:  0,
+    paddingTop:  0,
+    paddingBottom:  0,
     whiteSpace: 'nowrap',
   };
+
+  if (isFF(FF_DEV_3873)) {
+    style.paddingRight = 12;
+    style.paddingLeft = 2;
+  }
 
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
       <Button type="text" {...extraStyles} icon={readableValue.icon} style={style} extra={(
-        <DirectionIndicator
-          direction={direction}
-          name={value}
-          value={value}
-          wrap={false}
-        />
+        isFF(FF_DEV_3873) ? (
+          extra
+        ) : (
+          <DirectionIndicator
+            direction={direction}
+            name={value}
+            value={value}
+            wrap={false}
+          />
+        )
       )}
       tooltip={isFF(FF_LSDV_4992) && readableValue.tooltip || undefined}
       tooltipTheme="dark"
