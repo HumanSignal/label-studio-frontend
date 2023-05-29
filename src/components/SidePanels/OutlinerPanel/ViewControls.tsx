@@ -117,7 +117,7 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
             onChange={value => onOrderingChange(value)}
             readableValueForKey={getOrderingLabels}
             allowClickSelected
-            extra={renderOrderingDirectionIcon}
+            extraIcon={renderOrderingDirectionIcon}
           />
         </Elem>
       )}
@@ -158,7 +158,6 @@ interface LabelInfo {
   selectedLabel: string;
   icon: JSX.Element;
   tooltip?: string;
-  extra?: JSX.Element;
 }
 
 interface GroupingProps<T extends string> {
@@ -168,6 +167,7 @@ interface GroupingProps<T extends string> {
   allowClickSelected?: boolean;
   onChange: (value: T) => void;
   readableValueForKey: (value: T) => LabelInfo;
+  extraIcon?: JSX.Element;
 }
 
 const Grouping = <T extends string>({
@@ -177,7 +177,7 @@ const Grouping = <T extends string>({
   allowClickSelected,
   onChange,
   readableValueForKey,
-  extra,
+  extraIcon,
 }: GroupingProps<T>) => {
 
   const readableValue = useMemo(() => {
@@ -217,23 +217,19 @@ const Grouping = <T extends string>({
   // mods are already set in the button from type, so use it only in new UI
   const extraStyles = isFF(FF_DEV_3873) ? { mod: { newUI: true } } : undefined;
   const style = isFF(FF_LSDV_4992) ? {} : {
-    paddingRight:  0,
-    paddingLeft:  0,
-    paddingTop:  0,
-    paddingBottom:  0,
+    padding: '0',
     whiteSpace: 'nowrap',
   };
 
   if (isFF(FF_DEV_3873)) {
-    style.paddingRight = 12;
-    style.paddingLeft = 2;
+    style.padding = '0 12px 0 2px';
   }
 
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
       <Button type="text" {...extraStyles} icon={readableValue.icon} style={style} extra={(
         isFF(FF_DEV_3873) ? (
-          extra
+          extraIcon
         ) : (
           <DirectionIndicator
             direction={direction}
