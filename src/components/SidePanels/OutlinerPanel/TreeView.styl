@@ -20,6 +20,11 @@
     &:hover .outliner-item__controls
       display grid
 
+    &:hover .outliner-item__controls_newUI
+      .outliner-item__control_type_lock button,
+      .outliner-item__control_type_visibility button
+        display inline-flex !important
+
   &-switcher
     width 24px
     height 24px
@@ -124,21 +129,11 @@
     justify-content center
     grid-template-columns repeat(5, 32px)
 
-  &:hover &_newUI
-    .outliner-item__control_type_lock
-      display flex
-
     &_newUI
       display grid
 
-      .outliner-item__control_type_dirty
-        display none
-
-      .outliner-item__control_type_lock
-        display none
-
-    &_withControls
-      grid-template-columns repeat(6, 32px)
+      &_withControls
+        grid-template-columns repeat(6, 32px)
 
   &__control
     width 32px
