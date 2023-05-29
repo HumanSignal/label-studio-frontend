@@ -75,9 +75,6 @@ const Model = types
     // @todo allow Views inside: ['bucket', 'view']
     children: Types.unionArray(['bucket']),
   })
-  .volatile(() => ({
-    leftInList: null,
-  }))
   .views(self => ({
     get list() {
       const list = self.annotation.names.get(self.toname);
@@ -116,7 +113,6 @@ const Model = types
       const result = self.result?.value.ranker;
       let itemIds = {};
 
-
       if (!data) return [];
       // one array of items sitting in List tag, just reorder them if result is given
       if (self.rankOnly) {
@@ -127,13 +123,16 @@ const Model = types
       } else {
         itemIds = { ...result };
 
-        if (!self.defaultBucket) {
+        // original list is shown, but there are no such column in result,
+        // so create it from results not groupped into buckets
+        if (!self.defaultBucket && !result['_']) {
           const selected = Object.values(result).flat();
-          const left = self.leftInList ?? ids.filter(id => !selected.includes(id));
-          // @todo what if data has more items then in selected bucket?
+          const left = ids.filter(id => !selected.includes(id));
 
           itemIds['_'] = left;
         }
+        // @todo what if there are items in data that are not presented in result?
+        // @todo they must likely should go into _ bucket as well
       }
 
       return { items, columns, itemIds };
@@ -155,9 +154,6 @@ const Model = types
     updateResult(newData) {
       if (self.rankOnly) {
         newData = newData[self.name];
-      } else if (newData._) {
-        self.leftInList = newData._;
-        delete newData._;
       }
 
       // check if result exists already, since only one instance of it can exist at a time
@@ -170,7 +166,10 @@ const Model = types
 
     // Create result on submit if it doesn't exist
     beforeSend() {
-      if (self.result || !self.list) return;
+      if (!self.list) return;
+
+      // @todo later we will most probably remove _ bucket from exported result
+      if (self.result) return;
 
       const ids = Object.keys(self.list?.items);
 
