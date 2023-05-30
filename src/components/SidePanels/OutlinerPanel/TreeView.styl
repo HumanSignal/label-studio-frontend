@@ -20,6 +20,9 @@
     &:hover .outliner-item__controls
       display grid
 
+      &_newUI
+        display flex
+
   &-switcher
     width 24px
     height 24px
@@ -80,6 +83,9 @@
   min-height 32px
   position relative
 
+  &__wrapper
+    display flex
+
   &__content
     display flex
     min-height 32px
@@ -125,7 +131,10 @@
     grid-template-columns repeat(5, 32px)
 
     &_newUI
-      display grid
+      display flex
+      width 100%
+      position initial
+      justify-content space-between
 
       .outliner-item__control_type_dirty
         display none
@@ -133,9 +142,11 @@
       .outliner-item__control_type_lock
         display none
 
-      &:hover
-        .outliner-item__control_type_lock
-          display flex
+      .outliner-item__control_type_predict
+        width 14px
+
+      .outliner-item__control_type_score
+        font-size 12px
 
     &_withControls
       grid-template-columns repeat(6, 32px)
@@ -147,6 +158,10 @@
     align-items center
     justify-content center
 
+    &-wrapper
+      display flex
+      margin-left 13px
+
     &_type
       &_score
         font-family 'Roboto Mono'
@@ -156,6 +171,12 @@
 
   &:hover &__controls
     display grid
+
+    &_newUI
+      display flex
+
+    .outliner-item__control_type_lock
+      display flex
 
 .ocr
   background none
