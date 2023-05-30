@@ -90,7 +90,9 @@ export { ReactComponent as IconList } from './list.svg';
 export { ReactComponent as IconSpeed } from './speed.svg';
 export { ReactComponent as IconTagAlt } from './tag-alt.svg';
 export { ReactComponent as IconSortUp } from './sort-up.svg';
+export { ReactComponent as IconSortUpNew } from './sort-up-new.svg';
 export { ReactComponent as IconSortDown } from './sort-down.svg';
+export { ReactComponent as IconSortDownNew } from './sort-down-new.svg';
 export { ReactComponent as IconFilter } from './filter.svg';
 export { ReactComponent as IconDelete } from './delete.svg';
 
