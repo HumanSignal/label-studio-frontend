@@ -7,6 +7,7 @@ import Registry from '../../core/Registry';
 import Tree from '../../core/Tree';
 import Types from '../../core/Types';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 import { guidGenerator } from '../../utils/unique';
 import Base from './Base';
 
@@ -16,6 +17,7 @@ import Base from './Base';
  * With `Bucket`s any items from the `List` can be moved to these buckets, and resulting groups will be exported as a dict `{ bucket-name-1: [array of ids in this bucket], ... }`
  * By default all items will sit in `List` and will not be exported, unless they are moved to a bucket. But with `default="true"` parameter you can specify a bucket where all items will be placed by default, so exported result will always have all items from the list, grouped by buckets.
  * Columns and items can be styled in `Style` tag by using respective `.htx-ranker-column` and `.htx-ranker-item` classes. Titles of columns are defined in `title` parameter of `Bucket` tag.
+ * Note: When `Bucket`s used without `default` param, the original list will also be stored as "_" named column in results, but that's internal value and this may be changed later.
  * @example
  * <!-- Visual appearance can be changed via Style tag with these predefined classnames -->
  * <View>
@@ -75,9 +77,6 @@ const Model = types
     // @todo allow Views inside: ['bucket', 'view']
     children: Types.unionArray(['bucket']),
   })
-  .volatile(() => ({
-    leftInList: null,
-  }))
   .views(self => ({
     get list() {
       const list = self.annotation.names.get(self.toname);
@@ -116,24 +115,26 @@ const Model = types
       const result = self.result?.value.ranker;
       let itemIds = {};
 
-
       if (!data) return [];
       // one array of items sitting in List tag, just reorder them if result is given
       if (self.rankOnly) {
         // 
-        itemIds = { [self.name]: result ?? ids };
+        itemIds = { [self.name]: result ? [...result] : ids };
       } else if (!result) {
         itemIds = { [self.defaultBucket ?? '_']: ids };
       } else {
         itemIds = { ...result };
 
-        if (!self.defaultBucket) {
+        // original list is shown, but there are no such column in result,
+        // so create it from results not groupped into buckets
+        if (!self.defaultBucket && !result['_']) {
           const selected = Object.values(result).flat();
-          const left = self.leftInList ?? ids.filter(id => !selected.includes(id));
-          // @todo what if data has more items then in selected bucket?
+          const left = ids.filter(id => !selected.includes(id));
 
           itemIds['_'] = left;
         }
+        // @todo what if there are items in data that are not presented in result?
+        // @todo they must likely should go into _ bucket as well
       }
 
       return { items, columns, itemIds };
@@ -141,11 +142,6 @@ const Model = types
     get result() {
       return self.annotation?.results.find(r => r.from_name === self);
     },
-    // isReadOnly() {
-    //   // tmp fix for infinite recursion in isReadOnly() in ReadOnlyMixin
-    //   // should not affect anything, this object is self-contained
-    //   return true;
-    // },
   }))
   .actions(self => ({
     createResult(data) {
@@ -155,9 +151,6 @@ const Model = types
     updateResult(newData) {
       if (self.rankOnly) {
         newData = newData[self.name];
-      } else if (newData._) {
-        self.leftInList = newData._;
-        delete newData._;
       }
 
       // check if result exists already, since only one instance of it can exist at a time
@@ -170,7 +163,10 @@ const Model = types
 
     // Create result on submit if it doesn't exist
     beforeSend() {
-      if (self.result || !self.list) return;
+      if (!self.list) return;
+
+      // @todo later we will most probably remove _ bucket from exported result
+      if (self.result) return;
 
       const ids = Object.keys(self.list?.items);
 
@@ -182,7 +178,7 @@ const Model = types
     },
   }));
 
-const RankerModel = types.compose('RankerModel', Base, AnnotationMixin, Model);
+const RankerModel = types.compose('RankerModel', Base, AnnotationMixin, Model, ReadOnlyControlMixin);
 
 const HtxRanker = inject('store')(
   observer(({ item }) => {
@@ -192,7 +188,7 @@ const HtxRanker = inject('store')(
     if (!data) return null;
 
     return (
-      <Ranker inputData={data} handleChange={item.updateResult} />
+      <Ranker inputData={data} handleChange={item.updateResult} readonly={item.isReadOnly()} />
     );
   }),
 );
