@@ -19,7 +19,7 @@ const Item = (props: ItemProps) => {
   const { item, index, readonly } = props;
 
   // @todo document html parameter later after proper tests
-  const html = useMemo(() => sanitizeHtml(item.html), [item.html]);
+  const html = useMemo(() => item.html ? sanitizeHtml(item.html) : '', [item.html]);
 
   return (
     <Draggable draggableId={item.id} index={index} isDragDisabled={readonly}>
@@ -31,6 +31,7 @@ const Item = (props: ItemProps) => {
             style={{ ...provided.draggableProps.style }}
             className={[styles.item, 'htx-ranker-item'].join(' ')}
             ref={provided.innerRef}
+            data-ranker-id={item.id}
           >
             {item.title && <h3 className={styles.itemLine}>{item.title}</h3>}
             {item.body && <p className={styles.itemLine}>{item.body}</p>}

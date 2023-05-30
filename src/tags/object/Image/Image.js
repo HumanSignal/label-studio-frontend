@@ -947,7 +947,7 @@ const Model = types.model({
       self.drawingRegion?.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
 
       setTimeout(self.annotation.history.unfreeze, 0);
-
+      
       //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
       if (_historyLength <= 1) {
         // Don't force unselection of regions during the updateObjects callback from history reinit
