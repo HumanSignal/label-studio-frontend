@@ -18,10 +18,12 @@
       background-color var(--selection-color, rgba(#000, 0.04))
 
     &:hover .outliner-item__controls
-      display grid
+      display flex
 
-      &_newUI
-        display flex
+    &:hover .outliner-item__controls_newUI
+      .outliner-item__control_type_lock button,
+      .outliner-item__control_type_visibility button
+        display inline-flex !important
 
   &-switcher
     width 24px
@@ -136,17 +138,15 @@
       position initial
       justify-content space-between
 
-      .outliner-item__control_type_dirty
-        display none
-
-      .outliner-item__control_type_lock
-        display none
-
       .outliner-item__control_type_predict
         width 14px
 
       .outliner-item__control_type_score
         font-size 12px
+      
+      .outliner-item__control_type_predict:empty,
+      .outliner-item__control_type_score:empty
+        display none
 
     &_withControls
       grid-template-columns repeat(6, 32px)
@@ -170,10 +170,7 @@
         color $magic_color
 
   &:hover &__controls
-    display grid
-
-    &_newUI
-      display flex
+    display flex
 
     .outliner-item__control_type_lock
       display flex
