@@ -389,7 +389,10 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
     const observer = new ResizeObserver(() => {
       const { clientWidth, clientHeight } = root ?? {};
-      
+
+      // we don't need to check or resize anything in collapsed state
+      if (clientWidth <= maxWindowWidth) return;
+
       if(viewportSize.current.height !== clientHeight) setPanelData(getSnappedHeights(panelData, clientHeight));
       // Remember current width and height of the viewport
       viewportSize.current.width = clientWidth ?? 0;
