@@ -1,4 +1,4 @@
-import { FC, useCallback, useContext, useEffect, useMemo } from 'react';
+import { FC, useCallback, useContext, useMemo } from 'react';
 import {
   IconCursor,
   IconDetails,
