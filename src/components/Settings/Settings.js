@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Checkbox, Modal, Table, Tabs } from 'antd';
 import { observer } from 'mobx-react';
 
@@ -10,8 +10,15 @@ import { triggerResizeEvent } from '../../utils/utilities';
 
 import EditorSettings from '../../core/settings/editorsettings';
 import * as TagSettings from './TagSettings';
-import { useMemo } from 'react';
+import { LsClose } from '../../assets/icons';
+import Toggle from '../../common/Toggle/Toggle';
 import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
+
+let editorSettingsKeys = Object.keys(EditorSettings);
+
+if (isFF(FF_DEV_3873)) {
+  editorSettingsKeys = editorSettingsKeys.sort((a, b) => EditorSettings[a].newUI.order - EditorSettings[b].newUI.order);
+}
 
 const HotkeysDescription = () => {
   const columns = [
@@ -55,21 +62,43 @@ const HotkeysDescription = () => {
 };
 
 
+const newUI = isFF(FF_DEV_3873) ? { newUI: true } : {};
 
 const GeneralSettings = observer(({ store }) => {
   return (
-    <Block name="settings">
-      {Object.keys(EditorSettings).map((obj, index)=> {
+    <Block name="settings" mod={newUI}>
+      {editorSettingsKeys.map((obj, index) => {
         return (
           <Elem name="field" key={index}>
-            <Checkbox
-              key={index}
-              checked={store.settings[obj]}
-              onChange={store.settings[EditorSettings[obj].onChangeEvent]}
-            >
-              {EditorSettings[obj].description}
-            </Checkbox>
-            <br />
+            {isFF(FF_DEV_3873) ? (
+              <>
+                <Block name="settings__label">
+                  <Elem name="title">
+                    {EditorSettings[obj].newUI.title}
+                  </Elem>
+                  <Block name="description">
+                    {EditorSettings[obj].newUI.description}
+                  </Block>
+                </Block>
+                <Toggle
+                  key={index}
+                  checked={store.settings[obj]}
+                  onChange={store.settings[EditorSettings[obj].onChangeEvent]}
+                  description={EditorSettings[obj].description}
+                />
+              </>
+            ) : (
+              <>
+                <Checkbox
+                  key={index}
+                  checked={store.settings[obj]}
+                  onChange={store.settings[EditorSettings[obj].onChangeEvent]}
+                >
+                  {EditorSettings[obj].description}
+                </Checkbox>
+                <br />
+              </>
+            )}
           </Elem>
         );
       })}
@@ -79,7 +108,7 @@ const GeneralSettings = observer(({ store }) => {
 
 const LayoutSettings = observer(({ store }) => {
   return (
-    <Block name="settings">
+    <Block name="settings" mod={newUI}>
       <Elem name="field">
         <Checkbox
           checked={store.settings.bottomSidePanel}
@@ -88,13 +117,13 @@ const LayoutSettings = observer(({ store }) => {
             setTimeout(triggerResizeEvent);
           }}
         >
-            Move sidepanel to the bottom
+          Move sidepanel to the bottom
         </Checkbox>
       </Elem>
 
       <Elem name="field">
         <Checkbox checked={store.settings.displayLabelsByDefault} onChange={store.settings.toggleSidepanelModel}>
-            Display Labels by default in Results panel
+          Display Labels by default in Results panel
         </Checkbox>
       </Elem>
 
@@ -106,7 +135,7 @@ const LayoutSettings = observer(({ store }) => {
             store.settings.toggleAnnotationsPanel();
           }}
         >
-            Show Annotations panel
+          Show Annotations panel
         </Checkbox>
       </Elem>
 
@@ -118,7 +147,7 @@ const LayoutSettings = observer(({ store }) => {
             store.settings.togglePredictionsPanel();
           }}
         >
-            Show Predictions panel
+          Show Predictions panel
         </Checkbox>
       </Elem>
 
@@ -149,6 +178,16 @@ if (!isFF(FF_DEV_3873)) {
 
 const DEFAULT_ACTIVE = Object.keys(Settings)[0];
 
+const DEFAULT_MODAL_SETTINGS = isFF(FF_DEV_3873) ? {
+  name: 'settings-modal',
+  title: 'Labeling Interface Settings',
+  closeIcon: <LsClose />,
+} : {
+  name: 'settings-modal-old',
+  title: 'Settings',
+  bodyStyle: { paddingTop: '0' },
+};
+
 export default observer(({ store }) => {
   const availableSettings = useMemo(() => {
     const availableTags = Object.values(store.annotationStore.names.toJSON());
@@ -165,12 +204,12 @@ export default observer(({ store }) => {
   }, []);
 
   return (
-    <Modal
+    <Block
+      tag={Modal}
       visible={store.showingSettings}
-      title="Settings"
-      bodyStyle={{ paddingTop: '0' }}
-      footer=""
       onCancel={store.toggleSettings}
+      footer=""
+      {...DEFAULT_MODAL_SETTINGS}
     >
       <Tabs defaultActiveKey={DEFAULT_ACTIVE}>
         {Object.entries(Settings).map(([key, { name, component }]) => (
@@ -180,10 +219,10 @@ export default observer(({ store }) => {
         ))}
         {availableSettings.map((Page) => (
           <Tabs.TabPane tab={Page.title} key={Page.tagName}>
-            <Page store={store}/>
+            <Page store={store} />
           </Tabs.TabPane>
         ))}
       </Tabs>
-    </Modal>
+    </Block>
   );
 });

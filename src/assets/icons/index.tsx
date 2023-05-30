@@ -21,6 +21,7 @@ export { ReactComponent as LsExpand } from './expand.svg';
 export { ReactComponent as LsExpandAlt } from './expand-alt.svg';
 export { ReactComponent as LsCollapse } from './collapse.svg';
 export { ReactComponent as LsDate } from './date.svg';
+export { ReactComponent as LsClose } from './close.svg';
 export { ReactComponent as IconPlusCircle } from './plus_circle.svg';
 export { ReactComponent as IconSlow } from './slow.svg';
 export { ReactComponent as IconFast } from './fast.svg';
@@ -92,7 +93,6 @@ export { ReactComponent as IconDelete } from './delete.svg';
 
 export { ReactComponent as IconArrowLeft } from './arrow-left.svg';
 export { ReactComponent as IconArrowRight } from './arrow-right.svg';
-
 
 // Relations
 export { ReactComponent as IconRelationRight } from './relations/right.svg';
