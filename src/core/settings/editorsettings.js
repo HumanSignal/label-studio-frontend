@@ -1,7 +1,6 @@
 export default {
   'enableHotkeys': {
     'newUI': {
-      'order': 0,
       'title': 'Labeling hotkeys',
       'description': 'Enables quick selection of labels using hotkeys',
     },
@@ -11,7 +10,6 @@ export default {
   },
   'enableTooltips': {
     'newUI': {
-      'order': 1,
       'title': 'Show hotkeys on tooltips',
       'description': 'Displays keybindings on tools and actions tooltips',
     },
@@ -22,7 +20,6 @@ export default {
   },
   'enableLabelTooltips': {
     'newUI': {
-      'order': 2,
       'title': 'Show hotkeys on labels',
       'description': 'Displays keybindings on labels',
     },
@@ -32,7 +29,6 @@ export default {
   },
   'showLabels': {
     'newUI': {
-      'order': 3,
       'title': 'Show region labels',
       'description': 'Display region label names',
     },
@@ -42,7 +38,6 @@ export default {
   },
   'continuousLabeling': {
     'newUI': {
-      'order': 4,
       'title': 'Keep label selected after creating a region',
       'description': 'Allows continuous region creation using the selected label',
     },
@@ -52,7 +47,6 @@ export default {
   },
   'selectAfterCreate': {
     'newUI': {
-      'order': 5,
       'title': 'Select region after creating it',
       'description': 'Automatically selects newly created regions',
     },
@@ -62,8 +56,8 @@ export default {
   },
   'showLineNumbers': {
     'newUI': {
-      'order': 7,
-      'title': 'Show line numbers for text',
+      'tags': 'Text Tag',
+      'title': 'Show line numbers',
       'description': 'Identify and reference specific lines of text in your document',
     },
     'description': 'Show line numbers for Text',
@@ -72,7 +66,7 @@ export default {
   },
   'preserveSelectedTool': {
     'newUI': {
-      'order': 6,
+      'tags': 'Image Tag',
       'title': 'Keep selected tool',
       'description': 'Persists the selected tool across tasks',
     },
@@ -82,9 +76,9 @@ export default {
   },
   'enableSmoothing': {
     'newUI': {
-      'order': 8,
-      'title': 'Image smoothing when zooming in',
-      'description': 'Smooth pixels when zooming in',
+      'tags': 'Image Tag',
+      'title': 'Pixel smoothing on zoom',
+      'description': 'Smooth image pixels when zoomed in',
     },
     'description': 'Enable image smoothing when zoom',
     'onChangeEvent': 'toggleSmoothing',

@@ -14,12 +14,6 @@ import { LsClose } from '../../assets/icons';
 import Toggle from '../../common/Toggle/Toggle';
 import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
-let editorSettingsKeys = Object.keys(EditorSettings);
-
-if (isFF(FF_DEV_3873)) {
-  editorSettingsKeys = editorSettingsKeys.sort((a, b) => EditorSettings[a].newUI.order - EditorSettings[b].newUI.order);
-}
-
 const HotkeysDescription = () => {
   const columns = [
     { title: 'Shortcut', dataIndex: 'combo', key: 'combo' },
@@ -64,10 +58,16 @@ const HotkeysDescription = () => {
 
 const newUI = isFF(FF_DEV_3873) ? { newUI: true } : {};
 
+const SettingsTag = ({ children }) => {
+  return (
+    <Block name="settings-tag">{children}</Block>
+  );
+};
+
 const GeneralSettings = observer(({ store }) => {
   return (
     <Block name="settings" mod={newUI}>
-      {editorSettingsKeys.map((obj, index) => {
+      {Object.keys(EditorSettings).map((obj, index) => {
         return (
           <Elem name="field" key={index}>
             {isFF(FF_DEV_3873) ? (
@@ -75,6 +75,7 @@ const GeneralSettings = observer(({ store }) => {
                 <Block name="settings__label">
                   <Elem name="title">
                     {EditorSettings[obj].newUI.title}
+                    {EditorSettings[obj].newUI.tags?.split(',').map((tag) => (<SettingsTag key={tag}>{tag}</SettingsTag>))}
                   </Elem>
                   <Block name="description">
                     {EditorSettings[obj].newUI.description}
