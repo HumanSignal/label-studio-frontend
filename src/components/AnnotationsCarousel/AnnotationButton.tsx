@@ -49,7 +49,7 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
 
   const clickHandler = useCallback(() => {
     const { selected, id, type } = entity;
-    
+
     if (!selected) {
       if (type === 'prediction') {
         annotationStore.selectPrediction(id);
@@ -96,7 +96,7 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
     const isPrediction = entity.type === 'prediction';
     const isDraft = !isDefined(entity.pk);
     const showGroundTruth = capabilities.groundTruthEnabled && !isPrediction && !isDraft;
-    
+
     return (
       <Block name="AnnotationButtonContextMenu">
         {showGroundTruth && (
