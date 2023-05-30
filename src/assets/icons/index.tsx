@@ -18,8 +18,10 @@ export { ReactComponent as LsVisible } from './visible.svg';
 export { ReactComponent as LsInvisible } from './invisible.svg';
 export { ReactComponent as LsChevron } from './chevron.svg';
 export { ReactComponent as LsExpand } from './expand.svg';
+export { ReactComponent as LsExpandSmall } from './expand-small.svg';
 export { ReactComponent as LsExpandAlt } from './expand-alt.svg';
 export { ReactComponent as LsCollapse } from './collapse.svg';
+export { ReactComponent as LsCollapseSmall } from './collapse-small.svg';
 export { ReactComponent as LsDate } from './date.svg';
 export { ReactComponent as IconPlusCircle } from './plus_circle.svg';
 export { ReactComponent as IconSlow } from './slow.svg';
@@ -91,7 +93,9 @@ export { ReactComponent as IconFilter } from './filter.svg';
 export { ReactComponent as IconDelete } from './delete.svg';
 
 export { ReactComponent as IconArrowLeft } from './arrow-left.svg';
+export { ReactComponent as IconArrowLeftSmall } from './arrow-left-small.svg';
 export { ReactComponent as IconArrowRight } from './arrow-right.svg';
+export { ReactComponent as IconArrowRightSmall } from './arrow-right-small.svg';
 
 
 // Relations
