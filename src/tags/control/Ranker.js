@@ -178,10 +178,15 @@ const Model = types
       if (self.result) return;
 
       const ids = Object.keys(self.list?.items);
+      // empty array for every column
+      const data = Object.fromEntries(self.columns.map(c => [c.id, []]));
 
+      // if List items should also be stored (rank and group modes), we add them to result
       if (self.defaultBucket) {
-        self.createResult({ [self.defaultBucket]: ids });
+        data[self.defaultBucket] = ids;
       }
+
+      self.createResult(data);
     },
   }));
 
