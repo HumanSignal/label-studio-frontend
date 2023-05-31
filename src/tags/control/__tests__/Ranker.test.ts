@@ -7,12 +7,16 @@ import { ListModel } from '../../object/List';
 // @ts-ignore
 import { RankerModel } from '../Ranker';
 
+const MockAnnotationStore = types.model('Annotation', {
+  names: types.map(types.union(RankerModel, ListModel)),
+}).volatile(() => ({
+  results: [],
+}));
+
 const MockStore = types
   .model({
     annotationStore: types.model({
-      selected: types.model('Annotation', {
-        names: types.map(types.union(RankerModel, ListModel)),
-      }),
+      selected: MockAnnotationStore,
     }),
   })
   .volatile(() => ({
@@ -57,6 +61,12 @@ describe('List + Ranker + Buckets (pick mode)', () => {
   store.task.dataObj = { items };
   list.updateValue(store);
 
+  const columns = [
+    { id: '_', title: 'Test List' },
+    { id: 'B1', title: 'Bucket 1' },
+    { id: 'B2', title: 'Bucket 2' },
+  ];
+
   it('List and Ranker should get values from the task', () => {
     expect(list._value).toEqual(items);
     expect(Object.keys(ranker.list.items)).toEqual(['item1', 'item2', 'item3']);
@@ -66,11 +76,15 @@ describe('List + Ranker + Buckets (pick mode)', () => {
     expect(ranker.buckets.map(b => b.name)).toEqual(['B1', 'B2']);
     expect(ranker.defaultBucket).toEqual(undefined);
     expect(ranker.rankOnly).toEqual(false);
-    expect(ranker.columns).toEqual([
-      { id: '_', title: 'Test List' },
-      { id: 'B1', title: 'Bucket 1' },
-      { id: 'B2', title: 'Bucket 2' },
-    ]);
+    expect(ranker.columns).toEqual(columns);
+  });
+
+  it('Ranker puts all items into _ bucket if there is no result', () => {
+    expect(ranker.dataSource).toEqual({
+      items: ranker.list.items,
+      columns,
+      itemIds: { _: ['item1', 'item2', 'item3'], B1: [], B2: [] },
+    });
   });
 });
 
@@ -85,6 +99,11 @@ describe('List + Ranker + Buckets + default (group mode)', () => {
   store.task.dataObj = { items };
   list.updateValue(store);
 
+  const columns = [
+    { id: 'B1', title: 'Bucket 1' },
+    { id: 'B2', title: 'Bucket 2' },
+  ];
+
   it('List and Ranker should get values from the task', () => {
     expect(list._value).toEqual(items);
     expect(Object.keys(ranker.list.items)).toEqual(['item1', 'item2', 'item3']);
@@ -94,9 +113,14 @@ describe('List + Ranker + Buckets + default (group mode)', () => {
     expect(ranker.buckets.map(b => b.name)).toEqual(['B1', 'B2']);
     expect(ranker.defaultBucket).toEqual('B2');
     expect(ranker.rankOnly).toEqual(false);
-    expect(ranker.columns).toEqual([
-      { id: 'B1', title: 'Bucket 1' },
-      { id: 'B2', title: 'Bucket 2' },
-    ]);
+    expect(ranker.columns).toEqual(columns);
+  });
+
+  it('Ranker puts all items into default bucket if there is no result', () => {
+    expect(ranker.dataSource).toEqual({
+      items: ranker.list.items,
+      columns,
+      itemIds: { B1: [], B2: ['item1', 'item2', 'item3'] },
+    });
   });
 });

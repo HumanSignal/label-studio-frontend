@@ -119,14 +119,16 @@ const Model = types
       const ids = Object.keys(items);
       const columns = self.columns;
       /** @type {Record<string, string[]>} */
+      const columnStubs = Object.fromEntries(self.columns.map(c => [c.id, []]));
+      /** @type {Record<string, string[]>} */
       const result = self.result?.value.ranker;
       let itemIds = {};
 
       if (!data) return [];
       if (!result) {
-        itemIds = { [self.defaultBucket ?? '_']: ids };
+        itemIds = { ...columnStubs, [self.defaultBucket ?? '_']: ids };
       } else {
-        itemIds = { ...result };
+        itemIds = { ...columnStubs, ...result };
 
         // original list is displayed, but there are no such column in result,
         // so create it from results not groupped into buckets;
