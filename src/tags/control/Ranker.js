@@ -221,4 +221,4 @@ Registry.addTag('ranker', RankerModel, HtxRanker);
 Registry.addTag('bucket', BucketModel, HtxBucket);
 Registry.addObjectType(RankerModel);
 
-export { HtxRanker, RankerModel };
+export { BucketModel, HtxRanker, RankerModel };
