@@ -11,6 +11,9 @@ import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 import { guidGenerator } from '../../utils/unique';
 import Base from './Base';
 
+// column to display items from original List, when there are no default Bucket
+const ORIGINAL_ITEMS_KEY = '_';
+
 /**
  * The `Ranker` tag is used to rank items in a `List` tag or pick relevant items from a `List`, depending on using nested `Bucket` tags.
  * In simple case of `List` + `Ranker` tags the first one becomes interactive and saved result is a dict with the only key of tag's name and with value of array of ids in new order.
@@ -107,7 +110,7 @@ const Model = types
 
       const columns = self.buckets.map(b => ({ id: b.name, title: b.title ?? '' }));
 
-      if (!self.defaultBucket) columns.unshift({ id: '_', title: self.list.title });
+      if (!self.defaultBucket) columns.unshift({ id: ORIGINAL_ITEMS_KEY, title: self.list.title });
 
       return columns;
     },
@@ -126,7 +129,7 @@ const Model = types
 
       if (!data) return [];
       if (!result) {
-        itemIds = { ...columnStubs, [self.defaultBucket ?? '_']: ids };
+        itemIds = { ...columnStubs, [self.defaultBucket ?? ORIGINAL_ITEMS_KEY]: ids };
       } else {
         itemIds = { ...columnStubs, ...result };
 
@@ -145,7 +148,7 @@ const Model = types
 
           if (left.length) {
             // there are might be already some items in result
-            itemIds['_'] = [...(itemIds['_'] ?? []), ...left];
+            itemIds[ORIGINAL_ITEMS_KEY] = [...(itemIds[ORIGINAL_ITEMS_KEY] ?? []), ...left];
           }
         }
       }
