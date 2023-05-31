@@ -119,6 +119,18 @@ const RectRegionAbsoluteCoordsDEV3793 = types
         self.height = oldHeight;
       }
     },
+    getHeightOnPerpendicular(pointA, pointB, cursor) {
+      const dx1 = pointB.x - pointA.x;
+      const dy1 = pointB.y - pointA.y;
+      const dy2 = pointB.y - cursor.y;
+      const dx2 = dy2 / dx1 * dy1; // dx2 / dy1 = dy2 / dx1 (triangle is rotated)
+      const dx3 = cursor.x - pointB.x - dx2;
+      const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+      const d3 = dx3 / d2 * dx2; // dx3 / d2 = d3 / dx2 (triangle is inverted)
+      const h = d2 + d3;
+
+      return Math.abs(h);
+    },
   }));
 
 /**
@@ -226,16 +238,12 @@ const Model = types
     },
 
     getHeightOnPerpendicular(pointA, pointB, cursor) {
-      const dx1 = pointB.x - pointA.x;
-      const dy1 = pointB.y - pointA.y;
-      const dy2 = pointB.y - cursor.y;
-      const dx2 = dy2 / dx1 * dy1; // dx2 / dy1 = dy2 / dx1 (triangle is rotated)
-      const dx3 = cursor.x - pointB.x - dx2;
-      const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-      const d3 = dx3 / d2 * dx2; // dx3 / d2 = d3 / dx2 (triangle is inverted)
-      const h = d2 + d3;
+      const dX = pointB.x - pointA.x;
+      const dY = pointB.y - pointA.y;
+      const s2 = Math.abs(dY * cursor.x - dX * cursor.y + pointB.x * pointA.y - pointB.y * pointA.x);
+      const ab = Math.sqrt(dY * dY + dX * dX);
 
-      return Math.abs(h);
+      return s2 / ab;
     },
 
     isAboveTheLine(a, b, c) {
