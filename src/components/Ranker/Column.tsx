@@ -1,21 +1,13 @@
-/**
- * components
- */
-import { StrictModeDroppable } from './StrictModeDroppable';
 import Item from './Item';
-import { ColumnData, InputItem } from './createData';
+import { StrictModeDroppable } from './StrictModeDroppable';
+import { InputItem, NewColumnData } from './createData';
 
-/**
- * styles
- */
 import styles from './Ranker.module.scss';
-/**
- * types
- */
+
 interface ColumnProps {
-  column: ColumnData;
+  column: NewColumnData;
   items: InputItem[];
-  title: string;
+  readonly?: boolean;
 }
 
 /*
@@ -24,16 +16,16 @@ interface ColumnProps {
  */
 
 const Column = (props: ColumnProps) => {
-  const { column, items, title } = props;
+  const { column, items, readonly } = props;
 
   return (
-    <div className={[styles.columnStyle, 'htx-ranker-column'].join(' ')}>
-      <h1>{title ? title : column.title}</h1>
+    <div className={[styles.column, 'htx-ranker-column'].join(' ')}>
+      <h1>{column.title}</h1>
       <StrictModeDroppable droppableId={column.id}>
         {provided => (
-          <div ref={provided.innerRef} {...provided.droppableProps} className={styles.dropAreaStyle}>
+          <div ref={provided.innerRef} {...provided.droppableProps} className={styles.dropArea}>
             {items.map((item, index) => (
-              <Item key={item.id} item={item} index={index} />
+              <Item key={item.id} item={item} index={index} readonly={readonly} />
             ))}
             {provided.placeholder}
           </div>

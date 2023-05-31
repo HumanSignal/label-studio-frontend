@@ -1,5 +1,15 @@
 import { FC, useCallback, useContext, useMemo } from 'react';
-import { IconCursor, IconDetails, IconList, IconSortDown, IconSortUp, IconSpeed, IconTagAlt } from '../../../assets/icons';
+import {
+  IconCursor,
+  IconDetails,
+  IconList,
+  IconOutlinerEyeClosed,
+  IconOutlinerEyeOpened,
+  IconSortDown, IconSortDownNew,
+  IconSortUp, IconSortUpNew,
+  IconSpeed,
+  IconTagAlt
+} from '../../../assets/icons';
 import { Button } from '../../../common/Button/Button';
 import { Dropdown } from '../../../common/Dropdown/Dropdown';
 // eslint-disable-next-line
@@ -9,7 +19,7 @@ import { BemWithSpecifiContext } from '../../../utils/bem';
 import { SidePanelsContext } from '../SidePanelsContext';
 import './ViewControls.styl';
 import { Filter } from '../../Filter/Filter';
-import { FF_DEV_3873, FF_LSDV_3025, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_3873, FF_LSDV_3025, FF_LSDV_4992, isFF } from '../../../utils/feature-flags';
 import { observer } from 'mobx-react';
 
 const { Block, Elem } = BemWithSpecifiContext();
@@ -46,16 +56,23 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
         label: 'Group Manually',
         selectedLabel: isFF(FF_DEV_3873) ? 'Manual': 'Manual Grouping',
         icon: <IconList/>,
+        tooltip: 'Manually Grouped',
       };
       case 'label': return {
         label: 'Group by Label',
-        selectedLabel:  isFF(FF_DEV_3873) ? 'Label': 'Grouped by Label',
+        selectedLabel: isFF(FF_DEV_3873) ?
+          (isFF(FF_LSDV_4992) ? 'By Label' :'Label')
+          : 'Grouped by Label',
         icon: <IconTagAlt/>,
+        tooltip: 'Grouped by Label',
       };
       case 'type': return {
         label: 'Group by Tool',
-        selectedLabel:  isFF(FF_DEV_3873) ? 'Tool': 'Grouped by Tool',
+        selectedLabel:  isFF(FF_DEV_3873) ?
+          (isFF(FF_LSDV_4992) ? 'By Tool' :'Tool')
+          : 'Grouped by Tool',
         icon: <IconCursor/>,
+        tooltip: 'Grouped by Tool',
       };
     }
   }, []);
@@ -75,8 +92,16 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
     }
   }, []);
 
+  const renderOrderingDirectionIcon = (
+    orderingDirection === 'asc' ? (
+      <IconSortUpNew style={{ color: '#898098' }} />
+    ) : (
+      <IconSortDownNew style={{ color: '#898098' }} />
+    )
+  );
+
   return (
-    <Block name="view-controls" mod={{ collapsed: context.locked }}>
+    <Block name="view-controls" mod={{ 'collapsed': context.locked, 'FF_LSDV_4992': isFF(FF_LSDV_4992) }}>
       <Grouping
         value={grouping}
         options={['manual', 'type', 'label']}
@@ -92,21 +117,8 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
             onChange={value => onOrderingChange(value)}
             readableValueForKey={getOrderingLabels}
             allowClickSelected
+            extraIcon={renderOrderingDirectionIcon}
           />
-          {isFF(FF_DEV_3873) && (
-            <Button
-              type="text"
-              icon={
-                orderingDirection === 'asc' ? (
-                  <IconSortUp style={{ color: '#898098' }} />
-                ) : (
-                  <IconSortDown style={{ color: '#898098' }} />
-                )
-              }
-              style={{ padding: 0, whiteSpace: 'nowrap' }}
-              onClick={() => onOrderingChange(ordering)}
-            />
-          )}
         </Elem>
       )}
       {isFF(FF_LSDV_3025) && (
@@ -127,6 +139,16 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
           ]}
         />
       )}
+      {
+        isFF(FF_LSDV_4992)
+          ? (
+            <ToggleRegionsVisibilityButton
+              regions={regions}
+            />
+          )
+          : null
+      }
+
     </Block>
   );
 });
@@ -135,6 +157,7 @@ interface LabelInfo {
   label: string;
   selectedLabel: string;
   icon: JSX.Element;
+  tooltip?: string;
 }
 
 interface GroupingProps<T extends string> {
@@ -144,6 +167,7 @@ interface GroupingProps<T extends string> {
   allowClickSelected?: boolean;
   onChange: (value: T) => void;
   readableValueForKey: (value: T) => LabelInfo;
+  extraIcon?: JSX.Element;
 }
 
 const Grouping = <T extends string>({
@@ -153,6 +177,7 @@ const Grouping = <T extends string>({
   allowClickSelected,
   onChange,
   readableValueForKey,
+  extraIcon,
 }: GroupingProps<T>) => {
 
   const readableValue = useMemo(() => {
@@ -191,20 +216,32 @@ const Grouping = <T extends string>({
 
   // mods are already set in the button from type, so use it only in new UI
   const extraStyles = isFF(FF_DEV_3873) ? { mod: { newUI: true } } : undefined;
+  const style = isFF(FF_LSDV_4992) ? {} : {
+    padding: '0',
+    whiteSpace: 'nowrap',
+  };
+
+  if (isFF(FF_DEV_3873)) {
+    style.padding = '0 12px 0 2px';
+  }
 
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" {...extraStyles} icon={readableValue.icon} style={{
-        padding: isFF(FF_DEV_3873) ? '0 6px 0 2px': 0,
-        whiteSpace: 'nowrap',
-      }} extra={(
-        <DirectionIndicator
-          direction={direction}
-          name={value}
-          value={value}
-          wrap={false}
-        />
-      )}>
+      <Button type="text" {...extraStyles} icon={readableValue.icon} style={style} extra={(
+        isFF(FF_DEV_3873) ? (
+          extraIcon
+        ) : (
+          <DirectionIndicator
+            direction={direction}
+            name={value}
+            value={value}
+            wrap={false}
+          />
+        )
+      )}
+      tooltip={isFF(FF_LSDV_4992) && readableValue.tooltip || undefined}
+      tooltipTheme="dark"
+      >
         {readableValue.selectedLabel}
       </Button>
     </Dropdown.Trigger>
@@ -263,3 +300,34 @@ const DirectionIndicator: FC<DirectionIndicator> = ({
 
   return (<span>{content}</span>);
 };
+
+interface ToggleRegionsVisibilityButton {
+  regions: any;
+}
+
+const ToggleRegionsVisibilityButton = observer<FC<ToggleRegionsVisibilityButton>>(({
+  regions,
+}) => {
+  const toggleRegionsVisibility = useCallback(e => {
+    e.preventDefault();
+    e.stopPropagation();
+    regions.toggleVisibility();
+  }, [regions]);
+
+  const isDisabled = !regions?.regions?.length;
+  const isAllHidden = !isDisabled && regions.isAllHidden;
+
+  return (
+    <Elem
+      tag={Button}
+      type="text"
+      disabled={isDisabled}
+      onClick={toggleRegionsVisibility}
+      mod={{ hidden: isAllHidden }}
+      aria-label={isAllHidden ? 'Show all regions' : 'Hide all regions'}
+      icon={isAllHidden ? <IconOutlinerEyeClosed /> : <IconOutlinerEyeOpened/>}
+      tooltip={ isAllHidden ? 'Show all regions' : 'Hide all regions' }
+      tooltipTheme="dark"
+    />
+  );
+});
