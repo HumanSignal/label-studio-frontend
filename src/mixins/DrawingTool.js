@@ -499,16 +499,17 @@ const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
         const shape = self.getCurrentArea();
 
         if (!shape) return;
-        const { stageWidth, stageHeight } = self.obj;
+        const maxStageWidth = isFF(FF_DEV_3793) ? 100 : self.obj.stageWidth;
+        const maxStageHeight = isFF(FF_DEV_3793) ? 100 : self.obj.stageHeight;
 
         let { x1, y1, x2, y2 } = Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x, y });
 
         x1 = Math.max(0, x1);
         y1 = Math.max(0, y1);
-        x2 = Math.min(stageWidth, x2);
-        y2 = Math.min(stageHeight, y2);
+        x2 = Math.min(maxStageWidth, x2);
+        y2 = Math.min(maxStageHeight, y2);
 
-        shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
+        shape.setPositionInternal(x1, y1, x2 - x1, y2 - y1, shape.rotation);
       },
 
       finishDrawing(x, y) {

@@ -32,7 +32,7 @@ const RectRegionAbsoluteCoordsDEV3793 = types
   }))
   .actions(self => ({
     afterCreate() {
-      switch (self.coordstype)  {
+      switch (self.coordstype) {
         case 'perc': {
           self.relativeX = self.x;
           self.relativeY = self.y;
@@ -81,6 +81,42 @@ const RectRegionAbsoluteCoordsDEV3793 = types
         self.width = (sw * self.width) / 100;
         self.height = (sh * self.height) / 100;
         self.coordstype = 'px';
+      }
+    },
+
+    draw(x, y, points) {
+      const oldHeight = self.height;
+
+      if (points.length === 1) {
+        self.width = self.getDistanceBetweenPoints({ x, y }, self);
+        self.rotation = self.rotationAtCreation = Math.atan2(y - self.y, x - self.x) * (180 / Math.PI);
+      } else if (points.length === 2) {
+        const { y: firstPointY, x: firstPointX } = points[0];
+        const { y: secondPointY, x: secondPointX } = points[1];
+
+        if (self.isAboveTheLine(points[0], points[1], { x, y })) {
+          self.x = secondPointX;
+          self.y = secondPointY;
+          self.rotation = self.rotationAtCreation + 180;
+        } else {
+          self.x = firstPointX;
+          self.y = firstPointY;
+          self.rotation = self.rotationAtCreation;
+        }
+        self.height = self.getHeightOnPerpendicular(points[0], points[1], { x, y });
+      }
+
+      self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+
+      const areaBBoxCoords = self?.bboxCoords;
+
+      if (
+        areaBBoxCoords?.left < 0 ||
+        areaBBoxCoords?.top < 0 ||
+        areaBBoxCoords?.right > self.parent.stageWidth ||
+        areaBBoxCoords?.bottom > self.parent.stageHeight
+      ) {
+        self.height = oldHeight;
       }
     },
   }));
@@ -208,15 +244,26 @@ const Model = types
 
     draw(x, y, points) {
       const oldHeight = self.height;
+      const canvasX = self.parent.internalToCanvasX(x);
+      const canvasY = self.parent.internalToCanvasY(y);
 
       if (points.length === 1) {
-        self.width = self.getDistanceBetweenPoints({ x, y }, self);
-        self.rotation = self.rotationAtCreation = Math.atan2(y - self.y, x - self.x) * (180 / Math.PI);
+        const canvasWidth = self.getDistanceBetweenPoints({ x: canvasX, y: canvasY }, {
+          x: self.canvasX,
+          y: self.canvasY,
+        });
+
+        self.width = self.parent.canvasToInternalX(canvasWidth);
+        self.rotation = self.rotationAtCreation = Math.atan2(canvasY - self.canvasY, canvasX - self.canvasX) * (180 / Math.PI);
       } else if (points.length === 2) {
+        const canvasPoints = points.map(({ x, y }) => ({
+          x: self.parent.internalToCanvasX(x),
+          y: self.parent.internalToCanvasY(y),
+        }));
         const { y: firstPointY, x: firstPointX } = points[0];
         const { y: secondPointY, x: secondPointX } = points[1];
 
-        if (self.isAboveTheLine(points[0], points[1], { x, y })) {
+        if (self.isAboveTheLine(canvasPoints[0], canvasPoints[1], { x: canvasX, y: canvasY })) {
           self.x = secondPointX;
           self.y = secondPointY;
           self.rotation = self.rotationAtCreation + 180;
@@ -225,18 +272,22 @@ const Model = types
           self.y = firstPointY;
           self.rotation = self.rotationAtCreation;
         }
-        self.height = self.getHeightOnPerpendicular(points[0], points[1], { x, y });
-      }
+        const canvasHeight = self.getHeightOnPerpendicular(canvasPoints[0], canvasPoints[1], {
+          x: canvasX,
+          y: canvasY,
+        });
 
-      self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+        self.height = self.parent.canvasToInternalY(canvasHeight);
+      }
+      self.setPositionInternal(self.x, self.y, self.width, self.height, self.rotation);
 
       const areaBBoxCoords = self?.bboxCoords;
 
       if (
         areaBBoxCoords?.left < 0 ||
         areaBBoxCoords?.top < 0 ||
-        areaBBoxCoords?.right > self.parent.stageWidth ||
-        areaBBoxCoords?.bottom > self.parent.stageHeight
+        areaBBoxCoords?.right > 100 ||
+        areaBBoxCoords?.bottom > 100
       ) {
         self.height = oldHeight;
       }
@@ -405,7 +456,10 @@ const HtxRectangleView = ({ item }) => {
       item.notifyDrawingFinished();
     };
 
-    eventHandlers.dragBoundFunc = createDragBoundFunc(item, { x: item.x - item.bboxCoords.left, y: item.y - item.bboxCoords.top });
+    eventHandlers.dragBoundFunc = createDragBoundFunc(item, {
+      x: item.x - item.bboxCoords.left,
+      y: item.y - item.bboxCoords.top,
+    });
   }
 
   return (
