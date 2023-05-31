@@ -10,7 +10,7 @@ import { RankerModel } from '../Ranker';
 const MockAnnotationStore = types.model('Annotation', {
   names: types.map(types.union(RankerModel, ListModel)),
 }).volatile(() => ({
-  results: [],
+  results: [] as any[],
 }));
 
 const MockStore = types
@@ -66,6 +66,12 @@ describe('List + Ranker + Buckets (pick mode)', () => {
     { id: 'B1', title: 'Bucket 1' },
     { id: 'B2', title: 'Bucket 2' },
   ];
+  const result: any = {
+    from_name: ranker,
+    to_name: list,
+    type: 'ranker',
+    value: { ranker: { B1: ['item2'] } },
+  };
 
   it('List and Ranker should get values from the task', () => {
     expect(list._value).toEqual(items);
@@ -73,7 +79,7 @@ describe('List + Ranker + Buckets (pick mode)', () => {
   });
 
   it('Ranker should have proper columns and other getters', () => {
-    expect(ranker.buckets.map(b => b.name)).toEqual(['B1', 'B2']);
+    expect(ranker.buckets.map((b: any) => b.name)).toEqual(['B1', 'B2']);
     expect(ranker.defaultBucket).toEqual(undefined);
     expect(ranker.rankOnly).toEqual(false);
     expect(ranker.columns).toEqual(columns);
@@ -84,6 +90,17 @@ describe('List + Ranker + Buckets (pick mode)', () => {
       items: ranker.list.items,
       columns,
       itemIds: { _: ['item1', 'item2', 'item3'], B1: [], B2: [] },
+    });
+  });
+
+  it('Ranker returns items according to result and puts the rest to _ bucket', () => {
+    store.annotationStore.selected.results.push(result);
+
+    expect(ranker.result).toBeTruthy();
+    expect(ranker.dataSource).toEqual({
+      items: ranker.list.items,
+      columns,
+      itemIds: { B1: ['item2'], B2: [], _: ['item1', 'item3'] },
     });
   });
 });
@@ -103,6 +120,12 @@ describe('List + Ranker + Buckets + default (group mode)', () => {
     { id: 'B1', title: 'Bucket 1' },
     { id: 'B2', title: 'Bucket 2' },
   ];
+  const result: any = {
+    from_name: ranker,
+    to_name: list,
+    type: 'ranker',
+    value: { ranker: { B1: ['item2'], B2: ['item1', 'item3'] } },
+  };
 
   it('List and Ranker should get values from the task', () => {
     expect(list._value).toEqual(items);
@@ -110,7 +133,7 @@ describe('List + Ranker + Buckets + default (group mode)', () => {
   });
 
   it('Ranker should have proper columns and other getters', () => {
-    expect(ranker.buckets.map(b => b.name)).toEqual(['B1', 'B2']);
+    expect(ranker.buckets.map((b: any) => b.name)).toEqual(['B1', 'B2']);
     expect(ranker.defaultBucket).toEqual('B2');
     expect(ranker.rankOnly).toEqual(false);
     expect(ranker.columns).toEqual(columns);
@@ -121,6 +144,17 @@ describe('List + Ranker + Buckets + default (group mode)', () => {
       items: ranker.list.items,
       columns,
       itemIds: { B1: [], B2: ['item1', 'item2', 'item3'] },
+    });
+  });
+
+  it('Ranker returns items according to result', () => {
+    store.annotationStore.selected.results.push(result);
+
+    expect(ranker.result).toBeTruthy();
+    expect(ranker.dataSource).toEqual({
+      items: ranker.list.items,
+      columns,
+      itemIds: { B1: ['item2'], B2: ['item1', 'item3'] },
     });
   });
 });
