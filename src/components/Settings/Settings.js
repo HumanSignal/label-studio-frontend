@@ -58,6 +58,19 @@ const HotkeysDescription = () => {
 
 const newUI = isFF(FF_DEV_3873) ? { newUI: true } : {};
 
+const editorSettingsKeys = Object.keys(EditorSettings);
+
+if (isFF(FF_DEV_3873)) {
+  const enableTooltipsIndex = editorSettingsKeys.findIndex(key => key === 'enableTooltips');
+  const enableLabelTooltipsIndex = editorSettingsKeys.findIndex(key => key === 'enableLabelTooltips');
+
+  // swap these in the array
+  const tmp = editorSettingsKeys[enableTooltipsIndex];
+
+  editorSettingsKeys[enableTooltipsIndex] = editorSettingsKeys[enableLabelTooltipsIndex];
+  editorSettingsKeys[enableLabelTooltipsIndex] = tmp;
+}
+
 const SettingsTag = ({ children }) => {
   return (
     <Block name="settings-tag">{children}</Block>
@@ -67,7 +80,7 @@ const SettingsTag = ({ children }) => {
 const GeneralSettings = observer(({ store }) => {
   return (
     <Block name="settings" mod={newUI}>
-      {Object.keys(EditorSettings).map((obj, index) => {
+      {editorSettingsKeys.map((obj, index) => {
         return (
           <Elem name="field" key={index}>
             {isFF(FF_DEV_3873) ? (
