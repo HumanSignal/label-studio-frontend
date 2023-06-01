@@ -72,10 +72,10 @@ export const AnnotationsCarousel = observer(({ store, annotationStore }: Annotat
       </Elem>
       {(!isLeftDisabled || !isRightDisabled) && (
         <Elem name='carousel-controls'>
-          <Elem tag={Button} name='nav' mod={{ left: true, disabled: isLeftDisabled }} aria-label="Carousel left" onClick={(e: MouseEvent) => !isLeftDisabled && updatePosition(e, true)}>
+          <Elem tag={Button} name='nav' disabled={isLeftDisabled} mod={{ left: true, disabled: isLeftDisabled }} aria-label="Carousel left" onClick={(e: MouseEvent) => !isLeftDisabled && updatePosition(e, true)}>
             <Elem name='arrow' mod={{ left: true }} tag={LsChevron} />
           </Elem>
-          <Elem tag={Button} name='nav' mod={{ right: true, disabled: isRightDisabled }} aria-label="Carousel right" onClick={(e: MouseEvent) => !isRightDisabled && updatePosition(e, false)}>
+          <Elem tag={Button} name='nav' disabled={isRightDisabled} mod={{ right: true, disabled: isRightDisabled }} aria-label="Carousel right" onClick={(e: MouseEvent) => !isRightDisabled && updatePosition(e, false)}>
             <Elem name='arrow' mod={{ right: true }} tag={LsChevron} />
           </Elem>
         </Elem>
