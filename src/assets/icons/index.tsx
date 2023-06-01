@@ -25,6 +25,7 @@ export { ReactComponent as LsExpandAlt } from './expand-alt.svg';
 export { ReactComponent as LsCollapse } from './collapse.svg';
 export { ReactComponent as LsCollapseSmall } from './collapse-small.svg';
 export { ReactComponent as LsDate } from './date.svg';
+export { ReactComponent as LsClose } from './close.svg';
 export { ReactComponent as IconPlusCircle } from './plus-circle.svg';
 export { ReactComponent as IconSlow } from './slow.svg';
 export { ReactComponent as IconFast } from './fast.svg';
