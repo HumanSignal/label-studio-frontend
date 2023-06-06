@@ -179,7 +179,7 @@ export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_0102202
 /**
  * Multi-image segmentation support via `valueList`
  */
-export const FF_LSDV_4583 = 'feat_front_lsdv_4583_multi_image_segmentation_short';
+export const FF_LSDV_4583 = 'fflag_feat_front_lsdv_4583_multi_image_segmentation_short';
 
 /**
  * Enables new way of preloading/cacheing images
@@ -238,6 +238,13 @@ export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4930_selection_tool_fixes_240423_short
  */
 export const FF_LSDV_4930 = 'fflag_fix_front_lsdv_4930_selection_tool_fixes_240423_short';
+
+/**
+ * Restore "hide all regions" button functionality in the outliner
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
+ */
+export const FF_LSDV_4992 = 'fflag_fix_front_lsdv_4992_hide_all_regions_04052023_short';
 
 /**
  * Resetting shared stores on task change to correctly generate dynamic children

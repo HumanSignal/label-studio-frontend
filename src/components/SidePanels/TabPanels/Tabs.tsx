@@ -228,10 +228,8 @@ export const Tabs = (props: BaseProps) => {
           />
         </Elem>
         <Elem  name="contents">
-          {console.log('props', props)}
           {ActiveComponent && <ActiveComponent {...props} />}
         </Elem>
-          
       </Block>
     </>
   );

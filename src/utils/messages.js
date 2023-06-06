@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-no-target-blank */
-
 import React from 'react';
+
+import { htmlEscape } from './html';
 
 const URL_CORS_DOCS = 'https://labelstud.io/guide/storage.html#Troubleshoot-CORS-and-access-problems';
 const URL_TAGS_DOCS = 'https://labelstud.io/tags';
@@ -57,7 +58,7 @@ export default {
       <div data-testid="error:audio">
         <p>Error while loading audio. Check <code>{attr}</code> field in task.</p>
         <p>Technical description: {error}</p>
-        <p>URL: {url}</p>
+        <p>URL: {htmlEscape(url)}</p>
       </div>
     );
   },
@@ -70,7 +71,7 @@ export default {
         The request parameters are invalid.
         If you are using S3, make sure you’ve specified the right bucket region name.
       </p>
-      <p>URL: <code><a href=${url} target="_blank">${url}</a></code></p>
+      <p>URL: <code><a href="${encodeURI(url)}" target="_blank">${htmlEscape(url)}</a></code></p>
     </div>`;
   },
 
@@ -80,7 +81,7 @@ export default {
       <p>
         There was an issue loading URL from <code>${attr}</code> value.
         Most likely that's because static server has wide-open CORS.
-        <a href=${this.URL_CORS_DOCS} target="_blank">Read more on that here.</a>
+        <a href="${this.URL_CORS_DOCS}" target="_blank">Read more on that here.</a>
       </p>
       <p>
         Also check that:
@@ -89,7 +90,7 @@ export default {
           <li>Network is reachable</li>
         </ul>
       </p>
-      <p>URL: <code><a href=${url} target="_blank">${url}</a></code></p>
+      <p>URL: <code><a href="${encodeURI(url)}" target="_blank">${htmlEscape(url)}</a></code></p>
     </div>`;
   },
 
@@ -113,7 +114,7 @@ export default {
       <p>
         Technical description: <code>${error}</code>
         <br />
-        URL: <code><a href=${url} target="_blank">${url}</a></code>
+        URL: <code><a href="${encodeURI(url)}" target="_blank">${htmlEscape(url)}</a></code>
       </p>
     </div>`;
   },
