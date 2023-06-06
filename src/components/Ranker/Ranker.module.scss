@@ -1,89 +1,54 @@
-.rankerBoard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: lightgray;
-  border: 1px solid rgba(34, 36, 38, 0.15);
-}
-
-.buttonContainer {
-  display: flex;
-}
-
-.buttonStyle {
-  margin: 2px;
-  cursor: pointer;
-}
-
-#buttonStyle__removeButton {
-  background-color: white;
-  color: #e30615;
-}
-
-#buttonStyle__addButton {
-  background-color: #1a9bf1;
-  color: white;
-}
-
-.boardStyle {
-  display: flex;
-  width: 100%;
-  margin-top: 10px;
-  background-color: lightgray;
-}
-
-.columnsStyle {
+.board {
+  --ranker-gap: 8px;
+  --ranker-border-color: rgba(34, 36, 38, 0.15);
   display: flex;
   justify-content: space-evenly;
   width: 100%;
+  padding: var(--ranker-gap);
+  border: 1px solid var(--ranker-border-color);
 }
 
-.columnStyle {
-  margin: 10px;
-  border: 1px solid rgba(34, 36, 38, 0.15);
+.column {
+  flex: 1;
+  border: 1px solid var(--ranker-border-color);
   background-color: white;
-  padding: 8px;
+  padding: var(--ranker-gap);
   border-radius: 2px;
   display: flex;
   flex-direction: column;
   align-items: center;
   overflow-y: scroll;
-  box-shadow: 2px 2px 8px #aaa;
+
+  [data-rbd-droppable-id] {
+    // to spread column to the full height
+    flex: 1;
+  }
+
+  & + & {
+    margin-left: var(--ranker-gap);
+  }
 }
 
-.itemStyle {
+.item {
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(34, 36, 38, 0.15);
-  margin-top: 20px;
-  padding: 8px;
+  border: 1px solid var(--ranker-border-color);
+  margin: var(--ranker-gap) 0 0;
+  padding: var(--ranker-gap);
   border-radius: 2px;
-  background-color: lightgray;
+  background-color: #f5f5f5;
   color: black;
-  width: 250px;
-  box-shadow: 2px 2px 8px #aaa;
+  max-width: 400px;
 }
 
-.itemLineStyle {
+.itemLine {
   margin: 0;
 }
 
-.dropAreaStyle {
+.dropArea {
   min-height: 50%;
   min-width: 80%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-}
-
-@media screen and (max-width: 1520px) {
-  .itemStyle {
-    width: 200px;
-  }
-}
-
-@media screen and (max-width: 1000px) {
-  .itemStyle {
-    width: 100px;
-  }
+  align-items: stretch;
 }
