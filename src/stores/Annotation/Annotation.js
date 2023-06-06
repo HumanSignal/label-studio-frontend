@@ -1038,7 +1038,12 @@ export const Annotation = types
         self.acceptAllSuggestions();
       } else {
         self.suggestions.forEach((suggestion) => {
-          if (['richtextregion', 'text', 'textrange'].includes(suggestion.type)) {
+          // regions that can't be accepted in usual way should be auto accepted;
+          // textarea will have simple classification area with no type.
+          const onlyAutoAccept = ['richtextregion', 'text', 'textrange'].includes(suggestion.type)
+            || suggestion.results?.[0]?.type === 'textarea';
+
+          if (onlyAutoAccept) {
             self.acceptSuggestion(suggestion.id);
             if (isFF(FF_DEV_1284)) {
               // This is necessary to prevent the occurrence of new steps in the history after updating objects at the end of current method
@@ -1051,7 +1056,7 @@ export const Annotation = types
       if (!isFF(FF_DEV_1284)) {
         history.freeze('richtext:suggestions');
       }
-      self.objects.forEach(obj => obj.needsUpdate?.({ suggestions: true }));
+      self.names.forEach(tag => tag.needsUpdate?.({ suggestions: true }));
       if (!isFF(FF_DEV_1284)) {
         history.setReplaceNextUndoState(true);
         history.unfreeze('richtext:suggestions');
