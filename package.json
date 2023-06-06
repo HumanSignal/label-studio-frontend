@@ -131,7 +131,7 @@
     "antd": "^4.3.3",
     "autoprefixer": "^10.4.2",
     "babel-jest": "^29.3.1",
-    "babel-loader": "8.2.2",
+    "babel-loader": "^8.2.2",
     "babel-plugin-import": "^1.13.5",
     "babel-plugin-remove-webpack": "^1.1.0",
     "chroma-js": "^2.1.1",
