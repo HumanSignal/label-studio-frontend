@@ -41,7 +41,7 @@ import Base from './Base';
  */
 const Model = types
   .model({
-    type: 'ranker',
+    type: 'list',
     value: types.maybeNull(types.string),
     _value: types.frozen([]),
     title: types.optional(types.string, ''),
@@ -59,7 +59,7 @@ const Model = types
     get dataSource() {
       return {
         items: self.items,
-        columns: [{ id: self.name }],
+        columns: [{ id: self.name, title: self.title }],
         itemIds: { [self.name]: Object.keys(self.items) },
       };
     },
@@ -73,7 +73,8 @@ const Model = types
 
       if (!Array.isArray(value)) return;
 
-      self._value = value;
+      // ids should be strings
+      self._value = value.map(item => ({ ...item, id: String(item.id) }));
     },
   }));
 

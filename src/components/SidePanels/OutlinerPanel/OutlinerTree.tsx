@@ -157,7 +157,7 @@ const useDataTree = ({
         '--selection-color': color.alpha(0.1).css(),
       },
       className: rootClass.elem('node').mod(mods).toClassName(),
-      title: (data: any) => <RootTitle {...data}/>,
+      title: (data: any) => <RootTitle {...data} />,
     };
   }, [hovered, selectedKeys]);
 
@@ -442,7 +442,11 @@ const RegionControls: FC<RegionControlsProps> = observer(({
           />
         </Elem>
         <Elem name="control" mod={{ type: 'visibility' }}>
-          {(hovered || hidden) && (
+          {isFF(FF_DEV_3873) ? (
+            <RegionControlButton onClick={onToggleHidden} style={hidden ? undefined : ({ display: 'none' })}>
+              {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
+            </RegionControlButton>
+          ) : (hovered || hidden) && (
             <RegionControlButton onClick={onToggleHidden}>
               {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
             </RegionControlButton>

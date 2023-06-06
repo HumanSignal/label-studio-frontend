@@ -7,15 +7,20 @@ import Registry from '../../core/Registry';
 import Tree from '../../core/Tree';
 import Types from '../../core/Types';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 import { guidGenerator } from '../../utils/unique';
 import Base from './Base';
 
+// column to display items from original List, when there are no default Bucket
+const ORIGINAL_ITEMS_KEY = '_';
+
 /**
  * The `Ranker` tag is used to rank items in a `List` tag or pick relevant items from a `List`, depending on using nested `Bucket` tags.
- * In simple case of `List` + `Ranker` tags the first one becomes interactive and saved result is an array of ids in new order.
+ * In simple case of `List` + `Ranker` tags the first one becomes interactive and saved result is a dict with the only key of tag's name and with value of array of ids in new order.
  * With `Bucket`s any items from the `List` can be moved to these buckets, and resulting groups will be exported as a dict `{ bucket-name-1: [array of ids in this bucket], ... }`
  * By default all items will sit in `List` and will not be exported, unless they are moved to a bucket. But with `default="true"` parameter you can specify a bucket where all items will be placed by default, so exported result will always have all items from the list, grouped by buckets.
  * Columns and items can be styled in `Style` tag by using respective `.htx-ranker-column` and `.htx-ranker-item` classes. Titles of columns are defined in `title` parameter of `Bucket` tag.
+ * Note: When `Bucket`s used without `default` param, the original list will also be stored as "_" named column in results, but that's internal value and this may be changed later.
  * @example
  * <!-- Visual appearance can be changed via Style tag with these predefined classnames -->
  * <View>
@@ -39,7 +44,7 @@ import Base from './Base';
  *   "from_name": "rank",
  *   "to_name": "results",
  *   "type": "ranker",
- *   "value": { "ranker": ["mdn", "wiki", "blog"] }
+ *   "value": { "ranker": { "rank": ["mdn", "wiki", "blog"] } }
  * }
  * @example
  * <!-- Example of using Buckets with Ranker tag -->
@@ -75,9 +80,6 @@ const Model = types
     // @todo allow Views inside: ['bucket', 'view']
     children: Types.unionArray(['bucket']),
   })
-  .volatile(() => ({
-    leftInList: null,
-  }))
   .views(self => ({
     get list() {
       const list = self.annotation.names.get(self.toname);
@@ -87,9 +89,16 @@ const Model = types
     get buckets() {
       return Tree.filterChildrenOfType(self, 'BucketModel');
     },
-    /** @returns {string | undefined} */
+    /**
+     * rank mode: tag's name
+     * pick mode: undefined
+     * group mode: name of the Bucket with default=true
+     * @returns {string | undefined}
+     */
     get defaultBucket() {
-      return self.buckets.find(b => b.default)?.name;
+      return self.buckets.length > 0
+        ? self.buckets.find(b => b.default)?.name
+        : self.name;
     },
     get rankOnly() {
       return !self.buckets.length;
@@ -101,7 +110,7 @@ const Model = types
 
       const columns = self.buckets.map(b => ({ id: b.name, title: b.title ?? '' }));
 
-      if (!self.defaultBucket) columns.unshift({ id: '_', title: self.list.title });
+      if (!self.defaultBucket) columns.unshift({ id: ORIGINAL_ITEMS_KEY, title: self.list.title });
 
       return columns;
     },
@@ -113,26 +122,34 @@ const Model = types
       const ids = Object.keys(items);
       const columns = self.columns;
       /** @type {Record<string, string[]>} */
+      const columnStubs = Object.fromEntries(self.columns.map(c => [c.id, []]));
+      /** @type {Record<string, string[]>} */
       const result = self.result?.value.ranker;
       let itemIds = {};
 
-
       if (!data) return [];
-      // one array of items sitting in List tag, just reorder them if result is given
-      if (self.rankOnly) {
-        // 
-        itemIds = { [self.name]: result ?? ids };
-      } else if (!result) {
-        itemIds = { [self.defaultBucket ?? '_']: ids };
+      if (!result) {
+        itemIds = { ...columnStubs, [self.defaultBucket ?? ORIGINAL_ITEMS_KEY]: ids };
       } else {
-        itemIds = { ...result };
+        itemIds = { ...columnStubs, ...result };
 
+        // original list is displayed, but there are no such column in result,
+        // so create it from results not groupped into buckets;
+        // also if there are unknown columns in result they'll go there too.
         if (!self.defaultBucket) {
-          const selected = Object.values(result).flat();
-          const left = self.leftInList ?? ids.filter(id => !selected.includes(id));
-          // @todo what if data has more items then in selected bucket?
+          const columnNames = self.columns.map(c => c.id);
+          // all items in known columns, including original list (_)
+          const selected = Object.entries(result)
+            .filter(([key]) => columnNames.includes(key))
+            .map(([_, values]) => values)
+            .flat();
+          // all undistributed items or items from unknown columns
+          const left = ids.filter(id => !selected.includes(id));
 
-          itemIds['_'] = left;
+          if (left.length) {
+            // there are might be already some items in result
+            itemIds[ORIGINAL_ITEMS_KEY] = [...(itemIds[ORIGINAL_ITEMS_KEY] ?? []), ...left];
+          }
         }
       }
 
@@ -141,11 +158,6 @@ const Model = types
     get result() {
       return self.annotation?.results.find(r => r.from_name === self);
     },
-    // isReadOnly() {
-    //   // tmp fix for infinite recursion in isReadOnly() in ReadOnlyMixin
-    //   // should not affect anything, this object is self-contained
-    //   return true;
-    // },
   }))
   .actions(self => ({
     createResult(data) {
@@ -153,13 +165,6 @@ const Model = types
     },
 
     updateResult(newData) {
-      if (self.rankOnly) {
-        newData = newData[self.name];
-      } else if (newData._) {
-        self.leftInList = newData._;
-        delete newData._;
-      }
-
       // check if result exists already, since only one instance of it can exist at a time
       if (self.result) {
         self.result.setValue(newData);
@@ -170,29 +175,32 @@ const Model = types
 
     // Create result on submit if it doesn't exist
     beforeSend() {
-      if (self.result || !self.list) return;
+      if (!self.list) return;
+
+      // @todo later we will most probably remove _ bucket from exported result
+      if (self.result) return;
 
       const ids = Object.keys(self.list?.items);
+      // empty array for every column
+      const data = Object.fromEntries(self.columns.map(c => [c.id, []]));
 
-      if (self.rankOnly) {
-        self.createResult(ids);
-      } else if (self.defaultBucket) {
-        self.createResult({ [self.defaultBucket]: ids });
-      }
+      // List items should also be stored at the beginning for consistency, we add them to result
+      data[self.defaultBucket ?? ORIGINAL_ITEMS_KEY] = ids;
+
+      self.createResult(data);
     },
   }));
 
-const RankerModel = types.compose('RankerModel', Base, AnnotationMixin, Model);
+const RankerModel = types.compose('RankerModel', Base, AnnotationMixin, Model, ReadOnlyControlMixin);
 
 const HtxRanker = inject('store')(
   observer(({ item }) => {
     const data = item.dataSource;
 
-
     if (!data) return null;
 
     return (
-      <Ranker inputData={data} handleChange={item.updateResult} />
+      <Ranker inputData={data} handleChange={item.updateResult} readonly={item.isReadOnly()} />
     );
   }),
 );
@@ -221,4 +229,4 @@ Registry.addTag('ranker', RankerModel, HtxRanker);
 Registry.addTag('bucket', BucketModel, HtxBucket);
 Registry.addObjectType(RankerModel);
 
-export { HtxRanker, RankerModel };
+export { BucketModel, HtxRanker, RankerModel };
