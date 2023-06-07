@@ -55,7 +55,6 @@ export const CommentForm: FC<CommentFormProps> = observer(({
 
 
   useEffect(() => {
-    commentStore.setAddedCommentThisSession(false);
     clearTooltipMessage();
   }, []);
 
