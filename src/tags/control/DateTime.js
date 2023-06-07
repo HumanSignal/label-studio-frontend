@@ -29,7 +29,7 @@ const zero = n => (n < 10 ? '0' : '') + n;
  *
  * Use with the following data types: audio, image, HTML, paragraph, text, time series, video
  *
- * [^FF_LSDV_4583]: `feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
  *
  * @example
  * <View>

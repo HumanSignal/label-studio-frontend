@@ -20,7 +20,7 @@ import { FF_LSDV_4583, isFF } from '../../utils/feature-flags';
  *
  * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
  *
- * [^FF_LSDV_4583]: `feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
  *
  * @example
  * <!--Basic labeling configuration to rate the content of a text passage -->

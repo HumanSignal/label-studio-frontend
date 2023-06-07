@@ -35,7 +35,7 @@ const { Option } = Select;
  *
  * The `Choices` tag can be used with any data types.
  *
- * [^FF_LSDV_4583]: `feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality.
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality.
  * [^FF_DEV_2007_DEV_2008]: `ff_dev_2007_dev_2008_dynamic_tag_children_250322_short` should be enabled to use dynamic options.
  * [^FF_DEV_2007]: `ff_dev_2007_rework_choices_280322_short` should be enabled to use `html` attribute
  *

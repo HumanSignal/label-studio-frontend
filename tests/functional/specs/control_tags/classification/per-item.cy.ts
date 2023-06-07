@@ -46,7 +46,7 @@ import {
   TEXTAREA_REQUIRED_WARNING
 } from '../../../data/control_tags/per-item';
 import { ImageView } from '@heartexlabs/ls-test/helpers/LSF/index';
-import { FF_LSDV_4583 } from '@heartexlabs/ls-test/feature-flags';
+import { FF_LSDV_4583 } from '../../../../../src/utils/feature-flags';
 
 beforeEach(() => {
   LabelStudio.addFeatureFlagsOnPageLoad({

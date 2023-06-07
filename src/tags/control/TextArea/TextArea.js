@@ -40,7 +40,7 @@ const { TextArea } = Input;
  *
  * [^FF_LSDV_4659]: `fflag_feat_front_lsdv_4659_skipduplicates_060323_short` should be enabled to use `skipDuplicates` attribute
  * [^FF_LSDV_4712]: `fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short` should be enabled to keep submissions unique during editing existed results
- * [^FF_LSDV_4583]: `feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
  *
  * @example
  * <!--Basic labeling configuration to display only a text area -->
