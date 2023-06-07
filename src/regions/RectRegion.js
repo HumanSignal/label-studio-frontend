@@ -18,6 +18,7 @@ import { createDragBoundFunc } from '../utils/image';
 import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
 import { RegionWrapper } from './RegionWrapper';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
 const RectRegionAbsoluteCoordsDEV3793 = types
   .model({
@@ -58,11 +59,11 @@ const RectRegionAbsoluteCoordsDEV3793 = types
       self.width = width;
       self.height = height;
 
-      self.relativeX = (x / self.parent?.stageWidth) * 100;
-      self.relativeY = (y / self.parent?.stageHeight) * 100;
+      self.relativeX = (x / self.parent?.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (y / self.parent?.stageHeight) * RELATIVE_STAGE_HEIGHT;
 
-      self.relativeWidth = (width / self.parent?.stageWidth) * 100;
-      self.relativeHeight = (height / self.parent?.stageHeight) * 100;
+      self.relativeWidth = (width / self.parent?.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeHeight = (height / self.parent?.stageHeight) * RELATIVE_STAGE_HEIGHT;
 
       self.rotation = (rotation + 360) % 360;
     },
@@ -71,15 +72,15 @@ const RectRegionAbsoluteCoordsDEV3793 = types
     },
     updateImageSize(wp, hp, sw, sh) {
       if (self.coordstype === 'px') {
-        self.x = (sw * self.relativeX) / 100;
-        self.y = (sh * self.relativeY) / 100;
-        self.width = (sw * self.relativeWidth) / 100;
-        self.height = (sh * self.relativeHeight) / 100;
+        self.x = (sw * self.relativeX) / RELATIVE_STAGE_WIDTH;
+        self.y = (sh * self.relativeY) / RELATIVE_STAGE_HEIGHT;
+        self.width = (sw * self.relativeWidth) / RELATIVE_STAGE_WIDTH;
+        self.height = (sh * self.relativeHeight) / RELATIVE_STAGE_HEIGHT;
       } else if (self.coordstype === 'perc') {
-        self.x = (sw * self.x) / 100;
-        self.y = (sh * self.y) / 100;
-        self.width = (sw * self.width) / 100;
-        self.height = (sh * self.height) / 100;
+        self.x = (sw * self.x) / RELATIVE_STAGE_WIDTH;
+        self.y = (sh * self.y) / RELATIVE_STAGE_HEIGHT;
+        self.width = (sw * self.width) / RELATIVE_STAGE_WIDTH;
+        self.height = (sh * self.height) / RELATIVE_STAGE_HEIGHT;
         self.coordstype = 'px';
       }
     },
@@ -294,8 +295,8 @@ const Model = types
       if (
         areaBBoxCoords?.left < 0 ||
         areaBBoxCoords?.top < 0 ||
-        areaBBoxCoords?.right > 100 ||
-        areaBBoxCoords?.bottom > 100
+        areaBBoxCoords?.right > RELATIVE_STAGE_WIDTH ||
+        areaBBoxCoords?.bottom > RELATIVE_STAGE_HEIGHT
       ) {
         self.height = oldHeight;
       }
