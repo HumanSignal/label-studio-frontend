@@ -389,7 +389,10 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
     const observer = new ResizeObserver(() => {
       const { clientWidth, clientHeight } = root ?? {};
-      
+
+      // we don't need to check or resize anything in collapsed state
+      if (clientWidth <= maxWindowWidth) return;
+
       if(viewportSize.current.height !== clientHeight) setPanelData(getSnappedHeights(panelData, clientHeight));
       // Remember current width and height of the viewport
       viewportSize.current.width = clientWidth ?? 0;
@@ -417,7 +420,15 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     };
   }, []);
 
-  const emptyBaseProps = { ...partialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
+  const getPartialEmptyBaseProps = useMemo(() => {
+    const updatedProps = { ...partialEmptyBaseProps };
+
+    updatedProps.panelViews = partialEmptyBaseProps.panelViews.filter((view) => view.name !== 'comments' || showComments);
+
+    return updatedProps;
+  }, [partialEmptyBaseProps, showComments]);
+
+  const emptyBaseProps = { ...getPartialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
 
   return (
     <SidePanelsContext.Provider value={contextValue}>

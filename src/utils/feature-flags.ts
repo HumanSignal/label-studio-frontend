@@ -233,6 +233,13 @@ export const FF_LSDV_4832 = 'fflag_feat_front_lsdv_4832_new_ranker_tag_120423_sh
 export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing_140423_short';
 
 /**
+ * Restore "hide all regions" button functionality in the outliner
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
+ */
+export const FF_LSDV_4992 = 'fflag_fix_front_lsdv_4992_hide_all_regions_04052023_short';
+
+/**
  * Resetting shared stores on task change to correctly generate dynamic children
  *
  * @see: ff_dev_2007_dev_2008_dynamic_tag_children_250322_short: To enable dynamic children

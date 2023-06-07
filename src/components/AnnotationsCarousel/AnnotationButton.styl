@@ -13,6 +13,10 @@
   height calc(100% - 3px)
   min-width 186px
 
+  &__user
+    line-height: 16px;
+    height: 16px;
+
   &__main
     flex: 1 0 auto;
   &__mainSection
@@ -48,8 +52,15 @@
 
   &:hover
     background-color rgba(9, 109, 217, 0.12)
-    border 1px solid rgba(9, 109, 217, 0.16)
+    border-color rgba(9, 109, 217, 0.16)
     border-bottom-color transparent
+
+    .annotation-button__name
+      color #1F1F1F
+
+    .annotation-button__created
+      color #413C4A
+
     .annotation-button__ellipsisIcon
       visibility visible
 
@@ -78,9 +89,6 @@
     border-radius 4px
     &_groundTruth
       color #FFC53D
-    &_comments
-      background #FF85C02E
-      color #FF85C0
   &__ellipsisIcon
     transform rotate(90deg)
     display flex
