@@ -1038,8 +1038,10 @@ export const Annotation = types
         self.acceptAllSuggestions();
       } else {
         self.suggestions.forEach((suggestion) => {
-          // regions that can't be accepted in usual way should be auto accepted;
-          // textarea will have simple classification area with no type.
+          // regions that can't be accepted in usual way, should be auto-accepted;
+          // textarea will have simple classification area with no type, so check result.
+          // @todo per-regions is tough thing here as they can be in generated result,
+          // connected to manual region, will check it later
           const onlyAutoAccept = ['richtextregion', 'text', 'textrange'].includes(suggestion.type)
             || suggestion.results?.[0]?.type === 'textarea';
 

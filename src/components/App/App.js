@@ -208,6 +208,7 @@ class App extends Component {
 
     const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
 
+    // tags can be styled in config when user is awaiting for suggestions from ML backend
     const mainContent = (
       <Block name="main-content" mix={store.awaitingSuggestions ? ['requesting'] : []}>
         {as.validation === null
