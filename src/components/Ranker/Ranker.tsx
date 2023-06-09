@@ -49,8 +49,6 @@ const Ranker = ({ inputData, handleChange, readonly }: BoardProps) => {
         [source.droppableId]: newCol,
       };
 
-      // delete newItemIds['_'];
-
       const newData = {
         ...data,
         itemIds: newItemIds,
@@ -76,8 +74,6 @@ const Ranker = ({ inputData, handleChange, readonly }: BoardProps) => {
       [source.droppableId]: startItemIds,
       [destination.droppableId]: endItemIds,
     };
-
-    // delete newItemIds['_'];
 
     const newData = {
       ...data,

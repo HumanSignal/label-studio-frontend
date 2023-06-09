@@ -11,9 +11,12 @@ import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 import { guidGenerator } from '../../utils/unique';
 import Base from './Base';
 
+// column to display items from original List, when there are no default Bucket
+const ORIGINAL_ITEMS_KEY = '_';
+
 /**
  * The `Ranker` tag is used to rank items in a `List` tag or pick relevant items from a `List`, depending on using nested `Bucket` tags.
- * In simple case of `List` + `Ranker` tags the first one becomes interactive and saved result is an array of ids in new order.
+ * In simple case of `List` + `Ranker` tags the first one becomes interactive and saved result is a dict with the only key of tag's name and with value of array of ids in new order.
  * With `Bucket`s any items from the `List` can be moved to these buckets, and resulting groups will be exported as a dict `{ bucket-name-1: [array of ids in this bucket], ... }`
  * By default all items will sit in `List` and will not be exported, unless they are moved to a bucket. But with `default="true"` parameter you can specify a bucket where all items will be placed by default, so exported result will always have all items from the list, grouped by buckets.
  * Columns and items can be styled in `Style` tag by using respective `.htx-ranker-column` and `.htx-ranker-item` classes. Titles of columns are defined in `title` parameter of `Bucket` tag.
@@ -41,7 +44,7 @@ import Base from './Base';
  *   "from_name": "rank",
  *   "to_name": "results",
  *   "type": "ranker",
- *   "value": { "ranker": ["mdn", "wiki", "blog"] }
+ *   "value": { "ranker": { "rank": ["mdn", "wiki", "blog"] } }
  * }
  * @example
  * <!-- Example of using Buckets with Ranker tag -->
@@ -86,9 +89,16 @@ const Model = types
     get buckets() {
       return Tree.filterChildrenOfType(self, 'BucketModel');
     },
-    /** @returns {string | undefined} */
+    /**
+     * rank mode: tag's name
+     * pick mode: undefined
+     * group mode: name of the Bucket with default=true
+     * @returns {string | undefined}
+     */
     get defaultBucket() {
-      return self.buckets.find(b => b.default)?.name;
+      return self.buckets.length > 0
+        ? self.buckets.find(b => b.default)?.name
+        : self.name;
     },
     get rankOnly() {
       return !self.buckets.length;
@@ -100,7 +110,7 @@ const Model = types
 
       const columns = self.buckets.map(b => ({ id: b.name, title: b.title ?? '' }));
 
-      if (!self.defaultBucket) columns.unshift({ id: '_', title: self.list.title });
+      if (!self.defaultBucket) columns.unshift({ id: ORIGINAL_ITEMS_KEY, title: self.list.title });
 
       return columns;
     },
@@ -112,29 +122,35 @@ const Model = types
       const ids = Object.keys(items);
       const columns = self.columns;
       /** @type {Record<string, string[]>} */
+      const columnStubs = Object.fromEntries(self.columns.map(c => [c.id, []]));
+      /** @type {Record<string, string[]>} */
       const result = self.result?.value.ranker;
       let itemIds = {};
 
       if (!data) return [];
-      // one array of items sitting in List tag, just reorder them if result is given
-      if (self.rankOnly) {
-        // 
-        itemIds = { [self.name]: result ? [...result] : ids };
-      } else if (!result) {
-        itemIds = { [self.defaultBucket ?? '_']: ids };
+      if (!result) {
+        itemIds = { ...columnStubs, [self.defaultBucket ?? ORIGINAL_ITEMS_KEY]: ids };
       } else {
-        itemIds = { ...result };
+        itemIds = { ...columnStubs, ...result };
 
-        // original list is shown, but there are no such column in result,
-        // so create it from results not groupped into buckets
-        if (!self.defaultBucket && !result['_']) {
-          const selected = Object.values(result).flat();
+        // original list is displayed, but there are no such column in result,
+        // so create it from results not groupped into buckets;
+        // also if there are unknown columns in result they'll go there too.
+        if (!self.defaultBucket) {
+          const columnNames = self.columns.map(c => c.id);
+          // all items in known columns, including original list (_)
+          const selected = Object.entries(result)
+            .filter(([key]) => columnNames.includes(key))
+            .map(([_, values]) => values)
+            .flat();
+          // all undistributed items or items from unknown columns
           const left = ids.filter(id => !selected.includes(id));
 
-          itemIds['_'] = left;
+          if (left.length) {
+            // there are might be already some items in result
+            itemIds[ORIGINAL_ITEMS_KEY] = [...(itemIds[ORIGINAL_ITEMS_KEY] ?? []), ...left];
+          }
         }
-        // @todo what if there are items in data that are not presented in result?
-        // @todo they must likely should go into _ bucket as well
       }
 
       return { items, columns, itemIds };
@@ -149,10 +165,6 @@ const Model = types
     },
 
     updateResult(newData) {
-      if (self.rankOnly) {
-        newData = newData[self.name];
-      }
-
       // check if result exists already, since only one instance of it can exist at a time
       if (self.result) {
         self.result.setValue(newData);
@@ -169,12 +181,13 @@ const Model = types
       if (self.result) return;
 
       const ids = Object.keys(self.list?.items);
+      // empty array for every column
+      const data = Object.fromEntries(self.columns.map(c => [c.id, []]));
 
-      if (self.rankOnly) {
-        self.createResult(ids);
-      } else if (self.defaultBucket) {
-        self.createResult({ [self.defaultBucket]: ids });
-      }
+      // List items should also be stored at the beginning for consistency, we add them to result
+      data[self.defaultBucket ?? ORIGINAL_ITEMS_KEY] = ids;
+
+      self.createResult(data);
     },
   }));
 
@@ -183,7 +196,6 @@ const RankerModel = types.compose('RankerModel', Base, AnnotationMixin, Model, R
 const HtxRanker = inject('store')(
   observer(({ item }) => {
     const data = item.dataSource;
-
 
     if (!data) return null;
 
@@ -217,4 +229,4 @@ Registry.addTag('ranker', RankerModel, HtxRanker);
 Registry.addTag('bucket', BucketModel, HtxBucket);
 Registry.addObjectType(RankerModel);
 
-export { HtxRanker, RankerModel };
+export { BucketModel, HtxRanker, RankerModel };

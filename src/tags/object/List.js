@@ -41,7 +41,7 @@ import Base from './Base';
  */
 const Model = types
   .model({
-    type: 'ranker',
+    type: 'list',
     value: types.maybeNull(types.string),
     _value: types.frozen([]),
     title: types.optional(types.string, ''),
