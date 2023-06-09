@@ -647,32 +647,68 @@ describe('findZIndices', () => {
 
 describe('findPanelViewByName', () => {
   const state = {
-    panel1: {
+    'view1-view2-view3' : {
       panelViews: [
-        { name: 'view1', tab: 'Tab 1' },
-        { name: 'view2', tab: 'Tab 2' },
+        { name: 'view1' },
+        { name: 'view2' },
+        { name: 'view3' },
       ],
     },
-    panel2: {
+    'view4-view5' : {
       panelViews: [
-        { name: 'view3', tab: 'Tab 3' },
-        { name: 'view4', tab: 'Tab 4' },
+        { name: 'View 4' },
+        { name: 'View 5' },
       ],
     },
   };
 
-  it('should return the panel view when found', () => {
-    const result = findPanelViewByName(state, 'view2');
-
-    expect(result).toEqual({
-      panelName: 'panel1',
-      tab: { name: 'view2', tab: 'Tab 2' },
+  it('should return the correct panel view when it exists', () => {
+    const name = 'view2';
+    const expected = {
+      panelName: 'view1-view2-view3',
+      tab: { name: 'view2' },
       panelViewIndex: 1,
-    });
+    };
+
+    const result = findPanelViewByName(state, name);
+
+    expect(result).toEqual(expected);
   });
 
-  it('should return undefined when the panel view is not found', () => {
-    const result = findPanelViewByName(state, 'view5');
+  it('should return undefined when the panel view does not exist', () => {
+    const name = 'Non-existent View';
+
+    const result = findPanelViewByName(state, name);
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should handle an empty state object', () => {
+    const name = 'View';
+
+    const result = findPanelViewByName({}, name);
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should handle an empty panelViews array', () => {
+    const stateWithEmptyPanel = {
+      panel1: {
+        panelViews: [],
+      },
+    };
+    const name = 'View';
+
+    const result = findPanelViewByName(stateWithEmptyPanel, name);
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should handle a state object with no matching panel views', () => {
+
+    const name = 'Non-existent View';
+
+    const result = findPanelViewByName(state, name);
 
     expect(result).toBeUndefined();
   });
