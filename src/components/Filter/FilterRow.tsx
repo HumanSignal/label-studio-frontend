@@ -40,8 +40,11 @@ export const FilterRow: FC<FilterRowInterface> = ({
   }, [_selectedField]);
 
   useEffect(() => {
-    if(!isDefined(_selectedOperation) || _selectedOperation < 0) return;
-    const _filterInputs = FilterInputs?.[availableFilters[_selectedField].type][_selectedOperation];
+    const _operationItems = FilterInputs?.[availableFilters[_selectedField].type];
+    const _operation = _operationItems.findIndex((item:any) => (item.key ?? item.label) === _selectedOperation);
+
+    if(!isDefined(_operation) || _operation < 0) return;
+    const _filterInputs = FilterInputs?.[availableFilters[_selectedField].type][_operation];
 
     onChange(index, { operation: _filterInputs?.key });
     setInputComponent(_filterInputs?.input);
@@ -57,7 +60,7 @@ export const FilterRow: FC<FilterRowInterface> = ({
             dataTestid={'logic-dropdown'}
             style={{ width: '60px' }}
             onChange={(value: any) => {
-              onChange(index, { logic:logicItems[value].key });
+              onChange(index, { logic:value });
             }}
           />
         )}
@@ -69,9 +72,9 @@ export const FilterRow: FC<FilterRowInterface> = ({
           dataTestid={'field-dropdown'}
           style={{ width: '140px' }}
           onChange={(value: any) => {
-            setSelectedField(value);
+            setSelectedField(availableFilters.findIndex((item:any) => (item.key ?? item.label) === value));
 
-            onChange(index, { value:'' });
+            onChange(index, { value:null });
           }}
         />
       </Elem>
