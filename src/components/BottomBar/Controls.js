@@ -43,6 +43,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   
   const buttonHandler = useCallback(async (e, callback, tooltipMessage) => {
     const { addedCommentThisSession, currentComment, commentFormSubmit } = store.commentStore;
+    
     if (isInProgress) return;
     setIsInProgress(true);
     if(addedCommentThisSession){
