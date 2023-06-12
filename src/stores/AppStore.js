@@ -496,6 +496,8 @@ export default types
       if (self.isSubmitting) return;
       self.setFlags({ isSubmitting: true });
       const res = fn();
+
+      self.commentStore.setAddedCommentThisSession(false);
       // Wait for request, max 5s to not make disabled forever broken button;
       // but block for at least 0.2s to prevent from double clicking.
 
