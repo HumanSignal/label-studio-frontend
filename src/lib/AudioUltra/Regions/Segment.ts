@@ -359,6 +359,13 @@ export class Segment extends Events<SegmentEvents> {
     }
   }
 
+  setLocked(locked: boolean) {
+    this.updateable = !locked;
+
+    this.invoke('update', [this]);
+    this.waveform.invoke('regionUpdated', [this]);
+  }
+
   updateColor(color: string|RgbaColorArray) {
     if (!this.updateable) return;
     this.setColor(color);
