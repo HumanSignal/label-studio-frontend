@@ -18,7 +18,7 @@
     "cvg:summary": "nyc report --temp-dir=.nyc_output --reporter=text-summary --cwd=. --exclude-after-remap false"
   },
   "dependencies": {
-    "@heartexlabs/ls-test": "git+ssh://git@github.com/heartexlabs/ls-frontend-test#d5858e491e1b231828ad69d4e5fc49302ed7b4dc"
+    "@heartexlabs/ls-test": "git+ssh://git@github.com/heartexlabs/ls-frontend-test#a4dd17f51bcbac2a8f8b225811cf91578c34f929"
   },
   "devDependencies": {
     "ts-loader": "^9.4.2",
