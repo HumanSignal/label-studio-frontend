@@ -496,6 +496,8 @@ export default types
       if (self.isSubmitting) return;
       self.setFlags({ isSubmitting: true });
       const res = fn();
+
+      self.commentStore.setAddedCommentThisSession(false);
       // Wait for request, max 5s to not make disabled forever broken button;
       // but block for at least 0.2s to prevent from double clicking.
 
@@ -724,12 +726,9 @@ export default types
     async function postponeTask() {
       const annotation = self.annotationStore.selected;
 
-      if (!annotation.versions.draft) {
-        // annotation created from prediction, so no draft was created
-        annotation.versions.draft = annotation.versions.result;
-      }
-
-      await self.submitDraft(annotation, { was_postponed: true });
+      // save draft before postponing; this can be new draft with FF_DEV_4174 off
+      // or annotation created from prediction
+      await annotation.saveDraft({ was_postponed: true });
       await getEnv(self).events.invoke('nextTask');
     }
 

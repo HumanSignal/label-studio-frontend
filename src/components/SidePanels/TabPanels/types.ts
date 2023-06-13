@@ -24,6 +24,7 @@ export interface SidePanelsProps {
   store: any;
   currentEntity: any;
   showComments: boolean;
+  focusTab: string;
 }
 
 export interface ViewportSize { width: number, height: number }
