@@ -133,7 +133,7 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
             Duplicate Annotation
           </Elem>
         )}
-        {capabilities.enableAnnotationDelete && (
+        {capabilities.enableAnnotationDelete && !isPrediction && (
           <>
             <Elem name="seperator"></Elem>
             <Elem name="option" mod={{ delete: true }} onClick={deleteAnnotation}>

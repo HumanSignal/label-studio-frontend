@@ -5,6 +5,7 @@ import { ReactComponent as IconSend } from '../../assets/icons/send.svg';
 import './CommentForm.styl';
 import { TextArea } from '../../common/TextArea/TextArea';
 import { observer } from 'mobx-react';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 
 export type CommentFormProps = {
@@ -36,8 +37,6 @@ export const CommentForm: FC<CommentFormProps> = observer(({
 
     if (!comment.trim()) return;
 
-    clearTooltipMessage();
-
     try {
       actionRef.current.update?.('');
 
@@ -55,13 +54,24 @@ export const CommentForm: FC<CommentFormProps> = observer(({
 
 
   useEffect(() => {
-    clearTooltipMessage();
+    if(!isFF(FF_DEV_3873)){
+      commentStore.setAddedCommentThisSession(false);
+      clearTooltipMessage();
+    }
+    return () => clearTooltipMessage();
   }, []);
+
+  useEffect(() => {
+    if (isFF(FF_DEV_3873)) {
+      commentStore.tooltipMessage && actionRef.current?.el?.current?.focus({ preventScroll: true });
+    }
+  }, [commentStore.tooltipMessage]);
 
   useEffect(() => {
     commentStore.setInputRef(actionRef.current.el);
     commentStore.setCommentFormSubmit(() => onSubmit());
   }, [actionRef, commentStore]);
+
 
   return (
     <Block ref={formRef} tag="form" name="comment-form" mod={{ inline }} onSubmit={onSubmit}>
