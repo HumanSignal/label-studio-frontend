@@ -210,7 +210,12 @@ Scenario('Selecting a region brings it to the front of the stack', async functio
   AtSidebar.clickRegion('Speech');
   AtSidebar.seeSelectedRegion('Speech');
 
-  // click on the overlapping region to show that it is now the top in the list
+  // click on the overlapping region will deselect it, which shows that it is now the top in the list
+  AtAudioView.clickAt(50);
+  AtSidebar.dontSeeSelectedRegion('Speech');
+  AtSidebar.dontSeeSelectedRegion('Noise');
+
+  // click on the overlapping region will select the top item of the list, which will now be the item which was brought to the front by the original interaction.
   AtAudioView.clickAt(50);
   AtSidebar.seeSelectedRegion('Speech');
 });
