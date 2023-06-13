@@ -100,7 +100,7 @@ const Regions = memo(({ regions, useLayers = true, chunkSize = 15, suggestion = 
 
 const DrawingRegion = observer(({ item }) => {
   const { drawingRegion } = item;
-  
+
   if (!drawingRegion) return null;
   if (item.multiImage && item.currentImage !== drawingRegion.item_index) return null;
 
@@ -294,7 +294,7 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
       {
         isFF(FF_LSDV_4930)
           ? null
-          : <TransformerBack item={item}/>
+          : <TransformerBack item={item} />
       }
       {brushRegions.length > 0 && (
         <Regions
@@ -341,7 +341,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
       window.removeEventListener('mousedown', dragHandler);
       window.removeEventListener('mouseup', dragHandler);
     };
-  },[]);
+  }, []);
 
   const disableTransform = item.zoomScale > 1 && (shift || isPanTool || isMouseWheelClick);
 
@@ -390,7 +390,7 @@ const Selection = observer(({ item, selectionArea, ...triggeredOnResize }) => {
   return (
     <>
       <SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />
-      <SelectionLayer item={item} selectionArea={selectionArea}/>
+      <SelectionLayer item={item} selectionArea={selectionArea} />
     </>
   );
 });
@@ -514,11 +514,14 @@ export default observer(
       const { offsetX: x, offsetY: y } = evt;
 
       if (isFF(FF_LSDV_4930)) {
-        // false trigger preventing
+        // Konva can trigger click even on simple mouseup
+        // You can try drag and drop interaction here https://konvajs.org/docs/events/Stage_Events.html and check the console
+        // So here is false trigger preventing
         if (
           !this.mouseDownPoint
           || Math.abs(this.mouseDownPoint.x - x) > 0.01
-          || Math.abs(this.mouseDownPoint.y - y) > 0.01) {
+          || Math.abs(this.mouseDownPoint.y - y) > 0.01
+        ) {
           this.mouseDownPoint = null;
           return;
         }
@@ -567,7 +570,7 @@ export default observer(
 
       const handleMouseDown = () => {
         if (
-        // create regions over another regions with Cmd/Ctrl pressed
+          // create regions over another regions with Cmd/Ctrl pressed
           item.getSkipInteractions() ||
           e.target === item.stageRef ||
           findClosestParent(
@@ -1077,7 +1080,7 @@ export default observer(
 
                 {
                   isFF(FF_LSDV_4930)
-                    ? <TransformerBack item={item}/>
+                    ? <TransformerBack item={item} />
                     : null
                 }
 
