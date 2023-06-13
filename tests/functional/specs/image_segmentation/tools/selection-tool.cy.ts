@@ -220,6 +220,22 @@ describe('Image segmentation - Tools - Selection tool', () => {
       ImageView.clickAtRelative(.1, .1, { ctrlKey: true, metaKey: true });
       Sidebar.hasSelectedRegions(4);
     });
+
+    it('Should be able to select one region from the group of selected regions by click on it', () =>{
+      LabelStudio.params()
+        .config(simpleRectangleConfig)
+        .data(simpleImageData)
+        .withResult(fourRectanglesResult)
+        .init();
+
+      ImageView.waitForImage();
+      ImageView.selectMoveToolByButton();
+      Sidebar.hasSelectedRegions(0);
+      ImageView.drawRectRelative(.1, .1, .8, .8);
+      Sidebar.hasSelectedRegions(4);
+      ImageView.clickAtRelative(.25, .25);
+      Sidebar.hasSelectedRegions(1);
+    });
   });
   describe('Selecting area', () => {
     it('Should be able to select just one region', () => {
