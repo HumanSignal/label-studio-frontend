@@ -1,6 +1,7 @@
 import { getParent, types } from 'mobx-state-tree';
 import { ImageSelectionPoint } from './ImageSelectionPoint';
 import { FF_DEV_3793, isFF } from '../../../utils/feature-flags';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../../../components/ImageView/Image';
 
 export const ImageSelection = types.model({
   start: types.maybeNull(ImageSelectionPoint),
@@ -97,7 +98,7 @@ export const ImageSelection = types.model({
       if (self.isActive || !self.obj.selectedRegions.length) return null;
 
       const initial = isFF(FF_DEV_3793)
-        ? { left: 100, top: 100, right: 0, bottom: 0 }
+        ? { left: RELATIVE_STAGE_WIDTH, top: RELATIVE_STAGE_HEIGHT, right: 0, bottom: 0 }
         : { left: self.obj.stageWidth, top: self.obj.stageHeight, right: 0, bottom: 0 };
       const bbox = self.obj.selectedRegions.reduce((borders, region) => {
         return region.bboxCoords ? {

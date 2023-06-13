@@ -664,7 +664,7 @@ export const Annotation = types
       onSnapshot(self.areas, self.autosave);
     }),
 
-    saveDraft() {
+    saveDraft(params) {
       // if this is now a history item or prediction don't save it
       if (!self.editable) return;
 
@@ -677,7 +677,7 @@ export const Annotation = types
       self.versions.draft = result;
       self.setDraftSaving(true);
 
-      self.store.submitDraft(self).then(self.onDraftSaved);
+      return self.store.submitDraft(self, params).then(self.onDraftSaved);
     },
 
     saveDraftImmediately() {

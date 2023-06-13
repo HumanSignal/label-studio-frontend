@@ -207,6 +207,14 @@ export const FF_LSDV_3012 = 'fflag_feat_front_lsdv_3012_syncable_tags_070423_sho
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
 
 /**
+ * Fixes Rect3PointTool behaviour in relative coords mode.
+ * It also fixes disappearing regions in degenerate cases.
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4673_rect3point_relative_310523_short
+ */
+export const FF_LSDV_4673 = 'fflag_fix_front_lsdv_4673_rect3point_relative_310523_short';
+
+/**
  * Fixes how presigned urls are generated and accessed to remove possibility of CORS errors.
  */
 export const FF_LSDV_4711 = 'fflag_fix_all_lsdv_4711_cors_errors_accessing_task_data_short';
