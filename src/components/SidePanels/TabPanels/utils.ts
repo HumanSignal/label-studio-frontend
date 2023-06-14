@@ -121,7 +121,7 @@ const panelViews = [
     name: 'history',
     title: 'History',
     component: panelComponents['history'] as FC<PanelProps>,
-    active: true,
+    active: false,
   },
 
   {
@@ -134,7 +134,7 @@ const panelViews = [
     name: 'info',
     title: 'Info',
     component: panelComponents['info'] as FC<PanelProps>,
-    active: false,
+    active: true,
   },
   {
     name: 'comments',
@@ -145,22 +145,7 @@ const panelViews = [
 ];
 
 export const enterprisePanelDefault: Record<string, PanelBBox> = {
-  'regions-info': {
-    order: 1,
-    top: 0,
-    left: 0,
-    relativeLeft: 0,
-    relativeTop: 0,
-    zIndex: 10,
-    width: DEFAULT_PANEL_WIDTH,
-    height: DEFAULT_PANEL_HEIGHT,
-    visible: true,
-    detached: false,
-    alignment: Side.left,
-    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[0], panelViews[4]],
-  },
-  'history-comments-relations': {
+  'info-comments-history': {
     order: 1,
     top: 0,
     left: 0,
@@ -173,27 +158,27 @@ export const enterprisePanelDefault: Record<string, PanelBBox> = {
     detached: false,
     alignment: Side.right,
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[1], panelViews[2], panelViews[3]],
+    panelViews: [panelViews[3], panelViews[4], panelViews[1]],
+  },
+  'regions-relations': {
+    order: 2,
+    top: 0,
+    left: 0,
+    relativeLeft: 0,
+    relativeTop: 0,
+    zIndex: 10,
+    width: DEFAULT_PANEL_WIDTH,
+    height: DEFAULT_PANEL_HEIGHT,
+    visible: true,
+    detached: false,
+    alignment: Side.right,
+    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
+    panelViews: [panelViews[0], panelViews[2]],
   },
 };
 
 export const openSourcePanelDefault: Record<string, PanelBBox> = {
-  'regions-info': {
-    order: 1,
-    top: 0,
-    left: 0,
-    relativeLeft: 0,
-    relativeTop: 0,
-    zIndex: 10,
-    width: DEFAULT_PANEL_WIDTH,
-    height: DEFAULT_PANEL_HEIGHT,
-    visible: true,
-    detached: false,
-    alignment: Side.left,
-    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[0]],
-  },
-  'history-comments-relations': {
+  'info-history': {
     order: 1,
     top: 0,
     left: 0,
@@ -206,7 +191,22 @@ export const openSourcePanelDefault: Record<string, PanelBBox> = {
     detached: false,
     alignment: Side.right,
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[1], panelViews[2], panelViews[3]],
+    panelViews: [panelViews[3], panelViews[1]],
+  },
+  'regions-relations': {
+    order: 2,
+    top: 0,
+    left: 0,
+    relativeLeft: 0,
+    relativeTop: 0,
+    zIndex: 10,
+    width: DEFAULT_PANEL_WIDTH,
+    height: DEFAULT_PANEL_HEIGHT,
+    visible: true,
+    detached: false,
+    alignment: Side.right,
+    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
+    panelViews: [panelViews[0], panelViews[2]],
   },
 };
 
@@ -383,8 +383,9 @@ export const joinPanelColumns = (
   };
   const newColumns = getAttachedPerSide(addedPanel, alignment) as string[];
   const orderedState = setOrder(addedPanel, panelAddKey, newColumns, order);
+  const adjustZIndex = findZIndices(orderedState, panelAddKey);
 
-  return redistributeHeights(orderedState, totalHeight, alignment);
+  return redistributeHeights(adjustZIndex, totalHeight, alignment);
 };
 
 export const splitPanelColumns = (
@@ -485,12 +486,49 @@ export const newPanelInState = (
 ) => {
   const newPanel = newPanelFromTab(state, name, movingPanel, movingTab, left, top, viewportSize);
   const stateWithRemovals = stateRemovedTab(state, movingPanel, movingTab);
-
-  Object.keys(stateWithRemovals).forEach(panelKey => (stateWithRemovals[panelKey].zIndex = 10));
   const panelsWithRemovals = stateRemovePanelEmptyViews(stateWithRemovals);
   const panelWithAdditions = { ...panelsWithRemovals, [`${newPanel.name}`]: newPanel };
   const renamedKeys = renameKeys(panelWithAdditions);
   const activeDefaults = setActiveDefaults(renamedKeys);
+  const adjustZIndex = findZIndices(activeDefaults, newPanel.name);
 
-  return getSnappedHeights(activeDefaults, viewportSize.current.height);
+  return getSnappedHeights(adjustZIndex, viewportSize.current.height);
+};
+
+const partitionByAttached = (state: Record<string, PanelBBox>) => {
+  return Object.keys(state).reduce(
+    (result: [{ zIndex: number, panelKey: string }[], { zIndex: number, panelKey: string }[]], panelKey) => {
+      state[panelKey].detached
+        ? result[0].push({ zIndex: state[panelKey].zIndex, panelKey })
+        : result[1].push({ zIndex: state[panelKey].zIndex, panelKey });
+
+      return result;
+    },
+    [[], []],
+  );
+};
+
+export const findZIndices = (state: Record<string, PanelBBox>, focusedKey: string) => {
+  const newState = { ...state };
+  const [detached, attached] = partitionByAttached(newState);
+
+  let detachedCounter = 12;
+
+  attached.forEach(panel => (newState[panel.panelKey].zIndex = 10));
+  detached
+    .sort((a, b) => a.zIndex - b.zIndex)
+    .forEach(panel => {
+      newState[panel.panelKey].zIndex = detachedCounter;
+      detachedCounter++;
+    });
+  if (newState[focusedKey].detached) newState[focusedKey].zIndex = detached.length + 12;
+
+  return newState;
+};
+
+export const findPanelViewByName = (state: Record<string, PanelBBox>, name: string): { panelName: string, tab: PanelView, panelViewIndex: number } | undefined => {
+  const panelName = Object.keys(state).find(panelKey => panelKey.includes(name)) || '';
+  const panelViewIndex = state[panelName]?.panelViews.findIndex((view: { name: string }) => view.name === name);
+
+  return panelViewIndex >= 0 ? { panelName, tab: state[panelName].panelViews[panelViewIndex], panelViewIndex } : undefined;
 };

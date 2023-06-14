@@ -23,6 +23,11 @@ module.exports = {
   locateRegionItemIndex(idx) {
     return locate(this._regionListItemIndex).withText(`${idx}`).inside(this.locateRegionItemList());
   },
+  locateSelectedItem(locator) {
+    const selectedLocator = locate(this._regionListItemSelectedSelector).inside(this.locateRegionList());
+
+    return locator ? selectedLocator.find(locator) : selectedLocator;
+  },
   seeRegions(count) {
     count && I.seeElement(this.locateRegionItemList().at(count));
     I.dontSeeElement(this.locateRegionItemList().at(count + 1));
@@ -40,10 +45,10 @@ module.exports = {
     I.click(locate(this._regionVesibilityActionButton));
   },
   seeSelectedRegion() {
-    I.seeElement(locate(this._regionListItemSelectedSelector).inside(this.locateRegionList()));
+    I.seeElement(this.locateSelectedItem());
   },
   dontSeeSelectedRegion() {
-    I.dontSeeElement(locate(this._regionListItemSelectedSelector).inside(this.locateRegionList()));
+    I.dontSeeElement(this.locateSelectedItem());
   },
   /**
    * Drag and drop region through the outliner's regions tree

@@ -56,9 +56,11 @@ const Result = types
       'rating',
       'pairwise',
       'videorectangle',
+      'ranker',
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
+      ranker: types.union(types.array(types.string), types.frozen(), types.null),
       datetime: types.maybe(types.string),
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
@@ -104,7 +106,7 @@ const Result = types
     },
 
     mergeMainValue(value) {
-      value =  value?.toJSON ? value.toJSON() : value;
+      value = value?.toJSON ? value.toJSON() : value;
       const mainValue = self.mainValue?.toJSON?.() ? self.mainValue?.toJSON?.() : self.mainValue;
 
       if (typeof value !== typeof mainValue) return null;
@@ -148,7 +150,7 @@ const Result = types
     /**
      * Checks perRegion and Visibility params
      */
-    get isSubmitable() {
+    get canBeSubmitted() {
       const control = self.from_name;
 
       if (control.perregion) {
@@ -157,10 +159,14 @@ const Result = types
         if (label && !self.area.hasLabel(label)) return false;
       }
 
+      // picks leaf's (last item in a path) value for Taxonomy or usual Choice value for Choices
+      const innerResults = (r) =>
+        r.map(s => Array.isArray(s) ? s.at(-1) : s);
+
       const isChoiceSelected = () => {
         const tagName = control.whentagname;
-        const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(',') : null;
-        const results = self.annotation.results.filter(r => r.type === 'choices' && r !== self);
+        const choiceValues = control.whenchoicevalue?.split(',') ?? null;
+        const results = self.annotation.results.filter(r => ['choices', 'taxonomy'].includes(r.type) && r !== self);
 
         if (tagName) {
           const result = results.find(r => {
@@ -170,11 +176,11 @@ const Result = types
           });
 
           if (!result) return false;
-          if (choiceValues && !choiceValues.some(v => result.mainValue.includes(v))) return false;
+          if (choiceValues && !choiceValues.some(v => innerResults(result.mainValue).some(vv => result.from_name.selectedChoicesMatch(v, vv)))) return false;
         } else {
           if (!results.length) return false;
           // if no given choice value is selected in any choice result
-          if (choiceValues && !choiceValues.some(v => results.some(r => r.mainValue.includes(v)))) return false;
+          if (choiceValues && !results.some(r => choiceValues.some(v => innerResults(r.mainValue).some(vv => r.from_name.selectedChoicesMatch(v, vv))))) return false;
         }
         return true;
       };
@@ -255,7 +261,7 @@ const Result = types
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
-    updateAppearenceFromState() {},
+    updateAppearenceFromState() { },
 
     serialize(options) {
       const { type, score, value, ...sn } = getSnapshot(self);
@@ -267,7 +273,7 @@ const Result = types
       const to_name = Tree.cleanUpId(sn.to_name);
 
       if (!data) return null;
-      if (!self.isSubmitable) return null;
+      if (!self.canBeSubmitted) return null;
 
       if (!isDefined(data.value)) data.value = {};
       // with `mergeLabelsAndResults` control uses only one result even with external `Labels`

@@ -6,8 +6,13 @@ module.exports = {
   _overviewSelector: '.htx-timeseries-overview .overlay',
   _westHandleSelector: '.htx-timeseries-overview .handle--w',
   _eastHandleSelector: '.htx-timeseries-overview .handle--e',
+  _stickSelector: '[text-anchor="start"]',
+
   get _channelStageSelector() {
     return `${this._rootSelector} .htx-timeseries-channel .new_brush`;
+  },
+  get _channelStickSelector() {
+    return `${this._rootSelector} .htx-timeseries-channel [text-anchor="start"]`;
   },
   _stageBBox: { x: 0, y: 0, width: 0, height: 0 },
 
@@ -22,7 +27,24 @@ module.exports = {
   },
 
   /**
+   * Retrieves timestamp value from a text element of timeseries' stick (cursor).
+   * **should be used inside async with `await`** operator.
+   *
+   * ```js
+   * let timestamp = await I.grabStickTime();
+   * ```
+   * @returns timestamp value
+   *
+   * {{ react }}
+   */
+  grabStickTime() {
+    // xPath cannot find `text` tag so we exchange it with `*`
+    return I.grabTextFrom(locate(this._channelStickSelector).find('*').at(2));
+  },
+
+  /**
    * Select range on overview to zoom in
+   * **should be used inside async with `await`** operator.
    * @param {number} from - relative position of start between 0 and 1
    * @param {number} to - relative position of finish between 0 and 1
    * @returns {Promise<void>}
@@ -54,6 +76,7 @@ module.exports = {
 
   /**
    * Move overview handle by mouse drag
+   * **should be used inside async with `await`** operator.
    * @param {number} where - position between 0 and 1
    * @param {"west"|"east"} [which="west"] - handler name
    * @returns {Promise<void>}
@@ -74,6 +97,7 @@ module.exports = {
 
   /**
    *  Zoom by mouse wheel over the channel
+   *  **should be used inside async with `await`** operator.
    * @param {number} deltaY
    * @param {Object} [atPoint] - Point where will be called wheel action
    * @param {number} [atPoint.x=0.5] - relative X coordinate
@@ -93,7 +117,29 @@ module.exports = {
     const channelBBox = await I.grabElementBoundingRect(this._channelSelector);
 
     I.moveMouse(channelBBox.x + channelBBox.width * x, channelBBox.y + channelBBox.height * y);
+    I.pressKeyDown('Control');
     I.mouseWheel({ deltaY });
+    I.pressKeyUp('Control');
+  },
+
+  /**
+   * Move mouse over the channel
+   * **should be used inside async with `await`** operator.
+   * @param {Object} [atPoint] - Point where will be called wheel action
+   * @param {number} [atPoint.x=0.5] - relative X coordinate
+   * @param {number} [atPoint.y=0.5] - relative Y coordinate
+   * @returns {Promise<void>}
+   *
+   * @example
+   * await AtTimeSeries.moveMouseOverChannel({ x: .01 });
+   */
+  async moveMouseOverChannel(atPoint) {
+    const { x = 0.5, y = 0.5 } = atPoint;
+
+    I.scrollPageToTop();
+    const channelBBox = await I.grabElementBoundingRect(this._channelSelector);
+
+    I.moveMouse(channelBBox.x + channelBBox.width * x, channelBBox.y + channelBBox.height * y);
   },
 
   /**

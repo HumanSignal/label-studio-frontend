@@ -1,6 +1,6 @@
 import { FC, MouseEvent as RMouseEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../../utils/bem';
-import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerDrag, IconOutlinerExpand } from '../../../assets/icons';
+import { IconArrowLeftSmall, IconArrowRightSmall, IconOutlinerDrag, LsCollapseSmall, LsExpandSmall } from '../../../assets/icons';
 import { useDrag } from '../../../hooks/useDrag';
 import { clamp, isDefined } from '../../../utils/utilities';
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_MIN_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT } from '../constants';
@@ -54,7 +54,7 @@ export const PanelTabsBase: FC<BaseProps> = ({
   const handlers = useRef({ onResize, onGroupHeightResize, onResizeStart, onResizeEnd, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
   const [resizing, setResizing] = useState<string | undefined>();
   const keyRef = useRef(key);
-  const collapsed = sidePanelCollapsed[alignment as Side];
+  const collapsed = sidePanelCollapsed[alignment as Side] && !detached;
   const isParentOfCollapsedPanel = attachedKeys && attachedKeys[0] === key;
   const isChildOfGroup = attachedKeys && attachedKeys.includes(key) && attachedKeys[0] !== key;
   const collapsedHeader = !(collapsed && !isParentOfCollapsedPanel);
@@ -263,12 +263,12 @@ export const PanelTabsBase: FC<BaseProps> = ({
               <Elem name="header-right" >
                 {(!detached || collapsed) && (
                   <Elem name="toggle" mod={{ detached, collapsed, alignment }} onClick={handleGroupPanelToggle} data-tooltip={`${tooltipText} Group`}>
-                    {Side.left === alignment ? <IconArrowLeft /> : <IconArrowRight />}
+                    {Side.left === alignment ? <IconArrowLeftSmall /> : <IconArrowRightSmall />}
                   </Elem>
                 )}
                 {!collapsed && (
                   <Elem name="toggle" mod={{ detached, collapsed, alignment }} onClick={handlePanelToggle} data-tooltip={tooltipText}>
-                    {visible ? <IconOutlinerCollapse /> : <IconOutlinerExpand />}
+                    {visible ? <LsCollapseSmall /> : <LsExpandSmall />}
                   </Elem>
                 )}
               </Elem>

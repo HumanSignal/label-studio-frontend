@@ -1,7 +1,7 @@
 import { Block, Elem } from '../../utils/bem';
 import { Dropdown } from '../../common/Dropdown/Dropdown';
 
-import { FC, useCallback, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '../../common/Button/Button';
 import { IconFilter } from '../../assets/icons';
 
@@ -9,19 +9,27 @@ import './Filter.styl';
 import { FilterInterface, FilterListInterface } from './FilterInterfaces';
 import { FilterRow } from './FilterRow';
 import { FilterItems } from './filter-util';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 export const Filter: FC<FilterInterface> = ({
   availableFilters,
   filterData,
-  // onChange,
+  onChange,
+  animated = true,
 }) => {
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    onChange(FilterItems(filterData, filterList));
+  }, [filterData]);
 
   const addNewFilterListItem = useCallback(() => {
     setFilterList((filterList) => [
       ...filterList,
       {
         field: availableFilters[0]?.label ?? '',
+        logic: 'and',
         operation: '',
         value: '',
         path: '',
@@ -30,7 +38,7 @@ export const Filter: FC<FilterInterface> = ({
   }, [setFilterList, availableFilters]);
 
   const onChangeRow = useCallback(
-    (index: number, { field, operation, value, path }: Partial<FilterListInterface>) => {
+    (index: number, { field, operation, value, path, logic }: Partial<FilterListInterface>) => {
       setFilterList((oldList) => {
         const newList = [...oldList];
 
@@ -38,11 +46,12 @@ export const Filter: FC<FilterInterface> = ({
           ...newList[index],
           field: field ?? newList[index].field,
           operation: operation ?? newList[index].operation,
+          logic: logic ?? newList[index].logic,
           value: value ?? newList[index].value,
           path: path ?? newList[index].path,
         };
 
-        FilterItems(filterData, newList[index]);
+        onChange(FilterItems(filterData, newList));
 
         return newList;
       });
@@ -55,17 +64,21 @@ export const Filter: FC<FilterInterface> = ({
       const newList = [...oldList];
 
       newList.splice(index, 1);
+
+      onChange(FilterItems(filterData, newList));
+
       return newList;
     });
-  }, [setFilterList]);
+  }, [setFilterList, filterData]);
 
   const renderFilterList = useMemo(() => {
-    return filterList.map(({ field, operation, value }, index) => (
+    return filterList.map(({ field, operation, logic, value }, index) => (
       <Block key={index} name="filter-item">
         <FilterRow
           index={index}
           availableFilters={availableFilters}
           field={field}
+          logic={logic}
           operation={operation}
           value={value}
           onDelete={onDeleteRow}
@@ -91,16 +104,28 @@ export const Filter: FC<FilterInterface> = ({
     );
   }, [filterList, renderFilterList, addNewFilterListItem]);
 
+  const onToggle = useCallback((isOpen: boolean) => {
+    setActive(isOpen);
+  }, []);
+
   return (
     <Dropdown.Trigger
       content={renderFilter}
+      dataTestId={'dropdown'}
+      animated={animated}
+      onToggle={onToggle}
     >
-      <Button type="text" style={{ padding: 0, whiteSpace: 'nowrap' }}>
+      <Block data-testid={'filter-button'} name={'filter-button'} mod={{ active }}>
         <Elem name={'icon'}>
           <IconFilter />
         </Elem>
-        <Elem name={'text'}>Filter</Elem>
-      </Button>
+        <Elem name={'text'} style={{
+          fontSize:isFF(FF_DEV_3873) && 12,
+          fontWeight:isFF(FF_DEV_3873) && 500,
+          lineHeight:isFF(FF_DEV_3873) && '24px',
+        }}>Filter</Elem>
+        {filterList.length > 0 && <Elem name={'filter-length'} data-testid={'filter-length'}>{filterList.length}</Elem>}
+      </Block>
     </Dropdown.Trigger>
   );
 };

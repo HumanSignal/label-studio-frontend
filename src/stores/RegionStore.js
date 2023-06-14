@@ -144,6 +144,8 @@ export default types.model('RegionStore', {
     () => window.localStorage.getItem(localStorageKeys.group) ?? 'manual',
   ),
 
+  filter: types.maybeNull(types.array(types.safeReference(AllRegionsType)), null),
+
   view: types.optional(
     types.enumeration(['regions', 'labels']),
     window.localStorage.getItem(localStorageKeys.view) ?? 'regions',
@@ -212,6 +214,10 @@ export default types.model('RegionStore', {
       return Array.from(self.annotation.areas.values()).filter(area => !area.classification);
     },
 
+    get filteredRegions() {
+      return self.filter || self.regions;
+    },
+
     get suggestions() {
       return Array.from(self.annotation.suggestions.values()).filter(area => !area.classification);
     },
@@ -222,8 +228,8 @@ export default types.model('RegionStore', {
 
     get sortedRegions() {
       const sorts = {
-        date: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.ouid - a.ouid : (a, b) => a.ouid - b.ouid),
-        score: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.score - a.score : (a, b) => a.score - b.score),
+        date: isDesc => [...self.filteredRegions].sort(isDesc ? (a, b) => b.ouid - a.ouid : (a, b) => a.ouid - b.ouid),
+        score: isDesc => [...self.filteredRegions].sort(isDesc ? (a, b) => b.score - a.score : (a, b) => a.score - b.score),
       };
 
       const sorted = sorts[self.sort](self.sortOrder === 'desc');
@@ -424,7 +430,6 @@ export default types.model('RegionStore', {
   setView(view) {
     if (isFF(FF_DEV_2755)) {
       window.localStorage.setItem(localStorageKeys.view, view);
-      console.log('setView', window.localStorage.getItem(localStorageKeys.view));
     }
     self.view = view;
   },
@@ -446,6 +451,24 @@ export default types.model('RegionStore', {
   setGrouping(group) {
     self.group = group;
     window.localStorage.setItem(localStorageKeys.group, self.group);
+  },
+
+  setFilteredRegions(filter) {
+
+    if (self.regions.length === filter.length) {
+      self.filter = null;
+      self.regions.forEach((region) => region.filtered && region.toggleFiltered());
+    } else {
+      const filteredIds = filter.map((filter) => filter.id);
+      
+      self.filter = filter;
+
+      self.regions.forEach((region) => {
+        if (!region.hideable || (region.hidden && !region.filtered)) return;
+        if (filteredIds.includes(region.id)) region.hidden && region.toggleFiltered();
+        else if (!region.hidden) region.toggleFiltered();
+      });
+    }
   },
 
   /**

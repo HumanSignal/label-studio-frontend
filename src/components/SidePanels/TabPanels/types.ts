@@ -24,6 +24,7 @@ export interface SidePanelsProps {
   store: any;
   currentEntity: any;
   showComments: boolean;
+  focusTab: string;
 }
 
 export interface ViewportSize { width: number, height: number }
@@ -117,7 +118,7 @@ export type BaseProps = PanelBBox & CommonProps & {
   panelViews: PanelView[],
   attachedKeys: string[] | undefined,
   sidePanelCollapsed: PanelsCollapsed,
-  breakPointActiveTab?: number,
+  breakPointActiveTab: number,
   setBreakPointActiveTab?: React.Dispatch<React.SetStateAction<number>>,
   setSidePanelCollapsed: React.Dispatch<React.SetStateAction<PanelsCollapsed>>,
   dragTop: boolean,

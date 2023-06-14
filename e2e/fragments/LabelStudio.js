@@ -1,6 +1,5 @@
 const { I } = inject();
 const Helpers = require('../tests/helpers');
-const Asserts = require('../utils/asserts');
 
 module.exports = {
   init({ events = {}, ...params }) {

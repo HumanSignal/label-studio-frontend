@@ -8,7 +8,7 @@ env:
   LSF_DIR: 'label-studio-frontend'
   TARGET_REPO: 'heartexlabs/label-studio'
   LS_DIR: 'label-studio'
-  NODE: '14'
+  NODE: '18'
   CACHE_NAME_PREFIX: v1
 
 jobs:

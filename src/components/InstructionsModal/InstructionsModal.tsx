@@ -45,7 +45,7 @@ export const InstructionsModal = ({
         >
           {title}
         </h2>
-        <p style={{ padding: '0 24px 24px' }}>{children}</p>
+        <p style={{ padding: '0 24px 24px', whiteSpace: 'pre-wrap' }}>{children}</p>
       </Modal>
     </>
   );

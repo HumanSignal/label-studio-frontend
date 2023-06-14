@@ -61,16 +61,17 @@ class App extends Component {
   }
 
   renderSuccess() {
-    return <Result status="success" title={getEnv(this.props.store).messages.DONE} />;
+    return <Block name="editor"><Result status="success" title={getEnv(this.props.store).messages.DONE} /></Block>;
   }
 
   renderNoAnnotation() {
-    return <Result status="success" title={getEnv(this.props.store).messages.NO_COMP_LEFT} />;
+    return <Block name="editor"><Result status="success" title={getEnv(this.props.store).messages.NO_COMP_LEFT} /></Block>;
   }
 
   renderNothingToLabel(store) {
     return (
       <Block
+        name="editor"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -91,7 +92,7 @@ class App extends Component {
 
 
   renderNoAccess() {
-    return <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />;
+    return <Block name="editor"><Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} /></Block>;
   }
 
   renderConfigValidationException(store) {
@@ -257,6 +258,7 @@ class App extends Component {
                   currentEntity={as.selectedHistory ?? as.selected}
                   regions={as.selected.regionStore}
                   showComments={!store.hasInterface('annotations:comments')}
+                  focusTab={store.commentStore.tooltipMessage ? 'comments' : null}
                 >
                   {mainContent}
                   {isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}

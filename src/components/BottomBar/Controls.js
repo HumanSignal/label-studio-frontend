@@ -38,35 +38,28 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
   const [isInProgress, setIsInProgress] = useState(false);
 
-  const disabled = !annotationEditable || store.isSubmitting || historySelected || isInProgress; // || !isReady;
+  const disabled = !annotationEditable || store.isSubmitting || historySelected || isInProgress;
   const submitDisabled = store.hasInterface('annotations:deny-empty') && results.length === 0;
   
   const buttonHandler = useCallback(async (e, callback, tooltipMessage) => {
-    const { addedCommentThisSession, currentComment, commentFormSubmit, inputRef } = store.commentStore;
-
+    const { addedCommentThisSession, currentComment, commentFormSubmit } = store.commentStore;
+    
     if (isInProgress) return;
     setIsInProgress(true);
-    if(!inputRef.current || addedCommentThisSession){
+    if(addedCommentThisSession){
       callback();
     } else if((currentComment ?? '').trim()) {
       e.preventDefault();
       await commentFormSubmit();
       callback();
     } else {
-      const commentsInput = inputRef.current;
-      
       store.commentStore.setTooltipMessage(tooltipMessage);
-      commentsInput.scrollIntoView({ 
-        behavior: 'smooth', 
-      });
-      commentsInput.focus({ preventScroll: true });
     }
     setIsInProgress(false);
   }, [
     store.rejectAnnotation, 
     store.skipTask, 
     store.commentStore.currentComment, 
-    store.commentStore.inputRef, 
     store.commentStore.commentFormSubmit, 
     store.commentStore.addedCommentThisSession,
     isInProgress,
@@ -136,6 +129,8 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       );
     }
 
+    const look = (disabled || submitDisabled) ? 'disabled' : 'primary';
+
     if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface('submit'))) {
       const title = submitDisabled
         ? 'Empty annotations denied in this project'
@@ -145,7 +140,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       buttons.push(
         <ButtonTooltip key="submit" title={title}>
           <Elem name="tooltip-wrapper">
-            <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={async () => {
+            <Button aria-label="submit" disabled={disabled || submitDisabled} look={look} onClick={async () => {
               await store.commentStore.commentFormSubmit();
               store.submitAnnotation();
             }}>
@@ -160,7 +155,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       const isUpdate = sentUserGenerate || versions.result;
       const button = (
         <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
-          <Button aria-label="submit" disabled={disabled || submitDisabled} look="primary" onClick={async () => {
+          <Button aria-label="submit" disabled={disabled || submitDisabled} look={look} onClick={async () => {
             await store.commentStore.commentFormSubmit();
             store.updateAnnotation();
           }}>
