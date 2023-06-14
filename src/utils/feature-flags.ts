@@ -179,7 +179,7 @@ export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_0102202
 /**
  * Multi-image segmentation support via `valueList`
  */
-export const FF_LSDV_4583 = 'feat_front_lsdv_4583_multi_image_segmentation_short';
+export const FF_LSDV_4583 = 'fflag_feat_front_lsdv_4583_multi_image_segmentation_short';
 
 /**
  * Enables new way of preloading/cacheing images
@@ -207,6 +207,14 @@ export const FF_LSDV_3012 = 'fflag_feat_front_lsdv_3012_syncable_tags_070423_sho
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
 
 /**
+ * Fixes Rect3PointTool behaviour in relative coords mode.
+ * It also fixes disappearing regions in degenerate cases.
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4673_rect3point_relative_310523_short
+ */
+export const FF_LSDV_4673 = 'fflag_fix_front_lsdv_4673_rect3point_relative_310523_short';
+
+/**
  * Fixes how presigned urls are generated and accessed to remove possibility of CORS errors.
  */
 export const FF_LSDV_4711 = 'fflag_fix_all_lsdv_4711_cors_errors_accessing_task_data_short';
@@ -231,6 +239,13 @@ export const FF_LSDV_4832 = 'fflag_feat_front_lsdv_4832_new_ranker_tag_120423_sh
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4881_timeseties_points_missing_140423_short
  */
 export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing_140423_short';
+
+/**
+ * Restore "hide all regions" button functionality in the outliner
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
+ */
+export const FF_LSDV_4992 = 'fflag_fix_front_lsdv_4992_hide_all_regions_04052023_short';
 
 /**
  * Resetting shared stores on task change to correctly generate dynamic children

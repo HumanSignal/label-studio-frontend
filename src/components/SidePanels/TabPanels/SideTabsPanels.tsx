@@ -11,7 +11,7 @@ import { useRegionsCopyPaste } from '../../../hooks/useRegionsCopyPaste';
 import { PanelTabsBase } from './PanelTabsBase';
 import { Tabs } from './Tabs';
 import { CommonProps, DropSide, EventHandlers, JoinOrder, PanelBBox, Result, Side, SidePanelsProps, ViewportSize } from './types';
-import { findZIndices, getAttachedPerSide, getLeftKeys, getRightKeys, getSnappedHeights, joinPanelColumns, newPanelInState, partialEmptyBaseProps, redistributeHeights, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
+import { findPanelViewByName, findZIndices, getAttachedPerSide, getLeftKeys, getRightKeys, getSnappedHeights, joinPanelColumns, newPanelInState, partialEmptyBaseProps, redistributeHeights, renameKeys, resizePanelColumns, restorePanel, savePanels, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from './utils';
 
 const maxWindowWidth = 980;
 const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
@@ -19,6 +19,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   panelsHidden,
   children,
   showComments,
+  focusTab,
 }) => {
   const snapThreshold = 5;
   const regions = currentEntity.regionStore;
@@ -382,6 +383,21 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   }, [panelData]);
 
   useEffect(() => {
+    if (focusTab) {
+      const state = { ...panelData };
+      const foundTab = findPanelViewByName(state, focusTab);
+  
+      if (!foundTab) return;
+      const { panelName, tab, panelViewIndex } = foundTab;
+      const { alignment, detached, visible } = state[panelName];
+      
+      if (!tab.active) setPanelData(setActive(state, panelName, panelViewIndex));
+      if (!detached && collapsedSide[alignment]) setCollapsedSide({ ...collapsedSide, [alignment]: false });
+      if (!visible) onVisibilityChange(panelName, true);
+    } 
+  },[focusTab]);
+
+  useEffect(() => {
     const root = rootRef.current!;
     const checkContentFit = () => {
       return (root.clientWidth ?? 0) < maxWindowWidth;
@@ -389,7 +405,10 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
 
     const observer = new ResizeObserver(() => {
       const { clientWidth, clientHeight } = root ?? {};
-      
+
+      // we don't need to check or resize anything in collapsed state
+      if (clientWidth <= maxWindowWidth) return;
+
       if(viewportSize.current.height !== clientHeight) setPanelData(getSnappedHeights(panelData, clientHeight));
       // Remember current width and height of the viewport
       viewportSize.current.width = clientWidth ?? 0;
@@ -417,7 +436,15 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
     };
   }, []);
 
-  const emptyBaseProps = { ...partialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
+  const getPartialEmptyBaseProps = useMemo(() => {
+    const updatedProps = { ...partialEmptyBaseProps };
+
+    updatedProps.panelViews = partialEmptyBaseProps.panelViews.filter((view) => view.name !== 'comments' || showComments);
+
+    return updatedProps;
+  }, [partialEmptyBaseProps, showComments]);
+
+  const emptyBaseProps = { ...getPartialEmptyBaseProps,  ...commonProps, breakPointActiveTab, setBreakPointActiveTab };
 
   return (
     <SidePanelsContext.Provider value={contextValue}>

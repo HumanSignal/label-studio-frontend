@@ -46,7 +46,9 @@ const VideoRegionsPure = ({
   const [newRegion, setNewRegion] = useState();
   const [isDrawing, setDrawingMode] = useState(false);
 
-  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.isReadOnly());
+  const selected = regions.filter((reg) => {
+    return (reg.selected || reg.inSelection) && !reg.hidden && !reg.isReadOnly() && reg.isInLifespan(item.frame);
+  });
   const listenToEvents = !locked;
 
   // if region is not in lifespan, it's not rendered,

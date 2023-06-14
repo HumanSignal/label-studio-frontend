@@ -258,6 +258,7 @@ class App extends Component {
                   currentEntity={as.selectedHistory ?? as.selected}
                   regions={as.selected.regionStore}
                   showComments={!store.hasInterface('annotations:comments')}
+                  focusTab={store.commentStore.tooltipMessage ? 'comments' : null}
                 >
                   {mainContent}
                   {isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}

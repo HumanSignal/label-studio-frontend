@@ -2,6 +2,7 @@ import { ChoicesModel } from './Choices';
 import { DateTimeModel } from './DateTime';
 import { NumberModel } from './Number';
 import { PairwiseModel } from './Pairwise';
+import { RankerModel } from './Ranker';
 import { RatingModel } from './Rating';
 import { ShortcutModel } from './Shortcut';
 import { TaxonomyModel } from './Taxonomy/Taxonomy';
@@ -33,6 +34,7 @@ export {
   DateTimeModel,
   NumberModel,
   PairwiseModel,
+  RankerModel,
   RatingModel,
   ShortcutModel,
   TaxonomyModel,

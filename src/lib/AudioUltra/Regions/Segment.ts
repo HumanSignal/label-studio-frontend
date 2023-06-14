@@ -14,6 +14,7 @@ export interface SegmentOptions {
   end: number;
   color?: string|RgbaColorArray;
   selected?: boolean;
+  locked?: boolean;
   updateable?: boolean;
   deleteable?: boolean;
   visible?: boolean;
@@ -46,6 +47,7 @@ export class Segment extends Events<SegmentEvents> {
   selected = false;
   highlighted = false;
   updateable = true;
+  locked = false;
   deleteable = true;
   visible = true;
 
@@ -74,6 +76,7 @@ export class Segment extends Events<SegmentEvents> {
     this.end = options.end;
     this.selected = !!options.selected;
     this.updateable = options.updateable ?? this.updateable;
+    this.locked = options.locked ?? this.locked;
     this.visible = options.visible ?? this.visible;
     this.waveform = waveform;
     this.visualizer = visualizer;
@@ -98,6 +101,9 @@ export class Segment extends Events<SegmentEvents> {
     }
     if (options.deleteable !== undefined) {
       this.deleteable = options.deleteable;
+    }
+    if (options.locked !== undefined) {
+      this.locked = options.locked;
     }
     if (options.start !== undefined) {
       this.start = options.start;
@@ -175,6 +181,7 @@ export class Segment extends Events<SegmentEvents> {
       id: this.id,
       selected: this.selected,
       updateable: this.updateable,
+      locked: this.locked,
       deleteable: this.deleteable,
       visible: this.visible,
     };
@@ -241,7 +248,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private handleDrag = (e: MouseEvent) => {
-    if (!this.updateable) return;
+    if (!this.updateable || this.locked) return;
     if (this.draggingStartPosition) {
       e.preventDefault();
       e.stopPropagation();
@@ -357,6 +364,13 @@ export class Segment extends Events<SegmentEvents> {
     if (this.color.rgba === this.color.base) {
       this.color.darken(value);
     }
+  }
+
+  setLocked(locked: boolean) {
+    this.locked = locked;
+
+    this.invoke('update', [this]);
+    this.waveform.invoke('regionUpdated', [this]);
   }
 
   updateColor(color: string|RgbaColorArray) {

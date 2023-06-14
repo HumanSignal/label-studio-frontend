@@ -21,6 +21,7 @@ import { createDragBoundFunc } from '../utils/image';
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
 import { FF_DEV_2432, FF_DEV_3793, isFF } from '../utils/feature-flags';
 import { fixMobxObserve } from '../utils/utilities';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
 const PolygonRegionAbsoluteCoordsDEV3793 = types
   .model({
@@ -30,8 +31,8 @@ const PolygonRegionAbsoluteCoordsDEV3793 = types
     updateImageSize(wp, hp, sw, sh) {
       if (self.coordstype === 'px') {
         self.points.forEach(p => {
-          const x = (sw * p.relativeX) / 100;
-          const y = (sh * p.relativeY) / 100;
+          const x = (sw * p.relativeX) / RELATIVE_STAGE_WIDTH;
+          const y = (sh * p.relativeY) / RELATIVE_STAGE_HEIGHT;
 
           p._movePoint(x, y);
         });
@@ -39,8 +40,8 @@ const PolygonRegionAbsoluteCoordsDEV3793 = types
 
       if (!self.annotation.sentUserGenerate && self.coordstype === 'perc') {
         self.points.forEach(p => {
-          const x = (sw * p.x) / 100;
-          const y = (sh * p.y) / 100;
+          const x = (sw * p.x) / RELATIVE_STAGE_WIDTH;
+          const y = (sh * p.y) / RELATIVE_STAGE_HEIGHT;
 
           self.coordstype = 'px';
           p._movePoint(x, y);
