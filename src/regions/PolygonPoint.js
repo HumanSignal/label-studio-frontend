@@ -6,6 +6,7 @@ import { getParent, getRoot, hasParent, types } from 'mobx-state-tree';
 import { guidGenerator } from '../core/Helpers';
 import { useRegionStyles } from '../hooks/useRegionColor';
 import { FF_DEV_2431, FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
 const PolygonPointAbsoluteCoordsDEV3793 = types.model()
   .volatile(() => ({
@@ -23,8 +24,8 @@ const PolygonPointAbsoluteCoordsDEV3793 = types.model()
         self.relativeX = self.x;
         self.relativeY = self.y;
       } else {
-        self.relativeX = (self.x / self.stage.stageWidth) * 100;
-        self.relativeY = (self.y / self.stage.stageHeight) * 100;
+        self.relativeX = (self.x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
+        self.relativeY = (self.y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
       }
     },
     movePoint(offsetX, offsetY) {
@@ -33,15 +34,15 @@ const PolygonPointAbsoluteCoordsDEV3793 = types.model()
       self.x = self.x + offsetX;
       self.y = self.y + offsetY;
 
-      self.relativeX = (self.x / self.stage.stageWidth) * 100;
-      self.relativeY = (self.y / self.stage.stageHeight) * 100;
+      self.relativeX = (self.x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (self.y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
     },
     _movePoint(x, y) {
       self.initX = x;
       self.initY = y;
 
-      self.relativeX = (x / self.stage.stageWidth) * 100;
-      self.relativeY = (y / self.stage.stageHeight) * 100;
+      self.relativeX = (x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
 
       self.x = x;
       self.y = y;
