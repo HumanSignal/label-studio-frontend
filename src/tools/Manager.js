@@ -101,8 +101,8 @@ class ToolsManager {
   selectTool(tool, selected) {
     const currentTool = this.findSelectedTool();
 
-    currentTool?.control?.unselectAdjoinedLabels?.();
-    
+    currentTool?.control?.unselectAll?.();
+
     if (currentTool && currentTool.handleToolSwitch) {
       currentTool.handleToolSwitch(tool);
     }

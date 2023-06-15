@@ -80,10 +80,6 @@ const SelectedModelMixin = types
       self.tiedChildren.forEach(c => c.setSelected(false));
     },
 
-    unselectAdjoinedLabels() {
-      self.tiedChildren?.forEach(c => c.setSelected(false));
-    },
-
     checkMaxUsages() {
       if (isFF(FF_DEV_3666)) {
         return self.tiedChildren.filter(c => !c.canBeUsed());
