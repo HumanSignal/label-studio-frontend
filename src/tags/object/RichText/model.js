@@ -316,7 +316,7 @@ const Model = types
         domManager.setStyles(stylesMap);
       },
       removeStyles(ids) {
-        domManager.removeStyles(ids);
+        domManager?.removeStyles(ids);
       },
 
       globalOffsetsToRelativeOffsets({ start, end }) {
