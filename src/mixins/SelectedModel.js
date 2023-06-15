@@ -62,6 +62,10 @@ const SelectedModelMixin = types
       return self.selectedValues().join(joinstr);
     },
 
+    unselectAdjoinedLabels() {
+      self.tiedChildren?.forEach(c => c.setSelected(false));
+    },
+
     findLabel(value) {
       return self.tiedChildren.find(
         c => (c.alias === value && isDefined(value)) || c.value === value || (!isDefined(c.value) && !isDefined(value)),
