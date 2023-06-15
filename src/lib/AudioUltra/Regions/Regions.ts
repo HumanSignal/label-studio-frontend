@@ -1,5 +1,13 @@
 import { rgba, RgbaColorArray } from '../Common/Color';
-import { clamp, defaults, findLast, getCursorPositionX, getCursorPositionY, isInRange, pixelsToTime } from '../Common/Utils';
+import {
+  clamp,
+  defaults,
+  findLast,
+  getCursorPositionX,
+  getCursorPositionY,
+  isInRange,
+  pixelsToTime
+} from '../Common/Utils';
 import { CursorSymbol } from '../Cursor/Cursor';
 import { LayerGroup } from '../Visual/LayerGroup';
 import { Visualizer } from '../Visual/Visualizer';
@@ -185,6 +193,12 @@ export class Regions {
     if (render) {
       this.redraw();
     }
+  }
+
+  bringRegionToFront(regionId: string) {
+    const originalIndex = this.regions.findIndex(reg => reg.id === regionId);
+
+    this.regions.push(...this.regions.splice(originalIndex, 1));
   }
 
   destroy() {
@@ -379,7 +393,6 @@ export class Regions {
     if (this.layerGroup.isVisible && region?.updateable) {
       e.preventDefault();
       e.stopPropagation();
-
       region.invoke('mouseDown', [region, e]);
     }
   };
@@ -398,7 +411,7 @@ export class Regions {
 
     if (e.target && mainLayer?.canvas?.contains(e.target)) {
       const region = this.findRegionUnderCursor(e);
-  
+
       if (this.layerGroup.isVisible && region) {
         region.invoke('click', [region, e]);
       }

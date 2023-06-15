@@ -77,6 +77,7 @@ export const AudioUltraRegionModel = types
       selectRegion() {
         if (!self._ws_region) return;
         self._ws_region.handleSelected(true);
+        self._ws_region.bringToFront();
         self._ws_region.scrollToRegion();
       },
 
@@ -139,7 +140,7 @@ export const AudioUltraRegionModel = types
 
       setProperty(propName, value) {
         Super.setProperty(propName, value);
-        if ( ['start', 'end'].includes(propName) ) {
+        if (['start', 'end'].includes(propName)) {
           self.updatePosition();
         }
       },

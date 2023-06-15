@@ -130,6 +130,13 @@ export class Segment extends Events<SegmentEvents> {
     this.waveform.invoke('regionUpdated', [this]);
   }
 
+  /**
+   * Move this segment to the front so it is readily available to the user to manipulate
+   */
+  bringToFront() {
+    this.controller.bringRegionToFront(this.id);
+  }
+
   protected get layerName() {
     return `region-${this.id}`;
   }
@@ -286,6 +293,7 @@ export class Segment extends Events<SegmentEvents> {
     const x = getCursorPositionX(e, container) + scrollLeft;
     const { start, end } = this;
 
+    this.bringToFront();
     this.draggingStartPosition = { grabPosition: x, start, end };
     this.isGrabbingEdge = this.edgeGrabCheck(e);
     document.addEventListener('mouseup', this.handleMouseUp);
