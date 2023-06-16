@@ -177,16 +177,9 @@ export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10
 export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short';
 
 /**
- * Default Audio v3 to use multichannel mode if the track has 2 or more channels.
- * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short
- *
- */
-export const FF_LSDV_3028 = 'fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short';
-
-/**
  * Multi-image segmentation support via `valueList`
  */
-export const FF_LSDV_4583 = 'feat_front_lsdv_4583_multi_image_segmentation_short';
+export const FF_LSDV_4583 = 'fflag_feat_front_lsdv_4583_multi_image_segmentation_short';
 
 /**
  * Enables new way of preloading/cacheing images
@@ -207,16 +200,19 @@ export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_
 export const FF_LSDV_3012 = 'fflag_feat_front_lsdv_3012_syncable_tags_070423_short';
 
 /**
- * Enables the ffmpeg audio decoder to be the default.
- */
-export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ffmpeg_long';
-
-/**
  * Adding "skipDuplicates" parameter for <TextArea /> to preventing adding duplicate entries
  *
  * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4659_skipduplicates_060323_short
  */
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
+
+/**
+ * Fixes Rect3PointTool behaviour in relative coords mode.
+ * It also fixes disappearing regions in degenerate cases.
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4673_rect3point_relative_310523_short
+ */
+export const FF_LSDV_4673 = 'fflag_fix_front_lsdv_4673_rect3point_relative_310523_short';
 
 /**
  * Fixes how presigned urls are generated and accessed to remove possibility of CORS errors.
@@ -246,6 +242,13 @@ export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing
 
 /** Fix "No Label" for Dynamic Labels by switching off missing labels removal */
 export const FF_LSDV_4988 = 'fflag_fix_front_lsdv_4988_dynamic_no_label_120523_short';
+
+/**
+ * Restore "hide all regions" button functionality in the outliner
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
+ */
+export const FF_LSDV_4992 = 'fflag_fix_front_lsdv_4992_hide_all_regions_04052023_short';
 
 /**
  * Resetting shared stores on task change to correctly generate dynamic children

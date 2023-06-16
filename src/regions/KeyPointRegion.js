@@ -17,6 +17,7 @@ import { FF_DEV_3793, isFF } from '../utils/feature-flags';
 import { createDragBoundFunc } from '../utils/image';
 import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
 const KeyPointRegionAbsoluteCoordsDEV3793 = types
   .model({
@@ -38,8 +39,8 @@ const KeyPointRegionAbsoluteCoordsDEV3793 = types
         const { stageWidth: width, stageHeight: height } = self.parent;
 
         if (width && height) {
-          self.relativeX = (self.x / width) * 100;
-          self.relativeY = (self.y / height) * 100;
+          self.relativeX = (self.x / width) * RELATIVE_STAGE_WIDTH;
+          self.relativeY = (self.y / height) * RELATIVE_STAGE_HEIGHT;
         }
       }
     },
@@ -48,20 +49,20 @@ const KeyPointRegionAbsoluteCoordsDEV3793 = types
       self.x = x;
       self.y = y;
 
-      self.relativeX = (x / self.parent.stageWidth) * 100;
-      self.relativeY = (y / self.parent.stageHeight) * 100;
+      self.relativeX = (x / self.parent.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (y / self.parent.stageHeight) * RELATIVE_STAGE_HEIGHT;
     },
 
     updateImageSize(wp, hp, sw, sh) {
       if (self.coordstype === 'px') {
-        self.x = (sw * self.relativeX) / 100;
-        self.y = (sh * self.relativeY) / 100;
+        self.x = (sw * self.relativeX) / RELATIVE_STAGE_WIDTH;
+        self.y = (sh * self.relativeY) / RELATIVE_STAGE_HEIGHT;
       }
 
       if (self.coordstype === 'perc') {
-        self.x = (sw * self.x) / 100;
-        self.y = (sh * self.y) / 100;
-        self.width = (sw * self.width) / 100;
+        self.x = (sw * self.x) / RELATIVE_STAGE_WIDTH;
+        self.y = (sh * self.y) / RELATIVE_STAGE_HEIGHT;
+        self.width = (sw * self.width) / RELATIVE_STAGE_WIDTH;
         self.coordstype = 'px';
       }
     },

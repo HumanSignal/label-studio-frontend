@@ -1,6 +1,6 @@
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH } from '../../constants';
 import { JoinOrder, PanelBBox, Side } from '../types';
-import { determineDroppableArea, determineLeftOrRight, findZIndices, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
+import { determineDroppableArea, determineLeftOrRight, findPanelViewByName, findZIndices, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
 
 
 const dummyPanels: Record<string, PanelBBox> = {
@@ -641,5 +641,75 @@ describe('findZIndices', () => {
     const result = findZIndices(newState, focusedKey);
 
     expect(result).toEqual(expectedState);
+  });
+});
+
+
+describe('findPanelViewByName', () => {
+  const state = {
+    'view1-view2-view3' : {
+      panelViews: [
+        { name: 'view1' },
+        { name: 'view2' },
+        { name: 'view3' },
+      ],
+    },
+    'view4-view5' : {
+      panelViews: [
+        { name: 'View 4' },
+        { name: 'View 5' },
+      ],
+    },
+  };
+
+  it('should return the correct panel view when it exists', () => {
+    const name = 'view2';
+    const expected = {
+      panelName: 'view1-view2-view3',
+      tab: { name: 'view2' },
+      panelViewIndex: 1,
+    };
+
+    const result = findPanelViewByName(state, name);
+
+    expect(result).toEqual(expected);
+  });
+
+  it('should return undefined when the panel view does not exist', () => {
+    const name = 'Non-existent View';
+
+    const result = findPanelViewByName(state, name);
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should handle an empty state object', () => {
+    const name = 'View';
+
+    const result = findPanelViewByName({}, name);
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should handle an empty panelViews array', () => {
+    const stateWithEmptyPanel = {
+      panel1: {
+        panelViews: [],
+      },
+    };
+    const name = 'View';
+
+    const result = findPanelViewByName(stateWithEmptyPanel, name);
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should handle a state object with no matching panel views', () => {
+
+    const name = 'Non-existent View';
+
+    const result = findPanelViewByName(state, name);
+
+    expect(result).toBeUndefined();
   });
 });

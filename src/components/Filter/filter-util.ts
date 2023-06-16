@@ -189,7 +189,7 @@ const empty = (items: any[], filterItem: FilterListInterface) => {
   return items.filter((obj) => {
     const item = getFilteredPath(filterItem.path, obj);
 
-    return item === '' || !item || item === null || item === undefined;
+    return item === '' || !item || item === null || item === undefined || item === 'blank';
   });
 };
 

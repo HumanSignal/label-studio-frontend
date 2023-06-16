@@ -18,6 +18,7 @@ import { createDragBoundFunc } from '../utils/image';
 import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
 import { RegionWrapper } from './RegionWrapper';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
 const RectRegionAbsoluteCoordsDEV3793 = types
   .model({
@@ -32,7 +33,7 @@ const RectRegionAbsoluteCoordsDEV3793 = types
   }))
   .actions(self => ({
     afterCreate() {
-      switch (self.coordstype)  {
+      switch (self.coordstype) {
         case 'perc': {
           self.relativeX = self.x;
           self.relativeY = self.y;
@@ -58,11 +59,11 @@ const RectRegionAbsoluteCoordsDEV3793 = types
       self.width = width;
       self.height = height;
 
-      self.relativeX = (x / self.parent?.stageWidth) * 100;
-      self.relativeY = (y / self.parent?.stageHeight) * 100;
+      self.relativeX = (x / self.parent?.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (y / self.parent?.stageHeight) * RELATIVE_STAGE_HEIGHT;
 
-      self.relativeWidth = (width / self.parent?.stageWidth) * 100;
-      self.relativeHeight = (height / self.parent?.stageHeight) * 100;
+      self.relativeWidth = (width / self.parent?.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeHeight = (height / self.parent?.stageHeight) * RELATIVE_STAGE_HEIGHT;
 
       self.rotation = (rotation + 360) % 360;
     },
@@ -71,17 +72,65 @@ const RectRegionAbsoluteCoordsDEV3793 = types
     },
     updateImageSize(wp, hp, sw, sh) {
       if (self.coordstype === 'px') {
-        self.x = (sw * self.relativeX) / 100;
-        self.y = (sh * self.relativeY) / 100;
-        self.width = (sw * self.relativeWidth) / 100;
-        self.height = (sh * self.relativeHeight) / 100;
+        self.x = (sw * self.relativeX) / RELATIVE_STAGE_WIDTH;
+        self.y = (sh * self.relativeY) / RELATIVE_STAGE_HEIGHT;
+        self.width = (sw * self.relativeWidth) / RELATIVE_STAGE_WIDTH;
+        self.height = (sh * self.relativeHeight) / RELATIVE_STAGE_HEIGHT;
       } else if (self.coordstype === 'perc') {
-        self.x = (sw * self.x) / 100;
-        self.y = (sh * self.y) / 100;
-        self.width = (sw * self.width) / 100;
-        self.height = (sh * self.height) / 100;
+        self.x = (sw * self.x) / RELATIVE_STAGE_WIDTH;
+        self.y = (sh * self.y) / RELATIVE_STAGE_HEIGHT;
+        self.width = (sw * self.width) / RELATIVE_STAGE_WIDTH;
+        self.height = (sh * self.height) / RELATIVE_STAGE_HEIGHT;
         self.coordstype = 'px';
       }
+    },
+
+    draw(x, y, points) {
+      const oldHeight = self.height;
+
+      if (points.length === 1) {
+        self.width = self.getDistanceBetweenPoints({ x, y }, self);
+        self.rotation = self.rotationAtCreation = Math.atan2(y - self.y, x - self.x) * (180 / Math.PI);
+      } else if (points.length === 2) {
+        const { y: firstPointY, x: firstPointX } = points[0];
+        const { y: secondPointY, x: secondPointX } = points[1];
+
+        if (self.isAboveTheLine(points[0], points[1], { x, y })) {
+          self.x = secondPointX;
+          self.y = secondPointY;
+          self.rotation = self.rotationAtCreation + 180;
+        } else {
+          self.x = firstPointX;
+          self.y = firstPointY;
+          self.rotation = self.rotationAtCreation;
+        }
+        self.height = self.getHeightOnPerpendicular(points[0], points[1], { x, y });
+      }
+
+      self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+
+      const areaBBoxCoords = self?.bboxCoords;
+
+      if (
+        areaBBoxCoords?.left < 0 ||
+        areaBBoxCoords?.top < 0 ||
+        areaBBoxCoords?.right > self.parent.stageWidth ||
+        areaBBoxCoords?.bottom > self.parent.stageHeight
+      ) {
+        self.height = oldHeight;
+      }
+    },
+    getHeightOnPerpendicular(pointA, pointB, cursor) {
+      const dx1 = pointB.x - pointA.x;
+      const dy1 = pointB.y - pointA.y;
+      const dy2 = pointB.y - cursor.y;
+      const dx2 = dy2 / dx1 * dy1; // dx2 / dy1 = dy2 / dx1 (triangle is rotated)
+      const dx3 = cursor.x - pointB.x - dx2;
+      const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+      const d3 = dx3 / d2 * dx2; // dx3 / d2 = d3 / dx2 (triangle is inverted)
+      const h = d2 + d3;
+
+      return Math.abs(h);
     },
   }));
 
@@ -190,16 +239,12 @@ const Model = types
     },
 
     getHeightOnPerpendicular(pointA, pointB, cursor) {
-      const dx1 = pointB.x - pointA.x;
-      const dy1 = pointB.y - pointA.y;
-      const dy2 = pointB.y - cursor.y;
-      const dx2 = dy2 / dx1 * dy1; // dx2 / dy1 = dy2 / dx1 (triangle is rotated)
-      const dx3 = cursor.x - pointB.x - dx2;
-      const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-      const d3 = dx3 / d2 * dx2; // dx3 / d2 = d3 / dx2 (triangle is inverted)
-      const h = d2 + d3;
+      const dX = pointB.x - pointA.x;
+      const dY = pointB.y - pointA.y;
+      const s2 = Math.abs(dY * cursor.x - dX * cursor.y + pointB.x * pointA.y - pointB.y * pointA.x);
+      const ab = Math.sqrt(dY * dY + dX * dX);
 
-      return Math.abs(h);
+      return s2 / ab;
     },
 
     isAboveTheLine(a, b, c) {
@@ -208,15 +253,26 @@ const Model = types
 
     draw(x, y, points) {
       const oldHeight = self.height;
+      const canvasX = self.parent.internalToCanvasX(x);
+      const canvasY = self.parent.internalToCanvasY(y);
 
       if (points.length === 1) {
-        self.width = self.getDistanceBetweenPoints({ x, y }, self);
-        self.rotation = self.rotationAtCreation = Math.atan2(y - self.y, x - self.x) * (180 / Math.PI);
+        const canvasWidth = self.getDistanceBetweenPoints({ x: canvasX, y: canvasY }, {
+          x: self.canvasX,
+          y: self.canvasY,
+        });
+
+        self.width = self.parent.canvasToInternalX(canvasWidth);
+        self.rotation = self.rotationAtCreation = Math.atan2(canvasY - self.canvasY, canvasX - self.canvasX) * (180 / Math.PI);
       } else if (points.length === 2) {
+        const canvasPoints = points.map(({ x, y }) => ({
+          x: self.parent.internalToCanvasX(x),
+          y: self.parent.internalToCanvasY(y),
+        }));
         const { y: firstPointY, x: firstPointX } = points[0];
         const { y: secondPointY, x: secondPointX } = points[1];
 
-        if (self.isAboveTheLine(points[0], points[1], { x, y })) {
+        if (self.isAboveTheLine(canvasPoints[0], canvasPoints[1], { x: canvasX, y: canvasY })) {
           self.x = secondPointX;
           self.y = secondPointY;
           self.rotation = self.rotationAtCreation + 180;
@@ -225,18 +281,22 @@ const Model = types
           self.y = firstPointY;
           self.rotation = self.rotationAtCreation;
         }
-        self.height = self.getHeightOnPerpendicular(points[0], points[1], { x, y });
-      }
+        const canvasHeight = self.getHeightOnPerpendicular(canvasPoints[0], canvasPoints[1], {
+          x: canvasX,
+          y: canvasY,
+        });
 
-      self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
+        self.height = self.parent.canvasToInternalY(canvasHeight);
+      }
+      self.setPositionInternal(self.x, self.y, self.width, self.height, self.rotation);
 
       const areaBBoxCoords = self?.bboxCoords;
 
       if (
         areaBBoxCoords?.left < 0 ||
         areaBBoxCoords?.top < 0 ||
-        areaBBoxCoords?.right > self.parent.stageWidth ||
-        areaBBoxCoords?.bottom > self.parent.stageHeight
+        areaBBoxCoords?.right > RELATIVE_STAGE_WIDTH ||
+        areaBBoxCoords?.bottom > RELATIVE_STAGE_HEIGHT
       ) {
         self.height = oldHeight;
       }
@@ -405,7 +465,10 @@ const HtxRectangleView = ({ item }) => {
       item.notifyDrawingFinished();
     };
 
-    eventHandlers.dragBoundFunc = createDragBoundFunc(item, { x: item.x - item.bboxCoords.left, y: item.y - item.bboxCoords.top });
+    eventHandlers.dragBoundFunc = createDragBoundFunc(item, {
+      x: item.x - item.bboxCoords.left,
+      y: item.y - item.bboxCoords.top,
+    });
   }
 
   return (

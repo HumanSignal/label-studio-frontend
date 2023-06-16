@@ -21,6 +21,7 @@ import ObjectBase from '../Base';
 import { DrawingRegion } from './DrawingRegion';
 import { ImageEntityMixin } from './ImageEntityMixin';
 import { ImageSelection } from './ImageSelection';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../../../components/ImageView/Image';
 
 const IMAGE_PRELOAD_COUNT = 3;
 
@@ -947,7 +948,7 @@ const Model = types.model({
       self.drawingRegion?.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
 
       setTimeout(self.annotation.history.unfreeze, 0);
-
+      
       //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
       if (_historyLength <= 1) {
         // Don't force unselection of regions during the updateObjects callback from history reinit
@@ -1080,19 +1081,19 @@ const CoordsCalculations = types.model()
 
     // @todo scale?
     canvasToInternalX(n) {
-      return n / self.stageWidth * 100;
+      return n / self.stageWidth * RELATIVE_STAGE_WIDTH;
     },
 
     canvasToInternalY(n) {
-      return n / self.stageHeight * 100;
+      return n / self.stageHeight * RELATIVE_STAGE_HEIGHT;
     },
 
     internalToCanvasX(n) {
-      return n / 100 * self.stageWidth;
+      return n / RELATIVE_STAGE_WIDTH * self.stageWidth;
     },
 
     internalToCanvasY(n) {
-      return n / 100 * self.stageHeight;
+      return n / RELATIVE_STAGE_HEIGHT * self.stageHeight;
     },
   }));
 
