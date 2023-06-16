@@ -11,11 +11,16 @@ import Registry from '../../core/Registry';
 import { guidGenerator } from '../../core/Helpers';
 import ControlBase from './Base';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import ClassificationBase from './ClassificationBase';
+import PerItemMixin from '../../mixins/PerItem';
+import { FF_LSDV_4583, isFF } from '../../utils/feature-flags';
 
 /**
  * The `Rating` tag adds a rating selection to the labeling interface. Use for labeling tasks involving ratings.
  *
  * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
+ *
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
  *
  * @example
  * <!--Basic labeling configuration to rate the content of a text passage -->
@@ -37,6 +42,7 @@ import { AnnotationMixin } from '../../mixins/AnnotationMixin';
  * @param {boolean} [required=false]          - Whether rating validation is required
  * @param {string} [requiredMessage]          - Message to show if validation fails
  * @param {boolean} [perRegion]               - Use this tag to rate regions instead of the whole object
+ * @param {boolean} [perItem]                 - Use this tag to rate items inside the object instead of the whole object[^FF_LSDV_4583]
  */
 const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
@@ -70,17 +76,6 @@ const Model = types
     get holdsState() {
       return self.rating > 0;
     },
-
-    get result() {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
-
-        if (!area) return null;
-
-        return self.annotation.results.find(r => r.from_name === self && r.area === area);
-      }
-      return self.annotation.results.find(r => r.from_name === self);
-    },
   }))
   .actions(self => ({
     getSelectedString() {
@@ -96,19 +91,7 @@ const Model = types
 
     setRating(value) {
       self.rating = value;
-
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          self.annotation.createResult({}, { rating: value }, self, self.toname);
-        }
-      }
+      self.updateResult();
     },
 
     updateFromResult(value) {
@@ -136,7 +119,16 @@ const Model = types
     },
   }));
 
-const RatingModel = types.compose('RatingModel', ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, AnnotationMixin);
+const RatingModel = types.compose('RatingModel',
+  ControlBase,
+  ClassificationBase,
+  RequiredMixin,
+  PerRegionMixin,
+  ...(isFF(FF_LSDV_4583)?[PerItemMixin]:[]),
+  AnnotationMixin,
+  TagAttrs,
+  Model,
+);
 
 const HtxRating = inject('store')(
   observer(({ item, store }) => {

@@ -248,6 +248,22 @@ const validateAttributes = (child, model, fieldsToSkip) => {
 };
 
 /**
+ * Validate perRegion restrictions
+ * @param {Object} child
+ */
+const validatePerRegion = (child) => {
+  const validationResult = [];
+
+  // PerItem and PerRegion are incompatible but PerRegion is more prioritized mode
+  if (child.perregion && child.peritem) {
+    validationResult.push(errorBuilder.generalError('Attribute <b>perItem</b> is incompatible with attribute <b>perRegion</b>. ' +
+      'They define two different modes. However <b>perRegion</b> works fine even with multi-item mode of object tags.'));
+  }
+
+  return validationResult;
+};
+
+/**
  * Convert MST type to a human-readable string
  * @param {import("mobx-state-tree").IType} type
  */
@@ -284,6 +300,8 @@ export class ConfigValidator {
         const parentValidation = validateParentTag(child, model);
 
         if (parentValidation !== null) validationResult.push(parentValidation);
+
+        validationResult.push(...validatePerRegion(child));
 
         validationResult.push(...validateAttributes(child, model, propertiesToSkip));
       } catch (e) {

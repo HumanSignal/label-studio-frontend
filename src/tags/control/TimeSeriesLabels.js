@@ -79,12 +79,12 @@ const Model = LabelMixin.props({ _type: 'timeserieslabels' }).views(self => ({
 }));
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   TagAttrs,
   Model,
   SelectedModelMixin.props({ _child: 'LabelModel' }),
-  ControlBase,
 );
 
 const TimeSeriesLabelsModel = types.compose('TimeSeriesLabelsModel', Composition);

@@ -20,7 +20,7 @@ import ResizeObserver from '../../utils/resize-observer';
 import { debounce } from '../../utils/debounce';
 import Constants from '../../core/Constants';
 import { fixRectToFit } from '../../utils/image';
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, FF_LSDV_4711, isFF } from '../../utils/feature-flags';
+import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583_6, FF_LSDV_4711, isFF } from '../../utils/feature-flags';
 import { Pagination } from '../../common/Pagination/Pagination';
 import { Image } from './Image';
 
@@ -842,7 +842,7 @@ export default observer(
 
       const containerClassName = styles.container;
 
-      const paginationEnabled = isFF(FF_LSDV_4583) && item.valuelist;
+      const paginationEnabled = !!item.isMultiItem;
 
       if (getRoot(item).settings.fullscreen === false) {
         containerStyle['maxWidth'] = item.maxwidth;
