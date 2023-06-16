@@ -16,7 +16,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
 
 env:
-  DOWNSTREAM_REPO_OWNER: heartexlabs
   DOWNSTREAM_REPO: label-studio-enterprise
 
 jobs:
@@ -33,9 +32,10 @@ jobs:
         with:
           github-token: ${{ secrets.GIT_PAT }}
           script: |
+            const { repo, owner } = context.repo;
             try {
               return (await github.rest.orgs.getMembershipForUser({
-                org: '${{ env.DOWNSTREAM_REPO_OWNER }}',
+                org: owner,
                 username: '${{ github.actor }}',
               }))?.data?.state == "active";
             } catch (error) {
@@ -56,7 +56,7 @@ jobs:
               body: [
                 'Hi @${{ github.actor }}!',
                 '',
-                'Unfortunately you don\'t have membership in ${{ env.DOWNSTREAM_REPO_OWNER }} organization, your PR wasn\'t synced with ${{ env.DOWNSTREAM_REPO }}.'
+                `Unfortunately you don't have membership in ${owner} organization, your PR wasn't synced with ${owner}/${{ env.DOWNSTREAM_REPO }}.`
               ].join('\n')
             });
 
@@ -70,6 +70,7 @@ jobs:
           github-token: ${{ secrets.GIT_PAT }}
           script: |
             const { repo, owner } = context.repo;
+            const [pr_owner, pr_repo] = '${{ github.event.pull_request.head.repo.full_name || github.repository }}'.split('/');
             let event_action = '${{ github.event.action }}'
             let commit_sha = '${{ github.event.pull_request.head.sha }}'
             if (${{ github.event.pull_request.merged }}) {
@@ -77,12 +78,12 @@ jobs:
               commit_sha = '${{ github.sha }}'
             }
             const getCommitResponse = await github.rest.repos.getCommit({
-              owner,
-              repo,
+              pr_owner,
+              pr_repo,
               ref: commit_sha
             });
             const result = await github.rest.repos.createDispatchEvent({
-              owner: '${{ env.DOWNSTREAM_REPO_OWNER }}',
+              owner: owner,
               repo: '${{ env.DOWNSTREAM_REPO }}',
               event_type: 'upstream_repo_update',
               client_payload: {
