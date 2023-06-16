@@ -16,7 +16,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
 
 env:
-  DOWNSTREAM_REPO_OWNER: heartexlabs
   DOWNSTREAM_REPO: label-studio
 
 jobs:
@@ -35,7 +34,8 @@ jobs:
         with:
           github-token: ${{ secrets.GIT_PAT }}
           script: |
-            const [owner, repo] = '${{ github.event.pull_request.head.repo.full_name || github.repository }}'.split('/');
+            const { repo, owner } = context.repo;
+            const [pr_owner, pr_repo] = '${{ github.event.pull_request.head.repo.full_name || github.repository }}'.split('/');
             let event_action = '${{ github.event.action }}'
             let commit_sha = '${{ github.event.pull_request.head.sha }}'
             if (${{ github.event.pull_request.merged }}) {
@@ -43,18 +43,18 @@ jobs:
               commit_sha = '${{ github.sha }}'
             }
             const getCommitResponse = await github.rest.repos.getCommit({
-              owner,
-              repo,
+              pr_owner,
+              pr_repo,
               ref: commit_sha
             });
             const result = await github.rest.repos.createDispatchEvent({
-              owner: '${{ env.DOWNSTREAM_REPO_OWNER }}',
+              owner: owner,
               repo: '${{ env.DOWNSTREAM_REPO }}',
               event_type: 'upstream_repo_update',
               client_payload: {
                 branch_name: '${{ github.head_ref }}',
                 base_branch_name: '${{ github.base_ref }}',
-                repo_name: '${{ github.event.pull_request.head.repo.full_name || github.repository }}',
+                repo_name: '${{ github.repository }}',
                 commit_sha : commit_sha,
                 title: process.env.TITLE,
                 html_url: '${{ github.event.pull_request.html_url }}',
