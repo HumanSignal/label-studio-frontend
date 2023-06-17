@@ -533,6 +533,11 @@ export default observer(
       if (p && p.className === 'Transformer') return;
 
       const handleMouseDown = () => {
+        if (e.evt.button === 1) {
+          // prevent middle click from scrolling page
+          e.evt.preventDefault();
+        }
+
         if (
         // create regions over another regions with Cmd/Ctrl pressed
           item.getSkipInteractions() ||
