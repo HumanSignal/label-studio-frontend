@@ -27,6 +27,16 @@ import MultiItemObjectBase from '../MultiItemObjectBase';
 const IMAGE_PRELOAD_COUNT = 3;
 
 /**
+ * enum of valid "interaction skippers", each skipper
+ * can be individually enabled to skip interactions
+ */
+export const INTERACTION_SKIPPERS = {
+  TOOL: 'tool',
+  CTRLKEY: 'ctrlkey',
+  PAN: 'pan',
+};
+
+/**
  * The `Image` tag shows an image on the page. Use for all image annotation tasks to display an image on the labeling interface.
  *
  * Use with the following data types: images.
@@ -528,29 +538,41 @@ const Model = types.model({
       afterResultCreated,
     };
   }).extend((self) => {
-    let skipInteractions = false;
+    // set of enabled "interaction skippers"
+    const interactionSkippers = new Set();
 
     return {
       views: {
         getSkipInteractions() {
-          const manager = self.getToolsManager();
-
-          const isPanning = manager.findSelectedTool()?.toolName === 'ZoomPanTool';
-
-          return skipInteractions || isPanning;
+          return interactionSkippers.size > 0;
         },
       },
       actions: {
-        setSkipInteractions(value) {
-          skipInteractions = value;
+        addInteractionSkipper(skipper) {
+          if (!Object.values(INTERACTION_SKIPPERS).includes(skipper)) {
+            throw new Error(`Unknown interaction skipper: ${skipper} (should be one from 'INTERACTION_SKIPPERS')`);
+          }
+          interactionSkippers.add(skipper);
+        },
+        removeInteractionSkipper(skipper) {
+          interactionSkippers.delete(skipper);
+        },
+        setInteractionSkipper(skipper, value) {
+          if (value) {
+            self.addInteractionSkipper(skipper);
+          } else {
+            self.removeInteractionSkipper(skipper);
+          }
         },
         updateSkipInteractions(e) {
+          if (e?.evt) {
+            e = e.evt;
+          }
+
           const currentTool = self.getToolsManager().findSelectedTool();
 
-          if (currentTool?.shouldSkipInteractions) {
-            return self.setSkipInteractions(currentTool.shouldSkipInteractions(e));
-          }
-          self.setSkipInteractions(e.evt && (e.evt.metaKey || e.evt.ctrlKey));
+          self.setInteractionSkipper(INTERACTION_SKIPPERS.TOOL, currentTool?.shouldSkipInteractions(e));
+          self.setInteractionSkipper(INTERACTION_SKIPPERS.CTRLKEY, e && (e.metaKey || e.ctrlKey));
         },
       },
     };

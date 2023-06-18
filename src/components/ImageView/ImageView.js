@@ -23,6 +23,7 @@ import { fixRectToFit } from '../../utils/image';
 import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583_6, FF_LSDV_4711, isFF } from '../../utils/feature-flags';
 import { Pagination } from '../../common/Pagination/Pagination';
 import { Image } from './Image';
+import { INTERACTION_SKIPPERS } from '../../tags/object/Image/Image';
 
 Konva.showWarnings = false;
 
@@ -627,7 +628,7 @@ export default observer(
       }
 
       item.freezeHistory();
-      item.setSkipInteractions(false);
+      item.removeInteractionSkipper(INTERACTION_SKIPPERS.PAN);
 
       return item.event('mouseup', e, e.evt.offsetX, e.evt.offsetY);
     };
@@ -649,7 +650,7 @@ export default observer(
       }
 
       if ((isMouseWheelClick || isShiftDrag) && item.zoomScale > 1) {
-        item.setSkipInteractions(true);
+        item.addInteractionSkipper(INTERACTION_SKIPPERS.PAN);
         e.evt.preventDefault();
 
         const newPos = {
