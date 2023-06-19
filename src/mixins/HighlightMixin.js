@@ -48,7 +48,7 @@ export const HighlightMixin = types
           background-color: ${color} !important;
           border: 1px dashed transparent;
         }
-        .${className}.${stateClass.active}:not(.${stateClass.hidden}) {
+        .${className}.${STATE_CLASS_MODS.active}:not(.${STATE_CLASS_MODS.hidden}) {
           color: ${Utils.Colors.contrastColor(initialActiveColor)} !important;
           background-color: ${initialActiveColor} !important;
         }
@@ -186,7 +186,7 @@ export const HighlightMixin = types
     selectRegion() {
       self.annotation.setHighlightedNode(self);
 
-      self.addClass(stateClass.active);
+      self.addClass(STATE_CLASS_MODS.active);
 
       const first = self._spans?.[0];
 
@@ -203,7 +203,7 @@ export const HighlightMixin = types
      * Unselect text region
      */
     afterUnselectRegion() {
-      self.removeClass(isFF(FF_LSDV_4620_3) ? stateClass.active : self._stylesheet?.state.active);
+      self.removeClass(isFF(FF_LSDV_4620_3) ? STATE_CLASS_MODS.active : self._stylesheet?.state.active);
     },
 
     /**
@@ -238,14 +238,14 @@ export const HighlightMixin = types
 
       if (self.highlighted) {
         if (isFF(FF_LSDV_4620_3)) {
-          self.addClass(stateClass.highlighted);
+          self.addClass(STATE_CLASS_MODS.highlighted);
         } else {
           self.addClass(self._stylesheet.state.highlighted);
           self._stylesheet?.setCursor(Constants.RELATION_MODE_CURSOR);
         }
       } else {
         if (isFF(FF_LSDV_4620_3)) {
-          self.removeClass(stateClass.highlighted);
+          self.removeClass(STATE_CLASS_MODS.highlighted);
         } else {
           self.removeClass(self._stylesheet.state.highlighted);
           self._stylesheet?.setCursor(Constants.POINTER_CURSOR);
@@ -307,7 +307,7 @@ export const HighlightMixin = types
 
 
 
-export const PSEUDO_CLASSES = {
+export const STATE_CLASS_MODS = {
   active: '__active',
   highlighted: '__highlighted',
   collapsed: '__collapsed',
@@ -328,8 +328,8 @@ const createSpanStylesheet = (document, identifier, color) => {
   };
 
   const classNames = {
-    active: `${className}.${stateClass.active}:not(.${stateClass.hidden})`,
-    highlighted: `${className}.${stateClass.highlighted}`,
+    active: `${className}.${STATE_CLASS_MODS.active}:not(.${STATE_CLASS_MODS.hidden})`,
+    highlighted: `${className}.${STATE_CLASS_MODS.highlighted}`,
   };
 
   const activeColorOpacity = 0.8;
@@ -362,19 +362,19 @@ const createSpanStylesheet = (document, identifier, color) => {
       position: relative;
       border-color: rgb(0, 174, 255);
     `,
-    [`${className}.${stateClass.hidden}`]: `
+    [`${className}.${STATE_CLASS_MODS.hidden}`]: `
       border: none;
       padding: 0;
       pointer-events: none;
       ${variables.color}: transparent;
     `,
-    [`${className}.${stateClass.hidden}::before`]: `
+    [`${className}.${STATE_CLASS_MODS.hidden}::before`]: `
       display: none
     `,
-    [`${className}.${stateClass.hidden}::after`]: `
+    [`${className}.${STATE_CLASS_MODS.hidden}::after`]: `
       display: none
     `,
-    [`${className}.${stateClass.noLabel}::after`]: `
+    [`${className}.${STATE_CLASS_MODS.noLabel}::after`]: `
       display: none
     `,
   };
@@ -431,7 +431,7 @@ const createSpanStylesheet = (document, identifier, color) => {
 
   return {
     className: className.substr(1),
-    state: stateClass,
+    state: STATE_CLASS_MODS,
     setColor,
     setCursor,
     remove,

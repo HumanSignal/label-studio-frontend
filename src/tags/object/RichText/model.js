@@ -15,7 +15,7 @@ import { escapeHtml, isValidObjectURL } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import { FF_LSDV_4620_3, isFF } from '../../../utils/feature-flags';
 import DomManager from './domManager';
-import { stateClass } from '../../../mixins/HighlightMixin';
+import { STATE_CLASS_MODS } from '../../../mixins/HighlightMixin';
 import Constants from '../../../core/Constants';
 
 const SUPPORTED_STATES = ['LabelsModel', 'HyperTextLabelsModel', 'RatingModel'];
@@ -125,21 +125,21 @@ const Model = types
         content: attr(data-label);
         line-height: 0;
       }
-      .htx-highlight.${stateClass.highlighted} {
+      .htx-highlight.${STATE_CLASS_MODS.highlighted} {
         position: relative;
         cursor: ${Constants.RELATION_MODE_CURSOR};
         border-color: rgb(0, 174, 255);
       }
-      .htx-highlight.${stateClass.hidden} {
+      .htx-highlight.${STATE_CLASS_MODS.hidden} {
         border: none;
         padding: 0;
         background: transparent !important;
         cursor: inherit;
         // pointer-events: none;
       }
-      .htx-highlight.${stateClass.hidden}::before,
-      .htx-highlight.${stateClass.hidden}::after,
-      .htx-highlight.${stateClass.noLabel}::after {
+      .htx-highlight.${STATE_CLASS_MODS.hidden}::before,
+      .htx-highlight.${STATE_CLASS_MODS.hidden}::after,
+      .htx-highlight.${STATE_CLASS_MODS.noLabel}::after {
         display: none;
       }
       `;
