@@ -59,12 +59,18 @@
   cursor: text;
 }
 
-.container {
+.scroll_container {
   position: relative;
   overflow: auto;
   counter-reset: phrase;
   border: 1px solid rgba(137, 128, 152, 0.16);
   padding: 8px;
+}
+
+.container {
+  position: relative;
+  overflow: auto;
+  counter-reset: phrase;
 }
 
 .withAudio {

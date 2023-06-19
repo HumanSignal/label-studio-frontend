@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 
 import ObjectTag from '../../../components/Tags/Object';
-import { FF_DEV_2669, FF_DEV_2918, FF_LSDV_3012, FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2669, FF_LSDV_E_278, FF_DEV_2918, FF_LSDV_3012, FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
 import { findNodeAt, matchesSelector, splitBoundaries } from '../../../utils/html';
 import { isSelectionContainsSpan } from '../../../utils/selection-tools';
 import styles from './Paragraphs.module.scss';
@@ -437,8 +437,8 @@ class HtxParagraphsView extends Component {
         <div
           ref={this.myRef}
           data-update={item._update}
-          className={styles.container}
-          style={{ height: `${this.props.item.maxheight}px` }}
+          className={isFF(FF_LSDV_E_278) ? styles.scroll_container : styles.container}
+          style={isFF(FF_LSDV_E_278) ? { height: `${this.props.item.maxheight}px` } : {}}
           onMouseUp={this.onMouseUp.bind(this)}
         >
           <Phrases item={item} />
