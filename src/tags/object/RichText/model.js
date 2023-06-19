@@ -268,7 +268,24 @@ const Model = types
 
         self.setReady(false);
 
-        if (!isFF(FF_LSDV_4620_3)) {
+        if (isFF(FF_LSDV_4620_3)) {
+          const styles = {
+            [self.name]: self.styles,
+          };
+
+          self.regs.forEach(region => {
+            try {
+              // will be initialized only once
+              region.initRangeAndOffsets();
+              region.applyHighlight(true);
+              region.updateHighlightedText();
+              styles[region.identifier] = region.styles;
+            } catch (err) {
+              console.error(err);
+            }
+          });
+          self.setStyles(styles);
+        } else {
           // init and render regions into working node, then move them to visible one
           beforeNeedsUpdateCallback?.();
           self.regs.forEach(region => {
@@ -290,23 +307,6 @@ const Model = types
               console.error(err);
             }
           });
-        } else {
-          const styles = {
-            [self.name]: self.styles,
-          };
-
-          self.regs.forEach(region => {
-            try {
-              // will be initialized only once
-              region.initRangeAndOffsets();
-              region.applyHighlight(true);
-              region.updateHighlightedText();
-              styles[region.identifier] = region.styles;
-            } catch (err) {
-              console.error(err);
-            }
-          });
-          self.setStyles(styles);
         }
 
         self.setReady(true);
