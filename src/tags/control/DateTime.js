@@ -12,6 +12,9 @@ import RequiredMixin from '../../mixins/Required';
 import { isDefined } from '../../utils/utilities';
 import ControlBase from './Base';
 import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
+import ClassificationBase from './ClassificationBase';
+import PerItemMixin from '../../mixins/PerItem';
+import { FF_LSDV_4583, isFF } from '../../utils/feature-flags';
 
 const FORMAT_FULL = '%Y-%m-%dT%H:%M';
 const FORMAT_DATE = '%Y-%m-%d';
@@ -25,6 +28,9 @@ const zero = n => (n < 10 ? '0' : '') + n;
  * The DateTime tag adds date and time selection to the labeling interface. Use this tag to add a date, timestamp, month, or year to an annotation.
  *
  * Use with the following data types: audio, image, HTML, paragraph, text, time series, video
+ *
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
+ *
  * @example
  * <View>
  *   <Text name="txt" value="$text" />
@@ -45,6 +51,7 @@ const zero = n => (n < 10 ? '0' : '') + n;
  * @param {boolean} [required=false] - Whether datetime is required or not
  * @param {string} [requiredMessage] - Message to show if validation fails
  * @param {boolean} [perRegion]      - Use this option to label regions instead of the whole object
+ * @param {boolean} [perItem]        - Use this option to label items inside the object instead of the whole object[^FF_LSDV_4583]
  */
 const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
@@ -140,17 +147,6 @@ const Model = types
       if (self.min && self.date < self.min) return false;
       if (self.max && self.date > self.max) return false;
       return true;
-    },
-
-    get result() {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
-
-        if (!area) return null;
-
-        return self.annotation.results.find(r => r.from_name === self && r.area === area);
-      }
-      return self.annotation.results.find(r => r.from_name === self);
     },
   }))
   .volatile(() => ({
@@ -256,21 +252,6 @@ const Model = types
       }
     },
 
-    updateResult() {
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          self.annotation.createResult({}, { datetime: self.datetime }, self, self.toname);
-        }
-      }
-    },
-
     onMonthChange(e) {
       self.month = +e.target.value || undefined;
       self.updateResult();
@@ -340,9 +321,9 @@ const Model = types
 
         // per-region results are not visible, so we have to check their values
         if (self.perregion) {
-          const objectTag = self.annotation.names.get(self.toname);
+          const objectTag = self.toNameTag;
 
-          for (const reg of objectTag.regs) {
+          for (const reg of objectTag.allRegs) {
             const date = reg.results.find(s => s.from_name === self)?.mainValue;
             const isValid = validateValue(date);
 
@@ -363,9 +344,11 @@ const Model = types
 const DateTimeModel = types.compose(
   'DateTimeModel',
   ControlBase,
+  ClassificationBase,
   RequiredMixin,
   ReadOnlyControlMixin,
   PerRegionMixin,
+  ...(isFF(FF_LSDV_4583)?[PerItemMixin]:[]),
   AnnotationMixin,
   TagAttrs,
   Model,
@@ -404,7 +387,7 @@ const HtxDateTime = inject('store')(
     };
 
     return (
-      <div style={visibleStyle}>
+      <div className="htx-datetime" style={visibleStyle}>
         {item.showMonth && (
           <select
             {...visual}

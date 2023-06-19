@@ -22,6 +22,7 @@ import { DrawingRegion } from './DrawingRegion';
 import { ImageEntityMixin } from './ImageEntityMixin';
 import { ImageSelection } from './ImageSelection';
 import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../../../components/ImageView/Image';
+import MultiItemObjectBase from '../MultiItemObjectBase';
 
 const IMAGE_PRELOAD_COUNT = 3;
 
@@ -170,7 +171,12 @@ const Model = types.model({
   },
 
   get multiImage() {
-    return isFF(FF_LSDV_4583) && isDefined(self.valuelist);
+    return !!self.isMultiItem;
+  },
+
+  // an alias of currentImage to make an interface reusable
+  get currentItemIndex() {
+    return self.currentImage;
   },
 
   get parsedValue() {
@@ -204,16 +210,6 @@ const Model = types.model({
     const states = self.states();
 
     return states && states.length > 0;
-  },
-
-  get regs() {
-    const regions = self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
-
-    if (isFF(FF_LSDV_4583) && self.valuelist) {
-      return regions.filter(r => (r.item_index ?? 0) === self.currentImage);
-    }
-
-    return regions;
   },
 
   get selectedRegions() {
@@ -516,6 +512,7 @@ const Model = types.model({
   
     function afterResultCreated(region) {
       if (!region) return;
+      if (region.classification) return;
       if (!self.multiImage) return;
 
       region.setItemIndex?.(self.currentImage);
@@ -632,6 +629,11 @@ const Model = types.model({
 
     setGridSize(value) {
       self.gridsize = String(value);
+    },
+
+    // an alias of setCurrentImage for making an interface reusable
+    setCurrentItem(index = 0) {
+      self.setCurrentImage(index);
     },
 
     setCurrentImage(index = 0) {
@@ -1118,6 +1120,7 @@ const ImageModel = types.compose(
   'ImageModel',
   TagAttrs,
   ObjectBase,
+  ...(isFF(FF_LSDV_4583)?[MultiItemObjectBase]:[]),
   AnnotationMixin,
   IsReadyWithDepsMixin,
   ImageEntityMixin,
