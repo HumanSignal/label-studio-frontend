@@ -367,7 +367,7 @@ export default types
       });
 
       // unselect region
-      hotkeys.addNamed('region:unselect', function () {
+      hotkeys.addNamed('region:unselect', function() {
         const c = self.annotationStore.selected;
 
         if (c && !c.relationMode && !c.isDrawing) {
@@ -379,7 +379,7 @@ export default types
         }
       });
 
-      hotkeys.addNamed('region:visibility', function () {
+      hotkeys.addNamed('region:visibility', function() {
         const c = self.annotationStore.selected;
 
         if (c && !c.relationMode) {
@@ -387,13 +387,13 @@ export default types
         }
       });
 
-      hotkeys.addNamed('annotation:undo', function () {
+      hotkeys.addNamed('annotation:undo', function() {
         const annotation = self.annotationStore.selected;
 
         if (!annotation.isDrawing) annotation.undo();
       });
 
-      hotkeys.addNamed('annotation:redo', function () {
+      hotkeys.addNamed('annotation:redo', function() {
         const annotation = self.annotationStore.selected;
 
         if (!annotation.isDrawing) annotation.redo();
