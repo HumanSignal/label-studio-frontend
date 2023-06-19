@@ -307,7 +307,7 @@ export const HighlightMixin = types
 
 
 
-export const stateClass = {
+export const PSEUDO_CLASSES = {
   active: '__active',
   highlighted: '__highlighted',
   collapsed: '__collapsed',
