@@ -235,8 +235,10 @@ class RichTextPieceView extends Component {
    * @param {HTMLElement} element
    */
   _determineRegion(element) {
-    if (matchesSelector(element, isFF(FF_LSDV_4620_3) ? this._regionVisibleSpanSelector : this._regionSpanSelector)) {
-      const span = element.tagName === 'SPAN' && (!isFF(FF_LSDV_4620_3) || element.matches(this._regionVisibleSpanSelector)) ? element : element.closest(isFF(FF_LSDV_4620_3) ? this._regionVisibleSpanSelector : this._regionSpanSelector);
+    const spanSelector = isFF(FF_LSDV_4620_3) ? this._regionVisibleSpanSelector : this._regionSpanSelector;
+    
+    if (matchesSelector(element, spanSelector)) {
+      const span = element.tagName === 'SPAN' && (!isFF(FF_LSDV_4620_3) || element.matches(spanSelector)) ? element : element.closest(spanSelector);
       const { item } = this.props;
 
       return item.regs.find(region => region.find(span));
@@ -392,7 +394,7 @@ class RichTextPieceView extends Component {
             dangerouslySetInnerHTML={{ __html: val }}
             {...eventHandlers}
           />
-          { isFF(FF_LSDV_4620_3) ? null : (
+          {isFF(FF_LSDV_4620_3) ? null : (
             <>
               <Elem
                 key="orig"
@@ -436,7 +438,7 @@ class RichTextPieceView extends Component {
             srcDoc={val}
             onLoad={this.onIFrameLoad}
           />
-          { isFF(FF_LSDV_4620_3) ? null : (
+          {isFF(FF_LSDV_4620_3) ? null : (
             <><Elem
               key="orig"
               name="orig-iframe"
