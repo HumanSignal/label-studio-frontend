@@ -26,7 +26,6 @@ import {
   FF_DEV_3077,
   FF_DEV_3793,
   FF_DEV_4081,
-  FF_LSDV_4583,
   FF_LSDV_4583_6,
   FF_LSDV_4711,
   FF_LSDV_4930,
@@ -878,7 +877,7 @@ export default observer(
 
       const containerClassName = styles.container;
 
-      const paginationEnabled = isFF(FF_LSDV_4583) && item.valuelist;
+      const paginationEnabled = !!item.isMultiItem;
 
       if (getRoot(item).settings.fullscreen === false) {
         containerStyle['maxWidth'] = item.maxwidth;

@@ -6,5 +6,6 @@ export const CURRENT_FLAGS = {
   [FLAGS.FF_LSDV_4930]: true,
   [FLAGS.FF_LSDV_4992]: true,
   [FLAGS.FF_LSDV_4673]: true,
+  [FLAGS.FF_DEV_2100]: true,
 };
 

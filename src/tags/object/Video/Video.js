@@ -76,10 +76,6 @@ const Model = types
       return getRoot(self);
     },
 
-    get regs() {
-      return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
-    },
-
     get currentFrame() {
       return self.ref.current?.position ?? 1;
     },

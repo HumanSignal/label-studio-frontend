@@ -78,8 +78,8 @@ jobs:
               commit_sha = '${{ github.sha }}'
             }
             const getCommitResponse = await github.rest.repos.getCommit({
-              pr_owner,
-              pr_repo,
+              owner: pr_owner,
+              repo: pr_repo,
               ref: commit_sha
             });
             const result = await github.rest.repos.createDispatchEvent({

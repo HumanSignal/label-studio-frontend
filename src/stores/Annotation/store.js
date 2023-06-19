@@ -420,7 +420,7 @@ const AnnotationStoreModel = types
         const updatedItem = item ?? self.selected;
 
         Array.from(updatedItem.names.values())
-          .filter(t => t.isClassification)
+          .filter(t => t.isClassificationTag)
           .forEach(t => t.updateFromResult([]));
 
         updatedItem?.results
