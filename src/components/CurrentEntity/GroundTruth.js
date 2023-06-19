@@ -1,8 +1,9 @@
 import { observer } from 'mobx-react';
-import { LsStar } from '../../assets/icons';
+import { LsStar, LsStarOutline } from '../../assets/icons';
 import { Button } from '../../common/Button/Button';
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 import { BemWithSpecifiContext } from '../../utils/bem';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 import './GroundTruth.styl';
 
 const { Block, Elem } = BemWithSpecifiContext();
@@ -27,8 +28,8 @@ export const GroundTruth = observer(({ entity, disabled = false, size = 'md' }) 
         >
           <Elem
             name="indicator"
-            tag={LsStar}
-            mod={{ active: entity.ground_truth }}
+            tag={isFF(FF_DEV_3873) && !entity.ground_truth ? LsStarOutline : LsStar}
+            mod={{ active: entity.ground_truth, dark: isFF(FF_DEV_3873) }}
           />
         </Elem>
       </Tooltip>

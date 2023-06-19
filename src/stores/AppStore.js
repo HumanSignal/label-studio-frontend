@@ -15,8 +15,9 @@ import Settings from './SettingsStore';
 import Task from './TaskStore';
 import { UserExtended } from './UserStore';
 import { UserLabels } from './UserLabels';
-import { FF_DEV_1536, FF_DEV_2715, isFF } from '../utils/feature-flags';
+import { FF_DEV_1536, FF_DEV_2715, FF_LSDV_4998, isFF } from '../utils/feature-flags';
 import { CommentStore } from './Comment/CommentStore';
+import { destroy as destroySharedStore } from '../mixins/SharedChoiceStore/mixin';
 
 const hotkeys = Hotkey('AppStore', 'Global Hotkeys');
 
@@ -381,8 +382,8 @@ export default types
       hotkeys.addNamed('region:visibility', function() {
         const c = self.annotationStore.selected;
 
-        if (c && c.highlightedNode && !c.relationMode) {
-          c.highlightedNode.toggleHidden();
+        if (c && !c.relationMode) {
+          c.hideSelectedRegions();
         }
       });
 
@@ -495,6 +496,8 @@ export default types
       if (self.isSubmitting) return;
       self.setFlags({ isSubmitting: true });
       const res = fn();
+
+      self.commentStore.setAddedCommentThisSession(false);
       // Wait for request, max 5s to not make disabled forever broken button;
       // but block for at least 0.2s to prevent from double clicking.
 
@@ -600,6 +603,9 @@ export default types
 
       if (oldAnnotationStore) {
         oldAnnotationStore.beforeReset?.();
+        if (isFF(FF_LSDV_4998)) {
+          destroySharedStore();
+        }
         detach(oldAnnotationStore);
         destroy(oldAnnotationStore);
       }
@@ -720,12 +726,9 @@ export default types
     async function postponeTask() {
       const annotation = self.annotationStore.selected;
 
-      if (!annotation.versions.draft) {
-        // annotation created from prediction, so no draft was created
-        annotation.versions.draft = annotation.versions.result;
-      }
-
-      await self.submitDraft(annotation, { was_postponed: true });
+      // save draft before postponing; this can be new draft with FF_DEV_4174 off
+      // or annotation created from prediction
+      await annotation.saveDraft({ was_postponed: true });
       await getEnv(self).events.invoke('nextTask');
     }
 

@@ -20,6 +20,7 @@ import {
   FF_DEV_3391,
   FF_LSDV_3009,
   FF_LSDV_4583,
+  FF_LSDV_4832,
   isFF
 } from '../../utils/feature-flags';
 import { delay, isDefined } from '../../utils/utilities';
@@ -366,6 +367,12 @@ export const Annotation = types
       self.regionStore.clearSelection();
     },
 
+    hideSelectedRegions() {
+      self.selectedRegions.forEach(region => {
+        region.toggleHidden();
+      });
+    },
+
     deleteSelectedRegions() {
       self.selectedRegions.forEach(region => {
         region.deleteRegion();
@@ -409,8 +416,22 @@ export const Annotation = types
     deleteAllRegions({ deleteReadOnly = false } = {}) {
       let regions = Array.from(self.areas.values());
 
-      // @todo classifiactions have `readonly===undefined` so they won't be deleted with `false`
-      // @todo check this later for consistency
+      // remove everything unconditionally
+      if (deleteReadOnly && isFF(FF_LSDV_4832)) {
+        self.unselectAll(true);
+        self.setIsDrawing(false);
+        self.relationStore.deleteAllRelations();
+
+        regions.forEach(r => {
+          r.destroyRegion?.();
+          destroy(r);
+        });
+
+        self.updateObjects();
+
+        return;
+      }
+
       if (deleteReadOnly === false) regions = regions.filter(r => r.readonly === false);
 
       regions.forEach(r => r.deleteRegion());
@@ -444,16 +465,14 @@ export const Annotation = types
       let ok = true;
 
       self.traverseTree(function(node) {
-        if (node.required === true) {
-          ok = node.validate();
-          if (ok === false) {
-            ok = false;
-            return TRAVERSE_STOP;
-          }
+        ok = node.validate?.();
+        if (ok === false) {
+          return TRAVERSE_STOP;
         }
       });
 
-      return ok;
+      // should be true or false
+      return ok ?? true;
     },
 
     traverseTree(cb) {
@@ -646,7 +665,7 @@ export const Annotation = types
       onSnapshot(self.areas, self.autosave);
     }),
 
-    saveDraft() {
+    saveDraft(params) {
       // if this is now a history item or prediction don't save it
       if (!self.editable) return;
 
@@ -659,7 +678,7 @@ export const Annotation = types
       self.versions.draft = result;
       self.setDraftSaving(true);
 
-      self.store.submitDraft(self).then(self.onDraftSaved);
+      return self.store.submitDraft(self, params).then(self.onDraftSaved);
     },
 
     saveDraftImmediately() {
@@ -840,8 +859,11 @@ export const Annotation = types
       };
 
 
-      //TODO: MST is crashing if we don't validate areas?, this problem isn't happening locally. So to reproduce you have to test in production or environment
+      // TODO: MST is crashing if we don't validate areas?, this problem isn't
+      // happening locally. So to reproduce you have to test in production or environment
       const area = self?.areas?.put(areaRaw);
+
+      objectTag?.afterResultCreated?.(area);
 
       if (!area) return;
 
@@ -1043,12 +1065,15 @@ export const Annotation = types
 
       self.areas.forEach(a => {
         const controlName = a.results[0].from_name.name;
+        // May be null but null is also valid key in this case
+        const itemIndex = a.item_index;
 
         if (a.classification) {
-          if (classificationAreasByControlName[controlName]) {
-            duplicateAreaIds.push(classificationAreasByControlName[controlName]);
+          if (classificationAreasByControlName[controlName]?.[itemIndex]) {
+            duplicateAreaIds.push(classificationAreasByControlName[controlName][itemIndex]);
           }
-          classificationAreasByControlName[controlName] = a.id;
+          classificationAreasByControlName[controlName] = classificationAreasByControlName[controlName] || {};
+          classificationAreasByControlName[controlName][itemIndex] = a.id;
         }
       });
       duplicateAreaIds.forEach(id => self.areas.delete(id));

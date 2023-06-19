@@ -4,7 +4,6 @@ import { types } from 'mobx-state-tree';
 
 import LabelMixin from '../../mixins/LabelMixin';
 import Registry from '../../core/Registry';
-import RequiredMixin from '../../mixins/Required';
 import SelectedModelMixin from '../../mixins/SelectedModel';
 import Types from '../../core/Types';
 import { HtxLabels, LabelsModel } from './Labels/Labels';
@@ -80,13 +79,12 @@ const Model = LabelMixin.props({ _type: 'timeserieslabels' }).views(self => ({
 }));
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   TagAttrs,
   Model,
-  RequiredMixin,
   SelectedModelMixin.props({ _child: 'LabelModel' }),
-  ControlBase,
 );
 
 const TimeSeriesLabelsModel = types.compose('TimeSeriesLabelsModel', Composition);

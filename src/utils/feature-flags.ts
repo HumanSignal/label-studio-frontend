@@ -135,6 +135,18 @@ export const FF_DEV_3617 = 'fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix';
 export const FF_DEV_3666 = 'fflag_fix_front_dev_3666_max_usages_on_region_creation_171122_short';
 
 /**
+ * Fixing "Auto Detect" tool undo functionality and bugs with skipNextUndoState.
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_1284_auto_detect_undo_281022_short
+ */
+export const FF_DEV_3873 = 'fflag_feat_front_dev_3873_labeling_ui_improvements_short';
+
+/**
+ * Filter component that filter regions on outliner component
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_3025_outliner_filter_short
+ */
+export const FF_LSDV_3025 = 'fflag_feat_front_lsdv_3025_outliner_filter_short';
+
+/**
  * Allow shourtcuts button to work with visible main textarea when there is no focus
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_dev_3730_shortcuts_initial_input_22122022_short
  */
@@ -165,16 +177,9 @@ export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10
 export const FF_LSDV_1148 = 'fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short';
 
 /**
- * Default Audio v3 to use multichannel mode if the track has 2 or more channels.
- * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short
- *
- */
-export const FF_LSDV_3028 = 'fflag_feat_front_lsdv_3028_audio_v3_multichannel_default_17022023_short';
-
-/**
  * Multi-image segmentation support via `valueList`
  */
-export const FF_LSDV_4583 = 'feat_front_lsdv_4583_multi_image_segmentation_short';
+export const FF_LSDV_4583 = 'fflag_feat_front_lsdv_4583_multi_image_segmentation_short';
 
 /**
  * Enables new way of preloading/cacheing images
@@ -190,9 +195,9 @@ export const FF_LSDV_4583_6 = 'fflag_feat_front_lsdv_4583_6_images_preloading_sh
 export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short';
 
 /**
- * Enables the ffmpeg audio decoder to be the default.
+ * New Syncable mixin for better sync
  */
-export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ffmpeg_long';
+export const FF_LSDV_3012 = 'fflag_feat_front_lsdv_3012_syncable_tags_070423_short';
 
 /**
  * Adding "skipDuplicates" parameter for <TextArea /> to preventing adding duplicate entries
@@ -200,6 +205,72 @@ export const FF_LSDV_4701 = 'fflag_feat_front_lsdv_4701_audio_default_decoder_ff
  * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4659_skipduplicates_060323_short
  */
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
+
+/**
+ * Fixes Rect3PointTool behaviour in relative coords mode.
+ * It also fixes disappearing regions in degenerate cases.
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4673_rect3point_relative_310523_short
+ */
+export const FF_LSDV_4673 = 'fflag_fix_front_lsdv_4673_rect3point_relative_310523_short';
+
+/**
+ * Fixes how presigned urls are generated and accessed to remove possibility of CORS errors.
+ */
+export const FF_LSDV_4711 = 'fflag_fix_all_lsdv_4711_cors_errors_accessing_task_data_short';
+
+/**
+ * Preventing creating duplicates in TextArea results with "skipDuplicates" parameter during editing.
+ * It also prevent creating new history steps on every change during editing textarea results.
+ *
+ * @see FF_LSDV_4659: To enable `skipDuplicates` parameter
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short
+ */
+export const FF_LSDV_4712 = 'fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short';
+
+/**
+ * New Ranker tag; flag is used for `deleteAllRegions()` optimization
+ */
+export const FF_LSDV_4832 = 'fflag_feat_front_lsdv_4832_new_ranker_tag_120423_short';
+
+/**
+ * Fixing issue with missed steps in timeseries with optimized data and zoom
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4881_timeseties_points_missing_140423_short
+ */
+export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing_140423_short';
+
+/**
+ * Restore "hide all regions" button functionality in the outliner
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
+ */
+export const FF_LSDV_4992 = 'fflag_fix_front_lsdv_4992_hide_all_regions_04052023_short';
+
+/**
+ * Resetting shared stores on task change to correctly generate dynamic children
+ *
+ * @see: ff_dev_2007_dev_2008_dynamic_tag_children_250322_short: To enable dynamic children
+ * @see: fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix: To enable shared store
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
+ */
+export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short';
+
+/**
+ * Add ability to show hints while hover over the choice
+ * @see: ff_dev_2007_rework_choices_280322_short: To enable alt version of <Choices/> (it's not necessary)
+ */
+export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
+
+Object.assign(window, {
+  APP_SETTINGS: {
+    ...(window.APP_SETTINGS ?? {}),
+    feature_flags: {
+      ...(window.APP_SETTINGS?.feature_flags ?? {}),
+      ...(window.FEATURE_FLAGS ?? {}),
+    },
+  },
+});
 
 function getFeatureFlags() {
   return {

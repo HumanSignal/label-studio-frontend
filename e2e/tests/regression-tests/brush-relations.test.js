@@ -1,5 +1,3 @@
-const assert = require('assert');
-
 Feature('Brush relations').tag('@regress');
 
 const IMAGE = 'https://user.fm/files/v2-901310d5cb3fa90e0616ca10590bacb3/spacexmoon-800x501.jpg';
@@ -26,14 +24,13 @@ function generateSpiralPoints(x0, y0, R, v , w) {
   return points;
 }
 
-Scenario('Brush relations shouldn\'t crash everything', async ({ I, LabelStudio, AtImageView, AtSidebar, ErrorsCollector }) => {
+Scenario('Brush relations shouldn\'t crash everything', async ({ I, LabelStudio, AtImageView, AtSidebar }) => {
   const params = {
     config,
     data: { image: IMAGE },
   };
 
   I.amOnPage('/');
-  await ErrorsCollector.run();
   LabelStudio.init(params);
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);
@@ -101,11 +98,6 @@ Scenario('Brush relations shouldn\'t crash everything', async ({ I, LabelStudio,
       AtSidebar.seeRelations(2);
     }
 
-    // Check the we didn't get any errors
-    const errors = await ErrorsCollector.grabErrors();
-
-    if (errors.length) {
-      assert.fail(`Got an error: ${errors[0]}`);
-    }
+    /// The potential errors should be caught by `errorsCollector` plugin
   }
 });

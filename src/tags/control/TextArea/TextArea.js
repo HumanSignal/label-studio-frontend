@@ -1,4 +1,4 @@
-import React, { createRef, forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { createRef, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from 'antd/lib/button/index';
 import Form from 'antd/lib/form/index';
 import Input from 'antd/lib/input/index';
@@ -19,8 +19,17 @@ import styles from '../../../components/HtxTextBox/HtxTextBox.module.scss';
 import { Block, Elem } from '../../../utils/bem';
 import './TextArea.styl';
 import { IconTrash } from '../../../assets/icons';
-import { FF_DEV_1564_DEV_1565, FF_DEV_3730, FF_LSDV_4659, isFF } from '../../../utils/feature-flags';
+import {
+  FF_DEV_1564_DEV_1565,
+  FF_DEV_3730,
+  FF_LSDV_4583,
+  FF_LSDV_4659,
+  FF_LSDV_4712,
+  isFF
+} from '../../../utils/feature-flags';
 import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
+import ClassificationBase from '../ClassificationBase';
+import PerItemMixin from '../../../mixins/PerItem';
 
 const { TextArea } = Input;
 
@@ -28,6 +37,11 @@ const { TextArea } = Input;
  * The `TextArea` tag is used to display a text area for user input. Use for transcription, paraphrasing, or captioning tasks.
  *
  * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
+ *
+ * [^FF_LSDV_4659]: `fflag_feat_front_lsdv_4659_skipduplicates_060323_short` should be enabled to use `skipDuplicates` attribute
+ * [^FF_LSDV_4712]: `fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short` should be enabled to keep submissions unique during editing existed results
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
+ *
  * @example
  * <!--Basic labeling configuration to display only a text area -->
  * <View>
@@ -46,8 +60,7 @@ const { TextArea } = Input;
  * </View>
  * @example
  * <!--
- *  You can keep submissions unique
- *  - `fflag_feat_front_lsdv_4659_skipduplicates_060323_short` should be enabled to use `skipDuplicates` attribute.
+ *  You can keep submissions unique[^FF_LSDV_4659][^FF_LSDV_4712]
  * -->
  * <View>
  *   <Audio name="audio" value="$audio"/>
@@ -63,13 +76,14 @@ const { TextArea } = Input;
  * @param {string=} [placeholder]          - Placeholder text
  * @param {string=} [maxSubmissions]       - Maximum number of submissions
  * @param {boolean=} [editable=false]      - Whether to display an editable textarea
- * @param {boolean} [skipDuplicates=false] - Prevent duplicates in textarea inputs (see example below)
+ * @param {boolean} [skipDuplicates=false] - Prevent duplicates in textarea inputs[^FF_LSDV_4659][^FF_LSDV_4712] (see example below)
  * @param {boolean=} [transcription=false] - If false, always show editor
  * @param {number} [rows]                  - Number of rows in the textarea
  * @param {boolean} [required=false]       - Validate whether content in textarea is required
  * @param {string} [requiredMessage]       - Message to show if validation fails
  * @param {boolean=} [showSubmitButton]    - Whether to show or hide the submit button. By default it shows when there are more than one rows of text, such as in textarea mode.
  * @param {boolean} [perRegion]            - Use this tag to label regions instead of whole objects
+ * @param {boolean} [perItem]              - Use this tag to label items inside objects instead of whole objects[^FF_LSDV_4583]
  */
 const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
@@ -137,17 +151,6 @@ const Model = types.model({
 
   selectedValues() {
     return self.regions.map(r => r._value);
-  },
-
-  get area() {
-    if (self.perregion) {
-      return self.annotation.highlightedNode;
-    }
-    return null;
-  },
-
-  get result() {
-    return self.annotation.results.find(r => r.from_name === self && (!self.area || r.area === self.area));
   },
 
   hasResult(text) {
@@ -223,23 +226,11 @@ const Model = types.model({
       const r = TextAreaRegionModel.create({ pid, _value: text });
 
       self.regions.push(r);
-
       return r;
     },
 
     onChange() {
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          self.annotation.createResult({}, { text: self.selectedValues() }, self, self.toname);
-        }
-      }
+      self.updateResult();
     },
 
     validateValue(text) {
@@ -320,10 +311,12 @@ const Model = types.model({
 const TextAreaModel = types.compose(
   'TextAreaModel',
   ControlBase,
+  ClassificationBase,
   TagAttrs,
   ProcessAttrsMixin,
   RequiredMixin,
   PerRegionMixin,
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin]:[]),
   AnnotationMixin,
   ReadOnlyControlMixin,
   Model,
@@ -425,31 +418,59 @@ const HtxTextArea = observer(({ item }) => {
   );
 });
 
-const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, control, collapsed }, ref) => {
+const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, validate, control, collapsed }, ref) => {
   const rows = parseInt(control.rows);
   const isTextarea = rows > 1;
-  const inputRef = useRef();
+  const [stateValue, setStateValue] = useState(value ?? '');
+
+  if (isFF(FF_LSDV_4712)) {
+    useEffect(() => {
+      if (value !== stateValue) {
+        setStateValue(value);
+      }
+    }, [value]);
+  }
+
   const displayValue = useMemo(() => {
     if (collapsed) {
       return (value ?? '').split(/\n/)[0] ?? '';
     }
 
-    return value;
-  }, [value, collapsed]);
+    return isFF(FF_LSDV_4712) ? stateValue : value;
+  }, [value, collapsed, ...(isFF(FF_LSDV_4712) ? [stateValue] : [])]);
+
+  const changeHandler = isFF(FF_LSDV_4712)
+    ? useCallback(e => {
+      setStateValue(e.target.value);
+    }, [])
+    : e => {
+      if (!collapsed) onChange(idx, e.target.value);
+    };
+
+  const blurHandler = useCallback((e) => {
+    if (value === e.target.value || collapsed) return;
+
+    if (validate && !validate(e.target.value)) {
+      setStateValue(value);
+    } else {
+      onChange?.(idx, e.target.value);
+    }
+  },[idx, value, onChange, validate, collapsed]);
 
   const inputProps = {
-    ref: inputRef,
     className: 'ant-input ' + styles.input,
     value: displayValue,
     autoSize: isTextarea ? { minRows: 1 } : null,
-    onChange: e => {
-      if (!collapsed) onChange(idx, e.target.value);
-    },
+    onChange: changeHandler,
     readOnly: readOnly || collapsed,
     onFocus,
   };
 
-  if (isTextarea) {
+  if (isFF(FF_LSDV_4712)) {
+    inputProps.onBlur = blurHandler;
+  }
+
+  if (isFF(FF_LSDV_4712) || isTextarea) {
     inputProps.onKeyDown = e => {
       if ((e.key === 'Enter' && !e.shiftKey) || e.key === 'Escape') {
         e.preventDefault();
@@ -465,6 +486,7 @@ const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDe
       { (!collapsed && !readOnly) && (
         <Elem
           name="action"
+          aria-label="Delete Region"
           tag={Button}
           icon={<IconTrash />}
           size="small"
@@ -515,6 +537,7 @@ const HtxTextAreaResult = observer(({
         ref={idx === 0 ? firstResultInputRef : null}
         onFocus={onFocus}
         collapsed={collapsed}
+        validate={isFF(FF_LSDV_4712) ? item.from_name.validateValue : null}
       />
     );
   });
@@ -523,7 +546,7 @@ const HtxTextAreaResult = observer(({
 const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, outliner, color }) => {
   const rows = parseInt(item.rows);
   const isTextArea = rows > 1;
-  const isActive = item.area === area;
+  const isActive = item.perRegionArea === area;
   const shouldFocus = area.isCompleted && area.perRegionFocusTarget === item && area.perRegionFocusRequest;
   const value = isActive ? item._value : '';
   const result = area.results.find(r => r.from_name === item);

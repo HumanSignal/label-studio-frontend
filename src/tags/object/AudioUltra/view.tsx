@@ -20,46 +20,45 @@ const NORMALIZED_STEP = 0.1;
 const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
   const rootRef = useRef<HTMLElement | null>();
 
-  const { waveform, ...controls } = useWaveform(rootRef, 
-    {
-      src: item._value,
-      autoLoad: false,
-      waveColor: '#BEB9C5',
-      gridColor: '#BEB9C5',
-      gridWidth: 1,
-      backgroundColor: '#fafafa',
-      autoCenter: true,
-      zoomToCursor: true,
-      height: item.height && !isNaN(Number(item.height)) ? Number(item.height) : 96,
-      waveHeight: item.waveheight && !isNaN(Number(item.waveheight)) ? Number(item.waveheight) : 32,
-      splitChannels: item.splitchannels,
-      decoderType: item.decoder,
-      volume: item.defaultvolume ? Number(item.defaultvolume) : 1,
-      amp: item.defaultscale ? Number(item.defaultscale) : 1,
-      zoom: item.defaultzoom ? Number(item.defaultzoom) : 1,
-      showLabels: item.annotationStore.store.settings.showLabels,
-      rate: item.defaultspeed ? Number(item.defaultspeed) : 1,
-      muted: item.muted === 'true',
-      onLoad: item.onLoad,
-      onPlaying: item.onPlaying,
-      onSeek: item.onSeek,
-      onRateChange: item.onRateChange,
-      onError: item.onError,
-      regions: {
-        createable: !item.readonly,
-        updateable: !item.readonly,
-        deleteable: !item.readonly,
-      },
-      timeline: {
-        backgroundColor: '#ffffff',
-      },
-      experimental: {
-        backgroundCompute: true,
-        denoize: true,
-      },
-      autoPlayNewSegments: true,
+  const { waveform, ...controls } = useWaveform(rootRef, {
+    src: item._value,
+    autoLoad: false,
+    waveColor: '#BEB9C5',
+    gridColor: '#BEB9C5',
+    gridWidth: 1,
+    backgroundColor: '#fafafa',
+    autoCenter: true,
+    zoomToCursor: true,
+    height: item.height && !isNaN(Number(item.height)) ? Number(item.height) : 96,
+    waveHeight: item.waveheight && !isNaN(Number(item.waveheight)) ? Number(item.waveheight) : 32,
+    splitChannels: item.splitchannels,
+    decoderType: item.decoder,
+    playerType: item.player,
+    volume: item.defaultvolume ? Number(item.defaultvolume) : 1,
+    amp: item.defaultscale ? Number(item.defaultscale) : 1,
+    zoom: item.defaultzoom ? Number(item.defaultzoom) : 1,
+    showLabels: item.annotationStore.store.settings.showLabels,
+    rate: item.defaultspeed ? Number(item.defaultspeed) : 1,
+    muted: item.muted === 'true',
+    onLoad: item.onLoad,
+    onPlaying: item.onPlaying,
+    onSeek: item.onSeek,
+    onRateChange: item.onRateChange,
+    onError: item.onError,
+    regions: {
+      createable: !item.readonly,
+      updateable: !item.readonly,
+      deleteable: !item.readonly,
     },
-  );
+    timeline: {
+      backgroundColor: '#ffffff',
+    },
+    experimental: {
+      backgroundCompute: true,
+      denoize: true,
+    },
+    autoPlayNewSegments: true,
+  });
 
   useEffect(() => {
     const hotkeys = Hotkey('Audio', 'Audio Segmentation');
@@ -83,15 +82,14 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       regions.resetLabels();
     };
 
-    const createRegion = (region: Region|Segment) => {
+    const createRegion = (region: Region | Segment) => {
       item.addRegion(region);
     };
 
-    const selectRegion = (region: Region|Segment, event: MouseEvent) => {
+    const selectRegion = (region: Region | Segment, event: MouseEvent) => {
       const growSelection = event.metaKey || event.ctrlKey;
 
-      if (!growSelection || (!region.selected && !region.isRegion))
-        item.annotation.regionStore.unselectAll();
+      if (!growSelection || (!region.selected && !region.isRegion)) item.annotation.regionStore.unselectAll();
 
       // to select or unselect region
       const itemRegion = item.regs.find((obj: any) => obj.id === region.id);
@@ -128,7 +126,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
     hotkeys.addNamed('region:delete', () => {
       waveform.current?.regions.clearSegments(false);
     });
-    
+
     hotkeys.addNamed('segment:delete', () => {
       waveform.current?.regions.clearSegments(false);
     });
@@ -147,7 +145,7 @@ const AudioUltraView: FC<AudioUltraProps> = ({ item }) => {
       {item.errors?.map((error: any, i: any) => (
         <ErrorMessage key={`err-${i}`} error={error} />
       ))}
-      <div ref={(el) => (rootRef.current = el)}></div>
+      <div ref={el => (rootRef.current = el)}></div>
       <Controls
         position={controls.currentTime}
         playing={controls.playing}

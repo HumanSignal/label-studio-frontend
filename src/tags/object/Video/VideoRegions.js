@@ -46,7 +46,9 @@ const VideoRegionsPure = ({
   const [newRegion, setNewRegion] = useState();
   const [isDrawing, setDrawingMode] = useState(false);
 
-  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.isReadOnly());
+  const selected = regions.filter((reg) => {
+    return (reg.selected || reg.inSelection) && !reg.hidden && !reg.isReadOnly() && reg.isInLifespan(item.frame);
+  });
   const listenToEvents = !locked;
 
   // if region is not in lifespan, it's not rendered,
@@ -156,7 +158,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseMove = e => {
-    if (!isDrawing || item.annotation?.isReadOnly) return false;
+    if (!isDrawing || item.annotation?.isReadOnly()) return false;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
 
@@ -260,7 +262,7 @@ const RegionsLayer = observer(({
           workingArea={workinAreaCoordinates}
           draggable={!reg.isReadOnly() && !isDrawing && !locked}
           selected={reg.selected || reg.inSelection}
-          listening={!reg.locked}
+          listening={!reg.locked && !reg.hidden}
           stageRef={stageRef}
           onDragMove={onDragMove}
         />

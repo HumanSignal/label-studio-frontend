@@ -3,7 +3,8 @@ import { types } from 'mobx-state-tree';
 import Utils from '../utils';
 import throttle from 'lodash.throttle';
 import { MIN_SIZE } from '../tools/Base';
-import { FF_DEV_3666, FF_DEV_3793, FF_LSDV_4583, isFF } from '../utils/feature-flags';
+import { FF_DEV_3666, FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
 const DrawingTool = types
   .model('DrawingTool', {
@@ -12,7 +13,7 @@ const DrawingTool = types
     unselectRegionOnToolChange: true,
   })
   .volatile(() => {
-    return { 
+    return {
       currentArea: null,
     };
   })
@@ -56,8 +57,8 @@ const DrawingTool = types
       get MIN_SIZE() {
         if (isFF(FF_DEV_3793)) {
           return {
-            X: MIN_SIZE.X / self.obj.stageScale / self.obj.stageWidth * 100,
-            Y: MIN_SIZE.Y / self.obj.stageScale / self.obj.stageHeight * 100,
+            X: MIN_SIZE.X / self.obj.stageScale / self.obj.stageWidth * RELATIVE_STAGE_WIDTH,
+            Y: MIN_SIZE.Y / self.obj.stageScale / self.obj.stageHeight * RELATIVE_STAGE_HEIGHT,
           };
         }
 
@@ -111,8 +112,6 @@ const DrawingTool = types
         self.currentArea = self.obj.createDrawingRegion(opts, resultValue, control, false);
         self.currentArea.setDrawing(true);
 
-        if (isFF(FF_LSDV_4583)) self.currentArea.setItemIndex?.(self.obj.currentImage);
-
         self.applyActiveStates(self.currentArea);
         self.annotation.setIsDrawing(true);
         return self.currentArea;
@@ -137,8 +136,6 @@ const DrawingTool = types
         }, { coordstype: 'px', dynamic: self.dynamic });
 
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
-
-        if (isFF(FF_LSDV_4583)) newArea.setItemIndex?.(obj.currentImage);
 
         currentArea.setDrawing(false);
         self.applyActiveStates(newArea);
@@ -234,16 +231,30 @@ const TwoPointsDrawingTool = DrawingTool.named('TwoPointsDrawingTool')
         const shape = self.getCurrentArea();
 
         if (!shape) return;
-        const { stageWidth, stageHeight } = self.obj;
+        const isEllipse = shape.type.includes('ellipse');
+        const maxStageWidth = isFF(FF_DEV_3793) ? RELATIVE_STAGE_WIDTH : self.obj.stageWidth;
+        const maxStageHeight = isFF(FF_DEV_3793) ? RELATIVE_STAGE_HEIGHT : self.obj.stageHeight;
 
-        let { x1, y1, x2, y2 } = Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x, y });
+        let { x1, y1, x2, y2 } = isEllipse ? {
+          x1: shape.startX,
+          y1: shape.startY,
+          x2: x,
+          y2: y,
+        } : Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x, y });
 
         x1 = Math.max(0, x1);
         y1 = Math.max(0, y1);
-        x2 = Math.min(stageWidth, x2);
-        y2 = Math.min(stageHeight, y2);
+        x2 = Math.min(maxStageWidth, x2);
+        y2 = Math.min(maxStageHeight, y2);
 
-        shape.setPositionInternal(x1, y1, x2 - x1, y2 - y1, shape.rotation);
+        let [distX, distY] = [x2 - x1, y2 - y1].map(Math.abs);
+
+        if (isEllipse) {
+          distX = Math.min(distX, Math.min(x1, maxStageWidth - x1));
+          distY = Math.min(distY, Math.min(y1, maxStageHeight - y1));
+        }
+
+        shape.setPositionInternal(x1, y1, distX, distY, shape.rotation);
       },
 
       finishDrawing(x, y) {
@@ -347,6 +358,11 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
         return Super.canStartDrawing() && !self.annotation.regionStore.hasSelection;
       },
       nextPoint(x, y) {
+        const area = self.getCurrentArea();
+        const object = self.obj;
+
+        if (area && object && object.multiImage && area.item_index !== object.currentImage) return;
+
         self.getCurrentArea().addPoint(x, y);
         pointsCount++;
       },
@@ -419,7 +435,7 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
       },
 
       drawDefault() {
-        const { x,y } = startPoint;
+        const { x, y } = startPoint;
         let dX = self.defaultDimensions.length;
         let dY = self.defaultDimensions.length;
 
@@ -484,16 +500,17 @@ const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
         const shape = self.getCurrentArea();
 
         if (!shape) return;
-        const { stageWidth, stageHeight } = self.obj;
+        const maxStageWidth = isFF(FF_DEV_3793) ? RELATIVE_STAGE_WIDTH : self.obj.stageWidth;
+        const maxStageHeight = isFF(FF_DEV_3793) ? RELATIVE_STAGE_HEIGHT : self.obj.stageHeight;
 
         let { x1, y1, x2, y2 } = Utils.Image.reverseCoordinates({ x: shape.startX, y: shape.startY }, { x, y });
 
         x1 = Math.max(0, x1);
         y1 = Math.max(0, y1);
-        x2 = Math.min(stageWidth, x2);
-        y2 = Math.min(stageHeight, y2);
+        x2 = Math.min(maxStageWidth, x2);
+        y2 = Math.min(maxStageHeight, y2);
 
-        shape.setPosition(x1, y1, x2 - x1, y2 - y1, shape.rotation);
+        shape.setPositionInternal(x1, y1, x2 - x1, y2 - y1, shape.rotation);
       },
 
       finishDrawing(x, y) {

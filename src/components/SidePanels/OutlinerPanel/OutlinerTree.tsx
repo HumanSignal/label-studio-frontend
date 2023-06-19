@@ -9,7 +9,7 @@ import { Tooltip } from '../../../common/Tooltip/Tooltip';
 import Registry from '../../../core/Registry';
 import { PER_REGION_MODES } from '../../../mixins/PerRegionModes';
 import { Block, cn, Elem } from '../../../utils/bem';
-import { FF_DEV_2755, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2755, FF_DEV_3873, isFF } from '../../../utils/feature-flags';
 import { flatten, isDefined, isMacOS } from '../../../utils/utilities';
 import { NodeIcon } from '../../Node/Node';
 import { LockButton } from '../Components/LockButton';
@@ -38,9 +38,9 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
 }) => {
   const rootClass = cn('tree');
   const [hovered, setHovered] = useState<string | null>(null);
-  const onHover = (hovered: boolean, id: string) => setHovered(hovered ? id : null);
+  const onHover = useCallback((hovered: boolean, id: string) => setHovered(hovered ? id : null), [setHovered]);
 
-  const eventHandlers = useEventHandlers({ regions, onHover });
+  const eventHandlers = useEventHandlers({ onHover });
   const regionsTree = useDataTree({ regions, hovered, rootClass, selectedKeys });
 
   if( isFF(FF_DEV_2755) ) {
@@ -157,7 +157,7 @@ const useDataTree = ({
         '--selection-color': color.alpha(0.1).css(),
       },
       className: rootClass.elem('node').mod(mods).toClassName(),
-      title: (data: any) => <RootTitle {...data}/>,
+      title: (data: any) => <RootTitle {...data} />,
     };
   }, [hovered, selectedKeys]);
 
@@ -165,10 +165,8 @@ const useDataTree = ({
 };
 
 const useEventHandlers = ({
-  regions,
   onHover,
 }: {
-  regions: any,
   onHover: (hovered: boolean, id: string) => void,
 }) => {
   const onSelect = useCallback((_, evt) => {
@@ -198,12 +196,12 @@ const useEventHandlers = ({
   const onMouseEnter = useCallback(({ node }: any) => {
     onHover(true, node.key);
     node.item?.setHighlight(true);
-  }, []);
+  }, [onHover]);
 
   const onMouseLeave = useCallback(({ node }: any) => {
     onHover(false, node.key);
     node.item?.setHighlight(false);
-  }, []);
+  }, [onHover]);
 
 
   // find the height of the tree formed by dragReg for
@@ -213,6 +211,7 @@ const useEventHandlers = ({
   const treeHeight = useCallback((node: any): number => {
     if (!node) return 0;
 
+    const regions = node.item.annotation.regionStore;
     // TODO this can blow up if we have lots of stuff there
     const nodes: any[] = regions.filterByParentID(node.pid);
     const childrenHeight = nodes.map(c => treeHeight(c));
@@ -227,6 +226,7 @@ const useEventHandlers = ({
     const dropKey = node.props.eventKey;
     const dragKey = dragNode.props.eventKey;
     const dropPos = node.props.pos.split('-');
+    const regions = node.item.annotation.regionStore;
 
     dropPosition = dropPosition - parseInt(dropPos[dropPos.length - 1]);
     const treeDepth = dropPos.length;
@@ -402,45 +402,68 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   }, []);
 
   return (
-    <Elem name="controls" mod={{ withControls: hasControls }}>
-      <Elem name="control" mod={{ type: 'score' }}>
-        {isDefined(item?.score) && item.score.toFixed(2)}
-      </Elem>
-      <Elem name="control" mod={{ type: 'dirty' }}>
-        {/* dirtyness is not implemented yet */}
-      </Elem>
-      <Elem name="control" mod={{ type: 'predict' }}>
-        {item?.origin === 'prediction' && (
-          <LsSparks style={{ width: 18, height: 18 }}/>
-        )}
-      </Elem>
-      <Elem name="control" mod={{ type: 'lock' }}>
-        <LockButton
-          item={item}
-          annotation={item?.annotation}
-          hovered={hovered}
-          locked={item?.locked}
-          onClick={onToggleLocked}
-        />
-      </Elem>
-      <Elem name="control" mod={{ type: 'visibility' }}>
-        {(hovered || hidden) && (
-          <RegionControlButton onClick={onToggleHidden}>
-            {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
-          </RegionControlButton>
-        )}
-      </Elem>
-      {hasControls && (
-        <Elem name="control" mod={{ type: 'visibility' }}>
-          <RegionControlButton onClick={onToggleCollapsed}>
-            <IconChevronLeft
-              style={{
-                transform: `rotate(${collapsed ? -90 : 90}deg)`,
-              }}
-            />
-          </RegionControlButton>
-        </Elem>
+    <Elem name="controls" mod={{ withControls: hasControls, newUI: isFF(FF_DEV_3873) }}>
+      {isFF(FF_DEV_3873) ? (
+        <Tooltip title={'Confidence Score'}>
+          <Elem name="control-wrapper">
+            <Elem name="control" mod={{ type: 'predict' }}>
+              {item?.origin === 'prediction' && (
+                <LsSparks style={{ width: 18, height: 18 }}/>
+              )}
+            </Elem>
+            <Elem name="control" mod={{ type: 'score' }}>
+              {isDefined(item?.score) && item.score.toFixed(2)}
+            </Elem>
+          </Elem>
+        </Tooltip>
+      ) : (
+        <>
+          <Elem name="control" mod={{ type: 'score' }}>
+            {isDefined(item?.score) && item.score.toFixed(2)}
+          </Elem>
+          <Elem name="control" mod={{ type: 'dirty' }}>
+            {/* dirtyness is not implemented yet */}
+          </Elem>
+          <Elem name="control" mod={{ type: 'predict' }}>
+            {item?.origin === 'prediction' && (
+              <LsSparks style={{ width: 18, height: 18 }}/>
+            )}
+          </Elem>
+        </>
       )}
+      <Elem name={'wrapper'}>
+        <Elem name="control" mod={{ type: 'lock' }}>
+          <LockButton
+            item={item}
+            annotation={item?.annotation}
+            hovered={hovered}
+            locked={item?.locked}
+            onClick={onToggleLocked}
+          />
+        </Elem>
+        <Elem name="control" mod={{ type: 'visibility' }}>
+          {isFF(FF_DEV_3873) ? (
+            <RegionControlButton onClick={onToggleHidden} style={hidden ? undefined : ({ display: 'none' })}>
+              {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
+            </RegionControlButton>
+          ) : (hovered || hidden) && (
+            <RegionControlButton onClick={onToggleHidden}>
+              {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
+            </RegionControlButton>
+          )}
+        </Elem>
+        {hasControls && (
+          <Elem name="control" mod={{ type: 'visibility' }}>
+            <RegionControlButton onClick={onToggleCollapsed}>
+              <IconChevronLeft
+                style={{
+                  transform: `rotate(${collapsed ? -90 : 90}deg)`,
+                }}
+              />
+            </RegionControlButton>
+          </Elem>
+        )}
+      </Elem>
     </Elem>
   );
 });

@@ -13,13 +13,17 @@ import Tree from '../../core/Tree';
 import Types from '../../core/Types';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import { TagParentMixin } from '../../mixins/TagParentMixin';
-import { FF_DEV_2007, FF_DEV_2244, FF_DEV_3391, isFF } from '../../utils/feature-flags';
+import { FF_DEV_2007, FF_DEV_2244, FF_DEV_3391, FF_PROD_309, isFF } from '../../utils/feature-flags';
 import { Block, Elem } from '../../utils/bem';
 import './Choice/Choice.styl';
 import { LsChevron } from '../../assets/icons';
+import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
 
 /**
  * The `Choice` tag represents a single choice for annotations. Use with the `Choices` tag or `Taxonomy` tag to provide specific choice options.
+ *
+ * [^FF_DEV_2007]: `ff_dev_2007_rework_choices_280322_short` should be enabled to use `html` attribute
+ * [^FF_PROD_309]: The `hint` attribute works only when `fflag_feat_front_prod_309_choice_hint_080523_short` is enabled
  *
  * @example
  * <!--Basic text classification labeling configuration-->
@@ -40,6 +44,8 @@ import { LsChevron } from '../../assets/icons';
  * @param {string} [alias]     - Alias for the choice. If used, the alias replaces the choice value in the annotation results. Alias does not display in the interface.
  * @param {style} [style]      - CSS style of the checkbox element
  * @param {string} [hotkey]    - Hotkey for the selection
+ * @param {string} [html]      - can be used to show enriched content[^FF_DEV_2007], it has higher priority than `value`, however `value` will be used in the exported result (should be properly escaped)
+ * @param {string} [hint]      - Hint for choice on hover[^FF_PROD_309]
  */
 const TagAttrs = types.model({
   ...(isFF(FF_DEV_3391) ? { id: types.identifier } : {}),
@@ -49,6 +55,7 @@ const TagAttrs = types.model({
   hotkey: types.maybeNull(types.string),
   style: types.maybeNull(types.string),
   ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {}),
+  ...(isFF(FF_PROD_309) ? { hint: types.maybeNull(types.string) } : {}),
 });
 
 const Model = types
@@ -162,6 +169,10 @@ const Model = types
 
 const ChoiceModel = types.compose('ChoiceModel', TagParentMixin, TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
 
+function triggerElementGetter(el) {
+  return el?.input?.parentNode?.parentNode;
+}
+
 class HtxChoiceView extends Component {
   render() {
     const { item, store } = this.props;
@@ -194,19 +205,23 @@ class HtxChoiceView extends Component {
 
       return (
         <Form.Item style={cStyle}>
-          <Checkbox name={item._value} {...props} disabled={item.isReadOnly()}>
-            {item._value}
-            {showHotkey && <Hint>[{item.hotkey}]</Hint>}
-          </Checkbox>
+          <HintTooltip title={item.hint} triggerElementGetter={triggerElementGetter}>
+            <Checkbox name={item._value} {...props} disabled={item.isReadOnly()}>
+              {item._value}
+              {showHotkey && <Hint>[{item.hotkey}]</Hint>}
+            </Checkbox>
+          </HintTooltip>
         </Form.Item>
       );
     } else {
       return (
         <div style={style}>
-          <Radio value={item._value} style={{ display: 'inline-block', marginBottom: '0.5em' }} {...props}>
-            {item._value}
-            {showHotkey && <Hint>[{item.hotkey}]</Hint>}
-          </Radio>
+          <HintTooltip title={item.hint} triggerElementGetter={triggerElementGetter}>
+            <Radio value={item._value} style={{ display: 'inline-block', marginBottom: '0.5em' }} {...props}>
+              {item._value}
+              {showHotkey && <Hint>[{item.hotkey}]</Hint>}
+            </Radio>
+          </HintTooltip>
         </div>
       );
     }
@@ -250,8 +265,10 @@ const HtxNewChoiceView = ({ item, store }) => {
           disabled={item.isReadOnly()}
           onChange={changeHandler}
         >
-          {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> : item._value }
-          {showHotkey && (<Hint>[{item.hotkey}]</Hint>)}
+          <HintTooltip title={item.hint} wrapper="span">
+            {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> : item._value }
+            {showHotkey && (<Hint>[{item.hotkey}]</Hint>)}
+          </HintTooltip>
         </Elem>
         {!item.isLeaf ? (
           <Elem name="toggle" mod={{ collapsed }} component={Button} type="text" onClick={toogleCollapsed}>

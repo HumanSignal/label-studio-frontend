@@ -4,10 +4,9 @@ import { guidGenerator } from '../../../core/Helpers.ts';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
-import { SyncMixin } from '../../../mixins/SyncMixin';
+import { SyncableMixin } from '../../../mixins/Syncable';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_DEV_2461, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
@@ -27,7 +26,6 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  *   <Rating name="rate-1" toName="audio-1" />
  *   <Audio name="audio-1" value="$audio" />
  * </View>
- * @name Audio
  * @meta_title Audio Tag for Audio Labeling
  * @meta_description Customize Label Studio with the Audio tag for advanced audio annotation tasks for machine learning and data science projects.
  * @param {string} name - Name of the element
@@ -69,7 +67,7 @@ const TagAttrs = types.model({
 export const AudioModel = types.compose(
   'AudioModel',
   TagAttrs,
-  SyncMixin,
+  SyncableMixin,
   ProcessAttrsMixin,
   ObjectBase,
   AnnotationMixin,
@@ -95,10 +93,6 @@ export const AudioModel = types.compose(
         return getRoot(self);
       },
 
-      get regs() {
-        return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
-      },
-
       states() {
         return self.annotation.toNames.get(self.name);
       },
@@ -109,24 +103,40 @@ export const AudioModel = types.compose(
         return states && states.filter(s => getType(s).name === 'LabelsModel' && s.isSelected);
       },
     }))
+    ////// Sync actions
     .actions(self => ({
-      needsUpdate() {
-        self.handleNewRegions();
-      },
-
-      onReady() {
-        self.setReady(true);
-      },
-
-      handleSyncPlay() {
+      ////// Outgoing
+      triggerSync(event, data) {
         if (!self._ws) return;
+
+        self.syncSend({
+          playing: self._ws.isPlaying(),
+          time: self._ws.getCurrentTime(),
+          speed: self._ws.rate ?? 1,
+          ...data,
+        }, event);
+      },
+
+      triggerSyncPlay() {
+        self.triggerSync('play');
+      },
+
+      triggerSyncPause() {
+        self.triggerSync('pause');
+      },
+
+      ////// Incoming
+      handleSyncPlay(data) {
+        if (!self._ws) return;
+        self.handleSyncSeek(data);
         if (self._ws.isPlaying()) return;
 
         self._ws?.play();
       },
 
-      handleSyncPause() {
+      handleSyncPause(data) {
         if (!self._ws) return;
+        self.handleSyncSeek(data);
         if (!self._ws.isPlaying()) return;
 
         self._ws?.pause();
@@ -134,7 +144,7 @@ export const AudioModel = types.compose(
 
       handleSyncSpeed() {},
 
-      handleSyncSeek(time) {
+      handleSyncSeek({ time }) {
         try {
           if (self._ws && time !== self._ws.getCurrentTime()) {
             self._ws.setCurrentTime(time);
@@ -142,6 +152,22 @@ export const AudioModel = types.compose(
         } catch (err) {
           console.log(err);
         }
+      },
+
+      registerSyncHandlers() {
+        self.syncHandlers.set('play', self.handleSyncPlay);
+        self.syncHandlers.set('pause', self.handleSyncPause);
+        self.syncHandlers.set('seek', self.handleSyncSeek);
+        self.syncHandlers.set('speed', self.handleSyncSpeed);
+      },
+    }))
+    .actions(self => ({
+      needsUpdate() {
+        self.handleNewRegions();
+      },
+
+      onReady() {
+        self.setReady(true);
       },
 
       handleNewRegions() {
@@ -235,23 +261,21 @@ export const AudioModel = types.compose(
       },
 
       /**
-     * Play and stop
-     */
+       * Play and stop
+       */
       handlePlay() {
         if (self._ws) {
           self.playing = !self.playing;
-          self._ws.isPlaying() ? self.triggerSyncPlay() : self.triggerSyncPause();
+          self._ws.isPlaying() ? self.triggerSync('play') : self.triggerSync('pause');
         }
       },
 
       handleSeek() {
-        if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === 'paragraphs')) return;
-
-        self.triggerSyncSeek(self._ws.getCurrentTime());
+        self.triggerSync('seek');
       },
 
       handleSpeed(speed) {
-        self.triggerSyncSpeed(speed);
+        self.triggerSync('speed', { speed });
       },
 
       createWsRegion(region) {

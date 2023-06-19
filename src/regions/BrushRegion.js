@@ -64,8 +64,8 @@ const Points = types
   }))
   .actions(self => {
     return {
-      updateImageSize(wp, hp,sw,sh) {
-        self.points = self.relativePoints.map((v,idx) => {
+      updateImageSize(wp, hp, sw, sh) {
+        self.points = self.relativePoints.map((v, idx) => {
           const isX = !(idx % 2);
           const stageSize = isX ? sw : sh;
 
@@ -346,7 +346,7 @@ const Model = types
         annotation.autosave && setTimeout(() => annotation.autosave());
       },
 
-      convertPointsToMask() {},
+      convertPointsToMask() { },
 
       setScale(x, y) {
         self.scaleX = x;
@@ -497,14 +497,14 @@ const HtxBrushView = ({ item }) => {
     //  that dynamically produce image masks.
 
     if (!item.rle && !item.maskDataURL) return;
-    if (!item.parent || item.parent.naturalWidth <=1 || item.parent.naturalHeight <= 1) return;
+    if (!item.parent || item.parent.naturalWidth <= 1 || item.parent.naturalHeight <= 1) return;
 
     let img;
 
     if (item.maskDataURL && isFF(FF_DEV_4081)) {
       img = await Canvas.maskDataURL2Image(item.maskDataURL, { color: item.strokeColor });
     } else if (item.rle) {
-      img = Canvas.RLE2Region(item.rle, item.parent, { color: item.strokeColor });
+      img = Canvas.RLE2Region(item, { color: item.strokeColor });
     }
 
     if (img) {
@@ -689,8 +689,8 @@ const HtxBrushView = ({ item }) => {
           <Image
             name="highlight"
             image={highlightedImageRef.current}
-            sceneFunc={highlightedRef.current.highlighted ? null : () => {}}
-            hitFunc={() => {}}
+            sceneFunc={highlightedRef.current.highlighted ? null : () => { }}
+            hitFunc={() => { }}
             {...highlightedRef.current.highlight}
             scaleX={1 / item.parent.stageScale}
             scaleY={1 / item.parent.stageScale}
@@ -711,7 +711,7 @@ const HtxBrushView = ({ item }) => {
         }}
       >
         <Group>
-          <LabelOnMask item={item} color={item.strokeColor}/>
+          <LabelOnMask item={item} color={item.strokeColor} />
         </Group>
       </Layer>
     </RegionWrapper>

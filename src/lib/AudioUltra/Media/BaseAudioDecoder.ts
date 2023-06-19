@@ -1,7 +1,6 @@
-
 import { Events } from '../Common/Events';
 import { info } from '../Common/Utils';
- 
+
 interface AudioDecoderEvents {
   progress: (chunk: number, total: number) => void;
 }
@@ -20,6 +19,7 @@ export abstract class BaseAudioDecoder extends Events<AudioDecoderEvents> {
 
   protected decodingResolve?: () => void;
   decodingPromise: Promise<void> | undefined;
+  buffer?: AudioBuffer | void;
 
   /**
    * Timeout for removal of the decoder from the cache.
@@ -45,14 +45,16 @@ export abstract class BaseAudioDecoder extends Events<AudioDecoderEvents> {
 
   get dataLength() {
     if (this.chunks && !this._dataLength) {
-      this._dataLength = (this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.length, 0), 0) ?? 0) / this._channelCount;
+      this._dataLength =
+        (this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.length, 0), 0) ?? 0) / this._channelCount;
     }
     return this._dataLength;
   }
 
   get dataSize() {
     if (this.chunks && !this._dataSize) {
-      this._dataSize = (this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.byteLength, 0), 0) ?? 0) / this._channelCount;
+      this._dataSize =
+        (this.chunks?.reduce((a, b) => a + b.reduce((_a, _b) => _a + _b.byteLength, 0), 0) ?? 0) / this._channelCount;
     }
     return this._dataSize;
   }
@@ -110,6 +112,6 @@ export abstract class BaseAudioDecoder extends Events<AudioDecoderEvents> {
     info('decode:cleanup', this.src);
   }
 
-  abstract init(arraybuffer: ArrayBuffer): Promise<void> 
-  abstract decode(options?: { multiChannel?: boolean }): Promise<void>;
+  abstract init(arraybuffer: ArrayBuffer): Promise<void>;
+  abstract decode(options?: { multiChannel?: boolean }): Promise<void | AudioBuffer>;
 }

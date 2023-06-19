@@ -48,22 +48,18 @@ module.exports = function(config) {
       recorder.add('set feature flags', async () => {
         try {
           helper.page.once('requestfinished',
-            request => {
-              const url = request.url();
-
-              if (url.startsWith(options.url + step.args[0])) {
-                helper.page.evaluate((config) => {
-                  if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
-                  if (!window.APP_SETTINGS.feature_flags) window.APP_SETTINGS.feature_flags = {};
-                  window.APP_SETTINGS.feature_flags = {
-                    ...window.APP_SETTINGS.feature_flags,
-                    ...config.feature_flags,
-                  };
-                  if (typeof config.feature_flags_default_value === 'boolean') {
-                    window.APP_SETTINGS.feature_flags_default_value = config.feature_flags_default_value;
-                  }
-                }, { feature_flags: ffs, feature_flags_default_value: defaultValue });
-              }
+            () => {
+              helper.page.evaluate((config) => {
+                if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
+                if (!window.APP_SETTINGS.feature_flags) window.APP_SETTINGS.feature_flags = {};
+                window.APP_SETTINGS.feature_flags = {
+                  ...window.APP_SETTINGS.feature_flags,
+                  ...config.feature_flags,
+                };
+                if (typeof config.feature_flags_default_value === 'boolean') {
+                  window.APP_SETTINGS.feature_flags_default_value = config.feature_flags_default_value;
+                }
+              }, { feature_flags: ffs, feature_flags_default_value: defaultValue });
             },
           );
         } catch (err) {

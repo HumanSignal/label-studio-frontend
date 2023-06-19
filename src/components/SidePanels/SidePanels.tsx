@@ -13,6 +13,7 @@ import { PanelProps } from './PanelBase';
 import './SidePanels.styl';
 import { SidePanelsContext } from './SidePanelsContext';
 import { useRegionsCopyPaste } from '../../hooks/useRegionsCopyPaste';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 const maxWindowWidth = 980;
 
@@ -154,7 +155,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [updatePanel]);
 
   const spaceFree = useCallback((alignment: 'left' | 'right') => {
-    return Object.values(panelData).find(p => p.alignment === alignment && !p.detached) === undefined;
+    return isFF(FF_DEV_3873) || Object.values(panelData).find(p => p.alignment === alignment && !p.detached) === undefined;
   }, [panelData]);
 
   const checkSnap = useCallback((left: number, parentWidth: number, panelWidth: number) => {
@@ -236,34 +237,65 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     setResizing(() => false);
   }, []);
 
+  const findPanelsOnSameSide = useCallback((panelAlignment : string) => {
+    return Object.keys(panelData)
+      .filter((panelName) => panelData[panelName as PanelType]?.alignment === panelAlignment);
+  }, [panelData]);
+
   const onResize = useCallback((name: PanelType, w: number, h: number, t: number, l: number) => {
     const { left, top } = normalizeOffsets(name, t, l);
     const maxHeight = viewportSize.current.height - top;
 
     requestAnimationFrame(() => {
-      updatePanel(name, {
-        top,
-        left,
-        relativeTop: top / viewportSize.current.height * 100,
-        relativeLeft: left / viewportSize.current.width * 100,
-        storedLeft: undefined,
-        storedTop: undefined,
-        maxHeight,
-        width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
-        height: clamp(h, DEFAULT_PANEL_WIDTH, maxHeight),
-      });
+      if (isFF(FF_DEV_3873)) {
+        const panelsOnSameAlignment = findPanelsOnSameSide(panelData[name]?.alignment);
+  
+        panelsOnSameAlignment.forEach((panelName) => {
+          updatePanel(panelName as PanelType, {
+            top,
+            left,
+            relativeTop: top / viewportSize.current.height * 100,
+            relativeLeft: left / viewportSize.current.width * 100,
+            storedLeft: undefined,
+            storedTop: undefined,
+            maxHeight,
+            width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
+            height: clamp(h, DEFAULT_PANEL_HEIGHT, maxHeight),
+          });
+        });
+      } else {
+        updatePanel(name, {
+          top,
+          left,
+          relativeTop: top / viewportSize.current.height * 100,
+          relativeLeft: left / viewportSize.current.width * 100,
+          storedLeft: undefined,
+          storedTop: undefined,
+          maxHeight,
+          width: clamp(w, DEFAULT_PANEL_WIDTH, panelMaxWidth),
+          height: clamp(h, DEFAULT_PANEL_HEIGHT, maxHeight),
+        });
+      }
     });
-  }, [updatePanel, panelMaxWidth]);
+  }, [updatePanel, panelMaxWidth, panelData]);
 
   const onSnap = useCallback((name: PanelType) => {
     setPositioning(false);
 
     if (!localSnap.current) return;
-
-    updatePanel(name, {
+    const bboxData: Partial<PanelBBox> = {
       alignment: localSnap.current,
       detached: false,
-    });
+    };
+
+    if (isFF(FF_DEV_3873)) {
+      const firstPanelOnNewSideName = findPanelsOnSameSide(localSnap.current).filter(panelName => panelName !== name)?.[0];
+
+      if(firstPanelOnNewSideName) {
+        bboxData.width = clamp(panelData[firstPanelOnNewSideName as PanelType]?.width, DEFAULT_PANEL_WIDTH, panelMaxWidth);
+      }
+    }
+    updatePanel(name, bboxData);
     setSnap(undefined);
   }, [updatePanel]);
 
@@ -290,6 +322,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
   }, [eventHandlers, rootRef, regions, regions.selectio, currentEntity]);
 
   const padding = useMemo(() => {
+    if (panelsHidden && isFF(FF_DEV_3873)) return {};
+
     const result = {
       paddingLeft: 0,
       paddingRight: 0,
@@ -300,7 +334,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     }
 
     return Object.values(panelData).reduce<CSSProperties>((res, data) => {
-      const visible = !panelsHidden && !data.detached && data.visible;
+      const visible = isFF(FF_DEV_3873) || (!panelsHidden && !data.detached && data.visible);
       const padding = visible ? data.width : PANEL_HEADER_HEIGHT;
       const paddingProperty = data.alignment === 'left' ? 'paddingLeft' : 'paddingRight';
 
@@ -371,6 +405,9 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     const observer = new ResizeObserver(() => {
       const { clientWidth, clientHeight } = root ?? {};
 
+      // we don't need to check or resize anything in collapsed state
+      if (clientWidth <= maxWindowWidth) return;
+
       // Remember current width and height of the viewport
       viewportSize.current.width = clientWidth ?? 0;
       viewportSize.current.height = clientHeight ?? 0;
@@ -411,7 +448,7 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
         style={{
           ...padding,
         }}
-        mod={{ collapsed: sidepanelsCollapsed }}
+        mod={{ collapsed: sidepanelsCollapsed, newLabelingUI: isFF(FF_DEV_3873) }}
       >
         {initialized && (
           <>

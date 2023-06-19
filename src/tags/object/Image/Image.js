@@ -14,13 +14,15 @@ import { RectRegionModel } from '../../../regions/RectRegion';
 import * as Tools from '../../../tools';
 import ToolsManager from '../../../tools/Manager';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
 import { guidGenerator } from '../../../utils/unique';
 import { clamp, isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import { DrawingRegion } from './DrawingRegion';
 import { ImageEntityMixin } from './ImageEntityMixin';
 import { ImageSelection } from './ImageSelection';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../../../components/ImageView/Image';
+import MultiItemObjectBase from '../MultiItemObjectBase';
 
 const IMAGE_PRELOAD_COUNT = 3;
 
@@ -30,34 +32,29 @@ const IMAGE_PRELOAD_COUNT = 3;
  * Use with the following data types: images.
  *
  * When you annotate image regions with this tag, the annotations are saved as percentages of the original size of the image, from 0-100.
+ *
  * @example
  * <!--Labeling configuration to display an image on the labeling interface-->
  * <View>
  *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
  *   <Image name="image" value="$url" rotateControl="true" zoomControl="true"></Image>
  * </View>
- *  * @example
+ *
+ * @example
  * <!--Labeling configuration to perform multi-image segmentation-->
  *
- * Config:
- * ```xml
  * <View>
  *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
  *   <Image name="image" valueList="$images" rotateControl="true" zoomControl="true"></Image>
  * </View>
- * ```
- *
- * Data:
- * ```json
- * {
+ * <!-- {
  *   "data": {
  *     "images": [
  *       "https://images.unsplash.com/photo-1556740734-7f3a7d7f0f9c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
  *       "https://images.unsplash.com/photo-1556740734-7f3a7d7f0f9c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
  *     ]
  *   }
- * }
- * ```
+ * } -->
  * @name Image
  * @meta_title Image Tags for Images
  * @meta_description Customize Label Studio with the Image tag to annotate images for computer vision machine learning and data science projects.
@@ -71,17 +68,17 @@ const IMAGE_PRELOAD_COUNT = 3;
  * @param {float=} [zoomBy=1.1]               - Scale factor
  * @param {boolean=} [grid=false]             - Whether to show a grid
  * @param {number=} [gridSize=30]             - Specify size of the grid
- * @param {string=} [gridColor="#EEEEF4"]     - Color of the grid in hex, opacity is 0.15
+ * @param {string=} [gridColor=#EEEEF4]       - Color of the grid in hex, opacity is 0.15
  * @param {boolean} [zoomControl=false]       - Show zoom controls in toolbar
  * @param {boolean} [brightnessControl=false] - Show brightness control in toolbar
  * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
  * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
  * @param {boolean} [crosshair=false]         - Show crosshair cursor
- * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
- * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
- * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
- * @param {string} [valuelist]                  - References a variable that holds a list of image URLs
- * @param {string} [crossOrigin="none"]         - Configures CORS cross domain behavior for this image, either "none", "anonymous", or "use-credentials", similar to [DOM `img` crossOrigin property](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/crossOrigin).
+ * @param {string} [horizontalAlignment=left] - Where to align image horizontally. Can be one of "left", "center" or "right"
+ * @param {string} [verticalAlignment=top]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
+ * @param {string} [defaultZoom=fit]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
+ * @param {string} [valuelist]                - References a variable that holds a list of image URLs
+ * @param {string} [crossOrigin=none]         - Configures CORS cross domain behavior for this image, either "none", "anonymous", or "use-credentials", similar to [DOM `img` crossOrigin property](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/crossOrigin).
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
@@ -174,7 +171,12 @@ const Model = types.model({
   },
 
   get multiImage() {
-    return isFF(FF_LSDV_4583) && isDefined(self.valuelist);
+    return !!self.isMultiItem;
+  },
+
+  // an alias of currentImage to make an interface reusable
+  get currentItemIndex() {
+    return self.currentImage;
   },
 
   get parsedValue() {
@@ -208,16 +210,6 @@ const Model = types.model({
     const states = self.states();
 
     return states && states.length > 0;
-  },
-
-  get regs() {
-    const regions = self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
-
-    if (isFF(FF_LSDV_4583) && self.valuelist) {
-      return regions.filter(r => (r.item_index ?? 0) === self.currentImage);
-    }
-
-    return regions;
   },
 
   get selectedRegions() {
@@ -286,6 +278,8 @@ const Model = types.model({
 
   get imageCrossOrigin() {
     const value = self.crossorigin.toLowerCase();
+
+    if (isFF(FF_LSDV_4711) && (!value || value === 'none')) return 'anonymous';
 
     if (!isFF(FF_DEV_4081)) {
       return null;
@@ -515,6 +509,14 @@ const Model = types.model({
 
       createImageEntities();
     }
+  
+    function afterResultCreated(region) {
+      if (!region) return;
+      if (region.classification) return;
+      if (!self.multiImage) return;
+
+      region.setItemIndex?.(self.currentImage);
+    }
 
     function getToolsManager() {
       return manager;
@@ -523,6 +525,7 @@ const Model = types.model({
     return {
       afterAttach,
       getToolsManager,
+      afterResultCreated,
     };
   }).extend((self) => {
     let skipInteractions = false;
@@ -628,9 +631,15 @@ const Model = types.model({
       self.gridsize = String(value);
     },
 
+    // an alias of setCurrentImage for making an interface reusable
+    setCurrentItem(index = 0) {
+      self.setCurrentImage(index);
+    },
+
     setCurrentImage(index = 0) {
       index = index ?? 0;
       if (index === self.currentImage) return;
+
       self.currentImage = index;
       self.currentImageEntity = self.findImageEntity(index);
       if (isFF(FF_LSDV_4583_6)) self.preloadImages();
@@ -941,7 +950,7 @@ const Model = types.model({
       self.drawingRegion?.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
 
       setTimeout(self.annotation.history.unfreeze, 0);
-
+      
       //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
       if (_historyLength <= 1) {
         // Don't force unselection of regions during the updateObjects callback from history reinit
@@ -1074,19 +1083,19 @@ const CoordsCalculations = types.model()
 
     // @todo scale?
     canvasToInternalX(n) {
-      return n / self.stageWidth * 100;
+      return n / self.stageWidth * RELATIVE_STAGE_WIDTH;
     },
 
     canvasToInternalY(n) {
-      return n / self.stageHeight * 100;
+      return n / self.stageHeight * RELATIVE_STAGE_HEIGHT;
     },
 
     internalToCanvasX(n) {
-      return n / 100 * self.stageWidth;
+      return n / RELATIVE_STAGE_WIDTH * self.stageWidth;
     },
 
     internalToCanvasY(n) {
-      return n / 100 * self.stageHeight;
+      return n / RELATIVE_STAGE_HEIGHT * self.stageHeight;
     },
   }));
 
@@ -1111,6 +1120,7 @@ const ImageModel = types.compose(
   'ImageModel',
   TagAttrs,
   ObjectBase,
+  ...(isFF(FF_LSDV_4583)?[MultiItemObjectBase]:[]),
   AnnotationMixin,
   IsReadyWithDepsMixin,
   ImageEntityMixin,
