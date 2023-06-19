@@ -235,8 +235,10 @@ class RichTextPieceView extends Component {
    * @param {HTMLElement} element
    */
   _determineRegion(element) {
-    if (matchesSelector(element, isFF(FF_LSDV_4620_3) ? this._regionVisibleSpanSelector : this._regionSpanSelector)) {
-      const span = element.tagName === 'SPAN' && (!isFF(FF_LSDV_4620_3) || element.matches(this._regionVisibleSpanSelector)) ? element : element.closest(isFF(FF_LSDV_4620_3) ? this._regionVisibleSpanSelector : this._regionSpanSelector);
+    const spanSelector = isFF(FF_LSDV_4620_3) ? this._regionVisibleSpanSelector : this._regionSpanSelector;
+    
+    if (matchesSelector(element, spanSelector)) {
+      const span = element.tagName === 'SPAN' && (!isFF(FF_LSDV_4620_3) || element.matches(spanSelector)) ? element : element.closest(spanSelector);
       const { item } = this.props;
 
       return item.regs.find(region => region.find(span));
