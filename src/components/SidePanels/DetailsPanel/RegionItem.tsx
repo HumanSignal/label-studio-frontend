@@ -93,7 +93,7 @@ const RegionAction: FC<any> = observer(({
       icon={<IconLink/>}
       primary={annotation.relationMode}
       onClick={(_e: any, hotkey?: any) => {
-        // If this is triggered by the hotey, allow the global hotkey to handle it
+        // If this is triggered by a hotkey, defer to the global bound handler for relations to avoid contention.
         if (hotkey) return;
         if (annotation.relationMode) {
           annotation.stopRelationMode();
