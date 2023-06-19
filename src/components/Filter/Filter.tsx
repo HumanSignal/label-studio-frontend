@@ -65,6 +65,10 @@ export const Filter: FC<FilterInterface> = ({
 
       newList.splice(index, 1);
 
+      if (newList[0]) {
+        newList[0].logic = 'and';
+      }
+
       onChange(FilterItems(filterData, newList));
 
       return newList;

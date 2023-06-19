@@ -38,6 +38,8 @@ export const FilterItems = (items: any[], filterList: FilterListInterface[]) => 
   const _filteredList = [[...items]];
 
   for(let i = 0; i < filterList.length; i++) {
+    if (!filterList[i].value && filterList[i].operation !== 'empty') continue;
+
     if (filterList[i].logic === 'and') { // 0 is equal to AND, 1 is equal to OR
       _filteredList[_filteredList.length - 1] = FilterItemsByOperation(_filteredList[_filteredList.length - 1], filterList[i]);
     } else {

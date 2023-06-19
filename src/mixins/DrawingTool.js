@@ -301,6 +301,8 @@ const TwoPointsDrawingTool = DrawingTool.named('TwoPointsDrawingTool')
 
       clickEv(_, [x, y]) {
         if (!self.canStartDrawing()) return;
+        // @todo: here is a potential problem with endPoint
+        // it may be incorrect due to it may be not set at this moment
         if (startPoint && endPoint && !self.comparePointsWithThreshold(startPoint, endPoint)) return;
         if (currentMode === DEFAULT_MODE) {
           modeAfterMouseMove = TWO_CLICKS_MODE;
