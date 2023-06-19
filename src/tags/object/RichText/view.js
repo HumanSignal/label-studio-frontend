@@ -438,7 +438,7 @@ class RichTextPieceView extends Component {
             srcDoc={val}
             onLoad={this.onIFrameLoad}
           />
-          { isFF(FF_LSDV_4620_3) ? null : (
+          {isFF(FF_LSDV_4620_3) ? null : (
             <><Elem
               key="orig"
               name="orig-iframe"
