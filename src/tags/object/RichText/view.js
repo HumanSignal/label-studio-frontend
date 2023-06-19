@@ -394,7 +394,7 @@ class RichTextPieceView extends Component {
             dangerouslySetInnerHTML={{ __html: val }}
             {...eventHandlers}
           />
-          { isFF(FF_LSDV_4620_3) ? null : (
+          {isFF(FF_LSDV_4620_3) ? null : (
             <>
               <Elem
                 key="orig"
