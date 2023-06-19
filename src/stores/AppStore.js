@@ -347,15 +347,6 @@ export default types
         }
       });
 
-      // create relation
-      hotkeys.overwriteNamed('region:relation', () => {
-        const c = self.annotationStore.selected;
-
-        if (c && c.highlightedNode && !c.relationMode) {
-          c.startRelationMode(c.highlightedNode);
-        }
-      });
-
       // Focus fist focusable perregion when region is selected
       hotkeys.addNamed('region:focus', (e) => {
         e.preventDefault();
