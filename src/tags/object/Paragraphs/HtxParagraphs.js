@@ -438,6 +438,7 @@ class HtxParagraphsView extends Component {
           ref={this.myRef}
           data-update={item._update}
           className={styles.container}
+          style={{ height: `${this.props.item.maxheight}px` }}
           onMouseUp={this.onMouseUp.bind(this)}
         >
           <Phrases item={item} />

@@ -48,6 +48,7 @@ const isFFLsdv4711 = isFF(FF_LSDV_4711);
  * @param {none|dialogue} [layout=none]  - Whether to use a dialogue-style layout or not
  * @param {string} [nameKey=author]      - The key field to use for name
  * @param {string} [textKey=text]        - The key field to use for the text
+ * @param {string} [maxheight]           - Maximum height of the paragraph container
  */
 const TagAttrs = types.model('ParagraphsModel', {
   value: types.maybeNull(types.string),
@@ -67,6 +68,7 @@ const TagAttrs = types.model('ParagraphsModel', {
 
   namekey: types.optional(types.string, 'author'),
   textkey: types.optional(types.string, 'text'),
+  maxheight: types.optional(types.string, '500'),
 });
 
 const Model = types
