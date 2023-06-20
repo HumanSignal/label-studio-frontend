@@ -19,9 +19,6 @@ class HtxParagraphsView extends Component {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
-    this.state = {
-      scrollContainerHeight: 0,
-    };
   }
 
   getSelectionText(sel) {
@@ -403,34 +400,32 @@ class HtxParagraphsView extends Component {
   }
 
   _handleScrollContainerHeight() {
+    const container = this.myRef.current;
     const mainContentView = document.querySelector('.lsf-main-content');
     const annotationView = document.querySelector('.lsf-main-view__annotation');
     const totalSpace = mainContentView?.offsetHeight || 0;
     const filledSpace = annotationView?.offsetHeight || 0;
-    const containerHeight = this.myRef.current?.offsetHeight || 0;
+    const containerHeight = container?.offsetHeight || 0;
     const viewPadding = parseInt(window.getComputedStyle(mainContentView)?.getPropertyValue('padding-bottom')) || 0;
-    const annotationPadding = parseInt(window.getComputedStyle(annotationView)?.getPropertyValue('padding-bottom')) || 0;
-    const height = totalSpace - (filledSpace - containerHeight) - viewPadding - annotationPadding;
+    const height = totalSpace - (filledSpace - containerHeight) - (viewPadding);
     const minHeight = 100;
 
-    this.setState(
-      { scrollContainerHeight: height < minHeight ? minHeight : height },
-    );
+    if (container) this.myRef.current.style.maxHeight = `${height < minHeight ? minHeight : height}px`;
   }
 
-  _resizeObvserver = new ResizeObserver(() => this._handleScrollContainerHeight());
+  _resizeObserver = new ResizeObserver(() => this._handleScrollContainerHeight());
 
   componentDidUpdate() {
     this._handleUpdate();
   }
 
   componentDidMount() {
-    isFF(FF_LSDV_E_278) && this.props.item.contextscroll && this._resizeObvserver.observe(document.querySelector('.lsf-main-content'));
+    if(isFF(FF_LSDV_E_278) && this.props.item.contextscroll) this._resizeObserver.observe(document.querySelector('.lsf-main-content'));
     this._handleUpdate();
   }
 
   componentWillUnmount() {
-    this._resizeObvserver.unobserve(document.querySelector('.lsf-main-content'));
+    this._resizeObserver.unobserve(document.querySelector('.lsf-main-content'));
   }
 
   render() {
@@ -465,7 +460,6 @@ class HtxParagraphsView extends Component {
           ref={this.myRef}
           data-update={item._update}
           className={contextScroll ? styles.scroll_container : styles.container}
-          style={contextScroll ? { height: `${this.state.scrollContainerHeight}px` } : {}}
           onMouseUp={this.onMouseUp.bind(this)}
         >
           <Phrases item={item} />
