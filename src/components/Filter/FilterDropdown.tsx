@@ -49,7 +49,7 @@ export const FilterDropdown: FC<FilterDropdownInterface> = ({
         backgroundColor: '#fafafa',
         ...(style ?? {}),
       }}
-      onChange={(value) => onChange(items.findIndex((item) => (item.key ?? item.label) === value))}
+      onChange={(value) => onChange(value)}
       size='small'
     >
       {items.map(renderOptions)}

@@ -6,7 +6,7 @@ on:
 
 env:
   LSF_DIR: 'label-studio-frontend'
-  TARGET_REPO: 'heartexlabs/label-studio'
+  TARGET_REPO_NAME: 'label-studio'
   LS_DIR: 'label-studio'
   NODE: '18'
   CACHE_NAME_PREFIX: v1
@@ -82,7 +82,7 @@ jobs:
         with:
           token: ${{ secrets.GIT_PAT }}
           fetch-depth: 1
-          repository: ${{ env.TARGET_REPO }}
+          repository: "${{ github.repository_owner }}/${{ env.TARGET_REPO_NAME }}"
           path: ${{ env.LS_DIR }}
 
       - name: Commit docs
