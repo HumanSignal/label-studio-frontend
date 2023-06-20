@@ -2,7 +2,7 @@ export const simpleData = {
   text: 'This text exists for no reason',
 };
 
-export const dataWithPrediction = [
+export const dataWithPrediction =
   {
     'data': {
       'text': 'Calif. wildfires signal the arrival of a planetary fire age https://t.co/Vvo9noqQfA',
@@ -59,8 +59,7 @@ export const dataWithPrediction = [
         'score': 0.425405738240795,
       },
     ],
-  },
-];
+  };
 export const taxonomyConfig = `<View>
   <Text name="text"/>
   <Taxonomy name="choices">

@@ -20,27 +20,10 @@ describe('Control Tags - Taxonomy', () => {
   });
 
   it('should show error message if there is more choices selected than maxUsages is set', () => {
-    LabelStudio.params()
-      .config(taxonomyConfigWithMaxUsages)
-      .data(dataWithPrediction)
-      .withResult([{
-        'id': 'n2ldmNpSQI',
-        'type': 'taxonomy',
-        'value': {
-          'taxonomy': [
-            [
-              'Archaea',
-            ],
-            [
-              'Bacteria',
-            ],
-          ],
-        },
-        'origin': 'manual',
-        'to_name': 'text',
-        'from_name': 'taxonomy',
-      }])
-      .init();
+    LabelStudio.init({
+      config: taxonomyConfigWithMaxUsages,
+      task: dataWithPrediction,
+    });
 
     cy.contains('button', 'Update').click();
 
