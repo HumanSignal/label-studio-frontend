@@ -242,14 +242,12 @@ export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing
 
 /**
  * Restore "hide all regions" button functionality in the outliner
- *
- * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4992_hide_all_regions_04052023_short
  */
 export const FF_LSDV_4992 = 'fflag_fix_front_lsdv_4992_hide_all_regions_04052023_short';
 
 /**
  * Resetting shared stores on task change to correctly generate dynamic children
- *
  * @see: ff_dev_2007_dev_2008_dynamic_tag_children_250322_short: To enable dynamic children
  * @see: fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix: To enable shared store
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
@@ -261,6 +259,18 @@ export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_0
  * @see: ff_dev_2007_rework_choices_280322_short: To enable alt version of <Choices/> (it's not necessary)
  */
 export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
+
+// Taxonomy and Choices related FFs, also for Dynamic Children and User Labels
+export const FFS_CHOICES = [
+  FF_DEV_1536,   // user labels
+  FF_DEV_2007,   // rework choices and add dynamic children
+  FF_DEV_2007_DEV_2008,
+  FF_DEV_2100_A, // preselected choices
+  FF_DEV_2244,   // indeterminate state
+  FF_DEV_3617,   // memory leaks fix, introduces shared stores
+  FF_DEV_4075,   // taxonomy overlap fix, mostly styles and mock-up
+  FF_LSDV_4998,  // dynamic children with shared stores
+];
 
 Object.assign(window, {
   APP_SETTINGS: {
