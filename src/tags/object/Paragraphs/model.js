@@ -48,7 +48,7 @@ const isFFLsdv4711 = isFF(FF_LSDV_4711);
  * @param {none|dialogue} [layout=none]   - Whether to use a dialogue-style layout or not
  * @param {string} [nameKey=author]       - The key field to use for name
  * @param {string} [textKey=text]         - The key field to use for the text
- * @param {boolean} [contextscroll=false] - Turn on contextual scroll mode
+ * @param {boolean} [contextScroll=false] - Turn on contextual scroll mode
  */
 const TagAttrs = types.model('ParagraphsModel', {
   value: types.maybeNull(types.string),
