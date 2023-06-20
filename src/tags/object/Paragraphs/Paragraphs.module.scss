@@ -1,3 +1,5 @@
+$border-thin: 1px solid rgba(137, 128, 152, 0.16);
+
 .phrase {
   background: #e8ffd0;
   padding: 0.5em;
@@ -63,7 +65,7 @@
   position: relative;
   overflow: auto;
   counter-reset: phrase;
-  border: 1px solid rgba(137, 128, 152, 0.16);
+  border: $border-thin;
   padding: 8px;
 }
 
