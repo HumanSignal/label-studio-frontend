@@ -714,7 +714,6 @@ describe('findPanelViewByName', () => {
   });
 });
 
-
 describe('checkCollapsedPanelsHaveData', () => {
   const collapsedSide = {
     left: true,
