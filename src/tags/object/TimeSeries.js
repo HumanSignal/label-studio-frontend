@@ -126,10 +126,6 @@ const Model = types
       return getRoot(self);
     },
 
-    get regs() {
-      return self.annotation.regionStore.regions.filter(r => r.object === self);
-    },
-
     get isDate() {
       return Boolean(self.timeformat) || (self.timedisplayformat && /[a-zA-Z]/.test(self.timedisplayformat[0]));
     },

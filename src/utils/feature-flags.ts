@@ -246,6 +246,16 @@ export const FF_LSDV_4832 = 'fflag_feat_front_lsdv_4832_new_ranker_tag_120423_sh
  */
 export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing_140423_short';
 
+/** Fix "No Label" for Dynamic Labels by switching off missing labels removal */
+export const FF_LSDV_4988 = 'fflag_fix_front_lsdv_4988_dynamic_no_label_120523_short';
+
+/**
+ * Fixing issues related to selection tool functional (selecting hidden regions, onClick in Konva, interaction with regions inside selection area)
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4930_selection_tool_fixes_240423_short
+ */
+export const FF_LSDV_4930 = 'fflag_fix_front_lsdv_4930_selection_tool_fixes_240423_short';
+
 /**
  * Restore "hide all regions" button functionality in the outliner
  *

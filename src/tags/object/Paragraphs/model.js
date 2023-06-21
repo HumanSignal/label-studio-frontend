@@ -103,10 +103,6 @@ const Model = types
       return self.audiourl;
     },
 
-    get regs() {
-      return self.annotation.regionStore.regions.filter(r => r.object === self);
-    },
-
     layoutStyles(data) {
       if (self.layout === 'dialogue') {
         const seed = data[self.namekey];
