@@ -45,7 +45,7 @@ class DDTextElement {
     const newNode = node.cloneNode() as Text;
     const content = this.getContent(start, end);
 
-    newNode.textContent = newNode.textContent ? newNode.textContent.substr(start - this.start, end - this.start) : newNode.textContent;
+    newNode.textContent = newNode.textContent ? newNode.textContent.substring(start - this.start, end - this.start) : newNode.textContent;
 
     return new DDTextElement(newNode, start, end, content);
   }
