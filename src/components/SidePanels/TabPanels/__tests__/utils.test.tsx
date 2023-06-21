@@ -1,6 +1,6 @@
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH } from '../../constants';
 import { JoinOrder, PanelBBox, Side } from '../types';
-import { determineDroppableArea, determineLeftOrRight, findPanelViewByName, findZIndices, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
+import { checkCollapsedPanelsHaveData, determineDroppableArea, determineLeftOrRight, findPanelViewByName, findZIndices, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
 
 
 const dummyPanels: Record<string, PanelBBox> = {
@@ -711,5 +711,45 @@ describe('findPanelViewByName', () => {
     const result = findPanelViewByName(state, name);
 
     expect(result).toBeUndefined();
+  });
+});
+
+describe('checkCollapsedPanelsHaveData', () => {
+  const collapsedSide = {
+    left: true,
+    right: false,
+  };
+
+  const panelData = {
+    panel1: { alignment: 'left', detached: false },
+    panel2: { alignment: 'right', detached: false },
+    panel3: { alignment: 'top', detached: true },
+    panel4: { alignment: 'bottom', detached: false },
+  };
+
+  it('should update collapsedSide correctly when there is data in collapsed panels', () => {
+    const expected = {
+      left: true,
+      right: false,
+    };
+
+    const result = checkCollapsedPanelsHaveData(collapsedSide, panelData);
+
+    expect(result).toEqual(expected);
+  });
+
+  it('should not update collapsedSide when there is no data in collapsed panels', () => {
+    const collapsedSideWithNoData = {
+      left: true,
+      right: true,
+    };
+    const expected = { ...collapsedSideWithNoData };
+
+    const result = checkCollapsedPanelsHaveData(
+      collapsedSideWithNoData,
+      panelData,
+    );
+
+    expect(result).toEqual(expected);
   });
 });
