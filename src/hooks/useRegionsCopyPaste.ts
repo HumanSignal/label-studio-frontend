@@ -63,9 +63,7 @@ export const useRegionsCopyPaste = (entity: any) => {
     };
 
     const cutHandler = (ev: Event) =>{
-      const selection = window.getSelection();
-
-      if (!selection?.isCollapsed) return;
+      if (!allowCopyPaste()) return;
 
       copyToClipboard(ev as ClipboardEvent);
       entity.deleteSelectedRegions();
