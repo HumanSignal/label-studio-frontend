@@ -129,13 +129,24 @@ const useDataTree = ({
     const style = item?.background ?? item?.getOneColor?.();
     const color = chroma(style ?? '#666').alpha(1);
     const mods: Record<string, any> = { hidden, type, isDrawing };
+
     const label = (() => {
       if (!type) {
         return 'No Label';
       } else if (type.includes('label')) {
         return item.value;
       } else if (type.includes('region') || type.includes('range')) {
-        return (item?.labels ?? []).join(', ') || 'No label';
+        const labelsInResults = item.results
+          .filter((result: any) => result.type.endsWith('labels'))
+          .map((result: any) => result.selectedLabels || []);
+
+        const labels: any[] = [].concat(...labelsInResults);
+
+        console.log('heartex labels', [...labelsInResults]);
+
+        return labels.map((label, index) => {
+          return `${label.value}${index < labels.length - 1 ? ', ' : ''}`;
+        }) || 'No label';
       } else if (type.includes('tool')) {
         return item.value;
       }
