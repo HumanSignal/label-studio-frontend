@@ -68,7 +68,7 @@ class ToolsManager {
     }
 
     this.tools[key] = tool;
-
+    // this.allTools[key] = tool;
     if (tool.default && !this._default_tool) this._default_tool = tool;
 
     if (this.preservedTool && tool.shouldPreserveSelectedState) {
@@ -100,8 +100,13 @@ class ToolsManager {
 
   selectTool(tool, selected) {
     const currentTool = this.findSelectedTool();
+    const newSelection = tool?.group;
 
-    currentTool?.control?.unselectAll?.();
+    if (newSelection === 'segmentation') Object.keys(this.tools).forEach(key => {
+      if (this.tools[key].group === 'segmentation') {
+        this.tools[key].control?.unselectAll?.();
+      }
+    });
 
     if (currentTool && currentTool.handleToolSwitch) {
       currentTool.handleToolSwitch(tool);
