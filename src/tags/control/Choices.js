@@ -19,10 +19,12 @@ import './Choices/Choises.styl';
 
 import './Choice';
 import DynamicChildrenMixin from '../../mixins/DynamicChildrenMixin';
-import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from '../../utils/feature-flags';
+import { FF_DEV_2007, FF_DEV_2007_DEV_2008, FF_LSDV_4583, isFF } from '../../utils/feature-flags';
 import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 import SelectedChoiceMixin from '../../mixins/SelectedChoiceMixin';
 import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
+import ClassificationBase from './ClassificationBase';
+import PerItemMixin from '../../mixins/PerItem';
 
 const { Option } = Select;
 
@@ -32,6 +34,11 @@ const { Option } = Select;
  * Choices can have dynamic value to load labels from task. This task data should contain a list of options to create underlying `<Choice>`s. All the parameters from options will be transferred to corresponding tags.
  *
  * The `Choices` tag can be used with any data types.
+ *
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality.
+ * [^FF_DEV_2007_DEV_2008]: `ff_dev_2007_dev_2008_dynamic_tag_children_250322_short` should be enabled to use dynamic options.
+ * [^FF_DEV_2007]: `ff_dev_2007_rework_choices_280322_short` should be enabled to use `html` attribute
+ *
  * @example
  * <!--Basic text classification labeling configuration-->
  * <View>
@@ -46,10 +53,8 @@ const { Option } = Select;
  *
  * @example <caption>This config with dynamic labels</caption>
  * <!--
- *   `Choice`s can be loaded dynamically from task data. It should be an array of objects with attributes.
- *   `html` can be used to show enriched content, it has higher priority than `value`, however `value` will be used in the exported result.
- *   *ff_dev_2007_dev_2008_dynamic_tag_children_250322_short* should be enabled to use dynamic options.
- *   *ff_dev_2007_rework_choices_280322_short* should be enabled to use `html` attribute.
+ *   `Choice`s can be loaded dynamically from task data[^FF_DEV_2007_DEV_2008]. It should be an array of objects with attributes.
+ *   `html` can be used to show enriched content[^FF_DEV_2007], it has higher priority than `value`, however `value` will be used in the exported result.
  * -->
  * <View>
  *   <Audio name="audio" value="$audio" />
@@ -90,7 +95,8 @@ const { Option } = Select;
  * @param {string} [whenLabelValue]    - Narrow down visibility by label value
  * @param {string} [whenChoiceValue]   - Narrow down visibility by choice value
  * @param {boolean} [perRegion]        - Use this tag to select a choice for a specific region instead of the entire task
- * @param {string} [value]             - Task data field containing a list of dynamically loaded choices (see example below)
+ * @param {boolean} [perItem]          - Use this tag to select a choice for a specific item inside the object instead of the whole object[^FF_LSDV_4583]
+ * @param {string} [value]             - Task data field containing a list of dynamically loaded choices (see example below)[^FF_DEV_2007_DEV_2008]
  * @param {boolean} [allowNested]      - Allow to use `children` field in dynamic choices to nest them. Submitted result will contain array of arrays, every item is a list of values from topmost parent choice down to selected one.
  */
 const TagAttrs = types.model({
@@ -131,17 +137,6 @@ const Model = types
       if (choices && choices.length) return { choices };
 
       return null;
-    },
-
-    get result() {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
-
-        if (!area) return null;
-
-        return self.annotation.results.find(r => r.from_name === self && r.area === area);
-      }
-      return self.annotation.results.find(r => r.from_name === self);
     },
 
     get preselectedValues() {
@@ -222,37 +217,23 @@ const Model = types
         choice.setSelected(isSelected);
       });
     },
-
-    // update result in the store with current selected choices
-    updateResult() {
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          self.annotation.createResult({}, { choices: self.selectedValues() }, self, self.toname);
-        }
-      }
-    },
   }));
 
 const ChoicesModel = types.compose(
   'ChoicesModel',
   ControlBase,
-  TagAttrs,
+  ClassificationBase,
   SelectedModelMixin.props({ _child: 'ChoiceModel' }),
   RequiredMixin,
   PerRegionMixin,
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin]:[]),
   ReadOnlyControlMixin,
   SelectedChoiceMixin,
   VisibilityMixin,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
-  Model,
   AnnotationMixin,
+  TagAttrs,
+  Model,
 );
 
 const ChoicesSelectLayout = observer(({ item }) => {

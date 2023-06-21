@@ -4,6 +4,7 @@ import { guidGenerator } from '../core/Helpers';
 import Result from '../regions/Result';
 import { PER_REGION_MODES } from './PerRegion';
 import { ReadOnlyRegionMixin } from './ReadOnlyMixin';
+import { FF_LSDV_4930, isFF } from '../utils/feature-flags';
 
 let ouid = 1;
 
@@ -124,7 +125,8 @@ export const AreaMixinBase = types
     },
 
     get isInSelectionArea() {
-      return self.parent?.selectionArea?.isActive ? self.parent.selectionArea.intersectsBbox(self.bboxCoords) : false;
+      return (!isFF(FF_LSDV_4930) || !self.hidden)
+        && self.parent?.selectionArea?.isActive ? self.parent.selectionArea.intersectsBbox(self.bboxCoords) : false;
     },
   }))
   .volatile(() => ({

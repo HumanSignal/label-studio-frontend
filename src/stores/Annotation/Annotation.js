@@ -21,6 +21,7 @@ import {
   FF_LSDV_3009,
   FF_LSDV_4583,
   FF_LSDV_4832,
+  FF_LSDV_4988,
   isFF
 } from '../../utils/feature-flags';
 import { delay, isDefined } from '../../utils/utilities';
@@ -862,7 +863,7 @@ export const Annotation = types
       // happening locally. So to reproduce you have to test in production or environment
       const area = self?.areas?.put(areaRaw);
 
-      object?.afterResultCreated?.(area);
+      objectTag?.afterResultCreated?.(area);
 
       if (!area) return;
 
@@ -944,7 +945,9 @@ export const Annotation = types
             if (key.endsWith('labels')) {
               const hasControlTag = tagNames.has(obj.from_name) || tagNames.has('labels');
 
-              if (hasControlTag) {
+              // remove non-existent labels, it actually breaks dynamic labels
+              // and makes no reason overall — labels from predictions can be out of config
+              if (!isFF(FF_LSDV_4988) && hasControlTag) {
                 const labelsContainer = tagNames.get(obj.from_name) ?? tagNames.get('labels');
                 const value = obj.value[key];
 
@@ -966,6 +969,9 @@ export const Annotation = types
                 }
               }
 
+              // detect most relevant label tags if that one from from_name is missing
+              // can be useful for predictions in old format with config in new format:
+              // Rectangle + Labels -> RectangleLabels
               if (
                 !tagNames.has(obj.from_name) ||
                 (!obj.value[key].length && !tagNames.get(obj.from_name).allowempty)
@@ -1064,12 +1070,15 @@ export const Annotation = types
 
       self.areas.forEach(a => {
         const controlName = a.results[0].from_name.name;
+        // May be null but null is also valid key in this case
+        const itemIndex = a.item_index;
 
         if (a.classification) {
-          if (classificationAreasByControlName[controlName]) {
-            duplicateAreaIds.push(classificationAreasByControlName[controlName]);
+          if (classificationAreasByControlName[controlName]?.[itemIndex]) {
+            duplicateAreaIds.push(classificationAreasByControlName[controlName][itemIndex]);
           }
-          classificationAreasByControlName[controlName] = a.id;
+          classificationAreasByControlName[controlName] = classificationAreasByControlName[controlName] || {};
+          classificationAreasByControlName[controlName][itemIndex] = a.id;
         }
       });
       duplicateAreaIds.forEach(id => self.areas.delete(id));

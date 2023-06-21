@@ -363,7 +363,13 @@ const polygonKonva = async (points) => {
     const stage = window.Konva.stages[0];
 
     for (const point of points) {
+      stage.fire('mousedown', {
+        evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
+      });
       stage.fire('click', {
+        evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
+      });
+      stage.fire('mouseup', {
         evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
       });
       await delay(50);

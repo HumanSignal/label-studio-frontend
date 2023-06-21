@@ -177,6 +177,49 @@ Scenario('Can select a region below a hidden region', async function({ I, LabelS
   AtSidebar.seeSelectedRegion('Speech');
 });
 
+Scenario('Selecting a region brings it to the front of the stack', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+  LabelStudio.setFeatureFlags({
+    ff_front_dev_2715_audio_3_280722_short: true,
+  });
+  I.amOnPage('/');
+
+  LabelStudio.init(paramsSpeech);
+
+  await AtAudioView.waitForAudio();
+  await AtAudioView.lookForStage();
+
+  // create a new region
+  I.pressKey('1');
+  AtAudioView.dragAudioElement(50, 80);
+  I.pressKey('u');
+
+  AtSidebar.seeRegions(1);
+
+  // create a new region above the first one
+  I.pressKey('2');
+  AtAudioView.dragAudioElement(49, 81);
+  I.pressKey('u');
+
+  AtSidebar.seeRegions(2);
+
+  // click on the top-most region visible to select it
+  AtAudioView.clickAt(50);
+  AtSidebar.seeSelectedRegion('Noise');
+
+  // Select the bottom most region to bring it to the top
+  AtSidebar.clickRegion('Speech');
+  AtSidebar.seeSelectedRegion('Speech');
+
+  // click on the overlapping region will deselect it, which shows that it is now the top in the list
+  AtAudioView.clickAt(50);
+  AtSidebar.dontSeeSelectedRegion('Speech');
+  AtSidebar.dontSeeSelectedRegion('Noise');
+
+  // click on the overlapping region will select the top item of the list, which will now be the item which was brought to the front by the original interaction.
+  AtAudioView.clickAt(50);
+  AtSidebar.seeSelectedRegion('Speech');
+});
+
 Scenario('Delete region by pressing delete hotkey', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
   LabelStudio.setFeatureFlags({
     ff_front_dev_2715_audio_3_280722_short: true,
