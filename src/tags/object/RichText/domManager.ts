@@ -5,6 +5,10 @@ const LF = '\n';
 
 type DDExtraText = string;
 
+function normalizeText(text: string) {
+  return text.replace(/[\n\r]/g, '\\n');
+}
+
 class DDTextElement {
   public node: Text;
   public start: number;
@@ -348,7 +352,7 @@ class DomData {
     while (!(this.elements[lastIdxOfTextBlock] instanceof DDDynamicBlock) && lastIdxOfTextBlock > -1) {
       --lastIdxOfTextBlock;
     }
-    this.elements.splice(lastIdxOfTextBlock + 1, 0, text);
+    this.elements.splice(lastIdxOfTextBlock + 1, 0, normalizeText(text));
   }
 
   findProjectionOnDisplayedText(text: string) {
