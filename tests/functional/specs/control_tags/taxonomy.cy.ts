@@ -19,7 +19,7 @@ describe('Control Tags - Taxonomy', () => {
     Tooltip.hasText('A hint for Choice 2');
   });
 
-  it('should show error message if there is more choices selected than maxUsages is set', () => {
+  it('should show error message if there are more choices selected than maxUsages is set', () => {
     LabelStudio.init({
       config: taxonomyConfigWithMaxUsages,
       task: dataWithPrediction,
