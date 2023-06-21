@@ -38,16 +38,17 @@ const isFFLsdv4711 = isFF(FF_LSDV_4711);
  * @regions ParagraphsRegion
  * @meta_title Paragraph Tags for Paragraphs
  * @meta_description Customize Label Studio with the Paragraphs tag to annotate paragraphs for NLP and NER machine learning and data science projects.
- * @param {string} name                  - Name of the element
- * @param {string} value                 - Data field containing the paragraph content
- * @param {json|url} [valueType=json]    - Whether the data is stored directly in uploaded JSON data or needs to be loaded from a URL
- * @param {string} audioUrl              - Audio to sync phrases with
- * @param {string} [sync]                - object name to sync with
- * @param {boolean} [showPlayer=false]   - Whether to show audio player above the paragraphs. Ignored if sync object is audio
- * @param {no|yes} [saveTextResult=yes]  - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
- * @param {none|dialogue} [layout=none]  - Whether to use a dialogue-style layout or not
- * @param {string} [nameKey=author]      - The key field to use for name
- * @param {string} [textKey=text]        - The key field to use for the text
+ * @param {string} name                   - Name of the element
+ * @param {string} value                  - Data field containing the paragraph content
+ * @param {json|url} [valueType=json]     - Whether the data is stored directly in uploaded JSON data or needs to be loaded from a URL
+ * @param {string} audioUrl               - Audio to sync phrases with
+ * @param {string} [sync]                 - object name to sync with
+ * @param {boolean} [showPlayer=false]    - Whether to show audio player above the paragraphs. Ignored if sync object is audio
+ * @param {no|yes} [saveTextResult=yes]   - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
+ * @param {none|dialogue} [layout=none]   - Whether to use a dialogue-style layout or not
+ * @param {string} [nameKey=author]       - The key field to use for name
+ * @param {string} [textKey=text]         - The key field to use for the text
+ * @param {boolean} [contextScroll=false] - Turn on contextual scroll mode
  */
 const TagAttrs = types.model('ParagraphsModel', {
   value: types.maybeNull(types.string),
@@ -67,6 +68,7 @@ const TagAttrs = types.model('ParagraphsModel', {
 
   namekey: types.optional(types.string, 'author'),
   textkey: types.optional(types.string, 'text'),
+  contextscroll: types.optional(types.boolean, false),
 });
 
 const Model = types
