@@ -378,12 +378,16 @@ const Model = types
         if (range.isText) {
           area.updateTextOffsets(soff, eoff);
         } else {
-          // reapply globalOffsets to original document to get correct xpaths and offsets
-          const original = area._getRootNode(true);
-          const originalRange = findRangeNative(soff, eoff, original);
+          if (isFF(FF_LSDV_4620_3)) {
+            area.updateXPathsFromGlobalOffsets();
+          } else {
+            // reapply globalOffsets to original document to get correct xpaths and offsets
+            const original = area._getRootNode(true);
+            const originalRange = findRangeNative(soff, eoff, original);
 
-          // @todo if originalRange is missed we are really fucked up
-          if (originalRange) area._fixXPaths(originalRange, original);
+            // @todo if originalRange is missed we are really fucked up
+            if (originalRange) area._fixXPaths(originalRange, original);
+          }
         }
 
         area.applyHighlight();

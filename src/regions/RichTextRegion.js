@@ -152,6 +152,14 @@ const Model = types
       return self.cachedRange;
     },
 
+    updateXPathsFromGlobalOffsets() {
+      const xPathRange = self.parent.globalOffsetsToRelativeOffsets(self.globalOffsets);
+
+      if (xPathRange) {
+        self._setXPaths(xPathRange);
+      }
+    },
+
     /**
      * Main method to detect HTML range and its offsets for LSF region
      * globalOffsets are used for:
@@ -194,11 +202,7 @@ const Model = types
 
         // 3. if xpaths are broken use globalOffsets if given
         if (self.globalOffsets) {
-          const xPathRange = self.parent.globalOffsetsToRelativeOffsets(self.globalOffsets);
-
-          if (xPathRange) {
-            self._setXPaths(xPathRange);
-          }
+          self.updateXPathsFromGlobalOffsets();
 
           return;
         }
