@@ -142,11 +142,20 @@ const useDataTree = ({
 
         const labels: any[] = [].concat(...labelsInResults);
 
-        console.log('heartex labels', [...labelsInResults]);
+        return (
+          <Block name="labels-list">
+            {labels.map((label, index) => {
+              const color = label.background || '#000000';
 
-        return labels.map((label, index) => {
-          return `${label.value}${index < labels.length - 1 ? ', ' : ''}`;
-        }) || 'No label';
+              return [
+                index ? ', ' : null,
+                <span key={label.id} style={{ color }}>
+                  {label.value || 'No label'}
+                </span>,
+              ];
+            })}
+          </Block>
+        );
       } else if (type.includes('tool')) {
         return item.value;
       }
