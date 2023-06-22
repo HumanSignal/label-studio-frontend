@@ -263,11 +263,11 @@ const Model = types
 
     return {
       validate() {
-        if (!Super.validate() || (self.maxusages && self.maxUsagesReached)) return false;
+        if (!Super.validate() || (self.maxusages && self.selected.length > self.maxusages)) return false;
       },
 
       beforeSend() {
-        if (self.maxusages && self.maxUsagesReached)
+        if (self.maxusages && self.selected.length > self.maxusages)
           Infomodal.warning(`The number of options selected (${self.selected.length}) exceed the maximum allowed (${self.maxusages}). To proceed, first unselect excess options for:\r\n • Taxonomy (${self.name})`);
       },
     };
