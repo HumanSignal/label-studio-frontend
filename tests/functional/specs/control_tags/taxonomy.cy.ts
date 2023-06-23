@@ -1,5 +1,5 @@
 import { LabelStudio, Taxonomy, Tooltip } from '@heartexlabs/ls-test/helpers/LSF/index';
-import { simpleData, taxonomyConfig } from '../../data/control_tags/taxonomy';
+import { dynamicData, dynamicTaxonomyConfig, simpleData, taxonomyConfig } from '../../data/control_tags/taxonomy';
 import { FF_DEV_2100_A, FF_DEV_3617 } from '../../../../src/utils/feature-flags';
 
 beforeEach(() => {
@@ -23,37 +23,34 @@ describe('Control Tags - Taxonomy', () => {
   });
 });
 
-const init = () => {
+const init = (config, data) => {
   LabelStudio.params()
-    .config(taxonomyConfig)
-    .data(simpleData)
+    .config(config)
+    .data(data)
     .withResult([])
     .init();
 };
 
 describe('Control Tags - Taxonomy with preselected Choices', () => {
-  // @todo fix this test
-  it('should work with FF_DEV_3617 on', () => {
-    LabelStudio.addFeatureFlagsOnPageLoad({
-      [FF_DEV_3617]: true,
-    });
+  const FF_DEV_3617_STATES = [true, false];
+  const datasets = [
+    { title: 'static', config: taxonomyConfig, data: simpleData },
+    { title: 'dynamic', config: dynamicTaxonomyConfig, data: dynamicData },
+  ];
 
-    init();
-    cy.get('.lsf-annotations-list').click();
-    cy.get('.lsf-annotations-list__create').click();
-    Taxonomy.open();
-    Taxonomy.findItem('Choice 3').find('[type=checkbox]').should('be.checked');
-  });
+  for (const ffState of FF_DEV_3617_STATES) {
+    for (const { config, data, title } of datasets) {
+      it(`should work with FF_DEV_3617 ${ffState ? 'on' : 'off'} for ${title} dataset`, () => {
+        LabelStudio.addFeatureFlagsOnPageLoad({
+          [FF_DEV_3617]: true,
+        });
 
-  it('should work with FF_DEV_3617 off', () => {
-    LabelStudio.addFeatureFlagsOnPageLoad({
-      [FF_DEV_3617]: false,
-    });
-
-    init();
-    cy.get('.lsf-annotations-list').click();
-    cy.get('.lsf-annotations-list__create').click();
-    Taxonomy.open();
-    Taxonomy.findItem('Choice 3').find('[type=checkbox]').should('be.checked');
-  });
+        init(config, data);
+        cy.get('.lsf-annotations-list').click();
+        cy.get('.lsf-annotations-list__create').click();
+        Taxonomy.open();
+        Taxonomy.findItem('Choice 3').find('[type=checkbox]').should('be.checked');
+      });
+    }
+  }
 });
