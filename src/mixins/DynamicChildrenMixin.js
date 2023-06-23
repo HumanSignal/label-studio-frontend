@@ -14,7 +14,7 @@ const DynamicChildrenMixin = types.model({
   .actions(self => {
     const prepareDynamicChildrenData = (data, store, parent) => {
       if (data && data.length) {
-        for(const obj of data) {
+        for (const obj of data) {
           parent.children.push({
             type: self.defaultChildType,
             ...obj,
