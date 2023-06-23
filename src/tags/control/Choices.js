@@ -19,7 +19,7 @@ import './Choices/Choises.styl';
 
 import './Choice';
 import DynamicChildrenMixin from '../../mixins/DynamicChildrenMixin';
-import { FF_DEV_2007_DEV_2008, FF_LSDV_4583, isFF } from '../../utils/feature-flags';
+import { FF_LSDV_4583, isFF } from '../../utils/feature-flags';
 import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 import SelectedChoiceMixin from '../../mixins/SelectedChoiceMixin';
 import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
@@ -36,7 +36,6 @@ const { Option } = Select;
  * The `Choices` tag can be used with any data types.
  *
  * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality.
- * [^FF_DEV_2007_DEV_2008]: `ff_dev_2007_dev_2008_dynamic_tag_children_250322_short` should be enabled to use dynamic options.
  *
  * @example
  * <!--Basic text classification labeling configuration-->
@@ -52,7 +51,7 @@ const { Option } = Select;
  *
  * @example <caption>This config with dynamic labels</caption>
  * <!--
- *   `Choice`s can be loaded dynamically from task data[^FF_DEV_2007_DEV_2008]. It should be an array of objects with attributes.
+ *   `Choice`s can be loaded dynamically from task data. It should be an array of objects with attributes.
  *   `html` can be used to show enriched content, it has higher priority than `value`, however `value` will be used in the exported result.
  * -->
  * <View>
@@ -89,26 +88,21 @@ const { Option } = Select;
  * @param {boolean} [showInline=false] - Show choices in the same visual line
  * @param {boolean} [required=false]   - Validate whether a choice has been selected
  * @param {string} [requiredMessage]   - Show a message if validation fails
- * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] - Control visibility of the choices.
+ * @param {region-selected|no-region-selected|choice-selected|choice-unselected} [visibleWhen] - Control visibility of the choices. Can also be used with `when*` attributes below to narrow down visibility
  * @param {string} [whenTagName]       - Use with visibleWhen. Narrow down visibility by name of the tag. For regions, use the name of the object tag, for choices, use the name of the choices tag
- * @param {string} [whenLabelValue]    - Narrow down visibility by label value
- * @param {string} [whenChoiceValue]   - Narrow down visibility by choice value
+ * @param {string} [whenLabelValue]    - Use with visibleWhen="region-selected". Narrow down visibility by label value
+ * @param {string} [whenChoiceValue]   - Use with visibleWhen="choice-selected" or "choice-unselected". Narrow down visibility by choice value
  * @param {boolean} [perRegion]        - Use this tag to select a choice for a specific region instead of the entire task
  * @param {boolean} [perItem]          - Use this tag to select a choice for a specific item inside the object instead of the whole object[^FF_LSDV_4583]
- * @param {string} [value]             - Task data field containing a list of dynamically loaded choices (see example below)[^FF_DEV_2007_DEV_2008]
+ * @param {string} [value]             - Task data field containing a list of dynamically loaded choices (see example below)
  * @param {boolean} [allowNested]      - Allow to use `children` field in dynamic choices to nest them. Submitted result will contain array of arrays, every item is a list of values from topmost parent choice down to selected one.
  */
 const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
-
   showinline: types.maybeNull(types.boolean),
-
   choice: types.optional(types.enumeration(['single', 'single-radio', 'multiple']), 'single'),
-
   layout: types.optional(types.enumeration(['select', 'inline', 'vertical']), 'vertical'),
-
-  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, '') } : {}),
-
+  value: types.optional(types.string, ''),
   allownested: types.optional(types.boolean, false),
 });
 
@@ -229,7 +223,7 @@ const ChoicesModel = types.compose(
   ReadOnlyControlMixin,
   SelectedChoiceMixin,
   VisibilityMixin,
-  ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
+  DynamicChildrenMixin,
   AnnotationMixin,
   TagAttrs,
   Model,
