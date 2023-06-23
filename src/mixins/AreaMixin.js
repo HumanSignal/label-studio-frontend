@@ -50,7 +50,7 @@ export const AreaMixinBase = types
     hasLabel(value) {
       const labels = self.labeling?.mainValue;
 
-      if (!labels) return false;
+      if (!labels || !value) return false;
       // label can contain comma, so check for full match first
       if (labels.includes(value)) return true;
       if (value.includes(',')) {
