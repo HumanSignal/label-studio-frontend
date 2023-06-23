@@ -33,7 +33,7 @@ const init = () => {
 
 describe('Control Tags - Taxonomy with preselected Choices', () => {
   // @todo fix this test
-  xit('should work with FF_DEV_3617 on', () => {
+  it('should work with FF_DEV_3617 on', () => {
     LabelStudio.addFeatureFlagsOnPageLoad({
       [FF_DEV_3617]: true,
     });

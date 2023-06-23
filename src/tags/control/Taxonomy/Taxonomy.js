@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import { types } from 'mobx-state-tree';
+import { getRoot, types } from 'mobx-state-tree';
 
 import Infomodal from '../../../components/Infomodal/Infomodal';
 import { Taxonomy } from '../../../components/Taxonomy/Taxonomy';
@@ -80,7 +80,7 @@ function traverse(root) {
     const uniq = new Set();
     const result = [];
 
-    for(const child of nodes) {
+    for (const child of nodes) {
       if (uniq.has(child.value)) continue;
       uniq.add(child.value);
       result.push(visitNode(child, path));
@@ -229,10 +229,20 @@ const Model = types
       const children = ChildrenSnapshots.get(self.name) ?? [];
 
       if (children.length) {
+        const root = getRoot(self);
+        const updateChildrenValue = children => {
+          children?.map(child => {
+            child.updateValue?.(root);
+            updateChildrenValue(child.children);
+          });
+        };
+
         self._children = children;
         self.children = [...children];
         self.store.unlock();
         ChildrenSnapshots.delete(self.name);
+
+        updateChildrenValue(self.children);
       }
 
       self.loading = false;
