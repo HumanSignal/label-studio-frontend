@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Select } from 'antd';
+import { Select } from 'antd';
 import { observer } from 'mobx-react';
 import { types } from 'mobx-state-tree';
 
@@ -19,7 +19,7 @@ import './Choices/Choises.styl';
 
 import './Choice';
 import DynamicChildrenMixin from '../../mixins/DynamicChildrenMixin';
-import { FF_DEV_2007, FF_DEV_2007_DEV_2008, FF_LSDV_4583, isFF } from '../../utils/feature-flags';
+import { FF_DEV_2007_DEV_2008, FF_LSDV_4583, isFF } from '../../utils/feature-flags';
 import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 import SelectedChoiceMixin from '../../mixins/SelectedChoiceMixin';
 import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
@@ -37,7 +37,6 @@ const { Option } = Select;
  *
  * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality.
  * [^FF_DEV_2007_DEV_2008]: `ff_dev_2007_dev_2008_dynamic_tag_children_250322_short` should be enabled to use dynamic options.
- * [^FF_DEV_2007]: `ff_dev_2007_rework_choices_280322_short` should be enabled to use `html` attribute
  *
  * @example
  * <!--Basic text classification labeling configuration-->
@@ -54,7 +53,7 @@ const { Option } = Select;
  * @example <caption>This config with dynamic labels</caption>
  * <!--
  *   `Choice`s can be loaded dynamically from task data[^FF_DEV_2007_DEV_2008]. It should be an array of objects with attributes.
- *   `html` can be used to show enriched content[^FF_DEV_2007], it has higher priority than `value`, however `value` will be used in the exported result.
+ *   `html` can be used to show enriched content, it has higher priority than `value`, however `value` will be used in the exported result.
  * -->
  * <View>
  *   <Audio name="audio" value="$audio" />
@@ -274,9 +273,7 @@ const HtxChoices = observer(({ item }) => {
       {item.layout === 'select' ? (
         <ChoicesSelectLayout item={item} />
       ) : (
-        !isFF(FF_DEV_2007)
-          ? <Form layout={item.layout}>{Tree.renderChildren(item, item.annotation)}</Form>
-          : Tree.renderChildren(item, item.annotation)
+        Tree.renderChildren(item, item.annotation)
       )}
     </Block>
   );
