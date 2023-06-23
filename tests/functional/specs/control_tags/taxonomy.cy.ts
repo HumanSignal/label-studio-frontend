@@ -42,7 +42,7 @@ describe('Control Tags - Taxonomy with preselected Choices', () => {
     for (const { config, data, title } of datasets) {
       it(`should work with FF_DEV_3617 ${ffState ? 'on' : 'off'} for ${title} dataset`, () => {
         LabelStudio.addFeatureFlagsOnPageLoad({
-          [FF_DEV_3617]: true,
+          [FF_DEV_3617]: ffState,
         });
 
         init(config, data);
