@@ -1,7 +1,13 @@
 import { getParent, types } from 'mobx-state-tree';
 
-/*
- * Per Region Mixin
+/**
+ * Controls visibility of the element depending on other tags.
+ * `visibleWhen` is required parameter, can refer to choices or regions, both selected or unselected:
+ * - region-selected, can specify tag and label value, both are optional
+ * - choice-selected, can specify tag, and with tag specified can specify choice value
+ * - no-region-selected, can't specify anything else
+ * - choice-unselected, can specify tag, and with tag specified can specify choice value
+ * Can be applied to `View` and `Choices` tags.
  */
 const VisibilityMixin = types
   .model({
