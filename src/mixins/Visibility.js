@@ -66,6 +66,19 @@ const VisibilityMixin = types
 
           return res !== false;
         }
+      } else if (self.whenchoicevalue) {
+        for (const choices of self.annotation.names.values()) {
+          const choicesList = choices?.selectedValues?.();
+
+          if (choicesList?.length) {
+            for (const obj of choicesList) {
+              if (obj === self.whenchoicevalue)
+                return true;
+            }
+          }
+        }
+
+        return false;
       }
 
       return true;
