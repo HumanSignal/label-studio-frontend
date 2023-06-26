@@ -136,8 +136,7 @@ const useDataTree = ({
       } else if (type.includes('label')) {
         return item.value;
       } else if (type.includes('region') || type.includes('range')) {
-        const labelsInResults = item.results
-          .filter((result: any) => result.type.endsWith('labels'))
+        const labelsInResults = item.labelings
           .map((result: any) => result.selectedLabels || []);
 
         const labels: any[] = [].concat(...labelsInResults);

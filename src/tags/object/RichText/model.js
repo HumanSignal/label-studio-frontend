@@ -264,6 +264,7 @@ const Model = types
         const rootEl = self.visibleNodeRef.current;
         const root = rootEl?.contentDocument?.body ?? rootEl;
 
+        //when user is using two different labels tag to draw a region, the other labels will be added to the region
         restSelectedStates.forEach(state => {
           area.setValue(state);
           destroyNode(state);

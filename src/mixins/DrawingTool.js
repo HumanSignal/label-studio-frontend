@@ -138,6 +138,7 @@ const DrawingTool = types
         const [main, ...rest] = currentArea.results;
         const newArea = self.annotation.createResult(value, main.value.toJSON(), control, obj);
 
+        //when user is using two different labels tag to draw a region, the other labels will be added to the region
         rest.forEach(r => newArea.addResult(r.toJSON()));
 
         currentArea.setDrawing(false);
