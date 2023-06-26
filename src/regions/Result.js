@@ -187,7 +187,7 @@ const Result = types
 
       if (control.visiblewhen === 'choice-selected') {
         return isChoiceSelected();
-      } else if (isFF(FF_DEV_1372) && control.visiblewhen === 'choice-unselected') {
+      } else if (control.visiblewhen === 'choice-unselected') {
         return !isChoiceSelected();
       }
 

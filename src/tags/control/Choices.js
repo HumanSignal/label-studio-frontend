@@ -226,7 +226,7 @@ const ChoicesModel = types.compose(
   SelectedModelMixin.props({ _child: 'ChoiceModel' }),
   RequiredMixin,
   PerRegionMixin,
-  ...(isFF(FF_LSDV_4583) ? [PerItemMixin]:[]),
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin] : []),
   ReadOnlyControlMixin,
   SelectedChoiceMixin,
   VisibilityMixin,
