@@ -12,7 +12,7 @@ import Tree from '../../core/Tree';
 import Types from '../../core/Types';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import { TagParentMixin } from '../../mixins/TagParentMixin';
-import { FF_DEV_2244, FF_DEV_3391, FF_PROD_309, isFF } from '../../utils/feature-flags';
+import { FF_DEV_3391, FF_PROD_309, isFF } from '../../utils/feature-flags';
 import { Block, Elem } from '../../utils/bem';
 import './Choice/Choice.styl';
 import { LsChevron } from '../../assets/icons';
@@ -88,11 +88,11 @@ const Model = types
     },
 
     get sel() {
-      return !isFF(FF_DEV_2244) || self.isLeaf ? self._sel : self.children.every(child => child.sel === true);
+      return self.isLeaf ? self._sel : self.children.every(child => child.sel === true);
     },
 
     get indeterminate() {
-      return isFF(FF_DEV_2244) && (self.isLeaf ? false : !self.sel && self.children.some(child => child.sel === true));
+      return self.isLeaf ? false : !self.sel && self.children.some(child => child.sel === true);
     },
 
     get parentChoice() {
