@@ -148,9 +148,9 @@ const useDataTree = ({
 
               return [
                 index ? ', ' : null,
-                <span key={label.id} style={{ color }}>
+                <Elem key={label.id} style={{ color }}>
                   {label.value || 'No label'}
-                </span>,
+                </Elem>,
               ];
             })}
           </Block>
