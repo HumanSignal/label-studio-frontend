@@ -141,7 +141,6 @@ const DrawingTool = types
         rest.forEach(r => newArea.addResult(r.toJSON()));
 
         currentArea.setDrawing(false);
-        // self.applyActiveStates(newArea);
         self.deleteRegion();
         newArea.notifyDrawingFinished();
         return newArea;

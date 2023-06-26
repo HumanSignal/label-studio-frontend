@@ -1,4 +1,4 @@
-import { flow, getType, types } from 'mobx-state-tree';
+import { destroy as destroyNode, flow, getType, types } from 'mobx-state-tree';
 import { createRef } from 'react';
 import { customTypes } from '../../../core/CustomTypes';
 import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
@@ -13,6 +13,7 @@ import messages from '../../../utils/messages';
 import { findRangeNative, rangeToGlobalOffset } from '../../../utils/selection-tools';
 import { escapeHtml, isValidObjectURL } from '../../../utils/utilities';
 import ObjectBase from '../Base';
+import { cloneNode } from '../../../core/Helpers';
 
 const SUPPORTED_STATES = ['LabelsModel', 'HyperTextLabelsModel', 'RatingModel'];
 
@@ -254,20 +255,19 @@ const Model = types
         if (states.length === 0) return;
 
         const [control, ...rest] = states;
-
         const values = doubleClickLabel?.value ?? control.selectedValues();
         const labels = { [control.valueType]: values };
+        // Clone labels nodes to avoid unselecting them on creating result 
+        const restSelectedStates = rest.map(state => cloneNode(state));
 
         const area = self.annotation.createResult(range, labels, control, self);
-
-        rest.forEach(r => {
-          if(!r.result) return;
-
-          return area.addResult(r.result?.toJSON());
-        });
-
         const rootEl = self.visibleNodeRef.current;
         const root = rootEl?.contentDocument?.body ?? rootEl;
+
+        restSelectedStates.forEach(state => {
+          area.setValue(state);
+          destroyNode(state);
+        });
 
         area._range = range._range;
 
