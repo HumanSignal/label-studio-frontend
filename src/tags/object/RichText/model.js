@@ -253,11 +253,19 @@ const Model = types
 
         if (states.length === 0) return;
 
-        const control = states[0];
+        const [control, ...rest] = states;
+
         const values = doubleClickLabel?.value ?? control.selectedValues();
         const labels = { [control.valueType]: values };
 
         const area = self.annotation.createResult(range, labels, control, self);
+
+        rest.forEach(r => {
+          if(!r.result) return;
+
+          return area.addResult(r.result?.toJSON());
+        });
+
         const rootEl = self.visibleNodeRef.current;
         const root = rootEl?.contentDocument?.body ?? rootEl;
 
