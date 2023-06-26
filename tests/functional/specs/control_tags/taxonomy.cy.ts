@@ -1,12 +1,6 @@
 import { LabelStudio, Taxonomy, Tooltip } from '@heartexlabs/ls-test/helpers/LSF/index';
 import { dynamicData, dynamicTaxonomyConfig, simpleData, taxonomyConfig } from '../../data/control_tags/taxonomy';
-import { FF_DEV_2100_A, FF_DEV_3617 } from '../../../../src/utils/feature-flags';
-
-beforeEach(() => {
-  LabelStudio.addFeatureFlagsOnPageLoad({
-    [FF_DEV_2100_A]: true, // preselected choices
-  });
-});
+import { FF_DEV_3617 } from '../../../../src/utils/feature-flags';
 
 describe('Control Tags - Taxonomy', () => {
   it('should show hint for <Choice />', () => {

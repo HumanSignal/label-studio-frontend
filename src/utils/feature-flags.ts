@@ -48,9 +48,6 @@ export const FF_DEV_1713 = 'ff_front_DEV_1713_audio_ui_150222_short';
 // Clean unnecessary classification areas after deserialization
 export const FF_DEV_2100 = 'ff_dev_2100_clean_unnecessary_areas_140422_short';
 
-// Fix preselected choices
-export const FF_DEV_2100_A = 'ff_dev_2100_preselected_choices_250422_short';
-
 // Allow to use html inside <Label/> tags
 export const FF_DEV_2128 = 'ff_dev_2128_html_in_labels_150422_short';
 
@@ -273,7 +270,6 @@ export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
 // Taxonomy and Choices related FFs, also for Dynamic Children and User Labels
 export const FFS_CHOICES = [
   FF_DEV_1536,   // user labels
-  FF_DEV_2100_A, // preselected choices
   FF_DEV_2244,   // indeterminate state
   FF_DEV_3617,   // memory leaks fix, introduces shared stores
   FF_DEV_4075,   // taxonomy overlap fix, mostly styles and mock-up
