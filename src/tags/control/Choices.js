@@ -225,12 +225,12 @@ const Model = types
 
     return {
       validate() {
-        if (!Super.validate() || (self.choice !== 'multiple' && self.result.mainValue.length > 1)) return false;
+        if (!Super.validate() || (self.choice !== 'multiple' && self.result?.mainValue.length > 1)) return false;
       },
 
       beforeSend() {
-        if (self.choice !== 'multiple' && self.result.mainValue.length > 1)
-          Infomodal.warning(`The number of options selected (${self.result.mainValue.length}) exceed the maximum allowed (1). To proceed, first unselect excess options for:\r\n • Choices (${self.name})`);
+        if (self.choice !== 'multiple' && self.result?.mainValue.length > 1)
+          Infomodal.warning(`The number of options selected (${self.result?.mainValue.length}) exceed the maximum allowed (1). To proceed, first unselect excess options for:\r\n • Choices (${self.name})`);
       },
     };
   });
