@@ -426,6 +426,7 @@ class HtxParagraphsView extends Component {
 
   componentWillUnmount() {
     const target = document.querySelector('.lsf-main-content');
+    
     if (target) this._resizeObserver?.unobserve(target);
     this._resizeObserver?.disconnect();
   }
