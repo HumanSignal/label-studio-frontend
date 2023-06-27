@@ -225,12 +225,21 @@ const Model = types
 
     return {
       validate() {
-        if (!Super.validate() || (self.choice !== 'multiple' && self.result?.mainValue.length > 1)) return false;
+        console.log('heartex', self.result?.mainValue.length);
+        console.log('heartex', self.result);
+
+        if (!Super.validate() || (self.choice !== 'multiple' && self.checkResultLength() > 1)) return false;
+      },
+
+      checkResultLength() {
+        const _resultFiltered = self.children.filter(c => !c.value._sel);
+
+        return _resultFiltered.length;
       },
 
       beforeSend() {
-        if (self.choice !== 'multiple' && self.result?.mainValue.length > 1)
-          Infomodal.warning(`The number of options selected (${self.result?.mainValue.length}) exceed the maximum allowed (1). To proceed, first unselect excess options for:\r\n • Choices (${self.name})`);
+        if (self.choice !== 'multiple' && self.checkResultLength() > 1)
+          Infomodal.warning(`The number of options selected (${self.checkResultLength()}) exceed the maximum allowed (1). To proceed, first unselect excess options for:\r\n • Choices (${self.name})`);
       },
     };
   });
