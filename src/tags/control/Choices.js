@@ -225,14 +225,11 @@ const Model = types
 
     return {
       validate() {
-        console.log('heartex', self.result?.mainValue.length);
-        console.log('heartex', self.result);
-
         if (!Super.validate() || (self.choice !== 'multiple' && self.checkResultLength() > 1)) return false;
       },
 
       checkResultLength() {
-        const _resultFiltered = self.children.filter(c => !c.value._sel);
+        const _resultFiltered = self.children.filter(c => c._sel);
 
         return _resultFiltered.length;
       },
