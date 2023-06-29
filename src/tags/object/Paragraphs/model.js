@@ -152,7 +152,7 @@ const PlayableAndSyncable = types.model()
     playing: false, // just internal state for UI
     audioRef: createRef(),
     audioDuration: null,
-    audioStopHandler: null,
+    audioFrameHandler: null,
   }))
   .views(self => ({
     /**
@@ -218,19 +218,25 @@ const PlayableAndSyncable = types.model()
 
     handleSyncPlay({ time, playing }) {
       const audio = self.audioRef.current;
-      const indices = self.regionIndicesByTime(time);
 
       if (!audio) return;
-      // if we left current region's time, reset
-      if (!indices.includes(self.playingId)) {
-        self.stopNow();
-        self.reset();
-        return;
+
+      if (!isFF(FF_LSDV_E_278)) {
+        const indices = self.regionIndicesByTime(time);
+
+        // if we left current region's time, reset
+        if (!indices.includes(self.playingId)) {
+          self.stopNow();
+          self.reset();
+          return;
+        }
       }
 
       // so we are changing time inside current region only
       audio.currentTime = time;
-      if (audio.paused && playing) {
+      if (isFF(FF_LSDV_E_278)) {
+        self.play();
+      } else if (audio.paused && playing) {
         self.play(self.playingId);
       }
     },
@@ -257,9 +263,9 @@ const PlayableAndSyncable = types.model()
     reset() {
       self.playingId = -1;
 
-      if (self.audioStopHandler) {
-        cancelAnimationFrame(self.audioStopHandler);
-        self.audioStopHandler = null;
+      if (self.audioFrameHandler) {
+        cancelAnimationFrame(self.audioFrameHandler);
+        self.audioFrameHandler = null;
       }
     },
 
@@ -289,7 +295,7 @@ const PlayableAndSyncable = types.model()
       const { end } = self.regionsStartEnd[self.playingId] ?? {};
 
       if (audio.currentTime < end) {
-        self.audioStopHandler = requestAnimationFrame(self.stopAtTheEnd);
+        self.audioFrameHandler = requestAnimationFrame(self.stopAtTheEnd);
         return;
       }
 
@@ -297,7 +303,51 @@ const PlayableAndSyncable = types.model()
       self.reset();
     },
 
+    trackPlayingId() {
+      if (self.audioFrameHandler) cancelAnimationFrame(self.audioFrameHandler);
+
+      const audio = self.audioRef.current;
+      const currentTime = audio?.currentTime;
+      const endTime = audio?.duration;
+
+      if (!isDefined(currentTime) || !isDefined(endTime) || currentTime >= endTime) {
+        self.reset();
+        return;
+      }
+
+      const regions = Object.values(self.regionsStartEnd);
+
+      self.playingId = regions.findIndex(({ start, end }) => {
+        return currentTime >= start && currentTime <= end;
+      });
+
+      if (!audio.paused) {
+        self.audioFrameHandler = requestAnimationFrame(self.trackPlayingId);
+      }
+    },
+
+    playAny() {
+      const audio = self.audioRef?.current;
+
+      if (!isDefined(audio)) return;
+
+      const isPaused = audio.paused;
+
+      if (isPaused) {
+        audio.play();
+        self.triggerSync('play');
+      }
+
+      self.playing = true;
+      self.trackPlayingId();
+    },
+
     play(idx) {
+      if (isFF(FF_LSDV_E_278) && !isDefined(idx)) {
+        self.playAny();
+        return;
+      }
+
       const { start, end } = self.regionsStartEnd[idx] ?? {};
       const audio = self.audioRef?.current;
 
@@ -319,7 +369,8 @@ const PlayableAndSyncable = types.model()
       self.playing = true;
       self.playingId = idx;
       self.triggerSync('play');
-      if (!isFF(FF_LSDV_E_278)) self.stopAtTheEnd();
+      if (isFF(FF_LSDV_E_278)) self.trackPlayingId();
+      else self.stopAtTheEnd();
     },
   }))
   .actions(self => ({
