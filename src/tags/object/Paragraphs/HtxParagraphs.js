@@ -420,13 +420,13 @@ class HtxParagraphsView extends Component {
   }
 
   componentDidMount() {
-    if(isFF(FF_LSDV_E_278) && this.props.item.contextscroll) this._resizeObserver.observe(document.querySelector('.lsf-main-content'));
+    if (isFF(FF_LSDV_E_278) && this.props.item.contextscroll) this._resizeObserver.observe(document.querySelector('.lsf-main-content'));
     this._handleUpdate();
   }
 
   componentWillUnmount() {
     const target = document.querySelector('.lsf-main-content');
-    
+
     if (target) this._resizeObserver?.unobserve(target);
     this._resizeObserver?.disconnect();
   }
