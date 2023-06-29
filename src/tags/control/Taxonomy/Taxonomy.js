@@ -256,7 +256,22 @@ const Model = types
       self.userLabels?.deleteLabel(self.name, path);
     },
 
-  }))
+  })).actions(self => {
+    const Super = {
+      validate: self.validate,
+    };
+
+    return {
+      validate() {
+        if (!Super.validate() || (self.maxusages && self.selected.length > self.maxusages)) return false;
+      },
+
+      beforeSend() {
+        if (self.maxusages && self.selected.length > self.maxusages)
+          Infomodal.warning(`The number of options selected (${self.selected.length}) exceed the maximum allowed (${self.maxusages}). To proceed, first unselect excess options for:\r\n • Taxonomy (${self.name})`);
+      },
+    };
+  })
   .preProcessSnapshot((sn) => {
     if (isFF(FF_DEV_3617)) {
       const children = sn._children ?? sn.children;
@@ -277,15 +292,15 @@ const TaxonomyModel = types.compose('TaxonomyModel',
   ClassificationBase,
   TagAttrs,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
+  AnnotationMixin,
+  RequiredMixin,
   Model,
   ...(isFF(FF_DEV_3617) ? [SharedStoreMixin] : []),
-  RequiredMixin,
   PerRegionMixin,
   ...(isFF(FF_LSDV_4583) ? [PerItemMixin] : []),
   ReadOnlyControlMixin,
   SelectedChoiceMixin,
   VisibilityMixin,
-  AnnotationMixin,
 );
 
 const HtxTaxonomy = observer(({ item }) => {
