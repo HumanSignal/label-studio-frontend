@@ -7,10 +7,12 @@ import {
   taxonomyConfig,
   taxonomyConfigWithMaxUsages
 } from '../../data/control_tags/taxonomy';
-import { FF_DEV_2100_A, FF_DEV_3617 } from '../../../../src/utils/feature-flags';
+import { FF_DEV_2007, FF_DEV_2007_DEV_2008, FF_DEV_2100_A, FF_DEV_3617 } from '../../../../src/utils/feature-flags';
 
 beforeEach(() => {
   LabelStudio.addFeatureFlagsOnPageLoad({
+    [FF_DEV_2007]: true, // rework choices
+    [FF_DEV_2007_DEV_2008]: true, // dynamic choices
     [FF_DEV_2100_A]: true, // preselected choices
   });
 });
