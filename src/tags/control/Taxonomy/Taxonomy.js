@@ -229,6 +229,8 @@ const Model = types
 
       if (children.length) {
         const root = getRoot(self);
+        // SharedChoiceStore doesn't call `updateValue()` because it's annotation agnostic,
+        // so call it here right after Taxonomy is attached
         const updateChildrenValue = children => {
           children?.map(child => {
             child.updateValue?.(root);
