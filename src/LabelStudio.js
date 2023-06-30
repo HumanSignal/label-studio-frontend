@@ -58,7 +58,7 @@ function cleanDomAfterReact(nodes, reactKey) {
         node[key] = null;
       }
       if (node.childNodes) {
-        cleanDomAfterReact(node.childNodes);
+        cleanDomAfterReact(node.childNodes, reactKey);
       }
     }
   }
@@ -68,7 +68,7 @@ export class LabelStudio {
   static instances = new Set();
 
   static destroyAll() {
-    this.instances.forEach(inst => inst.destroy());
+    this.instances.forEach(inst => inst.destroy?.());
     this.instances.clear();
   }
 
@@ -128,6 +128,7 @@ export class LabelStudio {
       destroy(this.store);
       this.store = null;
       this.destroy = null;
+      this.constructor.instances.delete(this);
     };
 
     this.destroy = destructor;
