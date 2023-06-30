@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree';
+import { tryReference, types } from 'mobx-state-tree';
 import * as xpath from 'xpath-range';
 import Registry from '../core/Registry';
 import { AreaMixin } from '../mixins/AreaMixin';
@@ -43,7 +43,7 @@ const Model = types
   }))
   .views(self => ({
     get parent() {
-      return self.object;
+      return tryReference(() => self.object);
     },
     getRegionElement() {
       return self._spans?.[0];

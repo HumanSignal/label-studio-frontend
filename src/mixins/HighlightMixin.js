@@ -157,8 +157,8 @@ export const HighlightMixin = types
      */
     removeHighlight() {
       if (isFF(FF_LSDV_4620_3)) {
-        self.parent.removeSpansInGlobalOffsets(self._spans, self.globalOffsets);
-        self.parent.removeStyles([self.identifier]);
+        self.parent?.removeSpansInGlobalOffsets(self._spans, self.globalOffsets);
+        self.parent?.removeStyles([self.identifier]);
       } else {
         Utils.Selection.removeRange(self._spans);
       }
@@ -211,7 +211,7 @@ export const HighlightMixin = types
      */
     beforeDestroy() {
       if (isFF(FF_LSDV_4620_3)) {
-        self.parent.removeStyles([self.identifier]);
+        self.parent?.removeStyles([self.identifier]);
       } else {
         try {
           self._stylesheet.remove();

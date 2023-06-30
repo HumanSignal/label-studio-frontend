@@ -128,6 +128,11 @@ const TimeTraveller = types
 
       beforeDestroy() {
         snapshotDisposer();
+
+        targetStore = null;
+        snapshotDisposer = null;
+        updateHandlers.clear();
+        freezingLockSet.clear();
       },
 
       undo() {

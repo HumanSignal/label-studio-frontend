@@ -1,6 +1,15 @@
 /* global LSF_VERSION */
 
-import { destroy, detach, flow, getEnv, getSnapshot, types } from 'mobx-state-tree';
+import {
+  destroy,
+  detach,
+  flow,
+  getEnv, getParent,
+  getSnapshot,
+  isRoot,
+  types,
+  walk
+} from 'mobx-state-tree';
 
 import uniqBy from 'lodash/uniqBy';
 import InfoModal from '../components/Infomodal/Infomodal';
@@ -804,6 +813,23 @@ export default types
       postponeTask,
       beforeDestroy() {
         ToolsManager.removeAllTools();
+      },
+      selfDestroy() {
+        const children = [];
+
+        walk(self, (node) => {
+          if (!isRoot(node) && getParent(node) === self) children.push(node);
+        });
+
+        let node;
+
+        while ((node = children.shift())) {
+          try {
+            destroy(node);
+          } catch (e) {
+            console.log('Problem: ', e);
+          }
+        }
       },
     };
   });

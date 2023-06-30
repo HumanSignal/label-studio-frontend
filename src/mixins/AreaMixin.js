@@ -1,4 +1,4 @@
-import { destroy, types } from 'mobx-state-tree';
+import { destroy, isAlive, types } from 'mobx-state-tree';
 import { defaultStyle } from '../core/Constants';
 import { guidGenerator } from '../core/Helpers';
 import Result from '../regions/Result';
@@ -32,6 +32,7 @@ export const AreaMixinBase = types
      * @return {Result?} first result with labels (usually it's the only one, but not always)
      */
     get labeling() {
+      if (!isAlive(self)) return;
       return self.results.find(r => r.type.endsWith('labels') && r.hasValue);
     },
 
@@ -72,6 +73,7 @@ export const AreaMixinBase = types
     },
 
     get labelName() {
+      if (!isAlive(self)) return null;
       return self.labeling?.mainValue?.[0] || self.emptyLabel?._value;
     },
 
@@ -95,6 +97,8 @@ export const AreaMixinBase = types
     },
 
     get style() {
+      if (!isAlive(self)) return;
+
       const styled = self.results.find(r => r.style);
 
       if (styled && styled.style) {

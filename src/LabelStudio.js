@@ -17,6 +17,40 @@ configure({
   isolateGlobalState: true,
 });
 
+function cutFibers(object) {
+  const objects = [object];
+  let obj;
+
+  while ((obj = objects.pop())) {
+    const keys = Object.keys(obj);
+
+    for (const key of keys) {
+      const prop = obj[key];
+
+      if (prop && typeof prop === 'object' && {}.hasOwnProperty.call(prop, 'stateNode')) {
+        objects.push(obj[key]);
+        obj[key] = null;
+      }
+    }
+  }
+}
+
+function cleanDomAfterReact(nodes) {
+  for (const node of nodes) {
+    const reactPropKeys = (Object.keys(node)).filter(key => key.startsWith('__react'));
+
+    if (reactPropKeys.length) {
+      for (const key of reactPropKeys) {
+        cutFibers(node[key]);
+        node[key] = null;
+      }
+      if (node.childNodes) {
+        cleanDomAfterReact(node.childNodes);
+      }
+    }
+  }
+}
+
 export class LabelStudio {
   static instances = new Set();
 
@@ -47,7 +81,7 @@ export class LabelStudio {
     this.events.on(...args);
   }
 
-  off(eventName, callback){
+  off(eventName, callback) {
     if (isDefined(callback)) {
       this.events.off(eventName, callback);
     } else {
@@ -70,9 +104,17 @@ export class LabelStudio {
     ), rootElement);
 
     const destructor = () => {
+      const childNodes = [...rootElement.childNodes];
+
       unmountComponentAtNode(rootElement);
+      cleanDomAfterReact(childNodes);
+      cleanDomAfterReact([rootElement]);
+      rootElement.replaceWith(rootElement.cloneNode(true));
       destroySharedStore();
+      this.store.selfDestroy();
       destroy(this.store);
+      this.store = null;
+      this.destroy = null;
     };
 
     this.destroy = destructor;

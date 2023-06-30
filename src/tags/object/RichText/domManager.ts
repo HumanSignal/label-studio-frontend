@@ -493,6 +493,10 @@ class DomData {
       block.removeSpans(spans);
     }
   }
+
+  destroy() {
+    this.elements = [];
+  }
 }
 
 class Path {
@@ -726,5 +730,10 @@ export default class DomManager {
         delete styleTags[id];
       }
     }
+  }
+  destroy() {
+    this.removeStyles(Object.keys(this.styleTags));
+    this.domData.destroy();
+    this.domData = new DomData();
   }
 }
