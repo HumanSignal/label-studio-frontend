@@ -109,7 +109,6 @@ export class LabelStudio {
       unmountComponentAtNode(rootElement);
       cleanDomAfterReact(childNodes);
       cleanDomAfterReact([rootElement]);
-      rootElement.replaceWith(rootElement.cloneNode(true));
       destroySharedStore();
       this.store.selfDestroy();
       destroy(this.store);
