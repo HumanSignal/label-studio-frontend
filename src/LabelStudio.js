@@ -50,7 +50,7 @@ function findReactKey(node) {
 
 function cleanDomAfterReact(nodes, reactKey) {
   for (const node of nodes) {
-    const reactPropKeys = (Object.keys(node)).filter(key => key.startsWith('__react') && (!key.match(/^__reactProps|__reactFiber/) || new RegExp(`\\${reactKey}$`)));
+    const reactPropKeys = (Object.keys(node)).filter(key => key.startsWith('__react') && (!key.match(/^__reactProps|__reactFiber/) || key.match(new RegExp(`\\${reactKey}$`))));
 
     if (reactPropKeys.length) {
       for (const key of reactPropKeys) {
