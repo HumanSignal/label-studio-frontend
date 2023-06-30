@@ -147,7 +147,6 @@ const Model = types
       return Tree.filterChildrenOfType(self, 'ChoiceModel');
     },
 
-    // @todo doesn't work with FF_DEV_3617 because of empty _value
     get preselectedValues() {
       return self.tiedChildren.filter(c => c.selected === true && !c.isSkipped).map(c => c.resultValue);
     },
