@@ -25,6 +25,7 @@ import SelectedChoiceMixin from '../../mixins/SelectedChoiceMixin';
 import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
 import ClassificationBase from './ClassificationBase';
 import PerItemMixin from '../../mixins/PerItem';
+import Infomodal from '../../components/Infomodal/Infomodal';
 
 const { Option } = Select;
 
@@ -217,7 +218,28 @@ const Model = types
         choice.setSelected(isSelected);
       });
     },
-  }));
+  })).actions(self => {
+    const Super = {
+      validate: self.validate,
+    };
+
+    return {
+      validate() {
+        if (!Super.validate() || (self.choice !== 'multiple' && self.checkResultLength() > 1)) return false;
+      },
+
+      checkResultLength() {
+        const _resultFiltered = self.children.filter(c => c._sel);
+
+        return _resultFiltered.length;
+      },
+
+      beforeSend() {
+        if (self.choice !== 'multiple' && self.checkResultLength() > 1)
+          Infomodal.warning(`The number of options selected (${self.checkResultLength()}) exceed the maximum allowed (1). To proceed, first unselect excess options for:\r\n • Choices (${self.name})`);
+      },
+    };
+  });
 
 const ChoicesModel = types.compose(
   'ChoicesModel',
