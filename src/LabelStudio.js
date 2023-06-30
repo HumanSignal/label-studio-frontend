@@ -35,9 +35,22 @@ function cutFibers(object) {
   }
 }
 
-function cleanDomAfterReact(nodes) {
+function findReactKey(node) {
+  const keys = Object.keys(node);
+
+  for (const key of keys) {
+    const match = key.match(/^__reactProps(\$[^$]+)$/);
+
+    if (match) {
+      return match[1];
+    }
+  }
+  return '';
+}
+
+function cleanDomAfterReact(nodes, reactKey) {
   for (const node of nodes) {
-    const reactPropKeys = (Object.keys(node)).filter(key => key.startsWith('__react'));
+    const reactPropKeys = (Object.keys(node)).filter(key => key.startsWith('__react') && (!key.match(/^__reactProps|__reactFiber/) || new RegExp(`\\${reactKey}$`)));
 
     if (reactPropKeys.length) {
       for (const key of reactPropKeys) {
@@ -105,10 +118,11 @@ export class LabelStudio {
 
     const destructor = () => {
       const childNodes = [...rootElement.childNodes];
+      const reactKey = findReactKey(childNodes[0]);
 
       unmountComponentAtNode(rootElement);
-      cleanDomAfterReact(childNodes);
-      cleanDomAfterReact([rootElement]);
+      cleanDomAfterReact(childNodes, reactKey);
+      cleanDomAfterReact([rootElement], reactKey);
       destroySharedStore();
       this.store.selfDestroy();
       destroy(this.store);
