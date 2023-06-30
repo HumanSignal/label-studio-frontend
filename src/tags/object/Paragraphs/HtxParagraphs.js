@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 
 import ObjectTag from '../../../components/Tags/Object';
-import { FF_DEV_2669, FF_DEV_2918, FF_LSDV_3012, FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2669, FF_DEV_2918, FF_LSDV_3012, FF_LSDV_4711, FF_LSDV_E_278, isFF } from '../../../utils/feature-flags';
 import { findNodeAt, matchesSelector, splitBoundaries } from '../../../utils/html';
 import { isSelectionContainsSpan } from '../../../utils/selection-tools';
 import styles from './Paragraphs.module.scss';
@@ -399,23 +399,45 @@ class HtxParagraphsView extends Component {
     });
   }
 
+  _handleScrollContainerHeight() {
+    const container = this.myRef.current;
+    const mainContentView = document.querySelector('.lsf-main-content');
+    const annotationView = document.querySelector('.lsf-main-view__annotation');
+    const totalSpace = mainContentView?.offsetHeight || 0;
+    const filledSpace = annotationView?.offsetHeight || 0;
+    const containerHeight = container?.offsetHeight || 0;
+    const viewPadding = parseInt(window.getComputedStyle(mainContentView)?.getPropertyValue('padding-bottom')) || 0;
+    const height = totalSpace - (filledSpace - containerHeight) - (viewPadding);
+    const minHeight = 100;
+
+    if (container) this.myRef.current.style.maxHeight = `${height < minHeight ? minHeight : height}px`;
+  }
+
+  _resizeObserver = new ResizeObserver(() => this._handleScrollContainerHeight());
+
   componentDidUpdate() {
     this._handleUpdate();
   }
 
   componentDidMount() {
+    if(isFF(FF_LSDV_E_278) && this.props.item.contextscroll) this._resizeObserver.observe(document.querySelector('.lsf-main-content'));
     this._handleUpdate();
+  }
+
+  componentWillUnmount() {
+    this._resizeObserver.unobserve(document.querySelector('.lsf-main-content'));
   }
 
   render() {
     const { item } = this.props;
     const withAudio = !!item.audio;
+    const contextScroll = isFF(FF_LSDV_E_278) && this.props.item.contextscroll;
 
     // current way to not render when we wait for data
     if (isFF(FF_DEV_2669) && !item._value) return null;
 
     return (
-      <ObjectTag item={item} className={'lsf-paragraphs'}>
+      <ObjectTag item={item} className={'lsf-paragraphs'} >
         {withAudio && (
           <audio
             {...audioDefaultProps} 
@@ -437,7 +459,7 @@ class HtxParagraphsView extends Component {
         <div
           ref={this.myRef}
           data-update={item._update}
-          className={styles.container}
+          className={contextScroll ? styles.scroll_container : styles.container}
           onMouseUp={this.onMouseUp.bind(this)}
         >
           <Phrases item={item} />
