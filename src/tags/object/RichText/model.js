@@ -340,7 +340,7 @@ const Model = types
       },
 
       removeSpansInGlobalOffsets(spans, { start, end }) {
-        return domManager.removeSpans(spans, start, end);
+        return domManager?.removeSpans(spans, start, end);
       },
 
       getTextFromGlobalOffsets({ start, end }) {

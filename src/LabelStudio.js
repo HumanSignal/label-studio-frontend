@@ -118,12 +118,23 @@ export class LabelStudio {
 
     const destructor = () => {
       const childNodes = [...rootElement.childNodes];
+      // We need this key to be sure that cleaning will affect only current react subtree
       const reactKey = findReactKey(childNodes[0]);
 
       unmountComponentAtNode(rootElement);
+      /*
+        Unmounting does not help with clearing react's fibers
+        but removing the manually helps
+        @see https://github.com/facebook/react/pull/20290 (similar problem)
+        That's may be not relevant in the the 18 version
+       */
       cleanDomAfterReact(childNodes, reactKey);
       cleanDomAfterReact([rootElement], reactKey);
       destroySharedStore();
+      /*
+         It seems that destroying children separately helps GC to collect garbage
+         as wel as nulling all these this.store
+       */
       this.store.selfDestroy();
       destroy(this.store);
       this.store = null;
