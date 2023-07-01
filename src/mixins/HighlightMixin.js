@@ -157,7 +157,7 @@ export const HighlightMixin = types
      */
     removeHighlight() {
       if (isFF(FF_LSDV_4620_3)) {
-        self.parent?.removeSpansInGlobalOffsets(self._spans, self.globalOffsets);
+        if (self.globalOffsets) self.parent?.removeSpansInGlobalOffsets(self._spans, self.globalOffsets);
         self.parent?.removeStyles([self.identifier]);
       } else {
         Utils.Selection.removeRange(self._spans);
