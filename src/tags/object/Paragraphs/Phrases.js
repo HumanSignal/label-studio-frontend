@@ -3,8 +3,9 @@ import { getRoot } from 'mobx-state-tree';
 import { Button } from 'antd';
 import { PauseCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import styles from './Paragraphs.module.scss';
+import { useEffect } from 'react';
 
-export const Phrases = observer(({ item }) => {
+export const Phrases = observer(({ item, playingId }) => {
   const cls = item.layoutClasses;
   const withAudio = !!item.audio;
 
@@ -14,7 +15,7 @@ export const Phrases = observer(({ item }) => {
     const style = item.layoutStyles(v);
     const classNames = [cls.phrase];
     const isContentVisible = item.isVisibleForAuthorFilter(v);
-    const isPlaying = item.playingId === idx && item.playing;
+    const isPlaying = playingId === idx && item.playing;
 
     if (withAudio) classNames.push(styles.withAudio);
     if (!isContentVisible) classNames.push(styles.collapsed);

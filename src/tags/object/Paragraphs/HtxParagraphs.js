@@ -19,6 +19,7 @@ class HtxParagraphsView extends Component {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
+    this.lastPlayingId = -1;
   }
 
   getSelectionText(sel) {
@@ -397,6 +398,15 @@ class HtxParagraphsView extends Component {
         return false;
       });
     });
+
+    if (isFF(FF_LSDV_E_278) && this.props.item.contextscroll && item.playingId >= 0 && this.lastPlayingId !== item.playingId) {
+      this.myRef.current.scrollTo({
+        top: this.myRef.current.querySelectorAll('div')[item.playingId]?.offsetTop - 8,
+        behavior: 'smooth',
+      });
+
+      this.lastPlayingId = item.playingId;
+    }
   }
 
   _handleScrollContainerHeight() {
@@ -415,8 +425,9 @@ class HtxParagraphsView extends Component {
 
   _resizeObserver = new ResizeObserver(() => this._handleScrollContainerHeight());
 
-  componentDidUpdate() {
-    this._handleUpdate();
+  componentDidUpdate(prevProps, prevState) {
+    console.log(prevState, prevProps);
+    this._handleUpdate(prevProps);
   }
 
   componentDidMount() {
@@ -461,7 +472,7 @@ class HtxParagraphsView extends Component {
           className={contextScroll ? styles.scroll_container : styles.container}
           onMouseUp={this.onMouseUp.bind(this)}
         >
-          <Phrases item={item} />
+          <Phrases item={item} playingId={item.playingId} />
         </div>
       </ObjectTag>
     );
