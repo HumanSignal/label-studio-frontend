@@ -348,7 +348,7 @@ export default types
       });
 
       // create relation
-      hotkeys.overwriteNamed('region:relation', () => {
+      hotkeys.addNamed('region:relation', () => {
         const c = self.annotationStore.selected;
 
         if (c && c.highlightedNode && !c.relationMode) {

@@ -21,6 +21,7 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   showComments,
   focusTab,
 }) => {
+  
   const snapThreshold = 5;
   const regions = currentEntity.regionStore;
   const viewportSize = useRef<ViewportSize>({ width: 0, height: 0 });
@@ -30,10 +31,10 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   const [lockPanelContents, setLockPanelContents] = useState(false);
   const [positioning, setPositioning] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const [collapsedSide, setCollapsedSide] = useState({ [Side.left]: false, [Side.right]: false });
   const rootRef = useRef<HTMLDivElement>();
   const [snap, setSnap] = useState<DropSide | Side | undefined>();
-  const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel(showComments));
+  const [panelData, setPanelData] = useState<Record<string, PanelBBox>>(restorePanel(showComments).panelData);
+  const [collapsedSide, setCollapsedSide] = useState(restorePanel(showComments).collapsedSide);
   const [breakPointActiveTab, setBreakPointActiveTab] = useState(0);
   const localSnap = useRef(snap);
   const collapsedSideRef = useRef(collapsedSide);
@@ -379,8 +380,8 @@ const SideTabsPanelsComponent: FC<SidePanelsProps> = ({
   }, [panelData, commonProps, lockPanelContents, panelsHidden, panelBreakPoint, positioning, panelMaxWidth, collapsedSide, snap]);
 
   useEffect(() => {
-    if (Object.keys(panelData).length) savePanels(panelData);
-  }, [panelData]);
+    if (Object.keys(panelData).length) savePanels(panelData, collapsedSide);
+  }, [panelData, collapsedSide]);
 
   useEffect(() => {
     if (focusTab) {

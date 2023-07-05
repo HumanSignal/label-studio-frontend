@@ -8,6 +8,10 @@ export const ImageEntityMixin = types
     imageEntities: types.optional(types.array(ImageEntity), []),
   })
   .views(self => ({
+    get maxItemIndex() {
+      return self.imageEntities.length - 1;
+    },
+
     get imageIsLoaded() {
       const imageEntity = self.currentImageEntity;
 

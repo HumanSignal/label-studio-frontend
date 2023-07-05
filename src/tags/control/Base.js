@@ -31,6 +31,18 @@ const ControlBase = types.model({
   get valueType() {
     return self.type;
   },
+
+  get toNameTag() {
+    return self.annotation.names.get(self.toname);
+  },
+
+  selectedValues() {
+    throw new Error('Control tag needs to implement selectedValues method in views');
+  },
+
+  get result() {
+    return self.annotation.results.find(r => r.from_name === self);
+  },
 }));
 
 export default types.compose(ControlBase, BaseTag);

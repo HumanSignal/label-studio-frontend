@@ -20,7 +20,17 @@ import ResizeObserver from '../../utils/resize-observer';
 import { debounce } from '../../utils/debounce';
 import Constants from '../../core/Constants';
 import { fixRectToFit } from '../../utils/image';
-import { FF_DEV_1285, FF_DEV_1442, FF_DEV_3077, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, FF_LSDV_4711, isFF } from '../../utils/feature-flags';
+import {
+  FF_DEV_1285,
+  FF_DEV_1442,
+  FF_DEV_3077,
+  FF_DEV_3793,
+  FF_DEV_4081,
+  FF_LSDV_4583_6,
+  FF_LSDV_4711,
+  FF_LSDV_4930,
+  isFF
+} from '../../utils/feature-flags';
 import { Pagination } from '../../common/Pagination/Pagination';
 import { Image } from './Image';
 
@@ -89,7 +99,7 @@ const Regions = memo(({ regions, useLayers = true, chunkSize = 15, suggestion = 
 
 const DrawingRegion = observer(({ item }) => {
   const { drawingRegion } = item;
-  
+
   if (!drawingRegion) return null;
   if (item.multiImage && item.currentImage !== drawingRegion.item_index) return null;
 
@@ -280,7 +290,11 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
 
   return (
     <>
-      <TransformerBack item={item}/>
+      {
+        isFF(FF_LSDV_4930)
+          ? null
+          : <TransformerBack item={item} />
+      }
       {brushRegions.length > 0 && (
         <Regions
           key="brushes"
@@ -326,7 +340,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
       window.removeEventListener('mousedown', dragHandler);
       window.removeEventListener('mouseup', dragHandler);
     };
-  },[]);
+  }, []);
 
   const disableTransform = item.zoomScale > 1 && (shift || isPanTool || isMouseWheelClick);
 
@@ -375,7 +389,7 @@ const Selection = observer(({ item, selectionArea, ...triggeredOnResize }) => {
   return (
     <>
       <SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />
-      <SelectionLayer item={item} selectionArea={selectionArea}/>
+      <SelectionLayer item={item} selectionArea={selectionArea} />
     </>
   );
 });
@@ -475,6 +489,7 @@ export default observer(
     handleDeferredMouseDown = null;
     deferredClickTimeout = [];
     skipMouseUp = false;
+    mouseDownPoint = null;
 
     constructor(props) {
       super(props);
@@ -495,8 +510,22 @@ export default observer(
       }
 
       const evt = e.evt || e;
+      const { offsetX: x, offsetY: y } = evt;
 
-      return item.event('click', evt, evt.offsetX, evt.offsetY);
+      if (isFF(FF_LSDV_4930)) {
+        // Konva can trigger click even on simple mouseup
+        // You can try drag and drop interaction here https://konvajs.org/docs/events/Stage_Events.html and check the console
+        // So here is false trigger preventing
+        if (
+          !this.mouseDownPoint
+          || Math.abs(this.mouseDownPoint.x - x) > 0.01
+          || Math.abs(this.mouseDownPoint.y - y) > 0.01
+        ) {
+          this.mouseDownPoint = null;
+          return;
+        }
+      }
+      return item.event('click', evt, x, y);
     };
 
     resetDeferredClickTimeout = () => {
@@ -514,6 +543,8 @@ export default observer(
           handleDeselection();
         }
         handleDeferredMouseDownCallback();
+        // mousedown should be called only once especially if it is called from mousemove interaction.
+        this.handleDeferredMouseDown = null;
       };
       this.resetDeferredClickTimeout();
       this.deferredClickTimeout.push(setTimeout(() => {
@@ -525,6 +556,10 @@ export default observer(
       const { item } = this.props;
       const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
 
+      if (isFF(FF_LSDV_4930)) {
+        this.mouseDownPoint = { x: e.evt.offsetX, y: e.evt.offsetY };
+      }
+
       item.updateSkipInteractions(e);
 
       const p = e.target.getParent();
@@ -534,7 +569,7 @@ export default observer(
 
       const handleMouseDown = () => {
         if (
-        // create regions over another regions with Cmd/Ctrl pressed
+          // create regions over another regions with Cmd/Ctrl pressed
           item.getSkipInteractions() ||
           e.target === item.stageRef ||
           findClosestParent(
@@ -842,7 +877,7 @@ export default observer(
 
       const containerClassName = styles.container;
 
-      const paginationEnabled = isFF(FF_LSDV_4583) && item.valuelist;
+      const paginationEnabled = !!item.isMultiItem;
 
       if (getRoot(item).settings.fullscreen === false) {
         containerStyle['maxWidth'] = item.maxwidth;
@@ -1041,6 +1076,12 @@ export default observer(
                   </Layer>
                 )}
                 {item.grid && item.sizeUpdated && <ImageGrid item={item} />}
+
+                {
+                  isFF(FF_LSDV_4930)
+                    ? <TransformerBack item={item} />
+                    : null
+                }
 
                 {renderableRegions.map(([groupName, list]) => {
                   const isBrush = groupName.match(/brush/i) !== null;
