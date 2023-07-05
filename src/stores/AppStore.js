@@ -232,6 +232,11 @@ export default types
     },
   }))
   .actions(self => {
+    let appControls;
+
+    function setAppControls(controls) {
+      appControls = controls;
+    }
     /**
      * Update settings display state
      */
@@ -258,7 +263,25 @@ export default types
         'awaitingSuggestions',
       ];
 
-      for (const n of names) if (n in flags) self[n] = flags[n];
+      for (const n of names) {
+        if (n in flags) {
+          self[n] = flags[n];
+          self.onFlagChanged(n);
+        }
+      }
+    }
+
+    function onFlagChanged(flagName) {
+      switch (flagName) {
+        case 'isLoading': {
+          if (self[flagName]) {
+            appControls?.clear();
+          } else {
+            appControls?.render();
+          }
+          break;
+        }
+      }
     }
 
     /**
@@ -773,6 +796,7 @@ export default types
 
     return {
       setFlags,
+      onFlagChanged,
       setHydrated,
       addInterface,
       hasInterface,
@@ -813,7 +837,10 @@ export default types
       postponeTask,
       beforeDestroy() {
         ToolsManager.removeAllTools();
+        appControls = null;
       },
+
+      setAppControls,
       selfDestroy() {
         const children = [];
 

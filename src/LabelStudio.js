@@ -109,31 +109,48 @@ export class LabelStudio {
     this.store = store;
     window.Htx = this.store;
 
-    render((
-      <App
-        store={this.store}
-        panels={registerPanels(this.options.panels) ?? []}
-      />
-    ), rootElement);
+    const isRendered = false;
 
-    const destructor = () => {
+    const renderApp = () => {
+      if (isRendered) {
+        clearRenderedApp();
+      }
+      render((
+        <App
+          store={this.store}
+          panels={registerPanels(this.options.panels) ?? []}
+        />
+      ), rootElement);
+    };
+
+    const clearRenderedApp = () => {
       const childNodes = [...rootElement.childNodes];
       // We need this key to be sure that cleaning will affect only current react subtree
       const reactKey = findReactKey(childNodes[0]);
 
       unmountComponentAtNode(rootElement);
       /*
-        Unmounting does not help with clearing react's fibers
-        but removing the manually helps
-        @see https://github.com/facebook/react/pull/20290 (similar problem)
-        That's may be not relevant in the the 18 version
-       */
+              Unmounting does not help with clearing React's fibers
+              but removing the manually helps
+              @see https://github.com/facebook/react/pull/20290 (similar problem)
+              That's maybe not relevant in version 18
+             */
       cleanDomAfterReact(childNodes, reactKey);
       cleanDomAfterReact([rootElement], reactKey);
+    };
+
+    renderApp();
+    store.setAppControls({
+      render: renderApp,
+      clear: clearRenderedApp,
+    });
+
+    this.destroy = () => {
+      clearRenderedApp();
       destroySharedStore();
       /*
          It seems that destroying children separately helps GC to collect garbage
-         as wel as nulling all these this.store
+         as well as nulling all these this.store
        */
       this.store.selfDestroy();
       destroy(this.store);
@@ -141,8 +158,6 @@ export class LabelStudio {
       this.destroy = null;
       this.constructor.instances.delete(this);
     };
-
-    this.destroy = destructor;
   }
 
   supportLgacyEvents() {
