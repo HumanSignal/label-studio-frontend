@@ -73,12 +73,6 @@ export const FF_DEV_2431 = 'ff_front_dev_2431_delete_polygon_points_080622_short
 
 export const FF_DEV_2432 = 'ff_front_dev_2432_auto_save_polygon_draft_210622_short';
 
-/**
- * Audio + Paragraphs sync playback of chunk position
- * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short
- */
-export const FF_DEV_2461 = 'fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short';
-
 // Undo keypoints when create new polygon
 export const FF_DEV_2576 = 'ff_feat_front_DEV_2576_undo_key_points_polygon_short';
 
@@ -171,6 +165,12 @@ export const FF_DEV_4081 = 'fflag_feat_front_dev_4081_magic_wand_tool';
 export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10012023_short';
 
 /**
+ * Contextual scrolling of Paragraph segments with Audio V0
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_e_278_contextual_scrolling_short/targeting
+ */
+export const FF_LSDV_E_278 = 'fflag_feat_front_lsdv_e_278_contextual_scrolling_short';
+
+/**
  * Fix logic of namespaces inside Hotkeys
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
  */
@@ -193,11 +193,6 @@ export const FF_LSDV_4583_6 = 'fflag_feat_front_lsdv_4583_6_images_preloading_sh
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
  */
 export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short';
-
-/**
- * New Syncable mixin for better sync
- */
-export const FF_LSDV_3012 = 'fflag_feat_front_lsdv_3012_syncable_tags_070423_short';
 
 /**
  * Adding "skipDuplicates" parameter for <TextArea /> to preventing adding duplicate entries
@@ -239,6 +234,16 @@ export const FF_LSDV_4832 = 'fflag_feat_front_lsdv_4832_new_ranker_tag_120423_sh
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4881_timeseties_points_missing_140423_short
  */
 export const FF_LSDV_4881 = 'fflag_fix_front_lsdv_4881_timeseries_points_missing_140423_short';
+
+/** Fix "No Label" for Dynamic Labels by switching off missing labels removal */
+export const FF_LSDV_4988 = 'fflag_fix_front_lsdv_4988_dynamic_no_label_120523_short';
+
+/**
+ * Fixing issues related to selection tool functional (selecting hidden regions, onClick in Konva, interaction with regions inside selection area)
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4930_selection_tool_fixes_240423_short
+ */
+export const FF_LSDV_4930 = 'fflag_fix_front_lsdv_4930_selection_tool_fixes_240423_short';
 
 /**
  * Restore "hide all regions" button functionality in the outliner

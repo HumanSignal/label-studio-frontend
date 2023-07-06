@@ -84,10 +84,6 @@ const Model = types
       return states && states.length > 0;
     },
 
-    get regs() {
-      return self.annotation.regionStore.regions.filter(r => r.object === self);
-    },
-
     states() {
       return self.annotation.toNames.get(self.name);
     },

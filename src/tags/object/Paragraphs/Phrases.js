@@ -2,7 +2,6 @@ import { observer } from 'mobx-react';
 import { getRoot } from 'mobx-state-tree';
 import { Button } from 'antd';
 import { PauseCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
-import { FF_LSDV_3012, isFF } from '../../../utils/feature-flags';
 import styles from './Paragraphs.module.scss';
 
 export const Phrases = observer(({ item }) => {
@@ -15,7 +14,7 @@ export const Phrases = observer(({ item }) => {
     const style = item.layoutStyles(v);
     const classNames = [cls.phrase];
     const isContentVisible = item.isVisibleForAuthorFilter(v);
-    const isPlaying = item.playingId === idx && (!isFF(FF_LSDV_3012) || item.playing);
+    const isPlaying = item.playingId === idx && item.playing;
 
     if (withAudio) classNames.push(styles.withAudio);
     if (!isContentVisible) classNames.push(styles.collapsed);

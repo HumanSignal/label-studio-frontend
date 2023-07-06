@@ -22,6 +22,9 @@ import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
 /**
  * The `Choice` tag represents a single choice for annotations. Use with the `Choices` tag or `Taxonomy` tag to provide specific choice options.
  *
+ * [^FF_DEV_2007]: `ff_dev_2007_rework_choices_280322_short` should be enabled to use `html` attribute
+ * [^FF_PROD_309]: The `hint` attribute works only when `fflag_feat_front_prod_309_choice_hint_080523_short` is enabled
+ *
  * @example
  * <!--Basic text classification labeling configuration-->
  * <View>
@@ -41,7 +44,8 @@ import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
  * @param {string} [alias]     - Alias for the choice. If used, the alias replaces the choice value in the annotation results. Alias does not display in the interface.
  * @param {style} [style]      - CSS style of the checkbox element
  * @param {string} [hotkey]    - Hotkey for the selection
- * @param {string} [hint]      - Hint for choice on hover (it works when fflag_feat_front_prod_309_choice_hint_080523_short is enabled)
+ * @param {string} [html]      - can be used to show enriched content[^FF_DEV_2007], it has higher priority than `value`, however `value` will be used in the exported result (should be properly escaped)
+ * @param {string} [hint]      - Hint for choice on hover[^FF_PROD_309]
  */
 const TagAttrs = types.model({
   ...(isFF(FF_DEV_3391) ? { id: types.identifier } : {}),
