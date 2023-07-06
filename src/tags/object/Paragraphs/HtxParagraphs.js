@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 
 import ObjectTag from '../../../components/Tags/Object';
-import { FF_DEV_2669, FF_DEV_2918, FF_LSDV_3012, FF_LSDV_4711, FF_LSDV_E_278, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2669, FF_DEV_2918, FF_LSDV_4711, FF_LSDV_E_278, isFF } from '../../../utils/feature-flags';
 import { findNodeAt, matchesSelector, splitBoundaries } from '../../../utils/html';
 import { isSelectionContainsSpan } from '../../../utils/selection-tools';
 import styles from './Paragraphs.module.scss';
@@ -425,7 +425,10 @@ class HtxParagraphsView extends Component {
   }
 
   componentWillUnmount() {
-    this._resizeObserver.unobserve(document.querySelector('.lsf-main-content'));
+    const target = document.querySelector('.lsf-main-content');
+    
+    if (target) this._resizeObserver?.unobserve(target);
+    this._resizeObserver?.disconnect();
   }
 
   render() {
@@ -444,12 +447,8 @@ class HtxParagraphsView extends Component {
             controls={item.showplayer && !item.syncedAudio}
             className={styles.audio}
             src={item.audio}
-            {...(isFF(FF_LSDV_3012) ? {
-              ref: item.audioRef,
-              onLoadedMetadata: item.handleAudioLoaded,
-            } : {
-              ref: item.getRef(),
-            })}
+            ref={item.audioRef}
+            onLoadedMetadata={item.handleAudioLoaded}
             onEnded={item.reset}
             onError={item.handleError}
             onCanPlay={item.handleCanPlay}

@@ -73,12 +73,6 @@ export const FF_DEV_2431 = 'ff_front_dev_2431_delete_polygon_points_080622_short
 
 export const FF_DEV_2432 = 'ff_front_dev_2432_auto_save_polygon_draft_210622_short';
 
-/**
- * Audio + Paragraphs sync playback of chunk position
- * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short
- */
-export const FF_DEV_2461 = 'fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short';
-
 // Undo keypoints when create new polygon
 export const FF_DEV_2576 = 'ff_feat_front_DEV_2576_undo_key_points_polygon_short';
 
@@ -199,11 +193,6 @@ export const FF_LSDV_4583_6 = 'fflag_feat_front_lsdv_4583_6_images_preloading_sh
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
  */
 export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short';
-
-/**
- * New Syncable mixin for better sync
- */
-export const FF_LSDV_3012 = 'fflag_feat_front_lsdv_3012_syncable_tags_070423_short';
 
 /**
  * Adding "skipDuplicates" parameter for <TextArea /> to preventing adding duplicate entries

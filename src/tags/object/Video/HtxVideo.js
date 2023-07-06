@@ -13,7 +13,7 @@ import { defaultStyle } from '../../../core/Constants';
 import { useFullscreen } from '../../../hooks/useFullscreen';
 import { useToggle } from '../../../hooks/useToggle';
 import { Block, Elem } from '../../../utils/bem';
-import { FF_DEV_2715, FF_LSDV_3012, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2715, isFF } from '../../../utils/feature-flags';
 import ResizeObserver from '../../../utils/resize-observer';
 import { clamp, isDefined } from '../../../utils/utilities';
 import './Video.styl';
@@ -307,9 +307,6 @@ const HtxVideoView = ({ item, store }) => {
     item.setOnlyFrame(1);
     item.setLength(length);
     item.setReady(true);
-    if (isFFDev2715 && !isFF(FF_LSDV_3012)) {
-      item.setSyncedDuration(item.ref.current?.duration);
-    }
   }, [item, setVideoLength]);
 
   const handleVideoResize = useCallback((videoDimensions) => {
@@ -325,7 +322,7 @@ const HtxVideoView = ({ item, store }) => {
   const handlePlay = useCallback(() => {
     setPlaying((_playing) => {
       // Audio v3 & Syncable
-      if (isFFDev2715 && isFF(FF_LSDV_3012)) {
+      if (isFFDev2715) {
         if (!item.ref.current.playing) {
           // @todo item.ref.current.playing? could be buffering and other states
           item.ref.current.play();
@@ -333,14 +330,6 @@ const HtxVideoView = ({ item, store }) => {
         }
         return true;
       }
-      // Audio v3
-      else if (isFFDev2715) {
-        if (item.isCurrentlyPlaying === false) {
-          item.triggerSyncPlay();
-          return true;
-        }
-        return item.isCurrentlyPlaying;
-      } 
       // Audio v1,v2
       else {
         if (_playing === false) {
@@ -356,20 +345,12 @@ const HtxVideoView = ({ item, store }) => {
   const handlePause = useCallback(() => {
     setPlaying((_playing) => {
       // Audio v3 & Syncable
-      if (isFFDev2715 && isFF(FF_LSDV_3012)) {
+      if (isFFDev2715) {
         if (item.ref.current.playing) {
           item.ref.current.pause();
           item.triggerSyncPause();
         }
         return false;
-      }
-      // Audio v3
-      else if (isFFDev2715) {
-        if (item.isCurrentlyPlaying === true) {
-          item.triggerSyncPause();
-          return false;
-        }
-        return item.isCurrentlyPlaying;
       }
       // Audio v1,v2
       else {
