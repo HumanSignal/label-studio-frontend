@@ -69,6 +69,15 @@ $border-thin: 1px solid rgba(137, 128, 152, 0.16);
   padding: 8px;
 }
 
+.wrapper_header {
+  display: flex;
+  justify-content: space-between;
+
+  &__buttons {
+
+  }
+}
+
 .container {
   position: relative;
   overflow: auto;

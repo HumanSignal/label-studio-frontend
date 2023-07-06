@@ -8,6 +8,9 @@ import { isSelectionContainsSpan } from '../../../utils/selection-tools';
 import styles from './Paragraphs.module.scss';
 import { AuthorFilter } from './AuthorFilter';
 import { Phrases } from './Phrases';
+import Toggle from '../../../common/Toggle/Toggle';
+import { IconHelp } from '../../../assets/icons';
+import { Tooltip } from '../../../common/Tooltip/Tooltip';
 
 const audioDefaultProps = {};
 
@@ -22,6 +25,9 @@ class HtxParagraphsView extends Component {
     this.lastPlayingId = -1;
     this.scrollTimeout = [];
     this.isPlaying = false;
+    this.state = {
+      canScroll: true,
+    };
   }
 
   getSelectionText(sel) {
@@ -409,7 +415,7 @@ class HtxParagraphsView extends Component {
     });
 
 
-    if (isFF(FF_LSDV_E_278) && this.props.item.contextscroll && item.playingId >= 0 && this.lastPlayingId !== item.playingId) {
+    if (isFF(FF_LSDV_E_278) && this.props.item.contextscroll && item.playingId >= 0 && this.lastPlayingId !== item.playingId && this.state.canScroll) {
       const _start = this.props.item._value[item.playingId].start;
       const _end = this.props.item._value[item.playingId].end;
       const _phaseHeight = root.querySelectorAll('div')[item.playingId]?.offsetHeight || 0;
@@ -509,7 +515,23 @@ class HtxParagraphsView extends Component {
             onCanPlay={item.handleCanPlay}
           />
         )}
-        {isFF(FF_DEV_2669) && <AuthorFilter item={item} />}
+        {isFF(FF_DEV_2669) && (
+          <div className={styles.wrapper_header}>
+            <AuthorFilter item={item} />
+            <div className={styles.wrapper_header__buttons}>
+              <Toggle
+                checked={this.state.canScroll}
+                onChange={() => {
+                  this.setState({ canScroll: !this.state.canScroll });
+                }}
+                label={'Auto-scroll'}
+              />
+              <Tooltip placement="topLeft" title="Automatically sync transcript scrolling with audio playback">
+                <IconHelp />
+              </Tooltip>
+            </div>
+          </div>
+        )}
         <div
           ref={this.myRef}
           data-testid="phrases-wrapper"
