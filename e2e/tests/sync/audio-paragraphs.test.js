@@ -311,5 +311,44 @@ FFlagMatrix(['fflag_feat_front_lsdv_e_278_contextual_scrolling_short'], function
 
       await assert.equal(scrollPosition.scrollTop, 0);
     });
+
+    FFlagScenario('Paragraph shouldnt automatically scroll if user disable the auto-scroll toggle', async function({ I, LabelStudio, AtAudioView }) {
+      LabelStudio.setFeatureFlags({
+        ff_front_dev_2715_audio_3_280722_short: true,
+        ff_front_1170_outliner_030222_short: true,
+        ...flags,
+      });
+
+      params.config = configWithScroll;
+
+      I.amOnPage('/');
+
+      LabelStudio.init(params);
+
+      await AtAudioView.waitForAudio();
+      await AtAudioView.lookForStage();
+
+      const [{ currentTime: startingAudioTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
+
+      assert.equal(startingAudioTime, startingParagraphAudioTime);
+      assert.equal(startingParagraphAudioTime, 0);
+
+      I.click('[data-testid="auto-scroll-toggle"]');
+
+      AtAudioView.clickPlayButton();
+
+      I.wait(10);
+
+      const scrollPosition = await I.executeScript(function(selector) {
+        const element = document.querySelector(selector);
+
+        return {
+          scrollTop: element.scrollTop,
+          scrollLeft: element.scrollLeft,
+        };
+      }, '[data-testid="phrases-wrapper"]');
+
+      await assert.equal(scrollPosition.scrollTop, 0);
+    });
   }
 });

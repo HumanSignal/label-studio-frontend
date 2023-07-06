@@ -520,6 +520,7 @@ class HtxParagraphsView extends Component {
             <AuthorFilter item={item} />
             <div className={styles.wrapper_header__buttons}>
               <Toggle
+                datatest-id={'auto-scroll-toggle'}
                 checked={this.state.canScroll}
                 onChange={() => {
                   this.setState({ canScroll: !this.state.canScroll });
