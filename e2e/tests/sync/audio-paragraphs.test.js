@@ -1,4 +1,5 @@
 const assert = require('assert');
+const { FFlagMatrix, FFlagScenario } = require('../../utils/feature-flags');
 
 Feature('Sync: Audio Paragraphs');
 
@@ -25,29 +26,33 @@ const data = {
   url: 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3',
   text: [
     {
-      'end': 5.6,
+      'end': 2,
       'text': 'Dont you hate that?',
-      'start': 3.1,
+      'start': 0,
       'author': 'Mia Wallace',
     },
     {
       'text': 'Hate what?',
-      'start': 4.2,
+      'start': 2,
       'author': 'Vincent Vega:',
-      'duration': 3.1,
+      'duration': 2,
     },
     {
       'text': 'Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?',
       'author': 'Mia Wallace:',
+      'start': 4,
+      'end': 6,
     },
     {
       'text': 'I dont know. Thats a good question.',
-      'start': 90,
+      'start': 6,
+      'end': 8,
       'author': 'Vincent Vega:',
     },
     {
       'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
+      'start': 8,
     },
   ],
 };
@@ -91,36 +96,87 @@ const annotations = [
 
 const params = {  annotations: [{ id: 'test', result: annotations }], config, data };
 
-Scenario('Check audio clip is played when using the new sync option', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
-  LabelStudio.setFeatureFlags({
-    fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short: true,
-    ff_front_dev_2715_audio_3_280722_short: true,
-    fflag_feat_front_lsdv_3012_syncable_tags_070423_short: true,
+FFlagMatrix(['fflag_feat_front_lsdv_e_278_contextual_scrolling_short'], function(flags) {
+  FFlagScenario('Audio clip is played when selecting the play button next to a paragraph segment', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_2715_audio_3_280722_short: true,
+      ...flags,
+    });
+
+    I.amOnPage('/');
+
+    LabelStudio.init(params);
+
+    await AtAudioView.waitForAudio();
+    await AtAudioView.lookForStage();
+
+    AtSidebar.seeRegions(2);
+
+    const [{ currentTime: startingAudioTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
+
+    assert.equal(startingAudioTime, startingParagraphAudioTime);
+    assert.equal(startingParagraphAudioTime, 0);
+
+    I.click('[aria-label="play-circle"]');
+    I.wait(1);
+
+    I.click('[aria-label="pause-circle"]');
+    I.wait(1);
+
+    const [{ currentTime: seekAudioTime }, { currentTime: seekParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
+
+    assert.notEqual(seekAudioTime, 0);
+    I.assertTimesInSync(seekAudioTime, seekParagraphAudioTime, `Expected seek time to be ${seekAudioTime} but was ${seekParagraphAudioTime}`);
   });
 
-  I.amOnPage('/');
+  if (flags['fflag_feat_front_lsdv_e_278_contextual_scrolling_short']) {
+    FFlagScenario('Playback button states continually change over time according to the paragraph segment which is being played', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
 
-  LabelStudio.init(params);
+      LabelStudio.setFeatureFlags({
+        ff_front_dev_2715_audio_3_280722_short: true,
+        ...flags,
+      });
 
-  await AtAudioView.waitForAudio();
-  await AtAudioView.lookForStage();
+      I.amOnPage('/');
 
-  AtSidebar.seeRegions(2);
+      LabelStudio.init(params);
 
-  const [{ currentTime: startingAudioTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
+      await AtAudioView.waitForAudio();
+      await AtAudioView.lookForStage();
 
-  assert.equal(startingAudioTime, startingParagraphAudioTime);
-  assert.equal(startingParagraphAudioTime, 0);
+      AtSidebar.seeRegions(2);
 
-  I.click('[aria-label="play-circle"]');
-  I.wait(1);
+      const [{ currentTime: startingAudioTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
 
-  I.click('[aria-label="pause-circle"]');
-  I.wait(1);
+      assert.equal(startingAudioTime, startingParagraphAudioTime);
+      assert.equal(startingParagraphAudioTime, 0);
 
-  const [{ currentTime: seekAudioTime }, { currentTime: seekParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
+      AtAudioView.clickPauseButton();
 
-  assert.notEqual(seekAudioTime, 0);
-  I.assertTimesInSync(seekAudioTime, seekParagraphAudioTime, `Expected seek time to be ${seekAudioTime} but was ${seekParagraphAudioTime}`);
+      // Plays the first paragraph segment when the audio interface is played
+      I.seeElement('[data-testid="phrase:0"] [aria-label="pause-circle"]');
+      I.seeElement('[data-testid="phrase:1"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:2"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:3"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:4"] [aria-label="play-circle"]');
+
+      I.wait(2);
+
+      // Plays the second paragraph segment when the audio progresses to the second paragraph segment
+      I.seeElement('[data-testid="phrase:1"] [aria-label="pause-circle"]');
+      I.seeElement('[data-testid="phrase:0"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:2"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:3"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:4"] [aria-label="play-circle"]');
+
+      I.wait(2);
+
+      // Plays the third paragraph segment when the audio progresses to the third paragraph segment
+      I.seeElement('[data-testid="phrase:2"] [aria-label="pause-circle"]');
+      I.seeElement('[data-testid="phrase:0"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:1"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:3"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:4"] [aria-label="play-circle"]');
+    });
+  }
 });
-
