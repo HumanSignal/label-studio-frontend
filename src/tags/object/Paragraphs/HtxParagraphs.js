@@ -416,12 +416,14 @@ class HtxParagraphsView extends Component {
 
 
     if (isFF(FF_LSDV_E_278) && this.props.item.contextscroll && item.playingId >= 0 && this.lastPlayingId !== item.playingId && this.state.canScroll) {
-      const _start = this.props.item._value[item.playingId].start;
-      const _end = this.props.item._value[item.playingId].end;
+      const _padding = 8; // 8 is the padding between the phrases, so it will keep aligned with the top of the phrase
+      const _playingItem = this.props.item._value[item.playingId];
+      const _start = _playingItem.start;
+      const _end = _playingItem.end;
       const _phaseHeight = root.querySelectorAll('div')[item.playingId]?.offsetHeight || 0;
       const _duration = this.props.item._value[item.playingId].duration || _end - _start;
       const _wrapperHeight = root.offsetHeight;
-      const _wrapperOffsetTop = root.querySelectorAll('div')[item.playingId]?.offsetTop - 8; // 8 is the padding between the phrases, so it will keep aligned with the top of the phrase
+      const _wrapperOffsetTop = root.querySelectorAll('div')[item.playingId]?.offsetTop - _padding;
       const _splittedText = 10; // it will be from 0 to 100% of the text height, going 10% by 10%
 
       this._disposeTimeout();
