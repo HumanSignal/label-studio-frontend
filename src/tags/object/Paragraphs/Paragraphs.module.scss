@@ -72,9 +72,16 @@ $border-thin: 1px solid rgba(137, 128, 152, 0.16);
 .wrapper_header {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 16px;
+  align-items: center;
 
   &__buttons {
+    display: flex;
+    align-items: center;
 
+    &:only-child {
+      margin-left: auto;
+    }
   }
 }
 
@@ -107,7 +114,6 @@ $border-thin: 1px solid rgba(137, 128, 152, 0.16);
   width: 100%;
   min-width: 320px;
   max-width: max-content;
-  margin-bottom: 16px;
 
   &__showall {
     display: inline-flex;

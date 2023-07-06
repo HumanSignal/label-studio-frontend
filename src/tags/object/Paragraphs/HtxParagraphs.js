@@ -515,12 +515,14 @@ class HtxParagraphsView extends Component {
             onCanPlay={item.handleCanPlay}
           />
         )}
-        {isFF(FF_DEV_2669) && (
-          <div className={styles.wrapper_header}>
+        <div className={styles.wrapper_header}>
+          {isFF(FF_DEV_2669) && (
             <AuthorFilter item={item} />
+          )}
+          {isFF(FF_LSDV_E_278) && (
             <div className={styles.wrapper_header__buttons}>
               <Toggle
-                datatest-id={'auto-scroll-toggle'}
+                data-testid={'auto-scroll-toggle'}
                 checked={this.state.canScroll}
                 onChange={() => {
                   this.setState({ canScroll: !this.state.canScroll });
@@ -531,8 +533,8 @@ class HtxParagraphsView extends Component {
                 <IconHelp />
               </Tooltip>
             </div>
-          </div>
-        )}
+          )}
+        </div>
         <div
           ref={this.myRef}
           data-testid="phrases-wrapper"
