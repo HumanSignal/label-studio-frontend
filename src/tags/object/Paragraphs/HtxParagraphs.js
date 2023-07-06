@@ -22,6 +22,7 @@ class HtxParagraphsView extends Component {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
+    this.activeRef = React.createRef();
     this.lastPlayingId = -1;
     this.scrollTimeout = [];
     this.isPlaying = false;
@@ -420,10 +421,10 @@ class HtxParagraphsView extends Component {
       const _playingItem = this.props.item._value[item.playingId];
       const _start = _playingItem.start;
       const _end = _playingItem.end;
-      const _phaseHeight = root.querySelectorAll('div')[item.playingId]?.offsetHeight || 0;
+      const _phaseHeight = this.activeRef.current?.offsetHeight || 0;
       const _duration = this.props.item._value[item.playingId].duration || _end - _start;
       const _wrapperHeight = root.offsetHeight;
-      const _wrapperOffsetTop = root.querySelectorAll('div')[item.playingId]?.offsetTop - _padding;
+      const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
       const _splittedText = 10; // it will be from 0 to 100% of the text height, going 10% by 10%
 
       this._disposeTimeout();
@@ -544,7 +545,7 @@ class HtxParagraphsView extends Component {
           className={contextScroll ? styles.scroll_container : styles.container}
           onMouseUp={this.onMouseUp.bind(this)}
         >
-          <Phrases item={item} playingId={item.playingId} />
+          <Phrases item={item} playingId={item.playingId} activeRef={this.activeRef} />
         </div>
       </ObjectTag>
     );
