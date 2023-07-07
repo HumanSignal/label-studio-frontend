@@ -8,6 +8,7 @@ import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import { SyncableMixin } from '../../../mixins/Syncable';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
+import { FF_LSDV_E_278, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
@@ -298,11 +299,31 @@ export const AudioModel = types.compose(
         },
 
         onReady() {
+          if (isFF(FF_LSDV_E_278)) {
+            self.loadSyncedParagraphs();
+          }
+
           self.setReady(true);
         },
 
         onRateChange(rate) {
           self.triggerSyncSpeed(rate);
+        },
+
+        /**
+         * Load any synced paragraph text segments which contain start and end values
+         * as Audio segments for visualization of the excerpts within the audio track
+         **/
+        loadSyncedParagraphs() {
+          // find synced paragraphs if any
+          // and add their regions to the audio
+          const syncedParagraphs = Array.from(self.syncManager.syncTargets, ([,value]) => value).filter(target => target.type === 'paragraphs' && target.contextscroll);
+
+          syncedParagraphs.forEach(paragraph => {
+            const segments = Object.values(paragraph.regionsStartEnd).map(({ start, end }) => ({ start, end, showInTimeline: true, external: true, locked: true }));
+
+            self._ws.addRegions(segments);
+          });
         },
 
         handleNewRegions() {

@@ -83,7 +83,11 @@ export class Regions {
 
   renderAll() {
     this.layerGroup.clear();
-    this.regions.forEach(region => region.render());
+    const currentTime = this.waveform.currentTime;
+    this.regions.forEach(region => {
+      region.highlighted = (region.start <= currentTime && region.end >= currentTime);
+      region.render();
+    });
   }
 
   regionDrawableTarget() {
@@ -100,12 +104,20 @@ export class Regions {
 
   clearSegments(selectedOnly = false) {
     this.regions = this.regions.filter(region => {
-      if (!region.isRegion && (!selectedOnly || region.selected)) {
+      if (!region.isRegion && (!selectedOnly || region.selected) && !region.external) {
         region.destroy();
         return false;
       }
       return true;
     });
+  }
+
+  addRegions(regions: RegionOptions[], render = true) {
+    regions.forEach(region => this.addRegion(region, false));
+
+    if (render) {
+      this.redraw();
+    }
   }
 
   addRegion(options: RegionOptions, render = true) {
@@ -245,6 +257,10 @@ export class Regions {
 
   get selected() {
     return this.regions.filter(region => region.selected);
+  }
+
+  get timelineRegions() {
+    return this.regions.filter(region => region.showInTimeline);
   }
 
   get visible() {
