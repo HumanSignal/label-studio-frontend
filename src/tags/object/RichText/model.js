@@ -249,8 +249,8 @@ const Model = types
       beforeDestroy() {
         self.regsObserverDisposer?.();
         if (isFF(FF_LSDV_4620_3)) {
-          domManager.removeStyles(self.name);
-          domManager.destroy();
+          domManager?.removeStyles(self.name);
+          domManager?.destroy();
           beforeNeedsUpdateCallback = null;
           afterNeedsUpdateCallback = null;
           domManager = null;
