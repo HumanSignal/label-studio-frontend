@@ -263,25 +263,7 @@ export default types
         'awaitingSuggestions',
       ];
 
-      for (const n of names) {
-        if (n in flags) {
-          self[n] = flags[n];
-          self.onFlagChanged(n);
-        }
-      }
-    }
-
-    function onFlagChanged(flagName) {
-      switch (flagName) {
-        case 'isLoading': {
-          if (self[flagName]) {
-            appControls?.clear();
-          } else {
-            appControls?.render();
-          }
-          break;
-        }
-      }
+      for (const n of names) if (n in flags) self[n] = flags[n];
     }
 
     /**
