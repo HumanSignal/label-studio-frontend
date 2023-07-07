@@ -12,7 +12,9 @@ export function cutFibers(object) {
 
       if (prop && isWritable) {
         if (typeof prop === 'object' && {}.hasOwnProperty.call(prop, 'stateNode')) {
-          objects.push(obj[key]);
+          if (!prop.stateNode || !(prop.stateNode.isMounted || prop.stateNode.isConnected)) {
+            objects.push(obj[key]);
+          }
         }
         obj[key] = null;
       }
