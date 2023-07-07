@@ -47,6 +47,7 @@ import { isDefined } from '../../utils/utilities';
 import { FF_DEV_1170, FF_DEV_3873, isFF } from '../../utils/feature-flags';
 import { Annotation } from './Annotation';
 import { Button } from '../../common/Button/Button';
+import { reactCleaner } from '../../utils/reactCleaner';
 
 /**
  * App
@@ -220,7 +221,7 @@ class App extends Component {
     const newUIEnabled = isFF(FF_DEV_3873);
 
     return (
-      <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !outlinerEnabled }}>
+      <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !outlinerEnabled }} ref={reactCleaner(this)}>
         <Settings store={store} />
         <Provider store={store}>
           {newUIEnabled ? (

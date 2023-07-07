@@ -12,57 +12,11 @@ import { Hotkey } from './core/Hotkey';
 import defaultOptions from './defaultOptions';
 import { destroy } from 'mobx-state-tree';
 import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
+import { cleanDomAfterReact, findReactKey } from './utils/reactCleaner';
 
 configure({
   isolateGlobalState: true,
 });
-
-function cutFibers(object) {
-  const objects = [object];
-  let obj;
-
-  while ((obj = objects.pop())) {
-    const keys = Object.keys(obj);
-
-    for (const key of keys) {
-      const prop = obj[key];
-
-      if (prop && typeof prop === 'object' && {}.hasOwnProperty.call(prop, 'stateNode')) {
-        objects.push(obj[key]);
-        obj[key] = null;
-      }
-    }
-  }
-}
-
-function findReactKey(node) {
-  const keys = Object.keys(node);
-
-  for (const key of keys) {
-    const match = RegExp(/^__reactProps(\$[^$]+)$/).exec(key);
-
-    if (match) {
-      return match[1];
-    }
-  }
-  return '';
-}
-
-function cleanDomAfterReact(nodes, reactKey) {
-  for (const node of nodes) {
-    const reactPropKeys = (Object.keys(node)).filter(key => key.startsWith('__react') && (!RegExp(/^(?:__reactProps|__reactFiber)/).exec(key) || RegExp(new RegExp(`\\${reactKey}$`)).exec(key)));
-
-    if (reactPropKeys.length) {
-      for (const key of reactPropKeys) {
-        cutFibers(node[key]);
-        node[key] = null;
-      }
-      if (node.childNodes) {
-        cleanDomAfterReact(node.childNodes, reactKey);
-      }
-    }
-  }
-}
 
 export class LabelStudio {
   static instances = new Set();
