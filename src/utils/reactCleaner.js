@@ -12,9 +12,7 @@ export function cutFibers(object) {
 
       if (prop && isWritable) {
         if (typeof prop === 'object' && {}.hasOwnProperty.call(prop, 'stateNode')) {
-          if (!prop.stateNode || !(prop.stateNode.isMounted || prop.stateNode.isConnected)) {
-            objects.push(obj[key]);
-          }
+          objects.push(obj[key]);
         }
         obj[key] = null;
       }
@@ -37,6 +35,7 @@ export function findReactKey(node) {
 
 export function cleanDomAfterReact(nodes, reactKey) {
   for (const node of nodes) {
+    if (node.isConnected) return;
     const reactPropKeys = (Object.keys(node)).filter(key => key.startsWith('__react') && (!RegExp(/^(?:__reactProps|__reactFiber)/).exec(key) || RegExp(new RegExp(`\\${reactKey}$`)).exec(key)));
 
     if (reactPropKeys.length) {
