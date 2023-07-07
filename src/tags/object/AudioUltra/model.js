@@ -299,10 +299,6 @@ export const AudioModel = types.compose(
         },
 
         onReady() {
-          if (isFF(FF_LSDV_E_278)) {
-            self.loadSyncedParagraphs();
-          }
-
           self.setReady(true);
         },
 
@@ -469,6 +465,9 @@ export const AudioModel = types.compose(
 
           self.onReady();
           self.needsUpdate();
+          if (isFF(FF_LSDV_E_278)) {
+            self.loadSyncedParagraphs();
+          }
         },
 
         onSeek(time) {
