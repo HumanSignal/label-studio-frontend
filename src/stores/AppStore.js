@@ -622,6 +622,7 @@ export default types
         }
         detach(oldAnnotationStore);
         destroy(oldAnnotationStore);
+        appControls?.clear();
       }
 
       self.annotationStore = AnnotationStore.create({ annotations: [] });
@@ -638,7 +639,7 @@ export default types
     }
 
     /**
-     * Function to initilaze annotation store
+     * Function to initialize annotation store
      * Given annotations and predictions
      * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
      */
@@ -649,6 +650,9 @@ export default types
 
       if (!as.initialized) {
         as.initRoot(self.config);
+        if (!appControls?.isRendered()) {
+          appControls?.render();
+        }
       }
 
       // Allow tags to decide whether to load individual data (audio, video, etc)

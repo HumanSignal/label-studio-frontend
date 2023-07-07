@@ -141,6 +141,9 @@ export class LabelStudio {
 
     renderApp();
     store.setAppControls({
+      isRendered() {
+        return isRendered;
+      },
       render: renderApp,
       clear: clearRenderedApp,
     });
