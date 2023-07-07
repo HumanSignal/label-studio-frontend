@@ -18,7 +18,7 @@ export const HighlightMixin = types
       ) : false;
     },
     get identifier() {
-      return self.id.split('#')[0];
+      return `${self.id.split('#')[0]}$${self.ouid}`;
     },
     get className() {
       return `${HIGHLIGHT_CN}-${self.identifier}`;
