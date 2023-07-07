@@ -5,13 +5,10 @@ import { guidGenerator } from '../../../core/Helpers.ts';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
-import { SyncMixin } from '../../../mixins/SyncMixin';
 import { SyncableMixin } from '../../../mixins/Syncable';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_LSDV_3012, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
-import { isTimeSimilar } from '../../../lib/AudioUltra';
 import ObjectBase from '../Base';
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
 
@@ -119,7 +116,7 @@ const TagAttrs = types.model({
 export const AudioModel = types.compose(
   'AudioModel',
   TagAttrs,
-  isFF(FF_LSDV_3012) ? SyncableMixin : SyncMixin,
+  SyncableMixin,
   ProcessAttrsMixin,
   ObjectBase,
   AnnotationMixin,
@@ -166,7 +163,7 @@ export const AudioModel = types.compose(
       },
     }))
     ////// Sync actions
-    .actions(!isFF(FF_LSDV_3012) ? (() => ({})) : self => ({
+    .actions(self => ({
       ////// Outgoing
 
       triggerSync(event, data) {
@@ -255,62 +252,6 @@ export const AudioModel = types.compose(
         self._ws.muted = muted;
       },
     }))
-    .actions(self => {
-      if (isFF(FF_LSDV_3012)) return {};
-
-      const Super = {
-        triggerSyncPlay: self.triggerSyncPlay,
-        triggerSyncPause: self.triggerSyncPause,
-      };
-
-      return {
-        triggerSyncPlay() {
-          if (self.syncedObject) {
-            Super.triggerSyncPlay();
-          } else {
-            self.handleSyncPlay();
-          }
-        },
-
-        triggerSyncPause() {
-          if (self.syncedObject) {
-            Super.triggerSyncPause();
-          } else {
-            self.handleSyncPause();
-          }
-        },
-
-        handleSyncPlay() {
-          if (!self._ws) return;
-          if (self._ws.playing && self.isCurrentlyPlaying) return;
-
-          self.isCurrentlyPlaying = true;
-          self._ws?.play();
-        },
-
-        handleSyncPause() {
-          if (!self._ws) return;
-          if (!self._ws.playing && !self.isCurrentlyPlaying) return;
-
-          self.isCurrentlyPlaying = false;
-          self._ws?.pause();
-        },
-
-        handleSyncSpeed() { },
-        handleSyncDuration() { },
-
-        handleSyncSeek(time) {
-          if (!self._ws?.loaded || isTimeSimilar(time, self._ws.currentTime)) return;
-
-          try {
-            self._ws.currentTime = time;
-            self._ws.syncCursor(); // sync cursor with other tags
-          } catch (err) {
-            console.log(err);
-          }
-        },
-      };
-    })
     .actions(self => {
       let dispose;
       let updateTimeout = null;
@@ -505,7 +446,6 @@ export const AudioModel = types.compose(
           self.clearRegionMappings();
           self._ws = ws;
 
-          if (!isFF(FF_LSDV_3012)) self.setSyncedDuration(self._ws.duration);
           self.onReady();
           self.needsUpdate();
         },
