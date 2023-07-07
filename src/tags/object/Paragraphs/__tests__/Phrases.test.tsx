@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { Phrases } from '../Phrases';
 import { getRoot } from 'mobx-state-tree';
+import { mockFF } from '../../../../../__mocks__/global';
+import { FF_LSDV_E_278 } from '../../../../utils/feature-flags';
+
+const ff = mockFF();
 
 jest.mock('mobx-state-tree', () => ({
   ...jest.requireActual('mobx-state-tree'),
@@ -8,6 +12,16 @@ jest.mock('mobx-state-tree', () => ({
 }));
 
 describe('Phrases Component', () => {
+  beforeAll(() => {
+    ff.setup();
+    ff.set({
+      [FF_LSDV_E_278]: true,
+    });
+  });
+  afterAll(() => {
+    ff.reset();
+  });
+
   it('renders phrases', () => {
     getRoot.mockReturnValue({ settings: { showLineNumbers: false } });
 
@@ -70,7 +84,6 @@ describe('Phrases Component', () => {
     render(
       <Phrases item={item} playingId={playingId} contextScroll={contextScroll} />,
     );
-
 
     const phraseElements = screen.getAllByTestId(/^phrase:/);
     const phraseTextContext = phraseElements.map(element => element.textContent);
