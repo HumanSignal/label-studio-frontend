@@ -311,6 +311,8 @@ export const AudioModel = types.compose(
          * as Audio segments for visualization of the excerpts within the audio track
          **/
         loadSyncedParagraphs() {
+          if (!self.syncManager) return;
+
           // find synced paragraphs if any
           // and add their regions to the audio
           const syncedParagraphs = Array.from(self.syncManager.syncTargets, ([,value]) => value).filter(target => target.type === 'paragraphs' && target.contextscroll);
