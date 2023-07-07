@@ -39,7 +39,7 @@ function findReactKey(node) {
   const keys = Object.keys(node);
 
   for (const key of keys) {
-    const match = key.match(/^__reactProps(\$[^$]+)$/);
+    const match = RegExp(/^__reactProps(\$[^$]+)$/).exec(key);
 
     if (match) {
       return match[1];
@@ -50,7 +50,7 @@ function findReactKey(node) {
 
 function cleanDomAfterReact(nodes, reactKey) {
   for (const node of nodes) {
-    const reactPropKeys = (Object.keys(node)).filter(key => key.startsWith('__react') && (!key.match(/^__reactProps|__reactFiber/) || key.match(new RegExp(`\\${reactKey}$`))));
+    const reactPropKeys = (Object.keys(node)).filter(key => key.startsWith('__react') && (!RegExp(/^(?:__reactProps|__reactFiber)/).exec(key) || RegExp(new RegExp(`\\${reactKey}$`)).exec(key)));
 
     if (reactPropKeys.length) {
       for (const key of reactPropKeys) {
@@ -125,16 +125,16 @@ export class LabelStudio {
 
     const clearRenderedApp = () => {
       const childNodes = [...rootElement.childNodes];
-      // We need this key to be sure that cleaning will affect only current react subtree
+      // cleanDomAfterReact needs this key to be sure that cleaning affects only current react subtree
       const reactKey = findReactKey(childNodes[0]);
 
       unmountComponentAtNode(rootElement);
       /*
-              Unmounting does not help with clearing React's fibers
-              but removing the manually helps
-              @see https://github.com/facebook/react/pull/20290 (similar problem)
-              That's maybe not relevant in version 18
-             */
+        Unmounting doesn't help with clearing React's fibers
+        but removing the manually helps
+        @see https://github.com/facebook/react/pull/20290 (similar problem)
+        That's maybe not relevant in version 18
+       */
       cleanDomAfterReact(childNodes, reactKey);
       cleanDomAfterReact([rootElement], reactKey);
     };

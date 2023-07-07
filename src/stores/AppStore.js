@@ -778,7 +778,6 @@ export default types
 
     return {
       setFlags,
-      onFlagChanged,
       setHydrated,
       addInterface,
       hasInterface,
