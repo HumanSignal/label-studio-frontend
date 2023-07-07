@@ -1,3 +1,5 @@
+const { FFlagMatrix, FFlagScenario } = require('../../utils/feature-flags');
+
 Feature('Audio Regions');
 
 const config = `
@@ -73,210 +75,221 @@ const annotations = [
 const params = { annotations: [{ id: 'test', result: annotations }], config, data };
 const paramsSpeech = { annotations: [{ id: 'test', result: [] }], config: configSpeech, data };
 
-Scenario('Check if regions are selected', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
-  LabelStudio.setFeatureFlags({
-    ff_front_dev_2715_audio_3_280722_short: true,
-  });
-  I.amOnPage('/');
+FFlagMatrix([
+  'fflag_feat_front_lsdv_e_278_contextual_scrolling_short',
+], function(flags) {
 
-  LabelStudio.init(params);
+  FFlagScenario('Check if regions are selected', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_2715_audio_3_280722_short: true,
+      ...flags,
+    });
+    I.amOnPage('/');
 
-  await AtAudioView.waitForAudio();
-  await AtAudioView.lookForStage();
+    LabelStudio.init(params);
 
-  AtSidebar.seeRegions(1);
+    await AtAudioView.waitForAudio();
+    await AtAudioView.lookForStage();
 
-  // creating a new region
-  I.pressKey('1');
-  AtAudioView.dragAudioElement(160,80);
-  I.pressKey('u');
+    AtSidebar.seeRegions(1);
 
-  AtSidebar.seeRegions(2);
-
-  AtAudioView.clickAt(170);
-  AtSidebar.seeSelectedRegion();
-  AtAudioView.clickAt(170);
-  AtSidebar.dontSeeSelectedRegion();
-  AtAudioView.dragAudioElement(170,40);
-  AtSidebar.seeSelectedRegion();
-  AtAudioView.clickAt(220);
-  AtSidebar.dontSeeSelectedRegion();
-});
-
-Scenario('Check if multiple regions are working changing labels', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
-  LabelStudio.setFeatureFlags({
-    ff_front_dev_2715_audio_3_280722_short: true,
-  });
-  I.amOnPage('/');
-
-  LabelStudio.init(paramsSpeech);
-
-  await AtAudioView.waitForAudio();
-  await AtAudioView.lookForStage();
-
-  for (let i = 0; i < 20; i++) {
     // creating a new region
     I.pressKey('1');
-    AtAudioView.dragAudioElement((40 * i) + 10,30);
-    AtAudioView.clickAt((40 * i) + 20);
-    I.pressKey('2');
-    I.pressKey('1');
+    AtAudioView.dragAudioElement(160,80);
     I.pressKey('u');
-  }
 
-  AtSidebar.seeRegions(20);
+    AtSidebar.seeRegions(2);
 
-  for (let i = 0; i < 20; i++) {
-    // creating a new region
-    AtAudioView.clickAt((40 * i) + 20);
+    AtAudioView.clickAt(170);
     AtSidebar.seeSelectedRegion();
+    AtAudioView.clickAt(170);
+    AtSidebar.dontSeeSelectedRegion();
+    AtAudioView.dragAudioElement(170,40);
+    AtSidebar.seeSelectedRegion();
+    AtAudioView.clickAt(220);
+    AtSidebar.dontSeeSelectedRegion();
+  });
+
+  FFlagScenario('Check if multiple regions are working changing labels', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_2715_audio_3_280722_short: true,
+      ...flags,
+    });
+    I.amOnPage('/');
+
+    LabelStudio.init(paramsSpeech);
+
+    await AtAudioView.waitForAudio();
+    await AtAudioView.lookForStage();
+
+    for (let i = 0; i < 20; i++) {
+      // creating a new region
+      I.pressKey('1');
+      AtAudioView.dragAudioElement((40 * i) + 10,30);
+      AtAudioView.clickAt((40 * i) + 20);
+      I.pressKey('2');
+      I.pressKey('1');
+      I.pressKey('u');
+    }
+
+    AtSidebar.seeRegions(20);
+
+    for (let i = 0; i < 20; i++) {
+      // creating a new region
+      AtAudioView.clickAt((40 * i) + 20);
+      AtSidebar.seeSelectedRegion();
+      I.pressKey('u');
+    }
+
+    AtSidebar.seeRegions(20);
+
     I.pressKey('u');
-  }
 
-  AtSidebar.seeRegions(20);
-
-  I.pressKey('u');
-
-  AtSidebar.dontSeeSelectedRegion();
-});
-
-Scenario('Can select a region below a hidden region', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
-  LabelStudio.setFeatureFlags({
-    ff_front_dev_2715_audio_3_280722_short: true,
+    AtSidebar.dontSeeSelectedRegion();
   });
-  I.amOnPage('/');
 
-  LabelStudio.init(paramsSpeech);
+  FFlagScenario('Can select a region below a hidden region', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_2715_audio_3_280722_short: true,
+      ...flags,
+    });
+    I.amOnPage('/');
 
-  await AtAudioView.waitForAudio();
-  await AtAudioView.lookForStage();
+    LabelStudio.init(paramsSpeech);
 
-  // create a new region
-  I.pressKey('1');
-  AtAudioView.dragAudioElement(50, 80);
-  I.pressKey('u');
+    await AtAudioView.waitForAudio();
+    await AtAudioView.lookForStage();
 
-  AtSidebar.seeRegions(1);
+    // create a new region
+    I.pressKey('1');
+    AtAudioView.dragAudioElement(50, 80);
+    I.pressKey('u');
 
-  // create a new region above the first one
-  I.pressKey('2');
-  AtAudioView.dragAudioElement(49, 81);
-  I.pressKey('u');
+    AtSidebar.seeRegions(1);
 
-  AtSidebar.seeRegions(2);
+    // create a new region above the first one
+    I.pressKey('2');
+    AtAudioView.dragAudioElement(49, 81);
+    I.pressKey('u');
 
-  // click on the top-most region visible to select it
-  AtAudioView.clickAt(50);
-  AtSidebar.seeSelectedRegion('Noise');
+    AtSidebar.seeRegions(2);
 
-  // hide the region
-  AtSidebar.hideRegion('Noise');
+    // click on the top-most region visible to select it
+    AtAudioView.clickAt(50);
+    AtSidebar.seeSelectedRegion('Noise');
 
-  // click on the region below the hidden one to select it
-  AtAudioView.clickAt(50);
-  AtSidebar.seeSelectedRegion('Speech');
-});
+    // hide the region
+    AtSidebar.hideRegion('Noise');
 
-Scenario('Selecting a region brings it to the front of the stack', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
-  LabelStudio.setFeatureFlags({
-    ff_front_dev_2715_audio_3_280722_short: true,
+    // click on the region below the hidden one to select it
+    AtAudioView.clickAt(50);
+    AtSidebar.seeSelectedRegion('Speech');
   });
-  I.amOnPage('/');
 
-  LabelStudio.init(paramsSpeech);
+  FFlagScenario('Selecting a region brings it to the front of the stack', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_2715_audio_3_280722_short: true,
+      ...flags,
+    });
+    I.amOnPage('/');
 
-  await AtAudioView.waitForAudio();
-  await AtAudioView.lookForStage();
+    LabelStudio.init(paramsSpeech);
 
-  // create a new region
-  I.pressKey('1');
-  AtAudioView.dragAudioElement(50, 80);
-  I.pressKey('u');
+    await AtAudioView.waitForAudio();
+    await AtAudioView.lookForStage();
 
-  AtSidebar.seeRegions(1);
+    // create a new region
+    I.pressKey('1');
+    AtAudioView.dragAudioElement(50, 80);
+    I.pressKey('u');
 
-  // create a new region above the first one
-  I.pressKey('2');
-  AtAudioView.dragAudioElement(49, 81);
-  I.pressKey('u');
+    AtSidebar.seeRegions(1);
 
-  AtSidebar.seeRegions(2);
+    // create a new region above the first one
+    I.pressKey('2');
+    AtAudioView.dragAudioElement(49, 81);
+    I.pressKey('u');
 
-  // click on the top-most region visible to select it
-  AtAudioView.clickAt(50);
-  AtSidebar.seeSelectedRegion('Noise');
+    AtSidebar.seeRegions(2);
 
-  // Select the bottom most region to bring it to the top
-  AtSidebar.clickRegion('Speech');
-  AtSidebar.seeSelectedRegion('Speech');
+    // click on the top-most region visible to select it
+    AtAudioView.clickAt(50);
+    AtSidebar.seeSelectedRegion('Noise');
 
-  // click on the overlapping region will deselect it, which shows that it is now the top in the list
-  AtAudioView.clickAt(50);
-  AtSidebar.dontSeeSelectedRegion('Speech');
-  AtSidebar.dontSeeSelectedRegion('Noise');
+    // Select the bottom most region to bring it to the top
+    AtSidebar.clickRegion('Speech');
+    AtSidebar.seeSelectedRegion('Speech');
 
-  // click on the overlapping region will select the top item of the list, which will now be the item which was brought to the front by the original interaction.
-  AtAudioView.clickAt(50);
-  AtSidebar.seeSelectedRegion('Speech');
-});
+    // click on the overlapping region will deselect it, which shows that it is now the top in the list
+    AtAudioView.clickAt(50);
+    AtSidebar.dontSeeSelectedRegion('Speech');
+    AtSidebar.dontSeeSelectedRegion('Noise');
 
-Scenario('Delete region by pressing delete hotkey', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
-  LabelStudio.setFeatureFlags({
-    ff_front_dev_2715_audio_3_280722_short: true,
+    // click on the overlapping region will select the top item of the list, which will now be the item which was brought to the front by the original interaction.
+    AtAudioView.clickAt(50);
+    AtSidebar.seeSelectedRegion('Speech');
   });
-  I.amOnPage('/');
 
-  LabelStudio.init(params);
+  FFlagScenario('Delete region by pressing delete hotkey', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_2715_audio_3_280722_short: true,
+      ...flags,
+    });
+    I.amOnPage('/');
 
-  await AtAudioView.waitForAudio();
-  await AtAudioView.lookForStage();
+    LabelStudio.init(params);
 
-  AtSidebar.seeRegions(1);
+    await AtAudioView.waitForAudio();
+    await AtAudioView.lookForStage();
 
-  // creating a new region
-  AtAudioView.dragAudioElement(160,80);
+    AtSidebar.seeRegions(1);
 
-  I.pressKey('Delete');
+    // creating a new region
+    AtAudioView.dragAudioElement(160,80);
 
-  I.pressKey('1');
+    I.pressKey('Delete');
 
-  AtSidebar.seeRegions(1);
-});
+    I.pressKey('1');
 
-Scenario('Check if there are ghost regions', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
-  LabelStudio.setFeatureFlags({
-    ff_front_dev_2715_audio_3_280722_short: true,
+    AtSidebar.seeRegions(1);
   });
-  I.amOnPage('/');
 
-  LabelStudio.init(paramsSpeech);
+  FFlagScenario('Check if there are ghost regions', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+    LabelStudio.setFeatureFlags({
+      ff_front_dev_2715_audio_3_280722_short: true,
+      ...flags,
+    });
+    I.amOnPage('/');
 
-  await AtAudioView.waitForAudio();
-  await AtAudioView.lookForStage();
+    LabelStudio.init(paramsSpeech);
 
-  // creating a new region
-  I.pressKey('1');
-  AtAudioView.dragAudioElement(300,80);
-  I.pressKey('u');
+    await AtAudioView.waitForAudio();
+    await AtAudioView.lookForStage();
+
+    // creating a new region
+    I.pressKey('1');
+    AtAudioView.dragAudioElement(300,80);
+    I.pressKey('u');
 
 
-  // creating a ghost region
-  I.pressKey('1');
-  AtAudioView.dragAudioElement(160,80, false);
-  I.pressKey('1');
-  I.wait(1);
-  I.pressMouseUp();
-  I.wait(1);
+    // creating a ghost region
+    I.pressKey('1');
+    AtAudioView.dragAudioElement(160,80, false);
+    I.pressKey('1');
+    I.wait(1);
+    I.pressMouseUp();
+    I.wait(1);
 
-  // checking if the created region is selected
-  AtAudioView.clickAt(310);
-  AtSidebar.seeSelectedRegion();
+    // checking if the created region is selected
+    AtAudioView.clickAt(310);
+    AtSidebar.seeSelectedRegion();
 
-  // trying to select the ghost region, if there is no ghost region, the region will keep selected
-  // as ghost region is not selectable and impossible to change the label, the created region will be deselected if there is a ghost region created.
-  AtAudioView.clickAt(170);
-  I.pressKey('2');
-  AtSidebar.seeSelectedRegion();
+    // trying to select the ghost region, if there is no ghost region, the region will keep selected
+    // as ghost region is not selectable and impossible to change the label, the created region will be deselected if there is a ghost region created.
+    AtAudioView.clickAt(170);
+    I.pressKey('2');
+    AtSidebar.seeSelectedRegion();
 
-  AtSidebar.seeRegions(2);
+    AtSidebar.seeRegions(2);
+  });
 });
