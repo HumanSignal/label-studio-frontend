@@ -60,11 +60,12 @@ function createCleaner() {
       ref = node;
     } else {
       if (ref) {
-        const reactKey = findReactKey(ref);
+        const lastRef = ref;
+        const reactKey = findReactKey(lastRef);
 
+        ref = null;
         setTimeout(() => {
-          cleanDomAfterReact([ref], reactKey);
-          ref = null;
+          cleanDomAfterReact([lastRef], reactKey);
         });
       }
     }
