@@ -461,7 +461,7 @@ class HtxParagraphsView extends Component {
           className={contextScroll ? styles.scroll_container : styles.container}
           onMouseUp={this.onMouseUp.bind(this)}
         >
-          <Phrases item={item} />
+          <Phrases item={item} contextScroll={contextScroll} />
         </div>
       </ObjectTag>
     );
