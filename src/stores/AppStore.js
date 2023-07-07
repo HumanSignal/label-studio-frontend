@@ -237,6 +237,14 @@ export default types
     function setAppControls(controls) {
       appControls = controls;
     }
+
+    function clearApp() {
+      appControls?.clear();
+    }
+
+    function renderApp() {
+      appControls?.render();
+    }
     /**
      * Update settings display state
      */
@@ -622,7 +630,6 @@ export default types
         }
         detach(oldAnnotationStore);
         destroy(oldAnnotationStore);
-        appControls?.clear();
       }
 
       self.annotationStore = AnnotationStore.create({ annotations: [] });
@@ -826,6 +833,8 @@ export default types
       },
 
       setAppControls,
+      clearApp,
+      renderApp,
       selfDestroy() {
         const children = [];
 
