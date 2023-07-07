@@ -45,7 +45,9 @@ class DDTextElement {
     const newNode = node.cloneNode() as Text;
     const content = this.getContent(start, end);
 
-    newNode.textContent = newNode.textContent ? newNode.textContent.substring(start - this.start, end - this.start) : newNode.textContent;
+    if (newNode.textContent) {
+      newNode.textContent = newNode.textContent.substring(start - this.start, end - this.start);
+    }
 
     return new DDTextElement(newNode, start, end, content);
   }
@@ -57,9 +59,9 @@ class DDTextElement {
     const dummyReplacer = doc.createTextNode('');
     const span = doc.createElement('span');
 
-    parent && parent.replaceChild(dummyReplacer, node);
+    parent?.replaceChild(dummyReplacer, node);
     span.appendChild(node);
-    parent && parent.replaceChild(span, dummyReplacer);
+    parent?.replaceChild(span, dummyReplacer);
 
     const spanElement = new DDSpanElement(span, start, end);
 
@@ -121,9 +123,7 @@ class DDBlock {
   }
 
   findTextElement(pos: number, avoid: 'start' | 'end' = 'start'): DDTextElement | undefined {
-    const el = this.children.find(el => {
-      return el.start <= pos && el.end >= pos && el[avoid] !== pos;
-    });
+    const el = this.children.find(child => (child.start <= pos && child.end >= pos && child[avoid] !== pos));
 
     if (el instanceof DDSpanElement) {
       return el.findTextElement(pos, avoid);
@@ -140,7 +140,9 @@ class DDBlock {
       if (el instanceof DDSpanElement) {
         const res = el.findElementByNode(node);
 
-        if (res) return res;
+        if (res) {
+          return res;
+        }
       }
     }
   }
@@ -148,7 +150,7 @@ class DDBlock {
   getText(start: number, end: number) {
     const texts: string[] = [];
 
-    this.children.map(el => {
+    this.children.forEach(el => {
       if (el.end > start && el.start < end) {
         texts.push(el.getText(start, end));
       }
@@ -201,7 +203,11 @@ class DDBlock {
           const elements = node.createSpanElements(start, end);
 
           children.push(...elements);
-          spans.push(...elements.filter(el => el instanceof DDSpanElement).map((el) => el.node as HTMLSpanElement));
+          spans.push(
+            ...elements
+              .filter(el => el instanceof DDSpanElement)
+              .map(el => el.node as HTMLSpanElement),
+          );
         } else {
           children.push(node);
           spans.push(...node.createSpans(start, end));
@@ -376,7 +382,12 @@ class DomData {
     return {
       fromIdx,
       toIdx,
-      content: contentParts.map(parts => parts ? [...parts] : parts).flat(),
+      content: contentParts.map(parts => {
+        if (parts) {
+          return [...parts];
+        }
+        return parts;
+      }).flat(),
     };
   }
 
@@ -429,6 +440,7 @@ class DomData {
         return el;
       }
     }
+    return undefined;
   }
 
   findElementByNode(node: Node) {
@@ -440,23 +452,24 @@ class DomData {
       } else if (el instanceof DDDynamicBlock) {
         const res = el.findElementByNode(node);
 
-        if (res) return res;
+        if (res) {
+          return res;
+        }
       }
     }
   }
 
   findTextBlock(pos: number, avoid: 'start' | 'end' = 'start'): DDDynamicBlock | undefined {
-    const block = this.elements.find(el => {
-      return (el instanceof DDDynamicBlock) && el.start <= pos && el.end >= pos && el[avoid] !== pos;
-    });
+    const block = this.elements.find(el => (el instanceof DDDynamicBlock) && el.start <= pos && el.end >= pos && el[avoid] !== pos);
 
-    return isDefined(block) ? block as DDDynamicBlock : block;
+    if (isDefined(block)) {
+      return block as DDDynamicBlock;
+    }
+    return block;
   }
 
   indexOfTextBlock(pos: number, avoid: 'start' | 'end' = 'start'): number {
-    return this.elements.findIndex(el => {
-      return (el instanceof DDDynamicBlock) && el.start <= pos && el.end >= pos && el[avoid] !== pos;
-    });
+    return this.elements.findIndex(el => (el instanceof DDDynamicBlock) && el.start <= pos && el.end >= pos && el[avoid] !== pos);
   }
 
   getText(start: number, end: number) {
@@ -464,7 +477,10 @@ class DomData {
     const endIdx = this.indexOfTextBlock(end, 'start');
 
     return this.elements.slice(startIdx, endIdx + 1).map(el => {
-      return typeof el !== 'string' ? el.getText(start, end) : el;
+      if (typeof el !== 'string') {
+        return el.getText(start, end);
+      }
+      return el;
     }).join('');
   }
 
@@ -500,8 +516,8 @@ class DomData {
 }
 
 class Path {
-  private segments: Array<[string, number]> = [];
-  private counters: Array<{ [key: string]: number }> = [];
+  private readonly segments: Array<[string, number]> = [];
+  private readonly counters: Array<{ [key: string]: number }> = [];
 
   get currentSegment() {
     return this.segments[this.segments.length - 1];
@@ -512,7 +528,10 @@ class Path {
   }
 
   getSegmentName(node: Node) {
-    return node.nodeType === Node.TEXT_NODE ? 'text()' : node.nodeName.toLowerCase();
+    if (node.nodeType === Node.TEXT_NODE) {
+      return 'text()';
+    }
+    return node.nodeName.toLowerCase();
   }
 
   into(node: Node) {
@@ -525,7 +544,9 @@ class Path {
   next(node: Node) {
     const segmentName = this.getSegmentName(node);
 
-    if (!this.currentCounters[segmentName]) this.currentCounters[segmentName] = 0;
+    if (!this.currentCounters[segmentName]) {
+      this.currentCounters[segmentName] = 0;
+    }
     this.currentSegment[0] = segmentName;
     this.currentSegment[1] = ++this.currentCounters[segmentName];
   }
@@ -541,14 +562,14 @@ class Path {
 }
 
 export default class DomManager {
-  private container: HTMLDivElement | HTMLIFrameElement;
-  private root: HTMLBodyElement | HTMLDivElement;
-  private doc: Document;
-  private view: Window;
+  private readonly container: HTMLDivElement | HTMLIFrameElement;
+  private readonly root: HTMLBodyElement | HTMLDivElement;
+  private readonly doc: Document;
+  private readonly view: Window;
   private domData: DomData;
-  private fragment: DocumentFragment;
-  private styleTags: { [key: string]: HTMLStyleElement };
-  private walker?: TreeWalker;
+  private readonly fragment: DocumentFragment;
+  private readonly styleTags: { [key: string]: HTMLStyleElement };
+  private walker: null | TreeWalker = null;
   private currentPath: Path = new Path();
 
   constructor(container: HTMLDivElement | HTMLIFrameElement) {
@@ -572,7 +593,7 @@ export default class DomManager {
 
   nextStep(isBackPropagation = false): Node | null {
     const walker = this.walker as TreeWalker;
-    const currentPath = this.currentPath as Path;
+    const currentPath = this.currentPath;
     let nextNode;
 
     if (!isBackPropagation) {
@@ -623,7 +644,7 @@ export default class DomManager {
       currentNode = this.nextStep();
     }
 
-    this.walker = undefined;
+    this.walker = null;
   }
 
   collectText() {
@@ -655,13 +676,16 @@ export default class DomManager {
 
       return range;
     }
+    return undefined;
   }
 
   relativeOffsetsToGlobalOffsets(start: string, startOffset: number, end: string, endOffset: number) {
     const startEl = this.domData.findElementByPath(start);
     const endEl = this.domData.findElementByPath(end);
 
-    if (!startEl || !endEl) return;
+    if (!startEl || !endEl) {
+      return undefined;
+    }
 
     return [startOffset + startEl.start, endOffset + endEl.start];
   }
@@ -679,13 +703,17 @@ export default class DomManager {
         endOffset: end - endElement.start,
       };
     }
+
+    return undefined;
   }
 
   rangeToGlobalOffset(range: Range) {
     const startEl = this.domData.findElementByNode(range.startContainer);
     const endEl = this.domData.findElementByNode(range.endContainer);
 
-    if (!startEl || !endEl) return;
+    if (!startEl || !endEl) {
+      return undefined;
+    }
 
     return [range.startOffset + startEl.start, range.endOffset + endEl.start];
   }
@@ -720,7 +748,9 @@ export default class DomManager {
   removeStyles(ids: string[] | string) {
     const { styleTags } = this;
 
-    if (!Array.isArray(ids)) ids = [ids];
+    if (!Array.isArray(ids)) {
+      ids = [ids];
+    }
     for (const id of ids) {
       const styleTag = styleTags[id];
 
