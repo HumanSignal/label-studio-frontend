@@ -11,7 +11,7 @@ export function cutFibers(object) {
       const isWritable = descriptors[key].writable;
 
       if (prop && isWritable) {
-        if (typeof prop === 'object') {
+        if (typeof prop === 'object' && {}.hasOwnProperty.call(prop, 'stateNode')) {
           objects.push(obj[key]);
         }
         obj[key] = null;
