@@ -4,12 +4,16 @@ export function cutFibers(object) {
 
   while ((obj = objects.pop())) {
     const keys = Object.keys(obj);
+    const descriptors = Object.getOwnPropertyDescriptors(obj);
 
     for (const key of keys) {
       const prop = obj[key];
+      const isWritable = descriptors[key].writable;
 
-      if (prop && typeof prop === 'object' && {}.hasOwnProperty.call(prop, 'stateNode')) {
-        objects.push(obj[key]);
+      if (prop && isWritable) {
+        if (typeof prop === 'object') {
+          objects.push(obj[key]);
+        }
         obj[key] = null;
       }
     }
@@ -59,6 +63,7 @@ function createCleaner() {
 
         setTimeout(() => {
           cleanDomAfterReact([ref], reactKey);
+          ref = null;
         });
       }
     }
