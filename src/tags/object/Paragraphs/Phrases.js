@@ -9,7 +9,7 @@ export const Phrases = observer(({ item }) => {
   const withAudio = !!item.audio;
 
   if (!item._value) return null;
-  const val =  item._value.map((v, idx) => {
+  const val = item._value.map((v, idx) => {
     const style = item.layoutStyles(v);
     const classNames = [cls.phrase];
     const isContentVisible = item.isVisibleForAuthorFilter(v);
