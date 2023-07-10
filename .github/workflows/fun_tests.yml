@@ -109,14 +109,18 @@ jobs:
           cd ./tests/functional
           yarn run test:parallel
 
+      - name: Prepare suite output
+        if: ${{ failure() }}
+        run: |
+          cd ./tests/functional
+          rm -rf node_modules
+
       - name: "Upload suite output" 
         uses: ./.github/actions/upload-artifact
         if: ${{ failure() }}
         with:
           name: failure-result
-          path: |
-            ./tests/functional
-            !./tests/functional/node_modules
+          path: ./tests/functional
 
       - name: Prepare coverage report
         if: ${{ success() }}
