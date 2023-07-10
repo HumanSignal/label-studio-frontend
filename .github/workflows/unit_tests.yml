@@ -58,7 +58,7 @@ jobs:
       #     token: ${{ secrets.CODECOV_TOKEN }}
       - name: Upload coverage to Artifacts
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         with:
           name: unit-tests-coverage
           path: coverage/
