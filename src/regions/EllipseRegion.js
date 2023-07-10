@@ -38,7 +38,7 @@ const EllipseRegionAbsoluteCoordsDEV3793 = types
       self.startX = self.x;
       self.startY = self.y;
 
-      switch (self.coordstype)  {
+      switch (self.coordstype) {
         case 'perc': {
           self.relativeX = self.x;
           self.relativeY = self.y;
@@ -302,7 +302,7 @@ const EllipseRegionModel = types.compose(
   ...(isFF(FF_DEV_3793) ? [] : [EllipseRegionAbsoluteCoordsDEV3793]),
 );
 
-const HtxEllipseView = ({ item }) => {
+const HtxEllipseView = ({ item, setShapeRef }) => {
   const { store } = item;
 
   const regionStyles = useRegionStyles(item);
@@ -314,7 +314,7 @@ const HtxEllipseView = ({ item }) => {
       <Ellipse
         x={item.canvasX}
         y={item.canvasY}
-        ref={el => item.setShapeRef(el)}
+        ref={el => setShapeRef(el)}
         radiusX={item.canvasRadiusX}
         radiusY={item.canvasRadiusY}
         fill={regionStyles.fillColor}

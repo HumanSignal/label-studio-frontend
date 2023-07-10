@@ -1,5 +1,5 @@
 import { inject } from 'mobx-react';
-import { destroy, getRoot, getType, types } from 'mobx-state-tree';
+import { destroy, detach, getRoot, getType, types } from 'mobx-state-tree';
 
 import ImageView from '../../../components/ImageView/ImageView';
 import { customTypes } from '../../../core/CustomTypes';
@@ -1120,7 +1120,7 @@ const ImageModel = types.compose(
   'ImageModel',
   TagAttrs,
   ObjectBase,
-  ...(isFF(FF_LSDV_4583)?[MultiItemObjectBase]:[]),
+  ...(isFF(FF_LSDV_4583) ? [MultiItemObjectBase] : []),
   AnnotationMixin,
   IsReadyWithDepsMixin,
   ImageEntityMixin,

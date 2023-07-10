@@ -43,7 +43,7 @@ export const AreaMixinBase = types
     },
 
     get texting() {
-      return self.results.find(r => r.type === 'textarea' && r.hasValue);
+      return isAlive(self) && self.results.find(r => r.type === 'textarea' && r.hasValue);
     },
 
     get tag() {
@@ -97,6 +97,9 @@ export const AreaMixinBase = types
     },
 
     get parent() {
+      if (!isAlive(self)) {
+        return void 0;
+      }
       return self.object;
     },
 

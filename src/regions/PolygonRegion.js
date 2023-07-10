@@ -416,7 +416,7 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
   );
 }));
 
-const HtxPolygonView = ({ item }) => {
+const HtxPolygonView = ({ item, setShapeRef }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
@@ -551,7 +551,7 @@ const HtxPolygonView = ({ item }) => {
     <Group
       key={item.id ? item.id : guidGenerator(5)}
       name={item.id}
-      ref={el => item.setShapeRef(el)}
+      ref={el => setShapeRef(el)}
       onMouseOver={() => {
         if (store.annotationStore.selected.relationMode) {
           item.setHighlight(true);

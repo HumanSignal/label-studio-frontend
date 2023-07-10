@@ -177,7 +177,7 @@ const KeyPointRegionModel = types.compose(
   ...(isFF(FF_DEV_3793) ? [] : [KeyPointRegionAbsoluteCoordsDEV3793]),
 );
 
-const HtxKeyPointView = ({ item }) => {
+const HtxKeyPointView = ({ item, setShapeRef }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
@@ -206,7 +206,7 @@ const HtxKeyPointView = ({ item }) => {
       <Circle
         x={item.canvasX}
         y={item.canvasY}
-        ref={el => item.setShapeRef(el)}
+        ref={el => setShapeRef(el)}
         // keypoint should always be the same visual size
         radius={Math.max(item.canvasWidth, 2) / item.parent.zoomScale}
         // fixes performance, but opactity+borders might look not so good

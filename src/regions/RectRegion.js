@@ -1,4 +1,4 @@
-import { getRoot, types } from 'mobx-state-tree';
+import { getRoot, isAlive, types } from 'mobx-state-tree';
 import React, { useContext } from 'react';
 import { Rect } from 'react-konva';
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
@@ -196,7 +196,7 @@ const Model = types
       return getRoot(self);
     },
     get parent() {
-      return self.object;
+      return isAlive(self) ? self.object : null;
     },
     get bboxCoords() {
       const bboxCoords = {
@@ -409,7 +409,7 @@ const RectRegionModel = types.compose(
   ...(isFF(FF_DEV_3793) ? [] : [RectRegionAbsoluteCoordsDEV3793]),
 );
 
-const HtxRectangleView = ({ item }) => {
+const HtxRectangleView = ({ item, setShapeRef }) => {
   const { store } = item;
 
   const { suggestion } = useContext(ImageViewContext) ?? {};
@@ -476,7 +476,7 @@ const HtxRectangleView = ({ item }) => {
       <Rect
         x={item.canvasX}
         y={item.canvasY}
-        ref={node => item.setShapeRef(node)}
+        ref={node => setShapeRef(node)}
         width={item.canvasWidth}
         height={item.canvasHeight}
         fill={regionStyles.fillColor}
