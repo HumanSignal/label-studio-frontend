@@ -115,7 +115,9 @@ jobs:
         if: ${{ failure() }}
         with:
           name: failure-result
-          path: ./tests/functional
+          path: |
+            ./tests/functional
+            !./tests/functional/node_modules
 
       - name: Prepare coverage report
         if: ${{ success() }}
