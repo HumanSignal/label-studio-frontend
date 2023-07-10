@@ -98,7 +98,7 @@ jobs:
         uses: ./.github/actions/upload-artifact
         if: ${{ failure() }}
         with:
-          name: e2e output
+          name: e2e-output
           path: e2e/output/
 
       - name: Merge coverage reports
