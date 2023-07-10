@@ -405,8 +405,8 @@ class HtxParagraphsView extends Component {
     const mainRect = mainContentView.getBoundingClientRect();
     const visibleHeight = document.documentElement.clientHeight - mainRect.top;
     const annotationView = document.querySelector('.lsf-main-view__annotation');
-    const totalVisibleSpace = Math.floor(visibleHeight < mainRect.height ? visibleHeight : mainRect.height || 0);
-    const filledSpace = annotationView?.offsetHeight || 0;
+    const totalVisibleSpace = Math.floor(visibleHeight < mainRect.height ? visibleHeight : mainContentView?.offsetHeight || 0);
+    const filledSpace = annotationView?.offsetHeight || mainContentView.firstChild?.offsetHeight || 0;
     const containerHeight = container?.offsetHeight || 0;
     const viewPadding = parseInt(window.getComputedStyle(mainContentView)?.getPropertyValue('padding-bottom')) || 0;
     const height = totalVisibleSpace - (filledSpace - containerHeight) - (viewPadding);
