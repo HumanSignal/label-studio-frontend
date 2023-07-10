@@ -32,7 +32,9 @@ export const AreaMixinBase = types
      * @return {Result?} first result with labels (usually it's the only one, but not always)
      */
     get labeling() {
-      if (!isAlive(self)) return;
+      if (!isAlive(self)) {
+        return void 0;
+      }
       return self.results.find(r => r.type.endsWith('labels') && r.hasValue);
     },
 
@@ -73,7 +75,9 @@ export const AreaMixinBase = types
     },
 
     get labelName() {
-      if (!isAlive(self)) return null;
+      if (!isAlive(self)) {
+        return void 0;
+      }
       return self.labeling?.mainValue?.[0] || self.emptyLabel?._value;
     },
 
@@ -97,7 +101,9 @@ export const AreaMixinBase = types
     },
 
     get style() {
-      if (!isAlive(self)) return;
+      if (!isAlive(self)) {
+        return void 0;
+      }
 
       const styled = self.results.find(r => r.style);
 

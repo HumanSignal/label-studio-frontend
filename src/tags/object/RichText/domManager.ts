@@ -423,8 +423,8 @@ class DomData {
     this.displayedTextPos += displayedTextLength;
   }
 
-  // That's mostly for processing html representation of simple text
-  // but historically we calculating this as one symbol even in html
+  // That's mostly for processing html representation of a simple text,
+  // but historically we calculated this as one symbol even in html,
   // so we should keep it here anyway
   addBR() {
     this.endPos += 1;
@@ -457,6 +457,7 @@ class DomData {
         }
       }
     }
+    return void 0;
   }
 
   findTextBlock(pos: number, avoid: 'start' | 'end' = 'start'): DDDynamicBlock | undefined {
@@ -551,7 +552,7 @@ class Path {
     this.currentSegment[1] = ++this.currentCounters[segmentName];
   }
 
-  outof() {
+  outOf() {
     this.segments.pop();
     this.counters.pop();
   }
@@ -612,7 +613,7 @@ export default class DomManager {
     }
 
     nextNode = walker.parentNode();
-    currentPath.outof();
+    currentPath.outOf();
     if (nextNode) {
       return this.nextStep(true);
     }

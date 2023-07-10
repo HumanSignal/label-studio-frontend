@@ -211,6 +211,13 @@ export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_sh
 export const FF_LSDV_4620_3 = 'fflag_feat_front_lsdv_4620_richtext_opimization_060423_short';
 
 /**
+ * Fixes memory leaks in label studio frontend relative to mobx-state-tree and react usage
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4620_memory_leaks_100723_short
+ */
+export const FF_LSDV_4620_3_ML = 'fflag_fix_front_lsdv_4620_memory_leaks_100723_short';
+
+/**
  * Fixes Rect3PointTool behaviour in relative coords mode.
  * It also fixes disappearing regions in degenerate cases.
  *

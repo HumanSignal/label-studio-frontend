@@ -13,6 +13,7 @@ import defaultOptions from './defaultOptions';
 import { destroy } from 'mobx-state-tree';
 import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
 import { cleanDomAfterReact, findReactKey } from './utils/reactCleaner';
+import { FF_LSDV_4620_3_ML, isFF } from './utils/feature-flags';
 
 configure({
   isolateGlobalState: true,
@@ -103,17 +104,27 @@ export class LabelStudio {
     });
 
     this.destroy = () => {
-      clearRenderedApp();
+      if (isFF(FF_LSDV_4620_3_ML)) {
+        clearRenderedApp();
+      }
       destroySharedStore();
-      /*
-         It seems that destroying children separately helps GC to collect garbage
-         as well as nulling all these this.store
-       */
-      this.store.selfDestroy();
+      if (isFF(FF_LSDV_4620_3_ML)) {
+        /*
+           It seems that destroying children separately helps GC to collect garbage
+           ...
+         */
+        this.store.selfDestroy();
+      }
       destroy(this.store);
-      this.store = null;
-      this.destroy = null;
-      this.constructor.instances.delete(this);
+      if (isFF(FF_LSDV_4620_3_ML)) {
+        /*
+            ...
+            as well as nulling all these this.store
+         */
+        this.store = null;
+        this.destroy = null;
+        this.constructor.instances.delete(this);
+      }
     };
   }
 

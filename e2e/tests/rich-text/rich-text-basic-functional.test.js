@@ -1,5 +1,3 @@
-const assert = require('assert');
-
 Feature('Richtext basic functional');
 
 Before(({ LabelStudio }) => {
