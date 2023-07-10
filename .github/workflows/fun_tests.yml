@@ -70,7 +70,6 @@ jobs:
         uses: ./.github/actions/download-artifact
         with:
           name: LSF-coverage-${{ inputs.sha }}
-          path: build/
 
       # run http-server with build in background (will be killed after job ends)
       # do this only for master branch (so only for push event)
