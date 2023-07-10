@@ -67,10 +67,9 @@ jobs:
         run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
       - name: "Download bundle"
-        uses: actions/download-artifact@v3
+        uses: ./.github/actions/download-artifact
         with:
           name: LSF-coverage-${{ inputs.sha }}
-          path: build/
 
       # run http-server with build in background (will be killed after job ends)
       # do this only for master branch (so only for push event)
@@ -110,8 +109,14 @@ jobs:
           cd ./tests/functional
           yarn run test:parallel
 
+      - name: Prepare suite output
+        if: ${{ failure() }}
+        run: |
+          cd ./tests/functional
+          rm -rf node_modules
+
       - name: "Upload suite output" 
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         if: ${{ failure() }}
         with:
           name: failure-result
@@ -125,7 +130,7 @@ jobs:
           yarn cvg:report
 
       - name: Upload coverage to Artifact
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         if: ${{ success() }}
         with:
           name: cypress-tests-coverage
