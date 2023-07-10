@@ -4,19 +4,12 @@ import { Button } from 'antd';
 import { PauseCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import styles from './Paragraphs.module.scss';
 
-const sortPhrases = (a, b) => {
-  if (!a.start) return 1;
-  if (!b.start) return -1;
-  return a.start - b.start;
-};
-
-export const Phrases = observer(({ item, contextScroll }) => {
+export const Phrases = observer(({ item }) => {
   const cls = item.layoutClasses;
   const withAudio = !!item.audio;
 
   if (!item._value) return null;
-  const list = contextScroll ? item._value.sort(sortPhrases) : item._value;
-  const val = list.map((v, idx) => {
+  const val =  item._value.map((v, idx) => {
     const style = item.layoutStyles(v);
     const classNames = [cls.phrase];
     const isContentVisible = item.isVisibleForAuthorFilter(v);

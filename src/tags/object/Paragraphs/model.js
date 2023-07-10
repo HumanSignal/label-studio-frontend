@@ -452,7 +452,15 @@ const ParagraphsLoadingModel = types.model()
         ]);
         return;
       }
-      self._value = val;
+      const contextScroll = isFF(FF_LSDV_E_278) && self.contextscroll;
+
+      const value = contextScroll ? val.sort((a, b) => {
+        if (!a.start) return 1;
+        if (!b.start) return -1;
+        return a.start - b.start;
+      }) : val;
+      
+      self._value = value;
       self.needsUpdate();
     },
 
