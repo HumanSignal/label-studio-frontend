@@ -1,4 +1,6 @@
 import { render, screen } from '@testing-library/react';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { Phrases } from '../Phrases';
 import { getRoot } from 'mobx-state-tree';
 import { mockFF } from '../../../../../__mocks__/global';
@@ -23,6 +25,8 @@ describe('Phrases Component', () => {
   });
 
   it('renders phrases', () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     getRoot.mockReturnValue({ settings: { showLineNumbers: false } });
 
     const item = {
