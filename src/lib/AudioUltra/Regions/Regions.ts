@@ -84,6 +84,7 @@ export class Regions {
   renderAll() {
     this.layerGroup.clear();
     const currentTime = this.waveform.currentTime;
+
     this.regions.forEach(region => {
       region.highlighted = (region.start <= currentTime && region.end >= currentTime);
       region.render();
