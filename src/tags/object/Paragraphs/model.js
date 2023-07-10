@@ -515,7 +515,7 @@ const ParagraphsLoadingModel = types.model()
         area._range = range._range;
         return area;
       }
-    }
+    },
   }));
 
 const paragraphModelMixins = [
