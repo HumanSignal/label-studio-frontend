@@ -23,7 +23,6 @@ jobs:
         uses: ./.github/actions/download-artifact
         with:
           name: unit-tests-coverage
-          path: coverage/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3.1.4
@@ -46,7 +45,6 @@ jobs:
         uses: ./.github/actions/download-artifact
         with:
           name: e2e-tests-coverage
-          path: coverage/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3.1.4
@@ -69,7 +67,6 @@ jobs:
         uses: ./.github/actions/download-artifact
         with:
           name: cypress-tests-coverage
-          path: coverage/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3.1.4
