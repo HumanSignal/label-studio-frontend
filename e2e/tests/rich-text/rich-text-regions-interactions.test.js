@@ -71,7 +71,7 @@ Scenario('Setting correct cursor on regions in relation creating mode', async ({
   I.say('Cursor should be equal to `crosshair` when element is hovered and it is relation creating mode and visible');
   {
     I.say('Check the same region');
-    const elementLocator = locate('.htx-highlight-A');
+    const elementLocator = locate('[class*="htx-highlight-A"]');
 
     I.moveCursorTo(elementLocator);
     const cursor = await I.grabCssPropertyFrom(elementLocator, 'cursor');
@@ -80,7 +80,7 @@ Scenario('Setting correct cursor on regions in relation creating mode', async ({
   }
   {
     I.say('Check second region');
-    const elementLocator = locate('.htx-highlight-B');
+    const elementLocator = locate('[class*="htx-highlight-B"]');
 
     I.moveCursorTo(elementLocator);
     const cursor = await I.grabCssPropertyFrom(elementLocator, 'cursor');
@@ -90,7 +90,7 @@ Scenario('Setting correct cursor on regions in relation creating mode', async ({
 
   {
     I.say('Check the hidden region');
-    const elementLocator = locate('.htx-highlight-D');
+    const elementLocator = locate('[class*="htx-highlight-D"]');
 
     I.moveCursorTo(elementLocator);
     const cursor = await I.grabCssPropertyFrom(elementLocator, 'cursor');
@@ -102,7 +102,7 @@ Scenario('Setting correct cursor on regions in relation creating mode', async ({
   I.say('It\'s not relation creating mode so there should be cursor equal to `pointer`');
   {
     I.say('Check the same region');
-    const elementLocator = locate('.htx-highlight-A');
+    const elementLocator = locate('[class*="htx-highlight-A"]');
 
     I.moveCursorTo(elementLocator);
     const cursor = await I.grabCssPropertyFrom(elementLocator, 'cursor');
@@ -111,7 +111,7 @@ Scenario('Setting correct cursor on regions in relation creating mode', async ({
   }
   {
     I.say('Check second region');
-    const elementLocator = locate('.htx-highlight-B');
+    const elementLocator = locate('[class*="htx-highlight-B"]');
 
     I.moveCursorTo(elementLocator);
     const cursor = await I.grabCssPropertyFrom(elementLocator, 'cursor');
@@ -120,7 +120,7 @@ Scenario('Setting correct cursor on regions in relation creating mode', async ({
   }
   {
     I.say('Check the hidden region');
-    const elementLocator = locate('.htx-highlight-D');
+    const elementLocator = locate('[class*="htx-highlight-D"]');
 
     I.moveCursorTo(elementLocator);
     const cursor = await I.grabCssPropertyFrom(elementLocator, 'cursor');
