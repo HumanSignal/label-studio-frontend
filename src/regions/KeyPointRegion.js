@@ -105,13 +105,13 @@ const Model = types
       };
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.y) : self.y;
     },
     get canvasWidth() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.width) : self.width;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.width) : self.width;
     },
   }))
   .actions(self => ({

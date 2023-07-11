@@ -167,16 +167,16 @@ const Model = types
       return rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y: self.y }, self.parent.whRatio);
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.y) : self.y;
     },
     get canvasRadiusX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.radiusX) : self.radiusX;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.radiusX) : self.radiusX;
     },
     get canvasRadiusY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.radiusY) : self.radiusY;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.radiusY) : self.radiusY;
     },
   }))
   .actions(self => ({
