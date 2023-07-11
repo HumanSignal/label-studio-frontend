@@ -14,7 +14,7 @@ const DynamicChildrenMixin = types.model({
   .actions(self => {
     const prepareDynamicChildrenData = (data, store, parent) => {
       if (data && data.length) {
-        for(const obj of data) {
+        for (const obj of data) {
           parent.children.push({
             type: self.defaultChildType,
             ...obj,
@@ -59,7 +59,7 @@ const DynamicChildrenMixin = types.model({
 
       updateDynamicChildren(store) {
         if (self.locked !== true) {
-          const valueFromTask = parseValue(self.value, store.task.dataObj);
+          const valueFromTask = parseValue(self.value, store.task?.dataObj);
 
           if (!valueFromTask) return;
 
