@@ -414,7 +414,7 @@ const HtxRectangleView = ({ item, setShapeRef }) => {
 
   const { suggestion } = useContext(ImageViewContext) ?? {};
   const regionStyles = useRegionStyles(item, { suggestion });
-  const stage = item.parent.stageRef;
+  const stage = item.parent?.stageRef;
 
   const eventHandlers = {};
 
@@ -516,7 +516,7 @@ const HtxRectangleView = ({ item, setShapeRef }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
-        listening={!suggestion && !item.annotation.isDrawing}
+        listening={!suggestion && !item.annotation?.isDrawing}
       />
       <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
     </RegionWrapper>

@@ -306,7 +306,7 @@ const HtxEllipseView = ({ item, setShapeRef }) => {
   const { store } = item;
 
   const regionStyles = useRegionStyles(item);
-  const stage = item.parent.stageRef;
+  const stage = item.parent?.stageRef;
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
   return (
