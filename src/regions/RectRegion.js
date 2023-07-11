@@ -206,21 +206,21 @@ const Model = types
         bottom: self.y + self.height,
       };
 
-      if (self.rotation === 0) return bboxCoords;
+      if (self.rotation === 0 || !self.parent) return bboxCoords;
 
       return rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y: self.y }, self.parent.whRatio);
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.y) : self.y;
     },
     get canvasWidth() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.width) : self.width;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.width) : self.width;
     },
     get canvasHeight() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.height) : self.height;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.height) : self.height;
     },
   }))
   .actions(self => ({
