@@ -481,16 +481,43 @@ class HtxParagraphsView extends Component {
     if(isFF(FF_LSDV_E_278) && this.props.item.contextscroll) this._resizeObserver.observe(document.querySelector('.lsf-main-content'));
     this._handleUpdate();
 
-    this.myRef.current.addEventListener('wheel', this._handleScrollRoot.bind(this));
+    if(isFF(FF_LSDV_E_278))
+      this.myRef.current.addEventListener('wheel', this._handleScrollRoot.bind(this));
   }
 
   componentWillUnmount() {
     const target = document.querySelector('.lsf-main-content');
 
-    this.myRef.current.removeEventListener('wheel', this._handleScrollRoot);
+    if(isFF(FF_LSDV_E_278))
+      this.myRef.current.removeEventListener('wheel', this._handleScrollRoot);
 
     if (target) this._resizeObserver?.unobserve(target);
     this._resizeObserver?.disconnect();
+  }
+
+  renderWrapperHeader() {
+    const { item } = this.props;
+
+    return (
+      <div className={styles.wrapper_header}>
+        {isFF(FF_DEV_2669) && (
+          <AuthorFilter item={item} />
+        )}
+        <div className={styles.wrapper_header__buttons}>
+          <Toggle
+            data-testid={'auto-scroll-toggle'}
+            checked={this.state.canScroll}
+            onChange={() => {
+              this.setState({ canScroll: !this.state.canScroll });
+            }}
+            label={'Auto-scroll'}
+          />
+          <Tooltip placement="topLeft" title="Automatically sync transcript scrolling with audio playback">
+            <IconHelp />
+          </Tooltip>
+        </div>
+      </div>
+    );
   }
 
   render() {
@@ -498,7 +525,7 @@ class HtxParagraphsView extends Component {
     const withAudio = !!item.audio;
     const contextScroll = isFF(FF_LSDV_E_278) && this.props.item.contextscroll;
 
-    if (!item.playing) this._disposeTimeout(); // dispose scroll timeout when the audio is not playing
+    if (!item.playing && isFF(FF_LSDV_E_278)) this._disposeTimeout(); // dispose scroll timeout when the audio is not playing
 
     // current way to not render when we wait for data
     if (isFF(FF_DEV_2669) && !item._value) return null;
@@ -518,26 +545,11 @@ class HtxParagraphsView extends Component {
             onCanPlay={item.handleCanPlay}
           />
         )}
-        <div className={styles.wrapper_header}>
-          {isFF(FF_DEV_2669) && (
+        {isFF(FF_LSDV_E_278) ? this.renderWrapperHeader() :
+          isFF(FF_DEV_2669) && (
             <AuthorFilter item={item} />
-          )}
-          {isFF(FF_LSDV_E_278) && (
-            <div className={styles.wrapper_header__buttons}>
-              <Toggle
-                data-testid={'auto-scroll-toggle'}
-                checked={this.state.canScroll}
-                onChange={() => {
-                  this.setState({ canScroll: !this.state.canScroll });
-                }}
-                label={'Auto-scroll'}
-              />
-              <Tooltip placement="topLeft" title="Automatically sync transcript scrolling with audio playback">
-                <IconHelp />
-              </Tooltip>
-            </div>
-          )}
-        </div>
+          )
+        }
         <div
           ref={this.myRef}
           data-testid="phrases-wrapper"
@@ -545,7 +557,7 @@ class HtxParagraphsView extends Component {
           className={contextScroll ? styles.scroll_container : styles.container}
           onMouseUp={this.onMouseUp.bind(this)}
         >
-          <Phrases item={item} playingId={item.playingId} activeRef={this.activeRef} />
+          <Phrases item={item} playingId={item.playingId} {...(isFF(FF_LSDV_E_278) ? { activeRef: this.activeRef }: {})} />
         </div>
       </ObjectTag>
     );
