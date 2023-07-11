@@ -252,15 +252,12 @@ const RegionsMixin = types
       },
 
       notifyDrawingFinished({ destroy = false } = {}) {
-        console.log('finished drawing', self.id);
         if (self.origin === 'prediction') {
           self.origin = 'prediction-changed';
         }
 
         // everything below is related to dynamic preannotations
-        if (!self.dynamic) return;
-
-        if (self.fromSuggestion)  return;
+        if (!self.dynamic || self.fromSuggestion)  return;
 
         clearTimeout(self.drawingTimeout);
 
