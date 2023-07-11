@@ -593,7 +593,7 @@ const HtxBrushView = ({ item, setShapeRef }) => {
   }, [
     item.touches.length,
     item.strokeColor,
-    item.parent.stageScale,
+    item.parent?.stageScale,
     store.annotationStore.selected?.id,
     item.parent?.zoomingPositionX,
     item.parent?.zoomingPositionY,
