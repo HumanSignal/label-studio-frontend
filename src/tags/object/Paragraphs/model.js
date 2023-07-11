@@ -101,10 +101,30 @@ const Model = types
     layoutStyles(data) {
       if (self.layout === 'dialogue') {
         const seed = data[self.namekey];
+        const color = ColorScheme.make_color({ seed })[0];
 
-        return {
-          phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed })[0], 0.25) },
-        };
+        if (isFF(FF_LSDV_E_278)) {
+          return {
+            phrase: {
+              background: '#FFF',
+              border: `1px solid ${color}`,
+              borderLeft: `4px solid ${color}`,
+            },
+            name: { color },
+            inactive: {
+              phrase: {
+                background: '#FAFAFA',
+                border: '1px solid rgba(137, 128, 152, 0.16)',
+                borderLeft: `4px solid ${Utils.Colors.convertToRGBA(color, 0.4)}`,
+              },
+              name: { color: Utils.Colors.convertToRGBA(color, 0.9) },
+            },
+          };
+        } else {
+          return {
+            phrase: { backgroundColor: Utils.Colors.convertToRGBA(color, 0.25) },
+          };
+        }
       }
 
       return {};
