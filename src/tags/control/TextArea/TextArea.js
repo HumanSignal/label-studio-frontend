@@ -245,7 +245,8 @@ const Model = types.model({
       if (getRoot(self).autoAnnotation) {
         self.result.area.makeDynamic();
       }
-      self.result.area.notifyDrawingFinished();
+      
+      self.result.area?.notifyDrawingFinished?.();
     },
 
     validateValue(text) {
@@ -431,7 +432,17 @@ const HtxTextArea = observer(({ item }) => {
   );
 });
 
-const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, validate, control, collapsed }, ref) => {
+const HtxTextAreaResultLine = forwardRef(({
+  idx,
+  value,
+  readOnly,
+  onChange,
+  onDelete,
+  onFocus,
+  validate,
+  control,
+  collapsed,
+}, ref) => {
   const rows = parseInt(control.rows);
   const isTextarea = rows > 1;
   const [stateValue, setStateValue] = useState(value ?? '');

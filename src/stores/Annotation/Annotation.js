@@ -1042,8 +1042,9 @@ export const Annotation = types
           // textarea will have simple classification area with no type, so check result.
           // @todo per-regions is tough thing here as they can be in generated result,
           // connected to manual region, will check it later
+          const results = suggestion.results ?? [];
           const onlyAutoAccept = ['richtextregion', 'text', 'textrange'].includes(suggestion.type)
-            || suggestion.results?.[0]?.type === 'textarea';
+            || results.findIndex(r => r.type === 'textarea') >= 0;
 
           if (onlyAutoAccept) {
             self.acceptSuggestion(suggestion.id);
@@ -1276,6 +1277,13 @@ export const Annotation = types
         area.setValue(state);
       });
       self.suggestions.delete(id);
+      
+      // hack to unlock sending textarea results
+      // to the ML backen every time
+      // it just sets `fromSuggestion` back to `false`
+      const isTextArea = area.results.findIndex(r => r.type === 'textarea') >= 0; 
+
+      if (isTextArea) area.revokeSuggestion();
     },
 
     rejectSuggestion(id) {
