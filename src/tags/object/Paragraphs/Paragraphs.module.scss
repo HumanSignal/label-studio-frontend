@@ -63,7 +63,8 @@ $border-thin: 1px solid rgba(137, 128, 152, 0.16);
 
 .scroll_container {
   position: relative;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   counter-reset: phrase;
   border: $border-thin;
   padding: 8px;
