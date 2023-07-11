@@ -242,11 +242,13 @@ const Model = types.model({
         }
       }
 
+      if (!self.result.area) return;
+
       if (getRoot(self).autoAnnotation) {
         self.result.area.makeDynamic();
       }
       
-      self.result.area?.notifyDrawingFinished?.();
+      self.result.area.notifyDrawingFinished();
     },
 
     validateValue(text) {

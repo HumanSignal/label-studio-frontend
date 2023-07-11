@@ -257,7 +257,7 @@ const RegionsMixin = types
         }
 
         // everything below is related to dynamic preannotations
-        if (!self.dynamic || self.fromSuggestion)  return;
+        if (!self.dynamic || self.fromSuggestion) return;
 
         clearTimeout(self.drawingTimeout);
 
