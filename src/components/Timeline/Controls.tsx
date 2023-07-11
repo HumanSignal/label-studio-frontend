@@ -13,7 +13,7 @@ import {
   IconPause,
   IconPlay,
   IconPrev,
-  IconRewind,
+  IconRewind
 } from '../../assets/icons/timeline';
 import { Button, ButtonProps } from '../../common/Button/Button';
 import { Space } from '../../common/Space/Space';
@@ -28,7 +28,7 @@ import {
   TimelineControlsStepHandler,
   TimelineCustomControls,
   TimelineProps,
-  TimelineStepFunction,
+  TimelineStepFunction
 } from './Types';
 import { FF_DEV_2715, isFF } from '../../utils/feature-flags';
 import { AudioControl } from './Controls/AudioControl';
