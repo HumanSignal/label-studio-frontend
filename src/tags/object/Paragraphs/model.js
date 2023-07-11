@@ -457,6 +457,7 @@ const ParagraphsLoadingModel = types.model()
       const value = contextScroll ? val.sort((a, b) => {
         if (!a.start) return 1;
         if (!b.start) return -1;
+        if (a.start === b.start) return a.end - b.end;
         return a.start - b.start;
       }) : val;
       
