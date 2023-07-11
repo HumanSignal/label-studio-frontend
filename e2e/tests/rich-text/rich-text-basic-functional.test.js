@@ -45,9 +45,9 @@ Scenario('Creating, removing and restoring regions', async ({ I, LabelStudio, At
   LabelStudio.waitForObjectsReady();
 
   const regionALocator = locate('.htx-highlight').withText('Hello');
-  const regionAStyleLocator = locate('style#highlight-Highlight_1');
+  const regionAStyleLocator = locate('style#highlight-Highlight_1-9');
   const regionBLocator = locate('.htx-highlight').withText('world');
-  const regionBStyleLocator = locate('style[id^="highlight-"]:not(#highlight-Highlight_1):not(#highlight-html)');
+  const regionBStyleLocator = locate('style[id^="highlight-"]:not(#highlight-Highlight_9):not(#highlight-html)');
 
   AtOutliner.seeRegions(1);
   I.say('We have 1 preset region. Let\'s create another one.');
