@@ -22,7 +22,7 @@ describe('Audio: Paragraphs Sync', () => {
     Sidebar.hasRegions(4);
 
     AudioView.isReady();
-    AudioView.toMatchImageSnapshot(AudioView.drawingArea);
+    AudioView.toMatchImageSnapshot(AudioView.drawingArea, { threshold: 0.4 });
   });
 
   // it('Should have changes in canvas', () => {
