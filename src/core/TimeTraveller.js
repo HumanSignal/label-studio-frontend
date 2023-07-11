@@ -71,6 +71,8 @@ const TimeTraveller = types
       },
 
       recordNow() {
+        if (!targetStore) return;
+
         self.addUndoState(getSnapshot(targetStore));
       },
 
