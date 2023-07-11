@@ -38,8 +38,8 @@ describe('Audio: Paragraphs Sync', () => {
     AudioView.isReady();
 
     AudioView.seekCurrentTimebox(14);
-    AudioView.toMatchImageSnapshot(AudioView.drawingArea, { threshold: 0.4 });
+    AudioView.toMatchImageSnapshot(AudioView.drawingArea, { name: 'HighlightOnFirstSeek', threshold: 0.4 });
     AudioView.play(undefined, 6);
-    AudioView.toMatchImageSnapshot(AudioView.drawingArea, { threshold: 0.4 });
+    AudioView.toMatchImageSnapshot(AudioView.drawingArea, { name: 'HighlightAfterFinishedPlayback', threshold: 0.4 });
   });
 });
