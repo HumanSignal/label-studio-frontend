@@ -4,7 +4,7 @@ import { Button } from 'antd';
 import { PauseCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import styles from './Paragraphs.module.scss';
 
-export const Phrases = observer(({ item }) => {
+export const Phrases = observer(({ item, playingId, activeRef }) => {
   const cls = item.layoutClasses;
   const withAudio = !!item.audio;
 
@@ -14,14 +14,14 @@ export const Phrases = observer(({ item }) => {
     const style = item.layoutStyles(v);
     const classNames = [cls.phrase];
     const isContentVisible = item.isVisibleForAuthorFilter(v);
-    const isPlaying = item.playingId === idx && item.playing;
+    const isPlaying = playingId === idx && item.playing;
 
     if (withAudio) classNames.push(styles.withAudio);
     if (!isContentVisible) classNames.push(styles.collapsed);
     if (getRoot(item).settings.showLineNumbers) classNames.push(styles.numbered);
 
     return (
-      <div key={`${item.name}-${idx}`} data-testid={`phrase:${idx}`} className={classNames.join(' ')} style={style.phrase}>
+      <div key={`${item.name}-${idx}`} ref={isPlaying ? activeRef : null} data-testid={`phrase:${idx}`} className={classNames.join(' ')} style={style.phrase}>
         {isContentVisible && withAudio && !isNaN(v.start) && (
           <Button
             type="text"

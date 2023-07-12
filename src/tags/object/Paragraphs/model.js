@@ -230,10 +230,12 @@ const PlayableAndSyncable = types.model()
 
       // so we are changing time inside current region only
       audio.currentTime = time;
-      if (isFF(FF_LSDV_E_278)) {
-        self.play();
-      } else if (audio.paused && playing) {
-        self.play(self.playingId);
+      if (audio.paused && playing) {
+        if (isFF(FF_LSDV_E_278)) {
+          self.play();
+        } else {
+          self.play(self.playingId);
+        }
       }
     },
 

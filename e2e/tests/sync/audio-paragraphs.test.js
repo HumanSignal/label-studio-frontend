@@ -17,8 +17,36 @@ const config = `
   </ParagraphLabels>
   <View style="height: 400px; overflow-y: auto">
     <Header value="Transcript"/>
-    <Paragraphs audioUrl="$url" sync="audio" name="text" value="$text" layout="dialogue" textKey="text" nameKey="author" showplayer="true" />
+    <Paragraphs audioUrl="$url" contextscroll="true" sync="audio" name="text" value="$text" layout="dialogue" textKey="text" nameKey="author" showplayer="true" />
   </View>
+</View>
+`;
+
+const configWithScroll = `
+<View>
+    <Audio name="audio" value="$url"
+           hotkey="space" sync="text"/>
+    <Header value="Transcript"/>
+    <Paragraphs audioUrl="$url"
+                sync="audio"
+                name="text"
+                value="$text"
+                layout="dialogue"
+                textKey="text"
+                nameKey="author"
+                contextscroll="true"
+                granularity="paragraph"/>
+     <View style="position: sticky">
+      <Header value="Sentiment Labels"/>
+      <ParagraphLabels name="label" toName="text">
+        <Label value="General: Positive" background="#00ff00"/>
+        <Label value="General: Negative" background="#ff0000"/>
+        <Label value="Company: Positive" background="#7dff7d"/>
+        <Label value="Company: Negative" background="#ff7d7d"/>
+        <Label value="External: Positive" background="#4bff4b"/>
+        <Label value="External: Negative" background="#ff4b4b"/>
+      </ParagraphLabels>
+    </View>
 </View>
 `;
 
@@ -53,6 +81,33 @@ const data = {
       'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 8,
+      'end': 10,
+    },
+    {
+      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'author': 'Mia Wallace:',
+      'start': 10,
+      'end': 12,
+    },{
+      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'author': 'Mia Wallace:',
+      'start': 12,
+      'end': 14,
+    },{
+      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'author': 'Mia Wallace:',
+      'start': 14,
+      'end': 16,
+    },{
+      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'author': 'Mia Wallace:',
+      'start': 16,
+      'end': 18,
+    },{
+      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'author': 'Mia Wallace:',
+      'start': 18,
+      'end': 20,
     },
   ],
 };
@@ -177,6 +232,123 @@ FFlagMatrix(['fflag_feat_front_lsdv_e_278_contextual_scrolling_short'], function
       I.seeElement('[data-testid="phrase:1"] [aria-label="play-circle"]');
       I.seeElement('[data-testid="phrase:3"] [aria-label="play-circle"]');
       I.seeElement('[data-testid="phrase:4"] [aria-label="play-circle"]');
+    });
+
+    FFlagScenario('Check if paragraph is scrolling automatically following the audio', async function({ I, LabelStudio, AtAudioView }) {
+      LabelStudio.setFeatureFlags({
+        ff_front_dev_2715_audio_3_280722_short: true,
+        ff_front_1170_outliner_030222_short: true,
+        ...flags,
+      });
+
+      params.config = configWithScroll;
+
+      I.amOnPage('/');
+
+      LabelStudio.init(params);
+
+      await AtAudioView.waitForAudio();
+      await AtAudioView.lookForStage();
+
+      const [{ currentTime: startingAudioTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
+
+      assert.equal(startingAudioTime, startingParagraphAudioTime);
+      assert.equal(startingParagraphAudioTime, 0);
+
+      AtAudioView.clickPlayButton();
+
+      I.wait(10);
+      // Plays the first paragraph segment when the audio interface is played
+      const scrollPosition = await I.executeScript(function(selector) {
+        const element = document.querySelector(selector);
+
+        return {
+          scrollTop: element.scrollTop,
+          scrollLeft: element.scrollLeft,
+        };
+      }, '[data-testid="phrases-wrapper"]');
+
+      await assert(scrollPosition.scrollTop > 200, 'Scroll position should be greater than 200');
+    });
+
+    FFlagScenario('Paragraph should automatically scroll if user seeks audio player', async function({ I, LabelStudio, AtAudioView }) {
+      LabelStudio.setFeatureFlags({
+        ff_front_dev_2715_audio_3_280722_short: true,
+        ff_front_1170_outliner_030222_short: true,
+        ...flags,
+      });
+
+      params.config = configWithScroll;
+
+      I.amOnPage('/');
+
+      LabelStudio.init(params);
+
+      await AtAudioView.waitForAudio();
+      await AtAudioView.lookForStage();
+
+      const [{ currentTime: startingAudioTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
+
+      assert.equal(startingAudioTime, startingParagraphAudioTime);
+      assert.equal(startingParagraphAudioTime, 0);
+
+      AtAudioView.clickPlayButton();
+
+      I.wait(10);
+
+      AtAudioView.clickAtBeginning();
+
+      AtAudioView.clickPauseButton();
+
+      const scrollPosition = await I.executeScript(function(selector) {
+        const element = document.querySelector(selector);
+
+        return {
+          scrollTop: element.scrollTop,
+          scrollLeft: element.scrollLeft,
+        };
+      }, '[data-testid="phrases-wrapper"]');
+
+      await assert.equal(scrollPosition.scrollTop, 0);
+    });
+
+    FFlagScenario('Paragraph shouldnt automatically scroll if user disable the auto-scroll toggle', async function({ I, LabelStudio, AtAudioView }) {
+      LabelStudio.setFeatureFlags({
+        ff_front_dev_2715_audio_3_280722_short: true,
+        ff_front_1170_outliner_030222_short: true,
+        ...flags,
+      });
+
+      params.config = configWithScroll;
+
+      I.amOnPage('/');
+
+      LabelStudio.init(params);
+
+      await AtAudioView.waitForAudio();
+      await AtAudioView.lookForStage();
+
+      const [{ currentTime: startingAudioTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
+
+      assert.equal(startingAudioTime, startingParagraphAudioTime);
+      assert.equal(startingParagraphAudioTime, 0);
+
+      I.click('[data-testid="auto-scroll-toggle"]');
+
+      AtAudioView.clickPlayButton();
+
+      I.wait(10);
+
+      const scrollPosition = await I.executeScript(function(selector) {
+        const element = document.querySelector(selector);
+
+        return {
+          scrollTop: element.scrollTop,
+          scrollLeft: element.scrollLeft,
+        };
+      }, '[data-testid="phrases-wrapper"]');
+
+      await assert.equal(scrollPosition.scrollTop, 0);
     });
   }
 });
