@@ -7,6 +7,8 @@ import { FF_LSDV_E_278, isFF } from '../../../utils/feature-flags';
 import { IconPause, IconPlay } from '../../../assets/icons';
 
 const formatTime = (seconds) => {
+  if (isNaN(seconds)) return '';
+
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const remainingSeconds = seconds % 60;
@@ -25,19 +27,25 @@ export const Phrases = observer(({ item, playingId, activeRef }) => {
   if (!item._value) return null;
 
   const val = item._value.map((v, idx) => {
-    const isPlaying = playingId === idx && item.playing;
-    const style = (isFF(FF_LSDV_E_278) && !isPlaying) ? item.layoutStyles(v).inactive: item.layoutStyles(v);
+    const isActive = playingId === idx;
+    const isPlaying = isActive && item.playing;
+    const style = (isFF(FF_LSDV_E_278) && !isActive) ? item.layoutStyles(v).inactive: item.layoutStyles(v);
     const classNames = [cls.phrase];
     const isContentVisible = item.isVisibleForAuthorFilter(v);
-    const startTime = formatTime(item._value[idx]?.start);
-    const endTime = formatTime(!item._value[idx]?.end ? item._value[idx]?.start + item._value[idx]?.duration : item._value[idx]?.end);
+
+    const withFormattedTime = (item) => {
+      const startTime = formatTime(item._value[idx]?.start);
+      const endTime = formatTime(!item._value[idx]?.end ? item._value[idx]?.start + item._value[idx]?.duration : item._value[idx]?.end);
+
+      return `${startTime} - ${endTime}`;
+    };
 
     if (withAudio) classNames.push(styles.withAudio);
     if (!isContentVisible) classNames.push(styles.collapsed);
     if (getRoot(item).settings.showLineNumbers) classNames.push(styles.numbered);
 
     return (
-      <div key={`${item.name}-${idx}`} ref={isPlaying ? activeRef : null} data-testid={`phrase:${idx}`} className={`${classNames.join(' ')} ${isFF(FF_LSDV_E_278) && styles.newUI}`} style={style.phrase}>
+      <div key={`${item.name}-${idx}`} ref={isActive ? activeRef : null} data-testid={`phrase:${idx}`} className={`${classNames.join(' ')} ${isFF(FF_LSDV_E_278) && styles.newUI}`} style={style.phrase}>
         {isContentVisible && withAudio && !isNaN(v.start) && (
           <Button
             type="text"
@@ -54,7 +62,7 @@ export const Phrases = observer(({ item, playingId, activeRef }) => {
         {isFF(FF_LSDV_E_278) ? (
           <span className={styles.titleWrapper} data-skip-node="true">
             <span className={cls.name} style={style.name}>{v[item.namekey]}</span>
-            <span className={styles.time}>{startTime} - {endTime}</span>
+            <span className={styles.time}>{withFormattedTime(item)}</span>
           </span>
         ) : (
           <span className={cls.name} data-skip-node="true" style={style.name}>{v[item.namekey]}</span>

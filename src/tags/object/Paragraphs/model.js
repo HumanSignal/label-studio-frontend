@@ -206,6 +206,9 @@ const PlayableAndSyncable = types.model()
         return { start, end };
       });
     },
+    get regionsValues() {
+      return Object.values(self.regionsStartEnd);
+    },
   }))
   .actions(self => ({
     /**
@@ -256,6 +259,8 @@ const PlayableAndSyncable = types.model()
         } else {
           self.play(self.playingId);
         }
+      } else if (isFF(FF_LSDV_E_278)) {
+        self.trackPlayingId();
       }
     },
 
@@ -333,7 +338,7 @@ const PlayableAndSyncable = types.model()
         return;
       }
 
-      const regions = Object.values(self.regionsStartEnd);
+      const regions = self.regionsValues;
 
       self.playingId = regions.findIndex(({ start, end }) => {
         return currentTime >= start && currentTime <= end;
