@@ -91,7 +91,7 @@ const annotations = [
   },
 ];
 
-const params = {  annotations: [{ id: 'test', result: annotations }], config, data };
+const params = { annotations: [{ id: 'test', result: annotations }], config, data };
 
 FFlagMatrix([
   'fflag_feat_front_lsdv_e_278_contextual_scrolling_short',

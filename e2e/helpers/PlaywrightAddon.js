@@ -47,9 +47,10 @@ class PlaywrightAddon extends Helper {
     const els = await this.helpers.Playwright._locate(locator);
 
     this.helpers.Playwright.debug(`Matched ${els.length} elements`);
-    const cssValues = await Promise.all(els.map(el => el.$eval('xpath=.', (el, { cssProperty, pseudoElement }) => getComputedStyle(el, pseudoElement).getPropertyValue(cssProperty), { cssProperty, pseudoElement })));
-
-    return cssValues;
+    return await Promise.all(els.map(el => el.$eval('xpath=.', (el, {
+      cssProperty,
+      pseudoElement,
+    }) => getComputedStyle(el, pseudoElement).getPropertyValue(cssProperty), { cssProperty, pseudoElement })));
   }
 }
 
