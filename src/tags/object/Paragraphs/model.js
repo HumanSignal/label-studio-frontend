@@ -102,16 +102,14 @@ const Model = types
         if (isFF(FF_LSDV_E_278)) {
           return {
             phrase: {
-              background: '#FFF',
-              border: `1px solid ${color}`,
-              borderLeft: `4px solid ${color}`,
+              '--highlight-color': color,
+              '--background-color': '#FFF',
             },
             name: { color },
             inactive: {
               phrase: {
-                background: '#FAFAFA',
-                border: '1px solid rgba(137, 128, 152, 0.16)',
-                borderLeft: `4px solid ${Utils.Colors.convertToRGBA(color, 0.4)}`,
+                '--highlight-color': Utils.Colors.convertToRGBA(color, 0.4),
+                '--background-color': '#FAFAFA',
               },
               name: { color: Utils.Colors.convertToRGBA(color, 0.9) },
             },

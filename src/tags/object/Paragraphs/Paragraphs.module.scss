@@ -200,12 +200,24 @@ $border-thin: 1px solid rgba(137, 128, 152, 0.16);
 
 .newUI {
   transition: all .1s ease-out;
-  border: 1px solid rgba(137, 128, 152, 0.16);
   border-radius: 4px;
   display: flex;
   flex-wrap: wrap;
   width: calc(100% - 36px);
-  padding: 8px 12px 8px 12px;
+
+  &.collapsed {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--highlight-color);
+  }
+
+  &:not(.collapsed) {
+    background-color: var(--background-color);
+    border-left: 4px solid var(--highlight-color);
+    border-top: 1px solid rgba(137, 128, 152, 0.16);
+    border-bottom: 1px solid rgba(137, 128, 152, 0.16);
+    border-right: 1px solid rgba(137, 128, 152, 0.16);
+    padding: 8px 12px 8px 12px;
+  }
 
   .dialoguename {
     transition: all .1s ease-out;
