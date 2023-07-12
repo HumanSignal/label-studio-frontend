@@ -50,6 +50,7 @@ export const Phrases = observer(({ item, playingId, activeRef }) => {
           <Button
             type="text"
             className={isFF(FF_LSDV_E_278) ? styles.playNewUi : styles.play}
+            aria-label={isPlaying ? 'pause' : 'play'}
             icon={isPlaying ?
               isFF(FF_LSDV_E_278) ?
                 <IconPause /> : <PauseCircleOutlined /> :
