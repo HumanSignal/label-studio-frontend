@@ -32,8 +32,6 @@ export const Phrases = observer(({ item, playingId, activeRef }) => {
     const startTime = formatTime(item._value[idx]?.start);
     const endTime = formatTime(!item._value[idx]?.end ? item._value[idx]?.start + item._value[idx]?.duration : item._value[idx]?.end);
 
-    console.log(playingId, idx, item.playing);
-
     if (withAudio) classNames.push(styles.withAudio);
     if (!isContentVisible) classNames.push(styles.collapsed);
     if (getRoot(item).settings.showLineNumbers) classNames.push(styles.numbered);
@@ -53,12 +51,15 @@ export const Phrases = observer(({ item, playingId, activeRef }) => {
             onClick={() => item.play(idx)}
           />
         )}
-        <span className={styles.titleWrapper}>
-          <span className={cls.name} data-skip-node="true" style={style.name}>{v[item.namekey]}</span>
-          {isFF(FF_LSDV_E_278) && (
+        {isFF(FF_LSDV_E_278) ? (
+          <span className={styles.titleWrapper} data-skip-node="true">
+            <span className={cls.name} style={style.name}>{v[item.namekey]}</span>
             <span className={styles.time}>{startTime} - {endTime}</span>
-          )}
-        </span>
+          </span>
+        ) : (
+          <span className={cls.name} data-skip-node="true" style={style.name}>{v[item.namekey]}</span>
+        )}
+
         <span className={cls.text}>{v[item.textkey]}</span>
       </div>
     );
