@@ -83,10 +83,6 @@ const Model = types
       return getRoot(self);
     },
 
-    get syncedAudioVideo() {
-      return self.syncedObject?.type?.startsWith('audio') || self.syncedObject?.type?.startsWith('video');
-    },
-
     get audio() {
       if (!self.audiourl) return null;
       if (self.audiourl[0] === '$') {

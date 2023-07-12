@@ -1,4 +1,5 @@
-output
+output/*
+!output/snapshots/
 runner-results/
 xunit.xml
 test-results.xml
