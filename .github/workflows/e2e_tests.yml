@@ -54,11 +54,9 @@ jobs:
         run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
       - name: "Download bundle"
-        uses: actions/download-artifact@v3
+        uses: ./.github/actions/download-artifact
         with:
           name: LSF-coverage-${{ inputs.sha }}
-
-          path: build/
 
       # run http-server with build in background (will be killed after job ends)
       # do this only for master branch (so only for push event)
@@ -95,10 +93,10 @@ jobs:
           yarn run test:ci ${{ steps.cpu-info.outputs.cores-count }}
 
       - name: "Upload e2e output" 
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         if: ${{ failure() }}
         with:
-          name: e2e output
+          name: e2e-output
           path: e2e/output/
 
       - name: Merge coverage reports
@@ -108,7 +106,7 @@ jobs:
           yarn coverage:merge 
 
       - name: Upload coverage to Artifact
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         if: ${{ success() }}
         with:
           name: e2e-tests-coverage
