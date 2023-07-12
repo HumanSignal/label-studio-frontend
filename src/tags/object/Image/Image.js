@@ -1,5 +1,5 @@
 import { inject } from 'mobx-react';
-import { destroy, detach, getRoot, getType, types } from 'mobx-state-tree';
+import { destroy, getRoot, getType, types } from 'mobx-state-tree';
 
 import ImageView from '../../../components/ImageView/ImageView';
 import { customTypes } from '../../../core/CustomTypes';
