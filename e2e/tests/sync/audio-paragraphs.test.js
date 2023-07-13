@@ -175,7 +175,7 @@ FFlagMatrix(['fflag_feat_front_lsdv_e_278_contextual_scrolling_short'], function
     I.click('[aria-label="play"]');
     I.wait(1);
 
-    I.click('[aria-label="pause"]');
+    I.click('[aria-label="play"]');
     I.wait(1);
 
     const [{ currentTime: seekAudioTime }, { currentTime: seekParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
