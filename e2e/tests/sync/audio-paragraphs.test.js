@@ -54,16 +54,16 @@ const data = {
   url: 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3',
   text: [
     {
-      'end': 2,
+      'end': 3,
       'text': 'Dont you hate that?',
       'start': 1,
       'author': 'Mia Wallace',
     },
     {
       'text': 'Hate what?',
-      'start': 2,
+      'start': 3,
       'author': 'Vincent Vega:',
-      'duration': 2,
+      'duration': 1,
     },
     {
       'text': 'Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?',
@@ -297,6 +297,8 @@ FFlagMatrix(['fflag_feat_front_lsdv_e_278_contextual_scrolling_short'], function
       I.wait(10);
 
       AtAudioView.clickAtBeginning();
+
+      I.wait(1);
 
       AtAudioView.clickPauseButton();
 
