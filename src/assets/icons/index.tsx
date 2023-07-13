@@ -32,6 +32,8 @@ export { ReactComponent as IconFast } from './fast.svg';
 export { ReactComponent as IconDuplicate } from './duplicate.svg';
 export { ReactComponent as IconEllipsis } from './ellipsis.svg';
 export { ReactComponent as IconWarning } from './warning.svg';
+export { ReactComponent as IconPlay } from './play.svg';
+export { ReactComponent as IconPause } from './pause.svg';
 export { ReactComponent as IconHelp } from './help.svg';
 
 export { ReactComponent as IconCheck } from './check.svg';

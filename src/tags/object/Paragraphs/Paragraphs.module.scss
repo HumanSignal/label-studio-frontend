@@ -38,7 +38,7 @@ $border-thin: 1px solid rgba(137, 128, 152, 0.16);
 
 .dialoguename {
   font-weight: bold;
-  background: white !important;
+  background: white;
   border-radius: 5px;
   padding: 5px;
   margin-right: 10px;
@@ -63,7 +63,8 @@ $border-thin: 1px solid rgba(137, 128, 152, 0.16);
 
 .scroll_container {
   position: relative;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   counter-reset: phrase;
   border: $border-thin;
   padding: 8px;
@@ -166,6 +167,19 @@ $border-thin: 1px solid rgba(137, 128, 152, 0.16);
   z-index: 1;
 }
 
+.playNewUi {
+  user-select: none;
+  cursor: pointer;
+  position: absolute;
+  left: 5px;
+  margin-top: -0.3em;
+  font-size: inherit;
+
+  &:hover, &:active, &:focus {
+    background: none;
+  }
+}
+
 .play {
   user-select: none;
   position: absolute;
@@ -181,5 +195,66 @@ $border-thin: 1px solid rgba(137, 128, 152, 0.16);
   // only the circle of play button highlighted
   &:focus path:first-child {
     fill: #1890ff;
+  }
+}
+
+.newUI {
+  transition: all .1s ease-out;
+  border-radius: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  width: calc(100% - 36px);
+
+  &.collapsed {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--highlight-color);
+  }
+
+  &:not(.collapsed) {
+    background-color: var(--background-color);
+    border-left: 4px solid var(--highlight-color);
+    border-top: 1px solid rgba(137, 128, 152, 0.16);
+    border-bottom: 1px solid rgba(137, 128, 152, 0.16);
+    border-right: 1px solid rgba(137, 128, 152, 0.16);
+    padding: 8px 12px 8px 12px;
+  }
+
+  .dialoguename {
+    transition: all .1s ease-out;
+    background: none;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0.15px;
+    padding: 0
+  }
+
+  .dialoguetext {
+    transition: all .1s ease-out;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    letter-spacing: 0.25px;
+    color: #1F1F1F;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .titleWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+    .time {
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 16px;
+      letter-spacing: 0.5px;
+      color: #898098;
+    }
   }
 }
