@@ -56,7 +56,7 @@ const data = {
     {
       'end': 2,
       'text': 'Dont you hate that?',
-      'start': 0,
+      'start': 1,
       'author': 'Mia Wallace',
     },
     {
