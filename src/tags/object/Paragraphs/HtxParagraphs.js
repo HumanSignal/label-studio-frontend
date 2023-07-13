@@ -8,6 +8,9 @@ import { isSelectionContainsSpan } from '../../../utils/selection-tools';
 import styles from './Paragraphs.module.scss';
 import { AuthorFilter } from './AuthorFilter';
 import { Phrases } from './Phrases';
+import Toggle from '../../../common/Toggle/Toggle';
+import { IconHelp } from '../../../assets/icons';
+import { Tooltip } from '../../../common/Tooltip/Tooltip';
 
 const audioDefaultProps = {};
 
@@ -19,6 +22,13 @@ class HtxParagraphsView extends Component {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
+    this.activeRef = React.createRef();
+    this.lastPlayingId = -1;
+    this.scrollTimeout = [];
+    this.isPlaying = false;
+    this.state = {
+      canScroll: true,
+    };
   }
 
   getSelectionText(sel) {
@@ -275,6 +285,13 @@ class HtxParagraphsView extends Component {
     }
   }
 
+  _disposeTimeout() {
+    if (this.scrollTimeout.length > 0){
+      this.scrollTimeout.forEach(timeout => clearTimeout(timeout));
+      this.scrollTimeout = [];
+    }
+  }
+
   onMouseUp(ev) {
     const item = this.props.item;
     const states = item.activeStates();
@@ -397,6 +414,43 @@ class HtxParagraphsView extends Component {
         return false;
       });
     });
+
+
+    if (isFF(FF_LSDV_E_278) && this.props.item.contextscroll && item.playingId >= 0 && this.lastPlayingId !== item.playingId && this.state.canScroll) {
+      const _padding = 8; // 8 is the padding between the phrases, so it will keep aligned with the top of the phrase
+      const _playingItem = this.props.item._value[item.playingId];
+      const _start = _playingItem.start;
+      const _end = _playingItem.end;
+      const _phaseHeight = this.activeRef.current?.offsetHeight || 0;
+      const _duration = this.props.item._value[item.playingId].duration || _end - _start;
+      const _wrapperHeight = root.offsetHeight;
+      const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
+      const _splittedText = 10; // it will be from 0 to 100% of the text height, going 10% by 10%
+
+      this._disposeTimeout();
+
+      if (_phaseHeight > _wrapperHeight) {
+        for (let i = 0; i < _splittedText; i++) {
+          this.scrollTimeout.push(
+            setTimeout(() => {
+              const _pos = (_wrapperOffsetTop) + ((_phaseHeight - (_wrapperHeight / 3)) * (i * .1)); // 1/3 of the wrapper height is the offset to keep the text aligned with the middle of the wrapper
+
+              root.scrollTo({
+                top: _pos,
+                behavior: 'smooth',
+              });
+            }, ((_duration / _splittedText) * i) * 1000),
+          );
+        }
+      } else {
+        root.scrollTo({
+          top: _wrapperOffsetTop,
+          behavior: 'smooth',
+        });
+      }
+
+      this.lastPlayingId = item.playingId;
+    }
   }
 
   _handleScrollContainerHeight() {
@@ -413,6 +467,10 @@ class HtxParagraphsView extends Component {
     if (container) this.myRef.current.style.maxHeight = `${height < minHeight ? minHeight : height}px`;
   }
 
+  _handleScrollRoot() {
+    this._disposeTimeout();
+  }
+
   _resizeObserver = new ResizeObserver(() => this._handleScrollContainerHeight());
 
   componentDidUpdate() {
@@ -422,19 +480,52 @@ class HtxParagraphsView extends Component {
   componentDidMount() {
     if(isFF(FF_LSDV_E_278) && this.props.item.contextscroll) this._resizeObserver.observe(document.querySelector('.lsf-main-content'));
     this._handleUpdate();
+
+    if(isFF(FF_LSDV_E_278))
+      this.myRef.current.addEventListener('wheel', this._handleScrollRoot.bind(this));
   }
 
   componentWillUnmount() {
     const target = document.querySelector('.lsf-main-content');
-    
+
+    if(isFF(FF_LSDV_E_278))
+      this.myRef.current.removeEventListener('wheel', this._handleScrollRoot);
+
     if (target) this._resizeObserver?.unobserve(target);
     this._resizeObserver?.disconnect();
+  }
+
+  renderWrapperHeader() {
+    const { item } = this.props;
+
+    return (
+      <div className={styles.wrapper_header}>
+        {isFF(FF_DEV_2669) && (
+          <AuthorFilter item={item} />
+        )}
+        <div className={styles.wrapper_header__buttons}>
+          <Toggle
+            data-testid={'auto-scroll-toggle'}
+            checked={this.state.canScroll}
+            onChange={() => {
+              this.setState({ canScroll: !this.state.canScroll });
+            }}
+            label={'Auto-scroll'}
+          />
+          <Tooltip placement="topLeft" title="Automatically sync transcript scrolling with audio playback">
+            <IconHelp />
+          </Tooltip>
+        </div>
+      </div>
+    );
   }
 
   render() {
     const { item } = this.props;
     const withAudio = !!item.audio;
     const contextScroll = isFF(FF_LSDV_E_278) && this.props.item.contextscroll;
+
+    if (!item.playing && isFF(FF_LSDV_E_278)) this._disposeTimeout(); // dispose scroll timeout when the audio is not playing
 
     // current way to not render when we wait for data
     if (isFF(FF_DEV_2669) && !item._value) return null;
@@ -454,14 +545,19 @@ class HtxParagraphsView extends Component {
             onCanPlay={item.handleCanPlay}
           />
         )}
-        {isFF(FF_DEV_2669) && <AuthorFilter item={item} />}
+        {isFF(FF_LSDV_E_278) ? this.renderWrapperHeader() :
+          isFF(FF_DEV_2669) && (
+            <AuthorFilter item={item} />
+          )
+        }
         <div
           ref={this.myRef}
+          data-testid="phrases-wrapper"
           data-update={item._update}
           className={contextScroll ? styles.scroll_container : styles.container}
           onMouseUp={this.onMouseUp.bind(this)}
         >
-          <Phrases item={item} />
+          <Phrases item={item} playingId={item.playingId} {...(isFF(FF_LSDV_E_278) ? { activeRef: this.activeRef }: {})} />
         </div>
       </ObjectTag>
     );
