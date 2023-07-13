@@ -458,9 +458,9 @@ const ParagraphsLoadingModel = types.model()
 
         if (!a.start) return 1;
         if (!b.start) return -1;
-        const aEnd = a.end ? a.end : a.start + a.duration;
-        const bEnd = b.end ? b.end : b.start + b.duration;
-        
+        const aEnd = a.end ? a.end : a.start + a.duration || 0;
+        const bEnd = b.end ? b.end : b.start + b.duration || 0;
+
         if (a.start === b.start) return aEnd - bEnd;
         return a.start - b.start;
       }) : val;
