@@ -197,6 +197,8 @@ class App extends Component {
     const root = as.selected && as.selected.root;
     const { settings } = store;
 
+    if (store.isLoading) return this.renderLoader();
+
     if (store.noTask) return this.renderNothingToLabel(store);
 
     if (store.noAccess) return this.renderNoAccess();
@@ -219,100 +221,93 @@ class App extends Component {
     const newUIEnabled = isFF(FF_DEV_3873);
 
     return (
-      <>
-        {
-          store.isLoading ? this.renderLoader() : null
-        }
-        <Block
-          key="editor"
-          style={{ display: store.isLoading ? 'none' : undefined }}
-          name="editor"
-          mod={{ fullscreen: settings.fullscreen, _auto_height: !outlinerEnabled }}
-          ref={isFF(FF_LSDV_4620_3_ML) ? reactCleaner(this) : null}
-        >
-          <Settings store={store} />
-          <Provider store={store}>
-            {newUIEnabled ? (
-              <InstructionsModal
-                visible={store.showingDescription}
-                onCancel={() => store.toggleDescription()}
-                title="Labeling Instructions"
-              >
-                {store.description}
-              </InstructionsModal>
-            ) : (
-              <>
-                {store.showingDescription && (
-                  <Segment>
-                    <div dangerouslySetInnerHTML={{ __html: store.description }} />
-                  </Segment>
-                )}
-              </>
-            )}
-
-            {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store} />}
-            <Block
-              name="wrapper"
-              mod={{
-                viewAll: viewingAll,
-                bsp: settings.bottomSidePanel,
-                outliner: outlinerEnabled,
-                showingBottomBar: newUIEnabled,
-              }}
+      <Block
+        name="editor"
+        mod={{ fullscreen: settings.fullscreen, _auto_height: !outlinerEnabled }}
+        ref={isFF(FF_LSDV_4620_3_ML) ? reactCleaner(this) : null}
+      >
+        <Settings store={store} />
+        <Provider store={store}>
+          {newUIEnabled ? (
+            <InstructionsModal
+              visible={store.showingDescription}
+              onCancel={() => store.toggleDescription()}
+              title="Labeling Instructions"
             >
-              {outlinerEnabled ? (
-                isFF(FF_DEV_3873) ? (
-                  <SideTabsPanels
-                    panelsHidden={viewingAll}
-                    currentEntity={as.selectedHistory ?? as.selected}
-                    regions={as.selected.regionStore}
-                    showComments={!store.hasInterface('annotations:comments')}
-                    focusTab={store.commentStore.tooltipMessage ? 'comments' : null}
-                  >
-                    {mainContent}
-                    {isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
-                  </SideTabsPanels>
-                ) : (
-                  <SidePanels
-                    panelsHidden={viewingAll}
-                    currentEntity={as.selectedHistory ?? as.selected}
-                    regions={as.selected.regionStore}
-                  >
-                    {mainContent}
+              {store.description}
+            </InstructionsModal>
+          ) : (
+            <>
+              {store.showingDescription && (
+                <Segment>
+                  <div dangerouslySetInnerHTML={{ __html: store.description }} />
+                </Segment>
+              )}
+            </>
+          )}
 
-                    {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
-                  </SidePanels>
-                )
+          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store} />}
+          <Block
+            name="wrapper"
+            mod={{
+              viewAll: viewingAll,
+              bsp: settings.bottomSidePanel,
+              outliner: outlinerEnabled,
+              showingBottomBar: newUIEnabled,
+            }}
+          >
+            {outlinerEnabled ? (
+              isFF(FF_DEV_3873) ? (
+                <SideTabsPanels
+                  panelsHidden={viewingAll}
+                  currentEntity={as.selectedHistory ?? as.selected}
+                  regions={as.selected.regionStore}
+                  showComments={!store.hasInterface('annotations:comments')}
+                  focusTab={store.commentStore.tooltipMessage ? 'comments' : null}
+                >
+                  {mainContent}
+                  {isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+                </SideTabsPanels>
               ) : (
-                <>
+                <SidePanels
+                  panelsHidden={viewingAll}
+                  currentEntity={as.selectedHistory ?? as.selected}
+                  regions={as.selected.regionStore}
+                >
                   {mainContent}
 
-                  {viewingAll === false && (
-                    <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
-                      {store.hasInterface('side-column') && (
-                        <SidebarTabs active="annotation">
-                          <SidebarPage name="annotation" title="Annotation">
-                            <AnnotationTab store={store} />
+                  {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+                </SidePanels>
+              )
+            ) : (
+              <>
+                {mainContent}
+
+                {viewingAll === false && (
+                  <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
+                    {store.hasInterface('side-column') && (
+                      <SidebarTabs active="annotation">
+                        <SidebarPage name="annotation" title="Annotation">
+                          <AnnotationTab store={store} />
+                        </SidebarPage>
+
+                        {this.props.panels.map(({ name, title, Component }) => (
+                          <SidebarPage key={name} name={name} title={title}>
+                            <Component />
                           </SidebarPage>
+                        ))}
+                      </SidebarTabs>
+                    )}
+                  </Block>
+                )}
 
-                          {this.props.panels.map(({ name, title, Component }) => (
-                            <SidebarPage key={name} name={name} title={title}>
-                              <Component />
-                            </SidebarPage>
-                          ))}
-                        </SidebarTabs>
-                      )}
-                    </Block>
-                  )}
-
-                  {newUIEnabled && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
-                </>
-              )}
-            </Block>
-          </Provider>
-          {store.hasInterface('debug') && <Debug store={store} />}
-        </Block>
-      </>
+                {newUIEnabled && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+              </>
+            )}
+          </Block>
+        </Provider>
+        {store.hasInterface('debug') && <Debug store={store} />}
+      </Block>
     );
   }
 
