@@ -401,8 +401,6 @@ FFlagMatrix(['fflag_feat_front_lsdv_e_278_contextual_scrolling_short'], function
         };
       }, '[data-testid="phrases-wrapper"]');
 
-      console.log(scrollPosition.scrollTop);
-
       await assert(scrollPosition.scrollTop > 400, 'Scroll position should be greater than 200');
     });
   }
