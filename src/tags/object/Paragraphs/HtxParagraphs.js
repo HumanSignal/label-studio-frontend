@@ -28,6 +28,7 @@ class HtxParagraphsView extends Component {
     this.isPlaying = false;
     this.state = {
       canScroll: true,
+      inViewport: true,
     };
   }
 
@@ -427,30 +428,47 @@ class HtxParagraphsView extends Component {
       const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
       const _splittedText = 10; // it will be from 0 to 100% of the text height, going 10% by 10%
 
+      this._handleScrollRoot();
       this._disposeTimeout();
 
       if (_phaseHeight > _wrapperHeight) {
         for (let i = 0; i < _splittedText; i++) {
           this.scrollTimeout.push(
             setTimeout(() => {
-              const _pos = (_wrapperOffsetTop) + ((_phaseHeight - (_wrapperHeight / 3)) * (i * .1)); // 1/3 of the wrapper height is the offset to keep the text aligned with the middle of the wrapper
+              const _pos = (_wrapperOffsetTop) + ((_phaseHeight - (_wrapperHeight / 3)) * (i * (1 / _splittedText))); // 1/3 of the wrapper height is the offset to keep the text aligned with the middle of the wrapper
 
-              root.scrollTo({
-                top: _pos,
-                behavior: 'smooth',
-              });
+              if (this.state.inViewPort && this.state.canScroll) {
+                root.scrollTo({
+                  top: _pos,
+                  behavior: 'smooth',
+                });
+              }
             }, ((_duration / _splittedText) * i) * 1000),
           );
         }
       } else {
-        root.scrollTo({
-          top: _wrapperOffsetTop,
-          behavior: 'smooth',
-        });
+        if (this.state.inViewPort) {
+          root.scrollTo({
+            top: _wrapperOffsetTop,
+            behavior: 'smooth',
+          });
+        }
       }
 
       this.lastPlayingId = item.playingId;
     }
+  }
+
+  _handleScrollToPhrase() {
+    this.setState( { inViewPort : true });
+
+    const _padding = 8; // 8 is the padding between the phrases, so it will keep aligned with the top of the phrase
+    const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
+
+    this.myRef.current.scrollTo({
+      top: _wrapperOffsetTop,
+      behavior: 'smooth',
+    });
   }
 
   _handleScrollContainerHeight() {
@@ -471,7 +489,16 @@ class HtxParagraphsView extends Component {
   }
 
   _handleScrollRoot() {
-    this._disposeTimeout();
+    if (this.activeRef.current) {
+      const { top, bottom, height } = this.activeRef.current.getBoundingClientRect();
+      const { offsetHeight, offsetTop } = this.myRef.current;
+      const offset = offsetTop + 95;
+      const off = height > offsetHeight ? height - offsetHeight : 0;
+      const isInView = ((top > offset && top < offsetHeight + offset) ||
+              (bottom > offset && bottom < offsetHeight + offset + off));
+
+      this.setState({ inViewPort: isInView });
+    }
   }
 
   _resizeObserver = new ResizeObserver(() => this._handleScrollContainerHeight());
@@ -511,7 +538,12 @@ class HtxParagraphsView extends Component {
             data-testid={'auto-scroll-toggle'}
             checked={this.state.canScroll}
             onChange={() => {
-              this.setState({ canScroll: !this.state.canScroll });
+              if (!this.state.canScroll)
+                this._handleScrollToPhrase();
+
+              this.setState({
+                canScroll: !this.state.canScroll,
+              });
             }}
             label={'Auto-scroll'}
           />
