@@ -1044,7 +1044,15 @@ export const Annotation = types
         self.acceptAllSuggestions();
       } else {
         self.suggestions.forEach((suggestion) => {
-          if (['richtextregion', 'text', 'textrange'].includes(suggestion.type)) {
+          // regions that can't be accepted in usual way, should be auto-accepted;
+          // textarea will have simple classification area with no type, so check result.
+          // @todo per-regions is tough thing here as they can be in generated result,
+          // connected to manual region, will check it later
+          const results = suggestion.results ?? [];
+          const onlyAutoAccept = ['richtextregion', 'text', 'textrange'].includes(suggestion.type)
+            || results.findIndex(r => r.type === 'textarea') >= 0;
+
+          if (onlyAutoAccept) {
             self.acceptSuggestion(suggestion.id);
             if (isFF(FF_DEV_1284)) {
               // This is necessary to prevent the occurrence of new steps in the history after updating objects at the end of current method
@@ -1057,7 +1065,7 @@ export const Annotation = types
       if (!isFF(FF_DEV_1284)) {
         history.freeze('richtext:suggestions');
       }
-      self.objects.forEach(obj => obj.needsUpdate?.({ suggestions: true }));
+      self.names.forEach(tag => tag.needsUpdate?.({ suggestions: true }));
       if (!isFF(FF_DEV_1284)) {
         history.setReplaceNextUndoState(true);
         history.unfreeze('richtext:suggestions');
@@ -1278,6 +1286,13 @@ export const Annotation = types
         area.setValue(state);
       });
       self.suggestions.delete(id);
+      
+      // hack to unlock sending textarea results
+      // to the ML backen every time
+      // it just sets `fromSuggestion` back to `false`
+      const isTextArea = area.results.findIndex(r => r.type === 'textarea') >= 0; 
+
+      if (isTextArea) area.revokeSuggestion();
     },
 
     rejectSuggestion(id) {
