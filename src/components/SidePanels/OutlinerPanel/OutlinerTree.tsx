@@ -379,7 +379,10 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   const hidden = useMemo(() => {
     if (type?.includes('region') || type?.includes('range')) {
       return entity.hidden;
-    } else if ((!type || type.includes('label')) && regions || type?.includes('tool') && regions) {
+    } else if (
+      (!type || type.includes('label')) && regions ||
+        type?.includes('tool') && regions
+    ) {
       return Object.values(regions).every(({ hidden }) => hidden);
     }
     return false;
