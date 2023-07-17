@@ -3,7 +3,7 @@ import Button from 'antd/lib/button/index';
 import Form from 'antd/lib/form/index';
 import Input from 'antd/lib/input/index';
 import { observer } from 'mobx-react';
-import { destroy, getRoot, isAlive, types } from 'mobx-state-tree';
+import { destroy, isAlive, types } from 'mobx-state-tree';
 
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import RequiredMixin from '../../../mixins/Required';
@@ -230,32 +230,8 @@ const Model = types.model({
     },
 
     onChange() {
-      let area = self.result?.area;
-      
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          area = self.annotation.createResult({}, {
-            text: self.selectedValues(),
-          }, self, self.toname);
-        }
-      }
-
-      if (!area) return;
-
-      if (getRoot(self).autoAnnotation) {
-        area.makeDynamic();
-      }
-      
-      area.notifyDrawingFinished();
-
       self.updateResult();
+      self.result.area.notifyDrawingFinished();
     },
 
     validateValue(text) {
