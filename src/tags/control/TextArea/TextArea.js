@@ -215,7 +215,7 @@ const Model = types.model({
       if (index < 0) return;
       self.regions.splice(index, 1);
       destroy(region);
-      self.onChange();
+      self.onChange(region);
     },
 
     perRegionCleanup() {
@@ -229,9 +229,11 @@ const Model = types.model({
       return r;
     },
 
-    onChange() {
+    onChange(area) {
       self.updateResult();
-      self.result.area.notifyDrawingFinished();
+      const currentArea = (area ?? self.result?.area);
+
+      currentArea?.notifyDrawingFinished();
     },
 
     validateValue(text) {
