@@ -428,8 +428,6 @@ class HtxParagraphsView extends Component {
       const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
       const _splittedText = 10; // it will be from 0 to 100% of the text height, going 10% by 10%
 
-      console.log('padding', _padding);
-
       this._handleScrollRoot();
       this._disposeTimeout();
 
