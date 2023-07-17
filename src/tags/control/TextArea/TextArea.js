@@ -230,26 +230,30 @@ const Model = types.model({
     },
 
     onChange() {
+      let area = self.result?.area;
+      
       if (self.result) {
         self.result.area.setValue(self);
       } else {
         if (self.perregion) {
-          const area = self.annotation.highlightedNode;
+          area = self.annotation.highlightedNode;
 
           if (!area) return null;
           area.setValue(self);
         } else {
-          self.annotation.createResult({}, { text: self.selectedValues() }, self, self.toname);
+          area = self.annotation.createResult({}, {
+            text: self.selectedValues(),
+          }, self, self.toname);
         }
       }
 
-      if (!self.result.area) return;
+      if (!area) return;
 
       if (getRoot(self).autoAnnotation) {
-        self.result.area.makeDynamic();
+        area.makeDynamic();
       }
       
-      self.result.area.notifyDrawingFinished();
+      area.notifyDrawingFinished();
 
       self.updateResult();
     },
