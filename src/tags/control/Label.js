@@ -154,14 +154,22 @@ const Model = types.model({
     // is changing the label we need to make sure that region is
     // not going to end up without labels at all
     const applicableRegions = affectedRegions.filter(region => {
+      // if that's the only selected label, the only labelset assigned to region,
+      // and we are trying to unselect it, then don't allow that
+      // (except for rare labelsets that allow empty labels)
       if (
         labels.selectedLabels.length === 1 &&
         self.selected &&
         region.labelings.length === 1 &&
-        (!self.parent?.allowempty || self.isEmpty)
+        (!labels?.allowempty || self.isEmpty)
       )
         return false;
-      if (self.parent?.type !== 'labels' && !self.parent?.type.includes(region.results[0].type)) return false;
+      // @todo rewrite this check and add more named vars
+      // @todo select only related specific labels
+      // @todo unselect any label, but only if that won't leave region without specific labels!
+      // @todo but check for regions created by tools
+      // @todo lot of tests!
+      if (!self.selected && labels.type !== 'labels' && !labels.type.includes(region.type.replace(/region$/, ''))) return false;
       return true;
     });
 

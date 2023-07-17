@@ -1,4 +1,5 @@
 import { ImageView, Labels, LabelStudio, Sidebar } from '@heartexlabs/ls-test/helpers/LSF';
+import {FF_LSDV_E_278} from "../../../../src/utils/feature-flags";
 
 const config = `
   <View>
@@ -103,14 +104,16 @@ const task = {
 describe('Filter outliner scenario', () => {
   const FF_LSDV_3025 = 'fflag_feat_front_lsdv_3025_outliner_filter_short';
 
+  beforeEach(() => {
+    LabelStudio.addFeatureFlagsOnPageLoad({
+      [FF_LSDV_3025]: true,
+    });
+  });
+
   it('Check if filter is visible', () => {
     LabelStudio.init({
       config,
       task,
-    });
-
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
     });
 
     cy.get('[data-testid="filter-button"]').should('be.visible');
@@ -120,10 +123,6 @@ describe('Filter outliner scenario', () => {
     LabelStudio.init({
       config,
       task,
-    });
-
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
     });
 
     cy.get('[data-testid="filter-button"]').click();
@@ -140,10 +139,6 @@ describe('Filter outliner scenario', () => {
       task,
     });
 
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
-    });
-
     cy.contains('Adjust or remove filters to view').should('not.exist');
   });
 
@@ -151,10 +146,6 @@ describe('Filter outliner scenario', () => {
     LabelStudio.init({
       config,
       task,
-    });
-
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
     });
 
     cy.get('[data-testid="filter-button"]').click();
@@ -171,10 +162,6 @@ describe('Filter outliner scenario', () => {
       task,
     });
 
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
-    });
-
     cy.get('[data-testid="filter-button"]').click();
     cy.contains('Add Filter').click();
     cy.get('[data-testid="operation-dropdown"]').click();
@@ -189,10 +176,6 @@ describe('Filter outliner scenario', () => {
       task,
     });
 
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
-    });
-
     cy.get('[data-testid="filter-button"]').click();
     cy.contains('Add Filter').click();
     cy.get('[data-testid="operation-dropdown"]').click();
@@ -205,10 +188,6 @@ describe('Filter outliner scenario', () => {
     LabelStudio.init({
       config: configWithAllowEmpty,
       task,
-    });
-
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
     });
 
     Labels.select('blank');
@@ -226,10 +205,6 @@ describe('Filter outliner scenario', () => {
     LabelStudio.init({
       config,
       task,
-    });
-
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
     });
 
     cy.get('[data-testid="filter-button"]').click();
@@ -259,10 +234,6 @@ describe('Filter outliner scenario', () => {
       task,
     });
 
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
-    });
-
     cy.get('[data-testid="filter-button"]').click();
     cy.contains('Add Filter').click();
     cy.get('[data-testid="operation-dropdown"]').click();
@@ -280,10 +251,6 @@ describe('Filter outliner scenario', () => {
     LabelStudio.init({
       config,
       task,
-    });
-
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
     });
 
     cy.get('[data-testid="filter-button"]').click();

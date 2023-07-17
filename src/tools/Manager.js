@@ -100,6 +100,24 @@ class ToolsManager {
 
   selectTool(tool, selected) {
     const currentTool = this.findSelectedTool();
+    const newSelection = tool?.group;
+
+    // if there are no tools selected, there are no specific labels to unselect
+    // also this will skip annotation init
+    if (currentTool && newSelection === 'segmentation') {
+      const toolType = tool.control.type.replace(/labels$/, '');
+      const currentLabels = tool.obj.activeStates();
+      // labels of different types; we can't create regions with different tools simultaneously, so we have to unselect them
+      const unrelatedLabels = currentLabels.filter(tag => {
+        const type = tag.type.replace(/labels$/, '');
+
+        if (tag.type === 'labels') return false;
+        if (type === toolType) return false;
+        return true;
+      });
+
+      unrelatedLabels.forEach(tag => tag.unselectAll());
+    }
 
     if (currentTool && currentTool.handleToolSwitch) {
       currentTool.handleToolSwitch(tool);
