@@ -14,9 +14,12 @@ export interface SegmentOptions {
   end: number;
   color?: string|RgbaColorArray;
   selected?: boolean;
+  locked?: boolean;
   updateable?: boolean;
   deleteable?: boolean;
   visible?: boolean;
+  showInTimeline?: boolean;
+  external?: boolean;
 }
 
 export interface SegmentGlobalEvents {
@@ -42,12 +45,15 @@ export class Segment extends Events<SegmentEvents> {
   id: string;
   start = 0;
   end = 0;
-  color: RgbaColorArray = rgba('#ccc');
+  color: RgbaColorArray = rgba('#afafaf');
   selected = false;
   highlighted = false;
   updateable = true;
+  locked = false;
   deleteable = true;
   visible = true;
+  showInTimeline = false;
+  external = false;
 
   protected waveform: Waveform;
   protected visualizer: Visualizer;
@@ -74,6 +80,7 @@ export class Segment extends Events<SegmentEvents> {
     this.end = options.end;
     this.selected = !!options.selected;
     this.updateable = options.updateable ?? this.updateable;
+    this.locked = options.locked ?? this.locked;
     this.visible = options.visible ?? this.visible;
     this.waveform = waveform;
     this.visualizer = visualizer;
@@ -82,6 +89,8 @@ export class Segment extends Events<SegmentEvents> {
     this.isDragging = false;
     this.draggingStartPosition = null;
     this.isGrabbingEdge = { isRightEdge: false, isLeftEdge: false };
+    this.showInTimeline = options.showInTimeline ?? this.showInTimeline;
+    this.external = options.external ?? this.external;
 
     this.initialize();
   }
@@ -99,6 +108,9 @@ export class Segment extends Events<SegmentEvents> {
     if (options.deleteable !== undefined) {
       this.deleteable = options.deleteable;
     }
+    if (options.locked !== undefined) {
+      this.locked = options.locked;
+    }
     if (options.start !== undefined) {
       this.start = options.start;
     }
@@ -114,6 +126,12 @@ export class Segment extends Events<SegmentEvents> {
     if (options.color !== undefined) {
       this.color = rgba(options.color);
     }
+    if (options.showInTimeline !== undefined) {
+      this.showInTimeline = options.showInTimeline;
+    }
+    if (options.external !== undefined) {
+      this.external = options.external;
+    }
   }
 
   setVisibility(visible: boolean) {
@@ -122,6 +140,13 @@ export class Segment extends Events<SegmentEvents> {
 
     this.invoke('update', [this]);
     this.waveform.invoke('regionUpdated', [this]);
+  }
+
+  /**
+   * Move this segment to the front so it is readily available to the user to manipulate
+   */
+  bringToFront() {
+    this.controller.bringRegionToFront(this.id);
   }
 
   protected get layerName() {
@@ -175,6 +200,7 @@ export class Segment extends Events<SegmentEvents> {
       id: this.id,
       selected: this.selected,
       updateable: this.updateable,
+      locked: this.locked,
       deleteable: this.deleteable,
       visible: this.visible,
     };
@@ -241,7 +267,7 @@ export class Segment extends Events<SegmentEvents> {
   };
 
   private handleDrag = (e: MouseEvent) => {
-    if (!this.updateable) return;
+    if (!this.updateable || this.locked) return;
     if (this.draggingStartPosition) {
       e.preventDefault();
       e.stopPropagation();
@@ -279,6 +305,7 @@ export class Segment extends Events<SegmentEvents> {
     const x = getCursorPositionX(e, container) + scrollLeft;
     const { start, end } = this;
 
+    this.bringToFront();
     this.draggingStartPosition = { grabPosition: x, start, end };
     this.isGrabbingEdge = this.edgeGrabCheck(e);
     document.addEventListener('mouseup', this.handleMouseUp);
@@ -299,24 +326,26 @@ export class Segment extends Events<SegmentEvents> {
     if (!this.visible || !this.inViewport) {
       return;
     }
-    // this is here because when the selected region is from a different label from before, it was deselecting everything
-    if (this.selected) this.setColorDarken(0.5);
 
-    const { color, timelinePlacement, timelineHeight } = this;
+    const { color: _color, selected, highlighted, timelinePlacement, timelineHeight } = this;
     const { height } = this.visualizer;
 
+    const color = _color.clone();
     const timelineLayer = this.visualizer.getLayer('timeline');
     const timelineTop = timelinePlacement === defaults.timelinePlacement;
     const top = timelineLayer?.isVisible && timelineTop ? timelineHeight : 0;
     const layer = this.controller.layerGroup;
 
-    // @todo - this should account for timeline placement and start at the reservedSpace height
+    if (selected || highlighted) {
+      color.darken(0.4);
+    }
 
-    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.08)`;
+    // @todo - this should account for timeline placement and start at the reservedSpace height
+    layer.fillStyle = color.clone().translucent(0.77).toString();
     layer.fillRect(this.xStart, top, this.width, height);
 
     // Render grab lines
-    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 1)`;
+    layer.fillStyle = selected ? color.toString() : color.clone().translucent(0.6).toString();
     layer.fillRect(this.xStart, top, this.handleWidth, height);
     layer.fillRect(this.xEnd - this.handleWidth, top, this.handleWidth, height);
   }
@@ -330,8 +359,6 @@ export class Segment extends Events<SegmentEvents> {
     if (!this.updateable || (this.isDragging && this.selected)) return;
     if (this.waveform.playing) this.waveform.player.pause();
     this.selected = selected ?? !this.selected;
-    if (selected) this.setColorDarken(0.5);
-    else this.color.reset();
     this.invoke('update', [this]);
     this.waveform.invoke('regionUpdated', [this]);
   };
@@ -339,8 +366,6 @@ export class Segment extends Events<SegmentEvents> {
   handleHighlighted = (highlighted?: boolean) => {
     if (!this.updateable || this.selected) return;
     this.highlighted = highlighted ?? !this.highlighted;
-    if (this.highlighted) this.setColorDarken(0.5);
-    else this.color.reset();
     this.invoke('update', [this]);
     this.waveform.invoke('regionUpdated', [this]);
   };
@@ -353,10 +378,11 @@ export class Segment extends Events<SegmentEvents> {
     this.color.update(color);
   }
 
-  setColorDarken(value: number) {
-    if (this.color.rgba === this.color.base) {
-      this.color.darken(value);
-    }
+  setLocked(locked: boolean) {
+    this.locked = locked;
+
+    this.invoke('update', [this]);
+    this.waveform.invoke('regionUpdated', [this]);
   }
 
   updateColor(color: string|RgbaColorArray) {

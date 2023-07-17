@@ -54,13 +54,13 @@ const ModelAttrs = types
   }));
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   KeyPointModel,
   Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: 'LabelModel' }),
-  ControlBase,
 );
 
 const KeyPointLabelsModel = types.compose('KeyPointLabelsModel', Composition);

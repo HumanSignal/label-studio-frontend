@@ -1,4 +1,5 @@
 import { ImageView, Labels, LabelStudio, Sidebar } from '@heartexlabs/ls-test/helpers/LSF';
+import {FF_LSDV_E_278} from "../../../../src/utils/feature-flags";
 
 const config = `
   <View>
@@ -103,14 +104,16 @@ const task = {
 describe('Filter outliner scenario', () => {
   const FF_LSDV_3025 = 'fflag_feat_front_lsdv_3025_outliner_filter_short';
 
+  beforeEach(() => {
+    LabelStudio.addFeatureFlagsOnPageLoad({
+      [FF_LSDV_3025]: true,
+    });
+  });
+
   it('Check if filter is visible', () => {
     LabelStudio.init({
       config,
       task,
-    });
-
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
     });
 
     cy.get('[data-testid="filter-button"]').should('be.visible');
@@ -120,10 +123,6 @@ describe('Filter outliner scenario', () => {
     LabelStudio.init({
       config,
       task,
-    });
-
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
     });
 
     cy.get('[data-testid="filter-button"]').click();
@@ -140,10 +139,6 @@ describe('Filter outliner scenario', () => {
       task,
     });
 
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
-    });
-
     cy.contains('Adjust or remove filters to view').should('not.exist');
   });
 
@@ -151,10 +146,6 @@ describe('Filter outliner scenario', () => {
     LabelStudio.init({
       config,
       task,
-    });
-
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
     });
 
     cy.get('[data-testid="filter-button"]').click();
@@ -171,10 +162,6 @@ describe('Filter outliner scenario', () => {
       task,
     });
 
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
-    });
-
     cy.get('[data-testid="filter-button"]').click();
     cy.contains('Add Filter').click();
     cy.get('[data-testid="operation-dropdown"]').click();
@@ -189,10 +176,6 @@ describe('Filter outliner scenario', () => {
       task,
     });
 
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
-    });
-
     cy.get('[data-testid="filter-button"]').click();
     cy.contains('Add Filter').click();
     cy.get('[data-testid="operation-dropdown"]').click();
@@ -205,10 +188,6 @@ describe('Filter outliner scenario', () => {
     LabelStudio.init({
       config: configWithAllowEmpty,
       task,
-    });
-
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
     });
 
     Labels.select('blank');
@@ -226,10 +205,6 @@ describe('Filter outliner scenario', () => {
     LabelStudio.init({
       config,
       task,
-    });
-
-    LabelStudio.setFeatureFlagsOnPageLoad({
-      [FF_LSDV_3025]: true,
     });
 
     cy.get('[data-testid="filter-button"]').click();
@@ -251,5 +226,47 @@ describe('Filter outliner scenario', () => {
     Sidebar.hasRegions(2);
     cy.contains('There are 4 hidden regions').should('be.visible');
 
+  });
+
+  it('Shouldnt show all items if second filter is set to OR and doesnt have any value added', () => {
+    LabelStudio.init({
+      config,
+      task,
+    });
+
+    cy.get('[data-testid="filter-button"]').click();
+    cy.contains('Add Filter').click();
+    cy.get('[data-testid="operation-dropdown"]').click();
+    cy.contains('contains').click();
+    cy.get('[data-testid="filter-input"]').type('Moonwalker ');
+    cy.contains('There are 2 hidden regions').should('be.visible');
+    cy.contains('Add Another Filter').click();
+    cy.get('[data-testid="logic-dropdown"]').click();
+    cy.get('.lsf-select__list').contains('Or').click();
+
+    Sidebar.hasRegions(2);
+  });
+
+  it('Should remove the first filter rule if its deleted', () => {
+    LabelStudio.init({
+      config,
+      task,
+    });
+
+    cy.get('[data-testid="filter-button"]').click();
+    cy.contains('Add Filter').click();
+    cy.get('[data-testid="operation-dropdown"]').click();
+    cy.contains('contains').click();
+    cy.get('[data-testid="filter-input"]').type('Moonwalker ');
+    cy.contains('There are 2 hidden regions').should('be.visible');
+    cy.contains('Add Another Filter').click();
+    cy.get('[data-testid="logic-dropdown"]').click();
+    cy.get('.lsf-select__list').contains('Or').click();
+    cy.contains('Select value').click();
+    cy.get('.lsf-select__dropdown.lsf-visible > .lsf-select__list').contains('contains').click();
+    cy.get('[data-testid="filter-input"]').eq(1).type('Planet');
+    Sidebar.hasRegions(3);
+    cy.get('[data-testid="delete-row-0"]').click();
+    Sidebar.hasRegions(1);
   });
 });
