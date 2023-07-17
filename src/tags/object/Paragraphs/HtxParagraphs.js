@@ -418,7 +418,7 @@ class HtxParagraphsView extends Component {
 
 
     if (isFF(FF_LSDV_E_278) && this.props.item.contextscroll && item.playingId >= 0 && this.lastPlayingId !== item.playingId && this.state.canScroll) {
-      const _padding = 8; // 8 is the padding between the phrases, so it will keep aligned with the top of the phrase
+      const _padding = parseInt(window.getComputedStyle(this.myRef.current)?.getPropertyValue('padding-top')) || 0;
       const _playingItem = this.props.item._value[item.playingId];
       const _start = _playingItem.start;
       const _end = _playingItem.end;
@@ -427,6 +427,8 @@ class HtxParagraphsView extends Component {
       const _wrapperHeight = root.offsetHeight;
       const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
       const _splittedText = 10; // it will be from 0 to 100% of the text height, going 10% by 10%
+
+      console.log('padding', _padding);
 
       this._handleScrollRoot();
       this._disposeTimeout();
@@ -462,7 +464,7 @@ class HtxParagraphsView extends Component {
   _handleScrollToPhrase() {
     this.setState( { inViewPort : true });
 
-    const _padding = 8; // 8 is the padding between the phrases, so it will keep aligned with the top of the phrase
+    const _padding = parseInt(window.getComputedStyle(this.myRef.current)?.getPropertyValue('padding-top')) || 0; // 8 is the padding between the phrases, so it will keep aligned with the top of the phrase
     const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
 
     this.myRef.current.scrollTo({
@@ -491,11 +493,11 @@ class HtxParagraphsView extends Component {
   _handleScrollRoot() {
     if (this.activeRef.current) {
       const { top, bottom, height } = this.activeRef.current.getBoundingClientRect();
-      const { offsetHeight, offsetTop } = this.myRef.current;
-      const offset = offsetTop + 95;
-      const off = height > offsetHeight ? height - offsetHeight : 0;
+      const { offsetHeight } = this.myRef.current;
+      const offset = this.myRef.current.getBoundingClientRect().top;
+      const heightDifference = height > offsetHeight ? height - offsetHeight : 0;
       const isInView = ((top > offset && top < offsetHeight + offset) ||
-              (bottom > offset && bottom < offsetHeight + offset + off));
+              (bottom > offset && bottom < offsetHeight + offset + heightDifference));
 
       this.setState({ inViewPort: isInView });
     }
