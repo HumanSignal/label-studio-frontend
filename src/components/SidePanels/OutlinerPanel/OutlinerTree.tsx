@@ -448,7 +448,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
             <RegionControlButton onClick={onToggleHidden} style={hidden ? undefined : ({ display: 'none' })}>
               {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
             </RegionControlButton>
-          ) : (hovered || hidden) && (
+          ) : (
             <RegionControlButton onClick={onToggleHidden}>
               {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
             </RegionControlButton>
