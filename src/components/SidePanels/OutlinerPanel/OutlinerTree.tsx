@@ -129,13 +129,32 @@ const useDataTree = ({
     const style = item?.background ?? item?.getOneColor?.();
     const color = chroma(style ?? '#666').alpha(1);
     const mods: Record<string, any> = { hidden, type, isDrawing };
+
     const label = (() => {
       if (!type) {
         return 'No Label';
       } else if (type.includes('label')) {
         return item.value;
       } else if (type.includes('region') || type.includes('range')) {
-        return (item?.labels ?? []).join(', ') || 'No label';
+        const labelsInResults = item.labelings
+          .map((result: any) => result.selectedLabels || []);
+
+        const labels: any[] = [].concat(...labelsInResults);
+
+        return (
+          <Block name="labels-list">
+            {labels.map((label, index) => {
+              const color = label.background || '#000000';
+
+              return [
+                index ? ', ' : null,
+                <Elem key={label.id} style={{ color }}>
+                  {label.value || 'No label'}
+                </Elem>,
+              ];
+            })}
+          </Block>
+        );
       } else if (type.includes('tool')) {
         return item.value;
       }
