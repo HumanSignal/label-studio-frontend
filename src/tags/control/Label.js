@@ -169,8 +169,7 @@ const Model = types.model({
       // @todo unselect any label, but only if that won't leave region without specific labels!
       // @todo but check for regions created by tools
       // @todo lot of tests!
-      if (!self.selected && labels.type !== 'labels' && !labels.type.includes(region.type.replace(/region$/, ''))) return false;
-      return true;
+      return !(!self.selected && labels.type !== 'labels' && !labels.type.includes(region.results[0].type));
     });
 
     if (sameObjectSelectedRegions.length > 0 && applicableRegions.length === 0) return;
