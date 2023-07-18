@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree';
-import debounce from  'lodash.debounce';
+import debounce from 'lodash.debounce';
 
 const LEAD_TIME_CALCULATION_INTERVAL = 500;
 
@@ -15,7 +15,7 @@ const LeadTimeMixin = types
   }))
   .actions(self => ({
     internalCountTime(callTime) {
-      const now = +Date.now();
+      const now = Date.now();
       // leading call called immediately, debounced call called after INTERVAL
       const leadingCall = now - callTime < LEAD_TIME_CALCULATION_INTERVAL / 2;
 
@@ -41,7 +41,7 @@ const LeadTimeMixin = types
     countTime(trailingCall = false) {
       const emulateDebounced = trailingCall === true ? -LEAD_TIME_CALCULATION_INTERVAL : 0;
 
-      self.debouncedCountTime(+Date.now() + emulateDebounced);
+      self.debouncedCountTime(Date.now() + emulateDebounced);
     },
   }));
 
