@@ -171,6 +171,12 @@ export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10
 export const FF_LSDV_E_278 = 'fflag_feat_front_lsdv_e_278_contextual_scrolling_short';
 
 /**
+ * Annotations with LLM assistance
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_all_lsdv_e_294_llm_annotations_180723_long
+ */
+export const FF_LLM_EPIC = 'fflag_feat_all_lsdv_e_294_llm_annotations_180723_long';
+
+/**
  * Fix logic of namespaces inside Hotkeys
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
  */
