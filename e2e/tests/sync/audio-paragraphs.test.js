@@ -54,16 +54,16 @@ const data = {
   url: 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3',
   text: [
     {
-      'end': 2,
+      'end': 3,
       'text': 'Dont you hate that?',
-      'start': 0,
+      'start': 1,
       'author': 'Mia Wallace',
     },
     {
       'text': 'Hate what?',
-      'start': 2,
+      'start': 3,
       'author': 'Vincent Vega:',
-      'duration': 2,
+      'duration': 1,
     },
     {
       'text': 'Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?',
@@ -172,10 +172,10 @@ FFlagMatrix(['fflag_feat_front_lsdv_e_278_contextual_scrolling_short'], function
     assert.equal(startingAudioTime, startingParagraphAudioTime);
     assert.equal(startingParagraphAudioTime, 0);
 
-    I.click('[aria-label="play-circle"]');
+    I.click('[aria-label="play"]');
     I.wait(1);
 
-    I.click('[aria-label="pause-circle"]');
+    I.click('[aria-label="play"]');
     I.wait(1);
 
     const [{ currentTime: seekAudioTime }, { currentTime: seekParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
@@ -209,29 +209,29 @@ FFlagMatrix(['fflag_feat_front_lsdv_e_278_contextual_scrolling_short'], function
       AtAudioView.clickPauseButton();
 
       // Plays the first paragraph segment when the audio interface is played
-      I.seeElement('[data-testid="phrase:0"] [aria-label="pause-circle"]');
-      I.seeElement('[data-testid="phrase:1"] [aria-label="play-circle"]');
-      I.seeElement('[data-testid="phrase:2"] [aria-label="play-circle"]');
-      I.seeElement('[data-testid="phrase:3"] [aria-label="play-circle"]');
-      I.seeElement('[data-testid="phrase:4"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:0"] [aria-label="pause"]');
+      I.seeElement('[data-testid="phrase:1"] [aria-label="play"]');
+      I.seeElement('[data-testid="phrase:2"] [aria-label="play"]');
+      I.seeElement('[data-testid="phrase:3"] [aria-label="play"]');
+      I.seeElement('[data-testid="phrase:4"] [aria-label="play"]');
 
       I.wait(2);
 
       // Plays the second paragraph segment when the audio progresses to the second paragraph segment
-      I.seeElement('[data-testid="phrase:1"] [aria-label="pause-circle"]');
-      I.seeElement('[data-testid="phrase:0"] [aria-label="play-circle"]');
-      I.seeElement('[data-testid="phrase:2"] [aria-label="play-circle"]');
-      I.seeElement('[data-testid="phrase:3"] [aria-label="play-circle"]');
-      I.seeElement('[data-testid="phrase:4"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:1"] [aria-label="pause"]');
+      I.seeElement('[data-testid="phrase:0"] [aria-label="play"]');
+      I.seeElement('[data-testid="phrase:2"] [aria-label="play"]');
+      I.seeElement('[data-testid="phrase:3"] [aria-label="play"]');
+      I.seeElement('[data-testid="phrase:4"] [aria-label="play"]');
 
       I.wait(2);
 
       // Plays the third paragraph segment when the audio progresses to the third paragraph segment
-      I.seeElement('[data-testid="phrase:2"] [aria-label="pause-circle"]');
-      I.seeElement('[data-testid="phrase:0"] [aria-label="play-circle"]');
-      I.seeElement('[data-testid="phrase:1"] [aria-label="play-circle"]');
-      I.seeElement('[data-testid="phrase:3"] [aria-label="play-circle"]');
-      I.seeElement('[data-testid="phrase:4"] [aria-label="play-circle"]');
+      I.seeElement('[data-testid="phrase:2"] [aria-label="pause"]');
+      I.seeElement('[data-testid="phrase:0"] [aria-label="play"]');
+      I.seeElement('[data-testid="phrase:1"] [aria-label="play"]');
+      I.seeElement('[data-testid="phrase:3"] [aria-label="play"]');
+      I.seeElement('[data-testid="phrase:4"] [aria-label="play"]');
     });
 
     FFlagScenario('Check if paragraph is scrolling automatically following the audio', async function({ I, LabelStudio, AtAudioView }) {
@@ -297,6 +297,8 @@ FFlagMatrix(['fflag_feat_front_lsdv_e_278_contextual_scrolling_short'], function
       I.wait(10);
 
       AtAudioView.clickAtBeginning();
+
+      I.wait(1);
 
       AtAudioView.clickPauseButton();
 

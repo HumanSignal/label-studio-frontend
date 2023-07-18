@@ -379,7 +379,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   const hidden = useMemo(() => {
     if (type?.includes('region') || type?.includes('range')) {
       return entity.hidden;
-    } else if ((!type || type.includes('label')) && regions) {
+    } else if ((!type || type.includes('label') || type?.includes('tool')) && regions) {
       return Object.values(regions).every(({ hidden }) => hidden);
     }
     return false;
@@ -390,6 +390,8 @@ const RegionControls: FC<RegionControlsProps> = observer(({
       entity.toggleHidden();
     } else if(!type || type.includes('label')) {
       regionStore.setHiddenByLabel(!hidden, entity);
+    } else if(type?.includes('tool')) {
+      regionStore.setHiddenByTool(!hidden, entity);
     }
   }, [item, item?.toggleHidden, hidden]);
 
@@ -446,7 +448,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
             <RegionControlButton onClick={onToggleHidden} style={hidden ? undefined : ({ display: 'none' })}>
               {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
             </RegionControlButton>
-          ) : (hovered || hidden) && (
+          ) : (
             <RegionControlButton onClick={onToggleHidden}>
               {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
             </RegionControlButton>

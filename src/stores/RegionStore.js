@@ -374,7 +374,6 @@ export default types.model('RegionStore', {
           isArea: false,
           children: [],
           isGroup: true,
-          type: region.type,
           entity: region,
         };
       };
@@ -563,7 +562,13 @@ export default types.model('RegionStore', {
       }
     });
   },
-
+  setHiddenByTool(shouldBeHidden, label) {
+    self.regions.forEach(area => {
+      if (area.hidden !== shouldBeHidden && area.type === label.type) {
+        area.toggleHidden();
+      }
+    });
+  },
   setHiddenByLabel(shouldBeHidden, label) {
     self.regions.forEach(area => {
       if (area.hidden !== shouldBeHidden) {

@@ -456,15 +456,18 @@ class HtxParagraphsView extends Component {
   _handleScrollContainerHeight() {
     const container = this.myRef.current;
     const mainContentView = document.querySelector('.lsf-main-content');
+    const mainRect = mainContentView.getBoundingClientRect();
+    const visibleHeight = document.documentElement.clientHeight - mainRect.top;
     const annotationView = document.querySelector('.lsf-main-view__annotation');
-    const totalSpace = mainContentView?.offsetHeight || 0;
-    const filledSpace = annotationView?.offsetHeight || 0;
+    const totalVisibleSpace = Math.floor(visibleHeight < mainRect.height ? visibleHeight : mainContentView?.offsetHeight || 0);
+    const filledSpace = annotationView?.offsetHeight || mainContentView.firstChild?.offsetHeight || 0;
     const containerHeight = container?.offsetHeight || 0;
     const viewPadding = parseInt(window.getComputedStyle(mainContentView)?.getPropertyValue('padding-bottom')) || 0;
-    const height = totalSpace - (filledSpace - containerHeight) - (viewPadding);
+    const height = totalVisibleSpace - (filledSpace - containerHeight) - (viewPadding);
     const minHeight = 100;
 
     if (container) this.myRef.current.style.maxHeight = `${height < minHeight ? minHeight : height}px`;
+
   }
 
   _handleScrollRoot() {
