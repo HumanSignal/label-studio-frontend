@@ -14,7 +14,9 @@ export function cutFibers(object) {
         if (key !== '_debugOwner' && typeof prop === 'object' && {}.hasOwnProperty.call(prop, 'stateNode')) {
           objects.push(obj[key]);
         }
-        obj[key] = null;
+        if (typeof prop === 'object' || typeof prop === 'function') {
+          obj[key] = null;
+        }
       }
     }
   }
