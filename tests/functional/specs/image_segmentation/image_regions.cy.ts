@@ -141,7 +141,7 @@ describe('Image Regions scenario', () => {
 
     ImageView.waitForImage();
     Labels.select('Moonwalker 2');
-    ImageView.drawRect(20, 20, 10, 10);
+    ImageView.drawRect(20, 20, 100, 100);
     ImageView.clickAt(30, 30);
     Labels.select('Planet');
     Sidebar.hasRegions(1);
