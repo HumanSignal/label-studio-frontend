@@ -264,9 +264,9 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
   integrity sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==
 
-"@heartexlabs/ls-test@git+ssh://git@github.com/heartexlabs/ls-frontend-test#98e4a6a21a94c3ec281a48794e33d07cd7811b29":
+"@heartexlabs/ls-test@git+ssh://git@github.com/heartexlabs/ls-frontend-test#0d424000658f3cd0231a3cee04e46266a6fdda98":
   version "1.0.8"
-  resolved "git+ssh://git@github.com/heartexlabs/ls-frontend-test#98e4a6a21a94c3ec281a48794e33d07cd7811b29"
+  resolved "git+ssh://git@github.com/heartexlabs/ls-frontend-test#0d424000658f3cd0231a3cee04e46266a6fdda98"
   dependencies:
     "@cypress/code-coverage" "^3.10.0"
     "@cypress/webpack-preprocessor" "^5.17.0"
@@ -891,9 +891,9 @@
   integrity sha512-0G7tNyS+yW8TdgHwZKlDWYXFA6OJQnoLCQvYKkQP0Q2X205PSQ6RNUj0M+1OB/9gRQaUZ/ccYfaxd0nhaWKfjw==
 
 "@xmldom/xmldom@^0.8.8":
-  version "0.8.8"
-  resolved "https://registry.yarnpkg.com/@xmldom/xmldom/-/xmldom-0.8.8.tgz#d0d11511cbc1de77e53342ad1546a4d487d6ea72"
-  integrity sha512-0LNz4EY8B/8xXY86wMrQ4tz6zEHZv9ehFMJPm8u2gq5lQ71cfRKdaKyxfJAx5aUoyzx0qzgURblTisPGgz3d+Q==
+  version "0.8.9"
+  resolved "https://registry.yarnpkg.com/@xmldom/xmldom/-/xmldom-0.8.9.tgz#b6ef7457e826be8049667ae673eda7876eb049be"
+  integrity sha512-4VSbbcMoxc4KLjb1gs96SRmi7w4h1SF+fCoiK0XaQX62buCc1G5d0DC5bJ9xJBNPDSVCmIrcl8BiYxzjrqaaJA==
 
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"

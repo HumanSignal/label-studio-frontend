@@ -1,7 +1,7 @@
 import Konva from 'konva';
 import React, { memo, useContext, useEffect, useMemo } from 'react';
 import { Group, Line } from 'react-konva';
-import { destroy, detach, getRoot, types } from 'mobx-state-tree';
+import { destroy, detach, getRoot, isAlive, types } from 'mobx-state-tree';
 
 import Constants from '../core/Constants';
 import NormalizationMixin from '../mixins/Normalization';
@@ -75,7 +75,7 @@ const Model = types
       return getRoot(self);
     },
     get bboxCoords() {
-      if (!self.points?.length) return {};
+      if (!self.points?.length || !isAlive(self)) return {};
 
       const bbox = self.points.reduce((bboxCoords, point) => ({
         left: Math.min(bboxCoords.left, point.x),
@@ -416,7 +416,7 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
   );
 }));
 
-const HtxPolygonView = ({ item }) => {
+const HtxPolygonView = ({ item, setShapeRef }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
@@ -539,19 +539,19 @@ const HtxPolygonView = ({ item }) => {
     };
   }, [item.bboxCoords.left, item.bboxCoords.top]);
 
-  if (!item.parent) return null;
-
-  const stage = item.parent.stageRef;
-
   useEffect(() => {
     if (isFF(FF_DEV_2432) && !item.closed) item.control.tools.Polygon.resumeUnfinishedRegion(item);
   }, [item.closed]);
+
+  if (!item.parent) return null;
+
+  const stage = item.parent?.stageRef;
 
   return (
     <Group
       key={item.id ? item.id : guidGenerator(5)}
       name={item.id}
-      ref={el => item.setShapeRef(el)}
+      ref={el => setShapeRef(el)}
       onMouseOver={() => {
         if (store.annotationStore.selected.relationMode) {
           item.setHighlight(true);

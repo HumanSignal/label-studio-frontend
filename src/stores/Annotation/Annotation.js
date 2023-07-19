@@ -178,7 +178,7 @@ export const Annotation = types
     get results() {
       const results = [];
 
-      self.areas.forEach(a => a.results.forEach(r => results.push(r)));
+      if (isAlive(self)) self.areas.forEach(a => a.results.forEach(r => results.push(r)));
       return results;
     },
 

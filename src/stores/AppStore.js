@@ -1,6 +1,15 @@
 /* global LSF_VERSION */
 
-import { destroy, detach, flow, getEnv, getSnapshot, types } from 'mobx-state-tree';
+import {
+  destroy,
+  detach,
+  flow,
+  getEnv, getParent,
+  getSnapshot,
+  isRoot,
+  types,
+  walk
+} from 'mobx-state-tree';
 
 import uniqBy from 'lodash/uniqBy';
 import InfoModal from '../components/Infomodal/Infomodal';
@@ -13,9 +22,9 @@ import AnnotationStore from './Annotation/store';
 import Project from './ProjectStore';
 import Settings from './SettingsStore';
 import Task from './TaskStore';
-import { UserExtended } from './UserStore';
+import { UserExtended } from './UserStore'; 
 import { UserLabels } from './UserLabels';
-import { FF_DEV_1536, FF_DEV_2715, FF_LLM_EPIC, FF_LSDV_4998, isFF } from '../utils/feature-flags';
+import { FF_DEV_1536, FF_DEV_2715, FF_LLM_EPIC, FF_LSDV_4620_3_ML, FF_LSDV_4998, isFF } from '../utils/feature-flags';
 import { CommentStore } from './Comment/CommentStore';
 import { destroy as destroySharedStore } from '../mixins/SharedChoiceStore/mixin';
 
@@ -224,6 +233,19 @@ export default types
     },
   }))
   .actions(self => {
+    let appControls;
+
+    function setAppControls(controls) {
+      appControls = controls;
+    }
+
+    function clearApp() {
+      appControls?.clear();
+    }
+
+    function renderApp() {
+      appControls?.render();
+    }
     /**
      * Update settings display state
      */
@@ -625,7 +647,7 @@ export default types
     }
 
     /**
-     * Function to initilaze annotation store
+     * Function to initialize annotation store
      * Given annotations and predictions
      * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
      */
@@ -636,6 +658,9 @@ export default types
 
       if (!as.initialized) {
         as.initRoot(self.config);
+        if (isFF(FF_LSDV_4620_3_ML) && !appControls?.isRendered()) {
+          appControls?.render();
+        }
       }
 
       // Allow tags to decide whether to load individual data (audio, video, etc)
@@ -805,6 +830,28 @@ export default types
       postponeTask,
       beforeDestroy() {
         ToolsManager.removeAllTools();
+        appControls = null;
+      },
+
+      setAppControls,
+      clearApp,
+      renderApp,
+      selfDestroy() {
+        const children = [];
+
+        walk(self, (node) => {
+          if (!isRoot(node) && getParent(node) === self) children.push(node);
+        });
+
+        let node;
+
+        while ((node = children.shift())) {
+          try {
+            destroy(node);
+          } catch (e) {
+            console.log('Problem: ', e);
+          }
+        }
       },
     };
   });

@@ -14,6 +14,10 @@ import { findRangeNative, rangeToGlobalOffset } from '../../../utils/selection-t
 import { escapeHtml, isValidObjectURL } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import { cloneNode } from '../../../core/Helpers';
+import { FF_LSDV_4620_3, isFF } from '../../../utils/feature-flags';
+import DomManager from './domManager';
+import { STATE_CLASS_MODS } from '../../../mixins/HighlightMixin';
+import Constants from '../../../core/Constants';
 
 const SUPPORTED_STATES = ['LabelsModel', 'HyperTextLabelsModel', 'RatingModel'];
 
@@ -100,7 +104,42 @@ const Model = types
     },
 
     get isReady() {
-      return self.isLoaded  && self._isReady;
+      return self.isLoaded && self._isReady;
+    },
+
+    get styles() {
+      return `
+      .htx-highlight {
+        cursor: pointer;
+        border: 1px dashed transparent;
+      }
+      .htx-highlight[data-label]::after {
+        padding: 2px 2px;
+        font-size: 9.5px;
+        font-weight: bold;
+        font-family: Monaco;
+        vertical-align: super;
+        content: attr(data-label);
+        line-height: 0;
+      }
+      .htx-highlight.${STATE_CLASS_MODS.highlighted} {
+        position: relative;
+        cursor: ${Constants.RELATION_MODE_CURSOR};
+        border-color: rgb(0, 174, 255);
+      }
+      .htx-highlight.${STATE_CLASS_MODS.hidden} {
+        border: none;
+        padding: 0;
+        background: transparent !important;
+        cursor: inherit;
+        // pointer-events: none;
+      }
+      .htx-highlight.${STATE_CLASS_MODS.hidden}::before,
+      .htx-highlight.${STATE_CLASS_MODS.hidden}::after,
+      .htx-highlight.${STATE_CLASS_MODS.noLabel}::after {
+        display: none;
+      }
+      `;
     },
   }))
   .volatile(() => ({
@@ -120,7 +159,7 @@ const Model = types
     _loadedForAnnotation: null,
   }))
   .actions(self => {
-    let beforeNeedsUpdateCallback, afterNeedsUpdateCallback;
+    let beforeNeedsUpdateCallback, afterNeedsUpdateCallback, domManager;
 
     return {
       setWorkingMode(mode) {
@@ -128,8 +167,16 @@ const Model = types
       },
 
       setLoaded(value = true) {
+        if (value) self.onLoaded();
+
         self._isLoaded = value;
         self._loadedForAnnotation = self.annotation?.id;
+      },
+
+      onLoaded() {
+        if (self.visibleNodeRef.current && isFF(FF_LSDV_4620_3)) {
+          domManager = new DomManager(self.visibleNodeRef.current);
+        }
       },
 
       updateValue: flow(function * (store) {
@@ -202,6 +249,13 @@ const Model = types
 
       beforeDestroy() {
         self.regsObserverDisposer?.();
+        if (isFF(FF_LSDV_4620_3)) {
+          domManager?.removeStyles(self.name);
+          domManager?.destroy();
+          beforeNeedsUpdateCallback = null;
+          afterNeedsUpdateCallback = null;
+          domManager = null;
+        }
       },
 
       // callbacks to switch render to working node for better performance
@@ -215,29 +269,83 @@ const Model = types
 
         self.setReady(false);
 
-        // init and render regions into working node, then move them to visible one
-        beforeNeedsUpdateCallback?.();
-        self.regs.forEach(region => {
-          try {
-            // will be initialized only once
-            region.initRangeAndOffsets();
-            region.applyHighlight();
-          } catch (err) {
-            console.error(err);
-          }
-        });
-        afterNeedsUpdateCallback?.();
+        if (isFF(FF_LSDV_4620_3)) {
+          const styles = {
+            [self.name]: self.styles,
+          };
 
-        // node texts can be only retrieved from the visible node
-        self.regs.forEach(region => {
-          try {
-            region.updateHighlightedText();
-          } catch (err) {
-            console.error(err);
-          }
-        });
+          self.regs.forEach(region => {
+            try {
+              // will be initialized only once
+              region.initRangeAndOffsets();
+              region.applyHighlight(true);
+              region.updateHighlightedText();
+              styles[region.identifier] = region.styles;
+            } catch (err) {
+              console.error(err);
+            }
+          });
+          self.setStyles(styles);
+        } else {
+          // init and render regions into working node, then move them to visible one
+          beforeNeedsUpdateCallback?.();
+          self.regs.forEach(region => {
+            try {
+              // will be initialized only once
+              region.initRangeAndOffsets();
+              region.applyHighlight();
+            } catch (err) {
+              console.error(err);
+            }
+          });
+          afterNeedsUpdateCallback?.();
+
+          // node texts can be only retrieved from the visible node
+          self.regs.forEach(region => {
+            try {
+              region.updateHighlightedText();
+            } catch (err) {
+              console.error(err);
+            }
+          });
+        }
 
         self.setReady(true);
+      },
+
+      setStyles(stylesMap) {
+        domManager.setStyles(stylesMap);
+      },
+      removeStyles(ids) {
+        domManager?.removeStyles(ids);
+      },
+
+      globalOffsetsToRelativeOffsets({ start, end }) {
+        return domManager.globalOffsetsToRelativeOffsets(start, end);
+      },
+
+      relativeOffsetsToGlobalOffsets(start, startOffset, end, endOffset) {
+        return domManager.relativeOffsetsToGlobalOffsets(start, startOffset, end, endOffset);
+      },
+
+      rangeToGlobalOffset(range) {
+        return domManager.rangeToGlobalOffset(range);
+      },
+
+      createRangeByGlobalOffsets({ start, end }) {
+        return domManager.createRange(start, end);
+      },
+
+      createSpansByGlobalOffsets({ start, end }) {
+        return domManager.createSpans(start, end);
+      },
+
+      removeSpansInGlobalOffsets(spans, { start, end }) {
+        return domManager?.removeSpans(spans, start, end);
+      },
+
+      getTextFromGlobalOffsets({ start, end }) {
+        return domManager.getText(start, end);
       },
 
       setHighlight(region) {
@@ -257,7 +365,7 @@ const Model = types
         const [control, ...rest] = states;
         const values = doubleClickLabel?.value ?? control.selectedValues();
         const labels = { [control.valueType]: values };
-        // Clone labels nodes to avoid unselecting them on creating result 
+        // Clone labels nodes to avoid unselecting them on creating result
         const restSelectedStates = rest.map(state => cloneNode(state));
 
         const area = self.annotation.createResult(range, labels, control, self);
@@ -279,12 +387,16 @@ const Model = types
         if (range.isText) {
           area.updateTextOffsets(soff, eoff);
         } else {
-          // reapply globalOffsets to original document to get correct xpaths and offsets
-          const original = area._getRootNode(true);
-          const originalRange = findRangeNative(soff, eoff, original);
+          if (isFF(FF_LSDV_4620_3)) {
+            area.updateXPathsFromGlobalOffsets();
+          } else {
+            // reapply globalOffsets to original document to get correct xpaths and offsets
+            const original = area._getRootNode(true);
+            const originalRange = findRangeNative(soff, eoff, original);
 
-          // @todo if originalRange is missed we are really fucked up
-          if (originalRange) area._fixXPaths(originalRange, original);
+            // @todo if originalRange is missed we are really fucked up
+            if (originalRange) area._fixXPaths(originalRange, original);
+          }
         }
 
         area.applyHighlight();

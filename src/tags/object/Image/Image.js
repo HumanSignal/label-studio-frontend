@@ -1120,7 +1120,7 @@ const ImageModel = types.compose(
   'ImageModel',
   TagAttrs,
   ObjectBase,
-  ...(isFF(FF_LSDV_4583)?[MultiItemObjectBase]:[]),
+  ...(isFF(FF_LSDV_4583) ? [MultiItemObjectBase] : []),
   AnnotationMixin,
   IsReadyWithDepsMixin,
   ImageEntityMixin,

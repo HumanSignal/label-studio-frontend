@@ -71,6 +71,8 @@ const TimeTraveller = types
       },
 
       recordNow() {
+        if (!targetStore) return;
+
         self.addUndoState(getSnapshot(targetStore));
       },
 
@@ -128,6 +130,10 @@ const TimeTraveller = types
 
       beforeDestroy() {
         snapshotDisposer();
+        targetStore = null;
+        snapshotDisposer = null;
+        updateHandlers.clear();
+        freezingLockSet.clear();
       },
 
       undo() {
@@ -144,7 +150,7 @@ const TimeTraveller = types
         applySnapshot(targetStore, self.history[idx]);
         triggerHandlers();
         if (isFF(FF_DEV_1284)) {
-          setTimeout(()=>{
+          setTimeout(() => {
             // Prevent skiping next undo state if onSnapshot event was somehow missed after applying snapshot
             self.setSkipNextUndoState(false);
           });
