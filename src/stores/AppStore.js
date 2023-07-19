@@ -22,9 +22,9 @@ import AnnotationStore from './Annotation/store';
 import Project from './ProjectStore';
 import Settings from './SettingsStore';
 import Task from './TaskStore';
-import { UserExtended } from './UserStore';
+import { UserExtended } from './UserStore'; 
 import { UserLabels } from './UserLabels';
-import { FF_DEV_1536, FF_DEV_2715, FF_LSDV_4620_3_ML, FF_LLM_EPIC, FF_LSDV_4998, isFF } from '../utils/feature-flags';
+import { FF_DEV_1536, FF_DEV_2715, FF_LLM_EPIC, FF_LSDV_4620_3_ML, FF_LSDV_4998, isFF } from '../utils/feature-flags';
 import { CommentStore } from './Comment/CommentStore';
 import { destroy as destroySharedStore } from '../mixins/SharedChoiceStore/mixin';
 
