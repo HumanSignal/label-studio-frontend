@@ -10,7 +10,7 @@ on:
 env:
   # increment it in case if you need to reset cache
   CACHE_NAME_PREFIX: v3
-  NODE: '14'
+  NODE: '18'
 
 jobs:
   run:
@@ -48,13 +48,12 @@ jobs:
             yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
       - name: "Install dependencies"
-        timeout-minutes: 1
         run: |
           set -euo pipefail
           yarn install --frozen-lockfile
 
       - name: Run ESLint
-        uses: tj-actions/eslint-changed-files@v18
+        uses: tj-actions/eslint-changed-files@v19
         with:
           config_path: ".eslintrc.js"
           ignore_path: ".eslintignore"

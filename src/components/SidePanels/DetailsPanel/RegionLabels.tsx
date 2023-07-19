@@ -1,8 +1,9 @@
 import { FC } from 'react';
+import { observer } from 'mobx-react';
 
 import { Block } from '../../../utils/bem';
 
-export const RegionLabels: FC<{region: LSFRegion}> = ({ region }) => {
+export const RegionLabels: FC<{region: LSFRegion}> = observer(({ region }) => {
   const labelsInResults = region.results
     .filter(result => result.type.endsWith('labels'))
     .map((result: any) => result.selectedLabels || []);
@@ -24,4 +25,4 @@ export const RegionLabels: FC<{region: LSFRegion}> = ({ region }) => {
       })}
     </Block>
   );
-};
+});

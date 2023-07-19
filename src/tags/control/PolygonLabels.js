@@ -50,13 +50,13 @@ const ModelAttrs = types.model('PolygonLabelsModel', {
 });
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   PolygonModel,
   Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: 'LabelModel' }),
-  ControlBase,
 );
 
 const PolygonLabelsModel = types.compose('PolygonLabelsModel', Composition);

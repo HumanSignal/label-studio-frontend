@@ -3,6 +3,7 @@ import { guidGenerator } from '../core/Helpers';
 import { isDefined } from '../utils/utilities';
 import { AnnotationMixin } from './AnnotationMixin';
 import { ReadOnlyRegionMixin } from './ReadOnlyMixin';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
 const RegionsMixin = types
   .model({
@@ -12,6 +13,8 @@ const RegionsMixin = types
     score: types.maybeNull(types.number),
 
     hidden: types.optional(types.boolean, false),
+
+    filtered: types.optional(types.boolean, false),
 
     parentID: types.optional(types.string, ''),
 
@@ -77,13 +80,16 @@ const RegionsMixin = types
       return self.parent.findImageEntity(self.item_index ?? 0);
     },
 
-    getConnectedDynamicRegions(selfExcluding) {
+    getConnectedDynamicRegions(excludeSelf) {
       const { regions = [] } = getRoot(self).annotationStore?.selected || {};
+      const { type, labelName } = self;
 
-      return regions.filter(r => {
-        if (selfExcluding && r === self) return false;
-        return r.dynamic && r.type === self.type && r.labelName === self.labelName;
+      const result = regions.filter(region => {
+        if (excludeSelf && region === self) return false;
+        return region.dynamic && region.type === type && region.labelName === labelName;
       });
+
+      return result;
     },
 
   }))
@@ -125,19 +131,19 @@ const RegionsMixin = types
 
       // @todo this conversion methods should be removed after removing FF_DEV_3793
       convertXToPerc(x) {
-        return (x * 100) / self.currentImageEntity.stageWidth;
+        return (x * RELATIVE_STAGE_WIDTH) / self.currentImageEntity.stageWidth;
       },
 
       convertYToPerc(y) {
-        return (y * 100) / self.currentImageEntity.stageHeight;
+        return (y * RELATIVE_STAGE_HEIGHT) / self.currentImageEntity.stageHeight;
       },
 
       convertHDimensionToPerc(hd) {
-        return (hd * (self.scaleX || 1) * 100) / self.currentImageEntity.stageWidth;
+        return (hd * (self.scaleX || 1) * RELATIVE_STAGE_WIDTH) / self.currentImageEntity.stageWidth;
       },
 
       convertVDimensionToPerc(vd) {
-        return (vd * (self.scaleY || 1) * 100) / self.currentImageEntity.stageHeight;
+        return (vd * (self.scaleY || 1) * RELATIVE_STAGE_HEIGHT) / self.currentImageEntity.stageHeight;
       },
 
       // update region appearence based on it's current states, for
@@ -222,6 +228,10 @@ const RegionsMixin = types
         self.perRegionFocusRequest = null;
       },
 
+      revokeSuggestion(){
+        self.fromSuggestion = false;
+      }, 
+
       setHighlight(val) {
         self._highlighted = val;
       },
@@ -230,7 +240,14 @@ const RegionsMixin = types
         self.setHighlight(!self._highlighted);
       },
 
-      toggleHidden(e) {
+      toggleFiltered(e) {
+        self.filtered = !self.filtered;
+        self.toggleHidden(e, true);
+        e && e.stopPropagation();
+      },
+
+      toggleHidden(e, isFiltered = false) {
+        if (!isFiltered) self.filtered = false;
         self.hidden = !self.hidden;
         e && e.stopPropagation();
       },
@@ -240,7 +257,7 @@ const RegionsMixin = types
           self.origin = 'prediction-changed';
         }
 
-        // everything above is related to dynamic preannotations
+        // everything below is related to dynamic preannotations
         if (!self.dynamic || self.fromSuggestion) return;
 
         clearTimeout(self.drawingTimeout);
@@ -250,7 +267,9 @@ const RegionsMixin = types
           const env = getEnv(self);
 
           self.drawingTimeout = setTimeout(() => {
-            env.events.invoke('regionFinishedDrawing', self, self.getConnectedDynamicRegions(destroy));
+            const connectedRegions = self.getConnectedDynamicRegions(destroy);
+
+            env.events.invoke('regionFinishedDrawing', self, connectedRegions);
           }, timeout);
         }
       },

@@ -208,8 +208,9 @@ class App extends Component {
 
     const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
 
+    // tags can be styled in config when user is awaiting for suggestions from ML backend
     const mainContent = (
-      <Block name="main-content">
+      <Block name="main-content" mix={store.awaitingSuggestions ? ['requesting'] : []}>
         {as.validation === null
           ? this._renderUI(as.selectedHistory?.root ?? root, as)
           : this.renderConfigValidationException(store)}
@@ -258,6 +259,7 @@ class App extends Component {
                   currentEntity={as.selectedHistory ?? as.selected}
                   regions={as.selected.regionStore}
                   showComments={!store.hasInterface('annotations:comments')}
+                  focusTab={store.commentStore.tooltipMessage ? 'comments' : null}
                 >
                   {mainContent}
                   {isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}

@@ -21,6 +21,7 @@ import {
   FF_LSDV_3009,
   FF_LSDV_4583,
   FF_LSDV_4832,
+  FF_LSDV_4988,
   isFF
 } from '../../utils/feature-flags';
 import { delay, isDefined } from '../../utils/utilities';
@@ -367,6 +368,12 @@ export const Annotation = types
       self.regionStore.clearSelection();
     },
 
+    hideSelectedRegions() {
+      self.selectedRegions.forEach(region => {
+        region.toggleHidden();
+      });
+    },
+
     deleteSelectedRegions() {
       self.selectedRegions.forEach(region => {
         region.deleteRegion();
@@ -459,16 +466,14 @@ export const Annotation = types
       let ok = true;
 
       self.traverseTree(function(node) {
-        if (node.required === true) {
-          ok = node.validate();
-          if (ok === false) {
-            ok = false;
-            return TRAVERSE_STOP;
-          }
+        ok = node.validate?.();
+        if (ok === false) {
+          return TRAVERSE_STOP;
         }
       });
 
-      return ok;
+      // should be true or false
+      return ok ?? true;
     },
 
     traverseTree(cb) {
@@ -660,7 +665,7 @@ export const Annotation = types
       onSnapshot(self.areas, self.autosave);
     }),
 
-    saveDraft() {
+    saveDraft(params) {
       // if this is now a history item or prediction don't save it
       if (!self.editable) return;
 
@@ -673,7 +678,7 @@ export const Annotation = types
       self.versions.draft = result;
       self.setDraftSaving(true);
 
-      self.store.submitDraft(self).then(self.onDraftSaved);
+      return self.store.submitDraft(self, params).then(self.onDraftSaved);
     },
 
     saveDraftImmediately() {
@@ -858,7 +863,7 @@ export const Annotation = types
       // happening locally. So to reproduce you have to test in production or environment
       const area = self?.areas?.put(areaRaw);
 
-      object?.afterResultCreated?.(area);
+      objectTag?.afterResultCreated?.(area);
 
       if (!area) return;
 
@@ -940,7 +945,9 @@ export const Annotation = types
             if (key.endsWith('labels')) {
               const hasControlTag = tagNames.has(obj.from_name) || tagNames.has('labels');
 
-              if (hasControlTag) {
+              // remove non-existent labels, it actually breaks dynamic labels
+              // and makes no reason overall — labels from predictions can be out of config
+              if (!isFF(FF_LSDV_4988) && hasControlTag) {
                 const labelsContainer = tagNames.get(obj.from_name) ?? tagNames.get('labels');
                 const value = obj.value[key];
 
@@ -962,6 +969,9 @@ export const Annotation = types
                 }
               }
 
+              // detect most relevant label tags if that one from from_name is missing
+              // can be useful for predictions in old format with config in new format:
+              // Rectangle + Labels -> RectangleLabels
               if (
                 !tagNames.has(obj.from_name) ||
                 (!obj.value[key].length && !tagNames.get(obj.from_name).allowempty)
@@ -1034,7 +1044,15 @@ export const Annotation = types
         self.acceptAllSuggestions();
       } else {
         self.suggestions.forEach((suggestion) => {
-          if (['richtextregion', 'text', 'textrange'].includes(suggestion.type)) {
+          // regions that can't be accepted in usual way, should be auto-accepted;
+          // textarea will have simple classification area with no type, so check result.
+          // @todo per-regions is tough thing here as they can be in generated result,
+          // connected to manual region, will check it later
+          const results = suggestion.results ?? [];
+          const onlyAutoAccept = ['richtextregion', 'text', 'textrange'].includes(suggestion.type)
+            || results.findIndex(r => r.type === 'textarea') >= 0;
+
+          if (onlyAutoAccept) {
             self.acceptSuggestion(suggestion.id);
             if (isFF(FF_DEV_1284)) {
               // This is necessary to prevent the occurrence of new steps in the history after updating objects at the end of current method
@@ -1047,7 +1065,7 @@ export const Annotation = types
       if (!isFF(FF_DEV_1284)) {
         history.freeze('richtext:suggestions');
       }
-      self.objects.forEach(obj => obj.needsUpdate?.({ suggestions: true }));
+      self.names.forEach(tag => tag.needsUpdate?.({ suggestions: true }));
       if (!isFF(FF_DEV_1284)) {
         history.setReplaceNextUndoState(true);
         history.unfreeze('richtext:suggestions');
@@ -1060,12 +1078,15 @@ export const Annotation = types
 
       self.areas.forEach(a => {
         const controlName = a.results[0].from_name.name;
+        // May be null but null is also valid key in this case
+        const itemIndex = a.item_index;
 
         if (a.classification) {
-          if (classificationAreasByControlName[controlName]) {
-            duplicateAreaIds.push(classificationAreasByControlName[controlName]);
+          if (classificationAreasByControlName[controlName]?.[itemIndex]) {
+            duplicateAreaIds.push(classificationAreasByControlName[controlName][itemIndex]);
           }
-          classificationAreasByControlName[controlName] = a.id;
+          classificationAreasByControlName[controlName] = classificationAreasByControlName[controlName] || {};
+          classificationAreasByControlName[controlName][itemIndex] = a.id;
         }
       });
       duplicateAreaIds.forEach(id => self.areas.delete(id));
@@ -1265,6 +1286,13 @@ export const Annotation = types
         area.setValue(state);
       });
       self.suggestions.delete(id);
+      
+      // hack to unlock sending textarea results
+      // to the ML backen every time
+      // it just sets `fromSuggestion` back to `false`
+      const isTextArea = area.results.findIndex(r => r.type === 'textarea') >= 0; 
+
+      if (isTextArea) area.revokeSuggestion();
     },
 
     rejectSuggestion(id) {

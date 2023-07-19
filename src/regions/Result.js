@@ -60,7 +60,7 @@ const Result = types
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
-      ranker: types.maybe(types.array(types.string)),
+      ranker: types.union(types.array(types.string), types.frozen(), types.null),
       datetime: types.maybe(types.string),
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
@@ -159,12 +159,13 @@ const Result = types
         if (label && !self.area.hasLabel(label)) return false;
       }
 
+      // picks leaf's (last item in a path) value for Taxonomy or usual Choice value for Choices
       const innerResults = (r) =>
         r.map(s => Array.isArray(s) ? s.at(-1) : s);
 
       const isChoiceSelected = () => {
         const tagName = control.whentagname;
-        const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(',') : null;
+        const choiceValues = control.whenchoicevalue?.split(',') ?? null;
         const results = self.annotation.results.filter(r => ['choices', 'taxonomy'].includes(r.type) && r !== self);
 
         if (tagName) {
