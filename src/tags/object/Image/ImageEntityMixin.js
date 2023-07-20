@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree';
+import { isAlive, types } from 'mobx-state-tree';
 import { ImageEntity } from './ImageEntity';
 
 export const ImageEntityMixin = types
@@ -6,6 +6,13 @@ export const ImageEntityMixin = types
     currentImageEntity: types.maybeNull(types.reference(ImageEntity)),
 
     imageEntities: types.optional(types.array(ImageEntity), []),
+  })
+  .actions(self => {
+    return {
+      beforeDestroy() {
+        self.currentImageEntity = null;
+      },
+    };
   })
   .views(self => ({
     get maxItemIndex() {
@@ -23,122 +30,134 @@ export const ImageEntityMixin = types
       );
     },
     get rotation() {
-      return self.currentImageEntity.rotation;
+      if (!isAlive(self)) {
+        return void 0;
+      }
+      return self.currentImageEntity?.rotation;
     },
     set rotation(value) {
-      self.currentImageEntity.setRotation(value);
+      self.currentImageEntity?.setRotation(value);
     },
 
     get naturalWidth() {
-      return self.currentImageEntity.naturalWidth;
+      return self.currentImageEntity?.naturalWidth;
     },
     set naturalWidth(value) {
-      self.currentImageEntity.setNaturalWidth(value);
+      self.currentImageEntity?.setNaturalWidth(value);
     },
 
     get naturalHeight() {
-      return self.currentImageEntity.naturalHeight;
+      return self.currentImageEntity?.naturalHeight;
     },
     set naturalHeight(value) {
-      self.currentImageEntity.setNaturalHeight(value);
+      self.currentImageEntity?.setNaturalHeight(value);
     },
 
     get stageWidth() {
-      return self.currentImageEntity.stageWidth;
+      return self.currentImageEntity?.stageWidth;
     },
     set stageWidth(value) {
-      self.currentImageEntity.setStageWidth(value);
+      self.currentImageEntity?.setStageWidth(value);
     },
 
     get stageHeight() {
-      return self.currentImageEntity.stageHeight;
+      return self.currentImageEntity?.stageHeight;
     },
     set stageHeight(value) {
-      self.currentImageEntity.setStageHeight(value);
+      self.currentImageEntity?.setStageHeight(value);
     },
 
     get stageRatio() {
-      return self.currentImageEntity.stageRatio;
+      return self.currentImageEntity?.stageRatio;
     },
     set stageRatio(value) {
-      self.currentImageEntity.setStageRatio(value);
+      self.currentImageEntity?.setStageRatio(value);
     },
 
     get containerWidth() {
-      return self.currentImageEntity.containerWidth;
+      return self.currentImageEntity?.containerWidth;
     },
     set containerWidth(value) {
-      self.currentImageEntity.setContainerWidth(value);
+      self.currentImageEntity?.setContainerWidth(value);
     },
 
     get containerHeight() {
-      return self.currentImageEntity.containerHeight;
+      return self.currentImageEntity?.containerHeight;
     },
     set containerHeight(value) {
-      self.currentImageEntity.setContainerHeight(value);
+      self.currentImageEntity?.setContainerHeight(value);
     },
 
     get stageZoom() {
-      return self.currentImageEntity.stageZoom;
+      return self.currentImageEntity?.stageZoom;
     },
     set stageZoom(value) {
-      self.currentImageEntity.setStageZoom(value);
+      self.currentImageEntity?.setStageZoom(value);
     },
 
     get stageZoomX() {
-      return self.currentImageEntity.stageZoomX;
+      return self.currentImageEntity?.stageZoomX;
     },
     set stageZoomX(value) {
-      self.currentImageEntity.setStageZoomX(value);
+      self.currentImageEntity?.setStageZoomX(value);
     },
 
     get stageZoomY() {
-      return self.currentImageEntity.stageZoomY;
+      return self.currentImageEntity?.stageZoomY;
     },
     set stageZoomY(value) {
-      self.currentImageEntity.setStageZoomY(value);
+      self.currentImageEntity?.setStageZoomY(value);
     },
 
     get currentZoom() {
-      return self.currentImageEntity.currentZoom;
+      return self.currentImageEntity?.currentZoom;
     },
     set currentZoom(value) {
-      self.currentImageEntity.setCurrentZoom(value);
+      self.currentImageEntity?.setCurrentZoom(value);
     },
 
     get zoomScale() {
-      return self.currentImageEntity.zoomScale;
+      if (!isAlive(self)) {
+        return void 0;
+      }
+      return self.currentImageEntity?.zoomScale;
     },
     set zoomScale(value) {
-      self.currentImageEntity.setZoomScale(value);
+      self.currentImageEntity?.setZoomScale(value);
     },
 
     get zoomingPositionX() {
-      return self.currentImageEntity.zoomingPositionX;
+      if (!isAlive(self)) {
+        return void 0;
+      }
+      return self.currentImageEntity?.zoomingPositionX;
     },
     set zoomingPositionX(value) {
-      self.currentImageEntity.setZoomingPositionX(value);
+      self.currentImageEntity?.setZoomingPositionX(value);
     },
 
     get zoomingPositionY() {
-      return self.currentImageEntity.zoomingPositionY;
+      if (!isAlive(self)) {
+        return null;
+      }
+      return self.currentImageEntity?.zoomingPositionY;
     },
     set zoomingPositionY(value) {
-      self.currentImageEntity.setZoomingPositionY(value);
+      self.currentImageEntity?.setZoomingPositionY(value);
     },
 
     get brightnessGrade() {
-      return self.currentImageEntity.brightnessGrade;
+      return self.currentImageEntity?.brightnessGrade;
     },
     set brightnessGrade(value) {
-      self.currentImageEntity.setBrightnessGrade(value);
+      self.currentImageEntity?.setBrightnessGrade(value);
     },
 
     get contrastGrade() {
-      return self.currentImageEntity.contrastGrade;
+      return self.currentImageEntity?.contrastGrade;
     },
     set contrastGrade(value) {
-      self.currentImageEntity.setContrastGrade(value);
+      self.currentImageEntity?.setContrastGrade(value);
     },
 
     findImageEntity(index) {

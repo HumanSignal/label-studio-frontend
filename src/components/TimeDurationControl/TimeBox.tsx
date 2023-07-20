@@ -18,6 +18,7 @@ export const TimeBox: FC<TimerProps> = ({
   inverted = false,
   readonly = false,
   onChange,
+  ...props
 }) => {
   const inputRef = React.createRef<HTMLInputElement>();
   const [currentInputTime, setCurrentInputTime] = useState<string | number | undefined>(value);
@@ -100,7 +101,7 @@ export const TimeBox: FC<TimerProps> = ({
   };
 
   return (
-    <Block name="time-box" mod={{ inverted, sidepanel }}>
+    <Block name="time-box" mod={{ inverted, sidepanel }} {...props}>
       {renderInputTime()}
     </Block>
   );

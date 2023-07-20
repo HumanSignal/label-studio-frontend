@@ -129,13 +129,32 @@ const useDataTree = ({
     const style = item?.background ?? item?.getOneColor?.();
     const color = chroma(style ?? '#666').alpha(1);
     const mods: Record<string, any> = { hidden, type, isDrawing };
+
     const label = (() => {
       if (!type) {
         return 'No Label';
       } else if (type.includes('label')) {
         return item.value;
       } else if (type.includes('region') || type.includes('range')) {
-        return (item?.labels ?? []).join(', ') || 'No label';
+        const labelsInResults = item.labelings
+          .map((result: any) => result.selectedLabels || []);
+
+        const labels: any[] = [].concat(...labelsInResults);
+
+        return (
+          <Block name="labels-list">
+            {labels.map((label, index) => {
+              const color = label.background || '#000000';
+
+              return [
+                index ? ', ' : null,
+                <Elem key={label.id} style={{ color }}>
+                  {label.value || 'No label'}
+                </Elem>,
+              ];
+            })}
+          </Block>
+        );
       } else if (type.includes('tool')) {
         return item.value;
       }
@@ -379,7 +398,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   const hidden = useMemo(() => {
     if (type?.includes('region') || type?.includes('range')) {
       return entity.hidden;
-    } else if ((!type || type.includes('label')) && regions) {
+    } else if ((!type || type.includes('label') || type?.includes('tool')) && regions) {
       return Object.values(regions).every(({ hidden }) => hidden);
     }
     return false;
@@ -390,6 +409,8 @@ const RegionControls: FC<RegionControlsProps> = observer(({
       entity.toggleHidden();
     } else if(!type || type.includes('label')) {
       regionStore.setHiddenByLabel(!hidden, entity);
+    } else if(type?.includes('tool')) {
+      regionStore.setHiddenByTool(!hidden, entity);
     }
   }, [item, item?.toggleHidden, hidden]);
 
@@ -446,7 +467,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
             <RegionControlButton onClick={onToggleHidden} style={hidden ? undefined : ({ display: 'none' })}>
               {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
             </RegionControlButton>
-          ) : (hovered || hidden) && (
+          ) : (
             <RegionControlButton onClick={onToggleHidden}>
               {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
             </RegionControlButton>

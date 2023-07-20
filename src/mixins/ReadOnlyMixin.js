@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree';
+import { isAlive, types } from 'mobx-state-tree';
 
 export const ReadOnlyControlMixin = types
   .model('ReadOnlyControlMixin', {})
@@ -14,6 +14,9 @@ export const ReadOnlyRegionMixin = types
   })
   .views(self => ({
     isReadOnly() {
+      if (!isAlive(self)) {
+        return false;
+      }
       return (
         self.locked ||
         self.readonly ||

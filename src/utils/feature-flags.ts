@@ -171,6 +171,12 @@ export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10
 export const FF_LSDV_E_278 = 'fflag_feat_front_lsdv_e_278_contextual_scrolling_short';
 
 /**
+ * Annotations with LLM assistance
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_all_lsdv_e_294_llm_annotations_180723_long
+ */
+export const FF_LLM_EPIC = 'fflag_feat_all_lsdv_e_294_llm_annotations_180723_long';
+
+/**
  * Fix logic of namespaces inside Hotkeys
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
  */
@@ -200,6 +206,22 @@ export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_
  * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4659_skipduplicates_060323_short
  */
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
+
+/**
+ * Reworking of RichText to optimize its work with DOM and decrease  response time with a large number of regions.
+ * It also fixes scenarios of working with hidden regions
+ * and edge cases for creating spans inside other spans.
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4620_richtext_opimization_060423_short
+ */
+export const FF_LSDV_4620_3 = 'fflag_feat_front_lsdv_4620_richtext_opimization_060423_short';
+
+/**
+ * Fixes memory leaks in label studio frontend relative to mobx-state-tree and react usage
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4620_memory_leaks_100723_short
+ */
+export const FF_LSDV_4620_3_ML = 'fflag_fix_front_lsdv_4620_memory_leaks_100723_short';
 
 /**
  * Fixes Rect3PointTool behaviour in relative coords mode.

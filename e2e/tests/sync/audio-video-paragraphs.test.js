@@ -91,7 +91,7 @@ const annotations = [
   },
 ];
 
-const params = {  annotations: [{ id: 'test', result: annotations }], config, data };
+const params = { annotations: [{ id: 'test', result: annotations }], config, data };
 
 FFlagMatrix([
   'fflag_feat_front_lsdv_e_278_contextual_scrolling_short',
@@ -121,7 +121,7 @@ FFlagMatrix([
       assert.equal(startingParagraphAudioTime, 0);
     }
 
-    I.click('[aria-label="play-circle"]');
+    I.click('[aria-label="play"]');
     I.wait(1);
     {
       I.say('Audio, Video, and Paragraph Audio are playing');
@@ -134,7 +134,7 @@ FFlagMatrix([
       assert.equal(paragraphAudioPaused, false);
     }
 
-    I.click('[aria-label="pause-circle"]');
+    I.click('[aria-label="pause"]');
     I.wait(1);
     {
       I.say('Audio, Video and Paragraph Audio are played to the same time and are now paused');
@@ -307,9 +307,9 @@ FFlagMatrix([
       assert.equal(startingAudioTime, startingVideoTime);
     }
 
-    I.click('[aria-label="play-circle"]');
+    I.click('[aria-label="play"]');
     I.wait(1);
-    I.click('[aria-label="pause-circle"]');
+    I.click('[aria-label="pause"]');
     I.wait(1);
     {
       I.say('Seek playback from paragraph. Audio, video and paragraph audio are played to the same time and are now paused');
