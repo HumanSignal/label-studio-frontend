@@ -428,7 +428,6 @@ class HtxParagraphsView extends Component {
       const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
       const _splittedText = 10; // it will be from 0 to 100% of the text height, going 10% by 10%
 
-      this._handleScrollRoot();
       this._disposeTimeout();
 
       if (_phaseHeight > _wrapperHeight) {
@@ -460,8 +459,6 @@ class HtxParagraphsView extends Component {
   }
 
   _handleScrollToPhrase() {
-    this.setState( { inViewPort : true });
-
     const _padding = parseInt(window.getComputedStyle(this.myRef.current)?.getPropertyValue('padding-top')) || 0; // 8 is the padding between the phrases, so it will keep aligned with the top of the phrase
     const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
 
@@ -488,19 +485,6 @@ class HtxParagraphsView extends Component {
 
   }
 
-  _handleScrollRoot() {
-    if (this.activeRef.current) {
-      const { top, bottom, height } = this.activeRef.current.getBoundingClientRect();
-      const { offsetHeight } = this.myRef.current;
-      const offset = this.myRef.current.getBoundingClientRect().top;
-      const heightDifference = height > offsetHeight ? height - offsetHeight : 0;
-      const isInView = ((top > offset && top < offsetHeight + offset) ||
-              (bottom > offset && bottom < offsetHeight + offset + heightDifference));
-
-      this.setState({ inViewPort: isInView });
-    }
-  }
-
   _resizeObserver = new ResizeObserver(() => this._handleScrollContainerHeight());
 
   componentDidUpdate() {
@@ -510,19 +494,17 @@ class HtxParagraphsView extends Component {
   componentDidMount() {
     if(isFF(FF_LSDV_E_278) && this.props.item.contextscroll) this._resizeObserver.observe(document.querySelector('.lsf-main-content'));
     this._handleUpdate();
-
-    if(isFF(FF_LSDV_E_278))
-      this.myRef.current.addEventListener('wheel', this._handleScrollRoot.bind(this));
   }
 
   componentWillUnmount() {
     const target = document.querySelector('.lsf-main-content');
 
-    if(isFF(FF_LSDV_E_278))
-      this.myRef.current.removeEventListener('wheel', this._handleScrollRoot);
-
     if (target) this._resizeObserver?.unobserve(target);
     this._resizeObserver?.disconnect();
+  }
+
+  setIsInViewPort(isInViewPort) {
+    this.setState({ inViewPort: isInViewPort });
   }
 
   renderWrapperHeader() {
@@ -592,7 +574,7 @@ class HtxParagraphsView extends Component {
           className={contextScroll ? styles.scroll_container : styles.container}
           onMouseUp={this.onMouseUp.bind(this)}
         >
-          <Phrases item={item} playingId={item.playingId} {...(isFF(FF_LSDV_E_278) ? { activeRef: this.activeRef }: {})} />
+          <Phrases setIsInViewport={this.setIsInViewPort.bind(this)} item={item} playingId={item.playingId} {...(isFF(FF_LSDV_E_278) ? { activeRef: this.activeRef }: {})} />
         </div>
       </ObjectTag>
     );
