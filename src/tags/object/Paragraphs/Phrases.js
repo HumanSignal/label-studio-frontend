@@ -99,6 +99,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
     item.syncHandlers.set('seek', seek => {
       item.handleSyncPlay(seek);
       setSeek(seek);
+      setIsInViewport(true);
     });
 
     return () => {
@@ -112,7 +113,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
     setSeekAnimation(true);
   }, [seek]);
 
-  // when user seek audio to a differente playing phrase, the useEffect will be triggered and animate the reading line to the seek position
+  // when user seek audio to a different playing phrase, the useEffect will be triggered and animate the reading line to the seek position
   useEffect(() => {
     if (!isSeek) return;
 
@@ -160,7 +161,10 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
               isFF(FF_LSDV_E_278) ?
                 <IconPlay /> : <PlayCircleOutlined />
             }
-            onClick={() => item.play(idx)}
+            onClick={() => {
+              setIsInViewport(true);
+              item.play(idx);
+            }}
           />
         )}
         {isFF(FF_LSDV_E_278) ? (

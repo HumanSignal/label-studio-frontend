@@ -426,7 +426,7 @@ class HtxParagraphsView extends Component {
       const _duration = this.props.item._value[item.playingId].duration || _end - _start;
       const _wrapperHeight = root.offsetHeight;
       const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
-      const _splittedText = 10; // it will be from 0 to 100% of the text height, going 10% by 10%
+      const _splittedText = Math.ceil(this.activeRef.current?.offsetHeight / this.myRef.current?.offsetHeight) + 1; // +1 to make sure the last line is scrolled to the top
 
       this._disposeTimeout();
 
