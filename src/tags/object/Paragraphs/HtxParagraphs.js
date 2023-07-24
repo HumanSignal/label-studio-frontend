@@ -434,7 +434,7 @@ class HtxParagraphsView extends Component {
         for (let i = 0; i < _splittedText; i++) {
           this.scrollTimeout.push(
             setTimeout(() => {
-              const _pos = (_wrapperOffsetTop) + ((_phaseHeight - (_wrapperHeight / 3)) * (i * (1 / _splittedText))); // 1/3 of the wrapper height is the offset to keep the text aligned with the middle of the wrapper
+              const _pos = (_wrapperOffsetTop) + ((_phaseHeight) * (i * (1 / _splittedText)));
 
               if (this.state.inViewPort && this.state.canScroll) {
                 root.scrollTo({
