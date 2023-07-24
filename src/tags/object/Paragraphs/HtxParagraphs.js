@@ -459,7 +459,7 @@ class HtxParagraphsView extends Component {
   }
 
   _handleScrollToPhrase() {
-    const _padding = parseInt(window.getComputedStyle(this.myRef.current)?.getPropertyValue('padding-top')) || 0; // 8 is the padding between the phrases, so it will keep aligned with the top of the phrase
+    const _padding = parseInt(window.getComputedStyle(this.myRef.current)?.getPropertyValue('padding-top')) || 0;
     const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
 
     this.myRef.current.scrollTo({
