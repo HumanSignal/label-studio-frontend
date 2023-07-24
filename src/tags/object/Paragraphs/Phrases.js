@@ -175,12 +175,20 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
           <span className={cls?.name} data-skip-node="true" style={style?.name}>{v[item.namekey]}</span>
         )}
 
-        <span className={`${cls?.text} ${isFF(FF_LSDV_E_278) && styles.text}`}>
-          {v[item.textkey]}
-          {(isFF(FF_LSDV_E_278) && isActive) && (
-            <span ref={readingLineRef} className={`${styles.readingLine} reading-line`}></span>
-          )}
-        </span>
+        {isFF(FF_LSDV_E_278) ? (
+          <span className={styles.wrapperText}>
+            {(isFF(FF_LSDV_E_278) && isActive) && (
+              <span ref={readingLineRef} className={`${styles.readingLine} reading-line`} data-skip-node="true"></span>
+            )}
+            <span className={`${cls?.text}`}>
+              {v[item.textkey]}
+            </span>
+          </span>
+        ) : (
+          <span className={`${cls?.text}`}>
+            {v[item.textkey]}
+          </span>
+        )}
       </div>
     );
   });
