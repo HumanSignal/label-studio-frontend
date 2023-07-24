@@ -227,7 +227,7 @@ const Grouping = <T extends string>({
 
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" {...extraStyles} icon={readableValue.icon} style={style} extra={(
+      <Button type="text" data-testid={`grouping-${value}`} {...extraStyles} icon={readableValue.icon} style={style} extra={(
         isFF(FF_DEV_3873) ? (
           extraIcon
         ) : (

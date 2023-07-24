@@ -8,5 +8,7 @@ export const CURRENT_FLAGS = {
   [FLAGS.FF_LSDV_4673]: true,
   [FLAGS.FF_DEV_2100]: true,
   [FLAGS.FF_DEV_2715]: true,
+  [FLAGS.FF_LSDV_4620_3]: true,
+  [FLAGS.FF_LSDV_4620_3_ML]: true,
 };
 

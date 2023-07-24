@@ -56,7 +56,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
   const setSeekAnimation = useCallback(
     (isSeeking) => {
       if (!isFF(FF_LSDV_E_278)) return;
-      
+
       const duration = item._value[playingId]?.duration || item._value[playingId]?.end - item._value[playingId]?.start;
       const endTime = !item._value[playingId]?.end ? item._value[playingId]?.start + item._value[playingId]?.duration : item._value[playingId]?.end;
       const seekDuration = endTime - seek.time;
@@ -95,7 +95,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
 
   useEffect(() => {
     if (!isFF(FF_LSDV_E_278)) return;
-    
+
     item.syncHandlers.set('seek', seek => {
       item.handleSyncPlay(seek);
       setSeek(seek);
@@ -129,7 +129,6 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
   }, [item.playing]);
 
   if (!item._value) return null;
-
   const val = item._value.map((v, idx) => {
     const isActive = playingId === idx;
     const isPlaying = isActive && item.playing;
@@ -149,7 +148,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
     if (getRoot(item).settings.showLineNumbers) classNames.push(styles.numbered);
 
     return (
-      <div key={`${item.name}-${idx}`} ref={isActive ? activeRef : null} data-testid={`phrase:${idx}`} className={`${classNames.join(' ')} ${isFF(FF_LSDV_E_278) && styles.newUI}`} style={style.phrase}>
+      <div key={`${item.name}-${idx}`} ref={isActive ? activeRef : null} data-testid={`phrase:${idx}`} className={`${classNames.join(' ')} ${isFF(FF_LSDV_E_278) && styles.newUI}`} style={style?.phrase}>
         {isContentVisible && withAudio && !isNaN(v.start) && (
           <Button
             type="text"
@@ -169,14 +168,14 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
         )}
         {isFF(FF_LSDV_E_278) ? (
           <span className={styles.titleWrapper} data-skip-node="true">
-            <span className={cls.name} style={style.name}>{v[item.namekey]}</span>
+            <span className={cls?.name} style={style?.name}>{v[item.namekey]}</span>
             <span className={styles.time}>{withFormattedTime(item)}</span>
           </span>
         ) : (
-          <span className={cls.name} data-skip-node="true" style={style.name}>{v[item.namekey]}</span>
+          <span className={cls?.name} data-skip-node="true" style={style?.name}>{v[item.namekey]}</span>
         )}
 
-        <span className={`${cls.text} ${isFF(FF_LSDV_E_278) && styles.text}`}>
+        <span className={`${cls?.text} ${isFF(FF_LSDV_E_278) && styles.text}`}>
           {v[item.textkey]}
           {(isFF(FF_LSDV_E_278) && isActive) && (
             <span ref={readingLineRef} className={`${styles.readingLine} reading-line`}></span>

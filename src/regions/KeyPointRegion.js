@@ -105,13 +105,13 @@ const Model = types
       };
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.y) : self.y;
     },
     get canvasWidth() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.width) : self.width;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.width) : self.width;
     },
   }))
   .actions(self => ({
@@ -177,7 +177,7 @@ const KeyPointRegionModel = types.compose(
   ...(isFF(FF_DEV_3793) ? [] : [KeyPointRegionAbsoluteCoordsDEV3793]),
 );
 
-const HtxKeyPointView = ({ item }) => {
+const HtxKeyPointView = ({ item, setShapeRef }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
@@ -199,16 +199,16 @@ const HtxKeyPointView = ({ item }) => {
     shadowBlur: 0,
   };
 
-  const stage = item.parent.stageRef;
+  const stage = item.parent?.stageRef;
 
   return (
     <Fragment>
       <Circle
         x={item.canvasX}
         y={item.canvasY}
-        ref={el => item.setShapeRef(el)}
+        ref={el => setShapeRef(el)}
         // keypoint should always be the same visual size
-        radius={Math.max(item.canvasWidth, 2) / item.parent.zoomScale}
+        radius={Math.max(item.canvasWidth, 2) / item.parent?.zoomScale}
         // fixes performance, but opactity+borders might look not so good
         perfectDrawEnabled={false}
         // for some reason this scaling doesn't work, so moved this to radius

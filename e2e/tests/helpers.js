@@ -619,11 +619,12 @@ const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation(
 const selectText = async ({ selector, rangeStart, rangeEnd }) => {
   let [doc, win] = [document, window];
 
-  const elem = document.querySelector(selector);
+  let elem = document.querySelector(selector);
 
   if (elem.matches('iframe')) {
     doc = elem.contentDocument;
     win = elem.contentWindow;
+    elem = doc.body;
   }
 
   const findOnPosition = (root, position, borderSide = 'left') => {
@@ -812,6 +813,24 @@ function hasSelectedRegion() {
   return !!Htx.annotationStore.selected.highlightedNode;
 }
 
+// `mulberry32` (simple generator with a 32-bit state)
+function createRandomWithSeed(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function createRandomIntWithSeed(seed) {
+  const random = createRandomWithSeed(seed);
+
+  return function(min, max) {
+    return Math.floor(random() * (max - min + 1) + min);
+  };
+}
+
 module.exports = {
   initLabelStudio,
   createLabelStudioInitFunction,
@@ -863,4 +882,7 @@ module.exports = {
 
   omitBy,
   dumpJSON,
+
+  createRandomWithSeed,
+  createRandomIntWithSeed,
 };

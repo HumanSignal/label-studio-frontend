@@ -1,6 +1,6 @@
 import { ImageView, LabelStudio } from '@heartexlabs/ls-test/helpers/LSF';
 import { rect3Config, simpleImageData } from '../../../data/image_segmentation/tools/rect3point';
-import { FF_DEV_2132, FF_DEV_3793, FF_LSDV_4673 } from '../../../../../src/utils/feature-flags';
+import { FF_DEV_2132, FF_DEV_3793 } from '../../../../../src/utils/feature-flags';
 
 describe('Rect3Point tool', () => {
   beforeEach(() => {

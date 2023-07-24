@@ -3,7 +3,7 @@ import Button from 'antd/lib/button/index';
 import Form from 'antd/lib/form/index';
 import Input from 'antd/lib/input/index';
 import { observer } from 'mobx-react';
-import { destroy, isAlive, types } from 'mobx-state-tree';
+import { destroy, getRoot, isAlive, types } from 'mobx-state-tree';
 
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
 import RequiredMixin from '../../../mixins/Required';
@@ -215,7 +215,7 @@ const Model = types.model({
       if (index < 0) return;
       self.regions.splice(index, 1);
       destroy(region);
-      self.onChange();
+      self.onChange(region);
     },
 
     perRegionCleanup() {
@@ -229,8 +229,15 @@ const Model = types.model({
       return r;
     },
 
-    onChange() {
+    onChange(area) {
       self.updateResult();
+      const currentArea = (area ?? self.result?.area);
+
+      if (getRoot(self).autoAnnotation) {
+        currentArea.makeDynamic();
+      }
+      
+      currentArea?.notifyDrawingFinished();
     },
 
     validateValue(text) {
@@ -418,7 +425,17 @@ const HtxTextArea = observer(({ item }) => {
   );
 });
 
-const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, validate, control, collapsed }, ref) => {
+const HtxTextAreaResultLine = forwardRef(({
+  idx,
+  value,
+  readOnly,
+  onChange,
+  onDelete,
+  onFocus,
+  validate,
+  control,
+  collapsed,
+}, ref) => {
   const rows = parseInt(control.rows);
   const isTextarea = rows > 1;
   const [stateValue, setStateValue] = useState(value ?? '');
