@@ -177,7 +177,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
 
         {isFF(FF_LSDV_E_278) ? (
           <span className={styles.wrapperText}>
-            {(isFF(FF_LSDV_E_278) && isActive) && (
+            {(isActive) && (
               <span ref={readingLineRef} className={`${styles.readingLine} reading-line`} data-skip-node="true"></span>
             )}
             <span className={`${cls?.text}`}>
