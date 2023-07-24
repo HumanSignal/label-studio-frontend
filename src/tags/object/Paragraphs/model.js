@@ -473,7 +473,20 @@ const ParagraphsLoadingModel = types.model()
         ]);
         return;
       }
-      self._value = val;
+      const contextScroll = isFF(FF_LSDV_E_278) && self.contextscroll;
+
+      const value = contextScroll ? val.sort((a, b) => {
+
+        if (!a.start) return 1;
+        if (!b.start) return -1;
+        const aEnd = a.end ? a.end : a.start + a.duration || 0;
+        const bEnd = b.end ? b.end : b.start + b.duration || 0;
+
+        if (a.start === b.start) return aEnd - bEnd;
+        return a.start - b.start;
+      }) : val;
+      
+      self._value = value;
       self.needsUpdate();
     },
 
