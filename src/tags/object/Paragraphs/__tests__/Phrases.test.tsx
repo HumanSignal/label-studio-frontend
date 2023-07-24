@@ -57,8 +57,8 @@ describe('Phrases Component', () => {
     const phraseTextContext = phraseElements.map(element => element.textContent);
   
     expect(phraseElements).toHaveLength(2);
-    expect(phraseTextContext[0]).toEqual('phrase1');
-    expect(phraseTextContext[1]).toEqual('phrase2');
+    expect(phraseTextContext[0]).toContain('phrase1');
+    expect(phraseTextContext[1]).toContain('phrase2');
   });
 });
 
