@@ -513,7 +513,11 @@ class HtxParagraphsView extends Component {
     return (
       <div className={styles.wrapper_header}>
         {isFF(FF_DEV_2669) && (
-          <AuthorFilter item={item} />
+          <AuthorFilter item={item} onChange={() => {
+            setTimeout(() => {
+              this._handleScrollToPhrase();
+            }, 100); // the transition phrase animation is 0.1s
+          }} />
         )}
         <div className={styles.wrapper_header__buttons}>
           <Toggle
