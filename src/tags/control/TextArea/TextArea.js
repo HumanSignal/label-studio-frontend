@@ -146,7 +146,7 @@ const Model = types.model({
   },
 
   get metaValue() {
-    if (!self.perregion) return null;
+    if (self.perregion) return null;
     return {
       lead_time: self.regions.reduce((sum, reg) => sum + reg.leadTime, 0) / 1000,
     };
@@ -267,6 +267,7 @@ const Model = types.model({
 
       self.createRegion(text, pid, self.leadTime);
       self.updateLeadTime();
+      self.resetLeadTimeCounters();
 
       self.onChange();
     },

@@ -91,11 +91,13 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
     params.onStartEditing = item.parent.countTime;
     params.onChange = str => {
       item.setValue(str);
+      item.parent.updateLeadTime();
+    };
+    params.onInput = () => {
       // @todo should be splitted: for per-regions countTime() on parent,
       // @todo for global classification countTime() on this region.
       // @todo currently most probably it's not counted when you edit global textarearegion.
-      item.parent.countTime(true);
-      item.parent.updateLeadTime();
+      item.parent.countTime();
     };
   }
 
