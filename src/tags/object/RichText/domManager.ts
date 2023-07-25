@@ -652,6 +652,12 @@ export default class DomManager {
     const { root, view } = this;
     const selection: Selection = view.getSelection() as Selection;
     const range: Range = new Range();
+    const lastRanges = [];
+
+    // save previous selection
+    for (let idx = 0; idx < selection.rangeCount; idx++) {
+      lastRanges.push(selection.getRangeAt(idx));
+    }
 
     range.setStartBefore(root);
     range.setEndAfter(root);
@@ -661,6 +667,22 @@ export default class DomManager {
     const text = String(selection);
 
     selection.removeAllRanges();
+    selection.removeRange(range);
+
+    // restore previous selection
+    for (const range of lastRanges) {
+      selection.addRange(range);
+    }
+
+    // Dirty hack for restoring active state of some elements (in our case it's CodeMirror editor)
+    // @todo Find a better way to reanimate CodeMirror after Selection manipulations
+    if (document.activeElement) {
+      const el = document.activeElement as HTMLElement;
+
+      el.blur?.();
+      el.focus?.();
+    }
+
     return text;
   }
 
@@ -762,6 +784,7 @@ export default class DomManager {
       }
     }
   }
+
   destroy() {
     this.removeStyles(Object.keys(this.styleTags));
     this.domData.destroy();
