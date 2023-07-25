@@ -27,6 +27,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
   const [isSeek, setIsSeek] = useState(null);
   const cls = item.layoutClasses;
   const withAudio = !!item.audio;
+  let observerTimeout;
   let observer;
 
   // default function to animate the reading line
@@ -84,7 +85,14 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
       }
 
       observer = new IntersectionObserver((entries) => {
-        setIsInViewport(entries[0].isIntersecting);
+        if(entries[0].isIntersecting) {
+          setIsInViewport(true);
+          clearTimeout(observerTimeout);
+        } else {
+          setTimeout(() => {
+            setIsInViewport(false);
+          }, 500);
+        }
       }, {
         rootMargin: '0px',
       });
