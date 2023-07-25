@@ -514,9 +514,12 @@ class HtxParagraphsView extends Component {
       <div className={styles.wrapper_header}>
         {isFF(FF_DEV_2669) && (
           <AuthorFilter item={item} onChange={() => {
+            if (!this.activeRef.current) return;
+            const _timeoutDelay = parseFloat(window.getComputedStyle(this.activeRef.current).transitionDuration) * 1000;
+
             setTimeout(() => {
               this._handleScrollToPhrase();
-            }, 100); // the transition phrase animation is 0.1s
+            }, _timeoutDelay);
           }} />
         )}
         <div className={styles.wrapper_header__buttons}>
