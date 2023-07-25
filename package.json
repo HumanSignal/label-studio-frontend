@@ -168,7 +168,7 @@
     "mobx-react": "^6",
     "mobx-state-tree": "^3.16.0",
     "nanoid": "^3.3.0",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^3.3.2",
     "pleasejs": "^0.4.2",
     "postcss": "^8.4.6",
     "postcss-loader": "^6.2.1",
