@@ -5,9 +5,9 @@ import { PauseCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import styles from './Paragraphs.module.scss';
 import { FF_LSDV_E_278, isFF } from '../../../utils/feature-flags';
 import { IconPause, IconPlay } from '../../../assets/icons';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-const formatTime = (seconds) => {
+const formatTime = seconds => {
   if (isNaN(seconds)) return '';
 
   const hours = Math.floor(seconds / 3600);
@@ -25,10 +25,10 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
   const [animationKeyFrame, setAnimationKeyFrame] = useState(null);
   const [seek, setSeek] = useState(0);
   const [isSeek, setIsSeek] = useState(null);
+  const prevReadlineRef = useRef(null);
+  const observerRef = useRef(null);
   const cls = item.layoutClasses;
   const withAudio = !!item.audio;
-  let observerTimeout;
-  let observer;
 
   // default function to animate the reading line
   const animateElement = useCallback(
@@ -73,8 +73,16 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
 
   // useRef to get the reading line element
   const readingLineRef = useCallback(node => {
-    if(observer) {
-      observer.disconnect();
+    if (!observerRef.current) {
+      observerRef.current = new IntersectionObserver((entries) => {
+        setIsInViewport(entries[0].isIntersecting);
+      }, {
+        rootMargin: '0px',
+      });
+    }
+
+    if(observerRef.current && readingLineRef.current) {
+      observerRef.current.unobserve(readingLineRef.current);
     }
 
     if(node !== null) {
@@ -84,20 +92,8 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
         animateElement(node, 0, duration, item.playing);
       }
 
-      observer = new IntersectionObserver((entries) => {
-        if(entries[0].isIntersecting) {
-          setIsInViewport(true);
-          clearTimeout(observerTimeout);
-        } else {
-          setTimeout(() => {
-            setIsInViewport(false);
-          }, 500);
-        }
-      }, {
-        rootMargin: '0px',
-      });
-
-      observer.observe(node);
+      prevReadlineRef.current = node;
+      observerRef.current.observe(node);
     }
   }, [playingId]);
 
@@ -111,7 +107,10 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
     });
 
     return () => {
-      observer?.disconnect();
+      if (readingLineRef.current) {
+        observerRef.current?.unobserve(readingLineRef.current);
+      }
+      observerRef.current?.disconnect();
     };
   }, []);
 
