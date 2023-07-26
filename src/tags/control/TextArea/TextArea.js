@@ -260,31 +260,30 @@ const Model = types.model({
       if (!self.validateValue(text)) return;
 
       self.createRegion(text, pid, self.leadTime);
-      self.updateLeadTime();
-      self.resetLeadTimeCounters();
-
+      // actually creates a new result
       self.onChange();
+
+      // should go after `onChange` because it uses result and area
+      self.updateLeadTime();
     },
 
     /**
-     * For per-regions we store `lead_time` inside connected result,
-     * we don't store it in TextAreaRegions,
-     *   because TextAreaRegions are recreated every time user selects main region
-     *   and they don't store any info except the text;
-     * and we don't store it in TextArea itself, just temporarily,
-     *   because it's shared between all main regions.
-     * For global claassification we store it in TextArea itself,
-     * becase TextAreaRegions are permanent.
+     * `lead_time` should be stored inside connected results,
+     *   we shouldn't store it in TextAreaRegions,
+     *   because TextAreaRegions are not safe, they can be rewritten
+     *   on undo/redo, on switching annotations, on switching regions...
+     * After adding lead_time to the result, we should reset all lead_time numbers
      */
     updateLeadTime() {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
+      const area = self.result?.area;
 
-        // add current stored leadTime to the main stored lead_time
-        area.setMetaValue('lead_time', (area.meta.lead_time ?? 0) + self.leadTime / 1000);
-      }
+      if (!area) return;
+
+      // add current stored leadTime to the main stored lead_time
+      area.setMetaValue('lead_time', (area.meta?.lead_time ?? 0) + self.leadTime / 1000);
 
       self.leadTime = 0;
+      self.resetLeadTimeCounters();
     },
 
     addTextToResult(text, result) {
