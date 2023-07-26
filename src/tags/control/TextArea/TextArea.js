@@ -257,12 +257,6 @@ const Model = types.model({
     },
 
     addText(text, pid) {
-      if (self.startTime) {
-        const now = +Date.now();
-
-        self.leadTime += now - self.startTime;
-        self.startTime = 0;
-      }
       if (!self.validateValue(text)) return;
 
       self.createRegion(text, pid, self.leadTime);
@@ -287,7 +281,7 @@ const Model = types.model({
         const area = self.annotation.highlightedNode;
 
         // add current stored leadTime to the main stored lead_time
-        area.setMetaValue('lead_time', (area.meta.leadTime ?? 0) + self.leadTime / 1000);
+        area.setMetaValue('lead_time', (area.meta.lead_time ?? 0) + self.leadTime / 1000);
       }
 
       self.leadTime = 0;
