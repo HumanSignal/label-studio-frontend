@@ -8,6 +8,12 @@ import { FF_LSDV_E_278 } from '../../../../utils/feature-flags';
 
 const ff = mockFF();
 
+const intersectionObserverMock = () => ({
+  observe: () => null,
+});
+
+window.IntersectionObserver = jest.fn().mockImplementation(intersectionObserverMock);
+
 jest.mock('mobx-state-tree', () => ({
   ...jest.requireActual('mobx-state-tree'),
   getRoot: jest.fn(),
