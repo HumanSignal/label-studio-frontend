@@ -19,3 +19,18 @@ export const textareaConfigPerRegion = `<View>
   <Header>Global description</Header>
   <TextArea name="global" toName="text" />
 </View>`;
+
+export const textareaResultsPerRegion = [
+  {
+    'id': 'reg1',
+    'type': 'labels',
+    'from_name': 'lbl',
+    'to_name': 'text',
+    'value': {
+      'start': 5,
+      'end': 9,
+      'labels': ['Word'],
+      'text': 'text',
+    },
+  },
+];

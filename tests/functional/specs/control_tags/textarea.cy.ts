@@ -1,7 +1,9 @@
-import { LabelStudio, Textarea } from '@heartexlabs/ls-test/helpers/LSF/index';
+import { LabelStudio, Sidebar, Textarea } from '@heartexlabs/ls-test/helpers/LSF';
 import {
   simpleData,
-  textareaConfigSimple
+  textareaConfigPerRegion,
+  textareaConfigSimple,
+  textareaResultsPerRegion
 } from '../../data/control_tags/textarea';
 
 describe('Control Tags - TextArea - Lead Time', () => {
@@ -19,6 +21,32 @@ describe('Control Tags - TextArea - Lead Time', () => {
       const lead_time = result[0].meta.lead_time;
 
       expect(result.length).to.be.eq(1);
+      expect(lead_time).to.be.gt(0);
+
+      Textarea.type('Another test{enter}');
+
+      LabelStudio.serialize().then(result2 => {
+        expect(result2[0].meta.lead_time).to.be.gt(lead_time);
+      });
+    });
+  });
+
+  it('should calculate lead_time for per-region TextArea', () => {
+    LabelStudio.params()
+      .config(textareaConfigPerRegion)
+      .data(simpleData)
+      .withResult(textareaResultsPerRegion)
+      .init();
+
+    Sidebar.findRegionByIndex(0).click();
+
+    Textarea.type('This is a test{enter}');
+    Textarea.hasValue('This is a test');
+
+    LabelStudio.serialize().then(result => {
+      const lead_time = result[0].meta.lead_time;
+
+      expect(result.length).to.be.eq(2);
       expect(lead_time).to.be.gt(0);
 
       Textarea.type('Another test{enter}');
