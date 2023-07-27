@@ -10,7 +10,6 @@ import { guidGenerator } from '../core/Helpers';
 
 import styles from './TextAreaRegion/TextAreaRegion.module.scss';
 import { HtxTextBox } from '../components/HtxTextBox/HtxTextBox';
-import LeadTimeMixin from '../mixins/LeadTime';
 import { FF_DEV_1566, FF_LSDV_4712, isFF } from '../utils/feature-flags';
 
 const Model = types
@@ -18,7 +17,6 @@ const Model = types
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
     type: 'textarearegion',
-    leadTime: 0,
 
     _value: types.string,
     // states: types.array(types.union(ChoicesModel)),
@@ -64,7 +62,6 @@ const Model = types
 const TextAreaRegionModel = types.compose(
   'TextAreaRegionModel',
   RegionsMixin,
-  LeadTimeMixin,
   NormalizationMixin,
   Model,
 );
@@ -93,9 +90,6 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
       item.parent.updateLeadTime();
     };
     params.onInput = () => {
-      // @todo should be splitted: for per-regions countTime() on parent,
-      // @todo for global classification countTime() on this region.
-      // @todo currently most probably it's not counted when you edit global textarearegion.
       item.parent.countTime();
     };
   }

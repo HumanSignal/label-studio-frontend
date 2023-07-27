@@ -75,7 +75,7 @@ const LeadTimeMixin = types
   }))
   .actions(self => ({
     /**
-     * Calculate leadTime; call on every interaction.
+     * Calculate leadTime; call it on every interaction.
      */
     countTime() {
       if (self.leadTimeLogic === LEAD_TIME_LOGIC_OPTIONS.inertial) {

@@ -161,7 +161,10 @@ const Model = types.model({
     text = text.toLowerCase();
     return value.some(val => val.toLowerCase() === text);
   },
-})).actions(self => {
+})).actions(() => isFF(FF_LEAD_TIME)
+  ? {}
+  : { countTime: () => {} },
+).actions(self => {
   let lastActiveElement = null;
   let lastActiveElementModel = null;
 
@@ -256,7 +259,7 @@ const Model = types.model({
       self.onChange();
 
       // should go after `onChange` because it uses result and area
-      if (isFF(FF_LEAD_TIME)) self.updateLeadTime();
+      self.updateLeadTime();
     },
 
     /**
@@ -267,6 +270,8 @@ const Model = types.model({
      * After adding lead_time to the result, we should reset all lead_time numbers
      */
     updateLeadTime() {
+      if (!isFF(FF_LEAD_TIME)) return;
+
       const area = self.result?.area;
 
       if (!area) return;
