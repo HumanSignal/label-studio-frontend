@@ -144,13 +144,6 @@ const Model = types.model({
     }
   },
 
-  get metaValue() {
-    if (self.perregion) return null;
-    return {
-      lead_time: self.regions.reduce((sum, reg) => sum + reg.leadTime, 0) / 1000,
-    };
-  },
-
   get serializableValue() {
     if (!self.regions.length) return null;
     return { text: self.selectedValues() };
@@ -263,7 +256,7 @@ const Model = types.model({
       self.onChange();
 
       // should go after `onChange` because it uses result and area
-      self.updateLeadTime();
+      if (isFF(FF_LEAD_TIME)) self.updateLeadTime();
     },
 
     /**
