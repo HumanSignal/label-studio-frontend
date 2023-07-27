@@ -21,6 +21,9 @@ const params = { annotations: [{ id: 'test', result: [] }], config, data };
 
 Scenario('Check if text area is saving lead_time', async function({ I, LabelStudio, AtTextAreaView }) {
   I.amOnPage('/');
+  LabelStudio.setFeatureFlags({
+    fflag_fix_front_lsdv_4600_lead_time_27072023_short: true,
+  });
 
   LabelStudio.init(params);
 
