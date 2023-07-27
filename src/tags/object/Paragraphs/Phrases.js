@@ -5,7 +5,7 @@ import { PauseCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import styles from './Paragraphs.module.scss';
 import { FF_LSDV_E_278, isFF } from '../../../utils/feature-flags';
 import { IconPause, IconPlay } from '../../../assets/icons';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const formatTime = seconds => {
   if (isNaN(seconds)) return '';
@@ -25,10 +25,9 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
   const [animationKeyFrame, setAnimationKeyFrame] = useState(null);
   const [seek, setSeek] = useState(0);
   const [isSeek, setIsSeek] = useState(null);
-  const prevReadlineRef = useRef(null);
-  const observerRef = useRef(null);
   const cls = item.layoutClasses;
   const withAudio = !!item.audio;
+  let observer;
 
   // default function to animate the reading line
   const animateElement = useCallback(
@@ -73,16 +72,8 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
 
   // useRef to get the reading line element
   const readingLineRef = useCallback(node => {
-    if (!observerRef.current) {
-      observerRef.current = new IntersectionObserver((entries) => {
-        setIsInViewport(entries[0].isIntersecting);
-      }, {
-        rootMargin: '0px',
-      });
-    }
-
-    if(observerRef.current && readingLineRef.current) {
-      observerRef.current.unobserve(readingLineRef.current);
+    if(observer) {
+      observer.disconnect();
     }
 
     if(node !== null) {
@@ -92,25 +83,27 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
         animateElement(node, 0, duration, item.playing);
       }
 
-      prevReadlineRef.current = node;
-      observerRef.current.observe(node);
+      observer = new IntersectionObserver((entries) => {
+        setIsInViewport(entries[0].isIntersecting);
+      }, {
+        rootMargin: '0px',
+      });
+
+      observer.observe(node);
     }
   }, [playingId]);
 
   useEffect(() => {
     if (!isFF(FF_LSDV_E_278)) return;
 
-    item.syncHandlers?.set('seek', seek => {
+    item.syncHandlers.set('seek', seek => {
       item.handleSyncPlay(seek);
       setSeek(seek);
       setIsInViewport(true);
     });
 
     return () => {
-      if (readingLineRef.current) {
-        observerRef.current?.unobserve(readingLineRef.current);
-      }
-      observerRef.current?.disconnect();
+      observer?.disconnect();
     };
   }, []);
 
