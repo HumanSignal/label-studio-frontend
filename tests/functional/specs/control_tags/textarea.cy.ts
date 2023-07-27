@@ -5,8 +5,15 @@ import {
   textareaConfigSimple,
   textareaResultsPerRegion
 } from '../../data/control_tags/textarea';
+import { FF_LEAD_TIME } from '../../../../src/utils/feature-flags';
 
 describe('Control Tags - TextArea - Lead Time', () => {
+  beforeEach(() => {
+    LabelStudio.addFeatureFlagsOnPageLoad({
+      [FF_LEAD_TIME]: true,
+    });
+  });
+
   it('should calculate lead_time for global TextArea', () => {
     LabelStudio.params()
       .config(textareaConfigSimple)

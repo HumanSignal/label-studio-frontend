@@ -20,6 +20,7 @@ import { HtxTextAreaRegion, TextAreaRegionModel } from '../../../regions/TextAre
 import {
   FF_DEV_1564_DEV_1565,
   FF_DEV_3730,
+  FF_LEAD_TIME,
   FF_LSDV_4583,
   FF_LSDV_4659,
   isFF
@@ -357,7 +358,7 @@ const TextAreaModel = types.compose(
   ControlBase,
   ClassificationBase,
   TagAttrs,
-  LeadTimeMixin,
+  ...(isFF(FF_LEAD_TIME) ? [LeadTimeMixin] : []),
   ProcessAttrsMixin,
   RequiredMixin,
   PerRegionMixin,
