@@ -31,7 +31,7 @@ const LeadTimeMixin = types
     leadTime: 0,
   })
   .volatile(() => ({
-    leadTimeLogic: LEAD_TIME_LOGIC_OPTIONS.instant,
+    leadTimeLogic: LEAD_TIME_LOGIC_OPTIONS.inertial,
     // when did the last event happen, used only for instant logic
     lastRecordedTime: 0,
     // time of the end of the current debounce frame
