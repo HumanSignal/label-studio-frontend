@@ -96,7 +96,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
   useEffect(() => {
     if (!isFF(FF_LSDV_E_278)) return;
 
-    item.syncHandlers.set('seek', seek => {
+    item.syncHandlers?.set('seek', seek => {
       item.handleSyncPlay(seek);
       setSeek(seek);
       setIsInViewport(true);
