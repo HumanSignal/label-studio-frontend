@@ -339,7 +339,7 @@ const PlayableAndSyncable = types.model()
       const regions = self.regionsValues;
 
       self.playingId = regions.findIndex(({ start, end }) => {
-        return currentTime >= start && currentTime <= end;
+        return currentTime >= start && currentTime < end;
       });
 
       if (!audio.paused) {

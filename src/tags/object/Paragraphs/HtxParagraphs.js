@@ -28,6 +28,7 @@ class HtxParagraphsView extends Component {
     this.isPlaying = false;
     this.state = {
       canScroll: true,
+      inViewport: true,
     };
   }
 
@@ -417,7 +418,7 @@ class HtxParagraphsView extends Component {
 
 
     if (isFF(FF_LSDV_E_278) && this.props.item.contextscroll && item.playingId >= 0 && this.lastPlayingId !== item.playingId && this.state.canScroll) {
-      const _padding = 8; // 8 is the padding between the phrases, so it will keep aligned with the top of the phrase
+      const _padding = parseInt(window.getComputedStyle(this.myRef.current)?.getPropertyValue('padding-top')) || 0;
       const _playingItem = this.props.item._value[item.playingId];
       const _start = _playingItem.start;
       const _end = _playingItem.end;
@@ -425,7 +426,7 @@ class HtxParagraphsView extends Component {
       const _duration = this.props.item._value[item.playingId].duration || _end - _start;
       const _wrapperHeight = root.offsetHeight;
       const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
-      const _splittedText = 10; // it will be from 0 to 100% of the text height, going 10% by 10%
+      const _splittedText = Math.ceil(this.activeRef.current?.offsetHeight / this.myRef.current?.offsetHeight) + 1; // +1 to make sure the last line is scrolled to the top
 
       this._disposeTimeout();
 
@@ -433,24 +434,38 @@ class HtxParagraphsView extends Component {
         for (let i = 0; i < _splittedText; i++) {
           this.scrollTimeout.push(
             setTimeout(() => {
-              const _pos = (_wrapperOffsetTop) + ((_phaseHeight - (_wrapperHeight / 3)) * (i * .1)); // 1/3 of the wrapper height is the offset to keep the text aligned with the middle of the wrapper
+              const _pos = (_wrapperOffsetTop) + ((_phaseHeight) * (i * (1 / _splittedText)));
 
-              root.scrollTo({
-                top: _pos,
-                behavior: 'smooth',
-              });
+              if (this.state.inViewPort && this.state.canScroll) {
+                root.scrollTo({
+                  top: _pos,
+                  behavior: 'smooth',
+                });
+              }
             }, ((_duration / _splittedText) * i) * 1000),
           );
         }
       } else {
-        root.scrollTo({
-          top: _wrapperOffsetTop,
-          behavior: 'smooth',
-        });
+        if (this.state.inViewPort) {
+          root.scrollTo({
+            top: _wrapperOffsetTop,
+            behavior: 'smooth',
+          });
+        }
       }
 
       this.lastPlayingId = item.playingId;
     }
+  }
+
+  _handleScrollToPhrase() {
+    const _padding = parseInt(window.getComputedStyle(this.myRef.current)?.getPropertyValue('padding-top')) || 0;
+    const _wrapperOffsetTop = this.activeRef.current?.offsetTop - _padding;
+
+    this.myRef.current.scrollTo({
+      top: _wrapperOffsetTop,
+      behavior: 'smooth',
+    });
   }
 
   _handleScrollContainerHeight() {
@@ -470,10 +485,6 @@ class HtxParagraphsView extends Component {
 
   }
 
-  _handleScrollRoot() {
-    this._disposeTimeout();
-  }
-
   _resizeObserver = new ResizeObserver(() => this._handleScrollContainerHeight());
 
   componentDidUpdate() {
@@ -483,19 +494,17 @@ class HtxParagraphsView extends Component {
   componentDidMount() {
     if(isFF(FF_LSDV_E_278) && this.props.item.contextscroll) this._resizeObserver.observe(document.querySelector('.lsf-main-content'));
     this._handleUpdate();
-
-    if(isFF(FF_LSDV_E_278))
-      this.myRef.current.addEventListener('wheel', this._handleScrollRoot.bind(this));
   }
 
   componentWillUnmount() {
     const target = document.querySelector('.lsf-main-content');
 
-    if(isFF(FF_LSDV_E_278))
-      this.myRef.current.removeEventListener('wheel', this._handleScrollRoot);
-
     if (target) this._resizeObserver?.unobserve(target);
     this._resizeObserver?.disconnect();
+  }
+
+  setIsInViewPort(isInViewPort) {
+    this.setState({ inViewPort: isInViewPort });
   }
 
   renderWrapperHeader() {
@@ -504,14 +513,26 @@ class HtxParagraphsView extends Component {
     return (
       <div className={styles.wrapper_header}>
         {isFF(FF_DEV_2669) && (
-          <AuthorFilter item={item} />
+          <AuthorFilter item={item} onChange={() => {
+            if (!this.activeRef.current) return;
+            const _timeoutDelay = parseFloat(window.getComputedStyle(this.activeRef.current).transitionDuration) * 1000;
+
+            setTimeout(() => {
+              this._handleScrollToPhrase();
+            }, _timeoutDelay);
+          }} />
         )}
         <div className={styles.wrapper_header__buttons}>
           <Toggle
             data-testid={'auto-scroll-toggle'}
             checked={this.state.canScroll}
             onChange={() => {
-              this.setState({ canScroll: !this.state.canScroll });
+              if (!this.state.canScroll)
+                this._handleScrollToPhrase();
+
+              this.setState({
+                canScroll: !this.state.canScroll,
+              });
             }}
             label={'Auto-scroll'}
           />
@@ -560,7 +581,7 @@ class HtxParagraphsView extends Component {
           className={contextScroll ? styles.scroll_container : styles.container}
           onMouseUp={this.onMouseUp.bind(this)}
         >
-          <Phrases item={item} playingId={item.playingId} {...(isFF(FF_LSDV_E_278) ? { activeRef: this.activeRef }: {})} />
+          <Phrases setIsInViewport={this.setIsInViewPort.bind(this)} item={item} playingId={item.playingId} {...(isFF(FF_LSDV_E_278) ? { activeRef: this.activeRef }: {})} />
         </div>
       </ObjectTag>
     );

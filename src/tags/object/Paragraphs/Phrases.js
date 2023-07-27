@@ -5,8 +5,9 @@ import { PauseCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import styles from './Paragraphs.module.scss';
 import { FF_LSDV_E_278, isFF } from '../../../utils/feature-flags';
 import { IconPause, IconPlay } from '../../../assets/icons';
+import { useCallback, useEffect, useState } from 'react';
 
-const formatTime = (seconds) => {
+const formatTime = seconds => {
   if (isNaN(seconds)) return '';
 
   const hours = Math.floor(seconds / 3600);
@@ -20,9 +21,112 @@ const formatTime = (seconds) => {
   return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 };
 
-export const Phrases = observer(({ item, playingId, activeRef }) => {
+export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }) => {
+  const [animationKeyFrame, setAnimationKeyFrame] = useState(null);
+  const [seek, setSeek] = useState(0);
+  const [isSeek, setIsSeek] = useState(null);
   const cls = item.layoutClasses;
   const withAudio = !!item.audio;
+  let observer;
+
+  // default function to animate the reading line
+  const animateElement = useCallback(
+    (element, start, duration, isPlaying = true) => {
+      if (!element || !isFF(FF_LSDV_E_278)) return;
+
+      const _animationKeyFrame = element.animate(
+        [{ top: `${start}%` }, { top: '100%' }],
+        {
+          easing: 'linear',
+          duration: duration * 1000,
+        },
+      );
+
+      if (isPlaying)
+        _animationKeyFrame.play();
+      else
+        _animationKeyFrame.pause();
+
+      setAnimationKeyFrame(_animationKeyFrame);
+    },
+    [animationKeyFrame, setAnimationKeyFrame],
+  );
+
+  // this function is used to animate the reading line when user seek audio
+  const setSeekAnimation = useCallback(
+    (isSeeking) => {
+      if (!isFF(FF_LSDV_E_278)) return;
+
+      const duration = item._value[playingId]?.duration || item._value[playingId]?.end - item._value[playingId]?.start;
+      const endTime = !item._value[playingId]?.end ? item._value[playingId]?.start + item._value[playingId]?.duration : item._value[playingId]?.end;
+      const seekDuration = endTime - seek.time;
+      const startValue = 100 - ((seekDuration * 100) / duration);
+
+      if (startValue > 0 && startValue < 100)
+        animateElement(activeRef.current?.querySelector('.reading-line'), startValue, seekDuration, seek.playing);
+      else
+        setIsSeek(isSeeking);
+    },
+    [seek, playingId],
+  );
+
+  // useRef to get the reading line element
+  const readingLineRef = useCallback(node => {
+    if(observer) {
+      observer.disconnect();
+    }
+
+    if(node !== null) {
+      const duration = item._value[playingId]?.duration || item._value[playingId]?.end - item._value[playingId]?.start;
+
+      if (!isNaN(duration)) {
+        animateElement(node, 0, duration, item.playing);
+      }
+
+      observer = new IntersectionObserver((entries) => {
+        setIsInViewport(entries[0].isIntersecting);
+      }, {
+        rootMargin: '0px',
+      });
+
+      observer.observe(node);
+    }
+  }, [playingId]);
+
+  useEffect(() => {
+    if (!isFF(FF_LSDV_E_278)) return;
+
+    item.syncHandlers?.set('seek', seek => {
+      item.handleSyncPlay(seek);
+      setSeek(seek);
+      setIsInViewport(true);
+    });
+
+    return () => {
+      observer?.disconnect();
+    };
+  }, []);
+
+
+  // when user seek audio, the useEffect will be triggered and animate the reading line to the seek position
+  useEffect(() => {
+    setSeekAnimation(true);
+  }, [seek]);
+
+  // when user seek audio to a different playing phrase, the useEffect will be triggered and animate the reading line to the seek position
+  useEffect(() => {
+    if (!isSeek) return;
+
+    setSeekAnimation(false);
+  }, [playingId]);
+
+  // when user click on play/pause button, the useEffect will be triggered and pause or play the reading line animation
+  useEffect(() => {
+    if (!isFF(FF_LSDV_E_278)) return;
+
+    if (item.playing) animationKeyFrame?.play();
+    else animationKeyFrame?.pause();
+  }, [item.playing]);
 
   if (!item._value) return null;
   const val = item._value.map((v, idx) => {
@@ -56,7 +160,10 @@ export const Phrases = observer(({ item, playingId, activeRef }) => {
               isFF(FF_LSDV_E_278) ?
                 <IconPlay /> : <PlayCircleOutlined />
             }
-            onClick={() => item.play(idx)}
+            onClick={() => {
+              setIsInViewport(true);
+              item.play(idx);
+            }}
           />
         )}
         {isFF(FF_LSDV_E_278) ? (
@@ -68,7 +175,20 @@ export const Phrases = observer(({ item, playingId, activeRef }) => {
           <span className={cls?.name} data-skip-node="true" style={style?.name}>{v[item.namekey]}</span>
         )}
 
-        <span className={cls?.text}>{v[item.textkey]}</span>
+        {isFF(FF_LSDV_E_278) ? (
+          <span className={styles.wrapperText}>
+            {(isActive) && (
+              <span ref={readingLineRef} className={`${styles.readingLine} reading-line`} data-skip-node="true"></span>
+            )}
+            <span className={`${cls?.text}`}>
+              {v[item.textkey]}
+            </span>
+          </span>
+        ) : (
+          <span className={`${cls?.text}`}>
+            {v[item.textkey]}
+          </span>
+        )}
       </div>
     );
   });
