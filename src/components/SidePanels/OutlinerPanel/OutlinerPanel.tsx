@@ -101,23 +101,23 @@ const OutlinerTreeComponent: FC<OutlinerTreeComponentProps> = observer(({ region
   return (
     <>
       {allRegionsHidden ? (
-        <Elem name="filters-empty">
+        <Block name="filters-info">
           <IconInfo width={21} height={20} />
           <Elem name="filters-title">All regions hidden</Elem>
           <Elem name="filters-description">Adjust or remove the filters to view</Elem>
-        </Elem>
+        </Block>
       ) : regions?.regions?.length > 0 ? (
         <>
           <OutlinerTree
             regions={regions}
+            footer={hiddenRegions > 0 && (
+              <Block name="filters-info">
+                <IconInfo width={21} height={20} />
+                <Elem name="filters-title">There {hiddenRegions === 1 ? 'is' : 'are'} {hiddenRegions} hidden region{hiddenRegions > 1 && 's'}</Elem>
+                <Elem name="filters-description">Adjust or remove filters to view</Elem>
+              </Block>
+            )}
           />
-          {hiddenRegions > 0 && (
-            <Elem name="filters-empty">
-              <IconInfo width={21} height={20} />
-              <Elem name="filters-title">There {hiddenRegions === 1 ? 'is' : 'are'} {hiddenRegions} hidden region{hiddenRegions > 1 && 's'}</Elem>
-              <Elem name="filters-description">Adjust or remove filters to view</Elem>
-            </Elem>
-          )}
         </>
       ) : (
         <Elem name="empty">

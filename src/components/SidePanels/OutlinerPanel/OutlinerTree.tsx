@@ -1,7 +1,18 @@
 import chroma from 'chroma-js';
 import { observer } from 'mobx-react';
 import Tree from 'rc-tree';
-import { createContext, FC, MouseEvent, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  FC,
+  MouseEvent,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
 import { IconWarning, LsSparks } from '../../../assets/icons';
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
 import { IconArrow } from '../../../assets/icons/tree';
@@ -32,15 +43,18 @@ const OutlinerContext = createContext<OutlinerContextProps>({
 
 interface OutlinerTreeProps {
   regions: any;
+  footer: ReactNode;
 }
 
 const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
   regions,
+  footer,
 }) => {
   const rootClass = cn('tree');
   const regionsTree = useDataTree({
     regions,
     rootClass,
+    footer,
     // that's a trick to have a dependency that causes recalculating of tree data on grouping mode change
     // it's for rerender OutlinerTreeComponent
     grouping: regions.group,
@@ -183,6 +197,7 @@ const OutlinerInnerTreeComponent: FC<OutlinerInnerTreeProps> = observer(({ regio
 const useDataTree = ({
   regions,
   rootClass,
+  footer,
 }: any) => {
   const processor = useCallback((item: any, idx, _false, _null, _onClick) => {
     const { id, type, hidden, isDrawing } = item ?? {};
@@ -238,7 +253,18 @@ const useDataTree = ({
     };
   }, []);
 
-  return regions.getRegionsTree(processor);
+  const regionsTreeData = regions.getRegionsTree(processor);
+
+  if (footer) {
+    regionsTreeData.push({
+      key: '__footer__',
+      disabled: true,
+      className: rootClass.elem('node').mod({ type: 'footer' }).toClassName(),
+      title: footer,
+    });
+  }
+
+  return regionsTreeData;
 };
 
 const useEventHandlers = () => {
