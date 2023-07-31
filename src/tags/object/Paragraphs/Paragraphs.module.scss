@@ -90,6 +90,7 @@ $border-thin: 1px solid rgba(137, 128, 152, 0.16);
   position: relative;
   overflow: auto;
   counter-reset: phrase;
+  margin-top: 16px;
 }
 
 .withAudio {
