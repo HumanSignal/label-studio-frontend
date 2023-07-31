@@ -27,7 +27,6 @@ import { LockButton } from '../Components/LockButton';
 import { RegionControlButton } from '../Components/RegionControlButton';
 import './TreeView.styl';
 import ResizeObserver from '../../../utils/resize-observer';
-import { debounce } from 'lodash';
 import { EventDataNode, Key } from 'rc-tree/es/interface';
 
 const { localStorage } = window;
@@ -82,9 +81,15 @@ const OutlinerInnerTreeComponent: FC<OutlinerInnerTreeProps> = observer(({ regio
   const blockRef = useRef<HTMLElement>();
   const [height, setHeight] = useState(0);
   let resizeObserver:ResizeObserver|null = useMemo(() => {
-    return new ResizeObserver(debounce(() => {
-      setHeight(blockRef.current?.clientHeight || 1);
-    }, 16));
+    let lastHeight = 0;
+
+    return new ResizeObserver((entities) => {
+      if (!entities?.[0]?.contentRect || entities?.[0]?.contentRect?.height === lastHeight) {
+        return;
+      }
+      lastHeight = entities?.[0]?.contentRect?.height || 1;
+      setHeight(lastHeight);
+    });
   }, []);
 
   useEffect(() => {
