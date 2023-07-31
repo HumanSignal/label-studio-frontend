@@ -211,7 +211,7 @@ const Grouping = <T extends string>({
         ))}
       </Menu>
     );
-  }, [value, optionsList, readableValue, direction]);
+  }, [value, optionsList, readableValue, direction, onChange]);
 
   // mods are already set in the button from type, so use it only in new UI
   const extraStyles = isFF(FF_DEV_3873) ? { mod: { newUI: true } } : undefined;
