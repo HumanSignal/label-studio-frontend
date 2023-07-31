@@ -16,6 +16,15 @@ interface OutlinerTreeComponentProps {
   regions: any;
 }
 
+const OutlinerFFClasses: string[] = [];
+
+if (isFF(FF_LSDV_4992)) {
+  OutlinerFFClasses.push('ff_hide_all_regions');
+}
+if (isFF(FF_OUTLINER_OPTIM)) {
+  OutlinerFFClasses.push('ff_outliner_optim');
+}
+
 const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
   const [group, setGroup] = useState();
   const onOrderingChange = useCallback((value) => {
@@ -38,7 +47,7 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
   regions.setGrouping(group);
 
   return (
-    <PanelBase {...props} name="outliner" title="Outliner">
+    <PanelBase {...props} name="outliner" mix={OutlinerFFClasses} title="Outliner">
       <ViewControls
         ordering={regions.sort}
         regions={regions}
@@ -52,14 +61,6 @@ const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) =
   );
 };
 
-const OutlinerFFClasses: string[] = [];
-
-if (isFF(FF_LSDV_4992)) {
-  OutlinerFFClasses.push('ff_hide_all_regions');
-}
-if (isFF(FF_OUTLINER_OPTIM)) {
-  OutlinerFFClasses.push('ff_outliner_optim');
-}
 const OutlinerStandAlone: FC<OutlinerPanelProps> = ({ regions }) => {
   const onOrderingChange = useCallback((value) => {
     regions.setSort(value);
@@ -97,7 +98,7 @@ const OutlinerTreeComponent: FC<OutlinerTreeComponentProps> = observer(({ region
     return regions?.regions?.length - regions?.filter?.length;
   }, [regions?.regions?.length, regions?.filter?.length]);
 
-  return(
+  return (
     <>
       {allRegionsHidden ? (
         <Elem name="filters-empty">
