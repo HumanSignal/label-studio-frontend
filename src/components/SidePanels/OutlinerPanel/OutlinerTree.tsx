@@ -93,7 +93,10 @@ const OutlinerInnerTreeComponent: FC<OutlinerInnerTreeProps> = observer(({ regio
   const rootClass = cn('tree');
   let expandedKeys = undefined;
   let onExpand = undefined;
-  const isPersistCollapseEnabled = isFF(FF_DEV_2755);
+  // It works only for 'label' mode yet.
+  // To enable this feature at other group modes, it needs to set correct pos at regionsTree for these modes
+  // It also doesn't work with nesting level more than 1
+  const isPersistCollapseEnabled = isFF(FF_DEV_2755) && regions.group === 'label';
 
   if( isFF(FF_DEV_2755) ) {
     const [collapsedPos, setCollapsedPos] = useState( localStorage.getItem( localStoreName )?.split?.(',')?.filter( pos => !!pos ) ?? [] );
