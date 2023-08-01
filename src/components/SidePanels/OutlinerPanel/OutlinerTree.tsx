@@ -31,6 +31,7 @@ import { EventDataNode, Key } from 'rc-tree/es/interface';
 
 const { localStorage } = window;
 const localStoreName = 'collapsed-label-pos';
+const MIN_REGIONS_TREE_ROW_HEIGHT = 34;
 
 interface OutlinerContextProps {
   regions: any;
@@ -179,7 +180,7 @@ const OutlinerInnerTreeComponent: FC<OutlinerInnerTreeProps> = observer(({ regio
               isFF(FF_OUTLINER_OPTIM)
                 ? {
                   virtual: true,
-                  itemHeight:34,
+                  itemHeight: MIN_REGIONS_TREE_ROW_HEIGHT,
                   height,
                 }
                 : {}
