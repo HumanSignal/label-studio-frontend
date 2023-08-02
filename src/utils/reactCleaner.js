@@ -43,7 +43,7 @@ export function findReactKey(node) {
 export function cleanDomAfterReact(nodes, reactKey) {
   for (const node of nodes) {
     if (node.isConnected) return;
-    // preventing processing svs due to the problem with props,
+    // preventing processing svgs due to the problem with props,
     // props sometimes come from the global variables, so it's tricky to clean them without breaking icons itself
     if (node.tagName === 'svg') return;
     const reactPropKeys = (Object.keys(node)).filter(key => key.startsWith('__react') && (!RegExp(/^(?:__reactProps|__reactFiber)/).exec(key) || RegExp(new RegExp(`\\${reactKey}$`)).exec(key)));
