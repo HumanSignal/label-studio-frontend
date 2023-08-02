@@ -238,26 +238,11 @@ const PlayableAndSyncable = types.model()
 
       if (!audio) return;
 
-      if (!isFF(FF_LSDV_E_278)) {
-        const indices = self.regionIndicesByTime(time);
-
-        // if we left current region's time, reset
-        if (!indices.includes(self.playingId)) {
-          self.stopNow();
-          self.reset();
-          return;
-        }
-      }
-
       // so we are changing time inside current region only
       audio.currentTime = time;
       if (audio.paused && playing) {
-        if (isFF(FF_LSDV_E_278)) {
-          self.play();
-        } else {
-          self.play(self.playingId);
-        }
-      } else if (isFF(FF_LSDV_E_278)) {
+        self.play();
+      } else {
         self.trackPlayingId();
       }
     },
@@ -364,7 +349,7 @@ const PlayableAndSyncable = types.model()
     },
 
     play(idx) {
-      if (isFF(FF_LSDV_E_278) && !isDefined(idx)) {
+      if (!isDefined(idx)) {
         self.playAny();
         return;
       }
@@ -390,8 +375,7 @@ const PlayableAndSyncable = types.model()
       self.playing = true;
       self.playingId = idx;
       self.triggerSync('play');
-      if (isFF(FF_LSDV_E_278)) self.trackPlayingId();
-      else self.stopAtTheEnd();
+      self.trackPlayingId();
     },
   }))
   .actions(self => ({
