@@ -7,7 +7,7 @@ export function cutFibers(object) {
     const descriptors = Object.getOwnPropertyDescriptors(obj);
     const isSvg = obj.elementType === 'svg';
 
-    // preventing processing svs due to the problem with props,
+    // preventing processing svgs due to the problem with props,
     // props sometimes come from the global variables, so it's tricky to clean them without breaking icons itself
     if (isSvg) continue;
 
