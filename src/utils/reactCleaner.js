@@ -1,3 +1,5 @@
+const svgChildren = new WeakMap();
+
 export function cutFibers(object) {
   const objects = [object];
   let obj;
@@ -9,14 +11,24 @@ export function cutFibers(object) {
     for (const key of keys) {
       const prop = obj[key];
       const isWritable = descriptors[key].writable;
+      const isSvgRelated = obj.elementType === 'svg' || svgChildren.has(obj);
 
+      if (isSvgRelated) {
+        console.log('!> SvgRelated', obj);
+      }
       if (prop && isWritable) {
         if (key !== '_debugOwner' && typeof prop === 'object' && {}.hasOwnProperty.call(prop, 'stateNode')) {
           objects.push(obj[key]);
+          if (isSvgRelated) {
+            svgChildren.set(obj[key], true);
+          }
         }
         if (typeof prop === 'object' || typeof prop === 'function') {
           obj[key] = null;
         }
+      }
+      if (isSvgRelated) {
+        svgChildren.delete(obj);
       }
     }
   }
