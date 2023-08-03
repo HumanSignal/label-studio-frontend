@@ -31,7 +31,6 @@ export type OrderingOptions = 'score' | 'date'
 export type OrderingDirection = 'asc' | 'desc'
 
 interface ViewControlsProps {
-  grouping: GroupingOptions;
   ordering: OrderingOptions;
   orderingDirection?: OrderingDirection;
   regions: any;
@@ -41,7 +40,6 @@ interface ViewControlsProps {
 }
 
 export const ViewControls: FC<ViewControlsProps> = observer(({
-  grouping,
   ordering,
   regions,
   orderingDirection,
@@ -49,6 +47,7 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
   onGroupingChange,
   onFilterChange,
 }) => {
+  const grouping = regions.group;
   const context = useContext(SidePanelsContext);
   const getGroupingLabels = useCallback((value: GroupingOptions): LabelInfo => {
     switch(value) {
@@ -212,7 +211,7 @@ const Grouping = <T extends string>({
         ))}
       </Menu>
     );
-  }, [value, optionsList, readableValue, direction]);
+  }, [value, optionsList, readableValue, direction, onChange]);
 
   // mods are already set in the button from type, so use it only in new UI
   const extraStyles = isFF(FF_DEV_3873) ? { mod: { newUI: true } } : undefined;
