@@ -51,7 +51,8 @@ describe('Control Tags - TextArea - Lead Time', () => {
     Textarea.hasValue('This is a test');
 
     LabelStudio.serialize().then(result => {
-      const lead_time = result[0].meta.lead_time;
+      // first result for region itself, second for textarea
+      const lead_time = result[1].meta.lead_time;
 
       expect(result.length).to.be.eq(2);
       expect(lead_time).to.be.gt(0);
@@ -59,7 +60,7 @@ describe('Control Tags - TextArea - Lead Time', () => {
       Textarea.type('Another test{enter}');
 
       LabelStudio.serialize().then(result2 => {
-        expect(result2[0].meta.lead_time).to.be.gt(lead_time);
+        expect(result2[1].meta.lead_time).to.be.gt(lead_time);
       });
     });
   });

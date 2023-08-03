@@ -272,12 +272,12 @@ const Model = types.model({
     updateLeadTime() {
       if (!isFF(FF_LEAD_TIME)) return;
 
-      const area = self.result?.area;
+      const result = self.result;
 
-      if (!area) return;
+      if (!result) return;
 
       // add current stored leadTime to the main stored lead_time
-      area.setMetaValue('lead_time', (area.meta?.lead_time ?? 0) + self.leadTime / 1000);
+      result.setMetaValue('lead_time', (result.meta?.lead_time ?? 0) + self.leadTime / 1000);
 
       self.leadTime = 0;
       self.resetLeadTimeCounters();
