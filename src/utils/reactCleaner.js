@@ -5,6 +5,11 @@ export function cutFibers(object) {
   while ((obj = objects.pop())) {
     const keys = Object.keys(obj);
     const descriptors = Object.getOwnPropertyDescriptors(obj);
+    const isSvg = obj.elementType === 'svg';
+
+    // preventing processing svgs due to the problem with props,
+    // props sometimes come from the global variables, so it's tricky to clean them without breaking icons itself
+    if (isSvg) continue;
 
     for (const key of keys) {
       const prop = obj[key];
@@ -38,6 +43,9 @@ export function findReactKey(node) {
 export function cleanDomAfterReact(nodes, reactKey) {
   for (const node of nodes) {
     if (node.isConnected) return;
+    // preventing processing svgs due to the problem with props,
+    // props sometimes come from the global variables, so it's tricky to clean them without breaking icons itself
+    if (node.tagName === 'svg') return;
     const reactPropKeys = (Object.keys(node)).filter(key => key.startsWith('__react') && (!RegExp(/^(?:__reactProps|__reactFiber)/).exec(key) || RegExp(new RegExp(`\\${reactKey}$`)).exec(key)));
 
     if (reactPropKeys.length) {
