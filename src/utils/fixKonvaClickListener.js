@@ -1,0 +1,49 @@
+let lastPointerDownTarget;
+let lastClickTime;
+let lastClickPos;
+let nextdoubleClickAction;
+const DOUBLE_CLICK_MS_WINDOW = 400;
+
+export const fixKonvaClickListener = ({ onClick, onDoubleClick }) => {
+  return {
+    onPointerDown(e)  {
+      lastPointerDownTarget = e.target;
+    },
+    onPointerUp(e){
+      if (lastPointerDownTarget !== e.target) return;
+
+      const currentTime = e.evt.timeStamp;
+
+      if (lastClickTime && (currentTime - lastClickTime < DOUBLE_CLICK_MS_WINDOW)) {
+        lastClickTime = undefined;
+        setTimeout(()=>onDoubleClick?.(e));
+      } else {
+        lastClickTime = e.evt.timeStamp;
+        lastClickPos = {
+          x: e.evt.offsetX,
+          y: e.evt.offsetY,
+        };
+        nextdoubleClickAction = onDoubleClick;
+        setTimeout(()=>onClick?.(e));
+        e.cancelBubble = true;
+      }
+    },
+  };
+};
+
+export const stageSecondClickCatcher = (e) => {
+  const currentTime = e.evt.timeStamp;
+
+  if (lastClickTime && currentTime !== lastClickTime && (currentTime - lastClickTime < DOUBLE_CLICK_MS_WINDOW)) {
+    if (lastClickPos && Math.abs(lastClickPos.x - e.evt.offsetX) < 30 && Math.abs(lastClickPos.y - e.evt.offsetY) < 30) {
+      lastPointerDownTarget = undefined;
+      lastClickTime = undefined;
+      setTimeout(()=>{
+        nextdoubleClickAction?.(e);
+      });
+      return true;
+    }
+  }
+
+  return false;
+};
