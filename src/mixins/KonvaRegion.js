@@ -35,7 +35,6 @@ export const KonvaRegionMixin = types.model({})
     };
   })
   .actions(self => {
-    let deferredSelectId = null;
 
     return {
       checkSizes() {
@@ -101,33 +100,22 @@ export const KonvaRegionMixin = types.model({})
         const ev = e?.evt || e;
         const additiveMode = ev?.ctrlKey || ev?.metaKey;
 
-        if (e) e.cancelBubble = true;
 
-        const selectAction = () => {
-          self._selectArea(additiveMode);
-          deferredSelectId = null;
-        };
+        if (e) e.cancelBubble = true;
 
         if (!annotation.isReadOnly() && annotation.relationMode) {
           annotation.addRelation(self);
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
         } else {
-          // Skip double click emulation when there is nothing to focus
-          if (!self.perRegionFocusTarget) {
-            selectAction();
-            return;
-          }
-          // Double click emulation
-          if (deferredSelectId) {
-            clearTimeout(deferredSelectId);
-            self.requestPerRegionFocus();
-            deferredSelectId = null;
-            annotation.selectArea(self);
-          } else {
-            deferredSelectId = setTimeout(selectAction, 300);
-          }
+          self._selectArea(additiveMode);
         }
+      },
+      onDoubleClickRegion(e) {
+        console.log('onDoubleClickRegion');
+        self.requestPerRegionFocus();
+        console.log('selectAreas');
+        self.annotation.selectAreas([self]);
       },
     };
   });

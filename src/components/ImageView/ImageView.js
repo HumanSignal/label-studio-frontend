@@ -33,6 +33,7 @@ import {
 } from '../../utils/feature-flags';
 import { Pagination } from '../../common/Pagination/Pagination';
 import { Image } from './Image';
+import { stageSecondClickCatcher } from '../../utils/fixKonvaClickListener';
 
 Konva.showWarnings = false;
 
@@ -500,6 +501,11 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
+
+      if (stageSecondClickCatcher(e)) {
+        this.resetDeferredClickTimeout();
+        return;
+      }
 
       if (isFF(FF_DEV_1442)) {
         this.handleDeferredMouseDown?.();

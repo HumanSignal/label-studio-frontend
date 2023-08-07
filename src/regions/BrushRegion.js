@@ -11,7 +11,7 @@ import Canvas from '../utils/canvas';
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
 import { LabelOnMask } from '../components/ImageView/LabelOnRegion';
 import { Geometry } from '../components/RelationsOverlay/Geometry';
-import { defaultStyle } from '../core/Constants';
+import Constants, { defaultStyle } from '../core/Constants';
 import { guidGenerator } from '../core/Helpers';
 import { AreaMixin } from '../mixins/AreaMixin';
 import IsReadyMixin from '../mixins/IsReadyMixin';
@@ -21,6 +21,7 @@ import { colorToRGBAArray, rgbArrayToHex } from '../utils/colors';
 import { FF_DEV_3793, FF_DEV_4081, isFF } from '../utils/feature-flags';
 import { AliveRegion } from './AliveRegion';
 import { RegionWrapper } from './RegionWrapper';
+import { fixKonvaClickListener } from '../utils/fixKonvaClickListener';
 
 const highlightOptions = {
   shadowColor: 'red',
@@ -657,25 +658,41 @@ const HtxBrushView = ({ item, setShapeRef }) => {
               stage.container().style.cursor = 'default';
             }
           }}
-          onClick={e => {
-            if (item.parent.getSkipInteractions()) return;
-            if (store.annotationStore.selected.relationMode) {
+
+          {...fixKonvaClickListener({
+            onClick(e) {
+              if (item.parent.getSkipInteractions()) return;
+              if (store.annotationStore.selected.relationMode) {
+                item.onClickRegion(e);
+                return;
+              }
+
+              const tool = item.parent.getToolsManager().findSelectedTool();
+              const isMoveTool = tool && getType(tool).name === 'MoveTool';
+
+              if (tool && !isMoveTool) return;
+
+              if (store.annotationStore.selected.relationMode) {
+                stage.container().style.cursor = 'default';
+              }
+
+              item.setHighlight(false);
               item.onClickRegion(e);
-              return;
-            }
+            },
+            onDoubleClick(e) {
+              if (item.parent.getSkipInteractions()) return;
+              if (store.annotationStore.selected.relationMode) {
+                stage.container().style.cursor = Constants.DEFAULT_CURSOR;
+              }
 
-            const tool = item.parent.getToolsManager().findSelectedTool();
-            const isMoveTool = tool && getType(tool).name === 'MoveTool';
+              const tool = item.parent.getToolsManager().findSelectedTool();
+              const isMoveTool = tool && getType(tool).name === 'MoveTool';
 
-            if (tool && !isMoveTool) return;
+              if (tool && !isMoveTool) return;
 
-            if (store.annotationStore.selected.relationMode) {
-              stage.container().style.cursor = 'default';
-            }
-
-            item.setHighlight(false);
-            item.onClickRegion(e);
-          }}
+              item.onDoubleClickRegion(e);
+            },
+          })}
           listening={!suggestion}
         >
           {/* RLE */}

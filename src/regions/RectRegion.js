@@ -19,6 +19,7 @@ import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
 import { RegionWrapper } from './RegionWrapper';
 import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
+import { fixKonvaClickListener } from '../utils/fixKonvaClickListener';
 
 const RectRegionAbsoluteCoordsDEV3793 = types
   .model({
@@ -507,15 +508,24 @@ const HtxRectangleView = ({ item, setShapeRef }) => {
             item.setHighlight(false);
           }
         }}
-        onClick={e => {
-          if (item.parent.getSkipInteractions()) return;
-          if (store.annotationStore.selected.relationMode) {
-            stage.container().style.cursor = Constants.DEFAULT_CURSOR;
-          }
+        {...fixKonvaClickListener({
+          onClick(e) {
+            if (item.parent.getSkipInteractions()) return;
+            if (store.annotationStore.selected.relationMode) {
+              stage.container().style.cursor = Constants.DEFAULT_CURSOR;
+            }
+            item.setHighlight(false);
+            item.onClickRegion(e);
+          },
+          onDoubleClick(e) {
+            if (item.parent.getSkipInteractions()) return;
+            if (store.annotationStore.selected.relationMode) {
+              stage.container().style.cursor = Constants.DEFAULT_CURSOR;
+            }
+            item.onDoubleClickRegion(e);
+          },
+        })}
 
-          item.setHighlight(false);
-          item.onClickRegion(e);
-        }}
         listening={!suggestion && !item.annotation?.isDrawing}
       />
       <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
