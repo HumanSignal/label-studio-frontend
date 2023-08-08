@@ -28,6 +28,12 @@ export const fixKonvaClickListener = ({ onClick, onDoubleClick }) => {
         e.cancelBubble = true;
       }
     },
+    onClick: onClick ? (e)=>{
+      e.cancelBubble = true;
+    } : onClick,
+    onDoubleClick: onDoubleClick ? (e)=>{
+      e.cancelBubble = true;
+    } : onDoubleClick,
   };
 };
 
