@@ -78,10 +78,10 @@ const PolygonPointRelativeCoords = types
       return getRoot(self).annotationStore.selected;
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.stage.internalToCanvasX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.stage?.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.stage.internalToCanvasY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.stage?.internalToCanvasY(self.y) : self.y;
     },
   }))
   .actions(self => ({

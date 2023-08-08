@@ -81,7 +81,7 @@ examples.slice(1).forEach(example =>
       // I.click('Delete Entity') - it founds something by tooltip, but not a button
       // so click the bin button in entity's info block
       I.click('.ls-entity-buttons span[aria-label=delete]');
-      AtSidebar.seeRegions(count-1);
+      AtSidebar.seeRegions(count - 1);
       I.click('.lsf-history-buttons__action[aria-label=Reset]');
       AtSidebar.seeRegions(count);
       // Reset is undoable
@@ -102,5 +102,9 @@ examples.slice(1).forEach(example =>
 
     // Check for regions count
     AtSidebar.seeRegions(count);
+
+    await I.executeScript(() => {
+      window.LabelStudio.destroyAll();
+    });
   }),
 );
