@@ -112,9 +112,7 @@ export const KonvaRegionMixin = types.model({})
         }
       },
       onDoubleClickRegion(e) {
-        console.log('onDoubleClickRegion');
         self.requestPerRegionFocus();
-        console.log('selectAreas');
         self.annotation.selectAreas([self]);
       },
     };

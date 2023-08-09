@@ -8,9 +8,13 @@ export const fixKonvaClickListener = ({ onClick, onDoubleClick }) => {
   return {
     onPointerDown(e)  {
       lastPointerDownTarget = e.target;
+      e.cancelBubble = true;
     },
     onPointerUp(e){
-      if (lastPointerDownTarget !== e.target) return;
+      if (lastPointerDownTarget.name !== e.target.name) {
+        debugger;
+        return;
+      }
 
       const currentTime = e.evt.timeStamp;
 
@@ -25,8 +29,11 @@ export const fixKonvaClickListener = ({ onClick, onDoubleClick }) => {
         };
         nextdoubleClickAction = onDoubleClick;
         setTimeout(()=>onClick?.(e));
-        e.cancelBubble = true;
       }
+      e.cancelBubble = true;
+    },
+    onMouseDown: e => {
+      e.cancelBubble = true;
     },
     onClick: onClick ? (e)=>{
       e.cancelBubble = true;
