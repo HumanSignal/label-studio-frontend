@@ -7,7 +7,18 @@ export const RegionLabels: FC<{region: LSFRegion}> = observer(({ region }) => {
   const labelsInResults = region.results
     .filter(result => result.type.endsWith('labels'))
     .map((result: any) => result.selectedLabels || []);
-  const labels: any[] = [].concat(...labelsInResults);
+
+  // mix taxonomies into labels
+  // it's hard to get all levels of taxonomy from results to display it properly
+  // @todo respect `showFullPath` property
+  const taxonomies = region.results
+    .filter(result => result.type === 'taxonomy')
+    .map((result: any) => result.mainValue || []);
+  const taxonomyInResults = [].concat(...taxonomies)
+    .map((v: string[]) => v.join(' / '))
+    .map((v: string) => ({ value: v, id: v }));
+
+  const labels: any[] = [].concat(...labelsInResults, taxonomyInResults);
 
   if (!labels.length) return <Block name="labels-list">No label</Block>;
 

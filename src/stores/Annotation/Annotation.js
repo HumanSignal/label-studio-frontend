@@ -882,7 +882,8 @@ export const Annotation = types
         }
       } else {
         // unselect labels after use, but consider "keep labels selected" settings
-        if (control.type.includes('labels')) self.unselectAll(true);
+        // if (control.type.includes('labels')) self.unselectAll(true);
+        if (control.isLabeling) self.unselectAll(true);
       }
     },
 

@@ -25,7 +25,7 @@ const PerRegionMixin = types
   },
   ).views(self => ({
     get perRegionArea() {
-      if (!self.perregion) return null;
+      if (!self.perregion && !self.isLabeling) return null;
       return self.annotation.highlightedNode;
     },
     get _perRegionResult() {

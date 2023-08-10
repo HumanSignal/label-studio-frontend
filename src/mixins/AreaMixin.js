@@ -33,9 +33,11 @@ export const AreaMixinBase = types
      */
     get labeling() {
       if (!isAlive(self)) {
-        return void 0;
+        return undefined;
       }
-      return self.results.find(r => r.type.endsWith('labels') && r.hasValue);
+      // @todo should check for isLabeling in control, not every taxonomy is good here
+      return self.results.find(r => (r.type.endsWith('labels') || r.type === 'taxonomy') && r.hasValue);
+      // return self.results.find(r => r.type.endsWith('labels') && r.hasValue);
     },
 
     get emptyLabel() {
@@ -63,7 +65,7 @@ export const AreaMixinBase = types
     },
 
     get perRegionTags() {
-      return self.annotation.toNames.get(self.object.name)?.filter(tag => tag.perregion) || [];
+      return self.annotation.toNames.get(self.object.name)?.filter(tag => tag.perregion || tag.isLabeling) || [];
     },
 
     get perRegionDescControls() {

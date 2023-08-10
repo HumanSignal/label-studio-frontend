@@ -19,7 +19,7 @@ import DomManager from './domManager';
 import { STATE_CLASS_MODS } from '../../../mixins/HighlightMixin';
 import Constants from '../../../core/Constants';
 
-const SUPPORTED_STATES = ['LabelsModel', 'HyperTextLabelsModel', 'RatingModel'];
+const SUPPORTED_STATES = ['LabelsModel', 'HyperTextLabelsModel', 'RatingModel', 'TaxonomyModel'];
 
 const WARNING_MESSAGES = {
   dataTypeMistmatch: () => 'Do not put text directly in task data if you use valueType=url.',

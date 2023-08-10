@@ -64,6 +64,7 @@ import PerItemMixin from '../../../mixins/PerItem';
  */
 const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
+  labeling: types.optional(types.boolean, false),
   leafsonly: types.optional(types.boolean, false),
   showfullpath: types.optional(types.boolean, false),
   pathseparator: types.optional(types.string, ' / '),
@@ -128,6 +129,9 @@ const Model = types
     set children(val) {
       self._children = val;
     },
+    get isLabeling() {
+      return self.labeling;
+    },
   }) : ({}))
   .views(self => ({
     get userLabels() {
@@ -136,6 +140,10 @@ const Model = types
 
     get holdsState() {
       return self.selected.length > 0;
+    },
+
+    get isSelected() {
+      return self.holdsState;
     },
 
     get valueType() {
@@ -200,6 +208,20 @@ const Model = types
       return findItem(self.items);
     },
   }))
+  .views(self => ({
+    get result() {
+      // if (self.isLabeling) {
+      return self._perRegionResult;
+      // }
+    },
+  }))
+  .actions(self => ({
+    updateResult() {
+      if (self.result) {
+        self.result.area.setValue(self);
+      }
+    },
+  }))
   .actions(self => ({
     afterAttach() {
       const children = ChildrenSnapshots.get(self.name) ?? [];
@@ -246,6 +268,11 @@ const Model = types
       self.selected = checked.map(s => s.path ?? s);
       self.maxUsagesReached = self.selected.length >= self.maxusages;
       self.updateResult();
+    },
+
+    unselectAll() {
+      self.selected = [];
+      // self.updateResult();
     },
 
     onAddLabel(path) {
