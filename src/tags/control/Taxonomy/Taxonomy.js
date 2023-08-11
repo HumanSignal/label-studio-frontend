@@ -80,7 +80,7 @@ function traverse(root) {
     const uniq = new Set();
     const result = [];
 
-    for(const child of nodes) {
+    for (const child of nodes) {
       if (uniq.has(child.value)) continue;
       uniq.add(child.value);
       result.push(visitNode(child, path));
@@ -189,6 +189,7 @@ const Model = types
           const label = item.label;
           const value = item.path[item.path.length - 1];
 
+          // @todo why do we change items??
           item.value = label;
           if (value !== label) {
             item.alias = value;
