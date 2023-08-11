@@ -69,6 +69,8 @@ const SelectionMap = types.model(
         // @todo some backward compatibility, should be rewritten to state handling
         // @todo but there are some actions should be performed like scroll to region
         self.highlighted.perRegionTags.forEach(tag => tag.updateFromResult?.(undefined));
+        // special case for Taxonomy as labeling tool
+        self.highlighted.labelingTags.forEach(tag => tag.updateFromResult?.(undefined));
         updateResultsFromSelection();
       } else {
         updateResultsFromSelection();

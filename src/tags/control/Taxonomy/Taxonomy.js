@@ -14,7 +14,7 @@ import RequiredMixin from '../../../mixins/Required';
 import VisibilityMixin from '../../../mixins/Visibility';
 import ControlBase from '../Base';
 import DynamicChildrenMixin from '../../../mixins/DynamicChildrenMixin';
-import { FF_DEV_2007_DEV_2008, FF_DEV_3617, FF_LSDV_4583, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2007_DEV_2008, FF_DEV_3617, FF_LSDV_4583, FF_TAXONOMY_ASYNC, FF_TAXONOMY_LABELING, isFF } from '../../../utils/feature-flags';
 import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
 import { Spin } from 'antd';
 import './Taxonomy.styl';
@@ -111,6 +111,37 @@ function traverse(root) {
 
 const ChildrenSnapshots = new Map();
 
+const TaxonomyLabelingResult = types
+  .model({})
+  .extend(self => {
+    const Super = {
+      result: self.result,
+      updateResult: self.updateResult,
+    };
+
+    return {
+      views: {
+        get result() {
+          if (!self.isLabeling) return Super.result;
+
+          const area = self.annotation.highlightedNode;
+
+          if (!area) return null;
+
+          return self.annotation.results.find(r => r.from_name === self && r.area === area);
+        },
+      },
+      actions: {
+        updateResult() {
+          if (!self.isLabeling) return Super.updateResult();
+          if (self.result) {
+            self.result.area.setValue(self);
+          }
+        },
+      },
+    };
+  });
+
 const Model = types
   .model({
     pid: types.optional(types.string, guidGenerator),
@@ -132,7 +163,7 @@ const Model = types
       self._children = val;
     },
     get isLabeling() {
-      return self.labeling;
+      return isFF(FF_TAXONOMY_LABELING) && self.labeling;
     },
   }) : ({}))
   .views(self => ({
@@ -223,20 +254,6 @@ const Model = types
       };
 
       return findItem(self.items);
-    },
-  }))
-  .views(self => ({
-    get result() {
-      // if (self.isLabeling) {
-      return self._perRegionResult;
-      // }
-    },
-  }))
-  .actions(self => ({
-    updateResult() {
-      if (self.result) {
-        self.result.area.setValue(self);
-      }
     },
   }))
   .actions(self => ({
@@ -331,7 +348,7 @@ const Model = types
     },
 
     unselectAll() {
-      self.selected = [];
+      if (isFF(FF_TAXONOMY_LABELING)) self.selected = [];
       // self.updateResult();
     },
 
@@ -385,6 +402,7 @@ const TaxonomyModel = types.compose('TaxonomyModel',
   ...(isFF(FF_DEV_3617) ? [SharedStoreMixin] : []),
   PerRegionMixin,
   ...(isFF(FF_LSDV_4583) ? [PerItemMixin] : []),
+  ...(isFF(FF_TAXONOMY_LABELING) ? [TaxonomyLabelingResult] : []),
   ReadOnlyControlMixin,
   SelectedChoiceMixin,
   VisibilityMixin,
@@ -405,33 +423,36 @@ const HtxTaxonomy = observer(({ item }) => {
 
   return (
     <div style={{ display: 'grid', gridTemplate: 'auto/1fr 1fr' }}>
-      <div className="taxonomy" style={{ ...style, ...visibleStyle }}>
-        {(item.loading && isFF(FF_DEV_3617)) ? (
-          <div className="lsf-taxonomy">
-            <Spin size="small"/>
-          </div>
-        ) : (
-          <Taxonomy
-            items={item.items}
-            selected={item.selected}
-            onChange={item.onChange}
-            onAddLabel={item.userLabels && item.onAddLabel}
-            onDeleteLabel={item.userLabels && item.onDeleteLabel}
-            options={options}
-            isEditable={!item.isReadOnly()}
-          />
-        )}
-      </div>
-      <NewTaxonomy
-        items={item.items}
-        selected={item.selected}
-        onChange={item.onChange}
-        onLoadData={item.loadItems}
-        onAddLabel={item.userLabels && item.onAddLabel}
-        onDeleteLabel={item.userLabels && item.onDeleteLabel}
-        options={options}
-        isEditable={!item.isReadOnly()}
-      />
+      {isFF(FF_TAXONOMY_ASYNC) ? (
+        <NewTaxonomy
+          items={item.items}
+          selected={item.selected}
+          onChange={item.onChange}
+          onLoadData={item.loadItems}
+          onAddLabel={item.userLabels && item.onAddLabel}
+          onDeleteLabel={item.userLabels && item.onDeleteLabel}
+          options={options}
+          isEditable={!item.isReadOnly()}
+        />
+      ) : (
+        <div className="taxonomy" style={{ ...style, ...visibleStyle }}>
+          {(item.loading && isFF(FF_DEV_3617)) ? (
+            <div className="lsf-taxonomy">
+              <Spin size="small"/>
+            </div>
+          ) : (
+            <Taxonomy
+              items={item.items}
+              selected={item.selected}
+              onChange={item.onChange}
+              onAddLabel={item.userLabels && item.onAddLabel}
+              onDeleteLabel={item.userLabels && item.onDeleteLabel}
+              options={options}
+              isEditable={!item.isReadOnly()}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 });
