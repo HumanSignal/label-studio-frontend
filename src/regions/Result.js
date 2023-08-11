@@ -141,6 +141,14 @@ const Result = types
     },
 
     get selectedLabels() {
+      if (self.type === 'taxonomy') {
+        const sep = self.from_name.pathseparator;
+        const join = self.from_name.showfullpath;
+
+        return (self.mainValue || [])
+          .map(v => join ? v.join(sep) : v.at(-1))
+          .map(v => ({ value: v, id: v }));
+      }
       if (self.mainValue?.length === 0 && self.from_name.allowempty) {
         return self.from_name.findLabel(null);
       }

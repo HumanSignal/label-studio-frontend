@@ -148,6 +148,10 @@ const Model = types
       return self.holdsState;
     },
 
+    get hasValue() {
+      return self.holdsState;
+    },
+
     get valueType() {
       return 'taxonomy';
     },

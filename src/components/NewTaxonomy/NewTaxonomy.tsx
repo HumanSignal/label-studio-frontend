@@ -24,7 +24,7 @@ type AntTaxonomyItem = {
 type TaxonomyOptions = {
   leafsOnly?: boolean,
   showFullPath?: boolean,
-  pathSeparator?: string,
+  pathSeparator: string,
   maxUsages?: number,
   maxWidth?: number,
   minWidth?: number,
@@ -42,16 +42,16 @@ type TaxonomyProps = {
   isEditable?: boolean,
 };
 
-const convert = (items: TaxonomyItem[]): AntTaxonomyItem[] => {
+const convert = (items: TaxonomyItem[], separator: string): AntTaxonomyItem[] => {
   return items.map(item => ({
     title: item.label,
-    value: item.path.join('-'),
-    key: item.path.join('-'),
+    value: item.path.join(separator),
+    key: item.path.join(separator),
     // disableCheckbox: !!item.children,
     isLeaf: item.isLeaf !== false && !item.children,
     // checkable: !item.children,
     // selectable: !item.children,
-    children: item.children ? convert(item.children) : undefined,
+    children: item.children ? convert(item.children, separator) : undefined,
   }));
 };
 
@@ -66,21 +66,22 @@ const NewTaxonomy = ({
   isEditable = true,
 }: TaxonomyProps) => {
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
+  const separator = options.pathSeparator;
 
   useEffect(() => {
-    setTreeData(convert(items));
+    setTreeData(convert(items, separator));
   }, [items]);
 
   const loadData = useCallback(async (node: any) => {
-    return onLoadData([node.value]);
+    return onLoadData?.(node.value.split(separator));
   }, []);
 
   return (
     <div>
       <TreeSelect
         treeData={treeData}
-        value={selected.map(path => path.join('-'))}
-        onChange={items => onChange(null, items.map(item => item.value.split('-')))}
+        value={selected.map(path => path.join(separator))}
+        onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
         loadData={loadData}
         // onChange={console.log}
         treeCheckable

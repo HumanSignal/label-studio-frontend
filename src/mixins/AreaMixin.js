@@ -25,7 +25,7 @@ export const AreaMixinBase = types
      * @return {Result[]} all results with labeling (created by *Labels control)
      */
     get labelings() {
-      return self.results.filter(r => r.type.endsWith('labels'));
+      return self.results.filter(r => r.from_name.isLabeling);
     },
 
     /**
@@ -35,9 +35,7 @@ export const AreaMixinBase = types
       if (!isAlive(self)) {
         return undefined;
       }
-      // @todo should check for isLabeling in control, not every taxonomy is good here
-      return self.results.find(r => (r.type.endsWith('labels') || r.type === 'taxonomy') && r.hasValue);
-      // return self.results.find(r => r.type.endsWith('labels') && r.hasValue);
+      return self.results.find(r => r.from_name.isLabeling && r.hasValue);
     },
 
     get emptyLabel() {
