@@ -51,6 +51,7 @@ import PerItemMixin from '../../../mixins/PerItem';
  * @meta_description Customize Label Studio with the Taxonomy tag and use hierarchical labels for machine learning and data science projects.
  * @param {string} name                   - Name of the element
  * @param {string} toName                 - Name of the element that you want to classify
+ * @param {string} [apiUrl]               - URL to fetch taxonomy from remote source; API should accept optional array `path` param: `apiUrl?path[]=root&path[]=child1` to return only nested children of `child1` node
  * @param {boolean} [leafsOnly=false]     - Allow annotators to select only leaf nodes of taxonomy
  * @param {boolean} [showFullPath=false]  - Whether to show the full path of selected items
  * @param {string} [pathSeparator= / ]    - Separator to show in the full path
@@ -69,6 +70,7 @@ const TagAttrs = types.model({
   leafsonly: types.optional(types.boolean, false),
   showfullpath: types.optional(types.boolean, false),
   pathseparator: types.optional(types.string, ' / '),
+  apiurl: types.maybeNull(types.string),
   placeholder: '',
   minwidth: types.maybeNull(types.string),
   maxwidth: types.maybeNull(types.string),
@@ -188,11 +190,7 @@ const Model = types
     },
 
     get isLoadedByApi() {
-      return true;
-    },
-
-    get apiUrl() {
-      return 'http://localhost:2345/labels';
+      return !!self.apiurl;
     },
 
     get items() {
@@ -288,7 +286,7 @@ const Model = types
       // build url with `path` as array
       // @todo how to build real array in query?
       const params = new URLSearchParams(path?.map(p => ['path', p]));
-      const url = `${self.apiUrl}?${params.toString()}`;
+      const url = `${self.apiurl}?${params.toString()}`;
       const res = yield fetch(url);
       const data = yield res.json();
       const prefix = path ?? [];
