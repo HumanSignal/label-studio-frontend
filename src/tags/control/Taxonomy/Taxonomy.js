@@ -1,9 +1,10 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import { types } from 'mobx-state-tree';
+import { flow, types } from 'mobx-state-tree';
 
 import Infomodal from '../../../components/Infomodal/Infomodal';
 import { Taxonomy } from '../../../components/Taxonomy/Taxonomy';
+import { NewTaxonomy } from '../../../components/NewTaxonomy/NewTaxonomy';
 import { guidGenerator } from '../../../core/Helpers';
 import Registry from '../../../core/Registry';
 import Types from '../../../core/Types';
@@ -121,6 +122,7 @@ const Model = types
     maxUsagesReached: false,
     selected: [],
     loading: true,
+    _items: [],
   }))
   .views(self => isFF(FF_DEV_3617) ? ({
     get children() {
@@ -150,7 +152,17 @@ const Model = types
       return 'taxonomy';
     },
 
+    get isLoadedByApi() {
+      return true;
+    },
+
+    get apiUrl() {
+      return 'http://localhost:2345/labels';
+    },
+
     get items() {
+      if (self.isLoadedByApi) return self._items;
+
       const fromConfig = traverse(self.children);
       const fromUsers = self.userLabels?.controls[self.name] ?? [];
 
@@ -225,6 +237,11 @@ const Model = types
   }))
   .actions(self => ({
     afterAttach() {
+      if (self.isLoadedByApi) {
+        self.loadItems();
+        return;
+      }
+
       const children = ChildrenSnapshots.get(self.name) ?? [];
 
       if (isFF(FF_DEV_3617) && self.store && children.length !== self.children.length) {
@@ -233,6 +250,44 @@ const Model = types
         self.loading = false;
       }
     },
+
+    loadItems: flow(function * (path) {
+      self.loading = true;
+
+      let item = { children: self.items };
+
+      if (path) {
+        for (const level of path) {
+          item = item.children?.find(ch => ch.path.at(-1) === level);
+          if (!item) return;
+        }
+      }
+
+      // const url = self.apiUrl + (path ? `?country=${path}` : '');
+      // build url with `path` as array
+      // @todo how to build real array in query?
+      const params = new URLSearchParams(path?.map(p => ['path', p]));
+      const url = `${self.apiUrl}?${params.toString()}`;
+      const res = yield fetch(url);
+      const data = yield res.json();
+      const prefix = path ?? [];
+      // @todo use aliases
+      // const items = data.map(({ alias, isLeaf, value }) => ({ label: value, path: [...prefix, alias ?? value], depth: 0, isLeaf }));
+      const items = data.map(({ isLeaf, value }) => ({ label: value, path: [...prefix, value], depth: 0, isLeaf }));
+
+      if (path) {
+        item.children = items;
+        self._items = [...self._items];
+      } else {
+        self._items = items;
+      }
+
+      // setTreeData(data.map(({ isLeaf, title }: any) => ({ title, value: title, key: title, isLeaf })));
+
+      // { label, path, depth, hint };
+
+      self.loading = false;
+    }),
 
     beforeDestroy() {
       ChildrenSnapshots.delete(self.name);
@@ -345,22 +400,34 @@ const HtxTaxonomy = observer(({ item }) => {
   };
 
   return (
-    <div className="taxonomy" style={{ ...style, ...visibleStyle }}>
-      {(item.loading && isFF(FF_DEV_3617)) ? (
-        <div className="lsf-taxonomy">
-          <Spin size="small"/>
-        </div>
-      ) : (
-        <Taxonomy
-          items={item.items}
-          selected={item.selected}
-          onChange={item.onChange}
-          onAddLabel={item.userLabels && item.onAddLabel}
-          onDeleteLabel={item.userLabels && item.onDeleteLabel}
-          options={options}
-          isEditable={!item.isReadOnly()}
-        />
-      )}
+    <div style={{ display: 'grid', gridTemplate: 'auto/1fr 1fr' }}>
+      <div className="taxonomy" style={{ ...style, ...visibleStyle }}>
+        {(item.loading && isFF(FF_DEV_3617)) ? (
+          <div className="lsf-taxonomy">
+            <Spin size="small"/>
+          </div>
+        ) : (
+          <Taxonomy
+            items={item.items}
+            selected={item.selected}
+            onChange={item.onChange}
+            onAddLabel={item.userLabels && item.onAddLabel}
+            onDeleteLabel={item.userLabels && item.onDeleteLabel}
+            options={options}
+            isEditable={!item.isReadOnly()}
+          />
+        )}
+      </div>
+      <NewTaxonomy
+        items={item.items}
+        selected={item.selected}
+        onChange={item.onChange}
+        onLoadData={item.loadItems}
+        onAddLabel={item.userLabels && item.onAddLabel}
+        onDeleteLabel={item.userLabels && item.onDeleteLabel}
+        options={options}
+        isEditable={!item.isReadOnly()}
+      />
     </div>
   );
 });
