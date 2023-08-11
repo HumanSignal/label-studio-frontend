@@ -33,7 +33,7 @@ import {
 } from '../../utils/feature-flags';
 import { Pagination } from '../../common/Pagination/Pagination';
 import { Image } from './Image';
-import { stageSecondClickCatcher } from '../../utils/fixKonvaClickListener';
+import { isPartOfProcessingAction, stageSecondClickCatcher } from '../../utils/fixKonvaClickListener';
 
 Konva.showWarnings = false;
 
@@ -572,6 +572,7 @@ export default observer(
 
       if (item.annotation.isReadOnly() && !isPanTool) return;
       if (p && p.className === 'Transformer') return;
+      if (isPartOfProcessingAction(e)) return;
 
       const handleMouseDown = () => {
         if (
