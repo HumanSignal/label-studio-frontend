@@ -1,5 +1,6 @@
 let lastPointerDownTarget;
 let lastPointerDownTime;
+let lastPointerDownPos;
 let lastClickTime;
 let lastClickPos;
 let nextdoubleClickAction;
@@ -8,11 +9,15 @@ const MAX_CLICK_POS_DEVIATION = 5;
 
 export const fixKonvaClickListener = ({ onClick, onDoubleClick }) => {
   return {
-    onPointerDown(e)  {
+    onPointerDown(e) {
       lastPointerDownTime = e.evt.timeStamp;
       lastPointerDownTarget = e.target;
+      lastPointerDownPos = {
+        x: e.evt.offsetX,
+        y: e.evt.offsetY,
+      };
     },
-    onPointerUp(e){
+    onPointerUp(e) {
       if (lastPointerDownTarget.attrs.name !== e.target.attrs.name) {
         debugger;
         return;
@@ -24,7 +29,12 @@ export const fixKonvaClickListener = ({ onClick, onDoubleClick }) => {
         (lastClickPos && Math.abs(lastClickPos.x - e.evt.offsetX) < MAX_CLICK_POS_DEVIATION && Math.abs(lastClickPos.y - e.evt.offsetY) < MAX_CLICK_POS_DEVIATION)) {
         lastClickTime = undefined;
         setTimeout(()=>onDoubleClick?.(e));
-      } else {
+        e.cancelBubble = true;
+      } else if (
+        lastPointerDownPos &&
+        Math.abs(lastPointerDownPos.x - e.evt.offsetX) < MAX_CLICK_POS_DEVIATION
+        && Math.abs(lastPointerDownPos.y - e.evt.offsetY) < MAX_CLICK_POS_DEVIATION
+      ) {
         lastClickTime = e.evt.timeStamp;
         lastClickPos = {
           x: e.evt.offsetX,
@@ -32,16 +42,13 @@ export const fixKonvaClickListener = ({ onClick, onDoubleClick }) => {
         };
         nextdoubleClickAction = onDoubleClick;
         setTimeout(()=>onClick?.(e));
+        e.cancelBubble = true;
       }
-      e.cancelBubble = true;
     },
-    onMouseDown: e => {
-      e.cancelBubble = true;
-    },
-    onClick: onClick ? (e)=>{
+    onClick: onClick ? (e) => {
       e.cancelBubble = true;
     } : onClick,
-    onDoubleClick: onDoubleClick ? (e)=>{
+    onDoubleClick: onDoubleClick ? (e) => {
       e.cancelBubble = true;
     } : onDoubleClick,
   };
@@ -64,7 +71,7 @@ export const stageSecondClickCatcher = (e) => {
     if (lastClickPos && Math.abs(lastClickPos.x - e.evt.offsetX) < MAX_CLICK_POS_DEVIATION && Math.abs(lastClickPos.y - e.evt.offsetY) < MAX_CLICK_POS_DEVIATION) {
       lastPointerDownTarget = undefined;
       lastClickTime = undefined;
-      setTimeout(()=>{
+      setTimeout(() => {
         nextdoubleClickAction?.(e);
       });
       return true;
