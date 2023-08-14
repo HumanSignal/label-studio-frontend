@@ -1,8 +1,8 @@
 
 /* global Feature, Scenario */
 
+const assert = require('assert');
 const { serialize } = require('./helpers');
-const { fail } = require('assert');
 
 Feature('Text Area');
 
@@ -19,7 +19,7 @@ const data = {
 
 const params = { annotations: [{ id: 'test', result: [] }], config, data };
 
-Scenario('Check if text area is saving lead_time', async function({ I, LabelStudio, AtTextAreaView }) {
+Scenario.only('Check if text area is saving lead_time', async function({ I, LabelStudio, AtTextAreaView }) {
   I.amOnPage('/');
   LabelStudio.setFeatureFlags({
     fflag_fix_front_lsdv_4600_lead_time_27072023_short: true,
@@ -35,6 +35,5 @@ Scenario('Check if text area is saving lead_time', async function({ I, LabelStud
 
   const result = await I.executeScript(serialize);
 
-  if (!result[0]?.meta?.lead_time || result[0].meta?.lead_time === 0)
-    fail('Lead time is not saved');
+  assert.notEqual(result[0]?.meta?.lead_time ?? 0, 0, 'Lead time is not saved');
 });
