@@ -332,14 +332,6 @@ const Model = types.model({
       }
     },
 
-    fromStateJSON(obj) {
-      let { text } = obj.value;
-
-      if (!Array.isArray(text)) text = [text];
-
-      text.forEach(t => self.addText(t, obj.id));
-    },
-
     setLastFocusedElement(element, model = self) {
       lastActiveElement = element;
       lastActiveElementModel = model;
