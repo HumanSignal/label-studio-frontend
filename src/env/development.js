@@ -76,7 +76,7 @@ import { ClassificationMixed } from '../examples/classification_mixed';
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = Buckets;
+const data = ClassificationMixed;
 
 function getData(task) {
   if (task && task.data) {
