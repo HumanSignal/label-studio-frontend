@@ -33,7 +33,6 @@ import {
 } from '../../utils/feature-flags';
 import { Pagination } from '../../common/Pagination/Pagination';
 import { Image } from './Image';
-import { isPartOfProcessingAction, stageSecondClickCatcher } from '../../utils/fixKonvaClickListener';
 
 Konva.showWarnings = false;
 
@@ -65,7 +64,7 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
-  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, region.annotation, false));
+  return useObserver(() => /*region.inSelection !== showSelected ? null :*/ Tree.renderItem(region, region.annotation, false));
 });
 
 const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
@@ -389,7 +388,8 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
 const Selection = observer(({ item, selectionArea, ...triggeredOnResize }) => {
   return (
     <>
-      <SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />
+      {/*<SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />*/}
+      <Layer name="selection-regions-layer" />
       <SelectionLayer item={item} selectionArea={selectionArea} />
     </>
   );
@@ -502,11 +502,6 @@ export default observer(
     handleOnClick = e => {
       const { item } = this.props;
 
-      if (stageSecondClickCatcher(e)) {
-        this.resetDeferredClickTimeout();
-        return;
-      }
-
       if (isFF(FF_DEV_1442)) {
         this.handleDeferredMouseDown?.();
       }
@@ -572,7 +567,6 @@ export default observer(
 
       if (item.annotation.isReadOnly() && !isPanTool) return;
       if (p && p.className === 'Transformer') return;
-      if (isPartOfProcessingAction(e)) return;
 
       const handleMouseDown = () => {
         if (

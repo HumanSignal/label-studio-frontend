@@ -2,13 +2,15 @@ import { observer } from 'mobx-react';
 import { isAlive } from 'mobx-state-tree';
 
 import { IReactComponent } from 'mobx-react/dist/types/IReactComponent';
-import { useCallback } from 'react';
+import { ExoticComponent, Fragment, ReactNode, useCallback } from 'react';
+import { Portal } from 'react-konva-utils';
 
 type Region = {
   annotation: any,
   hidden: boolean,
   // ...
   setShapeRef(ref: any): void,
+  inSelection: boolean,
 }
 
 type RegionComponentProps = {
@@ -18,7 +20,14 @@ type RegionComponentProps = {
 
 type Options = {
   renderHidden?: boolean,
+  shouldNotUsePortal?: boolean,
 }
+
+type PortalProps = {
+  selector?: string,
+  enabled?: boolean,
+  children: ReactNode,
+};
 
 export const AliveRegion = (
   RegionComponent: IReactComponent<RegionComponentProps>,
@@ -28,6 +37,8 @@ export const AliveRegion = (
 
   return observer(({ item, ...rest }: RegionComponentProps) => {
     const canRender = options?.renderHidden || !item.hidden;
+    const Wrapper = (options?.shouldNotUsePortal ? Fragment : Portal) as ExoticComponent<PortalProps>;
+    const wrapperProps = options?.shouldNotUsePortal ? {} : { selector: '.selection-regions-layer', enabled: item.inSelection };
     const isInTree = !!item.annotation;
     const setShapeRef = useCallback((ref) => {
       if (isAlive(item)) {
@@ -35,6 +46,10 @@ export const AliveRegion = (
       }
     }, [item]);
 
-    return isInTree && isAlive(item) && canRender ? <ObservableRegion item={item} {...rest} setShapeRef={setShapeRef} /> : null;
+    return isInTree && isAlive(item) && canRender ? (
+      <Wrapper {...wrapperProps}>
+        <ObservableRegion item={item} {...rest} setShapeRef={setShapeRef} />
+      </Wrapper>
+    ): null;
   });
 };

@@ -22,7 +22,6 @@ import { ImageViewContext } from '../components/ImageView/ImageViewContext';
 import { FF_DEV_2432, FF_DEV_3793, isFF } from '../utils/feature-flags';
 import { fixMobxObserve } from '../utils/utilities';
 import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
-import { fixKonvaClickListener } from '../utils/fixKonvaClickListener';
 
 const PolygonRegionAbsoluteCoordsDEV3793 = types
   .model({
@@ -568,31 +567,22 @@ const HtxPolygonView = ({ item, setShapeRef }) => {
           item.setHighlight(false);
         }
       }}
-      {...fixKonvaClickListener({
-        onClick(e) {
-          // create regions over another regions with Cmd/Ctrl pressed
-          if (item.parent.getSkipInteractions()) return;
-          if (item.isDrawing) return;
-          e.cancelBubble = true;
-          if (!item.closed) return;
-          if (store.annotationStore.selected.relationMode) {
-            stage.container().style.cursor = Constants.DEFAULT_CURSOR;
-          }
-          item.setHighlight(false);
-          item.onClickRegion(e);
-        },
-        onDoubleClick(e) {
-          if (item.parent.getSkipInteractions()) return;
-          if (item.isDrawing) return;
-          e.cancelBubble = true;
-          if (!item.closed) return;
-          if (store.annotationStore.selected.relationMode) {
-            stage.container().style.cursor = Constants.DEFAULT_CURSOR;
-          }
-          item.onDoubleClickRegion(e);
-        },
-      })}
+      onClick={e => {
+        // create regions over another regions with Cmd/Ctrl pressed
+        if (item.parent.getSkipInteractions()) return;
+        if (item.isDrawing) return;
 
+        e.cancelBubble = true;
+
+        if (!item.closed) return;
+
+        if (store.annotationStore.selected.relationMode) {
+          stage.container().style.cursor = Constants.DEFAULT_CURSOR;
+        }
+
+        item.setHighlight(false);
+        item.onClickRegion(e);
+      }}
       {...dragProps}
       draggable={!item.isReadOnly() && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
       listening={!suggestion}

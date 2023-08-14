@@ -1,5 +1,7 @@
 import { types } from 'mobx-state-tree';
 import { FF_DEV_3793, isFF } from '../utils/feature-flags';
+const DOUBLE_CLICK_MS_WINDOW = 400;
+const MAX_CLICK_POS_DEVIATION = 5;
 
 export const KonvaRegionMixin = types.model({})
   .views((self) => {
@@ -35,6 +37,7 @@ export const KonvaRegionMixin = types.model({})
     };
   })
   .actions(self => {
+    let lastClick;
 
     return {
       checkSizes() {
@@ -100,8 +103,15 @@ export const KonvaRegionMixin = types.model({})
         const ev = e?.evt || e;
         const additiveMode = ev?.ctrlKey || ev?.metaKey;
 
-
         if (e) e.cancelBubble = true;
+
+        const isInDoubleClickWindow = lastClick && (ev.timeStamp - lastClick.time < DOUBLE_CLICK_MS_WINDOW);
+        const isSamePosClick = lastClick && (Math.abs(ev.offsetX - lastClick.x) < MAX_CLICK_POS_DEVIATION && Math.abs(ev.offsetY - lastClick.y) < MAX_CLICK_POS_DEVIATION);
+
+        if (isInDoubleClickWindow && isSamePosClick) {
+          self.onDoubleClickRegion();
+          return;
+        }
 
         if (!annotation.isReadOnly() && annotation.relationMode) {
           annotation.addRelation(self);
@@ -110,6 +120,12 @@ export const KonvaRegionMixin = types.model({})
         } else {
           self._selectArea(additiveMode);
         }
+
+        lastClick = {
+          x: ev.offsetX,
+          y: ev.offsetY,
+          time: ev.timeStamp,
+        };
       },
       onDoubleClickRegion(e) {
         self.requestPerRegionFocus();
