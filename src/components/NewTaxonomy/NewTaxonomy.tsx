@@ -68,6 +68,7 @@ const NewTaxonomy = ({
 }: TaxonomyProps) => {
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const separator = options.pathSeparator;
+  const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
 
   useEffect(() => {
     setTreeData(convert(items, separator));
@@ -78,21 +79,19 @@ const NewTaxonomy = ({
   }, []);
 
   return (
-    <div>
-      <TreeSelect
-        treeData={treeData}
-        value={selected.map(path => path.join(separator))}
-        onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
-        loadData={loadData}
-        // onChange={console.log}
-        treeCheckable
-        treeCheckStrictly
-        showCheckedStrategy={TreeSelect.SHOW_ALL}
-        treeExpandAction="click"
-        placeholder="Please select"
-        style={{ width: '100%', minWidth: 300 }}
-      />
-    </div>
+    <TreeSelect
+      treeData={treeData}
+      value={selected.map(path => path.join(separator))}
+      onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
+      loadData={loadData}
+      treeCheckable
+      treeCheckStrictly
+      showCheckedStrategy={TreeSelect.SHOW_ALL}
+      treeExpandAction="click"
+      placeholder={options.placeholder || 'Click to add...'}
+      style={style}
+      className="htx-taxonomy"
+    />
   );
 };
 

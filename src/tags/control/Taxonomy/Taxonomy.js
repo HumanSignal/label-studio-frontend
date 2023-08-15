@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react';
 import { flow, types } from 'mobx-state-tree';
+import { Spin } from 'antd';
 
 import Infomodal from '../../../components/Infomodal/Infomodal';
 import { Taxonomy } from '../../../components/Taxonomy/Taxonomy';
@@ -12,16 +13,17 @@ import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import PerRegionMixin from '../../../mixins/PerRegion';
 import RequiredMixin from '../../../mixins/Required';
 import VisibilityMixin from '../../../mixins/Visibility';
-import ControlBase from '../Base';
 import DynamicChildrenMixin from '../../../mixins/DynamicChildrenMixin';
 import { FF_DEV_2007_DEV_2008, FF_DEV_3617, FF_LSDV_4583, FF_TAXONOMY_ASYNC, FF_TAXONOMY_LABELING, isFF } from '../../../utils/feature-flags';
 import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
-import { Spin } from 'antd';
-import './Taxonomy.styl';
 import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
 import SelectedChoiceMixin from '../../../mixins/SelectedChoiceMixin';
 import ClassificationBase from '../ClassificationBase';
 import PerItemMixin from '../../../mixins/PerItem';
+import { Block, Elem } from '../../../utils/bem';
+import ControlBase from '../Base';
+
+import styles from './Taxonomy.styl';
 
 /**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
@@ -411,7 +413,6 @@ const TaxonomyModel = types.compose('TaxonomyModel',
 );
 
 const HtxTaxonomy = observer(({ item }) => {
-  const style = { marginTop: '1em', marginBottom: '1em' };
   const visibleStyle = item.perRegionVisible() && item.isVisible ? {} : { display: 'none' };
   const options = {
     showFullPath: item.showfullpath,
@@ -424,7 +425,8 @@ const HtxTaxonomy = observer(({ item }) => {
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplate: 'auto/1fr 1fr' }}>
+    // @todo use BEM class names + literal "taxonomy" for external styling
+    <div className={[styles.taxonomy, 'taxonomy'].join(' ')} style={{ ...visibleStyle }}>
       {isFF(FF_TAXONOMY_ASYNC) ? (
         <NewTaxonomy
           items={item.items}
@@ -437,23 +439,21 @@ const HtxTaxonomy = observer(({ item }) => {
           isEditable={!item.isReadOnly()}
         />
       ) : (
-        <div className="taxonomy" style={{ ...style, ...visibleStyle }}>
-          {(item.loading && isFF(FF_DEV_3617)) ? (
-            <div className="lsf-taxonomy">
-              <Spin size="small"/>
-            </div>
-          ) : (
-            <Taxonomy
-              items={item.items}
-              selected={item.selected}
-              onChange={item.onChange}
-              onAddLabel={item.userLabels && item.onAddLabel}
-              onDeleteLabel={item.userLabels && item.onDeleteLabel}
-              options={options}
-              isEditable={!item.isReadOnly()}
-            />
-          )}
-        </div>
+        item.loading && isFF(FF_DEV_3617) ? (
+          <div className={styles.taxonomy__loading}>
+            <Spin size="small"/>
+          </div>
+        ) : (
+          <Taxonomy
+            items={item.items}
+            selected={item.selected}
+            onChange={item.onChange}
+            onAddLabel={item.userLabels && item.onAddLabel}
+            onDeleteLabel={item.userLabels && item.onDeleteLabel}
+            options={options}
+            isEditable={!item.isReadOnly()}
+          />
+        )
       )}
     </div>
   );
