@@ -2,12 +2,14 @@ import { types } from 'mobx-state-tree';
 
 /**
  * @todo rework this into MetaMixin for all the meta data
+ * @todo it's used by too much files, so that's for later
  * Meta Information
- * For normalize many labels to one value
+ * Additional information for regions and their results, like text and lead_time
  */
 const NormalizationMixin = types
   .model({
-    meta: types.frozen({}),
+    meta: types.frozen<{ text?: string[] }>({}),
+    // @todo do we really need it? it's used to store current value from input
     normInput: types.maybeNull(types.string),
   })
   .preProcessSnapshot((sn) => {
@@ -18,13 +20,17 @@ const NormalizationMixin = types
     };
   })
   .actions(self => ({
+    setMetaValue(key: string, value: any) {
+      self.meta = { ...self.meta, [key]: value };
+    },
+
     /**
      * Set meta text
-     * @param {*} val
+     * @param {*} text
      */
-    setMetaInfo(val) {
-      if (val) {
-        self.meta = { ...self.meta, text: [val] };
+    setMetaText(text: string) {
+      if (text) {
+        self.meta = { ...self.meta, text: [text] };
       } else {
         const adjusted = { ...self.meta };
 
@@ -33,15 +39,16 @@ const NormalizationMixin = types
       }
     },
 
+    setNormInput(val: string) {
+      self.normInput = val;
+    },
+  }))
+  .actions(self => ({
     /**
      * Delete meta text
      */
-    deleteMetaInfo() {
-      self.setMetaInfo('');
-    },
-
-    setNormInput(val) {
-      self.normInput = val;
+    deleteMetaText() {
+      self.setMetaText('');
     },
   }));
 
