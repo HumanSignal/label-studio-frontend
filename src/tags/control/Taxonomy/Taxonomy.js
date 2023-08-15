@@ -201,7 +201,7 @@ const Model = types
     },
 
     get isLoadedByApi() {
-      return !!self.apiurl;
+      return isFF(FF_TAXONOMY_ASYNC) && !!self.apiurl;
     },
 
     get items() {
@@ -268,10 +268,7 @@ const Model = types
   .actions(self => ({
     afterAttach() {
       // we are not mixing items from API with other kinds of items
-      if (self.isLoadedByApi) {
-        self.loadItems();
-        return;
-      }
+      if (self.isLoadedByApi) return;
 
       const children = ChildrenSnapshots.get(self.name) ?? [];
 
