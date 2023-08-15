@@ -122,31 +122,34 @@ const ChildrenSnapshots = new Map();
  */
 const TaxonomyLabelingResult = types
   .model({})
-  .extend(self => {
+  .views(self => ({
+    get result() {
+      // @todo make it without duplication of ClassificationBase code
+      if (!self.isLabeling) {
+        if (self.peritem) {
+          return self._perItemResult;
+        }
+        return self.annotation.results.find(r => r.from_name === self);
+      }
+
+      const area = self.annotation.highlightedNode;
+
+      if (!area) return null;
+
+      return self.annotation.results.find(r => r.from_name === self && r.area === area);
+    },
+  }))
+  .actions(self => {
     const Super = {
-      result: self.result,
       updateResult: self.updateResult,
     };
 
     return {
-      views: {
-        get result() {
-          if (!self.isLabeling) return Super.result;
-
-          const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-
-          return self.annotation.results.find(r => r.from_name === self && r.area === area);
-        },
-      },
-      actions: {
-        updateResult() {
-          if (!self.isLabeling) return Super.updateResult();
-          if (self.result) {
-            self.result.area.setValue(self);
-          }
-        },
+      updateResult() {
+        if (!self.isLabeling) return Super.updateResult();
+        if (self.result) {
+          self.result.area.setValue(self);
+        }
       },
     };
   });
