@@ -4,24 +4,23 @@ import { flow, types } from 'mobx-state-tree';
 import { Spin } from 'antd';
 
 import Infomodal from '../../../components/Infomodal/Infomodal';
-import { Taxonomy } from '../../../components/Taxonomy/Taxonomy';
 import { NewTaxonomy } from '../../../components/NewTaxonomy/NewTaxonomy';
+import { Taxonomy } from '../../../components/Taxonomy/Taxonomy';
 import { guidGenerator } from '../../../core/Helpers';
 import Registry from '../../../core/Registry';
 import Types from '../../../core/Types';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
-import PerRegionMixin from '../../../mixins/PerRegion';
-import RequiredMixin from '../../../mixins/Required';
-import VisibilityMixin from '../../../mixins/Visibility';
 import DynamicChildrenMixin from '../../../mixins/DynamicChildrenMixin';
-import { FF_DEV_2007_DEV_2008, FF_DEV_3617, FF_LSDV_4583, FF_TAXONOMY_ASYNC, FF_TAXONOMY_LABELING, isFF } from '../../../utils/feature-flags';
-import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
-import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
-import SelectedChoiceMixin from '../../../mixins/SelectedChoiceMixin';
-import ClassificationBase from '../ClassificationBase';
 import PerItemMixin from '../../../mixins/PerItem';
-import { Block, Elem } from '../../../utils/bem';
+import PerRegionMixin from '../../../mixins/PerRegion';
+import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
+import RequiredMixin from '../../../mixins/Required';
+import SelectedChoiceMixin from '../../../mixins/SelectedChoiceMixin';
+import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
+import VisibilityMixin from '../../../mixins/Visibility';
+import { FF_DEV_2007_DEV_2008, FF_DEV_3617, FF_LSDV_4583, FF_TAXONOMY_ASYNC, FF_TAXONOMY_LABELING, isFF } from '../../../utils/feature-flags';
 import ControlBase from '../Base';
+import ClassificationBase from '../ClassificationBase';
 
 import styles from './Taxonomy.styl';
 
