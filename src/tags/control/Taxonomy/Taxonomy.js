@@ -113,6 +113,10 @@ function traverse(root) {
 
 const ChildrenSnapshots = new Map();
 
+/**
+ * Taxonomy as a labeling tool should work with results in a different way, similar to per-regions.
+ * But it won't create a new result on change if there are none, these items will be used to create labeled region by user.
+ */
 const TaxonomyLabelingResult = types
   .model({})
   .extend(self => {
@@ -155,7 +159,7 @@ const Model = types
     maxUsagesReached: false,
     selected: [],
     loading: true,
-    _items: [],
+    _items: [], // items loaded via API
   }))
   .views(self => isFF(FF_DEV_3617) ? ({
     get children() {
@@ -256,6 +260,7 @@ const Model = types
   }))
   .actions(self => ({
     afterAttach() {
+      // we are not mixing items from API with other kinds of items
       if (self.isLoadedByApi) {
         self.loadItems();
         return;
@@ -270,6 +275,10 @@ const Model = types
       }
     },
 
+    /**
+     * Load items from `apiUrl` and set them indirectly to `items` (via `_items`)
+     * @param {string[]} path to load nested items by this path
+     */
     loadItems: flow(function * (path) {
       self.loading = true;
 
@@ -282,11 +291,11 @@ const Model = types
         }
       }
 
-      // const url = self.apiUrl + (path ? `?country=${path}` : '');
-      // build url with `path` as array
-      // @todo how to build real array in query?
-      const params = new URLSearchParams(path?.map(p => ['path', p]));
-      const url = `${self.apiurl}?${params.toString()}`;
+      // build url with `path` as array (path ['A', 'BC'] => path=A&path=BC)
+      const url = new URL(self.apiurl);
+
+      path?.forEach(p => url.searchParams.append('path', p));
+
       const res = yield fetch(url);
       const data = yield res.json();
       const prefix = path ?? [];
@@ -300,10 +309,6 @@ const Model = types
       } else {
         self._items = items;
       }
-
-      // setTreeData(data.map(({ isLeaf, title }: any) => ({ title, value: title, key: title, isLeaf })));
-
-      // { label, path, depth, hint };
 
       self.loading = false;
     }),
@@ -347,7 +352,6 @@ const Model = types
 
     unselectAll() {
       if (isFF(FF_TAXONOMY_LABELING)) self.selected = [];
-      // self.updateResult();
     },
 
     onAddLabel(path) {

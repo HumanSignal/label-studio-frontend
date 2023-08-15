@@ -9,6 +9,7 @@ type TaxonomyItem = {
   label: string,
   path: TaxonomyPath,
   depth: number,
+  isLeaf?: boolean, // only in new async taxonomy
   children?: TaxonomyItem[],
   origin?: 'config' | 'user' | 'session',
   hint?: string,
@@ -18,6 +19,7 @@ type AntTaxonomyItem = {
   title: string,
   value: string,
   key: string,
+  isLeaf?: boolean,
   children?: AntTaxonomyItem[],
 };
 
@@ -38,7 +40,7 @@ type TaxonomyProps = {
   onLoadData?: (item: TaxonomyPath) => any,
   onAddLabel?: onAddLabelCallback,
   onDeleteLabel?: onDeleteLabelCallback,
-  options?: TaxonomyOptions,
+  options: TaxonomyOptions,
   isEditable?: boolean,
 };
 
@@ -47,10 +49,7 @@ const convert = (items: TaxonomyItem[], separator: string): AntTaxonomyItem[] =>
     title: item.label,
     value: item.path.join(separator),
     key: item.path.join(separator),
-    // disableCheckbox: !!item.children,
     isLeaf: item.isLeaf !== false && !item.children,
-    // checkable: !item.children,
-    // selectable: !item.children,
     children: item.children ? convert(item.children, separator) : undefined,
   }));
 };
@@ -60,10 +59,12 @@ const NewTaxonomy = ({
   selected,
   onChange,
   onLoadData,
-  onAddLabel,
-  onDeleteLabel,
-  options = {},
-  isEditable = true,
+  // @todo implement user labels
+  // onAddLabel,
+  // onDeleteLabel,
+  options,
+  // @todo implement readonly mode
+  // isEditable = true,
 }: TaxonomyProps) => {
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const separator = options.pathSeparator;
