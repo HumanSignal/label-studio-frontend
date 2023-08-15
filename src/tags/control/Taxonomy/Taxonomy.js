@@ -18,6 +18,7 @@ import RequiredMixin from '../../../mixins/Required';
 import SelectedChoiceMixin from '../../../mixins/SelectedChoiceMixin';
 import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
 import VisibilityMixin from '../../../mixins/Visibility';
+import { parseValue } from '../../../utils/data';
 import { FF_DEV_2007_DEV_2008, FF_DEV_3617, FF_LSDV_4583, FF_TAXONOMY_ASYNC, FF_TAXONOMY_LABELING, isFF } from '../../../utils/feature-flags';
 import ControlBase from '../Base';
 import ClassificationBase from '../ClassificationBase';
@@ -161,6 +162,7 @@ const Model = types
     maxUsagesReached: false,
     selected: [],
     loading: true,
+    _api: '', // will be filled after the first load in updateValue()
     _items: [], // items loaded via API
   }))
   .views(self => isFF(FF_DEV_3617) ? ({
@@ -278,10 +280,24 @@ const Model = types
     },
 
     /**
+     * Usual method to parse values from task and init data.
+     * Will store correct api url and load items from it.
+     */
+    updateValue: flow(function * (store) {
+      if (!self.isLoadedByApi) return;
+
+      self._api = parseValue(self.apiurl, store.task.dataObj);
+
+      yield self.loadItems();
+    }),
+
+    /**
      * Load items from `apiUrl` and set them indirectly to `items` (via `_items`)
      * @param {string[]} path to load nested items by this path
      */
     loadItems: flow(function * (path) {
+      if (!self._api) return;
+
       self.loading = true;
 
       let item = { children: self.items };
@@ -294,22 +310,27 @@ const Model = types
       }
 
       // build url with `path` as array (path ['A', 'BC'] => path=A&path=BC)
-      const url = new URL(self.apiurl);
+      const url = new URL(self._api);
 
       path?.forEach(p => url.searchParams.append('path', p));
 
-      const res = yield fetch(url);
-      const data = yield res.json();
-      const prefix = path ?? [];
-      // @todo use aliases
-      // const items = data.map(({ alias, isLeaf, value }) => ({ label: value, path: [...prefix, alias ?? value], depth: 0, isLeaf }));
-      const items = data.map(({ isLeaf, value }) => ({ label: value, path: [...prefix, value], depth: 0, isLeaf }));
+      try {
+        const res = yield fetch(url);
+        const data = yield res.json();
+        const prefix = path ?? [];
+        // @todo use aliases
+        // const items = data.map(({ alias, isLeaf, value }) => ({ label: value, path: [...prefix, alias ?? value], depth: 0, isLeaf }));
+        const items = data.map(({ isLeaf, value }) => ({ label: value, path: [...prefix, value], depth: 0, isLeaf }));
 
-      if (path) {
-        item.children = items;
-        self._items = [...self._items];
-      } else {
-        self._items = items;
+        if (path) {
+          item.children = items;
+          self._items = [...self._items];
+        } else {
+          self._items = items;
+        }
+      } catch (err) {
+        console.error(err);
+        Infomodal.error(`Failed to load taxonomy "${self.name}" from "${self.apiurl}" by path "${path}".`);
       }
 
       self.loading = false;
