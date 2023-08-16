@@ -89,7 +89,7 @@ const result = [
       'end': '2',
       'startOffset': 20,
       'endOffset': 72,
-      'text': 'es. Why do we feel its necessary to yak about bullsh',
+      'text': 'es. Why do we feel its necessary to yak about nonsen',
       'paragraphlabels': [
         'External: Positive',
       ],
