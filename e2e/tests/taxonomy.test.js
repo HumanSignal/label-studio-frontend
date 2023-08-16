@@ -321,9 +321,7 @@ Scenario('Taxonomy read only in history', async ({ I, LabelStudio, AtTaxonomy })
   AtTaxonomy.seeCheckedItemByText('c');
 });
 
-/* todo: looks like we have a bug */
-// eslint-disable-next-line
-xScenario('Taxonomy readonly result', async ({ I, LabelStudio, AtTaxonomy }) => {
+Scenario('Taxonomy readonly result', async ({ I, LabelStudio, AtTaxonomy }) => {
   I.amOnPage('/');
   LabelStudio.init({
     config: `
