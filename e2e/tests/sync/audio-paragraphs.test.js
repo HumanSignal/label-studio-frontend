@@ -66,7 +66,7 @@ const data = {
       'duration': 1,
     },
     {
-      'text': 'Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?',
+      'text': 'Uncomfortable silences. Why do we feel its necessary to yak about nonsense in order to be comfortable?',
       'author': 'Mia Wallace:',
       'start': 4,
       'end': 6,
@@ -78,33 +78,33 @@ const data = {
       'author': 'Vincent Vega:',
     },
     {
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 8,
       'end': 10,
     },
     {
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 10,
       'end': 12,
     },{
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 12,
       'end': 14,
     },{
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 14,
       'end': 16,
     },{
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 16,
       'end': 18,
     },{
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 18,
       'end': 20,
