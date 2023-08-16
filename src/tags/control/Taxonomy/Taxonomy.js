@@ -401,7 +401,7 @@ const Model = types
        * Also used for Dynamic Children.
        */
       updateValue: flow(function * (store) {
-        if (!self.isLoadedByApi) return Super.updateValue(store);
+        if (!self.isLoadedByApi) return Super.updateValue?.(store);
 
         self._api = parseValue(self.apiurl, store.task.dataObj);
 
