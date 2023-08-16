@@ -1,4 +1,4 @@
-import { getRoot, types } from 'mobx-state-tree';
+import { getRoot, isAlive, types } from 'mobx-state-tree';
 import React, { useContext } from 'react';
 import { Rect } from 'react-konva';
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
@@ -196,7 +196,7 @@ const Model = types
       return getRoot(self);
     },
     get parent() {
-      return self.object;
+      return isAlive(self) ? self.object : null;
     },
     get bboxCoords() {
       const bboxCoords = {
@@ -206,21 +206,21 @@ const Model = types
         bottom: self.y + self.height,
       };
 
-      if (self.rotation === 0) return bboxCoords;
+      if (self.rotation === 0 || !self.parent) return bboxCoords;
 
       return rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y: self.y }, self.parent.whRatio);
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.y) : self.y;
     },
     get canvasWidth() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.width) : self.width;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.width) : self.width;
     },
     get canvasHeight() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.height) : self.height;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.height) : self.height;
     },
   }))
   .actions(self => ({
@@ -409,12 +409,12 @@ const RectRegionModel = types.compose(
   ...(isFF(FF_DEV_3793) ? [] : [RectRegionAbsoluteCoordsDEV3793]),
 );
 
-const HtxRectangleView = ({ item }) => {
+const HtxRectangleView = ({ item, setShapeRef }) => {
   const { store } = item;
 
   const { suggestion } = useContext(ImageViewContext) ?? {};
   const regionStyles = useRegionStyles(item, { suggestion });
-  const stage = item.parent.stageRef;
+  const stage = item.parent?.stageRef;
 
   const eventHandlers = {};
 
@@ -476,7 +476,7 @@ const HtxRectangleView = ({ item }) => {
       <Rect
         x={item.canvasX}
         y={item.canvasY}
-        ref={node => item.setShapeRef(node)}
+        ref={node => setShapeRef(node)}
         width={item.canvasWidth}
         height={item.canvasHeight}
         fill={regionStyles.fillColor}
@@ -516,7 +516,7 @@ const HtxRectangleView = ({ item }) => {
           item.setHighlight(false);
           item.onClickRegion(e);
         }}
-        listening={!suggestion && !item.annotation.isDrawing}
+        listening={!suggestion && !item.annotation?.isDrawing}
       />
       <LabelOnRect item={item} color={regionStyles.strokeColor} strokewidth={regionStyles.strokeWidth} />
     </RegionWrapper>

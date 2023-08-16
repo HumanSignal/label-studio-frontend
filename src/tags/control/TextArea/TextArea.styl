@@ -69,6 +69,9 @@
     border 1px solid transparent
     background-color rgba(#000, 0.05)
 
+    .ff_outliner_optim &
+      padding 8px 20px 8px 8px
+
     &::placeholder
       color rgba(#000, 0.5)
 
@@ -79,5 +82,6 @@
     box-shadow 0 0 0 3px var(--border-color)
 
   &_outliner &__action
-    margin 4px
-    margin-top 5px
+    :not(.ff_outliner_optim) &
+      margin 4px
+      margin-top 5px

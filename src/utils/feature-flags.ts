@@ -70,12 +70,6 @@ export const FF_DEV_2431 = 'ff_front_dev_2431_delete_polygon_points_080622_short
 
 export const FF_DEV_2432 = 'ff_front_dev_2432_auto_save_polygon_draft_210622_short';
 
-/**
- * Audio + Paragraphs sync playback of chunk position
- * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short
- */
-export const FF_DEV_2461 = 'fflag_feat_front_dev_2461_audio_paragraphs_seek_chunk_position_short';
-
 // Undo keypoints when create new polygon
 export const FF_DEV_2576 = 'ff_feat_front_DEV_2576_undo_key_points_polygon_short';
 
@@ -174,6 +168,12 @@ export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10
 export const FF_LSDV_E_278 = 'fflag_feat_front_lsdv_e_278_contextual_scrolling_short';
 
 /**
+ * Annotations with LLM assistance
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_all_lsdv_e_294_llm_annotations_180723_long
+ */
+export const FF_LLM_EPIC = 'fflag_feat_all_lsdv_e_294_llm_annotations_180723_long';
+
+/**
  * Fix logic of namespaces inside Hotkeys
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
  */
@@ -198,9 +198,10 @@ export const FF_LSDV_4583_6 = 'fflag_feat_front_lsdv_4583_6_images_preloading_sh
 export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short';
 
 /**
- * New Syncable mixin for better sync
+ * Allows to count time spend on textarea results and store it to lead_time meta field
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4600_lead_time_27072023_short
  */
-export const FF_LSDV_3012 = 'fflag_feat_front_lsdv_3012_syncable_tags_070423_short';
+export const FF_LEAD_TIME = 'fflag_fix_front_lsdv_4600_lead_time_27072023_short';
 
 /**
  * Adding "skipDuplicates" parameter for <TextArea /> to preventing adding duplicate entries
@@ -208,6 +209,29 @@ export const FF_LSDV_3012 = 'fflag_feat_front_lsdv_3012_syncable_tags_070423_sho
  * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4659_skipduplicates_060323_short
  */
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
+
+/**
+ * Reworking of RichText to optimize its work with DOM and decrease response time with a large number of regions.
+ * It also fixes scenarios of working with hidden regions
+ * and edge cases for creating spans inside other spans.
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4620_richtext_opimization_060423_short
+ */
+export const FF_LSDV_4620_3 = 'fflag_feat_front_lsdv_4620_richtext_opimization_060423_short';
+
+/**
+ * Fixes memory leaks in label studio frontend relative to mobx-state-tree and react usage
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4620_memory_leaks_100723_short
+ */
+export const FF_LSDV_4620_3_ML = 'fflag_fix_front_lsdv_4620_memory_leaks_100723_short';
+
+/**
+ * Improving the responsiveness of the interface when working with the list of regions in the outliner
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4620_outliner_optimization_310723_short
+ */
+export const FF_OUTLINER_OPTIM = 'fflag_feat_front_lsdv_4620_outliner_optimization_310723_short';
 
 /**
  * Fixes Rect3PointTool behaviour in relative coords mode.

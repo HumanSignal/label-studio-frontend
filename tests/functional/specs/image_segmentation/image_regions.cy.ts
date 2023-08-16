@@ -1,4 +1,4 @@
-import { ImageView, LabelStudio, Sidebar } from '@heartexlabs/ls-test/helpers/LSF';
+import { ImageView, Labels, LabelStudio, Sidebar } from '@heartexlabs/ls-test/helpers/LSF';
 
 const config = `
   <View>
@@ -9,6 +9,20 @@ const config = `
       <Label value="Moonwalker 1" background="red"></Label>
       <Label value="Moonwalker 2" background="pink"></Label>
       <Label value="Moonwalker 3" background="yellow"></Label>
+    </RectangleLabels>
+  </View>
+`;
+
+const configWithMultipleRegions = `
+  <View>
+    <Image name="img" value="$image"></Image>
+    <RectangleLabels name="tag" toName="img">
+      <Label value="Moonwalker 2" background="pink"></Label>
+      <Label value="Moonwalker 3" background="yellow"></Label>
+    </RectangleLabels>
+    <RectangleLabels name="tag2" toName="img" allowEmpty="true" maxUsages="2" choice="multiple">
+      <Label value="Planet"></Label>
+      <Label value="Moonwalker" background="blue"></Label>
     </RectangleLabels>
   </View>
 `;
@@ -116,5 +130,26 @@ describe('Image Regions scenario', () => {
     }).then(() => {
       expect(hiddenRegions).to.be.eq(2);
     });
+  });
+
+  it('should be able to select multi label for a region', () => {
+    LabelStudio.params()
+      .config(configWithMultipleRegions)
+      .data({ image })
+      .withResult([])
+      .init();
+
+    ImageView.waitForImage();
+    Labels.select('Moonwalker 2');
+    ImageView.drawRect(20, 20, 100, 100);
+    ImageView.clickAt(30, 30);
+    Labels.select('Planet');
+    Sidebar.hasRegions(1);
+    cy.contains('Moonwalker 2, Planet').should('exist');
+    cy.get('.lsf-outliner-item').contains('Moonwalker 2').should('have.css', 'color', 'rgb(255, 192, 203)');
+    cy.get('.lsf-outliner-item').contains('Planet').should('have.css', 'color', 'rgb(114, 191, 178)');
+    Labels.select('Planet');
+    cy.contains('Moonwalker 2, No label').should('exist');
+    cy.get('.lsf-outliner-item').contains('No label').should('have.css', 'color', 'rgb(102, 102, 102)');
   });
 });

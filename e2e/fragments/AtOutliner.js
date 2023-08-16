@@ -4,9 +4,10 @@ const { I } = inject();
 module.exports = {
   _rootSelector: '.lsf-outliner',
   _regionListSelector: '.lsf-outliner-tree',
-  _regionListItemSelector: '.lsf-tree__node',
+  _regionListItemSelector: '.lsf-tree__node:not(.lsf-tree__node_type_footer)',
   _regionListItemSelectedSelector: '.lsf-tree-node-selected',
   _regionListItemIndex: '.lsf-outliner-item__index',
+  _regionVesibilityActionButton: '.lsf-outliner-item__control_type_visibility button',
   locateOutliner() {
     return locate(this._rootSelector);
   },
@@ -33,6 +34,15 @@ module.exports = {
   },
   clickRegion(idx) {
     I.click(this.locateRegionItemIndex(idx));
+  },
+  hoverRegion(idx) {
+    I.moveCursorTo(this.locateRegionItemIndex(idx));
+  },
+  toggleRegionVisibility(idx) {
+    // Hover to see action button
+    this.hoverRegion(idx);
+    // This button exist only for hovered list item
+    I.click(locate(this._regionVesibilityActionButton));
   },
   seeSelectedRegion() {
     I.seeElement(this.locateSelectedItem());

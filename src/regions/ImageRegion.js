@@ -1,4 +1,4 @@
-import { getParent, getRoot, types } from 'mobx-state-tree';
+import { getParent, getRoot, hasParent, types } from 'mobx-state-tree';
 import { guidGenerator } from '../core/Helpers';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { ReadOnlyRegionMixin } from '../mixins/ReadOnlyMixin';
@@ -30,7 +30,7 @@ const RegionMixin = types
     },
 
     get parent() {
-      return getParent(self);
+      return hasParent(self) ? getParent(self) : null;
     },
 
     get labelsState() {
