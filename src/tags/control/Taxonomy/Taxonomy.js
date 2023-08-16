@@ -280,18 +280,6 @@ const Model = types
     },
 
     /**
-     * Usual method to parse values from task and init data.
-     * Will store correct api url and load items from it.
-     */
-    updateValue: flow(function * (store) {
-      if (!self.isLoadedByApi) return;
-
-      self._api = parseValue(self.apiurl, store.task.dataObj);
-
-      yield self.loadItems();
-    }),
-
-    /**
      * Load items from `apiUrl` and set them indirectly to `items` (via `_items`)
      * @param {string[]} path to load nested items by this path
      */
@@ -399,6 +387,26 @@ const Model = types
         if (self.maxusages && self.selected.length > self.maxusages)
           Infomodal.warning(`The number of options selected (${self.selected.length}) exceed the maximum allowed (${self.maxusages}). To proceed, first unselect excess options for:\r\n • Taxonomy (${self.name})`);
       },
+    };
+  })
+  .actions(self => {
+    const Super = {
+      updateValue: self.updateValue,
+    };
+
+    return {
+      /**
+       * Usual method to parse values from task and init data.
+       * Will store correct api url and load items from it.
+       * Also used for Dynamic Children.
+       */
+      updateValue: flow(function * (store) {
+        if (!self.isLoadedByApi) return Super.updateValue(store);
+
+        self._api = parseValue(self.apiurl, store.task.dataObj);
+
+        yield self.loadItems();
+      }),
     };
   })
   .preProcessSnapshot((sn) => {
