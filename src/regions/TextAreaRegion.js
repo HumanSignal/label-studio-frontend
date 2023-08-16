@@ -87,6 +87,10 @@ const HtxTextAreaRegionView = ({ item, onFocus }) => {
   if (editable || parent.transcription) {
     params.onChange = str => {
       item.setValue(str);
+      item.parent.updateLeadTime();
+    };
+    params.onInput = () => {
+      item.parent.countTime();
     };
   }
 

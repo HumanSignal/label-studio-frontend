@@ -84,7 +84,7 @@ const Result = types
       sequence: types.frozen(),
     }),
     // info about object and region
-    // meta: types.frozen(),
+    meta: types.frozen(),
   })
   .views(self => ({
     get perRegionStates() {
@@ -258,13 +258,18 @@ const Result = types
       self.parentID = id;
     },
 
+    setMetaValue(key, value) {
+      self.meta = { ...self.meta, [key]: value };
+    },
+
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
     updateAppearenceFromState() { },
 
     serialize(options) {
-      const { type, score, value, ...sn } = getSnapshot(self);
+      const sn = getSnapshot(self);
+      const { type, score, value, meta } = sn;
       const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize(options) : {};
       // cut off annotation id
@@ -292,6 +297,10 @@ const Result = types
 
       if (areaMeta && Object.keys(areaMeta).length) {
         data.meta = { ...data.meta, ...areaMeta };
+      }
+
+      if (meta) {
+        data.meta = { ...data.meta, ...meta };
       }
 
       if (self.area.parentID) {
