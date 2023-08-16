@@ -1,7 +1,7 @@
 const { I } = inject();
 
 class Taxonomy {
-  rootBase = '//div[./child::*[starts-with(./@class, "taxonomy")]]';
+  rootBase = '//div[contains(concat(" ", @class, " "), " taxonomy ")]'; // [./child::*[class*="taxonomy--"]]
   input = '[class*="taxonomy--"]';
   selectedList = '[class*="taxonomy__selected"]';
   item = '[class*="taxonomy__item"]';
