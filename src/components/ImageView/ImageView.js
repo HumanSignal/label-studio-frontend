@@ -556,6 +556,7 @@ export default observer(
     handleMouseDown = e => {
       const { item } = this.props;
       const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
+      const isMoveTool = item.getToolsManager().findSelectedTool()?.fullName === 'MoveTool';
 
       if (isFF(FF_LSDV_4930)) {
         this.mouseDownPoint = { x: e.evt.offsetX, y: e.evt.offsetY };
@@ -575,7 +576,17 @@ export default observer(
           e.target === item.stageRef ||
           findClosestParent(
             e.target,
-            el => el.nodeType === 'Group' && ['ruler', 'segmentation'].indexOf(el?.attrs?.name) > -1,
+            el => {
+              if (el.nodeType === 'Group') {
+                if ('ruler' === el?.attrs?.name) {
+                  return true;
+                }
+                if (!isMoveTool && 'segmentation' === el?.attrs?.name) {
+                  return true;
+                }
+              }
+              return false;
+            },
           )
         ) {
           window.addEventListener('mousemove', this.handleGlobalMouseMove);
