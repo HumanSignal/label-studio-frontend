@@ -302,6 +302,18 @@ export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_0
  */
 export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
 
+/**
+ * Allow to load Taxonomy from remote API
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5451_async_taxonomy_110823_short
+ */
+export const FF_TAXONOMY_ASYNC = 'fflag_feat_front_lsdv_5451_async_taxonomy_110823_short';
+
+/**
+ * Allow to label NER directly with Taxonomy instead of Labels
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short
+ */
+export const FF_TAXONOMY_LABELING = 'fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short';
+
 Object.assign(window, {
   APP_SETTINGS: {
     ...(window.APP_SETTINGS ?? {}),
