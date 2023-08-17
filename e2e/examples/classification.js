@@ -54,6 +54,9 @@ const result = [
         'World',
       ],
     },
+    'meta': {
+      'lead_time': 0
+    },
     'id': '0yMHFegGSK',
     'from_name': 'txt',
     'to_name': 'text',
