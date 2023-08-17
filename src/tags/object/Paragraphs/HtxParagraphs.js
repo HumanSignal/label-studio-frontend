@@ -510,8 +510,6 @@ class HtxParagraphsView extends Component {
   renderWrapperHeader() {
     const { item } = this.props;
 
-    console.log('item', item);
-
     return (
       <div className={styles.wrapper_header}>
         {isFF(FF_DEV_2669) && (
