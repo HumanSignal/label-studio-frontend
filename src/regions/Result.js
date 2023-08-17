@@ -4,7 +4,7 @@ import Registry from '../core/Registry';
 import Tree from '../core/Tree';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { isDefined } from '../utils/utilities';
-import { FF_DEV_1372, FF_LSDV_4583, isFF } from '../utils/feature-flags';
+import { FF_LSDV_4583, isFF } from '../utils/feature-flags';
 
 const Result = types
   .model('Result', {
@@ -195,7 +195,7 @@ const Result = types
 
       if (control.visiblewhen === 'choice-selected') {
         return isChoiceSelected();
-      } else if (isFF(FF_DEV_1372) && control.visiblewhen === 'choice-unselected') {
+      } else if (control.visiblewhen === 'choice-unselected') {
         return !isChoiceSelected();
       }
 
