@@ -55,7 +55,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
   // this function is used to animate the reading line when user seek audio
   const setSeekAnimation = useCallback(
     (isSeeking) => {
-      if ((!isFF(FF_LSDV_E_278) || !item.contextscroll)) return;
+      if (!isFF(FF_LSDV_E_278) || !item.contextscroll) return;
 
       const duration = item._value[playingId]?.duration || item._value[playingId]?.end - item._value[playingId]?.start;
       const endTime = !item._value[playingId]?.end ? item._value[playingId]?.start + item._value[playingId]?.duration : item._value[playingId]?.end;
