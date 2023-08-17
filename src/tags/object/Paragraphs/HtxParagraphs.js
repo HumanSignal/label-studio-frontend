@@ -510,6 +510,8 @@ class HtxParagraphsView extends Component {
   renderWrapperHeader() {
     const { item } = this.props;
 
+    console.log('item', item);
+
     return (
       <div className={styles.wrapper_header}>
         {isFF(FF_DEV_2669) && (
@@ -522,24 +524,26 @@ class HtxParagraphsView extends Component {
             }, _timeoutDelay);
           }} />
         )}
-        <div className={styles.wrapper_header__buttons}>
-          <Toggle
-            data-testid={'auto-scroll-toggle'}
-            checked={this.state.canScroll}
-            onChange={() => {
-              if (!this.state.canScroll)
-                this._handleScrollToPhrase();
+        {item.contextscroll && (
+          <div className={styles.wrapper_header__buttons}>
+            <Toggle
+              data-testid={'auto-scroll-toggle'}
+              checked={this.state.canScroll}
+              onChange={() => {
+                if (!this.state.canScroll)
+                  this._handleScrollToPhrase();
 
-              this.setState({
-                canScroll: !this.state.canScroll,
-              });
-            }}
-            label={'Auto-scroll'}
-          />
-          <Tooltip placement="topLeft" title="Automatically sync transcript scrolling with audio playback">
-            <IconHelp />
-          </Tooltip>
-        </div>
+                this.setState({
+                  canScroll: !this.state.canScroll,
+                });
+              }}
+              label={'Auto-scroll'}
+            />
+            <Tooltip placement="topLeft" title="Automatically sync transcript scrolling with audio playback">
+              <IconHelp />
+            </Tooltip>
+          </div>
+        )}
       </div>
     );
   }
