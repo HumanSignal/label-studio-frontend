@@ -543,6 +543,8 @@ export default types
       if (!entity.validate()) return;
 
       entity.sendUserGenerate();
+      entity.sumLeadTimes();
+
       handleSubmittingFlag(async () => {
         await getEnv(self).events.invoke(event, self, entity);
       });
@@ -557,7 +559,8 @@ export default types
       entity.beforeSend();
 
       if (!entity.validate()) return;
-
+      entity.sumLeadTimes();
+      
       handleSubmittingFlag(async () => {
         await getEnv(self).events.invoke('updateAnnotation', self, entity, extraData);
       });

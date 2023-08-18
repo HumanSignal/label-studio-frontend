@@ -608,6 +608,12 @@ export const Annotation = types
       if (versions.draft) self.setDraftSelected();
     },
 
+    sumLeadTimes() {
+      const draftLeadTime = self.versions.draft?.[0]?.leadTime || 0;
+
+      self.leadTime = draftLeadTime + self.leadTime;
+    },
+    
     toggleDraft(explicitValue) {
       const isDraft = self.draftSelected;
       const shouldSelectDraft = explicitValue ?? !isDraft;
