@@ -112,6 +112,7 @@ const TagAttrs = types.model({
   defaultscale: types.optional(types.string, '1'),
   autocenter: types.optional(types.boolean, true),
   scrollparent: types.optional(types.boolean, true),
+  splitchannels: types.optional(types.boolean, false),
   decoder: types.optional(types.enumeration(['ffmpeg', 'webaudio']), 'webaudio'),
   player: types.optional(types.enumeration(['html5', 'webaudio']), 'html5'),
 });
