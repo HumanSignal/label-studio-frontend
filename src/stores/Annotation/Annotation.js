@@ -1274,30 +1274,40 @@ export const Annotation = types
 
     acceptSuggestion(id) {
       const item = self.suggestions.get(id);
+      let itemId = id;
       const isGlobalClassification = item.classification;
 
-      if (isFF(FF_LLM_EPIC) && isGlobalClassification) {
-        const itemResult = item.results[0];
-        const areasIterator = self.areas.values();
+      if (isFF(FF_LLM_EPIC)) {
+        if (isGlobalClassification) {
+          const itemResult = item.results[0];
+          const areasIterator = self.areas.values();
 
-        for (const area of areasIterator) {
-          const areaResult = area.results[0];
-          const isFound = areaResult.from_name === itemResult.from_name
+          for (const area of areasIterator) {
+            const areaResult = area.results[0];
+            const isFound = areaResult.from_name === itemResult.from_name
               && areaResult.to_name === itemResult.to_name
               && areaResult.item_index === itemResult.item_index;
 
-          if (isFound) {
-            self.areas.delete(area.id);
-            break;
+            if (isFound) {
+              itemId = area.id;
+              break;
+            }
+          }
+        } else {
+          const area = self.areas.get(item.cleanId);
+
+          if (area) {
+            itemId = area.id;
           }
         }
       }
 
-      self.areas.set(id, {
+      self.areas.set(itemId, {
         ...item.toJSON(),
+        id: itemId,
         fromSuggestion: true,
       });
-      const area = self.areas.get(id);
+      const area = self.areas.get(itemId);
       const activeStates = area.object.activeStates();
 
       activeStates.forEach(state => {
