@@ -160,7 +160,6 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
                   >
                     <div>
                       <LsChevron />
-                      <Elem name="blind-width"></Elem>
                     </div>
                   </Dropdown.Trigger>
                 )}
