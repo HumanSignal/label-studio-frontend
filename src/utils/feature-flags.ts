@@ -16,6 +16,9 @@ export const FF_DEV_1284 = 'fflag_fix_front_dev_1284_auto_detect_undo_281022_sho
 // Fix crosshair working with zoom & rotation
 export const FF_DEV_1285 = 'ff_front_dev_1285_crosshair_wrong_zoom_140122_short';
 
+// Add visibleWhen="choice-unselected" option
+export const FF_DEV_1372 = 'ff_front_dev_1372_visible_when_choice_unselected_11022022_short';
+
 export const FF_DEV_1442 = 'ff_front_dev_1442_unselect_shape_on_click_outside_080622_short';
 
 // Keep enabled state of video region on area transformations
@@ -310,6 +313,13 @@ export const FF_TAXONOMY_ASYNC = 'fflag_feat_front_lsdv_5451_async_taxonomy_1108
  * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short
  */
 export const FF_TAXONOMY_LABELING = 'fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short';
+
+/**
+ * Annotator workflow control for lead time calculation
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short
+ */
+export const FF_PROD_E_111 = 'fflag_feat_front_prod_e_111_annotator_workflow_control_short';
+
 
 Object.assign(window, {
   APP_SETTINGS: {

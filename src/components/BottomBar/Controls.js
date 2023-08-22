@@ -4,9 +4,11 @@ import { Tooltip } from '../../common/Tooltip/Tooltip';
 import { Block, Elem } from '../../utils/bem';
 import { isDefined } from '../../utils/utilities';
 import { IconBan } from '../../assets/icons';
-
+import { FF_PROD_E_111, isFF } from '../../utils/feature-flags';
 import './Controls.styl';
 import { useCallback, useMemo, useState } from 'react';
+import { LsChevron } from '../../assets/icons';
+import { Dropdown } from '../../common/Dropdown/DropdownComponent';
 
 const TOOLTIP_DELAY = 0.8;
 
@@ -131,40 +133,109 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     const look = (disabled || submitDisabled) ? 'disabled' : 'primary';
 
-    if ((userGenerate && !sentUserGenerate) || (store.explore && !userGenerate && store.hasInterface('submit'))) {
-      const title = submitDisabled
-        ? 'Empty annotations denied in this project'
-        : 'Save results: [ Ctrl+Enter ]';
-      // span is to display tooltip for disabled button
+    const SubmitOption = ({ isUpdate }) => {
+      return (
+        <Button
+          name="list-button"
+          look="secondary"
+        >
+          {`${isUpdate ? 'Update' : 'Submit'} and exit`}
+        </Button>
+      );
+    };
+    
+    if (isFF(FF_PROD_E_111)) {
+      const createButton = (key, title, onClickMethod, isUpdate = false) => {
+        return (
+          <ButtonTooltip key={key} title={title}>
+            <Elem name="tooltip-wrapper">
+              <Button
+                aria-label="submit"
+                name="submit"
+                disabled={disabled || submitDisabled}
+                look={look}
+                icon={(
+                  <Dropdown.Trigger
+                    content={<SubmitOption />}
+                  >
+                    <div>
+                      <LsChevron />
+                      <Elem name="blind-width"></Elem>
+                    </div>
+                  </Dropdown.Trigger>
+                )}
+                onClick={async (event) => {
+                  if (event.target.classList.contains('lsf-dropdown__trigger')) return;
+                  await store.commentStore.commentFormSubmit();
+                  onClickMethod();
+                }}
+              >
+                {isUpdate ? 'Update' : 'Submit'}
+              </Button>
+            </Elem>
+          </ButtonTooltip>
+        );
+      };
+      
+      const conditions = [
+        {
+          check: (userGenerate) || (store.explore && !userGenerate && store.hasInterface('submit')),
+          key: 'submit',
+          title: submitDisabled ? 'Empty annotations denied in this project' : 'Save results: [ Ctrl+Enter ]',
+          method: store.submitAnnotation,
+        },
+        {
+          check: (userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface('update')),
+          key: 'update',
+          title: 'Update this task: [ Alt+Enter ]',
+          method: store.updateAnnotation,
+          isUpdate: sentUserGenerate || versions.result,
+        },
+      ];
+      
+      conditions.forEach((condition) => {
+        if (condition.check) {
+          buttons.push(createButton(condition.key, condition.title, condition.method, condition.isUpdate));
+        }
+      });
+      
 
-      buttons.push(
-        <ButtonTooltip key="submit" title={title}>
-          <Elem name="tooltip-wrapper">
+    } else {
+      if ((userGenerate) || (store.explore && !userGenerate && store.hasInterface('submit'))) {
+        const title = submitDisabled
+          ? 'Empty annotations denied in this project'
+          : 'Save results: [ Ctrl+Enter ]';
+        // span is to display tooltip for disabled button
+  
+        buttons.push(
+          <ButtonTooltip key="submit" title={title}>
+            <Elem name="tooltip-wrapper">
+              <Button aria-label="submit" disabled={disabled || submitDisabled} look={look} onClick={async () => {
+                await store.commentStore.commentFormSubmit();
+                store.submitAnnotation();
+              }}>
+                Submit
+              </Button>
+            </Elem>
+          </ButtonTooltip>,
+        );
+      }
+  
+      if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface('update'))) {
+        const isUpdate = sentUserGenerate || versions.result;
+        const button = (
+          <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
             <Button aria-label="submit" disabled={disabled || submitDisabled} look={look} onClick={async () => {
               await store.commentStore.commentFormSubmit();
-              store.submitAnnotation();
+              store.updateAnnotation();
             }}>
-              Submit
+              {isUpdate ? 'Update' : 'Submit'}
             </Button>
-          </Elem>
-        </ButtonTooltip>,
-      );
-    }
-
-    if ((userGenerate && sentUserGenerate) || (!userGenerate && store.hasInterface('update'))) {
-      const isUpdate = sentUserGenerate || versions.result;
-      const button = (
-        <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
-          <Button aria-label="submit" disabled={disabled || submitDisabled} look={look} onClick={async () => {
-            await store.commentStore.commentFormSubmit();
-            store.updateAnnotation();
-          }}>
-            {isUpdate ? 'Update' : 'Submit'}
-          </Button>
-        </ButtonTooltip>
-      );
-
-      buttons.push(button);
+          </ButtonTooltip>
+        );
+  
+        buttons.push(button);
+      }  
     }
   }
 
