@@ -17,7 +17,7 @@ import {
   FF_DEV_2100,
   FF_DEV_2100_A,
   FF_DEV_2432,
-  FF_DEV_3391,
+  FF_DEV_3391, FF_LLM_EPIC,
   FF_LSDV_3009,
   FF_LSDV_4583,
   FF_LSDV_4832,
@@ -1274,6 +1274,24 @@ export const Annotation = types
 
     acceptSuggestion(id) {
       const item = self.suggestions.get(id);
+      const isGlobalClassification = item.classification;
+
+      if (isFF(FF_LLM_EPIC) && isGlobalClassification) {
+        const itemResult = item.results[0];
+        const areasIterator = self.areas.values();
+
+        for (const area of areasIterator) {
+          const areaResult = area.results[0];
+          const isFound = areaResult.from_name === itemResult.from_name
+              && areaResult.to_name === itemResult.to_name
+              && areaResult.item_index === itemResult.item_index;
+
+          if (isFound) {
+            self.areas.delete(area.id);
+            break;
+          }
+        }
+      }
 
       self.areas.set(id, {
         ...item.toJSON(),
@@ -1290,8 +1308,10 @@ export const Annotation = types
       // hack to unlock sending textarea results
       // to the ML backen every time
       // it just sets `fromSuggestion` back to `false`
-      const isTextArea = area.results.findIndex(r => r.type === 'textarea') >= 0; 
+      const isTextArea = area.results.findIndex(r => r.type === 'textarea') >= 0;
 
+      // This is temporary exception until we find the way to do it right
+      // and this was done to keep notifications on prompt editing or fixing answer from ML backend
       if (isTextArea) area.revokeSuggestion();
     },
 
