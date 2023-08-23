@@ -57,7 +57,7 @@ import styles from './Taxonomy.styl';
  * @param {string} [apiUrl]               - URL to fetch taxonomy from remote source; API should accept optional array `path` param: `apiUrl?path[]=root&path[]=child1` to return only nested children of `child1` node[^FF_TAXONOMY_ASYNC]
  * @param {boolean} [leafsOnly=false]     - Allow annotators to select only leaf nodes of taxonomy
  * @param {boolean} [showFullPath=false]  - Whether to show the full path of selected items
- * @param {string} [pathSeparator= / ]    - Separator to show in the full path
+ * @param {string} [pathSeparator=" / "]  - Separator to show in the full path
  * @param {number} [maxUsages]            - Maximum number of times a choice can be selected per task
  * @param {number} [maxWidth]             - Maximum width for dropdown
  * @param {number} [minWidth]             - Minimum width for dropdown
