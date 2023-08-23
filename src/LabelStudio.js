@@ -1,4 +1,4 @@
-import { render, unmountComponentAtNode } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import App from './components/App/App';
 import { configureStore } from './configureStore';
 import { LabelStudio as LabelStudioReact } from './Component';
@@ -14,6 +14,7 @@ import { destroy } from 'mobx-state-tree';
 import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
 import { cleanDomAfterReact, findReactKey } from './utils/reactCleaner';
 import { FF_LSDV_4620_3_ML, isFF } from './utils/feature-flags';
+import { StrictMode } from 'react';
 
 configure({
   isolateGlobalState: true,
@@ -60,6 +61,7 @@ export class LabelStudio {
   async createApp() {
     const { store, getRoot } = await configureStore(this.options, this.events);
     const rootElement = getRoot(this.root);
+    const appRoot = createRoot(rootElement);
 
     this.store = store;
     window.Htx = this.store;
@@ -68,30 +70,50 @@ export class LabelStudio {
 
     const renderApp = () => {
       if (isRendered) {
-        clearRenderedApp();
+        unmountApp();
       }
-      render((
-        <App
-          store={this.store}
-          panels={registerPanels(this.options.panels) ?? []}
-        />
-      ), rootElement);
+      appRoot.render(
+        <StrictMode>
+          <App
+            store={this.store}
+            panels={registerPanels(this.options.panels) ?? []}
+          />
+        </StrictMode>
+      )
     };
 
-    const clearRenderedApp = () => {
-      const childNodes = [...rootElement.childNodes];
-      // cleanDomAfterReact needs this key to be sure that cleaning affects only current react subtree
-      const reactKey = findReactKey(childNodes[0]);
+    const PERFORM_REACT_CLEANUP = true;
 
-      unmountComponentAtNode(rootElement);
+    const cleanupReactNodes = (callback) => {
+      let childNodes, reactKey;
+
+      if (PERFORM_REACT_CLEANUP) {
+        childNodes = Array.from(rootElement.childNodes);
+        console.log(childNodes);
+
+        // cleanDomAfterReact needs this key to be sure that cleaning affects
+        // only current react subtree
+        reactKey = findReactKey(childNodes[0]);
+      }
+
+      callback();
+
       /*
         Unmounting doesn't help with clearing React's fibers
         but removing the manually helps
         @see https://github.com/facebook/react/pull/20290 (similar problem)
         That's maybe not relevant in version 18
        */
-      cleanDomAfterReact(childNodes, reactKey);
-      cleanDomAfterReact([rootElement], reactKey);
+      if (childNodes && reactKey) {
+        cleanDomAfterReact(childNodes, reactKey);
+        cleanDomAfterReact([rootElement], reactKey);
+      }
+    }
+
+    const unmountApp = () => {
+      cleanupReactNodes(() => {
+        appRoot.unmount();
+      });
     };
 
     renderApp();
@@ -100,12 +122,12 @@ export class LabelStudio {
         return isRendered;
       },
       render: renderApp,
-      clear: clearRenderedApp,
+      clear: unmountApp,
     });
 
     this.destroy = () => {
       if (isFF(FF_LSDV_4620_3_ML)) {
-        clearRenderedApp();
+        unmountApp();
       }
       destroySharedStore();
       if (isFF(FF_LSDV_4620_3_ML)) {
