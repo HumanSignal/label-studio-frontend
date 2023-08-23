@@ -125,7 +125,7 @@ const TaxonomyLabelingResult = types
   .views(self => ({
     get result() {
       // @todo make it without duplication of ClassificationBase code
-      if (!self.isLabeling) {
+      if (!self.isLabeling && !self.perregion) {
         if (self.peritem) {
           return self._perItemResult;
         }
@@ -362,7 +362,7 @@ const Model = types
     },
 
     unselectAll() {
-      if (isFF(FF_TAXONOMY_LABELING)) self.selected = [];
+      if (isFF(FF_TAXONOMY_LABELING) && self.isLabeling) self.selected = [];
     },
 
     onAddLabel(path) {
