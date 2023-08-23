@@ -307,6 +307,15 @@ const Model = types.model({
       : `${naturalHeight / naturalWidth * 100}%`;
   },
 
+  get zoomedPixelSize() {
+    const { naturalWidth, naturalHeight } = self;
+
+    return {
+      x: 100 / naturalWidth,
+      y: 100 / naturalHeight,
+    };
+  },
+
   createSerializedResult(region, value) {
     const index = region.item_index ?? 0;
     const currentImageEntity = self.findImageEntity(index);
@@ -973,11 +982,6 @@ const Model = types.model({
 
       self.naturalWidth = naturalWidth;
       self.naturalHeight = naturalHeight;
-
-      self.zoomedPixelSize = {
-        x: 100 / self.naturalWidth,
-        y: 100 / self.naturalHeight,
-      };
 
       self._updateImageSize({ width: offsetWidth, height: offsetHeight });
       // after regions' sizes adjustment we have to reset all saved history changes

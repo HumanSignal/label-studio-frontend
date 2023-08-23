@@ -105,10 +105,22 @@ const Model = types
       };
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.x) : self.x;
+      const isSnap = self.tag.snap === 'pixel';
+      const zoomedPixelSize = self.parent.zoomedPixelSize.x;
+
+      const x = isSnap ?
+        Math.round(self.x / zoomedPixelSize) * zoomedPixelSize : self.x;
+
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(x) : x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.y) : self.y;
+      const isSnap = self.tag.snap === 'pixel';
+      const zoomedPixelSize = self.parent.zoomedPixelSize.y;
+
+      const y = isSnap ?
+        Math.round(self.y / zoomedPixelSize) * zoomedPixelSize : self.y;
+
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(y) : y;
     },
     get canvasWidth() {
       return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.width) : self.width;

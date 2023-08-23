@@ -113,13 +113,22 @@ const _Tool = types
       },
 
       startDrawing(x, y) {
+        const points = { x, y };
+        const zoomedPixelSizeX = self.obj.zoomedPixelSize.x;
+        const zoomedPixelSizeY = self.obj.zoomedPixelSize.y;
+
+        if (self.control?.snap === 'pixel') {
+          points.x = Math.round(x / zoomedPixelSizeX) * zoomedPixelSizeX;
+          points.y = Math.round(y / zoomedPixelSizeY) * zoomedPixelSizeY;
+        }
+
         if (isFF(FF_DEV_2432)) {
           self.mode = 'drawing';
-          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }), true);
+          self.currentArea = self.createRegion(self.createRegionOptions({ x: points.x, y: points.y }), true);
           self.setDrawing(true);
           self.applyActiveStates(self.currentArea);
         } else {
-          Super.startDrawing(x, y);
+          Super.startDrawing(points.x, points.y);
         }
       },
 
