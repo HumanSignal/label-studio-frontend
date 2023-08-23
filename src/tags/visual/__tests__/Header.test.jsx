@@ -1,9 +1,7 @@
 /* global test, expect, jest */
-import Enzyme, { render } from "enzyme";
-import Adapter from "@cfaester/enzyme-adapter-react-18";
+import { render } from "@testing-library/react";
 import { HtxHeader } from "../Header";
-
-Enzyme.configure({ adapter: new Adapter() });
+import "@testing-library/jest-dom";
 
 jest.mock('react', () => ({
   ...jest.requireActual('react'),
@@ -18,7 +16,6 @@ test("Header basic test", () => {
   };
 
   const view = render(<HtxHeader item={confStore} />);
-  const text = view.text();
 
-  expect(text).toBe("header text");
+  expect(view.getByText('header text')).toBeInTheDocument();
 });

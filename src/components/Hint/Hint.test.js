@@ -1,12 +1,7 @@
 /* global describe, it, expect */
 import React from 'react';
-import Enzyme, { shallow } from 'enzyme';
-import { shallowToJson } from 'enzyme-to-json';
-import Adapter from '@cfaester/enzyme-adapter-react-18';
-
-Enzyme.configure({ adapter: new Adapter() });
-
 import Hint from './Hint';
+import { render } from '@testing-library/react';
 
 describe('Hint', () => {
   it('Should render correctly', () => {
@@ -16,8 +11,8 @@ describe('Hint', () => {
       </Hint>
     );
 
-    const output = shallow(component);
+    const output = render(component);
 
-    expect(shallowToJson(output)).toMatchSnapshot();
+    expect(output.asFragment()).toMatchSnapshot();
   });
 });

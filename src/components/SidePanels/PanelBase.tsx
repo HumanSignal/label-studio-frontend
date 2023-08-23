@@ -1,4 +1,4 @@
-import { FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FC, MutableRefObject, MouseEvent as RMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
 import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand } from '../../assets/icons';
 
@@ -32,7 +32,7 @@ const resizers = [
 interface PanelBaseProps {
   root: MutableRefObject<HTMLDivElement | undefined>;
   name: PanelType;
-  mix?: string|string[];
+  mix?: string | string[];
   title: string;
   tooltip: string;
   top: number;
@@ -57,6 +57,7 @@ interface PanelBaseProps {
   onPositionChange: PositonChangeHandler;
   onVisibilityChange: VisibilityChangeHandler;
   onPositionChangeBegin: PositonChangeHandler;
+  children: React.ReactNode;
 }
 
 export type PanelProps = Omit<PanelBaseProps, PanelBaseExclusiveProps>
@@ -145,9 +146,9 @@ export const PanelBase: FC<PanelBaseProps> = ({
   }, [alignment, visible, detached, resizing, locked]);
 
   const currentIcon = useMemo(() => {
-    if (detached) return visible ? <IconOutlinerCollapse/> : <IconOutlinerExpand/>;
-    if (alignment === 'left') return visible ? <IconArrowLeft/> : <IconArrowRight/>;
-    if (alignment === 'right') return visible ? <IconArrowRight/> : <IconArrowLeft/>;
+    if (detached) return visible ? <IconOutlinerCollapse /> : <IconOutlinerExpand />;
+    if (alignment === 'left') return visible ? <IconArrowLeft /> : <IconArrowRight />;
+    if (alignment === 'right') return visible ? <IconArrowRight /> : <IconArrowLeft />;
 
     return null;
   }, [detached, visible, alignment]);
@@ -232,7 +233,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       const target = e.target as HTMLElement;
       const type = target.dataset.resize;
       const shift = (() => {
-        switch(type) {
+        switch (type) {
           case 'top-left':
             return 'top-left';
           case 'top':
@@ -332,6 +333,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
               mod={{ enabled: visible }}
               onClick={(detached && !visible) ? handleExpand : handleCollapse}
               data-tooltip={tooltipText}
+              data-testid="panel-toggle-collapsed"
             >
               {currentIcon}
             </Elem>

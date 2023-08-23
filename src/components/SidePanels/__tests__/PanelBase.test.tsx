@@ -1,17 +1,16 @@
 /* global test, expect, describe */
-import Enzyme, { mount } from 'enzyme';
-import Adapter from '@cfaester/enzyme-adapter-react-18';
 import { PanelBase, PanelProps } from '../PanelBase';
 import { createRef } from 'react';
-
-Enzyme.configure({ adapter: new Adapter() });
+import { render } from '@testing-library/react';
+import "@testing-library/jest-dom";
+import userEvent from "@testing-library/user-event";
 
 describe('PanelBase', () => {
   test('Panel', async () => {
     const panelName = 'details';
     const rootRef = createRef<HTMLDivElement>();
     let isCurrentlyExpanded = true;
-    const sampleProps: Partial<PanelProps> = {
+    const sampleProps: PanelProps = {
       'top': 113,
       'left': 0,
       'relativeLeft': 0,
@@ -22,13 +21,13 @@ describe('PanelBase', () => {
       'visible': true,
       'detached': false,
       'alignment': 'left',
-      'onResize': () => {},
-      'onResizeStart': () => {},
-      'onResizeEnd': () => {},
-      'onPositionChange': () => {},
-      'onVisibilityChange': (name: string, isExpanded) => {isCurrentlyExpanded = isExpanded;},
-      'onPositionChangeBegin': () => {},
-      'onSnap': () => {},
+      'onResize': () => { },
+      'onResizeStart': () => { },
+      'onResizeEnd': () => { },
+      'onPositionChange': () => { },
+      'onVisibilityChange': (name: string, isExpanded) => { isCurrentlyExpanded = isExpanded; },
+      'onPositionChangeBegin': () => { },
+      'onSnap': () => { },
       // eslint-disable-next-line
       // @ts-ignore
       'root': rootRef,
@@ -77,22 +76,21 @@ describe('PanelBase', () => {
         'isDraftSaving': false,
         'versions': '{draft: undefined, result: Array(0)}',
         'resultSnapshot': '',
-        'autosave': () => {},
+        'autosave': () => { },
       },
     };
     const sampleContent = 'Sample Panel';
-    const view = mount(<div>
-      { /* eslint-disable-next-line */
-        /* @ts-ignore */ }
+    const view = render(<>
       <PanelBase {...sampleProps} name={panelName} title={panelName}>
         {sampleContent}
       </PanelBase>
-    </div>);
+    </>);
 
-    expect(view.find('.dm-panel__title').text()).toBe(panelName);
-    expect(view.find('.dm-panel__body .dm-details').text()).toBe(sampleContent);
+    expect(view.getByText(panelName)).toBeInTheDocument();
+    expect(view.getByText(sampleContent)).toBeInTheDocument();
     expect(isCurrentlyExpanded).toBe(true);
-    view.find('.dm-panel__toggle').simulate('click');
+
+    await userEvent.click(view.getByTestId("panel-toggle-collapsed"));
     expect(isCurrentlyExpanded).toBe(false);
   });
 });

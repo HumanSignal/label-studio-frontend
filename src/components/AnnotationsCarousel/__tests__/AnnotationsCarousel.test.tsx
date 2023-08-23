@@ -1,13 +1,10 @@
 /* global test, expect, jest */
 import React from 'react';
-import Enzyme, { mount } from 'enzyme';
-import Adapter from '@cfaester/enzyme-adapter-react-18';
+import { render } from "@testing-library/react";
 import { AnnotationsCarousel } from '../AnnotationsCarousel';
 // eslint-disable-next-line
 // @ts-ignore
 import { annotationStore, store } from './sampleData.js';
-
-Enzyme.configure({ adapter: new Adapter() });
 
 jest.mock('react', () => ({
   ...jest.requireActual('react'),
@@ -15,7 +12,13 @@ jest.mock('react', () => ({
 }));
 
 test('AnnotationsCarousel', async () => {
-  const view = mount(<AnnotationsCarousel annotationStore={annotationStore} store={store} />);
-  
-  expect(view.find('.dm-annotations-carousel__carosel').children().length).toBe(9);
+  const view = render(
+    <AnnotationsCarousel
+      annotationStore={annotationStore}
+      store={store}
+    />
+  );
+  const carouselItems = view.container.querySelectorAll('.dm-annotations-carousel__carosel > *');
+
+  expect(carouselItems).toHaveLength(9);
 });
