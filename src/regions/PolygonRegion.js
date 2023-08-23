@@ -158,6 +158,7 @@ const Model = types
         removeHoverAnchor({ layer: e.currentTarget.getLayer() });
 
         const { offsetX, offsetY } = e.evt;
+
         const [cursorX, cursorY] = self.parent.fixZoomedCoords([offsetX, offsetY]);
         const point = getAnchorPoint({ flattenedPoints, cursorX, cursorY });
 
@@ -176,7 +177,15 @@ const Model = types
 
       addPoint(x, y) {
         if (self.closed) return;
-        self._addPoint(x, y);
+
+        const _points = { x, y };
+
+        if (self.tag?.snap === 'pixel') {
+          _points.x = Math.round(x / self.parent.zoomedPixelSize.x) * self.parent.zoomedPixelSize.x;
+          _points.y = Math.round(y / self.parent.zoomedPixelSize.y) * self.parent.zoomedPixelSize.y;
+        }
+
+        self._addPoint(_points.x, _points.y);
       },
 
       setPoints(points) {

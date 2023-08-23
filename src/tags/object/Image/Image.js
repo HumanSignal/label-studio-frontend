@@ -14,7 +14,16 @@ import { RectRegionModel } from '../../../regions/RectRegion';
 import * as Tools from '../../../tools';
 import ToolsManager from '../../../tools/Manager';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
+import {
+  FF_DEV_3377,
+  FF_DEV_3666,
+  FF_DEV_3793,
+  FF_DEV_4081,
+  FF_LSDV_4583,
+  FF_LSDV_4583_6,
+  FF_LSDV_4711,
+  isFF
+} from '../../../utils/feature-flags';
 import { guidGenerator } from '../../../utils/unique';
 import { clamp, isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
@@ -467,7 +476,7 @@ const Model = types.model({
 
     function createImageEntities() {
       if (!self.store.task) return;
-    
+
       const parsedValue = self.multiImage
         ? self.parsedValueList
         : self.parsedValue;
@@ -509,7 +518,7 @@ const Model = types.model({
 
       createImageEntities();
     }
-  
+
     function afterResultCreated(region) {
       if (!region) return;
       if (region.classification) return;
@@ -950,7 +959,7 @@ const Model = types.model({
       self.drawingRegion?.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
 
       setTimeout(self.annotation.history.unfreeze, 0);
-      
+
       //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
       if (_historyLength <= 1) {
         // Don't force unselection of regions during the updateObjects callback from history reinit
@@ -964,6 +973,11 @@ const Model = types.model({
 
       self.naturalWidth = naturalWidth;
       self.naturalHeight = naturalHeight;
+
+      self.zoomedPixelSize = {
+        x: 100 / self.naturalWidth,
+        y: 100 / self.naturalHeight,
+      };
 
       self._updateImageSize({ width: offsetWidth, height: offsetHeight });
       // after regions' sizes adjustment we have to reset all saved history changes
