@@ -133,18 +133,19 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     const look = (disabled || submitDisabled) ? 'disabled' : 'primary';
 
-    const SubmitOption = ({ isUpdate }) => {
-      return (
-        <Button
-          name="list-button"
-          look="secondary"
-        >
-          {`${isUpdate ? 'Update' : 'Submit'} and exit`}
-        </Button>
-      );
-    };
+
     
     if (isFF(FF_PROD_E_111)) {
+      const SubmitOption = ({ isUpdate }) => {
+        return (
+          <Button
+            name="list-button"
+            look="secondary"
+          >
+            {`${isUpdate ? 'Update' : 'Submit'} and exit`}
+          </Button>
+        );
+      };
       const createButton = (key, title, onClickMethod, isUpdate = false) => {
         return (
           <ButtonTooltip key={key} title={title}>
