@@ -1033,6 +1033,7 @@ export const Annotation = types
 
       self.suggestions.clear();
 
+      if (!rawSuggestions) return;
       self.deserializeResults(rawSuggestions, {
         suggestions: true,
       });
