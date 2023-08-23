@@ -1,6 +1,6 @@
 /* global test, expect, jest */
 import Enzyme, { render } from "enzyme";
-import Adapter from "@wojtekmaj/enzyme-adapter-react-17";
+import Adapter from "@cfaester/enzyme-adapter-react-18";
 import { HtxHeader } from "../Header";
 
 Enzyme.configure({ adapter: new Adapter() });
