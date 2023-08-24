@@ -136,11 +136,25 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     
     if (isFF(FF_PROD_E_111)) {
-      const SubmitOption = ({ isUpdate }) => {
+      const SubmitOption = ({ isUpdate, onClickMethod }) => {
         return (
           <Button
             name="list-button"
             look="secondary"
+            onClick={async (event) => {
+              event.preventDefault();
+              
+              if ('URLSearchParams' in window) {
+                const searchParams = new URLSearchParams(window.location.search);
+
+                searchParams.set('exitStream', 'true');
+                const newRelativePathQuery = window.location.pathname + '?' + searchParams.toString();
+
+                window.history.pushState(null, '', newRelativePathQuery);
+              }
+              await store.commentStore.commentFormSubmit();
+              onClickMethod();
+            }}
           >
             {`${isUpdate ? 'Update' : 'Submit'} and exit`}
           </Button>
@@ -157,7 +171,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
                 look={look}
                 icon={(
                   <Dropdown.Trigger
-                    content={<SubmitOption />}
+                    content={<SubmitOption onClickMethod={onClickMethod} isUpdate={isUpdate} />}
                   >
                     <div>
                       <LsChevron />
