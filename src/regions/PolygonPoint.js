@@ -104,6 +104,24 @@ const PolygonPointRelativeCoords = types
       self.y = self.stage.canvasToInternalY(canvasY);
     },
 
+    _moveToSnapPoint(canvasX, canvasY) {
+      if (self.parent.control.snap !== 'pixel') return;
+
+      const point = {
+        x: self.stage.canvasToInternalX(canvasX),
+        y: self.stage.canvasToInternalY(canvasY),
+      };
+      
+      const zoomedPixelSizeX = self.parent.object.zoomedPixelSize.x;
+      const zoomedPixelSizeY = self.parent.object.zoomedPixelSize.y;
+
+      point.x = Math.round(point.x / zoomedPixelSizeX) * zoomedPixelSizeX;
+      point.y = Math.round(point.y / zoomedPixelSizeY) * zoomedPixelSizeY;
+
+      self.x = point.x;
+      self.y = point.y;
+    },
+
     /**
      * Close polygon
      * @param {*} ev
@@ -236,6 +254,15 @@ const PolygonPointView = observer(({ item, name }) => {
 
     onDragEnd: e => {
       setDraggable(true);
+
+      let { x, y } = e.target.attrs;
+
+      if (x < 0) x = 0;
+      if (y < 0) y = 0;
+      if (x > item.stage.stageWidth) x = item.stage.stageWidth;
+      if (y > item.stage.stageHeight) y = item.stage.stageHeight;
+
+      item._moveToSnapPoint(x, y);
       item.annotation.history.unfreeze();
       e.cancelBubble = true;
     },
