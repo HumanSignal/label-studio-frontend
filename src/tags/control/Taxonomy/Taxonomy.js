@@ -307,7 +307,9 @@ const Model = types
 
       try {
         const res = yield fetch(url);
-        const data = yield res.json();
+        const dataRaw = yield res.json();
+        // @todo temporary to support deprecated API response format (just array, no items)
+        const data = dataRaw.items ?? dataRaw;
         const prefix = path ?? [];
         // @todo use aliases
         // const items = data.map(({ alias, isLeaf, value }) => ({ label: value, path: [...prefix, alias ?? value], depth: 0, isLeaf }));
