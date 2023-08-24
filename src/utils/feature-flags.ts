@@ -313,7 +313,6 @@ export const FF_TAXONOMY_LABELING = 'fflag_feat_front_lsdv_5452_taxonomy_labelin
 
 /**
  * Annotator workflow control for lead time calculation
- * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short
  */
 export const FF_PROD_E_111 = 'fflag_feat_front_prod_e_111_annotator_workflow_control_short';
 
