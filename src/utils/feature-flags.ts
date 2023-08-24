@@ -16,9 +16,6 @@ export const FF_DEV_1284 = 'fflag_fix_front_dev_1284_auto_detect_undo_281022_sho
 // Fix crosshair working with zoom & rotation
 export const FF_DEV_1285 = 'ff_front_dev_1285_crosshair_wrong_zoom_140122_short';
 
-// Add visibleWhen="choice-unselected" option
-export const FF_DEV_1372 = 'ff_front_dev_1372_visible_when_choice_unselected_11022022_short';
-
 export const FF_DEV_1442 = 'ff_front_dev_1442_unselect_shape_on_click_outside_080622_short';
 
 // Keep enabled state of video region on area transformations
@@ -301,6 +298,18 @@ export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_0
  * @see: ff_dev_2007_rework_choices_280322_short: To enable alt version of <Choices/> (it's not necessary)
  */
 export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
+
+/**
+ * Allow to load Taxonomy from remote API
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5451_async_taxonomy_110823_short
+ */
+export const FF_TAXONOMY_ASYNC = 'fflag_feat_front_lsdv_5451_async_taxonomy_110823_short';
+
+/**
+ * Allow to label NER directly with Taxonomy instead of Labels
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short
+ */
+export const FF_TAXONOMY_LABELING = 'fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short';
 
 Object.assign(window, {
   APP_SETTINGS: {

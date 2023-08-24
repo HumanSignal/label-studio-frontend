@@ -1,4 +1,4 @@
-import { destroy as destroyNode, flow, getType, types } from 'mobx-state-tree';
+import { destroy as destroyNode, flow, types } from 'mobx-state-tree';
 import { createRef } from 'react';
 import { customTypes } from '../../../core/CustomTypes';
 import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
@@ -18,8 +18,6 @@ import { FF_LSDV_4620_3, isFF } from '../../../utils/feature-flags';
 import DomManager from './domManager';
 import { STATE_CLASS_MODS } from '../../../mixins/HighlightMixin';
 import Constants from '../../../core/Constants';
-
-const SUPPORTED_STATES = ['LabelsModel', 'HyperTextLabelsModel', 'RatingModel'];
 
 const WARNING_MESSAGES = {
   dataTypeMistmatch: () => 'Do not put text directly in task data if you use valueType=url.',
@@ -96,7 +94,7 @@ const Model = types
     activeStates() {
       const states = self.states();
 
-      return states ? states.filter(s => s.isSelected && SUPPORTED_STATES.includes(getType(s).name)) : null;
+      return states ? states.filter(s => s.isLabeling && s.isSelected) : null;
     },
 
     get isLoaded() {

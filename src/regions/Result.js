@@ -4,7 +4,7 @@ import Registry from '../core/Registry';
 import Tree from '../core/Tree';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { isDefined } from '../utils/utilities';
-import { FF_DEV_1372, FF_LSDV_4583, isFF } from '../utils/feature-flags';
+import { FF_LSDV_4583, isFF } from '../utils/feature-flags';
 
 const Result = types
   .model('Result', {
@@ -141,6 +141,14 @@ const Result = types
     },
 
     get selectedLabels() {
+      if (self.type === 'taxonomy') {
+        const sep = self.from_name.pathseparator;
+        const join = self.from_name.showfullpath;
+
+        return (self.mainValue || [])
+          .map(v => join ? v.join(sep) : v.at(-1))
+          .map(v => ({ value: v, id: v }));
+      }
       if (self.mainValue?.length === 0 && self.from_name.allowempty) {
         return self.from_name.findLabel(null);
       }
@@ -187,7 +195,7 @@ const Result = types
 
       if (control.visiblewhen === 'choice-selected') {
         return isChoiceSelected();
-      } else if (isFF(FF_DEV_1372) && control.visiblewhen === 'choice-unselected') {
+      } else if (control.visiblewhen === 'choice-unselected') {
         return !isChoiceSelected();
       }
 

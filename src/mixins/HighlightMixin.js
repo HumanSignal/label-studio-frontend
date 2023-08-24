@@ -278,13 +278,9 @@ export const HighlightMixin = types
     },
 
     getLabelColor() {
-      let labelColor = self.parent.highlightcolor || (self.style || self.tag || defaultStyle).fillcolor;
+      const labelColor = self.parent.highlightcolor || (self.style || self.tag || defaultStyle).fillcolor;
 
-      if (labelColor) {
-        labelColor = Utils.Colors.convertToRGBA(labelColor, LABEL_COLOR_ALPHA);
-      }
-
-      return labelColor;
+      return Utils.Colors.convertToRGBA(labelColor ?? '#DA935D', LABEL_COLOR_ALPHA);
     },
 
     find(span) {
