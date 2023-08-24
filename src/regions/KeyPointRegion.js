@@ -218,6 +218,7 @@ const HtxKeyPointView = ({ item, setShapeRef }) => {
       <Circle
         x={item.canvasX}
         y={item.canvasY}
+        key={item.x + item.y}
         ref={el => setShapeRef(el)}
         // keypoint should always be the same visual size
         radius={Math.max(item.canvasWidth, 2) / item.parent?.zoomScale}
