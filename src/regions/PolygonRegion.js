@@ -178,16 +178,16 @@ const Model = types
       addPoint(x, y) {
         if (self.closed) return;
 
-        const points = { x, y };
+        const point = { x, y };
         const zoomedPixelSizeX = self.parent.zoomedPixelSize.x;
         const zoomedPixelSizeY = self.parent.zoomedPixelSize.y;
 
         if (self.tag?.snap === 'pixel') {
-          points.x = Math.round(x / zoomedPixelSizeX) * zoomedPixelSizeX;
-          points.y = Math.round(y / zoomedPixelSizeY) * zoomedPixelSizeY;
+          point.x = Math.round(x / zoomedPixelSizeX) * zoomedPixelSizeX;
+          point.y = Math.round(y / zoomedPixelSizeY) * zoomedPixelSizeY;
         }
 
-        self._addPoint(points.x, points.y);
+        self._addPoint(point.x, point.y);
       },
 
       setPoints(points) {
