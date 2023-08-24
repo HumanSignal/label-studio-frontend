@@ -50,6 +50,7 @@ const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyIt
     value: item.path.join(options.pathSeparator),
     key: item.path.join(options.pathSeparator),
     isLeaf: item.isLeaf !== false && !item.children,
+    disableCheckbox: options.leafsOnly && (item.isLeaf === false || !!item.children),
     children: item.children ? convert(item.children, options) : undefined,
   }));
 };

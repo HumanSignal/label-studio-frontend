@@ -293,7 +293,10 @@ const Model = types
       if (path) {
         for (const level of path) {
           item = item.children?.find(ch => ch.path.at(-1) === level);
-          if (!item) return;
+          if (!item) {
+            self.loading = false;
+            return;
+          }
         }
       }
 
