@@ -105,7 +105,7 @@ const Model = types
       };
     },
     get canvasX() {
-      const isSnap = self.tag.snap === 'pixel';
+      const isSnap = self.control?.snap === 'pixel';
       const zoomedPixelSize = self.parent.zoomedPixelSize.x;
 
       const x = isSnap ?
@@ -114,7 +114,7 @@ const Model = types
       return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(x) : x;
     },
     get canvasY() {
-      const isSnap = self.tag.snap === 'pixel';
+      const isSnap = self.control?.snap === 'pixel';
       const zoomedPixelSize = self.parent.zoomedPixelSize.y;
 
       const y = isSnap ?

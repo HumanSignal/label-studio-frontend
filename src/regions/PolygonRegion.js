@@ -182,7 +182,7 @@ const Model = types
         const zoomedPixelSizeX = self.parent.zoomedPixelSize.x;
         const zoomedPixelSizeY = self.parent.zoomedPixelSize.y;
 
-        if (self.tag?.snap === 'pixel') {
+        if (self.control?.snap === 'pixel') {
           point.x = Math.round(x / zoomedPixelSizeX) * zoomedPixelSizeX;
           point.y = Math.round(y / zoomedPixelSizeY) * zoomedPixelSizeY;
         }
