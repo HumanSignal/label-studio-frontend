@@ -4,7 +4,7 @@ import { guidGenerator } from '../core/Helpers';
 import Result from '../regions/Result';
 import { PER_REGION_MODES } from './PerRegion';
 import { ReadOnlyRegionMixin } from './ReadOnlyMixin';
-import { FF_LSDV_4930, isFF } from '../utils/feature-flags';
+import { FF_LSDV_4930, FF_TAXONOMY_LABELING, isFF } from '../utils/feature-flags';
 
 let ouid = 1;
 
@@ -25,7 +25,7 @@ export const AreaMixinBase = types
      * @return {Result[]} all results with labeling (created by *Labels control)
      */
     get labelings() {
-      return self.results.filter(r => r.type.endsWith('labels'));
+      return self.results.filter(r => r.from_name.isLabeling);
     },
 
     /**
@@ -33,9 +33,9 @@ export const AreaMixinBase = types
      */
     get labeling() {
       if (!isAlive(self)) {
-        return void 0;
+        return undefined;
       }
-      return self.results.find(r => r.type.endsWith('labels') && r.hasValue);
+      return self.results.find(r => r.from_name.isLabeling && r.hasValue);
     },
 
     get emptyLabel() {
@@ -64,6 +64,13 @@ export const AreaMixinBase = types
 
     get perRegionTags() {
       return self.annotation.toNames.get(self.object.name)?.filter(tag => tag.perregion) || [];
+    },
+
+    // special tags that can be used for labeling (only <Taxonomy isLabeling/> for now)
+    get labelingTags() {
+      if (!isFF(FF_TAXONOMY_LABELING)) return [];
+
+      return self.annotation.toNames.get(self.object.name)?.filter(tag => tag.classification && tag.isLabeling) || [];
     },
 
     get perRegionDescControls() {
