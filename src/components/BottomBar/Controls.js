@@ -219,7 +219,6 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
         const title = submitDisabled
           ? 'Empty annotations denied in this project'
           : 'Save results: [ Ctrl+Enter ]';
-        // span is to display tooltip for disabled button
   
         buttons.push(
           <ButtonTooltip key="submit" title={title}>
