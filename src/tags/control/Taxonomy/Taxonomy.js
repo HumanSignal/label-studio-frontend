@@ -132,6 +132,8 @@ const TaxonomyLabelingResult = types
         return self.annotation.results.find(r => r.from_name === self);
       }
 
+      // per-region Taxonomy and Taxonomy as a labeling tool share the same way to find a result,
+      // they just display items for current region, attached directly or in result.
       const area = self.annotation.highlightedNode;
 
       if (!area) return null;
