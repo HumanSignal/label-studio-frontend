@@ -522,24 +522,26 @@ class HtxParagraphsView extends Component {
             }, _timeoutDelay);
           }} />
         )}
-        <div className={styles.wrapper_header__buttons}>
-          <Toggle
-            data-testid={'auto-scroll-toggle'}
-            checked={this.state.canScroll}
-            onChange={() => {
-              if (!this.state.canScroll)
-                this._handleScrollToPhrase();
+        {this.props.item.contextscroll && (
+          <div className={styles.wrapper_header__buttons}>
+            <Toggle
+              data-testid={'auto-scroll-toggle'}
+              checked={this.state.canScroll}
+              onChange={() => {
+                if (!this.state.canScroll)
+                  this._handleScrollToPhrase();
 
-              this.setState({
-                canScroll: !this.state.canScroll,
-              });
-            }}
-            label={'Auto-scroll'}
-          />
-          <Tooltip placement="topLeft" title="Automatically sync transcript scrolling with audio playback">
-            <IconHelp />
-          </Tooltip>
-        </div>
+                this.setState({
+                  canScroll: !this.state.canScroll,
+                });
+              }}
+              label={'Auto-scroll'}
+            />
+            <Tooltip placement="topLeft" title="Automatically sync transcript scrolling with audio playback">
+              <IconHelp />
+            </Tooltip>
+          </div>
+        )}
       </div>
     );
   }
