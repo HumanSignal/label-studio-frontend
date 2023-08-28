@@ -33,7 +33,7 @@ const controlsInjector = inject(({ store }) => {
 
 export const Controls = controlsInjector(observer(({ store, history, annotation }) => {
   const isReview = store.hasInterface('review');
-  
+  const isNotQuickView = store.hasInterface('topbar:prevnext');
   const historySelected = isDefined(store.annotationStore.selectedHistory);
   const { userGenerate, sentUserGenerate, versions, results, editable: annotationEditable } = annotation;
   const buttons = [];
@@ -167,9 +167,10 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
               <Button
                 aria-label="submit"
                 name="submit"
+                mod={{ has_icon: !isNotQuickView }}
                 disabled={disabled || submitDisabled}
                 look={look}
-                icon={(
+                icon={isNotQuickView &&(
                   <Dropdown.Trigger
                     content={<SubmitOption onClickMethod={onClickMethod} isUpdate={isUpdate} />}
                   >

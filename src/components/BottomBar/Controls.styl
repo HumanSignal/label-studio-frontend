@@ -25,7 +25,7 @@
       display flex
       width 160px
       height 40px
-      justify-content space-between
+      justify-content center
       align-items center
       color #FFF
       text-align center
@@ -37,6 +37,9 @@
       flex-direction row-reverse
       padding 0
 
+      &__has_icon
+        justify-content space-between
+
       span  
         width 100%
 
@@ -44,15 +47,21 @@
         display flex
         max-width 40px 
         height 100%
-        padding 8px
         justify-content center
         align-items center
         align-self stretch
         border-left 1px solid rgba(255, 255, 255, 0.16)
 
+        div
+          width 100%
+          height 100%
+          display flex
+          align-items center
+          justify-content center
+
         svg 
           pointer-events none
-          transform: rotate(180deg) translateY(-4px) scale(1.1)
+          transform: rotate(180deg) scale(1.1)
 
     &__skipped-info
       display flex
