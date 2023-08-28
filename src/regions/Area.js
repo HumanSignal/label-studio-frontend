@@ -1,10 +1,11 @@
 import { types } from 'mobx-state-tree';
 import Registry from '../core/Registry';
 import Tree from '../core/Tree';
+import { AreaMixin } from '../mixins/AreaMixin';
+import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import { RectRegionModel } from './RectRegion';
 import { KeyPointRegionModel } from './KeyPointRegion';
-import { AreaMixin } from '../mixins/AreaMixin';
 import { AudioRegionModel } from './AudioRegion';
 import { PolygonRegionModel } from './PolygonRegion';
 import { EllipseRegionModel } from './EllipseRegion';
@@ -18,6 +19,7 @@ import { VideoRectangleRegionModel } from './VideoRectangleRegion';
 const ClassificationArea = types.compose(
   'ClassificationArea',
   RegionsMixin,
+  NormalizationMixin,
   AreaMixin,
   types
     .model({

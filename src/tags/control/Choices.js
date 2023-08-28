@@ -91,10 +91,10 @@ const { Option } = Select;
  * @param {boolean} [showInline=false] - Show choices in the same visual line
  * @param {boolean} [required=false]   - Validate whether a choice has been selected
  * @param {string} [requiredMessage]   - Show a message if validation fails
- * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] - Control visibility of the choices.
+ * @param {region-selected|no-region-selected|choice-selected|choice-unselected} [visibleWhen] - Control visibility of the choices. Can also be used with `when*` attributes below to narrow down visibility
  * @param {string} [whenTagName]       - Use with visibleWhen. Narrow down visibility by name of the tag. For regions, use the name of the object tag, for choices, use the name of the choices tag
- * @param {string} [whenLabelValue]    - Narrow down visibility by label value
- * @param {string} [whenChoiceValue]   - Narrow down visibility by choice value
+ * @param {string} [whenLabelValue]    - Use with visibleWhen="region-selected". Narrow down visibility by label value
+ * @param {string} [whenChoiceValue]   - Use with visibleWhen ("choice-selected" or "choice-unselected") and whenTagName, both are required. Narrow down visibility by choice value
  * @param {boolean} [perRegion]        - Use this tag to select a choice for a specific region instead of the entire task
  * @param {boolean} [perItem]          - Use this tag to select a choice for a specific item inside the object instead of the whole object[^FF_LSDV_4583]
  * @param {string} [value]             - Task data field containing a list of dynamically loaded choices (see example below)[^FF_DEV_2007_DEV_2008]
@@ -248,7 +248,7 @@ const ChoicesModel = types.compose(
   SelectedModelMixin.props({ _child: 'ChoiceModel' }),
   RequiredMixin,
   PerRegionMixin,
-  ...(isFF(FF_LSDV_4583) ? [PerItemMixin]:[]),
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin] : []),
   ReadOnlyControlMixin,
   SelectedChoiceMixin,
   VisibilityMixin,

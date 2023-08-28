@@ -178,7 +178,7 @@ export const Annotation = types
     get results() {
       const results = [];
 
-      self.areas.forEach(a => a.results.forEach(r => results.push(r)));
+      if (isAlive(self)) self.areas.forEach(a => a.results.forEach(r => results.push(r)));
       return results;
     },
 
@@ -881,8 +881,8 @@ export const Annotation = types
           setTimeout(() => isAlive(area) && self.selectArea(area));
         }
       } else {
-        // unselect labels after use, but consider "keep labels selected" settings
-        if (control.type.includes('labels')) self.unselectAll(true);
+        // unselect labeling tools after use, but consider "keep labels selected" settings
+        if (control.isLabeling) self.unselectAll(true);
       }
     },
 

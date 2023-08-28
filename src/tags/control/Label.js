@@ -164,13 +164,18 @@ const Model = types.model({
         (!labels?.allowempty || self.isEmpty)
       )
         return false;
+
       // @todo rewrite this check and add more named vars
       // @todo select only related specific labels
       // @todo unselect any label, but only if that won't leave region without specific labels!
       // @todo but check for regions created by tools
       // @todo lot of tests!
-      if (!self.selected && labels.type !== 'labels' && !labels.type.includes(region.type.replace(/region$/, ''))) return false;
-      return true;
+      if (self.selected) return true; // we are unselecting a label which is always ok
+      if (labels.type === 'labels') return true; // universal labels are fine to select
+      if (labels.type.includes(region.type.replace(/region$/, ''))) return true; // region type is in label type
+      if (labels.type.includes(region.results[0].type)) return true; // any result type of the region is in label type
+      
+      return false;
     });
 
     if (sameObjectSelectedRegions.length > 0 && applicableRegions.length === 0) return;

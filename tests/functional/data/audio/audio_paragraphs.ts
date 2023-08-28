@@ -33,7 +33,7 @@ export const data = {
       'duration': 2,
     },
     {
-      'text': 'Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?',
+      'text': 'Uncomfortable silences. Why do we feel its necessary to yak about nonsense in order to be comfortable?',
       'author': 'Mia Wallace:',
       'start': 14,
       'end': 16,
@@ -45,7 +45,7 @@ export const data = {
       'author': 'Vincent Vega:',
     },
     {
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 20,
       'end': 60,
@@ -94,7 +94,7 @@ export const result = [
       'end': '2',
       'startOffset': 20,
       'endOffset': 72,
-      'text': 'es. Why do we feel its necessary to yak about bullsh',
+      'text': 'es. Why do we feel its necessary to yak about nonsen',
       'paragraphlabels': [
         'External: Positive',
       ],

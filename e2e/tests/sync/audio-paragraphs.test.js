@@ -66,7 +66,7 @@ const data = {
       'duration': 1,
     },
     {
-      'text': 'Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?',
+      'text': 'Uncomfortable silences. Why do we feel its necessary to yak about nonsense in order to be comfortable?',
       'author': 'Mia Wallace:',
       'start': 4,
       'end': 6,
@@ -78,33 +78,33 @@ const data = {
       'author': 'Vincent Vega:',
     },
     {
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 8,
       'end': 10,
     },
     {
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 10,
       'end': 12,
     },{
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 12,
       'end': 14,
     },{
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 14,
       'end': 16,
     },{
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 16,
       'end': 18,
     },{
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
       'start': 18,
       'end': 20,
@@ -149,7 +149,7 @@ const annotations = [
   },
 ];
 
-const params = {  annotations: [{ id: 'test', result: annotations }], config, data };
+const params = { annotations: [{ id: 'test', result: annotations }], config, data };
 
 FFlagMatrix(['fflag_feat_front_lsdv_e_278_contextual_scrolling_short'], function(flags) {
   FFlagScenario('Audio clip is played when selecting the play button next to a paragraph segment', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
@@ -351,6 +351,57 @@ FFlagMatrix(['fflag_feat_front_lsdv_e_278_contextual_scrolling_short'], function
       }, '[data-testid="phrases-wrapper"]');
 
       await assert.equal(scrollPosition.scrollTop, 0);
+    });
+
+    FFlagScenario('Paragraph shouldnt automatically scroll if user manually scroll and the current paragraph is not in the screen', async function({ I, LabelStudio, AtAudioView }) {
+      LabelStudio.setFeatureFlags({
+        ff_front_dev_2715_audio_3_280722_short: true,
+        ff_front_1170_outliner_030222_short: true,
+        ...flags,
+      });
+
+      params.config = configWithScroll;
+
+      I.amOnPage('/');
+
+      LabelStudio.init(params);
+
+      await AtAudioView.waitForAudio();
+      await AtAudioView.lookForStage();
+
+      const [{ currentTime: startingAudioTime }, { currentTime: startingParagraphAudioTime }] = await AtAudioView.getCurrentAudio();
+
+      assert.equal(startingAudioTime, startingParagraphAudioTime);
+      assert.equal(startingParagraphAudioTime, 0);
+
+      AtAudioView.clickPlayButton();
+
+      I.wait(2);
+
+      I.executeScript( () => {
+        document.querySelector('[data-testid="phrases-wrapper"]').scrollTo(0, 1000);
+
+        const wheelEvt = document.createEvent('MouseEvents');
+
+        wheelEvt.initEvent('wheel', true, true);
+
+        wheelEvt.deltaY = 1200;
+
+        document.querySelector('[data-testid="phrases-wrapper"]').dispatchEvent(wheelEvt);
+      });
+
+      I.wait(5);
+
+      const scrollPosition = await I.executeScript(function(selector) {
+        const element = document.querySelector(selector);
+
+        return {
+          scrollTop: element.scrollTop,
+          scrollLeft: element.scrollLeft,
+        };
+      }, '[data-testid="phrases-wrapper"]');
+
+      await assert(scrollPosition.scrollTop > 400, 'Scroll position should be greater than 200');
     });
   }
 });

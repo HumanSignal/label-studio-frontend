@@ -238,26 +238,11 @@ const PlayableAndSyncable = types.model()
 
       if (!audio) return;
 
-      if (!isFF(FF_LSDV_E_278)) {
-        const indices = self.regionIndicesByTime(time);
-
-        // if we left current region's time, reset
-        if (!indices.includes(self.playingId)) {
-          self.stopNow();
-          self.reset();
-          return;
-        }
-      }
-
       // so we are changing time inside current region only
       audio.currentTime = time;
       if (audio.paused && playing) {
-        if (isFF(FF_LSDV_E_278)) {
-          self.play();
-        } else {
-          self.play(self.playingId);
-        }
-      } else if (isFF(FF_LSDV_E_278)) {
+        self.play();
+      } else {
         self.trackPlayingId();
       }
     },
@@ -339,7 +324,7 @@ const PlayableAndSyncable = types.model()
       const regions = self.regionsValues;
 
       self.playingId = regions.findIndex(({ start, end }) => {
-        return currentTime >= start && currentTime <= end;
+        return currentTime >= start && currentTime < end;
       });
 
       if (!audio.paused) {
@@ -364,7 +349,7 @@ const PlayableAndSyncable = types.model()
     },
 
     play(idx) {
-      if (isFF(FF_LSDV_E_278) && !isDefined(idx)) {
+      if (!isDefined(idx)) {
         self.playAny();
         return;
       }
@@ -390,8 +375,7 @@ const PlayableAndSyncable = types.model()
       self.playing = true;
       self.playingId = idx;
       self.triggerSync('play');
-      if (isFF(FF_LSDV_E_278)) self.trackPlayingId();
-      else self.stopAtTheEnd();
+      self.trackPlayingId();
     },
   }))
   .actions(self => ({
@@ -473,7 +457,20 @@ const ParagraphsLoadingModel = types.model()
         ]);
         return;
       }
-      self._value = val;
+      const contextScroll = isFF(FF_LSDV_E_278) && self.contextscroll;
+
+      const value = contextScroll ? val.sort((a, b) => {
+
+        if (!a.start) return 1;
+        if (!b.start) return -1;
+        const aEnd = a.end ? a.end : a.start + a.duration || 0;
+        const bEnd = b.end ? b.end : b.start + b.duration || 0;
+
+        if (a.start === b.start) return aEnd - bEnd;
+        return a.start - b.start;
+      }) : val;
+      
+      self._value = value;
       self.needsUpdate();
     },
 

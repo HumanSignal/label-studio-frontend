@@ -4,8 +4,7 @@ import { observer } from 'mobx-react';
 import { Block } from '../../../utils/bem';
 
 export const RegionLabels: FC<{region: LSFRegion}> = observer(({ region }) => {
-  const labelsInResults = region.results
-    .filter(result => result.type.endsWith('labels'))
+  const labelsInResults = region.labelings
     .map((result: any) => result.selectedLabels || []);
   const labels: any[] = [].concat(...labelsInResults);
 

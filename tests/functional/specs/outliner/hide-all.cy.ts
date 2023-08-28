@@ -124,7 +124,6 @@ describe('Outliner - Hide all regions', () => {
     cy.contains('Group by Tool')
       .click({ force: true });
     Sidebar.toggleRegionVisibility(0);
-    cy.get('.lsf-tree-switcher.lsf-tree-switcher_close').click();
     Sidebar.hasHiddenRegion(3);
   });
 });
