@@ -153,7 +153,7 @@ export const KonvaRegionMixin = types.model({})
           };
         }
       },
-      onDoubleClickRegion(e) {
+      onDoubleClickRegion() {
         self.requestPerRegionFocus();
         self.annotation.selectAreas([self]);
       },
