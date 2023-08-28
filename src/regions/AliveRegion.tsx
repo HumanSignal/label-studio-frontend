@@ -4,6 +4,7 @@ import { isAlive } from 'mobx-state-tree';
 import { IReactComponent } from 'mobx-react/dist/types/IReactComponent';
 import { ExoticComponent, Fragment, ReactNode, useCallback } from 'react';
 import { Portal } from 'react-konva-utils';
+import { FF_DBLCLICK_DELAY, isFF } from '../utils/feature-flags';
 
 type Region = {
   annotation: any,
@@ -37,8 +38,9 @@ export const AliveRegion = (
 
   return observer(({ item, ...rest }: RegionComponentProps) => {
     const canRender = options?.renderHidden || !item.hidden;
-    const Wrapper = (options?.shouldNotUsePortal ? Fragment : Portal) as ExoticComponent<PortalProps>;
-    const wrapperProps = options?.shouldNotUsePortal ? {} : { selector: '.selection-regions-layer', enabled: item.inSelection };
+    const shouldNotUsePortal = isFF(FF_DBLCLICK_DELAY) || options?.shouldNotUsePortal;
+    const Wrapper = (shouldNotUsePortal ? Fragment : Portal) as ExoticComponent<PortalProps>;
+    const wrapperProps = shouldNotUsePortal ? {} : { selector: '.selection-regions-layer', enabled: item.inSelection };
     const isInTree = !!item.annotation;
     const setShapeRef = useCallback((ref) => {
       if (isAlive(item)) {

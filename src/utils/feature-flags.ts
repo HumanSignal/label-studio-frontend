@@ -300,6 +300,12 @@ export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_0
 export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
 
 /**
+ * Fix delay on double-click interactions in Image Segmentation
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_5248_double_click_delay_280823_short
+ */
+export const FF_DBLCLICK_DELAY = 'fflag_fix_front_lsdv_5248_double_click_delay_280823_short';
+
+/**
  * Allow to load Taxonomy from remote API
  * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5451_async_taxonomy_110823_short
  */

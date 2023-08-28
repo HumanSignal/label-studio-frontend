@@ -11,14 +11,14 @@ import Canvas from '../utils/canvas';
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
 import { LabelOnMask } from '../components/ImageView/LabelOnRegion';
 import { Geometry } from '../components/RelationsOverlay/Geometry';
-import Constants, { defaultStyle } from '../core/Constants';
+import { defaultStyle } from '../core/Constants';
 import { guidGenerator } from '../core/Helpers';
 import { AreaMixin } from '../mixins/AreaMixin';
 import IsReadyMixin from '../mixins/IsReadyMixin';
 import { KonvaRegionMixin } from '../mixins/KonvaRegion';
 import { ImageModel } from '../tags/object/Image';
 import { colorToRGBAArray, rgbArrayToHex } from '../utils/colors';
-import { FF_DEV_3793, FF_DEV_4081, isFF } from '../utils/feature-flags';
+import { FF_DBLCLICK_DELAY, FF_DEV_3793, FF_DEV_4081, isFF } from '../utils/feature-flags';
 import { AliveRegion } from './AliveRegion';
 import { RegionWrapper } from './RegionWrapper';
 
@@ -657,8 +657,7 @@ const HtxBrushView = ({ item, setShapeRef }) => {
               stage.container().style.cursor = 'default';
             }
           }}
-
-          onClick={(e) => {
+          onClick={e => {
             if (item.parent.getSkipInteractions()) return;
             if (store.annotationStore.selected.relationMode) {
               item.onClickRegion(e);
@@ -726,7 +725,10 @@ const HtxBrushView = ({ item, setShapeRef }) => {
   );
 };
 
-const HtxBrush = AliveRegion(HtxBrushView, { renderHidden: true, shouldNotUsePortal: true });
+const HtxBrush = AliveRegion(HtxBrushView, {
+  renderHidden: true,
+  shouldNotUsePortal: isFF(FF_DBLCLICK_DELAY),
+});
 
 Registry.addTag('brushregion', BrushRegionModel, HtxBrush);
 Registry.addRegionType(BrushRegionModel, 'image', value => value.rle || value.touches || value.maskDataURL);

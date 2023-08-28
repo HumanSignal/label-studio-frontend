@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree';
-import { FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { FF_DBLCLICK_DELAY, FF_DEV_3793, isFF } from '../utils/feature-flags';
 const DOUBLE_CLICK_MS_WINDOW = 400;
 const MAX_CLICK_POS_DEVIATION = 5;
 
@@ -37,7 +37,7 @@ export const KonvaRegionMixin = types.model({})
     };
   })
   .actions(self => {
-    let lastClick;
+    let deferredSelectId, lastClick;
 
     return {
       checkSizes() {
@@ -105,27 +105,53 @@ export const KonvaRegionMixin = types.model({})
 
         if (e) e.cancelBubble = true;
 
-        const isInDoubleClickWindow = lastClick && (ev.timeStamp - lastClick.time < DOUBLE_CLICK_MS_WINDOW);
-        const isSamePosClick = lastClick && (Math.abs(ev.offsetX - lastClick.x) < MAX_CLICK_POS_DEVIATION && Math.abs(ev.offsetY - lastClick.y) < MAX_CLICK_POS_DEVIATION);
+        if (isFF(FF_DBLCLICK_DELAY)) {
+          const isInDoubleClickWindow = lastClick && (ev.timeStamp - lastClick.time < DOUBLE_CLICK_MS_WINDOW);
+          const isSamePosClick = lastClick && (Math.abs(ev.offsetX - lastClick.x) < MAX_CLICK_POS_DEVIATION && Math.abs(ev.offsetY - lastClick.y) < MAX_CLICK_POS_DEVIATION);
 
-        if (isInDoubleClickWindow && isSamePosClick) {
-          self.onDoubleClickRegion();
-          return;
+          if (isInDoubleClickWindow && isSamePosClick) {
+            self.onDoubleClickRegion();
+            return;
+          }
         }
+
+        const selectAction = () => {
+          self._selectArea(additiveMode);
+          deferredSelectId = null;
+        };
 
         if (!annotation.isReadOnly() && annotation.relationMode) {
           annotation.addRelation(self);
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
         } else {
-          self._selectArea(additiveMode);
+          if (isFF(FF_DBLCLICK_DELAY)) {
+            self._selectArea(additiveMode);
+          } else {
+            // Skip double click emulation when there is nothing to focus
+            if (!self.perRegionFocusTarget) {
+              selectAction();
+              return;
+            }
+            // Double click emulation
+            if (deferredSelectId) {
+              clearTimeout(deferredSelectId);
+              self.requestPerRegionFocus();
+              deferredSelectId = null;
+              annotation.selectArea(self);
+            } else {
+              deferredSelectId = setTimeout(selectAction, 300);
+            }
+          }
         }
 
-        lastClick = {
-          x: ev.offsetX,
-          y: ev.offsetY,
-          time: ev.timeStamp,
-        };
+        if (isFF(FF_DBLCLICK_DELAY)) {
+          lastClick = {
+            x: ev.offsetX,
+            y: ev.offsetY,
+            time: ev.timeStamp,
+          };
+        }
       },
       onDoubleClickRegion(e) {
         self.requestPerRegionFocus();

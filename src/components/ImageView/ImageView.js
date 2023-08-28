@@ -21,6 +21,7 @@ import { debounce } from '../../utils/debounce';
 import Constants from '../../core/Constants';
 import { fixRectToFit } from '../../utils/image';
 import {
+  FF_DBLCLICK_DELAY,
   FF_DEV_1285,
   FF_DEV_1442,
   FF_DEV_3077,
@@ -64,7 +65,10 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
-  return useObserver(() => /*region.inSelection !== showSelected ? null :*/ Tree.renderItem(region, region.annotation, false));
+  if (isFF(FF_DBLCLICK_DELAY)) {
+    return useObserver(() => Tree.renderItem(region, region.annotation, true));
+  }
+  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, region.annotation, false));
 });
 
 const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
@@ -388,8 +392,10 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
 const Selection = observer(({ item, selectionArea, ...triggeredOnResize }) => {
   return (
     <>
-      {/*<SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />*/}
-      <Layer name="selection-regions-layer" />
+      { !isFF(FF_DBLCLICK_DELAY)
+        ? <SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />
+        : <Layer name="selection-regions-layer" />
+      }
       <SelectionLayer item={item} selectionArea={selectionArea} />
     </>
   );
@@ -581,7 +587,8 @@ export default observer(
                 if ('ruler' === el?.attrs?.name) {
                   return true;
                 }
-                if (!isMoveTool && 'segmentation' === el?.attrs?.name) {
+                if ((!isFF(FF_DBLCLICK_DELAY) || !isMoveTool)
+                  && 'segmentation' === el?.attrs?.name) {
                   return true;
                 }
               }
