@@ -1,8 +1,5 @@
 import { types } from 'mobx-state-tree';
 import { FF_DBLCLICK_DELAY, FF_DEV_3793, isFF } from '../utils/feature-flags';
-const DOUBLE_CLICK_MS_WINDOW = 400;
-const MAX_CLICK_POS_DEVIATION = 5;
-
 export const KonvaRegionMixin = types.model({})
   .views((self) => {
     return {
@@ -37,7 +34,7 @@ export const KonvaRegionMixin = types.model({})
     };
   })
   .actions(self => {
-    let deferredSelectId, lastClick;
+    let deferredSelectId;
 
     return {
       checkSizes() {
@@ -106,12 +103,11 @@ export const KonvaRegionMixin = types.model({})
         if (e) e.cancelBubble = true;
 
         if (isFF(FF_DBLCLICK_DELAY)) {
-          const isInDoubleClickWindow = lastClick && (ev.timeStamp - lastClick.time < DOUBLE_CLICK_MS_WINDOW);
-          const isSamePosClick = lastClick && (Math.abs(ev.offsetX - lastClick.x) < MAX_CLICK_POS_DEVIATION && Math.abs(ev.offsetY - lastClick.y) < MAX_CLICK_POS_DEVIATION);
+          const isDoubleClick = ev.detail === 2;
 
-          if (isInDoubleClickWindow && isSamePosClick) {
+          if (isDoubleClick) {
             self.onDoubleClickRegion();
-            return;
+            return; 
           }
         }
 
@@ -143,14 +139,6 @@ export const KonvaRegionMixin = types.model({})
               deferredSelectId = setTimeout(selectAction, 300);
             }
           }
-        }
-
-        if (isFF(FF_DBLCLICK_DELAY)) {
-          lastClick = {
-            x: ev.offsetX,
-            y: ev.offsetY,
-            time: ev.timeStamp,
-          };
         }
       },
       onDoubleClickRegion() {
