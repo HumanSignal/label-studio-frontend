@@ -1278,6 +1278,7 @@ export const Annotation = types
       let itemId = id;
       const isGlobalClassification = item.classification;
 
+      // this piece of code prevents from creating duplicated global classifications
       if (isFF(FF_LLM_EPIC)) {
         if (isGlobalClassification) {
           const itemResult = item.results[0];
