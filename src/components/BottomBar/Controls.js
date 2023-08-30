@@ -161,16 +161,19 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
         );
       };
       const createButton = (key, title, onClickMethod, isUpdate = false) => {
+        const isDisabled = disabled || submitDisabled;
+        const useExitOption = !isDisabled && isNotQuickView;
+
         return (
           <ButtonTooltip key={key} title={title}>
             <Elem name="tooltip-wrapper">
               <Button
                 aria-label="submit"
                 name="submit"
-                mod={{ has_icon: !isNotQuickView }}
-                disabled={disabled || submitDisabled}
+                mod={{ has_icon: useExitOption, disabled: isDisabled }}
+                disabled={isDisabled}
                 look={look}
-                icon={isNotQuickView &&(
+                icon={useExitOption &&(
                   <Dropdown.Trigger
                     content={<SubmitOption onClickMethod={onClickMethod} isUpdate={isUpdate} />}
                   >
