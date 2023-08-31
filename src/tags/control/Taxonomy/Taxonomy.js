@@ -57,7 +57,7 @@ import styles from './Taxonomy.styl';
  * @param {string} [apiUrl]               - URL to fetch taxonomy from remote source; API should accept optional array `path` param: `apiUrl?path[]=root&path[]=child1` to return only nested children of `child1` node[^FF_TAXONOMY_ASYNC]
  * @param {boolean} [leafsOnly=false]     - Allow annotators to select only leaf nodes of taxonomy
  * @param {boolean} [showFullPath=false]  - Whether to show the full path of selected items
- * @param {string} [pathSeparator= / ]    - Separator to show in the full path
+ * @param {string} [pathSeparator= / ]    - Separator to show in the full path (default is " / ")
  * @param {number} [maxUsages]            - Maximum number of times a choice can be selected per task
  * @param {number} [maxWidth]             - Maximum width for dropdown
  * @param {number} [minWidth]             - Minimum width for dropdown
@@ -125,13 +125,15 @@ const TaxonomyLabelingResult = types
   .views(self => ({
     get result() {
       // @todo make it without duplication of ClassificationBase code
-      if (!self.isLabeling) {
+      if (!self.isLabeling && !self.perregion) {
         if (self.peritem) {
           return self._perItemResult;
         }
         return self.annotation.results.find(r => r.from_name === self);
       }
 
+      // per-region Taxonomy and Taxonomy as a labeling tool share the same way to find a result,
+      // they just display items for current region, attached directly or in result.
       const area = self.annotation.highlightedNode;
 
       if (!area) return null;
@@ -293,7 +295,10 @@ const Model = types
       if (path) {
         for (const level of path) {
           item = item.children?.find(ch => ch.path.at(-1) === level);
-          if (!item) return;
+          if (!item) {
+            self.loading = false;
+            return;
+          }
         }
       }
 
@@ -304,7 +309,9 @@ const Model = types
 
       try {
         const res = yield fetch(url);
-        const data = yield res.json();
+        const dataRaw = yield res.json();
+        // @todo temporary to support deprecated API response format (just array, no items)
+        const data = dataRaw.items ?? dataRaw;
         const prefix = path ?? [];
         // @todo use aliases
         // const items = data.map(({ alias, isLeaf, value }) => ({ label: value, path: [...prefix, alias ?? value], depth: 0, isLeaf }));
@@ -362,7 +369,7 @@ const Model = types
     },
 
     unselectAll() {
-      if (isFF(FF_TAXONOMY_LABELING)) self.selected = [];
+      if (isFF(FF_TAXONOMY_LABELING) && self.isLabeling) self.selected = [];
     },
 
     onAddLabel(path) {
