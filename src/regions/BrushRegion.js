@@ -18,7 +18,7 @@ import IsReadyMixin from '../mixins/IsReadyMixin';
 import { KonvaRegionMixin } from '../mixins/KonvaRegion';
 import { ImageModel } from '../tags/object/Image';
 import { colorToRGBAArray, rgbArrayToHex } from '../utils/colors';
-import { FF_DBLCLICK_DELAY, FF_DEV_3793, FF_DEV_4081, isFF } from '../utils/feature-flags';
+import { FF_DEV_3793, FF_DEV_4081, isFF } from '../utils/feature-flags';
 import { AliveRegion } from './AliveRegion';
 import { RegionWrapper } from './RegionWrapper';
 
