@@ -500,12 +500,12 @@ export default types
     }
     /* eslint-enable no-unused-vars */
 
-    function submitDraft(c, params = {}) {
+    function submitDraft(c, params = {}, statusCallback) {
       return new Promise(resolve => {
         const events = getEnv(self).events;
 
         if (!events.hasEvent('submitDraft')) return resolve();
-        const res = events.invokeFirst('submitDraft', self, c, params);
+        const res = events.invokeFirst('submitDraft', self, c, params, statusCallback);
 
         if (res && res.then) res.then(resolve);
         else resolve(res);
