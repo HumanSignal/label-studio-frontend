@@ -11,5 +11,6 @@ export const CURRENT_FLAGS = {
   [FLAGS.FF_LSDV_4620_3]: true,
   [FLAGS.FF_LSDV_4620_3_ML]: true,
   [FLAGS.FF_OUTLINER_OPTIM]: true,
+  [FLAGS.FF_DBLCLICK_DELAY]: true,
 };
 

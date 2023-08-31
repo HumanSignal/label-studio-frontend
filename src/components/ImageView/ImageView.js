@@ -392,9 +392,9 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
 const Selection = observer(({ item, selectionArea, ...triggeredOnResize }) => {
   return (
     <>
-      { !isFF(FF_DBLCLICK_DELAY)
-        ? <SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />
-        : <Layer name="selection-regions-layer" />
+      { isFF(FF_DBLCLICK_DELAY)
+        ? <Layer name="selection-regions-layer" />
+        : <SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />
       }
       <SelectionLayer item={item} selectionArea={selectionArea} />
     </>
@@ -576,24 +576,30 @@ export default observer(
       if (p && p.className === 'Transformer') return;
 
       const handleMouseDown = () => {
+        const isRightElementToCatchToolInteractions = el => {
+          // It could be ruler ot segmentation
+          if (el.nodeType === 'Group') {
+            if ('ruler' === el?.attrs?.name) {
+              return true;
+            }
+            // segmentation is specific for Brushes
+            // but click interaction on the region covers the case of the same MoveTool interaction here,
+            // so it should ignore move tool interaction to prevent conflicts
+            if ((!isFF(FF_DBLCLICK_DELAY) || !isMoveTool)
+              && 'segmentation' === el?.attrs?.name) {
+              return true;
+            }
+          }
+          return false;
+        };
+
         if (
           // create regions over another regions with Cmd/Ctrl pressed
           item.getSkipInteractions() ||
           e.target === item.stageRef ||
           findClosestParent(
             e.target,
-            el => {
-              if (el.nodeType === 'Group') {
-                if ('ruler' === el?.attrs?.name) {
-                  return true;
-                }
-                if ((!isFF(FF_DBLCLICK_DELAY) || !isMoveTool)
-                  && 'segmentation' === el?.attrs?.name) {
-                  return true;
-                }
-              }
-              return false;
-            },
+            isRightElementToCatchToolInteractions,
           )
         ) {
           window.addEventListener('mousemove', this.handleGlobalMouseMove);

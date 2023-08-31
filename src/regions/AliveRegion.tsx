@@ -38,7 +38,7 @@ export const AliveRegion = (
 
   return observer(({ item, ...rest }: RegionComponentProps) => {
     const canRender = options?.renderHidden || !item.hidden;
-    const shouldNotUsePortal = isFF(FF_DBLCLICK_DELAY) || options?.shouldNotUsePortal;
+    const shouldNotUsePortal = !isFF(FF_DBLCLICK_DELAY) || options?.shouldNotUsePortal;
     const Wrapper = (shouldNotUsePortal ? Fragment : Portal) as ExoticComponent<PortalProps>;
     const wrapperProps = shouldNotUsePortal ? {} : { selector: '.selection-regions-layer', enabled: item.inSelection };
     const isInTree = !!item.annotation;

@@ -34,7 +34,7 @@ export const KonvaRegionMixin = types.model({})
     };
   })
   .actions(self => {
-    let deferredSelectId;
+    let deferredSelectId = null;
 
     return {
       checkSizes() {
@@ -143,6 +143,8 @@ export const KonvaRegionMixin = types.model({})
       },
       onDoubleClickRegion() {
         self.requestPerRegionFocus();
+        // `selectArea` does nothing when there's a selected region already, but it should rerender to make `requestPerRegionFocus` work,
+        // so it needs to use `selectAreas` instead. It contains `unselectAll` for this purpose.
         self.annotation.selectAreas([self]);
       },
     };

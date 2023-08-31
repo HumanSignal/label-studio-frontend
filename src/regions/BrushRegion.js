@@ -727,7 +727,7 @@ const HtxBrushView = ({ item, setShapeRef }) => {
 
 const HtxBrush = AliveRegion(HtxBrushView, {
   renderHidden: true,
-  shouldNotUsePortal: isFF(FF_DBLCLICK_DELAY),
+  shouldNotUsePortal: true,
 });
 
 Registry.addTag('brushregion', BrushRegionModel, HtxBrush);
