@@ -132,8 +132,6 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     }
 
     const look = (disabled || submitDisabled) ? 'disabled' : 'primary';
-
-
     
     if (isFF(FF_PROD_E_111)) {
       const SubmitOption = ({ isUpdate, onClickMethod }) => {
@@ -160,42 +158,8 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
           </Button>
         );
       };
-      const createButton = (key, title, onClickMethod, isUpdate = false) => {
-        const isDisabled = disabled || submitDisabled;
-        const useExitOption = !isDisabled && isNotQuickView;
-
-        return (
-          <ButtonTooltip key={key} title={title}>
-            <Elem name="tooltip-wrapper">
-              <Button
-                aria-label="submit"
-                name="submit"
-                mod={{ has_icon: useExitOption, disabled: isDisabled }}
-                disabled={isDisabled}
-                look={look}
-                icon={useExitOption &&(
-                  <Dropdown.Trigger
-                    content={<SubmitOption onClickMethod={onClickMethod} isUpdate={isUpdate} />}
-                  >
-                    <div>
-                      <LsChevron />
-                    </div>
-                  </Dropdown.Trigger>
-                )}
-                onClick={async (event) => {
-                  if (event.target.classList.contains('lsf-dropdown__trigger')) return;
-                  await store.commentStore.commentFormSubmit();
-                  onClickMethod();
-                }}
-              >
-                {isUpdate ? 'Update' : 'Submit'}
-              </Button>
-            </Elem>
-          </ButtonTooltip>
-        );
-      };
       
-      const conditions = [
+      const submitConditions = [
         {
           check: (userGenerate) || (store.explore && !userGenerate && store.hasInterface('submit')),
           key: 'submit',
@@ -211,13 +175,43 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
         },
       ];
       
-      conditions.forEach((condition) => {
+      submitConditions.forEach((condition) => {
         if (condition.check) {
-          buttons.push(createButton(condition.key, condition.title, condition.method, condition.isUpdate));
+          const isDisabled = disabled || submitDisabled;
+          const useExitOption = !isDisabled && isNotQuickView;
+
+          buttons.push(
+            <ButtonTooltip key={condition.key} title={condition.title}>
+              <Elem name="tooltip-wrapper">
+                <Button
+                  aria-label="submit"
+                  name="submit"
+                  mod={{ has_icon: useExitOption, disabled: isDisabled }}
+                  disabled={isDisabled}
+                  look={look}
+                  icon={useExitOption &&(
+                    <Dropdown.Trigger
+                      content={<SubmitOption onClickMethod={condition.method} isUpdate={condition.isUpdate} />}
+                    >
+                      <div>
+                        <LsChevron />
+                      </div>
+                    </Dropdown.Trigger>
+                  )}
+                  onClick={async (event) => {
+                    if (event.target.classList.contains('lsf-dropdown__trigger')) return;
+                    await store.commentStore.commentFormSubmit();
+                    if (condition.key === 'submit') store.submitAnnotation();
+                    if (condition.key === 'update') store.updateAnnotation();
+                  }}
+                >
+                  {condition.isUpdate ? 'Update' : 'Submit'}
+                </Button>
+              </Elem>
+            </ButtonTooltip>,
+          );
         }
       });
-      
-
     } else {
       if ((userGenerate) || (store.explore && !userGenerate && store.hasInterface('submit'))) {
         const title = submitDisabled
