@@ -23,6 +23,9 @@ module.exports = {
   locateRegionItemIndex(idx) {
     return locate(this._regionListItemIndex).withText(`${idx}`).inside(this.locateRegionItemList());
   },
+  locateRegionIndex(idx) {
+    return this.locateRegionItemList().withDescendant(locate(this._regionListItemIndex).toXPath() + `[text()='${idx}']`);
+  },
   locateSelectedItem(locator) {
     const selectedLocator = locate(this._regionListItemSelectedSelector).inside(this.locateRegionList());
 

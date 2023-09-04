@@ -725,7 +725,10 @@ const HtxBrushView = ({ item, setShapeRef }) => {
   );
 };
 
-const HtxBrush = AliveRegion(HtxBrushView, { renderHidden: true });
+const HtxBrush = AliveRegion(HtxBrushView, {
+  renderHidden: true,
+  shouldNotUsePortal: true,
+});
 
 Registry.addTag('brushregion', BrushRegionModel, HtxBrush);
 Registry.addRegionType(BrushRegionModel, 'image', value => value.rle || value.touches || value.maskDataURL);
