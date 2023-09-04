@@ -10,6 +10,11 @@ class MouseActions extends Helper {
 
     return page.mouse.click(x, y, { button: buttonName, delay: 80 });
   }
+  dblClickAt(x, y, buttonName = 'left') {
+    const page = getPage(this.helpers);
+
+    return page.mouse.click(x, y, { button: buttonName, delay: 80, clickCount: 2 });
+  }
   pressMouseDown(buttonName = 'left') {
     const page = getPage(this.helpers);
 
