@@ -44,13 +44,14 @@ type TaxonomyProps = {
   isEditable?: boolean,
 };
 
-const convert = (items: TaxonomyItem[], separator: string): AntTaxonomyItem[] => {
+const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyItem[] => {
   return items.map(item => ({
     title: item.label,
-    value: item.path.join(separator),
-    key: item.path.join(separator),
+    value: item.path.join(options.pathSeparator),
+    key: item.path.join(options.pathSeparator),
     isLeaf: item.isLeaf !== false && !item.children,
-    children: item.children ? convert(item.children, separator) : undefined,
+    disableCheckbox: options.leafsOnly && (item.isLeaf === false || !!item.children),
+    children: item.children ? convert(item.children, options) : undefined,
   }));
 };
 
@@ -71,7 +72,7 @@ const NewTaxonomy = ({
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
 
   useEffect(() => {
-    setTreeData(convert(items, separator));
+    setTreeData(convert(items, options));
   }, [items]);
 
   const loadData = useCallback(async (node: any) => {
