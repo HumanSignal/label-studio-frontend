@@ -687,10 +687,10 @@ export const Annotation = types
       if (self.autosave) self.autosave.flush();
     },
 
-    async saveDraftImmediatelyWithResults(statusCallback) {
+    async saveDraftImmediatelyWithResults() {
       const res = await self.saveDraft(null);
-      
-      statusCallback(res?.$meta.status);
+
+      return res;
     },
 
     pauseAutosave() {
