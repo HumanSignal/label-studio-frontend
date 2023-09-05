@@ -32,6 +32,7 @@ type TaxonomyOptions = {
   maxUsages?: number,
   maxWidth?: number,
   minWidth?: number,
+  dropdownWidth?: number,
   placeholder?: string,
 };
 
@@ -76,6 +77,7 @@ const NewTaxonomy = ({
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
+  const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
 
   useEffect(() => {
     setTreeData(convert(items, options));
@@ -95,6 +97,7 @@ const NewTaxonomy = ({
       treeCheckStrictly
       showCheckedStrategy={TreeSelect.SHOW_ALL}
       treeExpandAction="click"
+      dropdownMatchSelectWidth={dropdownWidth}
       placeholder={options.placeholder || 'Click to add...'}
       style={style}
       className="htx-taxonomy"

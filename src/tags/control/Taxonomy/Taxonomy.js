@@ -77,6 +77,7 @@ const TagAttrs = types.model({
   placeholder: '',
   minwidth: types.maybeNull(types.string),
   maxwidth: types.maybeNull(types.string),
+  dropdownwidth: types.maybeNull(types.string),
   maxusages: types.maybeNull(types.string),
   ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, '') } : {}),
 });
@@ -468,6 +469,7 @@ const HtxTaxonomy = observer(({ item }) => {
     maxUsages: item.maxusages,
     maxWidth: item.maxwidth,
     minWidth: item.minwidth,
+    dropdownWidth: item.dropdownwidth,
     placeholder: item.placeholder,
   };
 
