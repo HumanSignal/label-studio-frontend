@@ -1,6 +1,8 @@
 import { TreeSelect } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { Tooltip } from '../../common/Tooltip/Tooltip';
+
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
 type onDeleteLabelCallback = (path: string[]) => any;
@@ -16,7 +18,7 @@ type TaxonomyItem = {
 };
 
 type AntTaxonomyItem = {
-  title: string,
+  title: string | JSX.Element,
   value: string,
   key: string,
   isLeaf?: boolean,
@@ -46,7 +48,11 @@ type TaxonomyProps = {
 
 const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyItem[] => {
   return items.map(item => ({
-    title: item.label,
+    title: item.hint ? (
+      <Tooltip title={item.hint} mouseEnterDelay={500}>
+        <span>{item.label}</span>
+      </Tooltip>
+    ) : item.label,
     value: item.path.join(options.pathSeparator),
     key: item.path.join(options.pathSeparator),
     isLeaf: item.isLeaf !== false && !item.children,

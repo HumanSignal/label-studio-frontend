@@ -319,8 +319,8 @@ const Model = types
         const data = dataRaw.items ?? dataRaw;
         const prefix = path ?? [];
         // recursive convertor to internal format
-        const convert = (items, path) => items.map(({ alias, children, isLeaf, value }) => {
-          const item = { label: value, path: [...path, alias ?? value], depth: path.length, isLeaf };
+        const convert = (items, path) => items.map(({ alias, children, isLeaf, value, ...rest }) => {
+          const item = { label: value, path: [...path, alias ?? value], depth: path.length, isLeaf, ...rest };
 
           if (children) item.children = convert(children, item.path);
 
