@@ -313,9 +313,7 @@ const Model = types
         // @todo temporary to support deprecated API response format (just array, no items)
         const data = dataRaw.items ?? dataRaw;
         const prefix = path ?? [];
-        // @todo use aliases
-        // const items = data.map(({ alias, isLeaf, value }) => ({ label: value, path: [...prefix, alias ?? value], depth: 0, isLeaf }));
-        const items = data.map(({ isLeaf, value }) => ({ label: value, path: [...prefix, value], depth: 0, isLeaf }));
+        const items = data.map(({ alias, isLeaf, value }) => ({ label: value, path: [...prefix, alias ?? value], depth: 0, isLeaf }));
 
         if (path) {
           item.children = items;
