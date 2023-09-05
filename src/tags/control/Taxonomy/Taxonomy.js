@@ -288,19 +288,24 @@ const Model = types
     loadItems: flow(function * (path) {
       if (!self._api) return;
 
-      self.loading = true;
+      // will be used only to load children for nested items
+      // to check that item exists and requires loading
+      let item;
 
-      let item = { children: self.items };
-
+      // check that item exists
       if (path) {
+        item = { children: self.items };
         for (const level of path) {
           item = item.children?.find(ch => ch.path.at(-1) === level);
-          if (!item) {
-            self.loading = false;
-            return;
-          }
+          if (!item) return;
         }
       }
+
+      // Tree Select triggers this on every non-leaf node,
+      // so load only if this item really needs it
+      if (path && (item.isLeaf !== false || item.children)) return;
+
+      self.loading = true;
 
       // build url with `path` as array (path ['A', 'BC'] => path=A&path=BC)
       const url = new URL(self._api);
@@ -313,7 +318,15 @@ const Model = types
         // @todo temporary to support deprecated API response format (just array, no items)
         const data = dataRaw.items ?? dataRaw;
         const prefix = path ?? [];
-        const items = data.map(({ alias, isLeaf, value }) => ({ label: value, path: [...prefix, alias ?? value], depth: 0, isLeaf }));
+        // recursive convertor to internal format
+        const convert = (items, path) => items.map(({ alias, children, isLeaf, value }) => {
+          const item = { label: value, path: [...path, alias ?? value], depth: path.length, isLeaf };
+
+          if (children) item.children = convert(children, item.path);
+
+          return item;
+        });
+        const items = convert(data, prefix);
 
         if (path) {
           item.children = items;
