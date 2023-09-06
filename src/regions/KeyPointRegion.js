@@ -18,6 +18,7 @@ import { createDragBoundFunc } from '../utils/image';
 import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
 import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
+import Constants from '../core/Constants';
 
 const KeyPointRegionAbsoluteCoordsDEV3793 = types
   .model({
@@ -261,7 +262,7 @@ const HtxKeyPointView = ({ item, setShapeRef }) => {
           if (item.parent.getSkipInteractions()) return;
 
           if (store.annotationStore.selected.relationMode) {
-            stage.container().style.cursor = 'default';
+            stage.container().style.cursor = Constants.DEFAULT_CURSOR;
           }
 
           item.setHighlight(false);
