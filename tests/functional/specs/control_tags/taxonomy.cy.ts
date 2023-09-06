@@ -26,12 +26,6 @@ Object.entries(taxonomies).forEach(([title, Taxonomy]) => {
     });
 
     it('should show hint for <Choice />', () => {
-      LabelStudio.addFeatureFlagsOnPageLoad({
-        [FF_PROD_309]: true,
-      });
-
-      console.log(Taxonomy._rootSelector);
-
       LabelStudio.params()
         .config(taxonomyConfig)
         .data(simpleData)
