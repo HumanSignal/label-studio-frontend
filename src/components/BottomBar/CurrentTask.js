@@ -26,7 +26,7 @@ export const CurrentTask = observer(({ store }) => {
           {store.task.id ?? guidGenerator()}
           {historyEnabled && (
             <Elem name="task-count">
-              {currentIndex} of {store.taskHistory.length}
+              {currentIndex} of {store.queueTotal}
             </Elem>
           )}
         </Elem>

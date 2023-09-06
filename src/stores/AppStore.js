@@ -154,6 +154,8 @@ export default types
     users: types.optional(types.array(UserExtended), []),
 
     userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
+    
+    queueTotal: types.optional(types.number, 0),
   })
   .preProcessSnapshot((sn) => {
     // This should only be handled if the sn.user value is an object, and converted to a reference id for other
@@ -759,11 +761,13 @@ export default types
     }
 
     function nextTask() {
+      
       if (self.canGoNextTask) {
         const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
 
         getEnv(self).events.invoke('nextTask', taskId, annotationId);
       }
+
     }
 
     function prevTask(e, shouldGoBack = false) {
