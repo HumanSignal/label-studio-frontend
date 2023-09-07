@@ -131,9 +131,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
       );
     }
 
-    
+    const look = (disabled || submitDisabled) ? 'disabled' : 'primary';
+
     if (isFF(FF_PROD_E_111)) {
-      const look = (disabled || submitDisabled) ? 'disabled' : 'primary';
       const isDisabled = disabled || submitDisabled;
       const useExitOption = !isDisabled && isNotQuickView;
 
@@ -216,7 +216,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
               }}
               icon={useExitOption &&(
                 <Dropdown.Trigger
-                  content={<SubmitOption onClickMethod={store.updateAnnotation} isUpdate={false} />}
+                  content={<SubmitOption onClickMethod={store.updateAnnotation} isUpdate={isUpdate} />}
                 >
                   <div>
                     <LsChevron />
