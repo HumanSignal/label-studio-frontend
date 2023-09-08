@@ -1,6 +1,5 @@
 import { types } from 'mobx-state-tree';
-import { FF_DEV_3793, isFF } from '../utils/feature-flags';
-
+import { FF_DBLCLICK_DELAY, FF_DEV_3793, isFF } from '../utils/feature-flags';
 export const KonvaRegionMixin = types.model({})
   .views((self) => {
     return {
@@ -103,6 +102,15 @@ export const KonvaRegionMixin = types.model({})
 
         if (e) e.cancelBubble = true;
 
+        if (isFF(FF_DBLCLICK_DELAY)) {
+          const isDoubleClick = ev.detail === 2;
+
+          if (isDoubleClick) {
+            self.onDoubleClickRegion();
+            return; 
+          }
+        }
+
         const selectAction = () => {
           self._selectArea(additiveMode);
           deferredSelectId = null;
@@ -113,21 +121,31 @@ export const KonvaRegionMixin = types.model({})
           annotation.stopRelationMode();
           annotation.regionStore.unselectAll();
         } else {
-          // Skip double click emulation when there is nothing to focus
-          if (!self.perRegionFocusTarget) {
-            selectAction();
-            return;
-          }
-          // Double click emulation
-          if (deferredSelectId) {
-            clearTimeout(deferredSelectId);
-            self.requestPerRegionFocus();
-            deferredSelectId = null;
-            annotation.selectArea(self);
+          if (isFF(FF_DBLCLICK_DELAY)) {
+            self._selectArea(additiveMode);
           } else {
-            deferredSelectId = setTimeout(selectAction, 300);
+            // Skip double click emulation when there is nothing to focus
+            if (!self.perRegionFocusTarget) {
+              selectAction();
+              return;
+            }
+            // Double click emulation
+            if (deferredSelectId) {
+              clearTimeout(deferredSelectId);
+              self.requestPerRegionFocus();
+              deferredSelectId = null;
+              annotation.selectArea(self);
+            } else {
+              deferredSelectId = setTimeout(selectAction, 300);
+            }
           }
         }
+      },
+      onDoubleClickRegion() {
+        self.requestPerRegionFocus();
+        // `selectArea` does nothing when there's a selected region already, but it should rerender to make `requestPerRegionFocus` work,
+        // so it needs to use `selectAreas` instead. It contains `unselectAll` for this purpose.
+        self.annotation.selectAreas([self]);
       },
     };
   });
