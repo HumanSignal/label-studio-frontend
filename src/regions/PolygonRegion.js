@@ -211,6 +211,16 @@ const Model = types
       },
 
       _addPoint(x, y) {
+        const firstPoint = self.points[0];
+        const zoomedPixelSizeX = self.parent.zoomedPixelSize.x;
+        const zoomedPixelSizeY = self.parent.zoomedPixelSize.y;
+
+        // This is mostly for "snap to pixel" mode, 'cause there is alse ability to close polygon by clicking on the first point precisely
+        if (Math.abs(firstPoint.x - x) < zoomedPixelSizeX / 2 && Math.abs(firstPoint.y - y) < zoomedPixelSizeY / 2) {
+          self.closePoly();
+          return;
+        }
+
         self.points.push({
           id: guidGenerator(),
           x,
@@ -222,6 +232,7 @@ const Model = types
       },
 
       closePoly() {
+        if (self.closed || self.points.length < 3) return;
         self.closed = true;
       },
 
