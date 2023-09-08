@@ -667,7 +667,6 @@ export default class DomManager {
     const text = String(selection);
 
     selection.removeAllRanges();
-    selection.removeRange(range);
 
     // restore previous selection
     for (const range of lastRanges) {
