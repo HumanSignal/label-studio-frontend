@@ -70,6 +70,7 @@ const NewTaxonomy = ({
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
+  const value = selected.map(path => path.join(separator)).map(path => ({ title: path, value: path, id: path }));
 
   useEffect(() => {
     setTreeData(convert(items, options));
@@ -82,7 +83,7 @@ const NewTaxonomy = ({
   return (
     <TreeSelect
       treeData={treeData}
-      value={selected.map(path => path.join(separator))}
+      value={value}
       onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
       loadData={loadData}
       treeCheckable
