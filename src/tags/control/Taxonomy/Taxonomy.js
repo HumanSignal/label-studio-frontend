@@ -266,6 +266,26 @@ const Model = types
 
       return findItem(self.items);
     },
+
+    /**
+     * @param {string[]} path saved value from Taxonomy
+     * @returns quazi-label object to act as Label in most places
+     */
+    findLabel(path) {
+      let title = '';
+      let items = self._items;
+
+      for (const value of path) {
+        const item = items?.find(item => item.path.at(-1) === value);
+
+        if (!item) return null;
+
+        items = item.children;
+        title = self.showfullpath && title ? title + self.pathseparator + item.label : item.label;
+      }
+
+      return { value: title, id: path.join(self.pathseparator) };
+    },
   }))
   .actions(self => ({
     afterAttach() {
