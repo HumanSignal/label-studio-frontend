@@ -8,7 +8,7 @@ export const InstructionsModal = ({
   onCancel,
 }: {
   title: string,
-  children: React.ReactNode,
+  children: string,
   visible: boolean,
   onCancel: () => void,
 }) => {
@@ -45,7 +45,10 @@ export const InstructionsModal = ({
         >
           {title}
         </h2>
-        <p style={{ padding: '0 24px 24px', whiteSpace: 'pre-wrap' }}>{children}</p>
+        <p
+          style={{ padding: '0 24px 24px', whiteSpace: 'pre-wrap' }}
+          dangerouslySetInnerHTML={{ __html: children }}
+        />
       </Modal>
     </>
   );
