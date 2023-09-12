@@ -191,16 +191,37 @@ const Model = types
       },
 
       insertPoint(insertIdx, x, y) {
+        const pointCoords = self.control?.getSnappedPoint({
+          x: self.parent.canvasToInternalX(x),
+          y: self.parent.canvasToInternalY(y),
+        });
+
+        if (
+          (
+            self.points[insertIdx - 1]
+            && self.parent.isSamePixel(pointCoords, self.points[insertIdx - 1])
+          )
+          || (
+            self.points[insertIdx]
+            && self.parent.isSamePixel(pointCoords, self.points[insertIdx])
+          )
+        ) {
+          return;
+        }
+
+
         const p = {
           id: guidGenerator(),
-          x: isFF(FF_DEV_3793) ? self.parent.canvasToInternalX(x) : x,
-          y: isFF(FF_DEV_3793) ? self.parent.canvasToInternalY(y) : y,
+          x: pointCoords.x,
+          y: pointCoords.y,
           size: self.pointSize,
           style: self.pointStyle,
           index: self.points.length,
         };
 
         self.points.splice(insertIdx, 0, p);
+
+        return self.points[insertIdx];
       },
 
       _addPoint(x, y) {
