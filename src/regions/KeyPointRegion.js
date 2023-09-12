@@ -47,11 +47,16 @@ const KeyPointRegionAbsoluteCoordsDEV3793 = types
     },
 
     setPosition(x, y) {
-      self.x = x;
-      self.y = y;
+      const point = self.control?.getSnappedPoint({
+        x: self.parent.canvasToInternalX(x),
+        y: self.parent.canvasToInternalY(y),
+      });
 
-      self.relativeX = (x / self.parent.stageWidth) * RELATIVE_STAGE_WIDTH;
-      self.relativeY = (y / self.parent.stageHeight) * RELATIVE_STAGE_HEIGHT;
+      self.x = point.x;
+      self.y = point.y;
+
+      self.relativeX = (point.x / self.parent.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (point.y / self.parent.stageHeight) * RELATIVE_STAGE_HEIGHT;
     },
 
     updateImageSize(wp, hp, sw, sh) {
@@ -106,22 +111,10 @@ const Model = types
       };
     },
     get canvasX() {
-      const isSnap = self.control?.snap === 'pixel';
-      const zoomedPixelSize = self.parent.zoomedPixelSize.x;
-
-      const x = isSnap ?
-        Math.round(self.x / zoomedPixelSize) * zoomedPixelSize : self.x;
-
-      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(x) : x;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      const isSnap = self.control?.snap === 'pixel';
-      const zoomedPixelSize = self.parent.zoomedPixelSize.y;
-
-      const y = isSnap ?
-        Math.round(self.y / zoomedPixelSize) * zoomedPixelSize : self.y;
-
-      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(y) : y;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.y) : self.y;
     },
     get canvasWidth() {
       return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.width) : self.width;
@@ -129,8 +122,13 @@ const Model = types
   }))
   .actions(self => ({
     setPosition(x, y) {
-      self.x = self.parent.canvasToInternalX(x);
-      self.y = self.parent.canvasToInternalY(y);
+      const point = self.control?.getSnappedPoint({
+        x: self.parent.canvasToInternalX(x),
+        y: self.parent.canvasToInternalY(y),
+      });
+
+      self.x = point.x;
+      self.y = point.y;
     },
 
     updateImageSize() {},
@@ -239,6 +237,8 @@ const HtxKeyPointView = ({ item, setShapeRef }) => {
           const t = e.target;
 
           item.setPosition(t.getAttr('x'), t.getAttr('y'));
+          t.setAttr('x', item.canvasX);
+          t.setAttr('y', item.canvasY);
           item.annotation.history.unfreeze(item.id);
           item.notifyDrawingFinished();
         }}

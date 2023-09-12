@@ -38,14 +38,19 @@ const PolygonPointAbsoluteCoordsDEV3793 = types.model()
       self.relativeY = (self.y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
     },
     _movePoint(x, y) {
-      self.initX = x;
-      self.initY = y;
+      const point = self.parent.control?.getSnappedPoint({
+        x: self.stage.canvasToInternalX(x),
+        y: self.stage.canvasToInternalY(y),
+      });
 
-      self.relativeX = (x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
-      self.relativeY = (y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
+      self.initX = point.x;
+      self.initY = point.y;
 
-      self.x = x;
-      self.y = y;
+      self.relativeX = (point.x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (point.y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
+
+      self.x = point.x;
+      self.y = point.y;
     },
   }));
 
@@ -100,23 +105,10 @@ const PolygonPointRelativeCoords = types
     },
 
     _movePoint(canvasX, canvasY) {
-      self.x = self.stage.canvasToInternalX(canvasX);
-      self.y = self.stage.canvasToInternalY(canvasY);
-    },
-
-    _moveToSnapPoint(canvasX, canvasY) {
-      if (self.parent.control.snap !== 'pixel') return;
-
-      const point = {
+      const point = self.parent.control?.getSnappedPoint({
         x: self.stage.canvasToInternalX(canvasX),
         y: self.stage.canvasToInternalY(canvasY),
-      };
-      
-      const zoomedPixelSizeX = self.parent.object.zoomedPixelSize.x;
-      const zoomedPixelSizeY = self.parent.object.zoomedPixelSize.y;
-
-      point.x = Math.round(point.x / zoomedPixelSizeX) * zoomedPixelSizeX;
-      point.y = Math.round(point.y / zoomedPixelSizeY) * zoomedPixelSizeY;
+      });
 
       self.x = point.x;
       self.y = point.y;
@@ -234,7 +226,8 @@ const PolygonPointView = observer(({ item, name }) => {
     onDragMove: e => {
       if (item.getSkipInteractions()) return false;
       if (e.target !== e.currentTarget) return;
-      let { x, y } = e.target.attrs;
+      const shape = e.target;
+      let { x, y } = shape.attrs;
 
       if (x < 0) x = 0;
       if (y < 0) y = 0;
@@ -242,6 +235,8 @@ const PolygonPointView = observer(({ item, name }) => {
       if (y > item.stage.stageHeight) y = item.stage.stageHeight;
 
       item._movePoint(x, y);
+      shape.setAttr('x', item.canvasX);
+      shape.setAttr('y', item.canvasY);
     },
 
     onDragStart: () => {
@@ -254,15 +249,6 @@ const PolygonPointView = observer(({ item, name }) => {
 
     onDragEnd: e => {
       setDraggable(true);
-
-      let { x, y } = e.target.attrs;
-
-      if (x < 0) x = 0;
-      if (y < 0) y = 0;
-      if (x > item.stage.stageWidth) x = item.stage.stageWidth;
-      if (y > item.stage.stageHeight) y = item.stage.stageHeight;
-
-      item._moveToSnapPoint(x, y);
       item.annotation.history.unfreeze();
       e.cancelBubble = true;
     },

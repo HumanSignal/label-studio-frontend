@@ -178,14 +178,7 @@ const Model = types
       addPoint(x, y) {
         if (self.closed) return;
 
-        const point = { x, y };
-        const zoomedPixelSizeX = self.parent.zoomedPixelSize.x;
-        const zoomedPixelSizeY = self.parent.zoomedPixelSize.y;
-
-        if (self.control?.snap === 'pixel') {
-          point.x = Math.round(x / zoomedPixelSizeX) * zoomedPixelSizeX;
-          point.y = Math.round(y / zoomedPixelSizeY) * zoomedPixelSizeY;
-        }
+        const point = self.control?.getSnappedPoint({ x, y });
 
         self._addPoint(point.x, point.y);
       },
@@ -212,11 +205,10 @@ const Model = types
 
       _addPoint(x, y) {
         const firstPoint = self.points[0];
-        const zoomedPixelSizeX = self.parent.zoomedPixelSize.x;
-        const zoomedPixelSizeY = self.parent.zoomedPixelSize.y;
 
-        // This is mostly for "snap to pixel" mode, 'cause there is alse ability to close polygon by clicking on the first point precisely
-        if (Math.abs(firstPoint.x - x) < zoomedPixelSizeX / 2 && Math.abs(firstPoint.y - y) < zoomedPixelSizeY / 2) {
+        // This is mostly for "snap to pixel" mode,
+        // 'cause there is also an ability to close polygon by clicking on the first point precisely
+        if (self.parent.isSamePixel(firstPoint, { x, y })) {
           self.closePoly();
           return;
         }
@@ -417,15 +409,23 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
 
           const d = [t.getAttr('x', 0), t.getAttr('y', 0)];
           const scale = [t.getAttr('scaleX', 1), t.getAttr('scaleY', 1)];
+          const points = t.getAttr('points');
 
-          if (isFF(FF_DEV_3793)) {
-            item.setPoints(t.getAttr('points').map((p, idx) => idx % 2
-              ? item.parent.canvasToInternalY(p * scale[1] + d[1])
-              : item.parent.canvasToInternalX(p * scale[0] + d[0]),
-            ));
-          } else {
-            item.setPoints(t.getAttr('points').map((c, idx) => c * scale[idx % 2] + d[idx % 2]));
-          }
+          item.setPoints(
+            points.reduce((result, coord, idx) => {
+              const isXCoord = idx % 2 === 0;
+
+              if (isXCoord) {
+                const point = item.control?.getSnappedPoint({
+                  x: item.parent.canvasToInternalX(coord * scale[0] + d[0]),
+                  y: item.parent.canvasToInternalY(points[idx+1] * scale[1] + d[1]),
+                });
+
+                result.push(point.x, point.y);
+              }
+              return result;
+            }, []),
+          );
 
           t.setAttr('x', 0);
           t.setAttr('y', 0);
@@ -550,7 +550,15 @@ const HtxPolygonView = ({ item, setShapeRef }) => {
 
           item.annotation.setDragMode(false);
 
-          item.points.forEach(p => p.movePoint(t.getAttr('x'), t.getAttr('y')));
+          const point = item.control?.getSnappedPoint({
+            x: item.parent?.canvasToInternalX(t.getAttr('x')),
+            y: item.parent?.canvasToInternalY(t.getAttr('y')),
+          });
+
+          point.x = item.parent?.internalToCanvasX( point.x);
+          point.y = item.parent?.internalToCanvasY( point.y);
+
+          item.points.forEach(p => p.movePoint(point.x, point.y));
           item.annotation.history.unfreeze(item.id);
         }
 

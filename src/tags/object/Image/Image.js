@@ -30,7 +30,7 @@ import ObjectBase from '../Base';
 import { DrawingRegion } from './DrawingRegion';
 import { ImageEntityMixin } from './ImageEntityMixin';
 import { ImageSelection } from './ImageSelection';
-import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../../../components/ImageView/Image';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH, SNAP_TO_PIXEL_MODE } from '../../../components/ImageView/Image';
 import MultiItemObjectBase from '../MultiItemObjectBase';
 
 const IMAGE_PRELOAD_COUNT = 3;
@@ -310,10 +310,45 @@ const Model = types.model({
   get zoomedPixelSize() {
     const { naturalWidth, naturalHeight } = self;
 
+    if (isFF(FF_DEV_3793)) {
+      return {
+        x: 100 / naturalWidth,
+        y: 100 / naturalHeight,
+      };
+    }
+
     return {
-      x: 100 / naturalWidth,
-      y: 100 / naturalHeight,
+      x: self.stageWidth / naturalWidth,
+      y: self.stageHeight / naturalHeight,
     };
+
+  },
+
+  isSamePixel({ x: x1, y: y1 }, { x: x2, y: y2 }) {
+    const zoomedPixelSizeX = self.zoomedPixelSize.x;
+    const zoomedPixelSizeY = self.zoomedPixelSize.y;
+
+    return Math.abs(x1 - x2) < zoomedPixelSizeX / 2 && Math.abs(y1 - y2) < zoomedPixelSizeY / 2;
+  },
+
+  snapPointToPixel({ x,y }, snapMode = SNAP_TO_PIXEL_MODE.EDGE) {
+    const zoomedPixelSizeX = self.zoomedPixelSize.x;
+    const zoomedPixelSizeY = self.zoomedPixelSize.y;
+
+    switch (snapMode) {
+      case SNAP_TO_PIXEL_MODE.EDGE: {
+        return {
+          x: Math.round(x / zoomedPixelSizeX) * zoomedPixelSizeX,
+          y: Math.round(y / zoomedPixelSizeY) * zoomedPixelSizeY,
+        };
+      }
+      case SNAP_TO_PIXEL_MODE.CENTER: {
+        return {
+          x: Math.floor(x / zoomedPixelSizeX) * zoomedPixelSizeX + zoomedPixelSizeX / 2,
+          y: Math.floor(y / zoomedPixelSizeY) * zoomedPixelSizeY + zoomedPixelSizeY / 2,
+        };
+      }
+    }
   },
 
   createSerializedResult(region, value) {

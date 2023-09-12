@@ -113,14 +113,7 @@ const _Tool = types
       },
 
       startDrawing(x, y) {
-        const point = { x, y };
-        const zoomedPixelSizeX = self.obj.zoomedPixelSize.x;
-        const zoomedPixelSizeY = self.obj.zoomedPixelSize.y;
-
-        if (self.control?.snap === 'pixel') {
-          point.x = Math.round(x / zoomedPixelSizeX) * zoomedPixelSizeX;
-          point.y = Math.round(y / zoomedPixelSizeY) * zoomedPixelSizeY;
-        }
+        const point = self.control?.getSnappedPoint({ x, y });
 
         if (isFF(FF_DEV_2432)) {
           self.mode = 'drawing';

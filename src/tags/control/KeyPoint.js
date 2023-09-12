@@ -6,6 +6,7 @@ import { customTypes } from '../../core/CustomTypes';
 import { AnnotationMixin } from '../../mixins/AnnotationMixin';
 import SeparatedControlMixin from '../../mixins/SeparatedControlMixin';
 import { ToolManagerMixin } from '../../mixins/ToolManagerMixin';
+import { SNAP_TO_PIXEL_MODE } from '../../components/ImageView/Image';
 
 /**
  * The `KeyPoint` tag is used to add a key point to an image without selecting a label. This can be useful when you have only one label to assign to the key point.
@@ -56,6 +57,7 @@ const Model = types
   }))
   .volatile(() => ({
     toolNames: ['KeyPoint'],
+    snapMode: SNAP_TO_PIXEL_MODE.CENTER,
   }));
 
 const KeyPointModel = types.compose('KeyPointModel',
