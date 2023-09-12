@@ -1,6 +1,8 @@
 import { TreeSelect } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { Tooltip } from '../../common/Tooltip/Tooltip';
+
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
 type onDeleteLabelCallback = (path: string[]) => any;
@@ -16,7 +18,7 @@ type TaxonomyItem = {
 };
 
 type AntTaxonomyItem = {
-  title: string,
+  title: string | JSX.Element,
   value: string,
   key: string,
   isLeaf?: boolean,
@@ -30,6 +32,7 @@ type TaxonomyOptions = {
   maxUsages?: number,
   maxWidth?: number,
   minWidth?: number,
+  dropdownWidth?: number,
   placeholder?: string,
 };
 
@@ -46,7 +49,11 @@ type TaxonomyProps = {
 
 const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyItem[] => {
   return items.map(item => ({
-    title: item.label,
+    title: item.hint ? (
+      <Tooltip title={item.hint} mouseEnterDelay={500}>
+        <span>{item.label}</span>
+      </Tooltip>
+    ) : item.label,
     value: item.path.join(options.pathSeparator),
     key: item.path.join(options.pathSeparator),
     isLeaf: item.isLeaf !== false && !item.children,
@@ -70,6 +77,7 @@ const NewTaxonomy = ({
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
+  const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
 
   useEffect(() => {
     setTreeData(convert(items, options));
@@ -89,6 +97,7 @@ const NewTaxonomy = ({
       treeCheckStrictly
       showCheckedStrategy={TreeSelect.SHOW_ALL}
       treeExpandAction="click"
+      dropdownMatchSelectWidth={dropdownWidth}
       placeholder={options.placeholder || 'Click to add...'}
       style={style}
       className="htx-taxonomy"

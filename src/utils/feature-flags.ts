@@ -300,6 +300,12 @@ export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_0
 export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
 
 /**
+ * Fix delay on double-click interactions in Image Segmentation
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_5248_double_click_delay_280823_short
+ */
+export const FF_DBLCLICK_DELAY = 'fflag_fix_front_lsdv_5248_double_click_delay_280823_short';
+
+/**
  * Allow to load Taxonomy from remote API
  * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5451_async_taxonomy_110823_short
  */
@@ -310,6 +316,12 @@ export const FF_TAXONOMY_ASYNC = 'fflag_feat_front_lsdv_5451_async_taxonomy_1108
  * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short
  */
 export const FF_TAXONOMY_LABELING = 'fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short';
+
+/**
+ * Annotator workflow control for lead time calculation
+ */
+export const FF_PROD_E_111 = 'fflag_feat_front_prod_e_111_annotator_workflow_control_short';
+
 
 Object.assign(window, {
   APP_SETTINGS: {
