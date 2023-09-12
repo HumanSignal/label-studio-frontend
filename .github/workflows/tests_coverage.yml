@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: "Checkout codebase"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Download Unit coverage from Artifact"
         uses: ./.github/actions/download-artifact
@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: "Checkout codebase"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Download E2E coverage from Artifact"
         uses: ./.github/actions/download-artifact
@@ -61,7 +61,7 @@ jobs:
 
     steps:
       - name: "Checkout codebase"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Download Cypress coverage from Artifact"
         uses: ./.github/actions/download-artifact

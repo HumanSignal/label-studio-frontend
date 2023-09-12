@@ -20,7 +20,7 @@ jobs:
       - uses: hmarr/debug-action@v2.1.0
 
       - name: Checkout LSF
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GIT_PAT }}
           fetch-depth: 1
@@ -78,7 +78,7 @@ jobs:
           git config --global user.email '${{ steps.get-github-user.outputs.user_email }}'
 
       - name: Checkout LS
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GIT_PAT }}
           fetch-depth: 1
