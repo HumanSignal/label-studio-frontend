@@ -383,6 +383,9 @@ const Model = types
     },
 
     onChange(_node, checked) {
+      // don't remove last label from region
+      if (self.isLabeling && !checked.length) return;
+
       self.selected = checked.map(s => s.path ?? s);
       self.maxUsagesReached = self.selected.length >= self.maxusages;
       self.updateResult();
