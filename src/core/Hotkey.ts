@@ -79,6 +79,11 @@ keymaster.filter = function(event) {
   return true;
 };
 
+const ALIASES = {
+  'plus': '=',
+  'minus': '-',
+};
+
 export const Hotkey = (
   namespace = 'global',
   description = 'Hotkeys',
@@ -159,6 +164,15 @@ export const Hotkey = (
   _destructors.push(unbind);
 
   return {
+    applyAliases(key: string) {
+      return key
+        .split(',')
+        .map(k => {
+          return k.split('+').map(k => ALIASES[k.trim()] ?? k).join('+');
+        },
+        )
+        .join(',');
+    },
     /**
      * Add key
      */
@@ -169,7 +183,7 @@ export const Hotkey = (
         console.warn(`Key already added: ${key}. It's possibly a bug.`);
       }
 
-      const keyName = key.toLowerCase();
+      const keyName = this.applyAliases(key.toLowerCase());
 
       _hotkeys_map[keyName] = func;
       if (desc) _hotkeys_desc[keyName] = desc;
