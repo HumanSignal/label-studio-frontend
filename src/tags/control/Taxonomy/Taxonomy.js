@@ -273,7 +273,7 @@ const Model = types
      */
     findLabel(path) {
       let title = '';
-      let items = self._items;
+      let items = self.items;
 
       for (const value of path) {
         const item = items?.find(item => item.path.at(-1) === value);
