@@ -156,6 +156,8 @@ export default types
     userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
     
     queueTotal: types.optional(types.number, 0),
+    
+    queuePosition: types.optional(types.number, 0),
   })
   .preProcessSnapshot((sn) => {
     // This should only be handled if the sn.user value is an object, and converted to a reference id for other
@@ -533,6 +535,9 @@ export default types
         })
         .then(() => self.setFlags({ isSubmitting: false }));
     }
+    function incrementQueuePosition() {
+      self.queuePosition++;
+    }
 
     function submitAnnotation() {
       if (self.isSubmitting) return;
@@ -547,6 +552,7 @@ export default types
       entity.sendUserGenerate();
       handleSubmittingFlag(async () => {
         await getEnv(self).events.invoke(event, self, entity);
+        self.incrementQueuePosition();
       });
       entity.dropDraft();
     }
@@ -562,6 +568,7 @@ export default types
 
       handleSubmittingFlag(async () => {
         await getEnv(self).events.invoke('updateAnnotation', self, entity, extraData);
+        self.incrementQueuePosition();
       });
       entity.dropDraft();
       !entity.sentUserGenerate && entity.sendUserGenerate();
@@ -594,6 +601,7 @@ export default types
 
         entity.dropDraft();
         await getEnv(self).events.invoke('acceptAnnotation', self, { isDirty, entity });
+        self.incrementQueuePosition();
       }, 'Error during accept, try again');
     }
 
@@ -832,6 +840,7 @@ export default types
       nextTask,
       prevTask,
       postponeTask,
+      incrementQueuePosition,
       beforeDestroy() {
         ToolsManager.removeAllTools();
         appControls = null;

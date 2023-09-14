@@ -28,10 +28,6 @@ export const CurrentTask = observer(({ store }) => {
     };
   }, []);
 
-  const currentIndex = useMemo(() => {
-    return store.taskHistory.findIndex((x) => x.taskId === store.task.id) + 1;
-  }, [store.taskHistory]);
-
   useEffect(() => {
     if (store.commentStore.addedCommentThisSession) {
       setInitialCommentLength(visibleComments);
@@ -62,7 +58,7 @@ export const CurrentTask = observer(({ store }) => {
           {store.task.id ?? guidGenerator()}
           {historyEnabled && showCounter && (
             <Elem name="task-count">
-              {currentIndex} of {store.queueTotal}
+              {store.queuePosition} of {store.queueTotal}
             </Elem>
           )}
         </Elem>

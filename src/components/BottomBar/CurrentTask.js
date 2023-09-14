@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react';
-import { useMemo } from 'react';
 import { Button } from '../../common/Button/Button';
 import { Block, Elem } from '../../utils/bem';
 import { guidGenerator } from '../../utils/unique';
@@ -8,9 +7,6 @@ import './CurrentTask.styl';
 
 
 export const CurrentTask = observer(({ store }) => {
-  const currentIndex = useMemo(() => {
-    return store.taskHistory.findIndex((x) => x.taskId === store.task.id) + 1;
-  }, [store.taskHistory]);
 
   const historyEnabled = store.hasInterface('topbar:prevnext');
   // @todo some interface?
@@ -26,7 +22,7 @@ export const CurrentTask = observer(({ store }) => {
           {store.task.id ?? guidGenerator()}
           {historyEnabled && (
             <Elem name="task-count">
-              {currentIndex} of {store.queueTotal}
+              {store.queuePosition} of {store.queueTotal}
             </Elem>
           )}
         </Elem>
