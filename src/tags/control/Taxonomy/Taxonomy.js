@@ -102,6 +102,7 @@ function traverse(root) {
     const depth = parents.length;
     const obj = { label, path, depth, hint };
 
+    if (node.color) obj.color = node.color;
     if (node.children) {
       obj.children = visitUnique(node.children, path);
     }
@@ -274,9 +275,10 @@ const Model = types
     findLabel(path) {
       let title = '';
       let items = self.items;
+      let item;
 
       for (const value of path) {
-        const item = items?.find(item => item.path.at(-1) === value);
+        item = items?.find(item => item.path.at(-1) === value);
 
         if (!item) return null;
 
@@ -284,7 +286,15 @@ const Model = types
         title = self.showfullpath && title ? title + self.pathseparator + item.label : item.label;
       }
 
-      return { value: title, id: path.join(self.pathseparator) };
+      const label = { value: title, id: path.join(self.pathseparator) };
+
+      if (item.color) {
+        // to conform the current format of our Result#style (and it requires parent)
+        label.background = item.color;
+        label.parent = {};
+      }
+
+      return label;
     },
   }))
   .actions(self => ({
