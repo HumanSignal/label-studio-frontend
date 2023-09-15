@@ -432,7 +432,7 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
               if (isXCoord) {
                 const point = item.control?.getSnappedPoint({
                   x: item.parent.canvasToInternalX(coord * scale[0] + d[0]),
-                  y: item.parent.canvasToInternalY(points[idx+1] * scale[1] + d[1]),
+                  y: item.parent.canvasToInternalY(points[idx + 1] * scale[1] + d[1]),
                 });
 
                 result.push(point.x, point.y);
@@ -569,8 +569,8 @@ const HtxPolygonView = ({ item, setShapeRef }) => {
             y: item.parent?.canvasToInternalY(t.getAttr('y')),
           });
 
-          point.x = item.parent?.internalToCanvasX( point.x);
-          point.y = item.parent?.internalToCanvasY( point.y);
+          point.x = item.parent?.internalToCanvasX(point.x);
+          point.y = item.parent?.internalToCanvasY(point.y);
 
           item.points.forEach(p => p.movePoint(point.x, point.y));
           item.annotation.history.unfreeze(item.id);
