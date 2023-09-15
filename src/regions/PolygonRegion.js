@@ -576,8 +576,8 @@ const HtxPolygonView = ({ item, setShapeRef }) => {
             y: item.parent?.canvasToInternalY(t.getAttr('y')),
           });
 
-          point.x = item.parent?.internalToCanvasX( point.x);
-          point.y = item.parent?.internalToCanvasY( point.y);
+          point.x = item.parent?.internalToCanvasX(point.x);
+          point.y = item.parent?.internalToCanvasY(point.y);
 
           item.points.forEach(p => p.movePoint(point.x, point.y));
           item.annotation.history.unfreeze(item.id);
