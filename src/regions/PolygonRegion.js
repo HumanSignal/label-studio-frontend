@@ -195,17 +195,10 @@ const Model = types
           x: self.parent.canvasToInternalX(x),
           y: self.parent.canvasToInternalY(y),
         });
+        const isMatchWithPrevPoint = self.points[insertIdx - 1] && self.parent.isSamePixel(pointCoords, self.points[insertIdx - 1]);
+        const isMatchWithNextPoint = self.points[insertIdx] && self.parent.isSamePixel(pointCoords, self.points[insertIdx]);
 
-        if (
-          (
-            self.points[insertIdx - 1]
-            && self.parent.isSamePixel(pointCoords, self.points[insertIdx - 1])
-          )
-          || (
-            self.points[insertIdx]
-            && self.parent.isSamePixel(pointCoords, self.points[insertIdx])
-          )
-        ) {
+        if (isMatchWithPrevPoint || isMatchWithNextPoint) {
           return;
         }
 
