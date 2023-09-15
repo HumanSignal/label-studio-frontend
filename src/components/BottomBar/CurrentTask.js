@@ -3,6 +3,7 @@ import { Button } from '../../common/Button/Button';
 import { Block, Elem } from '../../utils/bem';
 import { guidGenerator } from '../../utils/unique';
 import { isDefined } from '../../utils/utilities';
+import { Tooltip } from '../../common/Tooltip/Tooltip';
 import './CurrentTask.styl';
 
 
@@ -14,16 +15,18 @@ export const CurrentTask = observer(({ store }) => {
     && !store.canGoNextTask
     && !store.hasInterface('review')
     && store.hasInterface('postpone');
-
+  
   return (
     <Elem name="section">
       <Block name="current-task" mod={{ 'with-history': historyEnabled }}>
         <Elem name="task-id">
           {store.task.id ?? guidGenerator()}
           {historyEnabled && (
-            <Elem name="task-count">
-              {store.queuePosition} of {store.queueTotal}
-            </Elem>
+            <Tooltip name={'task-count'} title={`${store.queuePosition} tasks complete of ${store.queueTotal} total tasks`}>
+              <Elem name="task-count">
+                {store.queuePosition} of {store.queueTotal}
+              </Elem>
+            </Tooltip>
           )}
         </Elem>
         {historyEnabled && (

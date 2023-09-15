@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../common/Button/Button';
 import { Block, Elem } from '../../utils/bem';
 import { FF_DEV_3873, FF_DEV_4174, isFF } from '../../utils/feature-flags';
@@ -7,7 +7,7 @@ import { guidGenerator } from '../../utils/unique';
 import { isDefined } from '../../utils/utilities';
 import './CurrentTask.styl';
 import { reaction } from 'mobx';
-
+import { Tooltip } from '../../common/Tooltip/Tooltip';
 
 export const CurrentTask = observer(({ store }) => {
   const [initialCommentLength, setInitialCommentLength] = useState(0);
@@ -57,9 +57,11 @@ export const CurrentTask = observer(({ store }) => {
         <Elem name="task-id" style={{ fontSize: isFF(FF_DEV_3873) ? 12 : 14 }}>
           {store.task.id ?? guidGenerator()}
           {historyEnabled && showCounter && (
-            <Elem name="task-count">
-              {store.queuePosition} of {store.queueTotal}
-            </Elem>
+            <Tooltip name={'task-count'} title={`${store.queuePosition} tasks complete of ${store.queueTotal} total tasks`}>
+              <Elem name="task-count">
+                {store.queuePosition} of {store.queueTotal}
+              </Elem>
+            </Tooltip>
           )}
         </Elem>
         {historyEnabled && (
