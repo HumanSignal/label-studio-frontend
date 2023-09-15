@@ -15,6 +15,7 @@ type TaxonomyItem = {
   children?: TaxonomyItem[],
   origin?: 'config' | 'user' | 'session',
   hint?: string,
+  color?: string,
 };
 
 type AntTaxonomyItem = {
@@ -48,12 +49,23 @@ type TaxonomyProps = {
 };
 
 const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyItem[] => {
-  return items.map(item => ({
-    title: item.hint ? (
+  const enrich = (item: TaxonomyItem) => {
+    // @todo marginLeft: -4 is good to align labels, but cats them in selected list
+    const color = (item: TaxonomyItem) => (
+      <span style={{ background: item.color, padding: '2px 4px', borderRadius: 2 }}>{item.label}</span>
+    );
+
+    if (!item.hint) return item.color ? color(item) : item.label;
+
+    return (
       <Tooltip title={item.hint} mouseEnterDelay={500}>
-        <span>{item.label}</span>
+        {item.color ? color(item) : <span>{item.label}</span>}
       </Tooltip>
-    ) : item.label,
+    );
+  };
+
+  return items.map(item => ({
+    title: enrich(item),
     value: item.path.join(options.pathSeparator),
     key: item.path.join(options.pathSeparator),
     isLeaf: item.isLeaf !== false && !item.children,
