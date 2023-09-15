@@ -439,7 +439,7 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
               if (isXCoord) {
                 const point = item.control?.getSnappedPoint({
                   x: item.parent.canvasToInternalX(coord * scale[0] + d[0]),
-                  y: item.parent.canvasToInternalY(points[idx+1] * scale[1] + d[1]),
+                  y: item.parent.canvasToInternalY(points[idx + 1] * scale[1] + d[1]),
                 });
 
                 result.push(point.x, point.y);
