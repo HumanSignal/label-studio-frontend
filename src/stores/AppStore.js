@@ -535,8 +535,8 @@ export default types
         })
         .then(() => self.setFlags({ isSubmitting: false }));
     }
-    function incrementQueuePosition() {
-      self.queuePosition++;
+    function incrementQueuePosition(number = 1) {
+      self.queuePosition += number;
     }
 
     function submitAnnotation() {
@@ -578,6 +578,7 @@ export default types
       if (self.isSubmitting) return;
       handleSubmittingFlag(() => {
         getEnv(self).events.invoke('skipTask', self, extraData);
+        self.incrementQueuePosition();
       }, 'Error during skip, try again');
     }
 
@@ -618,6 +619,8 @@ export default types
 
         entity.dropDraft();
         await getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity, comment });
+        self.incrementQueuePosition(-1);
+
       }, 'Error during reject, try again');
     }
 
@@ -766,6 +769,8 @@ export default types
       // or annotation created from prediction
       await annotation.saveDraft({ was_postponed: true });
       await getEnv(self).events.invoke('nextTask');
+      self.incrementQueuePosition();
+
     }
 
     function nextTask() {
@@ -774,6 +779,8 @@ export default types
         const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
 
         getEnv(self).events.invoke('nextTask', taskId, annotationId);
+        self.incrementQueuePosition();
+
       }
 
     }
@@ -785,6 +792,8 @@ export default types
         const { taskId, annotationId } = self.taskHistory[length];
 
         getEnv(self).events.invoke('prevTask', taskId, annotationId);
+        self.incrementQueuePosition(-1);
+
       }
     }
 

@@ -7,7 +7,6 @@ import { guidGenerator } from '../../utils/unique';
 import { isDefined } from '../../utils/utilities';
 import './CurrentTask.styl';
 import { reaction } from 'mobx';
-import { Tooltip } from '../../common/Tooltip/Tooltip';
 
 export const CurrentTask = observer(({ store }) => {
   const [initialCommentLength, setInitialCommentLength] = useState(0);
@@ -57,11 +56,9 @@ export const CurrentTask = observer(({ store }) => {
         <Elem name="task-id" style={{ fontSize: isFF(FF_DEV_3873) ? 12 : 14 }}>
           {store.task.id ?? guidGenerator()}
           {historyEnabled && showCounter && (
-            <Tooltip name={'task-count'} title={`${store.queuePosition} tasks complete of ${store.queueTotal} total tasks`}>
-              <Elem name="task-count">
-                {store.queuePosition} of {store.queueTotal}
-              </Elem>
-            </Tooltip>
+            <Elem name="task-count">
+              {store.queuePosition} of {store.queueTotal}
+            </Elem>
           )}
         </Elem>
         {historyEnabled && (
