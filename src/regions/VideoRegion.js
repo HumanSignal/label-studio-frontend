@@ -1,10 +1,10 @@
 import { types } from 'mobx-state-tree';
 
+import { guidGenerator } from '../core/Helpers';
+import { AreaMixin } from '../mixins/AreaMixin';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
 import { VideoModel } from '../tags/object/Video';
-import { guidGenerator } from '../core/Helpers';
-import { AreaMixin } from '../mixins/AreaMixin';
 import { FF_LEAP_187, isFF } from '../utils/feature-flags';
 
 export const onlyProps = (props, obj) => {
