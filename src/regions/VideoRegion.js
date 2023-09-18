@@ -49,6 +49,10 @@ const Model = types
       throw new Error('Method updateShape must be implemented on a shape level');
     },
 
+    onSelectInOutliner() {
+      self.object.setFrame(self.sequence[0].frame);
+    },
+
     serialize() {
       const { framerate, length: framesCount } = self.object;
 

@@ -293,6 +293,8 @@ const useEventHandlers = () => {
 
     if (wasNotSelected) {
       annotation.selectArea(self);
+      // post-select hook
+      self.onSelectInOutliner?.(wasNotSelected);
     } else {
       annotation.unselectAll();
     }
