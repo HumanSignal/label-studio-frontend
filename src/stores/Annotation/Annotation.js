@@ -253,6 +253,7 @@ export const Annotation = types
     draftSelected: false,
     autosaveDelay: 5000,
     isDraftSaving: false,
+    submissionStarted: 0,
     versions: {},
     resultSnapshot: '',
   }))
@@ -681,6 +682,10 @@ export const Annotation = types
         self.onDraftSaved(res);
         return res;
       });
+    },
+
+    submissionInProgress() {
+      self.submissionStarted = Date.now();
     },
 
     saveDraftImmediately() {

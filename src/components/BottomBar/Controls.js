@@ -74,7 +74,6 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
           if(store.hasInterface('comments:reject') ?? true) {
             buttonHandler(e, () => store.rejectAnnotation({}), 'Please enter a comment before rejecting');
           } else {
-            console.log('rejecting');
             await store.commentStore.commentFormSubmit();
             store.rejectAnnotation({});
           }
@@ -146,6 +145,10 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
             onClick={async (event) => {
               event.preventDefault();
               
+              const selected = store.annotationStore?.selected;
+
+              selected?.submissionInProgress();
+
               if ('URLSearchParams' in window) {
                 const searchParams = new URLSearchParams(window.location.search);
 
@@ -154,6 +157,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
                 window.history.pushState(null, '', newRelativePathQuery);
               }
+
               await store.commentStore.commentFormSubmit();
               onClickMethod();
             }}
@@ -179,6 +183,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
                 mod={{ has_icon: useExitOption, disabled: isDisabled }}
                 onClick={async (event) => {
                   if (event.target.classList.contains('lsf-dropdown__trigger')) return;  
+                  const selected = store.annotationStore?.selected;
+
+                  selected?.submissionInProgress();
                   await store.commentStore.commentFormSubmit();
                   store.submitAnnotation();
                 }}
@@ -211,6 +218,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
               mod={{ has_icon: useExitOption, disabled: isDisabled }}
               onClick={async (event) => {
                 if (event.target.classList.contains('lsf-dropdown__trigger')) return;
+                const selected = store.annotationStore?.selected;
+
+                selected?.submissionInProgress();
                 await store.commentStore.commentFormSubmit();
                 store.updateAnnotation();
               }}
@@ -241,6 +251,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
           <ButtonTooltip key="submit" title={title}>
             <Elem name="tooltip-wrapper">
               <Button aria-label="submit" disabled={disabled || submitDisabled} look={look} onClick={async () => {
+                const selected = store.annotationStore?.selected;
+
+                selected?.submissionInProgress();
                 await store.commentStore.commentFormSubmit();
                 store.submitAnnotation();
               }}>
@@ -256,6 +269,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
         const button = (
           <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
             <Button aria-label="submit" disabled={disabled || submitDisabled} look={look} onClick={async () => {
+              const selected = store.annotationStore?.selected;
+
+              selected?.submissionInProgress();
               await store.commentStore.commentFormSubmit();
               store.updateAnnotation();
             }}>
