@@ -281,6 +281,8 @@ const PolygonPointView = observer(({ item, name }) => {
         strokeWidth={stroke[item.size]}
         dragOnTop={false}
         strokeScaleEnabled={false}
+        perfectDrawEnabled={false}
+        shadowForStrokeEnabled={false}
         scaleX={1 / (item.stage.zoomScale || 1)}
         scaleY={1 / (item.stage.zoomScale || 1)}
         onDblClick={() => {
@@ -316,6 +318,9 @@ const PolygonPointView = observer(({ item, name }) => {
         fill={fill}
         stroke="black"
         strokeWidth={stroke[item.size]}
+        strokeScaleEnabled={false}
+        perfectDrawEnabled={false}
+        shadowForStrokeEnabled={false}
         dragOnTop={false}
         {...dragOpts}
         {...startPointAttr}

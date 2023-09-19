@@ -664,11 +664,6 @@ const HtxBrushView = ({ item, setShapeRef }) => {
               return;
             }
 
-            const tool = item.parent.getToolsManager().findSelectedTool();
-            const isMoveTool = tool && getType(tool).name === 'MoveTool';
-
-            if (tool && !isMoveTool) return;
-
             if (store.annotationStore.selected.relationMode) {
               stage.container().style.cursor = 'default';
             }

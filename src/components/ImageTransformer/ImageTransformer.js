@@ -91,14 +91,14 @@ export default class TransformerComponent extends Component {
     const [realX, realY] = [box.x - stage.x, box.y - stage.y];
 
     if (realX < 0) {
-      x = 0;
+      x = stage.x;
       width += realX;
     } else if (realX + box.width > stage.width) {
       width = stage.width - realX;
     }
 
     if (realY < 0) {
-      y = 0;
+      y = stage.y;
       height += realY;
     } else if (realY + box.height > stage.height) {
       height = stage.height - realY;
@@ -111,7 +111,11 @@ export default class TransformerComponent extends Component {
     const stage = this.transformer.getStage();
     const { stageWidth, stageHeight } = this.props.item;
 
-    const [scaledStageWidth, scaledStageHeight] = [stageWidth * stage.scaleX(), stageHeight * stage.scaleY()];
+    let [scaledStageWidth, scaledStageHeight] = [stageWidth * stage.scaleX(), stageHeight * stage.scaleY()];
+
+    if (this.props.item.isSideways) {
+      [scaledStageWidth, scaledStageHeight] = [scaledStageHeight, scaledStageWidth];
+    }
     const [stageX, stageY] = [stage.x(), stage.y()];
 
     return {
