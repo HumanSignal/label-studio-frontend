@@ -317,6 +317,12 @@ export const FF_TAXONOMY_ASYNC = 'fflag_feat_front_lsdv_5451_async_taxonomy_1108
  */
 export const FF_TAXONOMY_LABELING = 'fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short';
 
+/**
+ * Fix task count on projects with over 100 tasks (switch from task history to queue count)
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_all_optic_79_task_count_is_wrong_short/targeting
+ */
+export const FF_TASK_COUNT_FIX = 'fflag_fix_all_optic_79_task_count_is_wrong_short';
+
 Object.assign(window, {
   APP_SETTINGS: {
     ...(window.APP_SETTINGS ?? {}),

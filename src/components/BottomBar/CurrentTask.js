@@ -1,13 +1,17 @@
+import React, { useMemo } from 'react';
 import { observer } from 'mobx-react';
 import { Button } from '../../common/Button/Button';
 import { Block, Elem } from '../../utils/bem';
 import { guidGenerator } from '../../utils/unique';
 import { isDefined } from '../../utils/utilities';
-import { Tooltip } from '../../common/Tooltip/Tooltip';
+import { FF_TASK_COUNT_FIX, isFF } from '../../common/Tooltip/Tooltip';
 import './CurrentTask.styl';
 
 
 export const CurrentTask = observer(({ store }) => {
+  const currentIndex = useMemo(() => {
+    return store.taskHistory.findIndex((x) => x.taskId === store.task.id) + 1;
+  }, [store.taskHistory]);
 
   const historyEnabled = store.hasInterface('topbar:prevnext');
   // @todo some interface?
@@ -22,11 +26,15 @@ export const CurrentTask = observer(({ store }) => {
         <Elem name="task-id">
           {store.task.id ?? guidGenerator()}
           {historyEnabled && (
-            <Tooltip name={'task-count'} title={`${store.queuePosition} tasks complete of ${store.queueTotal} total tasks`}>
+            isFF(FF_TASK_COUNT_FIX) ? (
               <Elem name="task-count">
                 {store.queuePosition} of {store.queueTotal}
               </Elem>
-            </Tooltip>
+            ) : (
+              <Elem name="task-count">
+                {currentIndex} of {store.taskHistory.length}
+              </Elem>
+            )
           )}
         </Elem>
         {historyEnabled && (
