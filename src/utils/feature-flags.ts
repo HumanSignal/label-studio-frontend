@@ -322,6 +322,11 @@ export const FF_TAXONOMY_LABELING = 'fflag_feat_front_lsdv_5452_taxonomy_labelin
  */
 export const FF_PROD_E_111 = 'fflag_feat_front_prod_e_111_annotator_workflow_control_short';
 
+/**
+ * Optimize stage rendering for large number of regions and zoom interactions
+ */
+export const FF_ZOOM_OPTIM = 'fflag_fix_front_leap_32_zoom_perf_190923_short';
+
 
 Object.assign(window, {
   APP_SETTINGS: {
