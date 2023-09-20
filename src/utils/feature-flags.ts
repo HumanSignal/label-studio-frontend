@@ -327,6 +327,9 @@ export const FF_PROD_E_111 = 'fflag_feat_front_prod_e_111_annotator_workflow_con
  */
 export const FF_SNAP_TO_PIXEL = 'fflag_feat_front_lsdv_5518_snap_to_pixel_130923_short';
 
+/** Skip video to region start when it's selected in the outliner */
+export const FF_LEAP_187 = 'fflag_feat_front_leap_187_video_seek_on_select_short';
+
 
 Object.assign(window, {
   APP_SETTINGS: {
