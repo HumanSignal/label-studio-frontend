@@ -34,7 +34,7 @@ const PolygonRegionAbsoluteCoordsDEV3793 = types
           const x = (sw * p.relativeX) / RELATIVE_STAGE_WIDTH;
           const y = (sh * p.relativeY) / RELATIVE_STAGE_HEIGHT;
 
-          p._movePoint(x, y);
+          p._setPos(x, y);
         });
       }
 
@@ -44,7 +44,7 @@ const PolygonRegionAbsoluteCoordsDEV3793 = types
           const y = (sh * p.y) / RELATIVE_STAGE_HEIGHT;
 
           self.coordstype = 'px';
-          p._movePoint(x, y);
+          p._setPos(x, y);
         });
       }
     },

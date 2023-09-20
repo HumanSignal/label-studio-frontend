@@ -37,20 +37,23 @@ const PolygonPointAbsoluteCoordsDEV3793 = types.model()
       self.relativeX = (self.x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
       self.relativeY = (self.y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
     },
+    _setPos(x, y) {
+      self.initX = x;
+      self.initY = y;
+
+      self.relativeX = (x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
+
+      self.x = x;
+      self.y = y;
+    },
     _movePoint(x, y) {
       const point = self.parent.control?.getSnappedPoint({
         x: self.stage.canvasToInternalX(x),
         y: self.stage.canvasToInternalY(y),
       });
 
-      self.initX = point.x;
-      self.initY = point.y;
-
-      self.relativeX = (point.x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
-      self.relativeY = (point.y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
-
-      self.x = point.x;
-      self.y = point.y;
+      self._setPos(point.x, point.y);
     },
   }));
 
@@ -104,14 +107,17 @@ const PolygonPointRelativeCoords = types
       self.y = self.y + dy;
     },
 
+    _setPos(x, y) {
+      self.x = x;
+      self.y = y;
+    },
     _movePoint(canvasX, canvasY) {
       const point = self.parent.control?.getSnappedPoint({
         x: self.stage.canvasToInternalX(canvasX),
         y: self.stage.canvasToInternalY(canvasY),
       });
 
-      self.x = point.x;
-      self.y = point.y;
+      self._setPos(point.x, point.y);
     },
 
     /**
