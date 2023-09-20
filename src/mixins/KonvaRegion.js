@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree';
-import { FF_DBLCLICK_DELAY, FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { FF_DBLCLICK_DELAY, FF_DEV_3793, FF_ZOOM_OPTIM, isFF } from '../utils/feature-flags';
 export const KonvaRegionMixin = types.model({})
   .views((self) => {
     return {
@@ -21,6 +21,7 @@ export const KonvaRegionMixin = types.model({})
         };
       },
       get inViewPort() {
+        if (!isFF(FF_ZOOM_OPTIM)) return true;
         return !!self && !!self.bboxCoordsCanvas && !!self.object && (
           self.bboxCoordsCanvas.right >= self.object.viewPortBBoxCoords.left
           && self.bboxCoordsCanvas.bottom >= self.object.viewPortBBoxCoords.top
