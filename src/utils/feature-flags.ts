@@ -321,8 +321,8 @@ export const FF_TAXONOMY_LABELING = 'fflag_feat_front_lsdv_5452_taxonomy_labelin
  * Fix task count on projects with over 100 tasks (switch from task history to queue count)
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_all_optic_79_task_count_is_wrong_short/targeting
  */
-export const FF_TASK_COUNT_FIX = 'fflag_fix_all_optic_79_task_count_is_wrong_short';
 
+export const FF_TASK_COUNT_FIX = 'fflag_fix_all_optic_79_task_count_is_wrong_short';
 /** 
 * Annotator workflow control for lead time calculation
  */
