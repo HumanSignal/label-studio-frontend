@@ -17,7 +17,7 @@ import { Hotkey } from '../core/Hotkey';
 import ToolsManager from '../tools/Manager';
 import Utils from '../utils';
 import { guidGenerator } from '../utils/unique';
-import { delay, isDefined } from '../utils/utilities';
+import { clamp, delay, isDefined } from '../utils/utilities';
 import AnnotationStore from './Annotation/store';
 import Project from './ProjectStore';
 import Settings from './SettingsStore';
@@ -536,7 +536,7 @@ export default types
         .then(() => self.setFlags({ isSubmitting: false }));
     }
     function incrementQueuePosition(number = 1) {
-      self.queuePosition += number;
+      self.queuePosition = clamp(self.queuePosition + number, 1, self.queueTotal);
     }
 
     function submitAnnotation() {
