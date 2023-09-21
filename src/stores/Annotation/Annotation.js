@@ -682,6 +682,7 @@ export const Annotation = types
       self.setDraftSaving(true);
       return self.store.submitDraft(self, params).then((res) => {
         self.onDraftSaved(res);
+
         return res;
       });
     },
