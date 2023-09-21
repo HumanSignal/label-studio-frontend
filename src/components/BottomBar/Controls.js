@@ -48,10 +48,15 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     
     if (isInProgress) return;
     setIsInProgress(true);
+
+    const selected = store.annotationStore?.selected;
+
     if(addedCommentThisSession){
+      selected?.submissionInProgress();
       callback();
     } else if((currentComment ?? '').trim()) {
       e.preventDefault();
+      selected?.submissionInProgress();
       await commentFormSubmit();
       callback();
     } else {
@@ -74,6 +79,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
           if(store.hasInterface('comments:reject') ?? true) {
             buttonHandler(e, () => store.rejectAnnotation({}), 'Please enter a comment before rejecting');
           } else {
+            const selected = store.annotationStore?.selected;
+
+            selected?.submissionInProgress();
             await store.commentStore.commentFormSubmit();
             store.rejectAnnotation({});
           }
@@ -90,6 +98,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     buttons.push(
       <ButtonTooltip key="accept" title="Accept annotation: [ Ctrl+Enter ]">
         <Button aria-label="accept-annotation" disabled={disabled} look="primary" onClick={async () => {
+          const selected = store.annotationStore?.selected;
+
+          selected?.submissionInProgress();
           await store.commentStore.commentFormSubmit();
           store.acceptAnnotation();
         }}>
@@ -105,6 +116,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     buttons.push(
       <ButtonTooltip key="cancel-skip" title="Cancel skip: []">
         <Button aria-label="cancel-skip" disabled={disabled} look="primary" onClick={async () => {
+          const selected = store.annotationStore?.selected;
+
+          selected?.submissionInProgress();
           await store.commentStore.commentFormSubmit();
           store.unskipTask();
         }}>
@@ -120,6 +134,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
             if(store.hasInterface('comments:skip') ?? true) {
               buttonHandler(e, () => store.skipTask({}), 'Please enter a comment before skipping');
             } else {
+              const selected = store.annotationStore?.selected;
+
+              selected?.submissionInProgress();
               await store.commentStore.commentFormSubmit();
               store.skipTask({});
             }
