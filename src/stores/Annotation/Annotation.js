@@ -667,6 +667,8 @@ export const Annotation = types
     }),
 
     async saveDraft(params) {
+      // There is no draft to save as it was already saved as an annotation
+      if (self.submissionStarted) return;
       // if this is now a history item or prediction don't save it
       if (!self.editable) return;
 
@@ -693,6 +695,9 @@ export const Annotation = types
     },
 
     async saveDraftImmediatelyWithResults() {
+      // There is no draft to save as it was already saved as an annotation
+      if (self.submissionStarted) return {};
+
       const res = await self.saveDraft(null);
 
       return res;
