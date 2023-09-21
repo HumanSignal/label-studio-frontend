@@ -1,12 +1,12 @@
-import { Component } from "react";
-import App from "./components/App/App";
-import { configureStore } from "./configureStore";
-import { registerPanels } from "./registerPanels";
+import { Component } from 'react';
+import App from './components/App/App';
+import { configureStore } from './configureStore';
+import { registerPanels } from './registerPanels';
 
 export class LabelStudio extends Component {
   state = {
     initialized: false,
-  }
+  };
 
   componentDidMount() {
     configureStore(this.props).then(({ store }) => {

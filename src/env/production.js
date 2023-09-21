@@ -1,5 +1,5 @@
-import External from "../core/External";
-import Messages from "../utils/messages";
+import External from '../core/External';
+import Messages from '../utils/messages';
 
 function getData(task) {
   if (task && task.data) {
@@ -26,13 +26,13 @@ function getState(task) {
 function rootElement(element) {
   let root;
 
-  if (typeof element === "string") {
+  if (typeof element === 'string') {
     root = document.getElementById(element);
   } else {
     root = element;
   }
 
-  root.innerHTML = "";
+  root.innerHTML = '';
 
   return root;
 }
@@ -55,6 +55,7 @@ function configureApplication(params) {
     // remove: params.remove || Requests.remover,
 
     // communication with the user
+    settings: params.settings || {},
     alert: m => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },
 
@@ -63,6 +64,7 @@ function configureApplication(params) {
     onUpdateAnnotation: params.onUpdateAnnotation ? ouCB : External.onUpdateAnnotation,
     onDeleteAnnotation: params.onDeleteAnnotation ? odCB : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
+    onUnskipTask: params.onUnskipTask ? params.onUnskipTask : External.onUnskipTask,
     onSubmitDraft: params.onSubmitDraft,
     onTaskLoad: params.onTaskLoad || External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad || External.onLabelStudioLoad,
@@ -73,6 +75,12 @@ function configureApplication(params) {
     onAcceptAnnotation: params.onAcceptAnnotation || External.onAcceptAnnotation,
     onRejectAnnotation: params.onRejectAnnotation || External.onRejectAnnotation,
     onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
+    onNextTask: params.onNextTask || External.onNextTask,
+    onPrevTask: params.onPrevTask || External.onPrevTask,
+
+    // other settings aka flags
+    forceAutoAnnotation: params.forceAutoAnnotation ?? false,
+    forceAutoAcceptSuggestions: params.forceAutoAcceptSuggestions ?? false,
   };
 
   return options;

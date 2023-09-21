@@ -1,17 +1,22 @@
 /* global describe, it, expect */
-import React from "react";
-import { shallow } from "enzyme";
-import { shallowToJson } from "enzyme-to-json";
+import React from 'react';
+import Enzyme, { shallow } from 'enzyme';
+import { shallowToJson } from 'enzyme-to-json';
+import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
 
-import Hint from "./Hint";
+Enzyme.configure({ adapter: new Adapter() });
 
-describe("Hint", () => {
-  it("Should render correctly", () => {
-    const output = shallow(
-      <Hint copy="test" style={{ background: "red" }} className="test">
+import Hint from './Hint';
+
+describe('Hint', () => {
+  it('Should render correctly', () => {
+    const component = (
+      <Hint copy="test" style={{ background: 'red' }} className="test">
         Test
-      </Hint>,
+      </Hint>
     );
+
+    const output = shallow(component);
 
     expect(shallowToJson(output)).toMatchSnapshot();
   });

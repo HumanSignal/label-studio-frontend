@@ -1,17 +1,17 @@
-import React from "react";
-import { Button, List, Select } from "antd";
-import { getRoot, isValidReference } from "mobx-state-tree";
-import { observer } from "mobx-react";
-import { ArrowLeftOutlined, ArrowRightOutlined, DeleteOutlined, MoreOutlined, SwapOutlined } from "@ant-design/icons";
+import React from 'react';
+import { Button, List, Select } from 'antd';
+import { getRoot, isValidReference } from 'mobx-state-tree';
+import { observer } from 'mobx-react';
+import { ArrowLeftOutlined, ArrowRightOutlined, DeleteOutlined, MoreOutlined, SwapOutlined } from '@ant-design/icons';
 
-import styles from "./Relations.module.scss";
-import { NodeMinimal } from "../Node/Node";
-import { wrapArray } from "../../utils/utilities";
-import globalStyles from "../../styles/global.module.scss";
+import styles from './Relations.module.scss';
+import { NodeMinimal } from '../Node/Node';
+import { wrapArray } from '../../utils/utilities';
+import globalStyles from '../../styles/global.module.scss';
 
-import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
-import { Block, Elem } from "../../utils/bem";
-import "./Relations.styl";
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+import { Block, Elem } from '../../utils/bem';
+import './Relations.styl';
 
 const { Option } = Select;
 
@@ -20,11 +20,11 @@ const RelationMeta = observer(({ rl }) => {
   const selected = r.getSelected().map(v => v.value);
 
   return (
-    <div style={{ marginTop: "10px" }}>
+    <div style={{ marginTop: '10px' }}>
       <h4 className={styles.header}>LABELS</h4>
       <Select
-        mode={r.choice === "multiple" ? "multiple" : ""}
-        style={{ width: "100%" }}
+        mode={r.choice === 'multiple' ? 'multiple' : ''}
+        style={{ width: '100%' }}
         placeholder="Please select"
         defaultValue={selected}
         onChange={(val) => {
@@ -132,7 +132,7 @@ const ListItem = observer(({ item }) => {
   );
 });
 
-export default observer(({ store }) => {
+const RelationsComponent = ({ store }) => {
   const annotation = store.annotationStore.selected;
   const { relations } = annotation.relationStore;
   const hasRelations = relations.length > 0;
@@ -170,4 +170,8 @@ export default observer(({ store }) => {
       </Elem>
     </Block>
   );
-});
+};
+
+export const Relations = observer(RelationsComponent);
+
+export default Relations;

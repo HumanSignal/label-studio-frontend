@@ -1,38 +1,40 @@
-import insertAfter from "insert-after";
-import * as Checkers from "./utilities";
-import Canvas from "./canvas";
+import insertAfter from 'insert-after';
+import * as Checkers from './utilities';
+import Canvas from './canvas';
 
+// fast way to change labels visibility for all text regions
 function toggleLabelsAndScores(show) {
-  const els = document.getElementsByClassName("htx-highlight");
+  const toggleInDocument = document => {
+    const els = document.getElementsByClassName('htx-highlight');
 
-  Array.from(els).forEach(el => {
-    let foundCls = null;
+    Array.from(els).forEach(el => {
+      // labels presence controlled by explicit `showLabels` in the config
+      if (el.classList.contains('htx-manual-label')) return;
 
-    Array.from(el.classList).forEach(cls => {
-      if (cls.indexOf("htx-label-") !== -1) foundCls = cls;
+      if (show) el.classList.remove('htx-no-label');
+      else el.classList.add('htx-no-label');
     });
+  };
 
-    if (foundCls !== null) {
-      if (show) el.classList.remove("htx-no-label");
-      else el.classList.add("htx-no-label");
-    }
-  });
+  toggleInDocument(document);
+  document.querySelectorAll('iframe.lsf-htx-richtext')
+    .forEach(iframe => toggleInDocument(iframe.contentWindow.document));
 }
 
 const labelWithCSS = (function() {
   const cache = {};
 
   return function(node, { labels, score }) {
-    const labelsStr = labels ? labels.join(",") : "";
+    const labelsStr = labels ? labels.join(',') : '';
     const clsName = Checkers.hashCode(labelsStr + score);
 
-    let cssCls = "htx-label-" + clsName;
+    let cssCls = 'htx-label-' + clsName;
 
     cssCls = cssCls.toLowerCase();
 
     if (cssCls in cache) return cache[cssCls];
 
-    node.setAttribute("data-labels", labelsStr);
+    node.setAttribute('data-labels', labelsStr);
 
     const resSVG = Canvas.labelToSVG({ label: labelsStr, score });
     const svgURL = `url(${resSVG})`;
@@ -47,12 +49,12 @@ const labelWithCSS = (function() {
 
 // work directly with the html tree
 function createClass(name, rules) {
-  var style = document.createElement("style");
+  const style = document.createElement('style');
 
-  style.type = "text/css";
-  document.getElementsByTagName("head")[0].appendChild(style);
+  style.type = 'text/css';
+  document.getElementsByTagName('head')[0].appendChild(style);
   if (!(style.sheet || {}).insertRule) (style.styleSheet || style.sheet).addRule(name, rules);
-  else style.sheet.insertRule(name + "{" + rules + "}", 0);
+  else style.sheet.insertRule(name + '{' + rules + '}', 0);
 }
 
 function documentForward(node) {
@@ -90,27 +92,40 @@ function getNextNode(node) {
   }
 }
 
-function getNodesInRange(range) {
-  var start = range.startContainer;
-  var end = range.endContainer;
-  var commonAncestor = range.commonAncestorContainer;
-  var nodes = [];
-  var node;
+export function isValidTreeNode(node, commonAncestor) {
+  while(node) {
+    if (commonAncestor && node === commonAncestor) return true;
+    if (node.nodeType === Node.ELEMENT_NODE && node.dataset.skipNode === 'true') return false;
+    node = node.parentNode;
+  }
+  return true;
+}
+
+export function getNodesInRange(range) {
+  const start = range.startContainer;
+  const end = range.endContainer;
+  const commonAncestor = range.commonAncestorContainer;
+  const nodes = [];
+  let node;
 
   // walk parent nodes from start to common ancestor
   for (node = start.parentNode; node; node = node.parentNode) {
-    nodes.push(node);
+    if (isValidTreeNode(node, commonAncestor)) nodes.push(node);
     if (node === commonAncestor) break;
   }
   nodes.reverse();
 
   // walk children and siblings from start until end is found
   for (node = start; node; node = getNextNode(node)) {
-    nodes.push(node);
+    if (isValidTreeNode(node, commonAncestor)) nodes.push(node);
     if (node === end) break;
   }
 
   return nodes;
+}
+
+export function getTextNodesInRange(range) {
+  return getNodesInRange(range).filter(n => isTextNode(n));
 }
 
 function documentReverse(node) {
@@ -130,7 +145,7 @@ function documentReverse(node) {
  * @param {number} offset
  */
 function splitText(node, offset) {
-  let tail = node.cloneNode(false);
+  const tail = node.cloneNode(false);
 
   tail.deleteData(0, offset);
   node.deleteData(offset, node.length - offset);
@@ -139,7 +154,7 @@ function splitText(node, offset) {
 
 function normalizeBoundaries(range) {
   let { startContainer, startOffset, endContainer, endOffset } = range;
-  let node, next, last, start, end;
+  let node, next, last;
 
   // Move the start container to the last leaf before any sibling boundary,
   // guaranteeing that any children of the container are within the range.
@@ -170,7 +185,7 @@ function normalizeBoundaries(range) {
   next = node => (node === last ? null : documentForward(node));
   last = lastLeaf(endContainer);
   while (node && !isTextNodeInRange(node)) node = next(node);
-  start = node;
+  const start = node;
 
   // Find the end TextNode.
   // Similarly, a reverse document order traversal visits every Node in the
@@ -179,23 +194,22 @@ function normalizeBoundaries(range) {
   next = node => (node === last ? null : documentReverse(node));
   last = firstLeaf(startContainer);
   while (node && !isTextNodeInRange(node)) node = next(node);
-  end = node;
+  const end = node;
 
   range.setStart(start, 0);
   range.setEnd(end, end.length);
 }
 
 function highlightRange(normedRange, cssClass, cssStyle) {
-  if (typeof cssClass === "undefined" || cssClass === null) {
-    cssClass = "htx-annotation";
+  if (typeof cssClass === 'undefined' || cssClass === null) {
+    cssClass = 'htx-annotation';
   }
 
-  const allNodes = getNodesInRange(normedRange._range);
-  const textNodes = allNodes.filter(n => isTextNode(n));
+  const textNodes = getTextNodesInRange(normedRange._range);
 
-  var white = /^\s*$/;
+  const white = /^\s*$/;
 
-  var nodes = textNodes; // normedRange.textNodes(),
+  const nodes = textNodes; // normedRange.textNodes(),
 
   let start = 0;
 
@@ -207,11 +221,11 @@ function highlightRange(normedRange, cssClass, cssStyle) {
 
   const results = [];
 
-  for (var i = start, len = nlen; i < len; i++) {
-    var node = nodes[i];
+  for (let i = start, len = nlen; i < len; i++) {
+    const node = nodes[i];
 
     if (!white.test(node.nodeValue)) {
-      var hl = window.document.createElement("span");
+      const hl = window.document.createElement('span');
 
       hl.style.backgroundColor = cssStyle.backgroundColor;
 
@@ -231,7 +245,8 @@ function highlightRange(normedRange, cssClass, cssStyle) {
  * @param {Range} range
  */
 function splitBoundaries(range) {
-  let { startContainer, startOffset, endContainer, endOffset } = range;
+  let { startContainer, endContainer  } = range;
+  const { startOffset, endOffset } = range;
 
   if (isTextNode(endContainer)) {
     if (endOffset > 0 && endOffset < endContainer.length) {
@@ -259,10 +274,10 @@ const toGlobalOffset = (container, element, len) => {
     if (node === element) {
       return pos;
     }
-    if (node.nodeName === "#text") pos = pos + node.length;
-    if (node.nodeName === "BR") pos = pos + 1;
+    if (node.nodeName === '#text') pos = pos + node.length;
+    if (node.nodeName === 'BR') pos = pos + 1;
 
-    for (var i = 0; i <= node.childNodes.length; i++) {
+    for (let i = 0; i <= node.childNodes.length; i++) {
       const n = node.childNodes[i];
 
       if (n) {
@@ -277,7 +292,7 @@ const toGlobalOffset = (container, element, len) => {
 };
 
 const mainOffsets = element => {
-  var range = window
+  const range = window
     .getSelection()
     .getRangeAt(0)
     .cloneRange();
@@ -288,7 +303,7 @@ const mainOffsets = element => {
   let passedEnd = false;
 
   const traverse = node => {
-    if (node.nodeName === "#text") {
+    if (node.nodeName === '#text') {
       if (node !== range.startContainer && !passedStart) start = start + node.length;
       if (node === range.startContainer) passedStart = true;
 
@@ -296,14 +311,14 @@ const mainOffsets = element => {
       if (node === range.endContainer) passedEnd = true;
     }
 
-    if (node.nodeName === "BR") {
+    if (node.nodeName === 'BR') {
       if (!passedStart) start = start + 1;
 
       if (!passedEnd) end = end + 1;
     }
 
     if (node.childNodes.length > 0) {
-      for (var i = 0; i <= node.childNodes.length; i++) {
+      for (let i = 0; i <= node.childNodes.length; i++) {
         const n = node.childNodes[i];
 
         if (n) {
@@ -326,13 +341,13 @@ const findIdxContainer = (el, globidx) => {
   const traverse = node => {
     if (!node) return;
 
-    if (node.nodeName === "#text") {
+    if (node.nodeName === '#text') {
       if (len - node.length <= 0) return node;
       else len = len - node.length;
-    } else if (node.nodeName === "BR") {
+    } else if (node.nodeName === 'BR') {
       len = len - 1;
     } else if (node.childNodes.length > 0) {
-      for (var i = 0; i <= node.childNodes.length; i++) {
+      for (let i = 0; i <= node.childNodes.length; i++) {
         const n = node.childNodes[i];
 
         if (n) {
@@ -350,7 +365,7 @@ const findIdxContainer = (el, globidx) => {
 };
 
 function removeSpans(spans) {
-  var norm = [];
+  const norm = [];
 
   if (spans) {
     spans.forEach(span => {
@@ -364,8 +379,59 @@ function removeSpans(spans) {
   norm.forEach(n => n.normalize());
 }
 
+function moveStylesBetweenHeadTags(srcHead, destHead) {
+  const rulesByStyleId = {};
+  const fragment = document.createDocumentFragment();
+
+  for (let i = 0; i < srcHead.children.length; ) {
+    const style = srcHead.children[i];
+
+    if (style?.tagName !== 'STYLE') {
+      i++;
+      continue;
+    }
+
+    const styleSheet = style.sheet;
+
+    // Sometimes rules are not accessible
+    try {
+      const rules = styleSheet.rules;
+
+      const cssTexts = rulesByStyleId[style.id] = [];
+
+      for (let k = 0;k < rules.length; k++) {
+        cssTexts.push(rules[k].cssText);
+      }
+    } finally {
+      fragment.appendChild(style);
+    }
+  }
+  destHead.appendChild(fragment);
+  applyHighlightStylesToDoc(destHead.ownerDocument,rulesByStyleId);
+}
+
+function applyHighlightStylesToDoc(destDoc, rulesByStyleId) {
+  for (let i = 0; i < destDoc.styleSheets.length; i++) {
+    const styleSheet = destDoc.styleSheets[i];
+    const style = styleSheet.ownerNode;
+
+    if (!style.id) continue;
+    // Sometimes rules are not accessible
+    try {
+      const rules = rulesByStyleId[style.id];
+
+      if (!rules) continue;
+      for (let k = 0;k < rules.length; k++) {
+        style.sheet.insertRule(rules[k]);
+      }
+    } catch {
+      continue;
+    }
+  }
+}
+
 /**
- * Checks if element of one of it's descendants match given selector
+ * Checks if element or one of its descendants match given selector
  * @param {HTMLElement} element Element to match
  * @param {string} selector CSS selector
  */
@@ -379,7 +445,7 @@ export const matchesSelector = (element, selector) => {
  * @param {Node} root
  */
 export const findByXpath = (xpath, root = document) => {
-  if (root !== document && xpath[0] !== ".") {
+  if (root !== document && xpath[0] !== '.') {
     xpath = `.${xpath}`;
   }
 
@@ -388,7 +454,7 @@ export const findByXpath = (xpath, root = document) => {
 
 export const htmlEscape = string => {
   const matchHtmlRegExp = /["'&<>]/;
-  const str = "" + string;
+  const str = '' + string;
   const match = matchHtmlRegExp.exec(str);
 
   if (!match) {
@@ -396,26 +462,26 @@ export const htmlEscape = string => {
   }
 
   let escape;
-  let html = "";
+  let html = '';
   let index = 0;
   let lastIndex = 0;
 
   for (index = match.index; index < str.length; index++) {
     switch (str.charCodeAt(index)) {
       case 34: // "
-        escape = "&quot;";
+        escape = '&quot;';
         break;
       case 38: // &
-        escape = "&amp;";
+        escape = '&amp;';
         break;
       case 39: // '
-        escape = "&#39;";
+        escape = '&#39;';
         break;
       case 60: // <
-        escape = "&lt;";
+        escape = '&lt;';
         break;
       case 62: // >
-        escape = "&gt;";
+        escape = '&gt;';
         break;
       default:
         continue;
@@ -444,6 +510,36 @@ function findNodeAt(context, at) {
   }
 }
 
+/**
+ * Sanitize html from scripts and iframes
+ * @param {string} html
+ * @param {object} [options]
+ * @param {boolean} [options.useStub] use stub instead of removing to keep tags number and order for html tasks
+ * @param {boolean} [options.useHeadStub] use different stub for scripts in head to not have excess tags there
+ * @returns {string}
+ */
+function sanitizeHtml(html, options = {}) {
+  if (!html) return '';
+
+  const reScripts = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi;
+  const stub = options.useStub ? '<ls-stub></ls-stub>' : '';
+  const headStub = '<ls-head-stub></ls-head-stub>';
+
+  if (options.useHeadStub) {
+    html = html.replace(/(<head.*?>)(.*?)(<\/head>)/, (_, opener, body, closer) => {
+      return [opener, body.replace(reScripts, headStub), closer].join('');
+    });
+  }
+
+  const sanitized = html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi, stub)
+    .replace(/<iframe\b.*?(?:\/>|<\/iframe>)/g, stub)
+    // remove events
+    .replace(/\bon[a-z]+\s*=\s*(?:(['"])(?!\1).+?\1|(?:\S+?\(.*?\)(?=[\s>])))(.*?)/gi, '');
+
+  return sanitized;
+}
+
 export {
   toggleLabelsAndScores,
   labelWithCSS,
@@ -453,7 +549,10 @@ export {
   findIdxContainer,
   toGlobalOffset,
   highlightRange,
+  sanitizeHtml,
   splitBoundaries,
   normalizeBoundaries,
-  createClass
+  createClass,
+  moveStylesBetweenHeadTags,
+  applyHighlightStylesToDoc
 };

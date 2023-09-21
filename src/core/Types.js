@@ -1,6 +1,6 @@
-import { getParent, getType, isRoot, types } from "mobx-state-tree";
+import { getParent, getType, isRoot, types } from 'mobx-state-tree';
 
-import Registry from "./Registry";
+import Registry from './Registry';
 
 function _mixedArray(fn) {
   return function(arr) {
@@ -22,7 +22,7 @@ function _oneOf(lookup, err) {
   };
 }
 
-const oneOfTags = _oneOf(Registry.getModelByTag, "Not expecting tag: ");
+const oneOfTags = _oneOf(Registry.getModelByTag, 'Not expecting tag: ');
 const tagsArray = _mixedArray(oneOfTags);
 
 function unionArray(arr) {
@@ -33,13 +33,13 @@ function unionArray(arr) {
 }
 
 function unionTag(arr) {
-  return types.maybeNull(types.enumeration("unionTag", arr));
+  return types.maybeNull(types.enumeration('unionTag', arr));
 }
 
 function tagsTypes(arr) {
   const type = types.frozen(arr.map(val => val.toLowerCase()));
 
-  type.describe = ()=>`(${arr.join("|")})`;
+  type.describe = () => `(${arr.join('|')})`;
   type.value = arr;
   return type;
 }
@@ -52,7 +52,7 @@ function allModelsTypes() {
         if (Registry.tags.includes(sn.type)) {
           return Registry.getModelByTag(sn.type);
         } else {
-          throw Error("Not expecting tag: " + sn.type);
+          throw Error('Not expecting tag: ' + sn.type);
         }
       },
     },
@@ -67,7 +67,7 @@ function allModelsTypes() {
 function isType(node, types) {
   const nt = getType(node);
 
-  for (let t of types) if (nt === t) return true;
+  for (const t of types) if (nt === t) return true;
 
   return false;
 }
@@ -96,7 +96,7 @@ function getParentTagOfTypeString(node, str) {
   if (!Array.isArray(str)) str = [str];
 
   while (parent) {
-    let parentType = parent.type;
+    const parentType = parent.type;
 
     if (str.find(c => c === parentType)) return parent;
 
@@ -106,7 +106,19 @@ function getParentTagOfTypeString(node, str) {
   return null;
 }
 
-const oneOfTools = _oneOf(Registry.getTool, "Not expecting tool: ");
+const oneOfTools = _oneOf(Registry.getTool, 'Not expecting tool: ');
 const toolsArray = _mixedArray(oneOfTools);
 
-export default { unionArray, allModelsTypes, unionTag, tagsTypes, isType, getParentOfTypeString, getParentTagOfTypeString, tagsArray, toolsArray };
+const Types = {
+  unionArray,
+  allModelsTypes,
+  unionTag,
+  tagsTypes,
+  isType,
+  getParentOfTypeString,
+  getParentTagOfTypeString,
+  tagsArray,
+  toolsArray,
+};
+
+export default Types;

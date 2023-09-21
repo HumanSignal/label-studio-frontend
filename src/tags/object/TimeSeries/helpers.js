@@ -1,6 +1,6 @@
-import * as d3 from "d3";
-import Utils from "../../../utils";
-import { defaultStyle } from "../../../core/Constants";
+import * as d3 from 'd3';
+import Utils from '../../../utils';
+import { defaultStyle } from '../../../core/Constants';
 
 export const line = (x, y) =>
   d3
@@ -15,7 +15,7 @@ export const getOptimalWidth = () => ((window.screen && window.screen.width) || 
 export const sparseValues = (values, max = 1e6) => {
   if (values.length <= max) return values;
   let next = 0;
-  let step = (values.length - 1) / (max - 1);
+  const step = (values.length - 1) / (max - 1);
   // return values.filter((_, i) => i > next && (next += step))
 
   return values.filter((_, i) => {
@@ -31,10 +31,6 @@ export const getRegionColor = (region, alpha = 1) => {
   return Utils.Colors.convertToRGBA(color, alpha);
 };
 
-// fixes `observe` - it watches only the changes of primitive props of observables count
-// so pass all the required primitives to this stub and they'll be observed
-export const fixMobxObserve = () => {};
-
 // clear d3 sourceEvent via async call to prevent infinite loops
 export const clearD3Event = f => setTimeout(f, 0);
 
@@ -42,7 +38,7 @@ export const clearD3Event = f => setTimeout(f, 0);
 export const checkD3EventLoop = event => {
   if (!d3.event.sourceEvent) return true;
   if (event) return d3.event.sourceEvent.type === event;
-  return ["start", "brush", "end"].includes(d3.event.sourceEvent.type);
+  return ['start', 'brush', 'end'].includes(d3.event.sourceEvent.type);
 };
 
 const formatDateDiff = (start, end) => {
@@ -55,12 +51,12 @@ const formatDateDiff = (start, end) => {
 export const formatRegion = node => {
   let ranges = [];
 
-  if (node.parent.format === "date") {
+  if (node.parent.format === 'date') {
     ranges = formatDateDiff(new Date(node.start), new Date(node.end));
   } else {
     ranges = [node.start, node.end];
   }
-  return node.instant ? ranges[0] : ranges.join("–");
+  return node.instant ? ranges[0] : ranges.join('–');
 };
 
-export const formatTrackerTime = time => new Date(time).toLocaleString();
+export const formatTrackerTime = time => new Date(time).toUTCString();

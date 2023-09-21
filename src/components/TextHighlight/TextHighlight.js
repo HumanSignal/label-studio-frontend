@@ -1,13 +1,13 @@
-import emojiRegex from "emoji-regex";
-import React, { Component } from "react";
-import { observer } from "mobx-react";
+import emojiRegex from 'emoji-regex';
+import React, { Component } from 'react';
+import { observer } from 'mobx-react';
 
-import Utils from "../../utils";
-import Range from "./Range";
-import { HtxTextNode } from "./Node";
-import UrlNode from "./UrlNode";
-import EmojiNode from "./EmojiNode";
-import styles from "./TextHighlight.module.scss";
+import Utils from '../../utils';
+import Range from './Range';
+import { HtxTextNode } from './Node';
+import UrlNode from './UrlNode';
+import EmojiNode from './EmojiNode';
+import styles from './TextHighlight.module.scss';
 
 class TextHighlight extends Component {
   constructor() {
@@ -133,7 +133,7 @@ class TextHighlight extends Component {
       return false;
     }
 
-    let text = "";
+    let text = '';
 
     if (window.getSelection) {
       /**
@@ -142,12 +142,12 @@ class TextHighlight extends Component {
        */
       // text = window.getSelection().toString();
 
-      if (window.getSelection().type === "None") return;
+      if (window.getSelection().type === 'None') return;
 
       /**
        * Create clone range
        */
-      let cloneCont = window
+      const cloneCont = window
         .getSelection()
         .getRangeAt(0)
         .cloneRange();
@@ -155,25 +155,25 @@ class TextHighlight extends Component {
       /**
        * The Range.cloneContents() returns a DocumentFragment copying the objects of type Node included in the Range.
        */
-      let selectionContents = cloneCont.cloneContents();
+      const selectionContents = cloneCont.cloneContents();
       /**
        * Create virtual div with text
        */
-      let virtualDiv = document.createElement("div");
+      const virtualDiv = document.createElement('div');
 
       virtualDiv.appendChild(selectionContents);
 
-      let elementsWithSup = virtualDiv.getElementsByTagName("sup");
+      const elementsWithSup = virtualDiv.getElementsByTagName('sup');
 
       if (elementsWithSup.length > 0) {
         for (let i = 0; i < elementsWithSup.length; i++) {
-          elementsWithSup[i].innerText = "";
+          elementsWithSup[i].innerText = '';
         }
         text = virtualDiv.innerText;
       } else {
         text = virtualDiv.innerText;
       }
-    } else if (document.selection && document.selection.type !== "Control") {
+    } else if (document.selection && document.selection.type !== 'Control') {
       text = document.selection.createRange().text;
     }
 
@@ -207,8 +207,8 @@ class TextHighlight extends Component {
       endContainerPosition = parseInt(range.endContainer.dataset.position);
     }
 
-    let startHL = startContainerPosition < endContainerPosition ? startContainerPosition : endContainerPosition;
-    let endHL = startContainerPosition < endContainerPosition ? endContainerPosition : startContainerPosition;
+    const startHL = startContainerPosition < endContainerPosition ? startContainerPosition : endContainerPosition;
+    const endHL = startContainerPosition < endContainerPosition ? endContainerPosition : startContainerPosition;
 
     const rangeObj = new Range(startHL, endHL, text, {
       ...this.props,

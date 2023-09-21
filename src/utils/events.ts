@@ -30,7 +30,7 @@ export class EventInvoker {
     const eventMap = this.getEventMap(eventName);
 
     if (eventMap.size > 0) {
-      eventMap.forEach(clb => clb(...args));
+      return Promise.all([...eventMap].map(fn => fn(...args)));
     }
   }
 

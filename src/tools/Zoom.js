@@ -1,11 +1,12 @@
-import React, { Fragment } from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React, { Fragment } from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import BaseTool from "./Base";
-import ToolMixin from "../mixins/Tool";
-import { Tool } from "../components/Toolbar/Tool";
-import { IconHandTool, IconMagnifyTool, IconMinifyTool } from "../assets/icons";
+import BaseTool from './Base';
+import ToolMixin from '../mixins/Tool';
+import { Tool } from '../components/Toolbar/Tool';
+import { FlyoutMenu } from '../components/Toolbar/FlyoutMenu';
+import { IconExpand, IconHandTool, IconZoomIn, IconZoomOut } from '../assets/icons';
 
 const ToolView = observer(({ item }) => {
   return (
@@ -23,7 +24,7 @@ const ToolView = observer(({ item }) => {
         }}
       />
       <Tool
-        icon={<IconMagnifyTool />}
+        icon={<IconZoomIn />}
         ariaLabel="zoom-in"
         label="Zoom In"
         shortcut="ctrl+plus"
@@ -31,8 +32,27 @@ const ToolView = observer(({ item }) => {
           item.handleZoom(1);
         }}
       />
+      <FlyoutMenu
+        icon={<IconExpand />}
+        items={[
+          {
+            label: 'Zoom to fit',
+            shortcut: 'shift+1',
+            onClick: () => {
+              item.sizeToFit();
+            },
+          },
+          {
+            label: 'Zoom to actual size',
+            shortcut: 'shift+2',
+            onClick: () => {
+              item.sizeToOriginal();
+            },
+          },
+        ]}
+      />
       <Tool
-        icon={<IconMinifyTool />}
+        icon={<IconZoomOut />}
         ariaLabel="zoom-out"
         label="Zoom Out"
         shortcut="ctrl+minus"
@@ -45,9 +65,9 @@ const ToolView = observer(({ item }) => {
 });
 
 const _Tool = types
-  .model("ZoomTool", {
+  .model('ZoomPanTool', {
     // image: types.late(() => types.safeReference(Registry.getModelByTag("image")))
-    group: "control",
+    group: 'control',
   })
   .views(self => ({
     get viewClass() {
@@ -59,15 +79,19 @@ const _Tool = types
     },
   }))
   .actions(self => ({
+    shouldSkipInteractions() {
+      return true;
+    },
+
     mouseupEv() {
-      self.mode = "viewing";
-      self.stageContainer.style.cursor = "grab";
+      self.mode = 'viewing';
+      self.stageContainer.style.cursor = 'grab';
     },
 
     updateCursor() {
-      if (!self.selected || !self.obj.stageRef) return;
+      if (!self.selected || !self.obj?.stageRef) return;
 
-      self.stageContainer.style.cursor = "grab";
+      self.stageContainer.style.cursor = 'grab';
     },
 
     afterUpdateSelected() {
@@ -76,8 +100,8 @@ const _Tool = types
 
     handleDrag(ev) {
       const item = self.obj;
-      let posx = item.zoomingPositionX + ev.movementX;
-      let posy = item.zoomingPositionY + ev.movementY;
+      const posx = item.zoomingPositionX + ev.movementX;
+      const posy = item.zoomingPositionY + ev.movementY;
 
       item.setZoomPosition(posx, posy);
     },
@@ -86,21 +110,42 @@ const _Tool = types
       const zoomScale = self.obj.zoomScale;
 
       if (zoomScale <= 1) return;
-      if (self.mode === "moving") {
+      if (self.mode === 'moving') {
         self.handleDrag(ev);
-        self.stageContainer.style.cursor = "grabbing";
+        self.stageContainer.style.cursor = 'grabbing';
       }
     },
 
-    mousedownEv() {
-      self.mode = "moving";
-      self.stageContainer.style.cursor = "grabbing";
+    mousedownEv(ev) {
+      // don't pan on right click
+      if (ev.button === 2) return;
+
+      self.mode = 'moving';
+      self.stageContainer.style.cursor = 'grabbing';
     },
 
     handleZoom(val) {
       const item = self.obj;
 
       item.handleZoom(val);
+    },
+
+    sizeToFit() {
+      const item = self.obj;
+
+      item.sizeToFit();
+    },
+
+    sizeToAuto() {
+      const item = self.obj;
+
+      item.sizeToAuto();
+    },
+
+    sizeToOriginal() {
+      const item = self.obj;
+
+      item.sizeToOriginal();
     },
   }));
 

@@ -1,20 +1,20 @@
-import React from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import LabelMixin from "../../mixins/LabelMixin";
-import Registry from "../../core/Registry";
-import SelectedModelMixin from "../../mixins/SelectedModel";
-import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels/Labels";
-import { RectangleModel } from "./Rectangle";
-import { guidGenerator } from "../../core/Helpers";
-import ControlBase from "./Base";
+import LabelMixin from '../../mixins/LabelMixin';
+import Registry from '../../core/Registry';
+import SelectedModelMixin from '../../mixins/SelectedModel';
+import Types from '../../core/Types';
+import { HtxLabels, LabelsModel } from './Labels/Labels';
+import { RectangleModel } from './Rectangle';
+import { guidGenerator } from '../../core/Helpers';
+import ControlBase from './Base';
 
 /**
- * The RectangleLabels tag creates labeled rectangles. Use to apply labels to bounding box semantic segmentation tasks.
+ * The `RectangleLabels` tag creates labeled rectangles. Use to apply labels to bounding box semantic segmentation tasks.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic labeling configuration for applying labels to rectangular bounding boxes on an image -->
  * <View>
@@ -39,38 +39,33 @@ import ControlBase from "./Base";
  * @param {number} [strokeWidth=1]   - Width of stroke
  * @param {boolean} [canRotate=true] - Show or hide rotation control
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const Validation = types.model({
-  controlledTags: Types.unionTag(["Image"]),
+  controlledTags: Types.unionTag(['Image']),
 });
 
-const ModelAttrs = types.model("RectangleLabelsModel", {
+const ModelAttrs = types.model('RectangleLabelsModel', {
   pid: types.optional(types.string, guidGenerator),
-  type: "rectanglelabels",
-  children: Types.unionArray(["label", "header", "view", "hypertext"]),
+  type: 'rectanglelabels',
+  children: Types.unionArray(['label', 'header', 'view', 'hypertext']),
 });
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   RectangleModel,
-  TagAttrs,
   Validation,
   LabelMixin,
-  SelectedModelMixin.props({ _child: "LabelModel" }),
-  ControlBase,
+  SelectedModelMixin.props({ _child: 'LabelModel' }),
 );
 
-const RectangleLabelsModel = types.compose("RectangleLabelsModel", Composition);
+const RectangleLabelsModel = types.compose('RectangleLabelsModel', Composition);
 
 const HtxRectangleLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;
 });
 
-Registry.addTag("rectanglelabels", RectangleLabelsModel, HtxRectangleLabels);
+Registry.addTag('rectanglelabels', RectangleLabelsModel, HtxRectangleLabels);
 
 export { HtxRectangleLabels, RectangleLabelsModel };
