@@ -105,7 +105,6 @@ jobs:
           COLLECT_COVERAGE: 'true'
           CPU_NUMBER: ${{ steps.cpu-info.outputs.cores-count }}
         run: |
-          set -euo pipefail
           cd ./tests/functional
           yarn run test:parallel
 
