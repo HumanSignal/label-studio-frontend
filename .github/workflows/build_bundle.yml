@@ -59,6 +59,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1
+
       - name: Build distribution package
         timeout-minutes: 10
         run: yarn run build:module
