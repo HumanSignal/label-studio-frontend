@@ -3,6 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
+import './NewTaxonomy.styl';
+
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
 type onDeleteLabelCallback = (path: string[]) => any;
@@ -52,7 +54,11 @@ const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyIt
   const enrich = (item: TaxonomyItem) => {
     // @todo marginLeft: -4 is good to align labels, but cats them in selected list
     const color = (item: TaxonomyItem) => (
-      <span style={{ background: item.color, padding: '2px 4px', borderRadius: 2 }}>{item.label}</span>
+      // no BEM here to make it more lightweight
+      // global classname to allow to change it in Style tag
+      <span className="htx-taxonomy-item-color" style={{ background: item.color }}>
+        {item.label}
+      </span>
     );
 
     if (!item.hint) return item.color ? color(item) : item.label;
