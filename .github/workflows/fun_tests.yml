@@ -100,7 +100,7 @@ jobs:
 
       - name: "[DEBUG] Print installed npm packages"
         run: |
-          npm list --depth=1
+          npm list --depth=1 || true
 
       - name: Run Cypress test suite
         timeout-minutes: 40
