@@ -54,7 +54,7 @@ jobs:
 
       - name: "[DEBUG] Print installed npm packages"
         run: |
-          npm list --depth=1
+          npm list --depth=1 || true
 
       - name: Run ESLint
         uses: tj-actions/eslint-changed-files@v21

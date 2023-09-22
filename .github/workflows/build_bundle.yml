@@ -61,7 +61,7 @@ jobs:
 
       - name: "[DEBUG] Print installed npm packages"
         run: |
-          npm list --depth=1
+          npm list --depth=1 || true
 
       - name: Build distribution package
         timeout-minutes: 10
