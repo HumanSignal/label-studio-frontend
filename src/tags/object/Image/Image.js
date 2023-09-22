@@ -14,14 +14,23 @@ import { RectRegionModel } from '../../../regions/RectRegion';
 import * as Tools from '../../../tools';
 import ToolsManager from '../../../tools/Manager';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_3377, FF_DEV_3666, FF_DEV_3793, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
+import {
+  FF_DEV_3377,
+  FF_DEV_3666,
+  FF_DEV_3793,
+  FF_DEV_4081,
+  FF_LSDV_4583,
+  FF_LSDV_4583_6,
+  FF_LSDV_4711,
+  isFF
+} from '../../../utils/feature-flags';
 import { guidGenerator } from '../../../utils/unique';
 import { clamp, isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import { DrawingRegion } from './DrawingRegion';
 import { ImageEntityMixin } from './ImageEntityMixin';
 import { ImageSelection } from './ImageSelection';
-import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../../../components/ImageView/Image';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH, SNAP_TO_PIXEL_MODE } from '../../../components/ImageView/Image';
 import MultiItemObjectBase from '../MultiItemObjectBase';
 
 const IMAGE_PRELOAD_COUNT = 3;
@@ -298,6 +307,50 @@ const Model = types.model({
       : `${naturalHeight / naturalWidth * 100}%`;
   },
 
+  get zoomedPixelSize() {
+    const { naturalWidth, naturalHeight } = self;
+
+    if (isFF(FF_DEV_3793)) {
+      return {
+        x: 100 / naturalWidth,
+        y: 100 / naturalHeight,
+      };
+    }
+
+    return {
+      x: self.stageWidth / naturalWidth,
+      y: self.stageHeight / naturalHeight,
+    };
+
+  },
+
+  isSamePixel({ x: x1, y: y1 }, { x: x2, y: y2 }) {
+    const zoomedPixelSizeX = self.zoomedPixelSize.x;
+    const zoomedPixelSizeY = self.zoomedPixelSize.y;
+
+    return Math.abs(x1 - x2) < zoomedPixelSizeX / 2 && Math.abs(y1 - y2) < zoomedPixelSizeY / 2;
+  },
+
+  snapPointToPixel({ x,y }, snapMode = SNAP_TO_PIXEL_MODE.EDGE) {
+    const zoomedPixelSizeX = self.zoomedPixelSize.x;
+    const zoomedPixelSizeY = self.zoomedPixelSize.y;
+
+    switch (snapMode) {
+      case SNAP_TO_PIXEL_MODE.EDGE: {
+        return {
+          x: Math.round(x / zoomedPixelSizeX) * zoomedPixelSizeX,
+          y: Math.round(y / zoomedPixelSizeY) * zoomedPixelSizeY,
+        };
+      }
+      case SNAP_TO_PIXEL_MODE.CENTER: {
+        return {
+          x: Math.floor(x / zoomedPixelSizeX) * zoomedPixelSizeX + zoomedPixelSizeX / 2,
+          y: Math.floor(y / zoomedPixelSizeY) * zoomedPixelSizeY + zoomedPixelSizeY / 2,
+        };
+      }
+    }
+  },
+
   createSerializedResult(region, value) {
     const index = region.item_index ?? 0;
     const currentImageEntity = self.findImageEntity(index);
@@ -467,7 +520,7 @@ const Model = types.model({
 
     function createImageEntities() {
       if (!self.store.task) return;
-    
+
       const parsedValue = self.multiImage
         ? self.parsedValueList
         : self.parsedValue;
@@ -509,7 +562,7 @@ const Model = types.model({
 
       createImageEntities();
     }
-  
+
     function afterResultCreated(region) {
       if (!region) return;
       if (region.classification) return;
@@ -950,7 +1003,7 @@ const Model = types.model({
       self.drawingRegion?.updateImageSize(width / naturalWidth, height / naturalHeight, width, height, userResize);
 
       setTimeout(self.annotation.history.unfreeze, 0);
-      
+
       //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
       if (_historyLength <= 1) {
         // Don't force unselection of regions during the updateObjects callback from history reinit
