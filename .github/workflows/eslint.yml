@@ -52,6 +52,10 @@ jobs:
           set -euo pipefail
           yarn install --frozen-lockfile
 
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1
+
       - name: Run ESLint
         uses: tj-actions/eslint-changed-files@v21
         with:

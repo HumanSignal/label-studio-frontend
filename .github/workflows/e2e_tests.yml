@@ -82,6 +82,10 @@ jobs:
           cd e2e
           yarn install --frozen-lockfile
 
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1
+
       - name: Run e2e test suite
         timeout-minutes: 40
         env:

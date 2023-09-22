@@ -98,6 +98,10 @@ jobs:
           cd ./tests/functional
           yarn install --frozen-lockfile
 
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1
+
       - name: Run Cypress test suite
         timeout-minutes: 40
         env:
