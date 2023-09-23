@@ -1,6 +1,6 @@
-import { types } from "mobx-state-tree";
-import { guidGenerator } from "../../utils/unique";
-import { Annotation } from "./Annotation";
+import { types } from 'mobx-state-tree';
+import { guidGenerator } from '../../utils/unique';
+import { Annotation } from './Annotation';
 
 // const HistoryActionTypes = types.enumeration([
 //   'prediction',
@@ -15,7 +15,7 @@ import { Annotation } from "./Annotation";
 //   'propagated_annotation',
 // ])
 
-export const HistoryItem = types.compose("HistoryItem", Annotation, types.model({
+export const HistoryItem = types.compose('HistoryItem', Annotation, types.model({
   /**
    * Optional comment
    */
@@ -32,6 +32,7 @@ export const HistoryItem = types.compose("HistoryItem", Annotation, types.model(
     user: snapshot.created_by,
     createdDate: snapshot.created_at,
     actionType: snapshot.action ?? snapshot.action_type ?? snapshot.actionType,
+    readonly: true,
     editable: false,
   };
 });

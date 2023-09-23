@@ -1,5 +1,6 @@
-import { formatDistanceToNow } from "date-fns";
-import { toCamelCase } from "strman";
+import { formatDistanceToNow } from 'date-fns';
+import { destroy, detach } from 'mobx-state-tree';
+import { toCamelCase } from 'strman';
 
 /**
  * Internal helper to check if parameter is a string
@@ -7,7 +8,7 @@ import { toCamelCase } from "strman";
  * @returns {boolean}
  */
 export const isString = (value: any): value is string => {
-  return typeof value === "string" || value instanceof String;
+  return typeof value === 'string' || value instanceof String;
 };
 
 /**
@@ -52,7 +53,7 @@ export function getUrl(i: number, text: string) {
   const myRegexp = /^(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/g; // eslint-disable-line no-useless-escape
   const match = myRegexp.exec(stringToTest);
 
-  return match && match.length ? match[1] : "";
+  return match && match.length ? match[1] : '';
 }
 
 /**
@@ -61,8 +62,8 @@ export function getUrl(i: number, text: string) {
  * @param {boolean} [relative=true] - Whether relative urls are good or nood
  */
 export function isValidObjectURL(str: string, relative = false) {
-  if (typeof str !== "string") return false;
-  if (relative && str.startsWith("/")) return true;
+  if (typeof str !== 'string') return false;
+  if (relative && str.startsWith('/')) return true;
   return /^https?:\/\//.test(str);
 }
 
@@ -73,7 +74,7 @@ export function isValidObjectURL(str: string, relative = false) {
  * @returns {string}
  */
 export function toTimeString(ms: number) {
-  if (typeof ms === "number") {
+  if (typeof ms === 'number') {
     return new Date(ms).toUTCString().match(/(\d\d:\d\d:\d\d)/)?.[0];
   }
 }
@@ -88,7 +89,7 @@ export function hashCode(str: string) {
   let hash = 0;
 
   if (str.length === 0) {
-    return hash + "";
+    return hash + '';
   }
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
@@ -96,18 +97,18 @@ export function hashCode(str: string) {
     hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
-  return hash + "";
+  return hash + '';
 }
 
 export function atobUnicode(str: string) {
   // Going backwards: from bytestream, to percent-encoding, to original string.
   return decodeURIComponent(
     atob(str)
-      .split("")
+      .split('')
       .map(function(c) {
-        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       })
-      .join(""),
+      .join(''),
   );
 }
 
@@ -116,12 +117,12 @@ export function atobUnicode(str: string) {
  * @param {string} unsafe
  */
 export function escapeHtml(unsafe: string) {
-  return (unsafe ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return (unsafe ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 /**
@@ -152,10 +153,13 @@ export const isDefined = <T>(value: T | null | undefined): value is T => {
   return value !== null && value !== undefined;
 };
 
-export function findClosestParent<T extends {parent: any}>(
+type ClosestParentPredicate<T> = (el: T) => boolean;
+type ClosestParentGetter<T> = (el: T) => T;
+
+export function findClosestParent<T extends { parent: any }>(
   el: T,
-  predicate = (el: T) => true,
-  parentGetter = (el: T) => el.parent,
+  predicate: ClosestParentPredicate<T> = () => true,
+  parentGetter: ClosestParentGetter<T> = (el) => el.parent,
 ) {
   while ((el = parentGetter(el))) {
     if (predicate(el)) {
@@ -180,15 +184,22 @@ export const chunks = <T extends any[]>(source: T, chunkSize: number): T[][] => 
   return result;
 };
 
-export const userDisplayName = (user: any = {}) => {
-  const firstName = user.firstName ?? user.firstName;
-  const lastName = user.lastName ?? user.lastName;
+export const userDisplayName = (user: Record<string, string> = {}) => {
+  const { firstName, lastName } = user;
 
   return (firstName || lastName)
-    ? [firstName, lastName].filter(n => !!n).join(" ").trim()
-    : (user.username)
-      ? user.username
-      : user.email;
+    ? [firstName, lastName].filter(n => !!n).join(' ').trim()
+    : (user.username || user.email);
+};
+
+/**
+ * This name supposed to be username, but most likely it's first_name and last_name
+ * @param {string} createdBy string like "[<name> ]<email>, <id>"
+ * @returns {string} email
+ */
+export const emailFromCreatedBy = (createdBy: string) => {
+  // get the email followed by id and cut off the id
+  return createdBy?.match(/([^@,\s]+@[^@,\s]+)(,\s*\d+)?$/)?.[1];
 };
 
 export const camelizeKeys = (object: any): Record<string, unknown> => {
@@ -215,15 +226,26 @@ export function isMacOS() {
 }
 
 export const triggerResizeEvent = () => {
-  const event = new Event("resize");
+  const event = new Event('resize');
 
-  event.initEvent("resize", false, false);
+  event.initEvent('resize', false, false);
   window.dispatchEvent(event);
 };
 
 export const humanDateDiff = (date: string | number): string => {
   const fnsDate = formatDistanceToNow(new Date(date), { addSuffix: true });
 
-  if (fnsDate === "less than a minute ago") return "just now";
+  if (fnsDate === 'less than a minute ago') return 'just now';
   return fnsDate;
 };
+
+export const destroyMSTObject = (object: any) => {
+  if (object) {
+    detach(object);
+    destroy(object);
+  }
+};
+
+// fixes `observe` - it watches only the changes of primitive props of observables used,
+// so pass all the required primitives to this stub and they'll be observed
+export const fixMobxObserve = (..._toObserve: any[]) => {};

@@ -1,4 +1,4 @@
-import { MutableRefObject } from "react";
+import { MutableRefObject } from 'react';
 
 export default function mergeRefs(...inputRefs: (MutableRefObject<any>|undefined|null)[]) {
   const filteredInputRefs = inputRefs.filter(Boolean) as MutableRefObject<any>[];

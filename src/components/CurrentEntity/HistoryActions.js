@@ -1,16 +1,16 @@
-import { observer } from "mobx-react";
-import { LsRedo, LsRemove, LsUndo } from "../../assets/icons";
-import { Button } from "../../common/Button/Button";
-import { Tooltip } from "../../common/Tooltip/Tooltip";
-import { Block, Elem } from "../../utils/bem";
-import "./HistoryActions.styl";
+import { observer } from 'mobx-react';
+import { LsRedo, LsRemove, LsUndo } from '../../assets/icons';
+import { Button } from '../../common/Button/Button';
+import { Tooltip } from '../../common/Tooltip/Tooltip';
+import { Block, Elem } from '../../utils/bem';
+import './HistoryActions.styl';
 import { Hotkey } from '../../core/Hotkey';
 
 export const HistoryActions = observer(({ annotation }) => {
   const { history } = annotation;
 
   return (
-    <Block name="history">
+    <Block name="history-buttons">
       <Hotkey.Tooltip name="annotation:undo">
         <Elem
           tag={Button}

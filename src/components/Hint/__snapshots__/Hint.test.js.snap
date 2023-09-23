@@ -6,7 +6,7 @@ exports[`Hint Should render correctly 1`] = `
   data-copy="test"
   name="hint"
   style={
-    Object {
+    {
       "background": "red",
     }
   }

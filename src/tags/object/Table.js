@@ -1,19 +1,18 @@
-import React from "react";
-import { Table } from "antd";
-import { inject, observer } from "mobx-react";
-import { flow, types } from "mobx-state-tree";
-import Papa from "papaparse";
+import React from 'react';
+import { Table } from 'antd';
+import { inject, observer } from 'mobx-react';
+import { flow, getEnv, types } from 'mobx-state-tree';
+import Papa from 'papaparse';
 
-import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
-import Registry from "../../core/Registry";
-import { AnnotationMixin } from "../../mixins/AnnotationMixin";
-import ProcessAttrsMixin from "../../mixins/ProcessAttrs";
-import Base from "./Base";
-import { parseTypeAndOption, parseValue } from "../../utils/data";
-import messages from "../../utils/messages";
+import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
+import Registry from '../../core/Registry';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import ProcessAttrsMixin from '../../mixins/ProcessAttrs';
+import Base from './Base';
+import { parseTypeAndOption, parseValue } from '../../utils/data';
 
 /**
- * Use the Table tag to display object keys and values in a table.
+ * The `Table` tag is used to display object keys and values in a table.
  * @example
  * <!-- Basic labeling configuration for text in a table -->
  * <View>
@@ -27,21 +26,22 @@ import messages from "../../utils/messages";
  */
 const Model = types
   .model({
-    name: types.identifier,
-    type: "table",
+    type: 'table',
     value: types.maybeNull(types.string),
     _value: types.frozen([]),
-    valuetype: types.optional(types.string, "json"),
+    valuetype: types.optional(types.string, 'json'),
   })
   .views(self => ({
     get dataSource() {
       const { type } = parseTypeAndOption(self.valuetype);
 
-      if (type === "json") {
-        return Object.keys(self._value).map(k => {
+      if (type === 'json') {
+        return Object.keys(self._value).sort((a, b) => {
+          return a.toLowerCase().localeCompare(b.toLowerCase());
+        }).map(k => {
           let val = self._value[k];
 
-          if (typeof val === "object") val = JSON.stringify(val);
+          if (typeof val === 'object') val = JSON.stringify(val);
           return { type: k, value: val };
         });
       } else {
@@ -49,10 +49,10 @@ const Model = types
       }
     },
     get columns() {
-      if (self.valuetype === "json" || !self._value[0]) {
+      if (self.valuetype === 'json' || !self._value[0]) {
         return [
-          { title: "Name", dataIndex: "type" },
-          { title: "Value", dataIndex: "value" },
+          { title: 'Name', dataIndex: 'type' },
+          { title: 'Value', dataIndex: 'value' },
         ];
       } else {
         return Object.keys(self._value[0]).map(value => ({ title: value, dataIndex: value }));
@@ -73,14 +73,14 @@ const Model = types
 
           originData = yield response.text();
         } catch (error) {
-          const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(error), url: originData });
+          const message = getEnv(self).messages.ERR_LOADING_HTTP({ attr: self.value, error: String(error), url: originData });
 
           self.annotationStore.addErrors([errorBuilder.generalError(message)]);
         }
       }
 
       switch (type) {
-        case "csv":
+        case 'csv':
           {
             Papa.parse(originData, {
               delimiter: options.separator,
@@ -93,21 +93,21 @@ const Model = types
           }
           break;
         default:
-          self._value = typeof originData === "string" ? JSON.parse(originData) : originData;
+          self._value = typeof originData === 'string' ? JSON.parse(originData) : originData;
           break;
       }
     }),
   }));
 
-const TableModel = types.compose("TableModel", Base, ProcessAttrsMixin, AnnotationMixin, Model);
+const TableModel = types.compose('TableModel', Base, ProcessAttrsMixin, AnnotationMixin, Model);
 
-const HtxTable = inject("store")(
+const HtxTable = inject('store')(
   observer(({ item }) => {
     return <Table bordered dataSource={item.dataSource} columns={item.columns} pagination={{ hideOnSinglePage: true }} />;
   }),
 );
 
-Registry.addTag("table", TableModel, HtxTable);
+Registry.addTag('table', TableModel, HtxTable);
 Registry.addObjectType(TableModel);
 
 export { HtxTable, TableModel };

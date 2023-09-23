@@ -1,19 +1,19 @@
-import React from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import LabelMixin from "../../mixins/LabelMixin";
-import Registry from "../../core/Registry";
-import SelectedModelMixin from "../../mixins/SelectedModel";
-import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels/Labels";
-import { PolygonModel } from "./Polygon";
-import ControlBase from "./Base";
+import LabelMixin from '../../mixins/LabelMixin';
+import Registry from '../../core/Registry';
+import SelectedModelMixin from '../../mixins/SelectedModel';
+import Types from '../../core/Types';
+import { HtxLabels, LabelsModel } from './Labels/Labels';
+import { PolygonModel } from './Polygon';
+import ControlBase from './Base';
 
 /**
- * Use the PolygonLabels tag to create labeled polygons. Use to apply labels to polygons in semantic segmentation tasks.
+ * The `PolygonLabels` tag is used to create labeled polygons. Use to apply labels to polygons in semantic segmentation tasks.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic labeling configuration for polygonal semantic segmentation of images -->
  * <View>
@@ -38,38 +38,34 @@ import ControlBase from "./Base";
  * @param {number} [strokeWidth=1]                  - Width of stroke
  * @param {small|medium|large} [pointSize=medium]   - Size of polygon handle points
  * @param {rectangle|circle} [pointStyle=rectangle] - Style of points
+ * @param {pixel|none} [snap=none]                  - Snap polygon to image pixels
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const Validation = types.model({
-  controlledTags: Types.unionTag(["Image"]),
+  controlledTags: Types.unionTag(['Image']),
 });
 
-const ModelAttrs = types.model("PolygonLabelsModel", {
-  type: "polygonlabels",
-  children: Types.unionArray(["label", "header", "view", "hypertext"]),
+const ModelAttrs = types.model('PolygonLabelsModel', {
+  type: 'polygonlabels',
+  children: Types.unionArray(['label', 'header', 'view', 'hypertext']),
 });
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   PolygonModel,
-  TagAttrs,
   Validation,
   LabelMixin,
-  SelectedModelMixin.props({ _child: "LabelModel" }),
-  ControlBase,
+  SelectedModelMixin.props({ _child: 'LabelModel' }),
 );
 
-const PolygonLabelsModel = types.compose("PolygonLabelsModel", Composition);
+const PolygonLabelsModel = types.compose('PolygonLabelsModel', Composition);
 
 const HtxPolygonLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;
 });
 
-Registry.addTag("polygonlabels", PolygonLabelsModel, HtxPolygonLabels);
+Registry.addTag('polygonlabels', PolygonLabelsModel, HtxPolygonLabels);
 
 export { HtxPolygonLabels, PolygonLabelsModel };

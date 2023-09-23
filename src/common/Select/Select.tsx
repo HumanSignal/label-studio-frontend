@@ -1,10 +1,10 @@
-import React, { Children, cloneElement, createContext, CSSProperties, FC, KeyboardEvent, MouseEvent, ReactChild, ReactElement, ReactFragment, ReactNode, ReactPortal, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { BemWithSpecifiContext, cn } from "../../utils/bem";
+import React, { Children, cloneElement, createContext, CSSProperties, FC, KeyboardEvent, MouseEvent, ReactChild, ReactFragment, ReactNode, ReactPortal, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { BemWithSpecifiContext, cn } from '../../utils/bem';
 import { shallowEqualArrays } from 'shallow-equal';
-import { isDefined } from "../../utils/utilities";
-import { Dropdown } from "../Dropdown/Dropdown";
-import "./Select.styl";
-import { FF_DEV_2669, isFF } from "../../utils/feature-flags";
+import { isDefined } from '../../utils/utilities';
+import { Dropdown } from '../Dropdown/Dropdown';
+import './Select.styl';
+import { FF_DEV_2669, isFF } from '../../utils/feature-flags';
 
 type FoundChild = ReactChild | ReactFragment | ReactPortal;
 
@@ -12,14 +12,15 @@ interface SelectProps {
   placeholder?: ReactNode;
   value?: string | string[];
   defaultValue?: string | string[];
-  size?: "normal" | "medium" | "small";
+  size?: 'normal' | 'medium' | 'small';
   style?: CSSProperties;
-  variant?: "base" | "rounded";
-  surface?: "base" | "emphasis";
+  variant?: 'base' | 'rounded';
+  surface?: 'base' | 'emphasis';
   multiple?: boolean;
   renderMultipleSelected?: (value: string[]) => ReactNode;
   tabIndex?: number;
   onChange?: (newValue?: string | string[]) => void;
+  dataTestid?: string;
 }
 
 interface SelectComponent<T> extends FC<T> {
@@ -49,13 +50,13 @@ const findSelectedChild = (children: ReactNode, value?: string | string[]): Foun
 
     const { type, props } = child as any;
 
-    if (type.displayName === "Select.Option") {
+    if (type.displayName === 'Select.Option') {
       if (props.value === value) {
         res = child;
       } else if (Array.isArray(value) && value.length === 1) {
         res = findSelectedChild(children, value[0]);
       }
-    } else if (type.displayName === "Select.OptGroup") {
+    } else if (type.displayName === 'Select.OptGroup') {
       res = findSelectedChild(props.children, value);
     }
 
@@ -74,8 +75,9 @@ export const Select: SelectComponent<SelectProps> = ({
   onChange,
   variant,
   surface,
+  dataTestid,
   tabIndex = 0,
-  placeholder = "Select value",
+  placeholder = 'Select value',
 }) => {
   const dropdown = useRef<any>();
   const rootRef = useRef();
@@ -87,7 +89,7 @@ export const Select: SelectComponent<SelectProps> = ({
   const [focused, setFocused] = useState<string | null>();
 
   const options = Children.toArray(children).filter((child: any) => { // toArray is returning incorrect types which don't have type.displayName or props, but the actual child does.
-    return child.type.displayName === "Select.Option" && !child.props.exclude;
+    return child.type.displayName === 'Select.Option' && !child.props.exclude;
   });
 
   const setValue = (newValue?: string | string[]) => {
@@ -122,7 +124,7 @@ export const Select: SelectComponent<SelectProps> = ({
 
   const selected = useMemo(() => {
     if (isFF(FF_DEV_2669) && multiple && renderMultipleSelected) {
-      return renderMultipleSelected(Array.isArray(currentValue) ? currentValue : [currentValue||""]);
+      return renderMultipleSelected(Array.isArray(currentValue) ? currentValue : [currentValue||'']);
     }
     if (multiple && Array.isArray(currentValue) && currentValue?.length > 1) {
       return <>Multiple values selected</>;
@@ -184,19 +186,19 @@ export const Select: SelectComponent<SelectProps> = ({
       context.setCurrentValue(value);
     }
   }, [value, multiple]);
- 
+
   return (
     <SelectContext.Provider value={context}>
       <Block ref={rootRef} name="select" mod={{ size, surface }} style={style} tabIndex={tabIndex} onKeyDown={handleKeyboard}>
         <Dropdown.Trigger
           ref={dropdown}
-          className={cn("select", { elem: "dropdown", mod: { variant } }).toClassName()}
+          className={cn('select', { elem: 'dropdown', mod: { variant } }).toClassName()}
           content={<Elem name="list">{children}</Elem>}
           onToggle={(visible: boolean) => {
             if (!visible) setFocused(null);
           }}
         >
-          <Elem name="selected">
+          <Elem name="selected" data-testid={dataTestid}>
             <Elem name="value">{selected ?? placeholder}</Elem>
             <Elem name="icon" />
           </Elem>
@@ -205,7 +207,7 @@ export const Select: SelectComponent<SelectProps> = ({
     </SelectContext.Provider>
   );
 };
-Select.displayName = "Select";
+Select.displayName = 'Select';
 
 interface SelectOptionProps {
   value?: string;
@@ -250,7 +252,7 @@ const SelectOption: FC<SelectOptionProps> = ({ value, children, style }) => {
   );
 };
 
-SelectOption.displayName = "Select.Option";
+SelectOption.displayName = 'Select.Option';
 
 interface SelectioOptGroupProps {
   label?: JSX.Element | string;
@@ -266,7 +268,7 @@ const SelectOptGroup: FC<SelectioOptGroupProps> = ({ label, children, style }) =
   );
 };
 
-SelectOptGroup.displayName = "Select.OptGroup";
+SelectOptGroup.displayName = 'Select.OptGroup';
 
 Select.Option = SelectOption;
 Select.OptGroup = SelectOptGroup;

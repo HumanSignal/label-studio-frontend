@@ -1,31 +1,31 @@
-import Keymaster from "keymaster";
-import { ButtonHTMLAttributes, cloneElement, CSSProperties, DOMAttributes, FC, forwardRef, ForwardRefExoticComponent, HTMLAttributes, useMemo } from "react";
-import { Hotkey } from "../../core/Hotkey";
-import { useHotkey } from "../../hooks/useHotkey";
-import { Block, CNTagName, Elem } from "../../utils/bem";
-import { isDefined } from "../../utils/utilities";
-import { Tooltip } from "../Tooltip/Tooltip";
-import "./Button.styl";
+import Keymaster from 'keymaster';
+import { ButtonHTMLAttributes, cloneElement, CSSProperties, FC, forwardRef, ForwardRefExoticComponent, useMemo } from 'react';
+import { Hotkey } from '../../core/Hotkey';
+import { useHotkey } from '../../hooks/useHotkey';
+import { Block, CNTagName, Elem } from '../../utils/bem';
+import { isDefined } from '../../utils/utilities';
+import { Tooltip } from '../Tooltip/Tooltip';
+import './Button.styl';
 
-const hotkeys = Hotkey();
-
-type HTMLButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type">
+type HTMLButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>
 
 export interface ButtonProps extends HTMLButtonProps {
-  type?: "text" | "link";
+  type?: 'text' | 'link';
   href?: string;
   extra?: JSX.Element;
   className?: string;
-  size?: "small" | "medium" | "compact" | "large";
+  size?: 'small' | 'medium' | 'compact' | 'large';
   waiting?: boolean;
   icon?: JSX.Element;
   tag?: CNTagName;
-  look?: "primary" | "danger" | "destructive" | "alt" | "outlined";
+  look?: 'primary' | 'danger' | 'destructive' | 'alt' | 'outlined' | 'active' | 'disabled';
   primary?: boolean;
   danger?: boolean;
   style?: CSSProperties;
   hotkey?: keyof typeof Hotkey.keymap;
   tooltip?: string;
+  tooltipTheme?: 'light' | 'dark';
+  nopadding?: boolean;
 }
 
 export interface ButtonGroupProps {
@@ -51,15 +51,18 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
   danger,
   hotkey,
   tooltip,
+  tooltipTheme = 'light',
+  nopadding,
   ...rest
 }, ref) => {
-  const finalTag = tag ?? (rest.href ? "a" : "button");
+  const finalTag = tag ?? (rest.href ? 'a' : 'button');
 
   const mods = {
     size,
     waiting,
     type,
     danger,
+    nopadding,
     look: look ?? [],
     withIcon: !!icon,
     withExtra: !!extra,
@@ -74,9 +77,9 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
     if (isDefined(icon.props.size)) return icon;
 
     switch (size) {
-      case "small":
+      case 'small':
         return cloneElement(icon, { ...icon.props, size: 12, width: 12, height: 12 });
-      case "compact":
+      case 'compact':
         return cloneElement(icon, { ...icon.props, size: 14, width: 14, height: 14 });
       default:
         return icon;
@@ -117,7 +120,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
 
   if (tooltip) {
     return (
-      <Tooltip title={tooltip} theme="light">
+      <Tooltip title={tooltip} theme={tooltipTheme} ref={ref}>
         {buttonBody}
       </Tooltip>
     );
@@ -126,7 +129,7 @@ export const Button: ButtonType<ButtonProps> = forwardRef(({
   return buttonBody;
 });
 
-Button.displayName = "Button";
+Button.displayName = 'Button';
 
 
 const Group: FC<ButtonGroupProps> = ({ className, children, collapsed }) => {

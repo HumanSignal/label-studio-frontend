@@ -1,17 +1,21 @@
-import { flow, getEnv, getParent, getRoot, getSnapshot, types } from "mobx-state-tree";
-import uniqBy from "lodash/uniqBy";
-import Utils from "../../utils";
-import { Comment } from "./Comment";
-import { FF_DEV_3034, isFF } from "../../utils/feature-flags";
-import { delay } from "../../utils/utilities";
+import { flow, getEnv, getParent, getRoot, getSnapshot, types } from 'mobx-state-tree';
+import { when } from 'mobx';
+import uniqBy from 'lodash/uniqBy';
+import Utils from '../../utils';
+import { Comment } from './Comment';
+import { FF_DEV_3034, isFF } from '../../utils/feature-flags';
 
 export const CommentStore = types
-  .model("CommentStore", {
-    loading: types.optional(types.maybeNull(types.string), "list"),
+  .model('CommentStore', {
+    loading: types.optional(types.maybeNull(types.string), 'list'),
     comments: types.optional(types.array(Comment), []),
   })
   .volatile(() => ({
+    addedCommentThisSession: false,
+    commentFormSubmit: () => {},
     currentComment: '',
+    inputRef: {},
+    tooltipMessage: '',
   }))
   .views(self => ({
     get store() {
@@ -37,7 +41,7 @@ export const CommentStore = types
       return getEnv(self).events;
     },
     get isListLoading() {
-      return self.loading === "list";
+      return self.loading === 'list';
     },
     get taskId() {
       return self.task?.id;
@@ -49,7 +53,7 @@ export const CommentStore = types
       return self.annotationId !== null && self.annotationId !== undefined;
     },
     get isCommentable() {
-      return !self.annotation || ["annotation"].includes(self.annotation.type);
+      return !self.annotation || ['annotation'].includes(self.annotation.type);
     },
     get queuedComments() {
       const queued = self.comments.filter(comment => !comment.isPersisted);
@@ -74,8 +78,24 @@ export const CommentStore = types
       self.currentComment = comment;
     }
 
+    function setCommentFormSubmit(submitCallback) {
+      self.commentFormSubmit = submitCallback;
+    }
+
+    function setInputRef(inputRef) {
+      self.inputRef = inputRef;
+    }
+
     function setLoading(loading = null) {
       self.loading = loading;
+    }
+    
+    function setTooltipMessage(tooltipMessage) {
+      self.tooltipMessage = tooltipMessage;
+    }
+
+    function setAddedCommentThisSession(isAddedCommentThisSession = false) {
+      self.addedCommentThisSession = isAddedCommentThisSession;
     }
 
     function replaceId(id, newComment) {
@@ -110,7 +130,7 @@ export const CommentStore = types
       }
 
       try {
-        self.setLoading("persistQueuedComments");
+        self.setLoading('persistQueuedComments');
         for (const comment of toPersist) {
           if (self.annotationId) {
             comment.annotation = self.annotationId;
@@ -119,7 +139,7 @@ export const CommentStore = types
           } else {
             comment.task = self.taskId;
           }
-          const [persistedComment] = await self.sdk.invoke("comments:create", comment);
+          const [persistedComment] = await self.sdk.invoke('comments:create', comment);
 
           if (persistedComment) {
             self.replaceId(comment.id, persistedComment);
@@ -133,6 +153,10 @@ export const CommentStore = types
     }
 
     const addComment = flow(function* (text) {
+      if (self.loading === 'addComment') return;
+
+      self.setLoading('addComment');
+
       const now = Date.now() * -1;
 
       const comment =  {
@@ -147,9 +171,13 @@ export const CommentStore = types
       const { annotation } = self;
 
       if (isFF(FF_DEV_3034) && !self.annotationId && !self.draftId) {
-        // rare case: draft is already saving, so just wait for it
-        if (annotation.versions.draft) {
-          yield delay(annotation.autosaveDelay);
+        // rare case: draft is already saving, commit the outstanding draft before adding a comment
+        if (annotation.history.hasChanges && !annotation.draftSaved) {
+          // commit the pending draft
+          annotation.saveDraftImmediately();
+
+          // wait for the draft to be saved entirely before adding the comment
+          yield when(() => annotation.draftSaved);
         } else {
           // replicate actions from autosave()
           // if versions.draft is empty, the current state (prediction actually) is in result
@@ -168,15 +196,12 @@ export const CommentStore = types
       if (self.draftId) {
         comment.draft = self.draftId;
       }
-
       // @todo setComments?
       self.comments.unshift(comment);
-
+      self.setAddedCommentThisSession(true);
       if (self.canPersist) {
         try {
-          self.setLoading("addComment");
-
-          const [newComment] = yield self.sdk.invoke("comments:create", comment);
+          const [newComment] = yield self.sdk.invoke('comments:create', comment);
 
           if (newComment) {
             self.replaceId(now, newComment);
@@ -189,6 +214,8 @@ export const CommentStore = types
         } finally{ 
           self.setLoading(null);
         }
+      } else {
+        self.setLoading(null);
       }
     });
 
@@ -251,18 +278,18 @@ export const CommentStore = types
       self.fromCache(key, { merge: true, queueRestored: true });
     }
 
-    const listComments = flow((function* ({ mounted = { current: true } } = {}) {
-      self.setComments([]);
+    const listComments = flow((function* ({ mounted = { current: true }, suppressClearComments } = {}) {
 
+      if (!suppressClearComments) self.setComments([]);
       if (!self.draftId && !self.annotationId) return;
 
       try {
         if (mounted.current) {
-          self.setLoading("list");
+          self.setLoading('list');
         }
 
         const annotation = self.annotationId;
-        const [comments] = yield self.sdk.invoke("comments:list", {
+        const [comments] = yield self.sdk.invoke('comments:list', {
           annotation,
           draft: self.draftId,
         });
@@ -287,7 +314,11 @@ export const CommentStore = types
       toCache,
       fromCache,
       restoreCommentsFromCache,
+      setAddedCommentThisSession,
+      setCommentFormSubmit,
+      setInputRef,
       setLoading,
+      setTooltipMessage,
       replaceId,
       removeCommentById,
       persistQueuedComments,
