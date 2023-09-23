@@ -1,2 +1,2 @@
-export { FramesControl } from "./FramesControl";
-export { VolumeControl } from "./VolumeControl";
+export { FramesControl } from './FramesControl';
+export { AudioVolumeControl  } from './VolumeControl';

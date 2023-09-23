@@ -8,6 +8,50 @@
   background-color #fff
   pointer-events all
 
+  &_newLabelingUI
+     --header-background-new #e1e0e2
+     --icon-color #898098 
+    .panel
+      &__header
+        background var(--header-background-new)
+        color var(--icon-color)
+        &:hover
+          --icon-color #096DD9
+          --header-background-new #d8e7f9
+          
+    &.panel
+      &_alignment
+        &_left, &_right
+          .panel__header
+            flex-direction row
+            padding 4px
+            padding-left 9px
+
+      &__header
+        color var(--icon-color)
+        padding-left: 24px
+
+      &_hidden:not(&_detached)
+        margin 0;
+        border-radius 0
+        height 100%
+        
+        .panel
+          &__header
+            height 100%
+            justify-content space-between
+            padding 0 4px
+            --header-border-radius 0
+
+      &_hidden &__header
+        padding 0
+        width 100%
+        height 100%
+        cursor pointer
+        line-height normal
+        justify-content center
+        border-radius var(--header-border-radius)
+
   &_alignment
     &_left
       border-right 1px solid rgba(#000, 0.1)
@@ -151,7 +195,8 @@
 
   &__body
     z-index 1
-    overflow auto
+    overflow-y auto
+    overflow-x hidden
     height calc(100% - var(--header-height))
     position relative
     styled-scrollbars()
@@ -163,6 +208,7 @@
     z-index 10
     position absolute
     background-color transparent
+    user-select none
 
     // Top and bottom
     &[data-resize=top],

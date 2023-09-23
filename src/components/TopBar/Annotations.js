@@ -1,23 +1,25 @@
-import { observer } from "mobx-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { IconPlusCircle, LsSparks } from "../../assets/icons";
-import { Space } from "../../common/Space/Space";
-import { Userpic } from "../../common/Userpic/Userpic";
-import { Block, Elem } from "../../utils/bem";
-import { isDefined, userDisplayName } from "../../utils/utilities";
-import { GroundTruth } from "../CurrentEntity/GroundTruth";
-import "./Annotations.styl";
-import { TimeAgo }  from "../../common/TimeAgo/TimeAgo";
+import { observer } from 'mobx-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { IconPlusCircle, LsComment, LsCommentRed, LsSparks } from '../../assets/icons';
+import { Space } from '../../common/Space/Space';
+import { Userpic } from '../../common/Userpic/Userpic';
+import { Block, Elem } from '../../utils/bem';
+import { isDefined, userDisplayName } from '../../utils/utilities';
+import { GroundTruth } from '../CurrentEntity/GroundTruth';
+import './Annotations.styl';
+import { TimeAgo }  from '../../common/TimeAgo/TimeAgo';
+import { reaction } from 'mobx';
 
-export const Annotations = observer(({ store, annotationStore }) => {
+export const Annotations = observer(({ store, annotationStore, commentStore }) => {
   const dropdownRef = useRef();
   const [opened, setOpened] = useState(false);
   const enableAnnotations = store.hasInterface('annotations:tabs');
   const enablePredictions = store.hasInterface('predictions:tabs');
   const enableCreateAnnotation = store.hasInterface('annotations:add-new');
-  const groundTrurhEnabled = store.hasInterface('ground-truth');
+  const groundTruthEnabled = store.hasInterface('ground-truth');
 
   const entities = [];
+
 
   if (enablePredictions) entities.push(...annotationStore.predictions);
 
@@ -45,8 +47,83 @@ export const Annotations = observer(({ store, annotationStore }) => {
 
     document.addEventListener('click', handleClick);
 
-    return () => document.removeEventListener('click', handleClick);
+    const runOnPropertyChange = (value) => {
+      let _unresolvedComments = 0;
+      let _comments = 0;
+
+      value.forEach(obj => {
+        _comments++;
+
+        if (!obj) _unresolvedComments++;
+      });
+
+      commentStore.annotation.setUnresolvedCommentCount(_unresolvedComments);
+      commentStore.annotation.setCommentCount(_comments);
+    };
+
+    const reactionDisposer = reaction(
+      () => [...commentStore.comments.map(item => item.isResolved)],
+      runOnPropertyChange,
+    );
+
+    return () => {
+      document.removeEventListener('click', handleClick);
+      reactionDisposer();
+    };
   }, []);
+
+  const renderCommentIcon = (ent) => {
+    if (ent.unresolved_comment_count > 0) {
+      return <LsCommentRed />;
+    } else if (ent.comment_count > 0) {
+      return <LsComment />;
+    }
+
+    return null;
+  };
+
+  const renderAnnotation = (ent, i) => {
+    return (
+      <Annotation
+        key={`${ent.pk ?? ent.id}${ent.type}`}
+        entity={ent}
+        aria-label={`${ent.type} ${i + 1}`}
+        selected={ent === annotationStore.selected}
+        onClick={e => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpened(false);
+          onAnnotationSelect?.(ent, ent.type === 'prediction');
+        }}
+        extra={(
+          <Elem name={'icons'} >
+            <Elem name="icon-column">{renderCommentIcon(ent)}</Elem>
+            <Elem name="icon-column">{groundTruthEnabled && <GroundTruth entity={ent} disabled />}</Elem>
+          </Elem>
+        )}
+      />
+    );
+  };
+
+  const renderAnnotationList = (entities) => {
+    const _drafts = [];
+    const _annotations = [];
+
+    entities.forEach((obj, i) => {
+      if (obj.pk) {
+        _annotations.push(renderAnnotation(obj, i));
+      } else {
+        _drafts.push(renderAnnotation(obj, i));
+      }
+    });
+
+    return (
+      <>
+        <Elem name="draft">{_drafts}</Elem>
+        <Elem name="annotation">{_annotations}</Elem>
+      </>
+    );
+  };
 
   return (enableAnnotations || enablePredictions || enableCreateAnnotation) ? (
     <Elem name="section" mod={{ flat: true }}>
@@ -79,23 +156,7 @@ export const Annotations = observer(({ store, annotationStore }) => {
               />
             )}
 
-            {entities.map((ent, i) => (
-              <Annotation
-                key={`${ent.pk ?? ent.id}${ent.type}`}
-                entity={ent}
-                aria-label={`${ent.type} ${i + 1}`}
-                selected={ent === annotationStore.selected}
-                onClick={e => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setOpened(false);
-                  onAnnotationSelect?.(ent, ent.type === 'prediction');
-                }}
-                extra={groundTrurhEnabled && (
-                  <GroundTruth entity={ent} disabled/>
-                )}
-              />
-            ))}
+            {renderAnnotationList(entities)}
           </Elem>
         )}
       </Block>

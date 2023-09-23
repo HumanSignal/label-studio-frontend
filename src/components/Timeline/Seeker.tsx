@@ -1,9 +1,9 @@
-import { clamp } from "lodash";
-import { FC, ReactElement, useCallback, useRef } from "react";
-import { Block, Elem } from "../../utils/bem";
-import { TimelineMinimapProps } from "./Types";
+import { clamp } from 'lodash';
+import { FC, ReactElement, useCallback, useRef } from 'react';
+import { Block, Elem } from '../../utils/bem';
+import { TimelineMinimapProps } from './Types';
 
-import "./Seeker.styl";
+import './Seeker.styl';
 
 export interface SeekerProps {
   position: number;
@@ -34,7 +34,10 @@ export const Seeker: FC<SeekerProps> = ({
   const viewRef = useRef<HTMLDivElement>();
 
   const showIndicator = seekVisible > 0;
-  const width = `${(seekVisible - leftOffset) / length * 100}%`;
+
+  // The indicator width is set wider by 1.5, to account for the pixel sizing of the position indicator width and placement
+  // to align better with the viewable timeline scroll.
+  const width = `${(Math.ceil(seekVisible) - Math.floor(leftOffset) + 1.5) / length * 100}%`;
   const offsetLimit = length - (seekVisible - leftOffset);
   const windowOffset = `${Math.min(seekOffset, offsetLimit) / length * 100}%`;
   const seekerOffset = position / length * 100;
@@ -61,15 +64,15 @@ export const Seeker: FC<SeekerProps> = ({
     };
 
     const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
   }, [length]);
 
-  const onSeekerDrag = useCallback((e) => {
+  const onSeekerDrag = useCallback((e: globalThis.MouseEvent) => {
     const indicator = seekerRef.current!;
     const dimensions = rootRef.current!.getBoundingClientRect();
     const indicatorWidth = indicator.clientWidth;
@@ -78,28 +81,43 @@ export const Seeker: FC<SeekerProps> = ({
     const startOffset = startDrag - dimensions.left - (indicatorWidth / 2);
     const parentWidth = dimensions.width;
 
-    onSeek?.(clamp(Math.ceil(length * (startOffset / parentWidth)), 0, parentWidth));
-
-    const onMouseMove = (e: globalThis.MouseEvent) => {
+    const jump = (e: globalThis.MouseEvent) => {
       const limit = parentWidth - indicator.clientWidth;
       const newOffset = clamp(startOffset + (e.pageX - startDrag), 0, limit);
       const percent = newOffset / parentWidth;
+      const newPosition = Math.ceil(length * percent);
 
-      onSeek?.(Math.ceil(length * percent));
+      onSeek?.(newPosition);
     };
+
+    jump(e);
+
+    const onMouseMove = (e: globalThis.MouseEvent) => {
+      jump(e);
+    };
+
     const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
   }, [length]);
 
-  const navigationHandler = showIndicator ? onIndicatorDrag : onSeekerDrag;
+  const onDrag = useCallback((e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.target === viewRef.current) {
+      onIndicatorDrag(e);
+    } else {
+      onSeekerDrag(e);
+    }
+  }, [onIndicatorDrag, onSeekerDrag]);
 
   return (
-    <Block name="seeker" ref={rootRef} onMouseDown={navigationHandler}>
+    <Block name="seeker" ref={rootRef} onMouseDown={onDrag}>
       <Elem name="track"/>
       {showIndicator && (
         <Elem name="indicator" ref={viewRef} style={{ left: windowOffset, width }}/>

@@ -1,7 +1,7 @@
-import React from "react";
-import { PropTypes } from "prop-types";
+import React from 'react';
+import { PropTypes } from 'prop-types';
 
-import { HtxTextNode } from "./Node";
+import { HtxTextNode } from './Node';
 
 /**
  * Node for Emoji

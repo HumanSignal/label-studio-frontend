@@ -1,19 +1,19 @@
-import React from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import LabelMixin from "../../mixins/LabelMixin";
-import Registry from "../../core/Registry";
-import SelectedModelMixin from "../../mixins/SelectedModel";
-import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels/Labels";
-import { KeyPointModel } from "./KeyPoint";
-import ControlBase from "./Base";
+import LabelMixin from '../../mixins/LabelMixin';
+import Registry from '../../core/Registry';
+import SelectedModelMixin from '../../mixins/SelectedModel';
+import Types from '../../core/Types';
+import { HtxLabels, LabelsModel } from './Labels/Labels';
+import { KeyPointModel } from './KeyPoint';
+import ControlBase from './Base';
 
 /**
- * The KeyPointLabels tag creates labeled keypoints. Use to apply labels to identified key points, such as identifying facial features for a facial recognition labeling project.
+ * The `KeyPointLabels` tag creates labeled keypoints. Use to apply labels to identified key points, such as identifying facial features for a facial recognition labeling project.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic keypoint image labeling configuration for multiple regions-->
  * <View>
@@ -33,23 +33,19 @@ import ControlBase from "./Base";
  * @param {number} [maxUsages]           - Maximum number of times a label can be used per task
  * @param {boolean} [showInline=true]    - Show labels in the same visual line
  * @param {float=} [opacity=0.9]         - Opacity of the keypoint
- * @param {string=} [fillColor=#8bad00]  - Keypoint fill color in hexadecimal
  * @param {number=} [strokeWidth=1]      - Width of the stroke
- * @param {string=} [stokeColor=#8bad00] - Keypoint stroke color in hexadecimal
+ * @param {pixel|none} [snap=none]       - Snap keypoint to image pixels
+ *
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const Validation = types.model({
-  controlledTags: Types.unionTag(["Image"]),
+  controlledTags: Types.unionTag(['Image']),
 });
 
 const ModelAttrs = types
-  .model("KeyPointLabelsModel", {
-    type: "keypointlabels",
-    children: Types.unionArray(["label", "header", "view", "hypertext"]),
+  .model('KeyPointLabelsModel', {
+    type: 'keypointlabels',
+    children: Types.unionArray(['label', 'header', 'view', 'hypertext']),
   })
   .views(self => ({
     get hasStates() {
@@ -60,22 +56,21 @@ const ModelAttrs = types
   }));
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   KeyPointModel,
-  TagAttrs,
   Validation,
   LabelMixin,
-  SelectedModelMixin.props({ _child: "LabelModel" }),
-  ControlBase,
+  SelectedModelMixin.props({ _child: 'LabelModel' }),
 );
 
-const KeyPointLabelsModel = types.compose("KeyPointLabelsModel", Composition);
+const KeyPointLabelsModel = types.compose('KeyPointLabelsModel', Composition);
 
 const HtxKeyPointLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;
 });
 
-Registry.addTag("keypointlabels", KeyPointLabelsModel, HtxKeyPointLabels);
+Registry.addTag('keypointlabels', KeyPointLabelsModel, HtxKeyPointLabels);
 
 export { HtxKeyPointLabels, KeyPointLabelsModel };

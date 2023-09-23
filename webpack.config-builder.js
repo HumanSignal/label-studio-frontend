@@ -6,8 +6,7 @@ const Dotenv = require("dotenv-webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
-const ESLintPlugin = require('eslint-webpack-plugin');
-const { EnvironmentPlugin, DefinePlugin } = require("webpack");
+const { EnvironmentPlugin } = require("webpack");
 
 const workingDirectory = process.env.WORK_DIR
   ? path.resolve(__dirname, process.env.WORK_DIR)
@@ -22,9 +21,10 @@ const customDistDir = !!process.env.WORK_DIR;
 const DEFAULT_NODE_ENV = process.env.BUILD_MODULE ? "production" : process.env.NODE_ENV || "development";
 
 const isDevelopment = DEFAULT_NODE_ENV !== "production";
+const isTest = process.env.TEST_ENV === "true";
 
 const BUILD = {
-  NO_SERVER: !!process.env.BUILD_NO_MINIMIZATION,
+  NO_SERVER: !!process.env.BUILD_NO_MINIMIZATION || !!process.env.BUILD_NO_SERVER,
   NO_MINIMIZE: isDevelopment || !!process.env.BUILD_NO_MINIMIZATION,
   NO_CHUNKS: isDevelopment || !!process.env.BUILD_NO_CHUNKS,
   NO_HASH: isDevelopment || process.env.BUILD_NO_HASH,
@@ -43,16 +43,18 @@ const LOCAL_ENV = {
   BUILD_NO_SERVER: BUILD.NO_SERVER,
 };
 
+console.log(LOCAL_ENV);
+
 const babelOptimizeOptions = () => {
   return BUILD.NO_MINIMIZE
     ? {
-        compact: false,
-        cacheCompression: false,
-      }
+      compact: false,
+      cacheCompression: false,
+    }
     : {
-        compact: true,
-        cacheCompression: true,
-      };
+      compact: true,
+      cacheCompression: true,
+    };
 };
 
 const optimizer = () => {
@@ -80,7 +82,7 @@ const optimizer = () => {
 
   if (BUILD.NO_CHUNKS) {
     result.runtimeChunk = false;
-    result.splitChunks = {cacheGroups: { default: false }}
+    result.splitChunks = { cacheGroups: { default: false } }
   }
 
   return result;
@@ -152,15 +154,24 @@ const babelLoader = {
       "@babel/plugin-proposal-class-properties",
       "@babel/plugin-proposal-optional-chaining",
       "@babel/plugin-proposal-nullish-coalescing-operator",
+      ...(
+        isTest
+          ? ["istanbul"]
+          : []
+      )
     ],
     ...babelOptimizeOptions(),
   },
 };
 
 const cssLoader = (withLocalIdent = true) => {
-  const rules = [MiniCssExtractPlugin.loader];
+  const rules = [{
+    loader: MiniCssExtractPlugin.loader,
+  }];
 
-  const localIdent = withLocalIdent ? LOCAL_ENV.CSS_PREFIX + "[local]" : "[local]";
+  const localIdent = withLocalIdent
+    ? LOCAL_ENV.CSS_PREFIX + "[local]"
+    : "[local]";
 
   const cssLoader = {
     loader: "css-loader",
@@ -191,7 +202,9 @@ const cssLoader = (withLocalIdent = true) => {
     options: {
       sourceMap: true,
       stylusOptions: {
-        import: [path.resolve(__dirname, "./src/themes/default/colors.styl")],
+        import: [
+          path.resolve(__dirname, "./src/themes/default/colors.styl")
+        ],
       },
     },
   };
@@ -205,7 +218,7 @@ const devServer = () => {
   return (DEFAULT_NODE_ENV === 'development' && !BUILD.NO_SERVER) ? {
     devServer: {
       compress: true,
-      port: 3000,
+      port: process.env.LSF_PORT ?? 3000,
       static: {
         directory: path.join(__dirname, "public")
       },
@@ -233,13 +246,6 @@ const plugins = [
   }),
   new webpack.EnvironmentPlugin(LOCAL_ENV),
 ];
-
-if (isDevelopment) {
-  plugins.push(new ESLintPlugin({
-    fix: false,
-    failOnError: true,
-  }));
-}
 
 if (!BUILD.NO_SERVER) {
   plugins.push(
@@ -270,8 +276,9 @@ if (BUILD.DIAGNOSTICS) {
 
 const sourceMap = isDevelopment ? "cheap-module-source-map" : "source-map";
 
-module.exports = ({withDevServer = true} = {}) => ({
+module.exports = ({ withDevServer = true } = {}) => ({
   mode: DEFAULT_NODE_ENV || "development",
+  target: process.env.NODE_ENV === "development" ? "web" : "browserslist",
   devtool: sourceMap,
   ...(withDevServer ? devServer() : {}),
   entry: {
@@ -286,11 +293,21 @@ module.exports = ({withDevServer = true} = {}) => ({
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
+    fallback: {
+      fs: false,
+      path: false,
+      crypto: false,
+      worker_threads: false,
+    }
   },
   plugins: withDevServer ? [
     ...plugins,
-    new webpack.HotModuleReplacementPlugin(),
+    // new webpack.HotModuleReplacementPlugin(),
   ] : plugins,
+  experiments: {
+    syncWebAssembly: true,
+    asyncWebAssembly: true,
+  },
   optimization: optimizer(),
   performance: {
     maxEntrypointSize: Infinity,
@@ -319,7 +336,7 @@ module.exports = ({withDevServer = true} = {}) => ({
       },
       {
         test: /\.css$/i,
-        use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"],
+        use: [{ loader: MiniCssExtractPlugin.loader }, "css-loader", "postcss-loader"],
       },
       {
         test: /\.styl$/i,
@@ -342,9 +359,6 @@ module.exports = ({withDevServer = true} = {}) => ({
             loader: MiniCssExtractPlugin.loader,
             options: {
               esModule: false,
-              modules: {
-                namedExport: false,
-              },
             },
           },
           {
@@ -353,8 +367,8 @@ module.exports = ({withDevServer = true} = {}) => ({
               sourceMap: true,
               importLoaders: 2,
               esModule: false,
+              // exportType: "string",
               modules: {
-                compileType: "module",
                 mode: "local",
                 auto: true,
                 namedExport: false,
@@ -409,6 +423,15 @@ module.exports = ({withDevServer = true} = {}) => ({
         exclude: /node_modules/,
         loader: "url-loader",
       },
+      {
+        test: /\.wasm$/,
+        type: "javascript/auto",
+        loader: "file-loader",
+        options: {
+          name: "[name].[ext]",
+          outputPath: dirPrefix.js, // colocate wasm with js
+        }
+      }
     ],
   },
 });

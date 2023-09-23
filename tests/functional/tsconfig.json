@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "baseUrl": "./",
+    "noImplicitThis": true,
+    "lib": ["es5", "dom"],
+    "types": ["cypress", "node"]
+  },
+  "include": [
+    "**/*.ts",
+    "./node_modules/@heartexlabs/ls-test/**/*.ts"
+  ]
+}

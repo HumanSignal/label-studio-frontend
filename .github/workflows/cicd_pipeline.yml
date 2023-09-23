@@ -1,0 +1,82 @@
+name: "CI/CD Pipeline"
+
+on:
+  push:
+    branches:
+      - master
+      - 'lse-release/**'
+      - 'ls-release/**'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+    branches:
+      - master
+      - 'lse-release/**'
+      - 'ls-release/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build_bundle:
+    name: "Build JS Bundle"
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    uses: ./.github/workflows/build_bundle.yml
+    with:
+      sha: ${{ github.event.pull_request.head.sha || github.event.after }}
+
+  build_for_coverage:
+    name: "Build JS Bundle"
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    uses: ./.github/workflows/build_bundle.yml
+    with:
+      sha: ${{ github.event.pull_request.head.sha || github.event.after }}
+      build_for_coverage: true
+
+  run_e2e:
+    name: "Tests"
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    uses: ./.github/workflows/e2e_tests.yml
+    needs:
+      - build_for_coverage
+    with:
+      sha: ${{ github.event.pull_request.head.sha || github.event.after }}
+
+  run_functional:
+    name: "Tests"
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    uses: ./.github/workflows/fun_tests.yml
+    needs:
+      - build_for_coverage
+    with:
+      sha: ${{ github.event.pull_request.head.sha || github.event.after }}
+    secrets: inherit
+
+  run_unit:
+    name: "Tests"
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    uses: ./.github/workflows/unit_tests.yml 
+    with:
+      sha: ${{ github.event.pull_request.head.sha || github.event.after }}
+
+  run_coverage:
+    name: "Coverage"
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    uses: ./.github/workflows/tests_coverage.yml
+    needs:
+      - run_unit
+      - run_e2e
+    with:
+      sha: ${{ github.event.pull_request.head.sha || github.event.after }}
+    secrets: inherit
+
+  run_lint:
+    name: "Lint"
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    uses: ./.github/workflows/eslint.yml
+    with:
+      sha: ${{ github.event.pull_request.head.sha || github.event.after }}

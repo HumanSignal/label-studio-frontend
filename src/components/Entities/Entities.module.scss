@@ -13,6 +13,14 @@
 
 .treelabels {
   max-height: auto;
+
+  :global(.ant-tree-switcher) {
+    &:global(.ant-tree-switcher_close) {
+      .switcherIcon {
+        transform: rotate(90deg);
+      }
+    }
+  }
 }
 
 .treelabel :global(.ant-tree-node-content-wrapper) {

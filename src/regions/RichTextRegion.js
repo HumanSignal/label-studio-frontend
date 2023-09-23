@@ -1,16 +1,16 @@
-import { types } from "mobx-state-tree";
-import * as xpath from "xpath-range";
-import Registry from "../core/Registry";
-import { AreaMixin } from "../mixins/AreaMixin";
-import { HighlightMixin } from "../mixins/HighlightMixin";
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
-import WithStatesMixin from "../mixins/WithStates";
-import { RichTextModel } from "../tags/object/RichText/model";
-import { findRangeNative, rangeToGlobalOffset } from "../utils/selection-tools";
-import { isDefined } from "../utils/utilities";
+import { tryReference, types } from 'mobx-state-tree';
+import * as xpath from 'xpath-range';
+import Registry from '../core/Registry';
+import { AreaMixin } from '../mixins/AreaMixin';
+import { HighlightMixin } from '../mixins/HighlightMixin';
+import NormalizationMixin from '../mixins/Normalization';
+import RegionsMixin from '../mixins/Regions';
+import { RichTextModel } from '../tags/object/RichText/model';
+import { findRangeNative, rangeToGlobalOffset } from '../utils/selection-tools';
+import { isDefined } from '../utils/utilities';
+import { FF_LSDV_4620_3, isFF } from '../utils/feature-flags';
 
-const GlobalOffsets = types.model("GlobalOffset", {
+const GlobalOffsets = types.model('GlobalOffset', {
   start: types.number,
   end: types.number,
   // distinguish loaded globalOffsets from user's annotation and internally calculated one;
@@ -25,8 +25,8 @@ const GlobalOffsets = types.model("GlobalOffset", {
 }));
 
 const Model = types
-  .model("RichTextRegionModel", {
-    type: "richtextregion",
+  .model('RichTextRegionModel', {
+    type: 'richtextregion',
     object: types.late(() => types.reference(RichTextModel)),
 
     startOffset: types.integer,
@@ -43,7 +43,7 @@ const Model = types
   }))
   .views(self => ({
     get parent() {
-      return self.object;
+      return tryReference(() => self.object);
     },
     getRegionElement() {
       return self._spans?.[0];
@@ -54,9 +54,9 @@ const Model = types
   }))
   .actions(self => ({
     beforeDestroy() {
-      try{
+      try {
         self.removeHighlight();
-      } catch(e) {
+      } catch (e) {
         console.warn(e);
       }
     },
@@ -73,23 +73,32 @@ const Model = types
         });
       } else {
         try {
-          // Calculate proper XPath right before serialization
-          const root = self._getRootNode(true);
-          const range = findRangeNative(
-            self.globalOffsets.start,
-            self.globalOffsets.end,
-            root,
-          );
+          if (isFF(FF_LSDV_4620_3)) {
+            const xpathRange = self.parent.globalOffsetsToRelativeOffsets(self.globalOffsets);
 
-          if (!range) throw new Error;
+            Object.assign(res.value, {
+              ...xpathRange,
+              globalOffsets: self.globalOffsets.serialized,
+            });
+          } else {
+            // Calculate proper XPath right before serialization
+            const root = self._getRootNode(true);
+            const range = findRangeNative(
+              self.globalOffsets.start,
+              self.globalOffsets.end,
+              root,
+            );
 
-          const xpathRange = xpath.fromRange(range, root);
+            if (!range) throw new Error;
 
-          Object.assign(res.value, {
-            ...xpathRange,
-            globalOffsets: self.globalOffsets.serialized,
-          });
-        } catch(e) {
+            const xpathRange = xpath.fromRange(range, root);
+
+            Object.assign(res.value, {
+              ...xpathRange,
+              globalOffsets: self.globalOffsets.serialized,
+            });
+          }
+        } catch (e) {
           // regions may be broken, so they don't have globalOffsets
           // or they can't be applied on current html, so just keep them untouched
           const { start, end, startOffset, endOffset } = self;
@@ -104,8 +113,8 @@ const Model = types
         }
       }
 
-      if (self.object.savetextresult === "yes" && isDefined(self.text)) {
-        res.value["text"] = self.text;
+      if (self.object.savetextresult === 'yes' && isDefined(self.text)) {
+        res.value['text'] = self.text;
       }
 
       return res;
@@ -143,6 +152,14 @@ const Model = types
       return self.cachedRange;
     },
 
+    updateXPathsFromGlobalOffsets() {
+      const xPathRange = self.parent.globalOffsetsToRelativeOffsets(self.globalOffsets);
+
+      if (xPathRange) {
+        self._setXPaths(xPathRange);
+      }
+    },
+
     /**
      * Main method to detect HTML range and its offsets for LSF region
      * globalOffsets are used for:
@@ -161,49 +178,76 @@ const Model = types
         const { startOffset: start, endOffset: end } = self;
 
         self.globalOffsets = { start, end, calculated: true };
-        self.cachedRange = findRangeNative(start, end, root);
+        if (!isFF(FF_LSDV_4620_3)) {
+          self.cachedRange = findRangeNative(start, end, root);
+        }
         return;
       }
 
-      // 1. first try to find range by xpath in original document
-      range = self._getRange({ useOriginalContent: true });
+      if (isFF(FF_LSDV_4620_3)) {
 
-      if (range) {
-        // we need this range in the visible document, so find it by global offsets
-        const originalRoot = self._getRootNode(true);
-        const [start, end] = rangeToGlobalOffset(range, originalRoot);
+        // 1. first try to find range by xpath in the original layout
+        
+        const offsets = self.parent.relativeOffsetsToGlobalOffsets(self.start, self.startOffset, self.end, self.endOffset);
 
-        self.globalOffsets = { start, end, calculated: true };
-        self.cachedRange = findRangeNative(start, end, root);
+        if (offsets) {
+          const [start, end] = offsets;
 
-        return;
-      }
-
-      // 2. then try to find range on visible document
-      // that's for old buggy annotations created over dirty document state
-      range = self._getRange({ useOriginalContent: false });
-
-      if (range) {
-        const [start, end] = rangeToGlobalOffset(range, root);
-
-        self.globalOffsets = { start, end, calculated: true };
-        self.cachedRange = range;
-
-        return;
-      }
-
-      // 3. if xpaths are broken use globalOffsets if given
-      if (self.globalOffsets && isDefined(root)) {
-        const { start, end } = self.globalOffsets;
-
-        self.cachedRange = findRangeNative(start, end, root);
-
-        if (self.cachedRange) {
-          self._fixXPaths(self.cachedRange, root);
-          self.globalOffsets.calculated = true;
+          self.globalOffsets = { start, end, calculated: true };
+          return;
         }
 
-        return;
+        // 2. then try to find range on dynamically changed document
+        // @todo or not todo?
+
+        // 3. if xpaths are broken use globalOffsets if given
+        if (self.globalOffsets) {
+          self.updateXPathsFromGlobalOffsets();
+
+          return;
+        }
+      } else {
+
+        // 1. first try to find range by xpath in original document
+        range = self._getRange({ useOriginalContent: true });
+
+        if (range) {
+        // we need this range in the visible document, so find it by global offsets
+          const originalRoot = self._getRootNode(true);
+          const [start, end] = rangeToGlobalOffset(range, originalRoot);
+
+          self.globalOffsets = { start, end, calculated: true };
+          self.cachedRange = findRangeNative(start, end, root);
+
+          return;
+        }
+
+        // 2. then try to find range on visible document
+        // that's for old buggy annotations created over dirty document state
+        range = self._getRange({ useOriginalContent: false });
+
+        if (range) {
+          const [start, end] = rangeToGlobalOffset(range, root);
+
+          self.globalOffsets = { start, end, calculated: true };
+          self.cachedRange = range;
+
+          return;
+        }
+
+        // 3. if xpaths are broken use globalOffsets if given
+        if (self.globalOffsets && isDefined(root)) {
+          const { start, end } = self.globalOffsets;
+
+          self.cachedRange = findRangeNative(start, end, root);
+
+          if (self.cachedRange) {
+            self._fixXPaths(self.cachedRange, root);
+            self.globalOffsets.calculated = true;
+          }
+
+          return;
+        }
       }
 
       // 4. out of options — region is broken
@@ -221,6 +265,13 @@ const Model = types
       self.end = normedRange.end;
       self.startOffset = normedRange.startOffset;
       self.endOffset = normedRange.endOffset;
+    },
+
+    _setXPaths(value) {
+      self.start = value.start;
+      self.end = value.end;
+      self.startOffset = value.startOffset;
+      self.endOffset = value.endOffset;
     },
 
     _getRange({ useOriginalContent = false, useCache = true } = {}) {
@@ -244,7 +295,8 @@ const Model = types
       const parent = self.parent;
       let ref;
 
-      if (originalContent) ref = parent.originalContentRef;
+      if (isFF(FF_LSDV_4620_3)) ref = parent.visibleNodeRef;
+      else if (originalContent) ref = parent.originalContentRef;
       else if (parent.useWorkingNode) ref = parent.workingNodeRef;
       else ref = parent.visibleNodeRef;
 
@@ -264,7 +316,7 @@ const Model = types
         return xpath.toRange(start, startOffset, end, endOffset, rootNode);
       } catch (err) {
         // actually this happens when regions cannot be located by xpath for some reason
-        console.warn("can't locate xpath", { start, end }, err);
+        console.warn('can\'t locate xpath', { start, end }, err);
       }
 
       return undefined;
@@ -272,8 +324,7 @@ const Model = types
   }));
 
 const RichTextRegionModel = types.compose(
-  "RichTextRegionModel",
-  WithStatesMixin,
+  'RichTextRegionModel',
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
@@ -281,8 +332,8 @@ const RichTextRegionModel = types.compose(
   HighlightMixin,
 );
 
-Registry.addRegionType(RichTextRegionModel, "text");
-Registry.addRegionType(RichTextRegionModel, "hypertext");
-Registry.addRegionType(RichTextRegionModel, "richtext");
+Registry.addRegionType(RichTextRegionModel, 'text');
+Registry.addRegionType(RichTextRegionModel, 'hypertext');
+Registry.addRegionType(RichTextRegionModel, 'richtext');
 
 export { RichTextRegionModel };

@@ -3,16 +3,18 @@
     width 24px
     height 24px
     margin-right 8px
+    flex-shrink 0
 
   &__head
-    height 32px
     display flex
     margin 8px 0
     padding 0 8px
     align-items center
     justify-content space-between
+    gap 8px
 
-    span
+  &__title
+    & + span
       color #000
 
       &:before
@@ -21,7 +23,8 @@
 
   &__title
     display flex
-    align-items center
+    align-items flex-start
+    word-break break-word
 
   &__result
     padding 0 8px
@@ -54,6 +57,25 @@
 
   &_compact &__head
     margin -5px 0
+
+  &__warning
+    box-sizing border-box
+    display flex
+    flex-direction row
+    align-items center
+    padding 8px
+    gap 8px
+    background rgba(255, 183, 122, 0.16)
+    border 1px solid rgba(137, 128, 152, 0.16)
+    border-radius 4px
+    margin 0 16px 8px
+    flex none
+    order 0
+    flex-grow 1
+    svg
+      width 20px
+      height 17px
+      fill var(--incomplete-warning-color, #FA8C16)
 
 .region-meta
   &__content

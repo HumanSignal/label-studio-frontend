@@ -1,6 +1,7 @@
 .region-editor
-  --col-count 5
+  --col-count 3
   --col-width calc((100% - 16px) / var(--col-count))
+
   width 100%
   padding 0 8px
   grid-auto-flow row
@@ -15,6 +16,11 @@
     width 100%
     grid-gap 4px
     grid-template-columns repeat(var(--col-count), minmax(0, 1fr))
+
+  &__time-control
+    display flex
+    justify-content space-around
+    width 100%
 
   &__property
     height 32px

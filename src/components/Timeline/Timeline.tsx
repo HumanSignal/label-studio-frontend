@@ -1,20 +1,20 @@
-import { observer } from "mobx-react";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
-import { useLocalStorageState } from "../../hooks/useLocalStorageState";
-import { useMemoizedHandlers } from "../../hooks/useMemoizedHandlers";
-import { Block, Elem } from "../../utils/bem";
-import { clamp, isDefined } from "../../utils/utilities";
-import { TimelineContextProvider } from "./Context";
-import { Controls } from "./Controls";
-import { Seeker } from "./Seeker";
-import "./Timeline.styl";
-import { TimelineContextValue, TimelineControlsStepHandler, TimelineProps } from "./Types";
-import { default as Views } from "./Views";
+import { observer } from 'mobx-react';
+import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocalStorageState } from '../../hooks/useLocalStorageState';
+import { useMemoizedHandlers } from '../../hooks/useMemoizedHandlers';
+import { Block, Elem } from '../../utils/bem';
+import { clamp, isDefined } from '../../utils/utilities';
+import { TimelineContextProvider } from './Context';
+import { Controls } from './Controls';
+import { Seeker } from './Seeker';
+import './Timeline.styl';
+import { TimelineContextValue, TimelineControlsStepHandler, TimelineProps } from './Types';
+import { default as Views } from './Views';
 
 const TimelineComponent: FC<TimelineProps> = ({
   regions,
   zoom = 1,
-  mode = "frames",
+  mode = 'frames',
   length = 1024,
   position = 1,
   framerate = 24,
@@ -38,8 +38,8 @@ const TimelineComponent: FC<TimelineProps> = ({
   const [currentPosition, setCurrentPosition] = useState(clamp(position, 1, Infinity));
   const [seekOffset, setSeekOffset] = useState(0);
   const [seekVisibleWidth, setSeekVisibleWidth] = useState(0);
-  const [viewCollapsed, setViewCollapsed] = useLocalStorageState("video-timeline", false, {
-    fromString(value) { return value === "true" ? true : false; },
+  const [viewCollapsed, setViewCollapsed] = useLocalStorageState('video-timeline', false, {
+    fromString(value) { return value === 'true' ? true : false; },
     toString(value) { return String(value); },
   });
   const getCurrentPosition = useRef(() => {
@@ -64,13 +64,16 @@ const TimelineComponent: FC<TimelineProps> = ({
   });
 
   const setInternalPosition = (newPosition: number) => {
-    // console.trace(`set position %c ${newPosition}`, "color: red");
-    const clampedValue = clamp(newPosition, 1, length);
+    setCurrentPosition((currentPosition) => {
+      const clampedValue = clamp(newPosition, 1, length);
 
-    if (clampedValue !== currentPosition) {
-      setCurrentPosition(clampedValue);
-      handlers.onPositionChange?.(clampedValue);
-    }
+      if (clampedValue !== currentPosition) {
+        handlers.onPositionChange?.(clampedValue);
+        return clampedValue;
+      }
+
+      return currentPosition;
+    });
   };
 
   const increasePosition: TimelineControlsStepHandler = (_, stepSize) => {
@@ -126,6 +129,8 @@ const TimelineComponent: FC<TimelineProps> = ({
         playing={playing}
         volume={props.volume}
         controls={props.controls}
+        altHopSize={props.altHopSize}
+        customControls={props.customControls}
         collapsed={viewCollapsed}
         onPlay={() => handlers.onPlay?.()}
         onPause={() => handlers.onPause?.()}
@@ -139,7 +144,7 @@ const TimelineComponent: FC<TimelineProps> = ({
         onStepForward={increasePosition}
         onRewind={(steps) => setInternalPosition(isDefined(steps) ? currentPosition - steps : 0)}
         onForward={(steps) => setInternalPosition(isDefined(steps) ? currentPosition + steps : length)}
-        onPositionChange={setInternalPosition}
+        onPositionChange={setInternalPosition} 
         onToggleCollapsed={setViewCollapsed}
         formatPosition={formatPosition}
         extraControls={View.Controls && !disableView ? (
@@ -149,6 +154,7 @@ const TimelineComponent: FC<TimelineProps> = ({
             }}
           />
         ) : null}
+        mediaType="timeline"
       />
 
       {allowSeek && (
@@ -163,7 +169,7 @@ const TimelineComponent: FC<TimelineProps> = ({
           onSeek={setInternalPosition}
           minimap={View.Minimap ? (
             <View.Minimap/>
-          ): null}
+          ) : null}
         />
       )}
     </Elem>

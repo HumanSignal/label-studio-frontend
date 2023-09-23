@@ -1,19 +1,19 @@
-import React from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import LabelMixin from "../../mixins/LabelMixin";
-import Registry from "../../core/Registry";
-import SelectedModelMixin from "../../mixins/SelectedModel";
-import Types from "../../core/Types";
-import { BrushModel } from "./Brush";
-import { HtxLabels, LabelsModel } from "./Labels/Labels";
-import ControlBase from "./Base";
+import LabelMixin from '../../mixins/LabelMixin';
+import Registry from '../../core/Registry';
+import SelectedModelMixin from '../../mixins/SelectedModel';
+import Types from '../../core/Types';
+import { BrushModel } from './Brush';
+import { HtxLabels, LabelsModel } from './Labels/Labels';
+import ControlBase from './Base';
 
 /**
- * Use the BrushLabels tag for image segmentation tasks where you want to apply a mask or use a brush to draw a region on the image.
+ * The `BrushLabels` tag for image segmentation tasks is used in the area where you want to apply a mask or use a brush to draw a region on the image.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic image segmentation labeling configuration-->
  * <View>
@@ -33,36 +33,31 @@ import ControlBase from "./Base";
  * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
  * @param {boolean} [showInline=true]        - Show labels in the same visual line
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const Validation = types.model({
-  controlledTags: Types.unionTag(["Image"]),
+  controlledTags: Types.unionTag(['Image']),
 });
 
-const ModelAttrs = types.model("BrushLabelsModel", {
-  type: "brushlabels",
-  children: Types.unionArray(["label", "header", "view", "hypertext"]),
+const ModelAttrs = types.model('BrushLabelsModel', {
+  type: 'brushlabels',
+  children: Types.unionArray(['label', 'header', 'view', 'hypertext']),
 });
 
 const BrushLabelsModel = types.compose(
-  "BrushLabelsModel",
+  'BrushLabelsModel',
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   BrushModel,
-  TagAttrs,
   Validation,
   LabelMixin,
-  SelectedModelMixin.props({ _child: "LabelModel" }),
-  ControlBase,
+  SelectedModelMixin.props({ _child: 'LabelModel' }),
 );
 
 const HtxBrushLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;
 });
 
-Registry.addTag("brushlabels", BrushLabelsModel, HtxBrushLabels);
+Registry.addTag('brushlabels', BrushLabelsModel, HtxBrushLabels);
 
 export { HtxBrushLabels, BrushLabelsModel };

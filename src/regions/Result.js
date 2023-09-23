@@ -1,18 +1,19 @@
-import { getParent, getRoot, getSnapshot, types } from "mobx-state-tree";
-import { guidGenerator } from "../core/Helpers";
-import Registry from "../core/Registry";
-import { AnnotationMixin } from "../mixins/AnnotationMixin";
-import { isDefined } from "../utils/utilities";
-import { FF_DEV_1170, FF_DEV_1372, isFF } from "../utils/feature-flags";
+import { getParent, getRoot, getSnapshot, types } from 'mobx-state-tree';
+import { guidGenerator } from '../core/Helpers';
+import Registry from '../core/Registry';
+import Tree from '../core/Tree';
+import { AnnotationMixin } from '../mixins/AnnotationMixin';
+import { isDefined } from '../utils/utilities';
+import { FF_LSDV_4583, isFF } from '../utils/feature-flags';
 
 const Result = types
-  .model("Result", {
+  .model('Result', {
     id: types.optional(types.identifier, guidGenerator),
     // pid: types.optional(types.string, guidGenerator),
 
     score: types.maybeNull(types.number),
     // @todo to readonly mixin
-    // readonly: types.optional(types.boolean, false),
+    readonly: types.optional(types.boolean, false),
 
     // @why?
     // hidden: types.optional(types.boolean, false),
@@ -32,38 +33,42 @@ const Result = types
     to_name: types.late(() => types.reference(types.union(...Registry.objectTypes()))),
     // @todo some general type, maybe just a `string`
     type: types.enumeration([
-      "labels",
-      "hypertextlabels",
-      "paragraphlabels",
-      "rectangle",
-      "keypoint",
-      "polygon",
-      "brush",
-      "ellipse",
-      "rectanglelabels",
-      "keypointlabels",
-      "polygonlabels",
-      "brushlabels",
-      "ellipselabels",
-      "timeserieslabels",
-      "choices",
-      "datetime",
-      "number",
-      "taxonomy",
-      "textarea",
-      "rating",
-      "pairwise",
-      "videorectangle",
+      'labels',
+      'hypertextlabels',
+      'paragraphlabels',
+      'rectangle',
+      'keypoint',
+      'polygon',
+      'brush',
+      'ellipse',
+      'magicwand',
+      'rectanglelabels',
+      'keypointlabels',
+      'polygonlabels',
+      'brushlabels',
+      'ellipselabels',
+      'timeserieslabels',
+      'choices',
+      'datetime',
+      'number',
+      'taxonomy',
+      'textarea',
+      'rating',
+      'pairwise',
+      'videorectangle',
+      'ranker',
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
+      ranker: types.union(types.array(types.string), types.frozen(), types.null),
       datetime: types.maybe(types.string),
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
+      item_index: types.maybeNull(types.number),
       text: types.maybe(types.union(types.string, types.array(types.string))),
       choices: types.maybe(types.array(types.union(types.string, types.array(types.string)))),
       // pairwise
-      selected: types.maybe(types.enumeration(["left", "right"])),
+      selected: types.maybe(types.enumeration(['left', 'right'])),
       // @todo all other *labels
       labels: types.maybe(types.array(types.string)),
       htmllabels: types.maybe(types.array(types.string)),
@@ -79,7 +84,7 @@ const Result = types
       sequence: types.frozen(),
     }),
     // info about object and region
-    // meta: types.frozen(),
+    meta: types.frozen(),
   })
   .views(self => ({
     get perRegionStates() {
@@ -101,11 +106,11 @@ const Result = types
     },
 
     mergeMainValue(value) {
-      value =  value?.toJSON ? value.toJSON() : value;
+      value = value?.toJSON ? value.toJSON() : value;
       const mainValue = self.mainValue?.toJSON?.() ? self.mainValue?.toJSON?.() : self.mainValue;
 
       if (typeof value !== typeof mainValue) return null;
-      if (self.type.endsWith("labels")) {
+      if (self.type.endsWith('labels')) {
         return value.filter(x => mainValue.includes(x));
       }
       return value === mainValue ? value : null;
@@ -120,20 +125,30 @@ const Result = types
     },
 
     get editable() {
-      // @todo readonly is not defined here, so we have to fix this
-      // @todo and as it's used only in region list view of textarea get rid of this getter
-      if (isFF(FF_DEV_1170)) {
-        // The value of self.area.editable is always false whenever region is locked, so we need to check if it's explicitly readonly on the area.
-        return !self.readonly && self.annotation.editable === true && !self.area.readonly;
-      }
-      return !self.readonly && self.annotation.editable === true && self.area.editable === true;
+      throw new Error('Not implemented');
     },
 
-    getSelectedString(joinstr = " ") {
-      return self.mainValue?.join(joinstr) || "";
+    isReadOnly() {
+      return self.readonly || self.area.isReadOnly();
+    },
+
+    isSelfReadOnly() {
+      return self.readonly;
+    },
+
+    getSelectedString(joinstr = ' ') {
+      return self.mainValue?.join(joinstr) || '';
     },
 
     get selectedLabels() {
+      if (self.type === 'taxonomy') {
+        const sep = self.from_name.pathseparator;
+        const join = self.from_name.showfullpath;
+
+        return (self.mainValue || [])
+          .map(v => join ? v.join(sep) : v.at(-1))
+          .map(v => ({ value: v, id: v }));
+      }
       if (self.mainValue?.length === 0 && self.from_name.allowempty) {
         return self.from_name.findLabel(null);
       }
@@ -143,7 +158,7 @@ const Result = types
     /**
      * Checks perRegion and Visibility params
      */
-    get isSubmitable() {
+    get canBeSubmitted() {
       const control = self.from_name;
 
       if (control.perregion) {
@@ -152,10 +167,14 @@ const Result = types
         if (label && !self.area.hasLabel(label)) return false;
       }
 
+      // picks leaf's (last item in a path) value for Taxonomy or usual Choice value for Choices
+      const innerResults = (r) =>
+        r.map(s => Array.isArray(s) ? s.at(-1) : s);
+
       const isChoiceSelected = () => {
         const tagName = control.whentagname;
-        const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(",") : null;
-        const results = self.annotation.results.filter(r => r.type === "choices" && r !== self);
+        const choiceValues = control.whenchoicevalue?.split(',') ?? null;
+        const results = self.annotation.results.filter(r => ['choices', 'taxonomy'].includes(r.type) && r !== self);
 
         if (tagName) {
           const result = results.find(r => {
@@ -165,18 +184,18 @@ const Result = types
           });
 
           if (!result) return false;
-          if (choiceValues && !choiceValues.some(v => result.mainValue.includes(v))) return false;
+          if (choiceValues && !choiceValues.some(v => innerResults(result.mainValue).some(vv => result.from_name.selectedChoicesMatch(v, vv)))) return false;
         } else {
           if (!results.length) return false;
           // if no given choice value is selected in any choice result
-          if (choiceValues && !choiceValues.some(v => results.some(r => r.mainValue.includes(v)))) return false;
+          if (choiceValues && !results.some(r => choiceValues.some(v => innerResults(r.mainValue).some(vv => r.from_name.selectedChoicesMatch(v, vv))))) return false;
         }
         return true;
       };
 
-      if (control.visiblewhen === "choice-selected") {
+      if (control.visiblewhen === 'choice-selected') {
         return isChoiceSelected();
-      } else if (isFF(FF_DEV_1372) && control.visiblewhen === "choice-unselected") {
+      } else if (control.visiblewhen === 'choice-unselected') {
         return !isChoiceSelected();
       }
 
@@ -224,7 +243,7 @@ const Result = types
     },
   }))
   .volatile(() => ({
-    pid: "",
+    pid: '',
     selected: false,
     // highlighted: types.optional(types.boolean, false),
   }))
@@ -247,24 +266,35 @@ const Result = types
       self.parentID = id;
     },
 
+    setMetaValue(key, value) {
+      self.meta = { ...self.meta, [key]: value };
+    },
+
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
-    updateAppearenceFromState() {},
+    updateAppearenceFromState() { },
 
     serialize(options) {
-      const { from_name, to_name, type, score, value } = getSnapshot(self);
+      const sn = getSnapshot(self);
+      const { type, score, value, meta } = sn;
       const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize(options) : {};
+      // cut off annotation id
+      const id = self.area?.cleanId;
+      const from_name = Tree.cleanUpId(sn.from_name);
+      const to_name = Tree.cleanUpId(sn.to_name);
 
       if (!data) return null;
-      if (!self.isSubmitable) return null;
-      // with `mergeLabelsAndResults` control uses only one result even with external `Labels`
-      if (type === "labels" && self.to_name.mergeLabelsAndResults) return null;
-      // cut off annotation id
-      const id = self.area.cleanId;
+      if (!self.canBeSubmitted) return null;
 
       if (!isDefined(data.value)) data.value = {};
+      // with `mergeLabelsAndResults` control uses only one result even with external `Labels`
+      if (self.to_name.mergeLabelsAndResults) {
+        if (type === 'labels') return null;
+        // add labels to the main region, not nested ones
+        if (self.area?.labels?.length && !self.from_name.perregion) data.value.labels = self.area.labels;
+      }
 
       const contolMeta = self.from_name.metaValue;
 
@@ -277,8 +307,12 @@ const Result = types
         data.meta = { ...data.meta, ...areaMeta };
       }
 
+      if (meta) {
+        data.meta = { ...data.meta, ...meta };
+      }
+
       if (self.area.parentID) {
-        data.parentID = self.area.parentID.replace(/#.*/, "");
+        data.parentID = self.area.parentID.replace(/#.*/, '');
       }
 
       Object.assign(data, { id, from_name, to_name, type, origin: self.area.origin });
@@ -287,71 +321,28 @@ const Result = types
         Object.assign(data.value, { [valueType]: value[valueType] });
       }
 
-      if (typeof score === "number") data.score = score;
+      if (typeof score === 'number') data.score = score;
 
-      if (!self.editable) data.readonly = true;
+      if (self.isSelfReadOnly()) data.readonly = true;
+
+      if (isFF(FF_LSDV_4583) && isDefined(self.area.item_index)) {
+        data.item_index = self.area.item_index;
+      }
 
       return data;
-    },
-
-    toStateJSON() {
-      const parent = self.parent;
-      const buildTree = control => {
-        const tree = {
-          id: self.pid,
-          from_name: control.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: control.type,
-          parent_id: self.parentID === "" ? null : self.parentID,
-        };
-
-        if (self.normalization) tree["normalization"] = self.normalization;
-
-        return tree;
-      };
-
-      if (self.states && self.states.length) {
-        return self.states
-          .map(s => {
-            const ser = self.serialize(s, parent);
-
-            if (!ser) return null;
-
-            const tree = {
-              ...buildTree(s),
-              ...ser,
-            };
-
-            // in case of labels it's gonna be, labels: ["label1", "label2"]
-
-            return tree;
-          })
-          .filter(Boolean);
-      } else {
-        const obj = self.annotation.toNames.get(parent.name);
-        const control = obj.length ? obj[0] : obj;
-
-        const tree = {
-          ...buildTree(control),
-          ...self.serialize(control, parent),
-        };
-
-        return tree;
-      }
     },
 
     /**
      * Remove region
      */
     deleteRegion() {
-      if (!self.annotation.editable) return;
+      if (self.annotation.isReadOnly()) return;
 
       self.unselectRegion();
 
       self.annotation.relationStore.deleteNodeRelation(self);
 
-      if (self.type === "polygonregion") {
+      if (self.type === 'polygonregion') {
         self.destroyRegion();
       }
 
@@ -373,4 +364,4 @@ const Result = types
     },
   }));
 
-export default types.compose(Result, AnnotationMixin);
+export default types.compose('Result', Result, AnnotationMixin);

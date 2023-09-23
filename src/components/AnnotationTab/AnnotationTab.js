@@ -1,10 +1,10 @@
-import { observer } from "mobx-react";
-import { Block, Elem } from "../../utils/bem";
-import { CurrentEntity } from "../CurrentEntity/CurrentEntity";
-import Entities from "../Entities/Entities";
-import Entity from "../Entity/Entity";
-import Relations from "../Relations/Relations";
-import { Comments } from "../Comments/Comments";
+import { observer } from 'mobx-react';
+import { Block, Elem } from '../../utils/bem';
+import { CurrentEntity } from '../CurrentEntity/CurrentEntity';
+import Entities from '../Entities/Entities';
+import Entity from '../Entity/Entity';
+import Relations from '../Relations/Relations';
+import { Comments } from '../Comments/Comments';
 
 import './CommentsSection.styl';
 
@@ -16,13 +16,13 @@ export const AnnotationTab = observer(({ store }) => {
 
   return (
     <>
-      {store.hasInterface("annotations:current") && (
+      {store.hasInterface('annotations:current') && (
         <CurrentEntity
           entity={as.selected}
-          showControls={store.hasInterface("controls")}
-          canDelete={store.hasInterface("annotations:delete")}
-          showHistory={store.hasInterface("annotations:history")}
-          showGroundTruth={store.hasInterface("ground-truth")}
+          showControls={store.hasInterface('controls')}
+          canDelete={store.hasInterface('annotations:delete')}
+          showHistory={store.hasInterface('annotations:history')}
+          showGroundTruth={store.hasInterface('ground-truth')}
         />
       )}
 
@@ -46,7 +46,7 @@ export const AnnotationTab = observer(({ store }) => {
         <Relations store={store} item={annotation} />
       )}
 
-      {store.hasInterface("annotations:comments") && store.commentStore.isCommentable && (
+      {store.hasInterface('annotations:comments') && store.commentStore.isCommentable && (
         <Block name="comments-section">
           <Elem name="header">
             <Elem name="title">Comments</Elem>
