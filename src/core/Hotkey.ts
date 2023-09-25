@@ -167,10 +167,7 @@ export const Hotkey = (
     applyAliases(key: string) {
       return key
         .split(',')
-        .map(k => {
-          return k.split('+').map(k => ALIASES[k.trim()] ?? k).join('+');
-        },
-        )
+        .map(k => k.split('+').map(k => ALIASES[k.trim()] ?? k).join('+'))
         .join(',');
     },
     /**
