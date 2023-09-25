@@ -80,7 +80,7 @@ keymaster.filter = function(event) {
 };
 
 const ALIASES = {
-  'plus': '=',
+  'plus': '=', // "ctrl plus" is actually a "ctrl =" because shift is not used
   'minus': '-',
 };
 
