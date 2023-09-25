@@ -56,7 +56,7 @@ Object.entries(taxonomies).forEach(([title, Taxonomy]) => {
       Taxonomy.open();
       Taxonomy.findItem('Choice 2').trigger('mouseenter');
       Tooltip.hasText('A hint for Choice 2');
-      Taxonomy.findItem('Choice 3').find('[type=checkbox]').should('not.be.checked');
+      Taxonomy.hasNoSelected('Choice 3');
     });
 
     it('should use aliases everywhere if given', () => {
@@ -71,6 +71,7 @@ Object.entries(taxonomies).forEach(([title, Taxonomy]) => {
       Taxonomy.findItem('Choice 2').click();
       Taxonomy.findItem('Choice 1').click();
       Taxonomy.hasSelected('Choice 1');
+      Taxonomy.hasNoSelected('Choice 2');
 
       LabelStudio.serialize().then(result => {
         expect(result.length).to.be.eq(1);
@@ -136,7 +137,7 @@ Object.entries(taxonomies).forEach(([title, Taxonomy]) => {
           cy.get('.lsf-annotations-list').click();
           cy.get('.lsf-annotations-list__create').click();
           Taxonomy.open();
-          Taxonomy.findItem('Choice 3').find('[type=checkbox]').should('be.checked');
+          Taxonomy.hasSelected('Choice 3');
         });
       }
     }
