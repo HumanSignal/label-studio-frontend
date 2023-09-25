@@ -80,13 +80,16 @@ const RegionsMixin = types
       return self.parent.findImageEntity(self.item_index ?? 0);
     },
 
-    getConnectedDynamicRegions(selfExcluding) {
+    getConnectedDynamicRegions(excludeSelf) {
       const { regions = [] } = getRoot(self).annotationStore?.selected || {};
+      const { type, labelName } = self;
 
-      return regions.filter(r => {
-        if (selfExcluding && r === self) return false;
-        return r.dynamic && r.type === self.type && r.labelName === self.labelName;
+      const result = regions.filter(region => {
+        if (excludeSelf && region === self) return false;
+        return region.dynamic && region.type === type && region.labelName === labelName;
       });
+
+      return result;
     },
 
   }))
@@ -225,6 +228,10 @@ const RegionsMixin = types
         self.perRegionFocusRequest = null;
       },
 
+      revokeSuggestion(){
+        self.fromSuggestion = false;
+      }, 
+
       setHighlight(val) {
         self._highlighted = val;
       },
@@ -250,7 +257,7 @@ const RegionsMixin = types
           self.origin = 'prediction-changed';
         }
 
-        // everything above is related to dynamic preannotations
+        // everything below is related to dynamic preannotations
         if (!self.dynamic || self.fromSuggestion) return;
 
         clearTimeout(self.drawingTimeout);
@@ -260,7 +267,9 @@ const RegionsMixin = types
           const env = getEnv(self);
 
           self.drawingTimeout = setTimeout(() => {
-            env.events.invoke('regionFinishedDrawing', self, self.getConnectedDynamicRegions(destroy));
+            const connectedRegions = self.getConnectedDynamicRegions(destroy);
+
+            env.events.invoke('regionFinishedDrawing', self, connectedRegions);
           }, timeout);
         }
       },

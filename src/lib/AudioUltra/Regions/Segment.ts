@@ -18,6 +18,8 @@ export interface SegmentOptions {
   updateable?: boolean;
   deleteable?: boolean;
   visible?: boolean;
+  showInTimeline?: boolean;
+  external?: boolean;
 }
 
 export interface SegmentGlobalEvents {
@@ -43,13 +45,15 @@ export class Segment extends Events<SegmentEvents> {
   id: string;
   start = 0;
   end = 0;
-  color: RgbaColorArray = rgba('#ccc');
+  color: RgbaColorArray = rgba('#afafaf');
   selected = false;
   highlighted = false;
   updateable = true;
   locked = false;
   deleteable = true;
   visible = true;
+  showInTimeline = false;
+  external = false;
 
   protected waveform: Waveform;
   protected visualizer: Visualizer;
@@ -85,6 +89,8 @@ export class Segment extends Events<SegmentEvents> {
     this.isDragging = false;
     this.draggingStartPosition = null;
     this.isGrabbingEdge = { isRightEdge: false, isLeftEdge: false };
+    this.showInTimeline = options.showInTimeline ?? this.showInTimeline;
+    this.external = options.external ?? this.external;
 
     this.initialize();
   }
@@ -119,6 +125,12 @@ export class Segment extends Events<SegmentEvents> {
     }
     if (options.color !== undefined) {
       this.color = rgba(options.color);
+    }
+    if (options.showInTimeline !== undefined) {
+      this.showInTimeline = options.showInTimeline;
+    }
+    if (options.external !== undefined) {
+      this.external = options.external;
     }
   }
 
@@ -314,24 +326,26 @@ export class Segment extends Events<SegmentEvents> {
     if (!this.visible || !this.inViewport) {
       return;
     }
-    // this is here because when the selected region is from a different label from before, it was deselecting everything
-    if (this.selected) this.setColorDarken(0.5);
 
-    const { color, timelinePlacement, timelineHeight } = this;
+    const { color: _color, selected, highlighted, timelinePlacement, timelineHeight } = this;
     const { height } = this.visualizer;
 
+    const color = _color.clone();
     const timelineLayer = this.visualizer.getLayer('timeline');
     const timelineTop = timelinePlacement === defaults.timelinePlacement;
     const top = timelineLayer?.isVisible && timelineTop ? timelineHeight : 0;
     const layer = this.controller.layerGroup;
 
-    // @todo - this should account for timeline placement and start at the reservedSpace height
+    if (selected || highlighted) {
+      color.darken(0.4);
+    }
 
-    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.08)`;
+    // @todo - this should account for timeline placement and start at the reservedSpace height
+    layer.fillStyle = color.clone().translucent(0.77).toString();
     layer.fillRect(this.xStart, top, this.width, height);
 
     // Render grab lines
-    layer.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 1)`;
+    layer.fillStyle = selected ? color.toString() : color.clone().translucent(0.6).toString();
     layer.fillRect(this.xStart, top, this.handleWidth, height);
     layer.fillRect(this.xEnd - this.handleWidth, top, this.handleWidth, height);
   }
@@ -345,8 +359,6 @@ export class Segment extends Events<SegmentEvents> {
     if (!this.updateable || (this.isDragging && this.selected)) return;
     if (this.waveform.playing) this.waveform.player.pause();
     this.selected = selected ?? !this.selected;
-    if (selected) this.setColorDarken(0.5);
-    else this.color.reset();
     this.invoke('update', [this]);
     this.waveform.invoke('regionUpdated', [this]);
   };
@@ -354,8 +366,6 @@ export class Segment extends Events<SegmentEvents> {
   handleHighlighted = (highlighted?: boolean) => {
     if (!this.updateable || this.selected) return;
     this.highlighted = highlighted ?? !this.highlighted;
-    if (this.highlighted) this.setColorDarken(0.5);
-    else this.color.reset();
     this.invoke('update', [this]);
     this.waveform.invoke('regionUpdated', [this]);
   };
@@ -366,12 +376,6 @@ export class Segment extends Events<SegmentEvents> {
 
   setColor(color: string|RgbaColorArray) {
     this.color.update(color);
-  }
-
-  setColorDarken(value: number) {
-    if (this.color.rgba === this.color.base) {
-      this.color.darken(value);
-    }
   }
 
   setLocked(locked: boolean) {

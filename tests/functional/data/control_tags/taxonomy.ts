@@ -62,10 +62,10 @@ export const dataWithPrediction =
   };
 
 export const taxonomyConfig = `<View>
-  <Text name="text"/>
+  <Text name="text" value="$text"/>
   <Taxonomy name="choices" toName="text">
-    <Choice value="Choice 1" />
-    <Choice value="Choice 2" hint="A hint for Choice 2" />
+    <Choice value="Choice 1" alias="C1" />
+    <Choice value="Choice 2" alias="C2" hint="A hint for Choice 2" />
     <Choice value="Choice 3" selected="true" />
   </Taxonomy>
 </View>`;
@@ -94,3 +94,14 @@ export const dynamicTaxonomyConfig = `<View>
   <Taxonomy name="choices" toName="text" value="$items">
   </Taxonomy>
 </View>`;
+
+export const taxonomyResultWithAlias = {
+  'id': 'aliased',
+  'type': 'taxonomy',
+  'value': {
+    'taxonomy': [['C2']],
+  },
+  'origin': 'manual',
+  'to_name': 'text',
+  'from_name': 'choices',
+};

@@ -16,9 +16,6 @@ export const FF_DEV_1284 = 'fflag_fix_front_dev_1284_auto_detect_undo_281022_sho
 // Fix crosshair working with zoom & rotation
 export const FF_DEV_1285 = 'ff_front_dev_1285_crosshair_wrong_zoom_140122_short';
 
-// Add visibleWhen="choice-unselected" option
-export const FF_DEV_1372 = 'ff_front_dev_1372_visible_when_choice_unselected_11022022_short';
-
 export const FF_DEV_1442 = 'ff_front_dev_1442_unselect_shape_on_click_outside_080622_short';
 
 // Keep enabled state of video region on area transformations
@@ -171,6 +168,12 @@ export const FF_DEV_4174 = 'fflag_fix_back_dev_4174_overlap_issue_experiments_10
 export const FF_LSDV_E_278 = 'fflag_feat_front_lsdv_e_278_contextual_scrolling_short';
 
 /**
+ * Annotations with LLM assistance
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_all_lsdv_e_294_llm_annotations_180723_long
+ */
+export const FF_LLM_EPIC = 'fflag_feat_all_lsdv_e_294_llm_annotations_180723_long';
+
+/**
  * Fix logic of namespaces inside Hotkeys
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_font_lsdv_1148_hotkeys_namespaces_01022023_short
  */
@@ -195,11 +198,40 @@ export const FF_LSDV_4583_6 = 'fflag_feat_front_lsdv_4583_6_images_preloading_sh
 export const FF_LSDV_3009 = 'fflag_fix_font_lsdv_3009_draft_saving_stuck_130223_short';
 
 /**
+ * Allows to count time spend on textarea results and store it to lead_time meta field
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4600_lead_time_27072023_short
+ */
+export const FF_LEAD_TIME = 'fflag_fix_front_lsdv_4600_lead_time_27072023_short';
+
+/**
  * Adding "skipDuplicates" parameter for <TextArea /> to preventing adding duplicate entries
  *
  * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4659_skipduplicates_060323_short
  */
 export const FF_LSDV_4659 = 'fflag_feat_front_lsdv_4659_skipduplicates_060323_short';
+
+/**
+ * Reworking of RichText to optimize its work with DOM and decrease response time with a large number of regions.
+ * It also fixes scenarios of working with hidden regions
+ * and edge cases for creating spans inside other spans.
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4620_richtext_opimization_060423_short
+ */
+export const FF_LSDV_4620_3 = 'fflag_feat_front_lsdv_4620_richtext_opimization_060423_short';
+
+/**
+ * Fixes memory leaks in label studio frontend relative to mobx-state-tree and react usage
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4620_memory_leaks_100723_short
+ */
+export const FF_LSDV_4620_3_ML = 'fflag_fix_front_lsdv_4620_memory_leaks_100723_short';
+
+/**
+ * Improving the responsiveness of the interface when working with the list of regions in the outliner
+ *
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_4620_outliner_optimization_310723_short
+ */
+export const FF_OUTLINER_OPTIM = 'fflag_feat_front_lsdv_4620_outliner_optimization_310723_short';
 
 /**
  * Fixes Rect3PointTool behaviour in relative coords mode.
@@ -264,6 +296,38 @@ export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_0
  * @see: ff_dev_2007_rework_choices_280322_short: To enable alt version of <Choices/> (it's not necessary)
  */
 export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
+
+/**
+ * Fix delay on double-click interactions in Image Segmentation
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_5248_double_click_delay_280823_short
+ */
+export const FF_DBLCLICK_DELAY = 'fflag_fix_front_lsdv_5248_double_click_delay_280823_short';
+
+/**
+ * Allow to load Taxonomy from remote API
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5451_async_taxonomy_110823_short
+ */
+export const FF_TAXONOMY_ASYNC = 'fflag_feat_front_lsdv_5451_async_taxonomy_110823_short';
+
+/**
+ * Allow to label NER directly with Taxonomy instead of Labels
+ * @link https://app.launchdarkly.com/default/production/features/fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short
+ */
+export const FF_TAXONOMY_LABELING = 'fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short';
+
+/**
+ * Annotator workflow control for lead time calculation
+ */
+export const FF_PROD_E_111 = 'fflag_feat_front_prod_e_111_annotator_workflow_control_short';
+
+/**
+ * Adding a property snap to Polygon, PolygonLabels, KeyPoint and KeyPoinLabels to snap points to image pixel when user sets snap="pixel".
+ */
+export const FF_SNAP_TO_PIXEL = 'fflag_feat_front_lsdv_5518_snap_to_pixel_130923_short';
+
+/** Skip video to region start when it's selected in the outliner */
+export const FF_LEAP_187 = 'fflag_feat_front_leap_187_video_seek_on_select_short';
+
 
 Object.assign(window, {
   APP_SETTINGS: {

@@ -103,4 +103,7 @@ module.exports = {
   seeResultChoices(value) {
     I.seeElement(this.locateResultChoices(value));
   },
+  clickCreateRelation() {
+    I.click(this.locate('[aria-label="Create Relation"]'));
+  },
 };

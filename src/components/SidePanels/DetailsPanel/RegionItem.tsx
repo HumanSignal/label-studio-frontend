@@ -15,7 +15,7 @@ interface RegionItemProps {
   compact?: boolean;
   withIds?: boolean;
   mainDetails?: FC<{region: any}>;
-  metaDetails?: FC<{region: any, editMode?: boolean, cancelEditMode?: () => void}>;
+  metaDetails?: FC<{ region: any, editMode?: boolean, cancelEditMode?: () => void, enterEditMode: () => void }>;
 }
 
 export const RegionItem: FC<RegionItemProps> = observer(({
@@ -102,6 +102,7 @@ const RegionAction: FC<any> = observer(({
         }
       }}
       hotkey="region:relation"
+      aria-label="Create Relation"
     />
   ));
 

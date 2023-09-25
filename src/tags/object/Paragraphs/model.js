@@ -83,10 +83,6 @@ const Model = types
       return getRoot(self);
     },
 
-    get syncedAudioVideo() {
-      return self.syncedObject?.type?.startsWith('audio') || self.syncedObject?.type?.startsWith('video');
-    },
-
     get audio() {
       if (!self.audiourl) return null;
       if (self.audiourl[0] === '$') {
@@ -101,10 +97,28 @@ const Model = types
     layoutStyles(data) {
       if (self.layout === 'dialogue') {
         const seed = data[self.namekey];
+        const color = ColorScheme.make_color({ seed })[0];
 
-        return {
-          phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed })[0], 0.25) },
-        };
+        if (isFF(FF_LSDV_E_278)) {
+          return {
+            phrase: {
+              '--highlight-color': color,
+              '--background-color': '#FFF',
+            },
+            name: { color },
+            inactive: {
+              phrase: {
+                '--highlight-color': Utils.Colors.convertToRGBA(color, 0.4),
+                '--background-color': '#FAFAFA',
+              },
+              name: { color: Utils.Colors.convertToRGBA(color, 0.9) },
+            },
+          };
+        } else {
+          return {
+            phrase: { backgroundColor: Utils.Colors.convertToRGBA(color, 0.25) },
+          };
+        }
       }
 
       return {};
@@ -190,6 +204,9 @@ const PlayableAndSyncable = types.model()
         return { start, end };
       });
     },
+    get regionsValues() {
+      return Object.values(self.regionsStartEnd);
+    },
   }))
   .actions(self => ({
     /**
@@ -221,23 +238,12 @@ const PlayableAndSyncable = types.model()
 
       if (!audio) return;
 
-      if (!isFF(FF_LSDV_E_278)) {
-        const indices = self.regionIndicesByTime(time);
-
-        // if we left current region's time, reset
-        if (!indices.includes(self.playingId)) {
-          self.stopNow();
-          self.reset();
-          return;
-        }
-      }
-
       // so we are changing time inside current region only
       audio.currentTime = time;
-      if (isFF(FF_LSDV_E_278)) {
+      if (audio.paused && playing) {
         self.play();
-      } else if (audio.paused && playing) {
-        self.play(self.playingId);
+      } else {
+        self.trackPlayingId();
       }
     },
 
@@ -315,10 +321,10 @@ const PlayableAndSyncable = types.model()
         return;
       }
 
-      const regions = Object.values(self.regionsStartEnd);
+      const regions = self.regionsValues;
 
       self.playingId = regions.findIndex(({ start, end }) => {
-        return currentTime >= start && currentTime <= end;
+        return currentTime >= start && currentTime < end;
       });
 
       if (!audio.paused) {
@@ -343,7 +349,7 @@ const PlayableAndSyncable = types.model()
     },
 
     play(idx) {
-      if (isFF(FF_LSDV_E_278) && !isDefined(idx)) {
+      if (!isDefined(idx)) {
         self.playAny();
         return;
       }
@@ -369,8 +375,7 @@ const PlayableAndSyncable = types.model()
       self.playing = true;
       self.playingId = idx;
       self.triggerSync('play');
-      if (isFF(FF_LSDV_E_278)) self.trackPlayingId();
-      else self.stopAtTheEnd();
+      self.trackPlayingId();
     },
   }))
   .actions(self => ({
@@ -452,7 +457,20 @@ const ParagraphsLoadingModel = types.model()
         ]);
         return;
       }
-      self._value = val;
+      const contextScroll = isFF(FF_LSDV_E_278) && self.contextscroll;
+
+      const value = contextScroll ? val.sort((a, b) => {
+
+        if (!a.start) return 1;
+        if (!b.start) return -1;
+        const aEnd = a.end ? a.end : a.start + a.duration || 0;
+        const bEnd = b.end ? b.end : b.start + b.duration || 0;
+
+        if (a.start === b.start) return aEnd - bEnd;
+        return a.start - b.start;
+      }) : val;
+      
+      self._value = value;
       self.needsUpdate();
     },
 

@@ -402,6 +402,10 @@ export class Waveform extends Events<WaveformEventTypes> {
     super.destroy(); // Events -> Destructable
   }
 
+  addRegions(regions: RegionOptions[], render = true) {
+    this.regions.addRegions(regions, render);
+  }
+
   addRegion(options: RegionOptions, render = true) {
     return this.regions.addRegion(options, render);
   }

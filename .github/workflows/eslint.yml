@@ -22,7 +22,7 @@ jobs:
       - uses: hmarr/debug-action@v2.1.0
 
       - name: "Checkout codebase"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.sha }}
@@ -52,8 +52,12 @@ jobs:
           set -euo pipefail
           yarn install --frozen-lockfile
 
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1 || true
+
       - name: Run ESLint
-        uses: tj-actions/eslint-changed-files@v19
+        uses: tj-actions/eslint-changed-files@v21
         with:
           config_path: ".eslintrc.js"
           ignore_path: ".eslintignore"

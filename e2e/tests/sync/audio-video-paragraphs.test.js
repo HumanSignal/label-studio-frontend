@@ -39,7 +39,7 @@ const data = {
       'duration': 3.1,
     },
     {
-      'text': 'Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?',
+      'text': 'Uncomfortable silences. Why do we feel its necessary to yak about nonsense in order to be comfortable?',
       'author': 'Mia Wallace:',
     },
     {
@@ -48,7 +48,7 @@ const data = {
       'author': 'Vincent Vega:',
     },
     {
-      'text': 'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+      'text': 'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
       'author': 'Mia Wallace:',
     },
   ],
@@ -91,7 +91,7 @@ const annotations = [
   },
 ];
 
-const params = {  annotations: [{ id: 'test', result: annotations }], config, data };
+const params = { annotations: [{ id: 'test', result: annotations }], config, data };
 
 FFlagMatrix([
   'fflag_feat_front_lsdv_e_278_contextual_scrolling_short',
@@ -121,7 +121,7 @@ FFlagMatrix([
       assert.equal(startingParagraphAudioTime, 0);
     }
 
-    I.click('[aria-label="play-circle"]');
+    I.click('[aria-label="play"]');
     I.wait(1);
     {
       I.say('Audio, Video, and Paragraph Audio are playing');
@@ -134,7 +134,7 @@ FFlagMatrix([
       assert.equal(paragraphAudioPaused, false);
     }
 
-    I.click('[aria-label="pause-circle"]');
+    I.click('[aria-label="pause"]');
     I.wait(1);
     {
       I.say('Audio, Video and Paragraph Audio are played to the same time and are now paused');
@@ -307,9 +307,9 @@ FFlagMatrix([
       assert.equal(startingAudioTime, startingVideoTime);
     }
 
-    I.click('[aria-label="play-circle"]');
+    I.click('[aria-label="play"]');
     I.wait(1);
-    I.click('[aria-label="pause-circle"]');
+    I.click('[aria-label="pause"]');
     I.wait(1);
     {
       I.say('Seek playback from paragraph. Audio, video and paragraph audio are played to the same time and are now paused');
