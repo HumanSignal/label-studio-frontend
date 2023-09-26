@@ -57,7 +57,7 @@ import styles from './Taxonomy.styl';
  * @param {string} [apiUrl]               - URL to fetch taxonomy from remote source; API should accept optional array `path` param: `apiUrl?path[]=root&path[]=child1` to return only nested children of `child1` node[^FF_TAXONOMY_ASYNC]
  * @param {boolean} [leafsOnly=false]     - Allow annotators to select only leaf nodes of taxonomy
  * @param {boolean} [showFullPath=false]  - Whether to show the full path of selected items
- * @param {string} [pathSeparator= / ]    - Separator to show in the full path
+ * @param {string} [pathSeparator= / ]    - Separator to show in the full path (default is " / ")
  * @param {number} [maxUsages]            - Maximum number of times a choice can be selected per task
  * @param {number} [maxWidth]             - Maximum width for dropdown
  * @param {number} [minWidth]             - Minimum width for dropdown
@@ -77,6 +77,7 @@ const TagAttrs = types.model({
   placeholder: '',
   minwidth: types.maybeNull(types.string),
   maxwidth: types.maybeNull(types.string),
+  dropdownwidth: types.maybeNull(types.string),
   maxusages: types.maybeNull(types.string),
   ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, '') } : {}),
 });
@@ -125,13 +126,15 @@ const TaxonomyLabelingResult = types
   .views(self => ({
     get result() {
       // @todo make it without duplication of ClassificationBase code
-      if (!self.isLabeling) {
+      if (!self.isLabeling && !self.perregion) {
         if (self.peritem) {
           return self._perItemResult;
         }
         return self.annotation.results.find(r => r.from_name === self);
       }
 
+      // per-region Taxonomy and Taxonomy as a labeling tool share the same way to find a result,
+      // they just display items for current region, attached directly or in result.
       const area = self.annotation.highlightedNode;
 
       if (!area) return null;
@@ -286,16 +289,24 @@ const Model = types
     loadItems: flow(function * (path) {
       if (!self._api) return;
 
-      self.loading = true;
+      // will be used only to load children for nested items
+      // to check that item exists and requires loading
+      let item;
 
-      let item = { children: self.items };
-
+      // check that item exists
       if (path) {
+        item = { children: self.items };
         for (const level of path) {
           item = item.children?.find(ch => ch.path.at(-1) === level);
           if (!item) return;
         }
       }
+
+      // Tree Select triggers this on every non-leaf node,
+      // so load only if this item really needs it
+      if (path && (item.isLeaf !== false || item.children)) return;
+
+      self.loading = true;
 
       // build url with `path` as array (path ['A', 'BC'] => path=A&path=BC)
       const url = new URL(self._api);
@@ -304,11 +315,19 @@ const Model = types
 
       try {
         const res = yield fetch(url);
-        const data = yield res.json();
+        const dataRaw = yield res.json();
+        // @todo temporary to support deprecated API response format (just array, no items)
+        const data = dataRaw.items ?? dataRaw;
         const prefix = path ?? [];
-        // @todo use aliases
-        // const items = data.map(({ alias, isLeaf, value }) => ({ label: value, path: [...prefix, alias ?? value], depth: 0, isLeaf }));
-        const items = data.map(({ isLeaf, value }) => ({ label: value, path: [...prefix, value], depth: 0, isLeaf }));
+        // recursive convertor to internal format
+        const convert = (items, path) => items.map(({ alias, children, isLeaf, value, ...rest }) => {
+          const item = { label: value, path: [...path, alias ?? value], depth: path.length, isLeaf, ...rest };
+
+          if (children) item.children = convert(children, item.path);
+
+          return item;
+        });
+        const items = convert(data, prefix);
 
         if (path) {
           item.children = items;
@@ -362,7 +381,7 @@ const Model = types
     },
 
     unselectAll() {
-      if (isFF(FF_TAXONOMY_LABELING)) self.selected = [];
+      if (isFF(FF_TAXONOMY_LABELING) && self.isLabeling) self.selected = [];
     },
 
     onAddLabel(path) {
@@ -450,6 +469,7 @@ const HtxTaxonomy = observer(({ item }) => {
     maxUsages: item.maxusages,
     maxWidth: item.maxwidth,
     minWidth: item.minwidth,
+    dropdownWidth: item.dropdownwidth,
     placeholder: item.placeholder,
   };
 

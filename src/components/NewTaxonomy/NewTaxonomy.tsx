@@ -1,6 +1,8 @@
 import { TreeSelect } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { Tooltip } from '../../common/Tooltip/Tooltip';
+
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
 type onDeleteLabelCallback = (path: string[]) => any;
@@ -16,7 +18,7 @@ type TaxonomyItem = {
 };
 
 type AntTaxonomyItem = {
-  title: string,
+  title: string | JSX.Element,
   value: string,
   key: string,
   isLeaf?: boolean,
@@ -30,6 +32,7 @@ type TaxonomyOptions = {
   maxUsages?: number,
   maxWidth?: number,
   minWidth?: number,
+  dropdownWidth?: number,
   placeholder?: string,
 };
 
@@ -44,13 +47,18 @@ type TaxonomyProps = {
   isEditable?: boolean,
 };
 
-const convert = (items: TaxonomyItem[], separator: string): AntTaxonomyItem[] => {
+const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyItem[] => {
   return items.map(item => ({
-    title: item.label,
-    value: item.path.join(separator),
-    key: item.path.join(separator),
+    title: item.hint ? (
+      <Tooltip title={item.hint} mouseEnterDelay={500}>
+        <span>{item.label}</span>
+      </Tooltip>
+    ) : item.label,
+    value: item.path.join(options.pathSeparator),
+    key: item.path.join(options.pathSeparator),
     isLeaf: item.isLeaf !== false && !item.children,
-    children: item.children ? convert(item.children, separator) : undefined,
+    disableCheckbox: options.leafsOnly && (item.isLeaf === false || !!item.children),
+    children: item.children ? convert(item.children, options) : undefined,
   }));
 };
 
@@ -69,9 +77,10 @@ const NewTaxonomy = ({
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
+  const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
 
   useEffect(() => {
-    setTreeData(convert(items, separator));
+    setTreeData(convert(items, options));
   }, [items]);
 
   const loadData = useCallback(async (node: any) => {
@@ -88,6 +97,7 @@ const NewTaxonomy = ({
       treeCheckStrictly
       showCheckedStrategy={TreeSelect.SHOW_ALL}
       treeExpandAction="click"
+      dropdownMatchSelectWidth={dropdownWidth}
       placeholder={options.placeholder || 'Click to add...'}
       style={style}
       className="htx-taxonomy"

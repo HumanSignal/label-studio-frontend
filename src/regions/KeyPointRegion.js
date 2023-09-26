@@ -18,6 +18,7 @@ import { createDragBoundFunc } from '../utils/image';
 import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
 import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
+import Constants from '../core/Constants';
 
 const KeyPointRegionAbsoluteCoordsDEV3793 = types
   .model({
@@ -46,11 +47,16 @@ const KeyPointRegionAbsoluteCoordsDEV3793 = types
     },
 
     setPosition(x, y) {
-      self.x = x;
-      self.y = y;
+      const point = self.control?.getSnappedPoint({
+        x: self.parent.canvasToInternalX(x),
+        y: self.parent.canvasToInternalY(y),
+      });
 
-      self.relativeX = (x / self.parent.stageWidth) * RELATIVE_STAGE_WIDTH;
-      self.relativeY = (y / self.parent.stageHeight) * RELATIVE_STAGE_HEIGHT;
+      self.x = point.x;
+      self.y = point.y;
+
+      self.relativeX = (point.x / self.parent.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (point.y / self.parent.stageHeight) * RELATIVE_STAGE_HEIGHT;
     },
 
     updateImageSize(wp, hp, sw, sh) {
@@ -116,8 +122,13 @@ const Model = types
   }))
   .actions(self => ({
     setPosition(x, y) {
-      self.x = self.parent.canvasToInternalX(x);
-      self.y = self.parent.canvasToInternalY(y);
+      const point = self.control?.getSnappedPoint({
+        x: self.parent.canvasToInternalX(x),
+        y: self.parent.canvasToInternalY(y),
+      });
+
+      self.x = point.x;
+      self.y = point.y;
     },
 
     updateImageSize() {},
@@ -226,6 +237,8 @@ const HtxKeyPointView = ({ item, setShapeRef }) => {
           const t = e.target;
 
           item.setPosition(t.getAttr('x'), t.getAttr('y'));
+          t.setAttr('x', item.canvasX);
+          t.setAttr('y', item.canvasY);
           item.annotation.history.unfreeze(item.id);
           item.notifyDrawingFinished();
         }}
@@ -261,7 +274,7 @@ const HtxKeyPointView = ({ item, setShapeRef }) => {
           if (item.parent.getSkipInteractions()) return;
 
           if (store.annotationStore.selected.relationMode) {
-            stage.container().style.cursor = 'default';
+            stage.container().style.cursor = Constants.DEFAULT_CURSOR;
           }
 
           item.setHighlight(false);

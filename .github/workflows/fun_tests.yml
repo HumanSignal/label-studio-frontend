@@ -23,7 +23,7 @@ jobs:
       - uses: hmarr/debug-action@v2.1.0
 
       - name: "Checkout codebase"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.sha }}
@@ -97,6 +97,10 @@ jobs:
           set -euo pipefail
           cd ./tests/functional
           yarn install --frozen-lockfile
+
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1 || true
 
       - name: Run Cypress test suite
         timeout-minutes: 40

@@ -21,6 +21,7 @@ import { debounce } from '../../utils/debounce';
 import Constants from '../../core/Constants';
 import { fixRectToFit } from '../../utils/image';
 import {
+  FF_DBLCLICK_DELAY,
   FF_DEV_1285,
   FF_DEV_1442,
   FF_DEV_3077,
@@ -64,6 +65,9 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
+  if (isFF(FF_DBLCLICK_DELAY)) {
+    return useObserver(() => Tree.renderItem(region, region.annotation, true));
+  }
   return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, region.annotation, false));
 });
 
@@ -245,8 +249,8 @@ const TransformerBack = observer(({ item }) => {
           }}
           onDragStart={e => {
             dragStartPointRef.current = {
-              x: e.target.getAttr('x'),
-              y: e.target.getAttr('y'),
+              x: item.canvasToInternalX(e.target.getAttr('x')),
+              y: item.canvasToInternalY(e.target.getAttr('y')),
             };
           }}
           dragBoundFunc={(pos) => {
@@ -388,7 +392,10 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
 const Selection = observer(({ item, selectionArea, ...triggeredOnResize }) => {
   return (
     <>
-      <SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />
+      { isFF(FF_DBLCLICK_DELAY)
+        ? <Layer name="selection-regions-layer" />
+        : <SelectedRegions item={item} selectedRegions={item.selectedRegions} {...triggeredOnResize} />
+      }
       <SelectionLayer item={item} selectionArea={selectionArea} />
     </>
   );
@@ -555,6 +562,7 @@ export default observer(
     handleMouseDown = e => {
       const { item } = this.props;
       const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
+      const isMoveTool = item.getToolsManager().findSelectedTool()?.fullName === 'MoveTool';
 
       if (isFF(FF_LSDV_4930)) {
         this.mouseDownPoint = { x: e.evt.offsetX, y: e.evt.offsetY };
@@ -568,13 +576,30 @@ export default observer(
       if (p && p.className === 'Transformer') return;
 
       const handleMouseDown = () => {
+        const isRightElementToCatchToolInteractions = el => {
+          // It could be ruler ot segmentation
+          if (el.nodeType === 'Group') {
+            if ('ruler' === el?.attrs?.name) {
+              return true;
+            }
+            // segmentation is specific for Brushes
+            // but click interaction on the region covers the case of the same MoveTool interaction here,
+            // so it should ignore move tool interaction to prevent conflicts
+            if ((!isFF(FF_DBLCLICK_DELAY) || !isMoveTool)
+              && 'segmentation' === el?.attrs?.name) {
+              return true;
+            }
+          }
+          return false;
+        };
+
         if (
           // create regions over another regions with Cmd/Ctrl pressed
           item.getSkipInteractions() ||
           e.target === item.stageRef ||
           findClosestParent(
             e.target,
-            el => el.nodeType === 'Group' && ['ruler', 'segmentation'].indexOf(el?.attrs?.name) > -1,
+            isRightElementToCatchToolInteractions,
           )
         ) {
           window.addEventListener('mousemove', this.handleGlobalMouseMove);
