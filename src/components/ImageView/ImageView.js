@@ -249,8 +249,8 @@ const TransformerBack = observer(({ item }) => {
           }}
           onDragStart={e => {
             dragStartPointRef.current = {
-              x: e.target.getAttr('x'),
-              y: e.target.getAttr('y'),
+              x: item.canvasToInternalX(e.target.getAttr('x')),
+              y: item.canvasToInternalY(e.target.getAttr('y')),
             };
           }}
           dragBoundFunc={(pos) => {
