@@ -144,5 +144,12 @@ export const AudioUltraRegionModel = types
           self.updatePosition();
         }
       },
+
+      clearWSRegion() {
+        self._ws_region = null;
+      },
+      setWSRegion(wsRegion) {
+        self._ws_region = wsRegion;
+      },
     };
   });

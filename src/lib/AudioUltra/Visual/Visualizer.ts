@@ -254,6 +254,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   clear() {
+    this.setLoading(false);
     this.layers.get('main')?.clear();
     this.transferImage();
   }

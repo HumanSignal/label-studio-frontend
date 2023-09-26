@@ -443,7 +443,7 @@ export const AudioModel = types.compose(
 
           const r = self._ws.addRegion(options, false);
 
-          region._ws_region = r;
+          region.setWSRegion(r);
         },
 
         updateWsRegion(region) {
@@ -458,7 +458,7 @@ export const AudioModel = types.compose(
 
         clearRegionMappings() {
           self.regs.forEach(r => {
-            r._ws_region = null;
+            r.clearWSRegion?.();
           });
         },
 

@@ -216,4 +216,11 @@ export const AudioRegionModel = types
       self._ws_region.element.style.display = self.hidden ?  'none' : 'block';
       e?.stopPropagation();
     },
+
+    clearWSRegion() {
+      self._ws_region = null;
+    },
+    setWSRegion(wsRegion) {
+      self._ws_region = wsRegion;
+    },
   }));

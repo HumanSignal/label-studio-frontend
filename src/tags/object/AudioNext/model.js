@@ -212,7 +212,7 @@ export const AudioModel = types.compose(
           states,
         });
 
-        r._ws_region = wsRegion;
+        r.setWSRegion(wsRegion);
 
         self.regions.push(r);
         self.annotation.addRegion(r);
@@ -288,7 +288,7 @@ export const AudioModel = types.compose(
 
         const r = self._ws.addRegion(region.wsRegionOptions);
 
-        region._ws_region = r;
+        region.setWSRegion(r);
         region.updateAppearenceFromState();
       },
 
