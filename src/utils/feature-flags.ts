@@ -325,6 +325,9 @@ export const FF_PROD_E_111 = 'fflag_feat_front_prod_e_111_annotator_workflow_con
  */
 export const FF_SNAP_TO_PIXEL = 'fflag_feat_front_lsdv_5518_snap_to_pixel_130923_short';
 
+/** Fix taxonomy items init with DEV-3617 FF on; this allows to correctly preselect items on init */
+export const FF_TAXONOMY_SELECTED = 'fflag_fix_front_leap_149_taxonomy_selected_true_short';
+
 /** Skip video to region start when it's selected in the outliner */
 export const FF_LEAP_187 = 'fflag_feat_front_leap_187_video_seek_on_select_short';
 
