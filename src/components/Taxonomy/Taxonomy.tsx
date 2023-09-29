@@ -15,7 +15,7 @@ import { LsChevron } from '../../assets/icons';
 import TreeStructure from '../TreeStructure/TreeStructure';
 
 import styles from './Taxonomy.module.scss';
-import { FF_DEV_4075, FF_PROD_309, isFF } from '../../utils/feature-flags';
+import { FF_DEV_4075, FF_PROD_309, FF_TAXONOMY_LABELING, isFF } from '../../utils/feature-flags';
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 import { CNTagName } from '../../utils/bem';
 
@@ -503,6 +503,9 @@ const Taxonomy = ({
   const contextValue: TaxonomySelectedContextValue = useMemo(() => {
     const setSelected = (path: TaxonomyPath, value: boolean) => {
       const newSelected = value ? [...selected, path] : selected.filter(current => !isArraysEqual(current, path));
+
+      // don't remove last item when taxonomy is used as labeling tool
+      if (isFF(FF_TAXONOMY_LABELING) && !newSelected.length) return;
 
       setInternalSelected(newSelected);
       onChange && onChange(null, newSelected);
