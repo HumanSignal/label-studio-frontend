@@ -169,7 +169,7 @@ type HintTooltipProps = {
   children: JSX.Element,
 }
 
-export const HintTooltip: React.FC<HintTooltipProps>  = ({
+export const HintTooltip: React.FC<HintTooltipProps> = ({
   title,
   wrapper: Wrapper,
   children,

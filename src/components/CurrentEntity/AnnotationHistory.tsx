@@ -188,7 +188,7 @@ const HistoryItemComponent: FC<{
   const isPrediction = entity?.type === 'prediction';
 
   const reason = useMemo(() => {
-    switch(acceptedState) {
+    switch (acceptedState) {
       case 'accepted': return 'Accepted';
       case 'rejected': return 'Rejected';
       case 'fixed_and_accepted': return 'Fixed';
@@ -293,7 +293,7 @@ const HistoryComment: FC<{
 
 const HistoryIcon: FC<{type: HistoryItemType}> = ({ type }) => {
   const icon = useMemo(() => {
-    switch(type) {
+    switch (type) {
       case 'submitted': return <IconAnnotationSubmitted style={{ color: '#0099FF' }}/>;
       case 'updated': return <IconAnnotationSubmitted style={{ color: '#0099FF' }}/>;
       case 'draft_created': return <IconDraftCreated style={{ color: '#0099FF' }}/>;
