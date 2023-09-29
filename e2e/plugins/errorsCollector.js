@@ -172,7 +172,11 @@ module.exports = function(config) {
   event.dispatcher.on(event.step.after, async () => {
     recorder.add('check for errors', async () => {
       for (const err of errorCollectors.errors) {
-        assert.fail(err);
+        if (err instanceof Error) {
+          assert.fail(err.stack);
+        } else {
+          assert.fail(err);
+        }
       }
     });
   });

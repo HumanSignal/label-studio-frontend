@@ -92,15 +92,49 @@ export class Timeline {
       layer.fillStyle = fillStyle;
       layer.beginPath();
       layer.fillRect(0, yOffset, width + xOffset, height);
+      this.renderTimelineRegions();
+      this.renderSelected();
       this.renderIntervals();
-      this.renderSelections();
       layer.fillStyle = strokeStyle;
       layer.fillRect(0, yOffset + height, width + xOffset, lineWidth);
       layer.stroke();
     }
   }
   
-  private renderSelections() {
+  private renderTimelineRegions() {
+
+    const timelineRegions = this.waveform?.regions.timelineRegions;
+
+    if (timelineRegions.length) {
+      const { height } = this;
+      const { duration } = this.waveform;
+      const { zoomedWidth } = this.visualizer;
+      const scrollOffset = this.visualizer.getScrollLeftPx();
+
+      const currentTime = this.waveform.currentTime;
+
+      timelineRegions.sort((a, b) => a.start - b.start).forEach((region) => {
+        const { end, start, selected, color } = region;
+
+        const playing = (start <= currentTime && end >= currentTime);
+        const xStart = (start * zoomedWidth / duration) - scrollOffset;
+        const xEnd = (end - start)  * zoomedWidth / duration;
+
+        const top = 0;
+        const layer = this.layer;
+        const regionColor = color.clone();
+
+        if (playing) {
+          regionColor.darken(selected ? 0.3 : 0.4);
+        }
+
+        layer.fillStyle = regionColor.translucent(0.8).toString();
+        layer.fillRect(xStart, top, xEnd, height);
+      });
+    }
+  }
+
+  private renderSelected() {
 
     const selectedRegions = this.waveform?.regions.selected;
 

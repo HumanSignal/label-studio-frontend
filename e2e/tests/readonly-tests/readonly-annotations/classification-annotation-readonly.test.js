@@ -9,6 +9,10 @@ Data(imageExamples).Scenario('Classification Readonly Annotations', async ({
   current,
   LabelStudio,
 }) => {
+  LabelStudio.setFeatureFlags({
+    'fflag_fix_front_lsdv_4600_lead_time_27072023_short': true,
+  });
+
   I.amOnPage('/');
   const { config, result, data } = current.example;
 

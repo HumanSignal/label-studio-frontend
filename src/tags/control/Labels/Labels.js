@@ -108,6 +108,9 @@ const Model = LabelMixin.views(self => ({
   get defaultChildType() {
     return 'label';
   },
+  get isLabeling() {
+    return true;
+  },
 })).actions(self => ({
   afterCreate() {
     if (self.allowempty) {
@@ -134,13 +137,13 @@ const Model = LabelMixin.views(self => ({
 
 const LabelsModel = types.compose(
   'LabelsModel',
+  ControlBase,
   ModelAttrs,
   TagAttrs,
   AnnotationMixin,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
   Model,
   SelectedModelMixin.props({ _child: 'LabelModel' }),
-  ControlBase,
 );
 
 const HtxLabels = observer(({ item }) => {

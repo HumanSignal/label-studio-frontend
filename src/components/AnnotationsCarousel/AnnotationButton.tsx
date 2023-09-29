@@ -108,6 +108,7 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
     const isPrediction = entity.type === 'prediction';
     const isDraft = !isDefined(entity.pk);
     const showGroundTruth = capabilities.groundTruthEnabled && !isPrediction && !isDraft;
+    const showDuplicateAnnotation = capabilities.enableCreateAnnotation && !isDraft;
 
     return (
       <Block name="AnnotationButtonContextMenu">
@@ -125,7 +126,7 @@ export const AnnotationButton = observer(({ entity, capabilities, annotationStor
             as Ground Truth
           </Elem>
         )}
-        {!isDraft && (
+        {showDuplicateAnnotation && (
           <Elem name="option" mod={{ duplicate: true }} onClick={duplicateAnnotation}>
             <Elem name="icon">
               <IconDuplicate width={20} height={24} />

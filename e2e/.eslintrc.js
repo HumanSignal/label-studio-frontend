@@ -14,6 +14,7 @@ module.exports = {
     inject: true,
     session: true,
     pause: true,
+    within: true,
   },
   rules: {
     'codeceptjs/no-exclusive-tests': 'error',
