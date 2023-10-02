@@ -1,6 +1,5 @@
 {
   "extends": [
-    "plugin:@heartexlabs/frontend/recommended",
     "../../.eslintrc.json"
   ],
   "globals": {
