@@ -142,6 +142,10 @@ const TaxonomyLabelingResult = types
 
       return self.annotation.results.find(r => r.from_name === self && r.area === area);
     },
+    get canRemoveItems() {
+      if (!self.isLabeling) return true;
+      return !self.result;
+    },
   }))
   .actions(self => {
     const Super = {
@@ -504,6 +508,7 @@ const HtxTaxonomy = observer(({ item }) => {
     minWidth: item.minwidth,
     dropdownWidth: item.dropdownwidth,
     placeholder: item.placeholder,
+    canRemoveItems: item.canRemoveItems,
   };
 
   return (

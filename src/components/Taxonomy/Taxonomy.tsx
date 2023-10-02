@@ -33,6 +33,7 @@ type TaxonomyItem = {
 };
 
 type TaxonomyOptions = {
+  canRemoveItems?: boolean,
   leafsOnly?: boolean,
   showFullPath?: boolean,
   pathSeparator?: string,
@@ -505,7 +506,8 @@ const Taxonomy = ({
       const newSelected = value ? [...selected, path] : selected.filter(current => !isArraysEqual(current, path));
 
       // don't remove last item when taxonomy is used as labeling tool
-      if (isFF(FF_TAXONOMY_LABELING) && !newSelected.length) return;
+      // canRemoveItems is undefined when FF is off; false only when region is active
+      if (options.canRemoveItems === false && !newSelected.length) return;
 
       setInternalSelected(newSelected);
       onChange && onChange(null, newSelected);
