@@ -409,8 +409,9 @@ const Model = types
     },
 
     onChange(_node, checked) {
-      // don't remove last label from region
-      if (self.isLabeling && !checked.length) return;
+      // don't remove last label from region if region is selected (so canRemoveItems is false)
+      // should be checked only for Taxonomy as labbeling tool
+      if (self.canRemoveItems === false && !checked.length) return;
 
       self.selected = checked.map(s => s.path ?? s);
       self.maxUsagesReached = self.selected.length >= self.maxusages;
