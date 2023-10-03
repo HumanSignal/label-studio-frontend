@@ -107,6 +107,9 @@ const Model = LabelMixin.views(self => ({
   get defaultChildType() {
     return 'label';
   },
+  get isLabeling() {
+    return true;
+  },
 })).actions(self => ({
   afterCreate() {
     if (self.allowempty) {

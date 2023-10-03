@@ -69,6 +69,8 @@ const SelectionMap = types.model(
         // @todo some backward compatibility, should be rewritten to state handling
         // @todo but there are some actions should be performed like scroll to region
         self.highlighted.perRegionTags.forEach(tag => tag.updateFromResult?.(undefined));
+        // special case for Taxonomy as labeling tool
+        self.highlighted.labelingTags.forEach(tag => tag.updateFromResult?.(undefined));
         updateResultsFromSelection();
       } else {
         updateResultsFromSelection();
@@ -374,7 +376,6 @@ export default types.model('RegionStore', {
           isArea: false,
           children: [],
           isGroup: true,
-          type: region.type,
           entity: region,
         };
       };
@@ -563,7 +564,13 @@ export default types.model('RegionStore', {
       }
     });
   },
-
+  setHiddenByTool(shouldBeHidden, label) {
+    self.regions.forEach(area => {
+      if (area.hidden !== shouldBeHidden && area.type === label.type) {
+        area.toggleHidden();
+      }
+    });
+  },
   setHiddenByLabel(shouldBeHidden, label) {
     self.regions.forEach(area => {
       if (area.hidden !== shouldBeHidden) {

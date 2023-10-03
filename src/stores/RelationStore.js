@@ -1,4 +1,4 @@
-import { destroy, getParentOfType, getRoot, isValidReference, types } from 'mobx-state-tree';
+import { destroy, getParentOfType, getRoot, isAlive, isValidReference, types } from 'mobx-state-tree';
 
 import { cloneNode, guidGenerator } from '../core/Helpers';
 import { RelationsModel } from '../tags/control/Relations';
@@ -37,6 +37,7 @@ const Relation = types
     },
 
     get shouldRender() {
+      if (!isAlive(self)) return false;
       const { node1: start, node2: end } = self;
       const [sIdx, eIdx] = [start.item_index, end.item_index];
 
@@ -161,7 +162,7 @@ const RelationStore = types
     },
 
     deleteRelation(rl) {
-      self._relations = self._relations.filter( r => r.id !== rl.id);
+      self._relations = self._relations.filter(r => r.id !== rl.id);
       destroy(rl);
     },
 

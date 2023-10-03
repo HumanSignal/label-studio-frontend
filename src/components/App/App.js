@@ -44,9 +44,10 @@ import './App.styl';
 import { Space } from '../../common/Space/Space';
 import { DynamicPreannotationsControl } from '../AnnotationTab/DynamicPreannotationsControl';
 import { isDefined } from '../../utils/utilities';
-import { FF_DEV_1170, FF_DEV_3873, isFF } from '../../utils/feature-flags';
+import { FF_DEV_1170, FF_DEV_3873, FF_LSDV_4620_3_ML, isFF } from '../../utils/feature-flags';
 import { Annotation } from './Annotation';
 import { Button } from '../../common/Button/Button';
+import { reactCleaner } from '../../utils/reactCleaner';
 
 /**
  * App
@@ -208,8 +209,9 @@ class App extends Component {
 
     const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
 
+    // tags can be styled in config when user is awaiting for suggestions from ML backend
     const mainContent = (
-      <Block name="main-content">
+      <Block name="main-content" mix={store.awaitingSuggestions ? ['requesting'] : []}>
         {as.validation === null
           ? this._renderUI(as.selectedHistory?.root ?? root, as)
           : this.renderConfigValidationException(store)}
@@ -220,7 +222,11 @@ class App extends Component {
     const newUIEnabled = isFF(FF_DEV_3873);
 
     return (
-      <Block name="editor" mod={{ fullscreen: settings.fullscreen, _auto_height: !outlinerEnabled }}>
+      <Block
+        name="editor"
+        mod={{ fullscreen: settings.fullscreen, _auto_height: !outlinerEnabled }}
+        ref={isFF(FF_LSDV_4620_3_ML) ? reactCleaner(this) : null}
+      >
         <Settings store={store} />
         <Provider store={store}>
           {newUIEnabled ? (

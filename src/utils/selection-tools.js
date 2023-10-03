@@ -1,4 +1,5 @@
 import { clamp, isDefined } from './utilities';
+import { FF_LSDV_4620_3, isFF } from './feature-flags';
 
 export const isTextNode = node => node && node.nodeType === Node.TEXT_NODE;
 
@@ -355,7 +356,7 @@ const fixRange = range => {
 };
 
 /**
- * Highlight gien Range
+ * Highlight given Range
  * @param {Range} range
  * @param {{label: string, classNames: string[]}} param1
  */
@@ -417,7 +418,9 @@ export const highlightRangePart = (container, startOffset, endOffset, classNames
    * In case we're inside another region, move the selection outside
    * to maintain proper nesting of highlight nodes
    */
-  if (startOffset === 0 && container.length === endOffset && parent.classList.contains(classNames[0])) {
+  if (startOffset === 0 && container.length === endOffset
+    && parent.classList.contains(classNames[0])
+    && (!isFF(FF_LSDV_4620_3) || parent.innerText === text)) {
     const placeholder = container.ownerDocument.createElement('span');
     const parentNode = parent.parentNode;
 

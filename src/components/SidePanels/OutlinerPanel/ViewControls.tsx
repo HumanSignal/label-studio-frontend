@@ -31,7 +31,6 @@ export type OrderingOptions = 'score' | 'date'
 export type OrderingDirection = 'asc' | 'desc'
 
 interface ViewControlsProps {
-  grouping: GroupingOptions;
   ordering: OrderingOptions;
   orderingDirection?: OrderingDirection;
   regions: any;
@@ -41,7 +40,6 @@ interface ViewControlsProps {
 }
 
 export const ViewControls: FC<ViewControlsProps> = observer(({
-  grouping,
   ordering,
   regions,
   orderingDirection,
@@ -49,27 +47,28 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
   onGroupingChange,
   onFilterChange,
 }) => {
+  const grouping = regions.group;
   const context = useContext(SidePanelsContext);
   const getGroupingLabels = useCallback((value: GroupingOptions): LabelInfo => {
-    switch(value) {
+    switch (value) {
       case 'manual': return {
         label: 'Group Manually',
-        selectedLabel: isFF(FF_DEV_3873) ? 'Manual': 'Manual Grouping',
+        selectedLabel: isFF(FF_DEV_3873) ? 'Manual' : 'Manual Grouping',
         icon: <IconList/>,
         tooltip: 'Manually Grouped',
       };
       case 'label': return {
         label: 'Group by Label',
         selectedLabel: isFF(FF_DEV_3873) ?
-          (isFF(FF_LSDV_4992) ? 'By Label' :'Label')
+          (isFF(FF_LSDV_4992) ? 'By Label' : 'Label')
           : 'Grouped by Label',
         icon: <IconTagAlt/>,
         tooltip: 'Grouped by Label',
       };
       case 'type': return {
         label: 'Group by Tool',
-        selectedLabel:  isFF(FF_DEV_3873) ?
-          (isFF(FF_LSDV_4992) ? 'By Tool' :'Tool')
+        selectedLabel: isFF(FF_DEV_3873) ?
+          (isFF(FF_LSDV_4992) ? 'By Tool' : 'Tool')
           : 'Grouped by Tool',
         icon: <IconCursor/>,
         tooltip: 'Grouped by Tool',
@@ -78,7 +77,7 @@ export const ViewControls: FC<ViewControlsProps> = observer(({
   }, []);
 
   const getOrderingLabels = useCallback((value: OrderingOptions): LabelInfo => {
-    switch(value) {
+    switch (value) {
       case 'date': return {
         label: 'Order by Time',
         selectedLabel: 'By Time',
@@ -212,7 +211,7 @@ const Grouping = <T extends string>({
         ))}
       </Menu>
     );
-  }, [value, optionsList, readableValue, direction]);
+  }, [value, optionsList, readableValue, direction, onChange]);
 
   // mods are already set in the button from type, so use it only in new UI
   const extraStyles = isFF(FF_DEV_3873) ? { mod: { newUI: true } } : undefined;
@@ -227,7 +226,7 @@ const Grouping = <T extends string>({
 
   return (
     <Dropdown.Trigger content={dropdownContent} style={{ width: 200 }}>
-      <Button type="text" {...extraStyles} icon={readableValue.icon} style={style} extra={(
+      <Button type="text" data-testid={`grouping-${value}`} {...extraStyles} icon={readableValue.icon} style={style} extra={(
         isFF(FF_DEV_3873) ? (
           extraIcon
         ) : (

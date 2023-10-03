@@ -1,10 +1,10 @@
-import { destroy, types } from 'mobx-state-tree';
+import { destroy, isAlive, types } from 'mobx-state-tree';
 import { defaultStyle } from '../core/Constants';
 import { guidGenerator } from '../core/Helpers';
 import Result from '../regions/Result';
 import { PER_REGION_MODES } from './PerRegion';
 import { ReadOnlyRegionMixin } from './ReadOnlyMixin';
-import { FF_LSDV_4930, isFF } from '../utils/feature-flags';
+import { FF_LSDV_4930, FF_TAXONOMY_LABELING, isFF } from '../utils/feature-flags';
 
 let ouid = 1;
 
@@ -25,14 +25,17 @@ export const AreaMixinBase = types
      * @return {Result[]} all results with labeling (created by *Labels control)
      */
     get labelings() {
-      return self.results.filter(r => r.type.endsWith('labels'));
+      return self.results.filter(r => r.from_name.isLabeling);
     },
 
     /**
      * @return {Result?} first result with labels (usually it's the only one, but not always)
      */
     get labeling() {
-      return self.results.find(r => r.type.endsWith('labels') && r.hasValue);
+      if (!isAlive(self)) {
+        return undefined;
+      }
+      return self.results.find(r => r.from_name.isLabeling && r.hasValue);
     },
 
     get emptyLabel() {
@@ -40,7 +43,7 @@ export const AreaMixinBase = types
     },
 
     get texting() {
-      return self.results.find(r => r.type === 'textarea' && r.hasValue);
+      return isAlive(self) && self.results.find(r => r.type === 'textarea' && r.hasValue);
     },
 
     get tag() {
@@ -50,7 +53,7 @@ export const AreaMixinBase = types
     hasLabel(value) {
       const labels = self.labeling?.mainValue;
 
-      if (!labels) return false;
+      if (!labels || !value) return false;
       // label can contain comma, so check for full match first
       if (labels.includes(value)) return true;
       if (value.includes(',')) {
@@ -63,6 +66,13 @@ export const AreaMixinBase = types
       return self.annotation.toNames.get(self.object.name)?.filter(tag => tag.perregion) || [];
     },
 
+    // special tags that can be used for labeling (only <Taxonomy isLabeling/> for now)
+    get labelingTags() {
+      if (!isFF(FF_TAXONOMY_LABELING)) return [];
+
+      return self.annotation.toNames.get(self.object.name)?.filter(tag => tag.classification && tag.isLabeling) || [];
+    },
+
     get perRegionDescControls() {
       return self.perRegionTags.filter(tag => tag.displaymode === PER_REGION_MODES.REGION_LIST);
     },
@@ -72,6 +82,9 @@ export const AreaMixinBase = types
     },
 
     get labelName() {
+      if (!isAlive(self)) {
+        return void 0;
+      }
       return self.labeling?.mainValue?.[0] || self.emptyLabel?._value;
     },
 
@@ -91,10 +104,17 @@ export const AreaMixinBase = types
     },
 
     get parent() {
+      if (!isAlive(self)) {
+        return void 0;
+      }
       return self.object;
     },
 
     get style() {
+      if (!isAlive(self)) {
+        return void 0;
+      }
+
       const styled = self.results.find(r => r.style);
 
       if (styled && styled.style) {

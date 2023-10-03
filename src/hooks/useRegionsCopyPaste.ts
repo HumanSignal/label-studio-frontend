@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 export const useRegionsCopyPaste = (entity: any) => {
-  useEffect(()=>{
+  useEffect(() => {
     const isFocusable = (el: Node | Window | HTMLElement | null) => {
       if (!el) return false;
       if ((el as Node).nodeType !== Node.ELEMENT_NODE) return false;
@@ -40,8 +40,6 @@ export const useRegionsCopyPaste = (entity: any) => {
           return { ...res, readonly: false };
         });
 
-        console.log({ results });
-
         entity.appendResults(results);
         ev.preventDefault();
       } catch (e) {
@@ -50,22 +48,20 @@ export const useRegionsCopyPaste = (entity: any) => {
       }
     };
 
-    const copyHandler = (ev: Event) =>{
+    const copyHandler = (ev: Event) => {
       if (!allowCopyPaste()) return;
 
       copyToClipboard(ev as ClipboardEvent);
     };
 
-    const pasteHandler = (ev: Event) =>{
+    const pasteHandler = (ev: Event) => {
       if (!allowCopyPaste()) return;
 
       pasteFromClipboard(ev as ClipboardEvent);
     };
 
-    const cutHandler = (ev: Event) =>{
-      const selection = window.getSelection();
-
-      if (!selection?.isCollapsed) return;
+    const cutHandler = (ev: Event) => {
+      if (!allowCopyPaste()) return;
 
       copyToClipboard(ev as ClipboardEvent);
       entity.deleteSelectedRegions();

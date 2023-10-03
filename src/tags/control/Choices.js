@@ -25,6 +25,7 @@ import SelectedChoiceMixin from '../../mixins/SelectedChoiceMixin';
 import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
 import ClassificationBase from './ClassificationBase';
 import PerItemMixin from '../../mixins/PerItem';
+import Infomodal from '../../components/Infomodal/Infomodal';
 
 const { Option } = Select;
 
@@ -91,7 +92,7 @@ const { Option } = Select;
  * @param {region-selected|no-region-selected|choice-selected|choice-unselected} [visibleWhen] - Control visibility of the choices. Can also be used with `when*` attributes below to narrow down visibility
  * @param {string} [whenTagName]       - Use with visibleWhen. Narrow down visibility by name of the tag. For regions, use the name of the object tag, for choices, use the name of the choices tag
  * @param {string} [whenLabelValue]    - Use with visibleWhen="region-selected". Narrow down visibility by label value
- * @param {string} [whenChoiceValue]   - Use with visibleWhen="choice-selected" or "choice-unselected". Narrow down visibility by choice value
+ * @param {string} [whenChoiceValue]   - Use with visibleWhen ("choice-selected" or "choice-unselected") and whenTagName, both are required. Narrow down visibility by choice value
  * @param {boolean} [perRegion]        - Use this tag to select a choice for a specific region instead of the entire task
  * @param {boolean} [perItem]          - Use this tag to select a choice for a specific item inside the object instead of the whole object[^FF_LSDV_4583]
  * @param {string} [value]             - Task data field containing a list of dynamically loaded choices (see example below)
@@ -210,7 +211,28 @@ const Model = types
         choice.setSelected(isSelected);
       });
     },
-  }));
+  })).actions(self => {
+    const Super = {
+      validate: self.validate,
+    };
+
+    return {
+      validate() {
+        if (!Super.validate() || (self.choice !== 'multiple' && self.checkResultLength() > 1)) return false;
+      },
+
+      checkResultLength() {
+        const _resultFiltered = self.children.filter(c => c._sel);
+
+        return _resultFiltered.length;
+      },
+
+      beforeSend() {
+        if (self.choice !== 'multiple' && self.checkResultLength() > 1)
+          Infomodal.warning(`The number of options selected (${self.checkResultLength()}) exceed the maximum allowed (1). To proceed, first unselect excess options for:\r\n • Choices (${self.name})`);
+      },
+    };
+  });
 
 const ChoicesModel = types.compose(
   'ChoicesModel',
@@ -219,7 +241,7 @@ const ChoicesModel = types.compose(
   SelectedModelMixin.props({ _child: 'ChoiceModel' }),
   RequiredMixin,
   PerRegionMixin,
-  ...(isFF(FF_LSDV_4583) ? [PerItemMixin]:[]),
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin] : []),
   ReadOnlyControlMixin,
   SelectedChoiceMixin,
   VisibilityMixin,

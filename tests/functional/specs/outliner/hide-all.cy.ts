@@ -109,4 +109,21 @@ describe('Outliner - Hide all regions', () => {
     Sidebar.hideAllRegionsButton
       .should('be.visible');
   });
+
+  it('should toggle visibility when its grouped by tool ', () => {
+    LabelStudio.params()
+      .config(simpleRegionsConfig)
+      .data(simpleRegionsData)
+      .withResult(simpleRegionsResult)
+      .init();
+
+    Sidebar.hasRegions(3);
+
+    cy.get('[data-testid="grouping-manual"]').click();
+    cy.wait(500);
+    cy.contains('Group by Tool')
+      .click({ force: true });
+    Sidebar.toggleRegionVisibility(0);
+    Sidebar.hasHiddenRegion(3);
+  });
 });
