@@ -27,11 +27,13 @@ import styles from './Taxonomy.styl';
 
 /**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
+ * 
+ * You can define nested classifications using the `Choice` tag, or retrieve classifications through an external file using the `apiUrl` parameter. For more information on these options, see the [Taxonomy template page](/templates/taxonomy).
  *
  * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
  *
- * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
- * [^FF_TAXONOMY_ASYNC]: `fflag_feat_front_lsdv_5451_async_taxonomy_110823_short` should be enabled to load items from `apiUrl` asynchronously
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` must be enabled for `perItem` functionality
+ * [^FF_TAXONOMY_ASYNC]: `fflag_feat_front_lsdv_5451_async_taxonomy_110823_short` must be enabled to load items from `apiUrl` asynchronously
  *
  * @example
  * <!--Labeling configuration for providing a taxonomy of choices in response to a passage of text -->
@@ -54,7 +56,7 @@ import styles from './Taxonomy.styl';
  * @meta_description Customize Label Studio with the Taxonomy tag and use hierarchical labels for machine learning and data science projects.
  * @param {string} name                   - Name of the element
  * @param {string} toName                 - Name of the element that you want to classify
- * @param {string} [apiUrl]               - URL to fetch taxonomy from remote source; API should accept optional array `path` param: `apiUrl?path[]=root&path[]=child1` to return only nested children of `child1` node[^FF_TAXONOMY_ASYNC]
+ * @param {string} [apiUrl]               - Retrieve the taxonomy from a remote source. This can be a JSON-formatted file or a hierarchical data source read as an API.[^FF_TAXONOMY_ASYNC] For more information, see the [Taxonomy template page](/templates/taxonomy).
  * @param {boolean} [leafsOnly=false]     - Allow annotators to select only leaf nodes of taxonomy
  * @param {boolean} [showFullPath=false]  - Whether to show the full path of selected items
  * @param {string} [pathSeparator= / ]    - Separator to show in the full path (default is " / ")
