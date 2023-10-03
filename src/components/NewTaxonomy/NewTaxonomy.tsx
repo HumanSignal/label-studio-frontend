@@ -52,7 +52,6 @@ type TaxonomyProps = {
 
 const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyItem[] => {
   const enrich = (item: TaxonomyItem) => {
-    // @todo marginLeft: -4 is good to align labels, but cuts them in selected list
     const color = (item: TaxonomyItem) => (
       // no BEM here to make it more lightweight
       // global classname to allow to change it in Style tag
