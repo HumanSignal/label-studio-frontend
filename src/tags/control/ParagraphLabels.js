@@ -1,19 +1,19 @@
-import React from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import LabelMixin from "../../mixins/LabelMixin";
-import Registry from "../../core/Registry";
-import SelectedModelMixin from "../../mixins/SelectedModel";
-import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels/Labels";
-import { guidGenerator } from "../../core/Helpers";
-import ControlBase from "./Base";
+import LabelMixin from '../../mixins/LabelMixin';
+import Registry from '../../core/Registry';
+import SelectedModelMixin from '../../mixins/SelectedModel';
+import Types from '../../core/Types';
+import { HtxLabels, LabelsModel } from './Labels/Labels';
+import { guidGenerator } from '../../core/Helpers';
+import ControlBase from './Base';
 
 /**
- * The ParagraphLabels tag creates labeled paragraphs. Use with the Paragraphs tag to label a paragraph of text.
+ * The `ParagraphLabels` tag creates labeled paragraphs. Use with the `Paragraphs` tag to label a paragraph of text.
  *
- * Use with the following data types: paragraphs
+ * Use with the following data types: paragraphs.
  * @example
  * <!--Basic labeling configuration to label paragraphs -->
  * <View>
@@ -32,16 +32,12 @@ import ControlBase from "./Base";
  * @param {number} [maxUsages]               - Maximum number of times a label can be used per task
  * @param {boolean} [showInline=true]        - Show labels in the same visual line
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
 const ModelAttrs = types
-  .model("ParagraphLabelsModel", {
+  .model('ParagraphLabelsModel', {
     pid: types.optional(types.string, guidGenerator),
-    type: "paragraphlabels",
-    children: Types.unionArray(["label", "header", "view", "hypertext"]),
+    type: 'paragraphlabels',
+    children: Types.unionArray(['label', 'header', 'view', 'hypertext']),
   })
   .views(self => ({
     get hasStates() {
@@ -53,29 +49,28 @@ const ModelAttrs = types
     get serializableValue() {
       const obj = {};
 
-      obj["paragraphlabels"] = self.selectedValues();
+      obj['paragraphlabels'] = self.selectedValues();
 
       return obj;
     },
   }));
 
-const Model = LabelMixin.props({ _type: "paragraphlabels" });
+const Model = LabelMixin.props({ _type: 'paragraphlabels' });
 
 const Composition = types.compose(
   ControlBase,
   LabelsModel,
   ModelAttrs,
-  TagAttrs,
   Model,
-  SelectedModelMixin.props({ _child: "LabelModel" }),
+  SelectedModelMixin.props({ _child: 'LabelModel' }),
 );
 
-const ParagraphLabelsModel = types.compose("ParagraphLabelsModel", Composition);
+const ParagraphLabelsModel = types.compose('ParagraphLabelsModel', Composition);
 
 const HtxParagraphLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;
 });
 
-Registry.addTag("paragraphlabels", ParagraphLabelsModel, HtxParagraphLabels);
+Registry.addTag('paragraphlabels', ParagraphLabelsModel, HtxParagraphLabels);
 
 export { HtxParagraphLabels, ParagraphLabelsModel };

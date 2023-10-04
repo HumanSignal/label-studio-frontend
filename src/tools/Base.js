@@ -1,8 +1,8 @@
-import { getEnv, getRoot, getSnapshot, getType, types } from "mobx-state-tree";
-import { observer } from "mobx-react";
-import React from "react";
-import { Tool } from "../components/Toolbar/Tool";
-import { toKebabCase } from "strman";
+import { getEnv, getRoot, getSnapshot, getType, types } from 'mobx-state-tree';
+import { observer } from 'mobx-react';
+import React from 'react';
+import { Tool } from '../components/Toolbar/Tool';
+import { toKebabCase } from 'strman';
 
 const ToolView = observer(({ item }) => {
   return (
@@ -22,9 +22,10 @@ const ToolView = observer(({ item }) => {
 });
 
 const BaseTool = types
-  .model("BaseTool", {
+  .model('BaseTool', {
     smart: false,
-    isDrawingTool: false,
+    unselectRegionOnToolChange: false,
+    removeDuplicatesNamed: types.maybeNull(types.string),
   })
   .volatile(() => ({
     dynamic: false,
@@ -73,7 +74,7 @@ const BaseTool = types
     };
   })
   .actions((self) => {
-    return  {
+    return {
       afterCreate() {
         if (self.smart && self.control?.smart) {
           const currentEnv = getEnv(self);
@@ -91,7 +92,7 @@ const BaseTool = types
 
           smartCopy.makeDynamic();
 
-          getEnv(self).manager.addTool(`${toolType.name}-smart`, smartCopy);
+          getEnv(self).manager.addTool(`${toolType.name}-smart`, smartCopy, self.control.removeDuplicatesNamed);
         }
       },
 

@@ -1,21 +1,23 @@
-import { destroy, getEnv, getParent, getRoot, types } from "mobx-state-tree";
+import { destroy, getEnv, getParent, getRoot, types } from 'mobx-state-tree';
 
-import Registry from "../../core/Registry";
-import Tree from "../../core/Tree";
-import Types from "../../core/Types";
-import Utils from "../../utils";
-import { guidGenerator } from "../../core/Helpers";
-import { DataValidator, ValidationError, VALIDATORS } from "../../core/DataValidator";
-import { errorBuilder } from "../../core/DataValidator/ConfigValidator";
-import { ViewModel } from "../../tags/visual";
-import { FF_DEV_1621, FF_DEV_3034, isFF } from "../../utils/feature-flags";
-import { Annotation } from "./Annotation";
-import { HistoryItem } from "./HistoryItem";
+import { errorBuilder } from '../../core/DataValidator/ConfigValidator';
+import { DataValidator, ValidationError, VALIDATORS } from '../../core/DataValidator';
+import { guidGenerator } from '../../core/Helpers';
+import Registry from '../../core/Registry';
+import Tree from '../../core/Tree';
+import Types from '../../core/Types';
+import { StoreExtender } from '../../mixins/SharedChoiceStore/extender';
+import { ViewModel } from '../../tags/visual';
+import Utils from '../../utils';
+import { FF_DEV_1621, FF_DEV_3034, FF_DEV_3391, FF_DEV_3617, isFF } from '../../utils/feature-flags';
+import { emailFromCreatedBy } from '../../utils/utilities';
+import { Annotation } from './Annotation';
+import { HistoryItem } from './HistoryItem';
 
 const SelectedItem = types.union(Annotation, HistoryItem);
 
-export default types
-  .model("AnnotationStore", {
+const AnnotationStoreModel = types
+  .model('AnnotationStore', {
     selected: types.maybeNull(types.reference(SelectedItem)),
     selectedHistory: types.maybeNull(types.safeReference(SelectedItem)),
 
@@ -32,6 +34,9 @@ export default types
 
     validation: types.maybeNull(types.array(ValidationError)),
   })
+  .volatile(() => ({
+    initialized: false,
+  }))
   .views(self => ({
     get store() {
       return getRoot(self);
@@ -112,15 +117,15 @@ export default types
       self.selected = c;
 
       c.updateObjects();
-      if (c.type === "annotation") c.setInitialValues();
+      if (c.type === 'annotation') c.setInitialValues();
 
       return c;
     }
 
     /**
-     * Select annotation
-     * @param {*} id
-     */
+   * Select annotation
+   * @param {*} id
+   */
     function selectAnnotation(id, options = {}) {
       if (!self.annotations.length) return null;
 
@@ -141,18 +146,32 @@ export default types
       return p;
     }
 
+    function clearDeletedParents(annotation) {
+      if (!annotation?.pk) return;
+      self.annotations.forEach(anno => {
+        if (anno.parent_annotation && +anno.parent_annotation === +annotation.pk) {
+          anno.parent_annotation = null;
+        }
+      });
+    }
+
     function deleteAnnotation(annotation) {
       getEnv(self).events.invoke('deleteAnnotation', self.store, annotation);
 
       /**
-       * MST destroy annotation
-       */
+     * MST destroy annotation
+     */
       destroy(annotation);
+      
+      /**
+       * Clear any other parent_annotations connected to this annotation
+       */
+      self.clearDeletedParents(annotation);
 
       self.selected = null;
       /**
-       * Select other annotation
-       */
+     * Select other annotation
+     */
       if (self.annotations.length > 0) {
         self.selectAnnotation(self.annotations[0].id);
       }
@@ -161,14 +180,32 @@ export default types
     function showError(err) {
       if (err) self.addErrors([errorBuilder.generalError(err)]);
       // we have to return at least empty View to display interface
-      return (self.root = ViewModel.create({ id: "error" }));
+      return (self.root = ViewModel.create({ id: 'error' }));
+    }
+
+    function upsertToName(node) {
+      const val = self.toNames.get(node.toname);
+
+      if (val) {
+        val.push(node.name);
+      } else {
+        self.addToName(node);
+      }
+    }
+
+    function addToName(node) {
+      self.toNames.set(node.toname, [node.name]);
+    }
+
+    function addName(node) {
+      self.names.put(node);
     }
 
     function initRoot(config) {
       if (self.root) return;
 
       if (!config) {
-        return (self.root = ViewModel.create({ id:"empty" }));
+        return (self.root = ViewModel.create({ id: 'empty' }));
       }
 
       // convert config to mst model
@@ -182,7 +219,7 @@ export default types
       }
       const modelClass = Registry.getModelByTag(rootModel.type);
       // hacky way to get all the available object tag names
-      const objectTypes = Registry.objectTypes().map(type => type.name.replace("Model", "").toLowerCase());
+      const objectTypes = Registry.objectTypes().map(type => type.name.replace('Model', '').toLowerCase());
       const objects = [];
 
       self.validate(VALIDATORS.CONFIG, rootModel);
@@ -194,16 +231,31 @@ export default types
         return showError(e);
       }
 
-      Tree.traverseTree(self.root, node => {
-        if (node?.name) {
-          self.names.put(node);
-          if (objectTypes.includes(node.type)) objects.push(node.name);
-        }
-      });
+      if (isFF(FF_DEV_3391)) {
+        // initialize toName bindings [DOCS] name & toName are used to
+        // connect different components to each other
+        const { names, toNames } = Tree.extractNames(self.root);
+
+        names.forEach(tag => self.names.put(tag));
+        toNames.forEach((tags, name) => self.toNames.set(name, tags));
+
+        Tree.traverseTree(self.root, node => {
+          if (self.store.task && node.updateValue) node.updateValue(self.store);
+        });
+
+        self.initialized = true;
+
+        return self.root;
+      }
 
       // initialize toName bindings [DOCS] name & toName are used to
       // connect different components to each other
       Tree.traverseTree(self.root, node => {
+        if (node?.name) {
+          self.addName(node);
+          if (objectTypes.includes(node.type)) objects.push(node.name);
+        }
+
         const isControlTag = node.name && !objectTypes.includes(node.type);
         // auto-infer missed toName if there is only one object tag in the config
 
@@ -212,17 +264,13 @@ export default types
         }
 
         if (node && node.toname) {
-          const val = self.toNames.get(node.toname);
-
-          if (val) {
-            val.push(node.name);
-          } else {
-            self.toNames.set(node.toname, [node.name]);
-          }
+          self.upsertToName(node);
         }
 
         if (self.store.task && node.updateValue) node.updateValue(self.store);
       });
+
+      self.initialized = true;
 
       return self.root;
     }
@@ -241,7 +289,12 @@ export default types
 
       if (!self.root) initRoot(config);
 
-      const pk = options.pk || options.id;
+      let pk = options.pk || options.id;
+
+      if (options.type === 'annotation' && pk && isNaN(pk)) {
+        /* something happened where our annotation pk was replaced with the id */
+        pk = self.annotations?.[self.annotations.length - 1]?.storedValue?.pk;
+      }
 
       //
       const node = {
@@ -257,7 +310,7 @@ export default types
         root: self.root,
       };
 
-      if (user && !("createdBy" in node)) node["createdBy"] = user.displayName;
+      if (user && !('createdBy' in node)) node['createdBy'] = user.displayName;
       if (options.user) node.user = options.user;
 
       return node;
@@ -265,7 +318,7 @@ export default types
 
     function addPrediction(options = {}) {
       options.editable = false;
-      options.type = "prediction";
+      options.type = 'prediction';
 
       const item = createItem(options);
 
@@ -277,7 +330,7 @@ export default types
     }
 
     function addAnnotation(options = {}) {
-      options.type = "annotation";
+      options.type = 'annotation';
 
       const item = createItem(options);
 
@@ -287,7 +340,7 @@ export default types
         if (isFF(FF_DEV_3034)) {
           // drafts can be created by other user, but we don't have much info
           // so parse "id", get email and find user by it
-          const email = item.createdBy?.replace(/,\s*\d+$/, '');
+          const email = emailFromCreatedBy(item.createdBy);
           const user = email && self.store.users.find(user => user.email === email);
 
           if (user) actual_user = user.id;
@@ -316,7 +369,7 @@ export default types
 
         // Area id is <uniq-id>#<annotation-id> to be uniq across all tree
         result.forEach(r => {
-          if ("id" in r) {
+          if ('id' in r) {
             const id = r.id.replace(/#.*$/, `#${c.id}`);
 
             ids[r.id] = id;
@@ -344,7 +397,7 @@ export default types
 
 
     function addHistory(options = {}) {
-      options.type = "history";
+      options.type = 'history';
 
       const item = createItem(options);
 
@@ -363,8 +416,12 @@ export default types
     function selectHistory(item) {
       self.selectedHistory = item;
       setTimeout(() => {
-        // update classifications after render
+      // update classifications after render
         const updatedItem = item ?? self.selected;
+
+        Array.from(updatedItem.names.values())
+          .filter(t => t.isClassificationTag)
+          .forEach(t => t.updateFromResult([]));
 
         updatedItem?.results
           .filter(r => r.area.classification)
@@ -373,7 +430,7 @@ export default types
     }
 
     function addAnnotationFromPrediction(entity) {
-      // immutable work, because we'll change ids soon
+    // immutable work, because we'll change ids soon
       const s = entity._initialAnnotationObj.map(r => ({ ...r }));
       const c = self.addAnnotation({ userGenerate: true, result: s });
 
@@ -381,7 +438,7 @@ export default types
 
       // Area id is <uniq-id>#<annotation-id> to be uniq across all tree
       s.forEach(r => {
-        if ("id" in r) {
+        if ('id' in r) {
           const id = r.id.replace(/#.*$/, `#${c.id}`);
 
           ids[r.id] = id;
@@ -450,6 +507,14 @@ export default types
       return self._validator.validate(validatorName, data);
     };
 
+    const resetAnnotations = () => {
+      self.selected = null;
+      self.selectedHistory = null;
+      self.annotations = [];
+      self.predictions = [];
+      self.history = [];
+    };
+
     return {
       afterCreate,
       beforeDestroy,
@@ -458,6 +523,9 @@ export default types
       toggleViewingAllPredictions,
 
       initRoot,
+      addToName,
+      addName,
+      upsertToName,
 
       addPrediction,
       addAnnotation,
@@ -477,5 +545,12 @@ export default types
       _unselectAll,
 
       deleteAnnotation,
+      clearDeletedParents,
+      resetAnnotations,
     };
   });
+
+export default types.compose('AnnotationStore',
+  AnnotationStoreModel,
+  ...(isFF(FF_DEV_3617) ? [StoreExtender] : []),
+);

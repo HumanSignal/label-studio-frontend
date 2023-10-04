@@ -13,7 +13,7 @@
     <Choice value="Pop" />
   </Choices>
   <Header value="Listen the audio:"></Header>
-  <AudioPlus name="audio" value="$url" cursorcolor="#FF0000" cursorwidth="4"/>
+  <Audio name="audio" value="$url" cursorcolor="#FF0000" cursorwidth="4"/>
   <Header>How many instruments in this audio?</Header>
   <Number name="overall" toName="audio" defaultValue="2" />
   <View visibleWhen="region-selected">

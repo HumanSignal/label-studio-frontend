@@ -1,7 +1,7 @@
 # Label Studio Frontend &middot; ![GitHub](https://img.shields.io/github/license/heartexlabs/label-studio?logo=heartex) ![build](https://github.com/heartexlabs/label-studio-frontend/workflows/Build%20and%20Test/badge.svg) ![npm audit](https://github.com/heartexlabs/label-studio-frontend/actions/workflows/npm_audit.yml/badge.svg)
  ![GitHub release](https://img.shields.io/github/v/release/heartexlabs/label-studio-frontend?include_prereleases) &middot; :sunny:
 
-[Website](https://labelstud.io/) • [Docs](https://labelstud.io/guide) • [Twitter](https://twitter.com/heartexlabs) • [Join Slack Community <img src="https://go.heartex.net/docs/images/slack-mini.png" width="18px"/>](https://slack.labelstudio.heartex.com)
+[Website](https://labelstud.io/) • [Docs](https://labelstud.io/guide) • [Twitter](https://twitter.com/heartexlabs) • [Join Slack Community <img src="https://go.heartex.net/docs/images/slack-mini.png" width="18px"/>](https://slack.labelstud.io)
 
 <br/>
 
@@ -22,7 +22,7 @@ npm install @heartexlabs/label-studio
 **With Webpack**
 
 ```js
-import LabelStudio from 'label-studio';
+import LabelStudio from '@heartexlabs/label-studio';
 import 'label-studio/build/static/css/main.css';
 ```
 
@@ -30,13 +30,13 @@ import 'label-studio/build/static/css/main.css';
 
 ```xhtml
 <!-- Include Label Studio stylesheet -->
-<link href="https://unpkg.com/label-studio@1.4.0/build/static/css/main.css" rel="stylesheet">
+<link href="https://unpkg.com/@heartexlabs/label-studio@1.8.0/build/static/css/main.css" rel="stylesheet">
 
 <!-- Create the Label Studio container -->
 <div id="label-studio"></div>
 
 <!-- Include the Label Studio library -->
-<script src="https://unpkg.com/label-studio@1.4.0/build/static/js/main.js"></script>
+<script src="https://unpkg.com/@heartexlabs/label-studio@1.8.0/build/static/js/main.js"></script>
 ```
 
 **Initialization**
@@ -121,7 +121,7 @@ import 'label-studio/build/static/css/main.css';
 
 ## Label Studio for Teams, Startups, and Enterprises :office:
 
-Label Studio for Teams is our enterprise edition (cloud & on-prem), that includes a data manager, high-quality baseline models, active learning, collaborators support, and more. Please visit the [website](https://www.heartex.ai/) to learn more.
+Label Studio for Teams is our enterprise edition (cloud & on-prem), that includes a data manager, high-quality baseline models, active learning, collaborators support, and more. Please visit the [website](https://www.heartex.com/) to learn more.
 
 ## Ecosystem
 
@@ -134,6 +134,6 @@ Label Studio for Teams is our enterprise edition (cloud & on-prem), that include
 
 ## License
 
-This software is licensed under the [Apache 2.0 LICENSE](/LICENSE) © [Heartex](https://www.heartex.ai/). 2020
+This software is licensed under the [Apache 2.0 LICENSE](/LICENSE) © [Heartex](https://www.heartex.com/). 2020
 
 <img src="https://github.com/heartexlabs/label-studio/blob/master/images/opossum_looking.png?raw=true" title="Hey everyone!" height="140" width="140" />

@@ -1,40 +1,66 @@
-import Konva from "konva";
-import React, { memo, useContext, useMemo } from "react";
-import { Group, Line } from "react-konva";
-import { destroy, detach, getRoot, types } from "mobx-state-tree";
+import Konva from 'konva';
+import React, { memo, useContext, useEffect, useMemo } from 'react';
+import { Group, Line } from 'react-konva';
+import { destroy, detach, getRoot, isAlive, types } from 'mobx-state-tree';
 
-import Constants from "../core/Constants";
-import NormalizationMixin from "../mixins/Normalization";
-import RegionsMixin from "../mixins/Regions";
-import Registry from "../core/Registry";
-import WithStatesMixin from "../mixins/WithStates";
-import { ImageModel } from "../tags/object/Image";
-import { LabelOnPolygon } from "../components/ImageView/LabelOnRegion";
-import { PolygonPoint, PolygonPointView } from "./PolygonPoint";
-import { green } from "@ant-design/colors";
-import { guidGenerator } from "../core/Helpers";
-import { AreaMixin } from "../mixins/AreaMixin";
-import { useRegionStyles } from "../hooks/useRegionColor";
-import { AliveRegion } from "./AliveRegion";
-import { KonvaRegionMixin } from "../mixins/KonvaRegion";
-import { observer } from "mobx-react";
-import { minMax } from "../utils/utilities";
-import { createDragBoundFunc } from "../utils/image";
-import { ImageViewContext } from "../components/ImageView/ImageViewContext";
+import Constants from '../core/Constants';
+import NormalizationMixin from '../mixins/Normalization';
+import RegionsMixin from '../mixins/Regions';
+import Registry from '../core/Registry';
+import { ImageModel } from '../tags/object/Image';
+import { LabelOnPolygon } from '../components/ImageView/LabelOnRegion';
+import { PolygonPoint, PolygonPointView } from './PolygonPoint';
+import { green } from '@ant-design/colors';
+import { guidGenerator } from '../core/Helpers';
+import { AreaMixin } from '../mixins/AreaMixin';
+import { useRegionStyles } from '../hooks/useRegionColor';
+import { AliveRegion } from './AliveRegion';
+import { KonvaRegionMixin } from '../mixins/KonvaRegion';
+import { observer } from 'mobx-react';
+import { createDragBoundFunc } from '../utils/image';
+import { ImageViewContext } from '../components/ImageView/ImageViewContext';
+import { FF_DEV_2432, FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { fixMobxObserve } from '../utils/utilities';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
+
+const PolygonRegionAbsoluteCoordsDEV3793 = types
+  .model({
+    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
+  })
+  .actions(self => ({
+    updateImageSize(wp, hp, sw, sh) {
+      if (self.coordstype === 'px') {
+        self.points.forEach(p => {
+          const x = (sw * p.relativeX) / RELATIVE_STAGE_WIDTH;
+          const y = (sh * p.relativeY) / RELATIVE_STAGE_HEIGHT;
+
+          p._setPos(x, y);
+        });
+      }
+
+      if (!self.annotation.sentUserGenerate && self.coordstype === 'perc') {
+        self.points.forEach(p => {
+          const x = (sw * p.x) / RELATIVE_STAGE_WIDTH;
+          const y = (sh * p.y) / RELATIVE_STAGE_HEIGHT;
+
+          self.coordstype = 'px';
+          p._setPos(x, y);
+        });
+      }
+    },
+  }));
 
 const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     pid: types.optional(types.string, guidGenerator),
-    type: "polygonregion",
+    type: 'polygonregion',
     object: types.late(() => types.reference(ImageModel)),
 
     points: types.array(types.union(PolygonPoint, types.array(types.number)), []),
-
-    coordstype: types.optional(types.enumeration(["px", "perc"]), "perc"),
+    closed: true,
   })
   .volatile(() => ({
-    closed: false,
     mouseOverStartPoint: false,
     selectedPoint: null,
     hideable: true,
@@ -49,25 +75,29 @@ const Model = types
       return getRoot(self);
     },
     get bboxCoords() {
-      return self.points.reduce((bboxCoords, point) => {
-        if (bboxCoords && point) return {
-          left: Math.min(bboxCoords.left, point.x),
-          top: Math.min(bboxCoords.top, point.y),
-          right: Math.max(bboxCoords.right, point.x),
-          bottom: Math.max(bboxCoords.bottom, point.y),
-        };
-        else return {};
-      }, {
+      if (!self.points?.length || !isAlive(self)) return {};
+
+      const bbox = self.points.reduce((bboxCoords, point) => ({
+        left: Math.min(bboxCoords.left, point.x),
+        top: Math.min(bboxCoords.top, point.y),
+        right: Math.max(bboxCoords.right, point.x),
+        bottom: Math.max(bboxCoords.bottom, point.y),
+      }), {
         left: self.points[0].x,
         top: self.points[0].y,
         right: self.points[0].x,
         bottom: self.points[0].y,
       });
+
+      if (!isFF(FF_DEV_3793)) {
+        // recalc on resize
+        fixMobxObserve(self.parent.stageWidth, self.parent.stageHeight);
+      }
+
+      return bbox;
     },
   }))
   .actions(self => {
-    let _historyPoints = [];
-
     return {
       afterCreate() {
         if (!self.points.length) return;
@@ -81,7 +111,7 @@ const Model = types
             index,
           }));
         }
-        if (self.points.length > 2) self.closed = true;
+        if (!isFF(FF_DEV_2432)) self.closed = self.points.length > 2;
         self.checkSizes();
       },
 
@@ -128,6 +158,7 @@ const Model = types
         removeHoverAnchor({ layer: e.currentTarget.getLayer() });
 
         const { offsetX, offsetY } = e.evt;
+
         const [cursorX, cursorY] = self.parent.fixZoomedCoords([offsetX, offsetY]);
         const point = getAnchorPoint({ flattenedPoints, cursorX, cursorY });
 
@@ -146,9 +177,10 @@ const Model = types
 
       addPoint(x, y) {
         if (self.closed) return;
-        self._addPoint(x, y);
 
-        _historyPoints = [...self.points];
+        const point = self.control?.getSnappedPoint({ x, y });
+
+        self._addPoint(point.x, point.y);
       },
 
       setPoints(points) {
@@ -159,38 +191,42 @@ const Model = types
       },
 
       insertPoint(insertIdx, x, y) {
+        const pointCoords = self.control?.getSnappedPoint({
+          x: self.parent.canvasToInternalX(x),
+          y: self.parent.canvasToInternalY(y),
+        });
+        const isMatchWithPrevPoint = self.points[insertIdx - 1] && self.parent.isSamePixel(pointCoords, self.points[insertIdx - 1]);
+        const isMatchWithNextPoint = self.points[insertIdx] && self.parent.isSamePixel(pointCoords, self.points[insertIdx]);
+
+        if (isMatchWithPrevPoint || isMatchWithNextPoint) {
+          return;
+        }
+
+
         const p = {
           id: guidGenerator(),
-          x,
-          y,
+          x: pointCoords.x,
+          y: pointCoords.y,
           size: self.pointSize,
           style: self.pointStyle,
           index: self.points.length,
         };
 
         self.points.splice(insertIdx, 0, p);
-      },
 
-      undoPoints(drawingTool){
-        if(self.points.length === 1){
-          drawingTool.cleanupUncloseableShape();
-          _historyPoints = [];
-
-          return;
-        }
-
-        this.deletePoint(self.points[self.points.length - 1]);
-      },
-
-      redoPoints(){
-        const historyPoints = _historyPoints[self.points.length];
-
-        if (historyPoints) {
-          this._addPoint(historyPoints.x, historyPoints.y);
-        }
+        return self.points[insertIdx];
       },
 
       _addPoint(x, y) {
+        const firstPoint = self.points[0];
+
+        // This is mostly for "snap to pixel" mode,
+        // 'cause there is also an ability to close polygon by clicking on the first point precisely
+        if (self.parent.isSamePixel(firstPoint, { x, y })) {
+          self.closePoly();
+          return;
+        }
+
         self.points.push({
           id: guidGenerator(),
           x,
@@ -201,17 +237,8 @@ const Model = types
         });
       },
 
-      // @todo not used
-      // only px coordtype here
-      rotate(degree = -90) {
-        self.points.forEach(point => {
-          const p = self.rotatePoint(point, degree);
-
-          point._movePoint(p.x, p.y);
-        });
-      },
-
       closePoly() {
+        if (self.closed || self.points.length < 3) return;
         self.closed = true;
       },
 
@@ -249,30 +276,7 @@ const Model = types
         self.scaleY = y;
       },
 
-      updateOffset() {
-        self.points.map(p => p.computeOffset());
-      },
-
-      updateImageSize(wp, hp, sw, sh) {
-        if (self.coordstype === "px") {
-          self.points.forEach(p => {
-            const x = (sw * p.relativeX) / 100;
-            const y = (sh * p.relativeY) / 100;
-
-            p._movePoint(x, y);
-          });
-        }
-
-        if (!self.annotation.sentUserGenerate && self.coordstype === "perc") {
-          self.points.forEach(p => {
-            const x = (sw * p.x) / 100;
-            const y = (sh * p.y) / 100;
-
-            self.coordstype = "px";
-            p._movePoint(x, y);
-          });
-        }
-      },
+      updateImageSize() {},
 
       /**
        * @example
@@ -297,27 +301,31 @@ const Model = types
        * @return {PolygonRegionResult}
        */
       serialize() {
-        if (self.points.length < 3) return null;
-        return {
-          original_width: self.parent.naturalWidth,
-          original_height: self.parent.naturalHeight,
-          image_rotation: self.parent.rotation,
-          value: {
-            points: self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
-          },
+        if (!isFF(FF_DEV_2432) && self.points.length < 3) return null;
+
+        const value = {
+          points: isFF(FF_DEV_3793)
+            ? self.points.map(p => [p.x, p.y])
+            : self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
+          ...(isFF(FF_DEV_2432)
+            ? { closed: self.closed }
+            : {}
+          ),
         };
+
+        return self.parent.createSerializedResult(self, value);
       },
     };
   });
 
 const PolygonRegionModel = types.compose(
-  "PolygonRegionModel",
-  WithStatesMixin,
+  'PolygonRegionModel',
   RegionsMixin,
   AreaMixin,
   NormalizationMixin,
   KonvaRegionMixin,
   Model,
+  ...(isFF(FF_DEV_3793) ? [] : [PolygonRegionAbsoluteCoordsDEV3793]),
 );
 
 /**
@@ -343,7 +351,7 @@ function getAnchorPoint({ flattenedPoints, cursorX, cursorY }) {
 }
 
 function getFlattenedPoints(points) {
-  const p = points.map(p => [p.x, p.y]);
+  const p = points.map(p => [p.canvasX, p.canvasY]);
 
   return p.reduce(function(flattenedPoints, point) {
     return flattenedPoints.concat(point);
@@ -351,7 +359,7 @@ function getFlattenedPoints(points) {
 }
 
 function getHoverAnchor({ layer }) {
-  return layer.findOne(".hoverAnchor");
+  return layer.findOne('.hoverAnchor');
 }
 
 /**
@@ -359,7 +367,7 @@ function getHoverAnchor({ layer }) {
  */
 function createHoverAnchor({ point, group, layer, zoom }) {
   const hoverAnchor = new Konva.Circle({
-    name: "hoverAnchor",
+    name: 'hoverAnchor',
     x: point[0],
     y: point[1],
     stroke: green.primary,
@@ -392,7 +400,7 @@ function removeHoverAnchor({ layer }) {
 
 const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
   const { points } = item;
-  const name = "poly";
+  const name = 'poly';
   const flattenedPoints = getFlattenedPoints(points);
 
   return (
@@ -413,15 +421,30 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
 
           const t = e.target;
 
-          const d = [t.getAttr("x", 0), t.getAttr("y", 0)];
-          const scale = [t.getAttr("scaleX", 1), t.getAttr("scaleY", 1)];
+          const d = [t.getAttr('x', 0), t.getAttr('y', 0)];
+          const scale = [t.getAttr('scaleX', 1), t.getAttr('scaleY', 1)];
+          const points = t.getAttr('points');
 
-          item.setPoints(t.getAttr("points").map((c, idx) => c * scale[idx % 2] + d[idx % 2]));
+          item.setPoints(
+            points.reduce((result, coord, idx) => {
+              const isXCoord = idx % 2 === 0;
 
-          t.setAttr("x", 0);
-          t.setAttr("y", 0);
-          t.setAttr("scaleX", 1);
-          t.setAttr("scaleY", 1);
+              if (isXCoord) {
+                const point = item.control?.getSnappedPoint({
+                  x: item.parent.canvasToInternalX(coord * scale[0] + d[0]),
+                  y: item.parent.canvasToInternalY(points[idx + 1] * scale[1] + d[1]),
+                });
+
+                result.push(point.x, point.y);
+              }
+              return result;
+            }, []),
+          );
+
+          t.setAttr('x', 0);
+          t.setAttr('y', 0);
+          t.setAttr('scaleX', 1);
+          t.setAttr('scaleY', 1);
         }}
         draggable={draggable}
       />
@@ -429,7 +452,7 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
   );
 }));
 
-const HtxPolygonView = ({ item }) => {
+const HtxPolygonView = ({ item, setShapeRef }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
@@ -464,7 +487,7 @@ const HtxPolygonView = ({ item }) => {
         name={name}
         onClick={e => item.handleLineClick({ e, flattenedPoints, insertIdx })}
         onMouseMove={e => {
-          if (!item.closed || !item.selected || !item.editable) return;
+          if (!item.closed || !item.selected || item.isReadOnly()) return;
 
           item.handleMouseMove({ e, flattenedPoints });
         }}
@@ -482,7 +505,7 @@ const HtxPolygonView = ({ item }) => {
   }
 
   function renderLines(points, closed) {
-    const name = "borders";
+    const name = 'borders';
 
     return (
       <Group key={name} name={name} listening={!(item.parent.useTransformer && item.closed)}>
@@ -506,7 +529,7 @@ const HtxPolygonView = ({ item }) => {
   }
 
   function renderCircles(points) {
-    const name = "anchors";
+    const name = 'anchors';
 
     if (item.parent.useTransformer && item.closed) return null;
     return (
@@ -517,12 +540,8 @@ const HtxPolygonView = ({ item }) => {
   }
 
 
-  const dragProps = useMemo(()=>{
-    let minX = 0,
-      maxX = 0,
-      minY = 0,
-      maxY = 0,
-      isDragging = false;
+  const dragProps = useMemo(() => {
+    let isDragging = false;
 
     return {
       onDragStart: e => {
@@ -534,15 +553,9 @@ const HtxPolygonView = ({ item }) => {
         isDragging = true;
         item.annotation.setDragMode(true);
 
-        const arrX = item.points.map(p => p.x);
-        const arrY = item.points.map(p => p.y);
-
-        [minX, maxX] = minMax(arrX);
-        [minY, maxY] = minMax(arrY);
-
         item.annotation.history.freeze(item.id);
       },
-      dragBoundFunc: createDragBoundFunc(item, { x:-item.bboxCoords.left , y: -item.bboxCoords.top }),
+      dragBoundFunc: createDragBoundFunc(item, { x: -item.bboxCoords.left, y: -item.bboxCoords.top }),
       onDragEnd: e => {
         if (!isDragging) return;
         const t = e.target;
@@ -551,25 +564,38 @@ const HtxPolygonView = ({ item }) => {
 
           item.annotation.setDragMode(false);
 
-          item.points.forEach(p => p.movePoint(t.getAttr("x"), t.getAttr("y")));
+          const point = item.control?.getSnappedPoint({
+            x: item.parent?.canvasToInternalX(t.getAttr('x')),
+            y: item.parent?.canvasToInternalY(t.getAttr('y')),
+          });
+
+          point.x = item.parent?.internalToCanvasX(point.x);
+          point.y = item.parent?.internalToCanvasY(point.y);
+
+          item.points.forEach(p => p.movePoint(point.x, point.y));
           item.annotation.history.unfreeze(item.id);
         }
 
-        t.setAttr("x", 0);
-        t.setAttr("y", 0);
+        t.setAttr('x', 0);
+        t.setAttr('y', 0);
         isDragging = false;
       },
     };
   }, [item.bboxCoords.left, item.bboxCoords.top]);
 
+  useEffect(() => {
+    if (isFF(FF_DEV_2432) && !item.closed) item.control.tools.Polygon.resumeUnfinishedRegion(item);
+  }, [item.closed]);
+
   if (!item.parent) return null;
 
-  const stage = item.parent.stageRef;
+  const stage = item.parent?.stageRef;
 
   return (
     <Group
       key={item.id ? item.id : guidGenerator(5)}
       name={item.id}
+      ref={el => setShapeRef(el)}
       onMouseOver={() => {
         if (store.annotationStore.selected.relationMode) {
           item.setHighlight(true);
@@ -592,8 +618,6 @@ const HtxPolygonView = ({ item }) => {
 
         e.cancelBubble = true;
 
-        // if (!item.editable) return;
-
         if (!item.closed) return;
 
         if (store.annotationStore.selected.relationMode) {
@@ -604,23 +628,23 @@ const HtxPolygonView = ({ item }) => {
         item.onClickRegion(e);
       }}
       {...dragProps}
-      draggable={item.editable && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
-      listening={!suggestion && item.editable}
+      draggable={!item.isReadOnly() && (!item.inSelection || item.parent?.selectedRegions?.length === 1)}
+      listening={!suggestion}
     >
       <LabelOnPolygon item={item} color={regionStyles.strokeColor} />
 
       {item.mouseOverStartPoint}
 
-      {item.points && item.closed ? <Poly item={item} colors={regionStyles} dragProps={dragProps} draggable={item.editable && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
-      {(item.points && item.editable) ? renderLines(item.points, item.closed) : null}
-      {(item.points && item.editable) ? renderCircles(item.points) : null}
+      {item.points && item.closed ? <Poly item={item} colors={regionStyles} dragProps={dragProps} draggable={!item.isReadOnly() && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
+      {(item.points && !item.isReadOnly()) ? renderLines(item.points, item.closed) : null}
+      {(item.points && !item.isReadOnly()) ? renderCircles(item.points) : null}
     </Group>
   );
 };
 
 const HtxPolygon = AliveRegion(HtxPolygonView);
 
-Registry.addTag("polygonregion", PolygonRegionModel, HtxPolygon);
-Registry.addRegionType(PolygonRegionModel, "image", value => !!value.points);
+Registry.addTag('polygonregion', PolygonRegionModel, HtxPolygon);
+Registry.addRegionType(PolygonRegionModel, 'image', value => !!value.points);
 
 export { PolygonRegionModel, HtxPolygon };

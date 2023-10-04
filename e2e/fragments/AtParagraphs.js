@@ -1,11 +1,23 @@
-/* global inject, locate */
-
 const { I } = inject();
-const Helpers = require("../tests/helpers");
+const Helpers = require('../tests/helpers');
 
 module.exports = {
-  _rootSelector: ".lsf-paragraphs",
-  _filterSelector: ".lsf-select__value",
+  _rootSelector: '.lsf-paragraphs',
+  _filterSelector: '.lsf-select__value',
+  _phraseSelector: '[class^=\'phrase--\']',
+  _phraseDialoguetextSelector: '[class^=\'dialoguetext--\']',
+ 
+  getParagraphTextSelector(idx) {
+    return `${this._rootSelector} ${this._phraseSelector}:nth-child(${idx}) ${this._phraseDialoguetextSelector}`;
+  },
+
+  selectTextByOffset(paragraphIdx, startOffset, endOffset) {
+    I.executeScript(Helpers.selectText, {
+      selector: this.getParagraphTextSelector(paragraphIdx),
+      rangeStart: startOffset,
+      rangeEnd: endOffset,
+    });
+  },
   setSelection(startLocator, startOffset, endLocator, endOffset) {
     I.setSelection(startLocator, startOffset, endLocator, endOffset);
   },
@@ -24,8 +36,8 @@ module.exports = {
   clickFilter(...authors) {
     I.click(this.locate(this._filterSelector));
     for (const author of authors) {
-      I.fillField("search_author", author);
-      I.click(locate(".lsf-select__option").withText(author));
+      I.fillField('search_author', author);
+      I.click(locate('.lsf-select__option').withText(author));
     }
     I.click(this.locate(this._filterSelector));
   },

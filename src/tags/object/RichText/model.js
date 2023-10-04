@@ -1,22 +1,26 @@
-import { flow, getType, types } from "mobx-state-tree";
-import { createRef } from "react";
-import { customTypes } from "../../../core/CustomTypes";
-import { errorBuilder } from "../../../core/DataValidator/ConfigValidator";
-import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
-import IsReadyMixin from "../../../mixins/IsReadyMixin";
-import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
-import RegionsMixin from "../../../mixins/Regions";
-import Utils from "../../../utils";
-import { parseValue } from "../../../utils/data";
-import messages from "../../../utils/messages";
-import { findRangeNative, rangeToGlobalOffset } from "../../../utils/selection-tools";
-import { escapeHtml, isValidObjectURL } from "../../../utils/utilities";
-import ObjectBase from "../Base";
-
-const SUPPORTED_STATES = ["LabelsModel", "HyperTextLabelsModel", "RatingModel"];
+import { destroy as destroyNode, flow, types } from 'mobx-state-tree';
+import { createRef } from 'react';
+import { customTypes } from '../../../core/CustomTypes';
+import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
+import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
+import IsReadyMixin from '../../../mixins/IsReadyMixin';
+import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
+import RegionsMixin from '../../../mixins/Regions';
+import Utils from '../../../utils';
+import { parseValue } from '../../../utils/data';
+import { sanitizeHtml } from '../../../utils/html';
+import messages from '../../../utils/messages';
+import { findRangeNative, rangeToGlobalOffset } from '../../../utils/selection-tools';
+import { escapeHtml, isValidObjectURL } from '../../../utils/utilities';
+import ObjectBase from '../Base';
+import { cloneNode } from '../../../core/Helpers';
+import { FF_LSDV_4620_3, isFF } from '../../../utils/feature-flags';
+import DomManager from './domManager';
+import { STATE_CLASS_MODS } from '../../../mixins/HighlightMixin';
+import Constants from '../../../core/Constants';
 
 const WARNING_MESSAGES = {
-  dataTypeMistmatch: () => "Do not put text directly in task data if you use valueType=url.",
+  dataTypeMistmatch: () => 'Do not put text directly in task data if you use valueType=url.',
   badURL: url => `URL (${escapeHtml(url)}) is not valid.`,
   secureMode: () => 'In SECURE MODE valueType is set to "url" by default.',
   loadingError: (url, error) => `Loading URL (${url}) unsuccessful: ${error}`,
@@ -45,18 +49,17 @@ const WARNING_MESSAGES = {
  * @param {none|base64|base64unicode} [encoding]          - decode value from an encoded string
  * @param {symbol|word|sentence|paragraph} [granularity]  - control region selection granularity
  */
-const TagAttrs = types.model("RichTextModel", {
-  name: types.identifier,
+const TagAttrs = types.model('RichTextModel', {
   value: types.maybeNull(types.string),
 
   /** Defines the type of data to be shown */
-  valuetype: types.optional(types.enumeration(["text", "url"]), () => (window.LS_SECURE_MODE ? "url" : "text")),
+  valuetype: types.optional(types.enumeration(['text', 'url']), () => (window.LS_SECURE_MODE ? 'url' : 'text')),
 
   inline: false,
 
   /** Whether or not to save selected text to the serialized data */
-  savetextresult: types.optional(types.enumeration(["none", "no", "yes"]), () =>
-    window.LS_SECURE_MODE ? "no" : "none",
+  savetextresult: types.optional(types.enumeration(['none', 'no', 'yes']), () =>
+    window.LS_SECURE_MODE ? 'no' : 'none',
   ),
 
   selectionenabled: types.optional(types.boolean, true),
@@ -67,25 +70,21 @@ const TagAttrs = types.model("RichTextModel", {
 
   showlabels: types.maybeNull(types.boolean),
 
-  encoding: types.optional(types.enumeration(["none", "base64", "base64unicode"]), "none"),
+  encoding: types.optional(types.enumeration(['none', 'base64', 'base64unicode']), 'none'),
 
-  granularity: types.optional(types.enumeration(["symbol", "word", "sentence", "paragraph"]), "symbol"),
+  granularity: types.optional(types.enumeration(['symbol', 'word', 'sentence', 'paragraph']), 'symbol'),
 });
 
 const Model = types
-  .model("RichTextModel", {
-    type: "richtext",
-    _value: types.optional(types.string, ""),
+  .model('RichTextModel', {
+    type: 'richtext',
+    _value: types.optional(types.string, ''),
   })
   .views(self => ({
     get hasStates() {
       const states = self.states();
 
       return states && states.length > 0;
-    },
-
-    get regs() {
-      return self.annotation.regionStore.regions.filter(r => r.object === self);
     },
 
     states() {
@@ -95,7 +94,7 @@ const Model = types
     activeStates() {
       const states = self.states();
 
-      return states ? states.filter(s => s.isSelected && SUPPORTED_STATES.includes(getType(s).name)) : null;
+      return states ? states.filter(s => s.isLabeling && s.isSelected) : null;
     },
 
     get isLoaded() {
@@ -103,7 +102,42 @@ const Model = types
     },
 
     get isReady() {
-      return self.isLoaded  && self._isReady;
+      return self.isLoaded && self._isReady;
+    },
+
+    get styles() {
+      return `
+      .htx-highlight {
+        cursor: pointer;
+        border: 1px dashed transparent;
+      }
+      .htx-highlight[data-label]::after {
+        padding: 2px 2px;
+        font-size: 9.5px;
+        font-weight: bold;
+        font-family: Monaco;
+        vertical-align: super;
+        content: attr(data-label);
+        line-height: 0;
+      }
+      .htx-highlight.${STATE_CLASS_MODS.highlighted} {
+        position: relative;
+        cursor: ${Constants.RELATION_MODE_CURSOR};
+        border-color: rgb(0, 174, 255);
+      }
+      .htx-highlight.${STATE_CLASS_MODS.hidden} {
+        border: none;
+        padding: 0;
+        background: transparent !important;
+        cursor: inherit;
+        // pointer-events: none;
+      }
+      .htx-highlight.${STATE_CLASS_MODS.hidden}::before,
+      .htx-highlight.${STATE_CLASS_MODS.hidden}::after,
+      .htx-highlight.${STATE_CLASS_MODS.noLabel}::after {
+        display: none;
+      }
+      `;
     },
   }))
   .volatile(() => ({
@@ -123,7 +157,7 @@ const Model = types
     _loadedForAnnotation: null,
   }))
   .actions(self => {
-    let beforeNeedsUpdateCallback, afterNeedsUpdateCallback;
+    let beforeNeedsUpdateCallback, afterNeedsUpdateCallback, domManager;
 
     return {
       setWorkingMode(mode) {
@@ -131,15 +165,23 @@ const Model = types
       },
 
       setLoaded(value = true) {
+        if (value) self.onLoaded();
+
         self._isLoaded = value;
         self._loadedForAnnotation = self.annotation?.id;
+      },
+
+      onLoaded() {
+        if (self.visibleNodeRef.current && isFF(FF_LSDV_4620_3)) {
+          domManager = new DomManager(self.visibleNodeRef.current);
+        }
       },
 
       updateValue: flow(function * (store) {
         const valueFromTask = parseValue(self.value, store.task.dataObj);
         const value = yield self.resolveValue(valueFromTask);
 
-        if (self.valuetype === "url") {
+        if (self.valuetype === 'url') {
           const url = value;
 
           if (!isValidObjectURL(url, true)) {
@@ -147,8 +189,8 @@ const Model = types
 
             if (window.LS_SECURE_MODE) message.unshift(WARNING_MESSAGES.secureMode());
 
-            self.annotationStore.addErrors([errorBuilder.generalError(message.join("<br/>\n"))]);
-            self.setRemoteValue("");
+            self.annotationStore.addErrors([errorBuilder.generalError(message.join('<br/>\n'))]);
+            self.setRemoteValue('');
             return;
           }
 
@@ -163,7 +205,7 @@ const Model = types
             const message = messages.ERR_LOADING_HTTP({ attr: self.value, error: String(error), url });
 
             self.annotationStore.addErrors([errorBuilder.generalError(message)]);
-            self.setRemoteValue("");
+            self.setRemoteValue('');
           }
         } else {
           self.setRemoteValue(value);
@@ -173,23 +215,12 @@ const Model = types
       setRemoteValue(val) {
         self.loaded = true;
 
-        if (self.encoding === "base64") val = atob(val);
-        if (self.encoding === "base64unicode") val = Utils.Checkers.atobUnicode(val);
+        if (self.encoding === 'base64') val = atob(val);
+        if (self.encoding === 'base64unicode') val = Utils.Checkers.atobUnicode(val);
 
         // clean up the html — remove scripts and iframes
         // nodes count better be the same, so replace them with stubs
-
-
-        val = val
-          .toString()
-          .replace(/(<head.*?>)(.*?)(<\/head>)/,(match, opener, body, closer) => {
-            return [opener,body.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi,"<!--ls-stub></ls-stub-->"),closer].join("");
-          })
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi, "<ls-stub></ls-stub>")
-          .replace(/<iframe\b.*?(?:\/>|<\/iframe>)/g, "<ls-stub></ls-stub>")
-          .replace(/\bon[a-z]+\s*=\s*(?:(['"])(?!\1).+?\1|(?:\S+?\(.*?\)(?=[\s>])))(.*?)/gi, "");
-
-        self._value = val;
+        self._value = sanitizeHtml(String(val), { useStub: true, useHeadStub: true });
 
         self._regionsCache.forEach(({ region, annotation }) => {
           region.setText(self._value.substring(region.startOffset, region.endOffset));
@@ -203,19 +234,26 @@ const Model = types
       afterCreate() {
         self._regionsCache = [];
 
-        if (self.type === "text") self.inline = true;
+        if (self.type === 'text') self.inline = true;
 
         // security measure, if valuetype is set to url then LS
         // doesn't save the text into the result, otherwise it does
         // can be aslo directly configured
-        if (self.savetextresult === "none") {
-          if (self.valuetype === "url") self.savetextresult = "no";
-          else if (self.valuetype === "text") self.savetextresult = "yes";
+        if (self.savetextresult === 'none') {
+          if (self.valuetype === 'url') self.savetextresult = 'no';
+          else if (self.valuetype === 'text') self.savetextresult = 'yes';
         }
       },
 
       beforeDestroy() {
         self.regsObserverDisposer?.();
+        if (isFF(FF_LSDV_4620_3)) {
+          domManager?.removeStyles(self.name);
+          domManager?.destroy();
+          beforeNeedsUpdateCallback = null;
+          afterNeedsUpdateCallback = null;
+          domManager = null;
+        }
       },
 
       // callbacks to switch render to working node for better performance
@@ -229,29 +267,83 @@ const Model = types
 
         self.setReady(false);
 
-        // init and render regions into working node, then move them to visible one
-        beforeNeedsUpdateCallback?.();
-        self.regs.forEach(region => {
-          try {
-            // will be initialized only once
-            region.initRangeAndOffsets();
-            region.applyHighlight();
-          } catch (err) {
-            console.error(err);
-          }
-        });
-        afterNeedsUpdateCallback?.();
+        if (isFF(FF_LSDV_4620_3)) {
+          const styles = {
+            [self.name]: self.styles,
+          };
 
-        // node texts can be only retrieved from the visible node
-        self.regs.forEach(region => {
-          try {
-            region.updateHighlightedText();
-          } catch (err) {
-            console.error(err);
-          }
-        });
+          self.regs.forEach(region => {
+            try {
+              // will be initialized only once
+              region.initRangeAndOffsets();
+              region.applyHighlight(true);
+              region.updateHighlightedText();
+              styles[region.identifier] = region.styles;
+            } catch (err) {
+              console.error(err);
+            }
+          });
+          self.setStyles(styles);
+        } else {
+          // init and render regions into working node, then move them to visible one
+          beforeNeedsUpdateCallback?.();
+          self.regs.forEach(region => {
+            try {
+              // will be initialized only once
+              region.initRangeAndOffsets();
+              region.applyHighlight();
+            } catch (err) {
+              console.error(err);
+            }
+          });
+          afterNeedsUpdateCallback?.();
+
+          // node texts can be only retrieved from the visible node
+          self.regs.forEach(region => {
+            try {
+              region.updateHighlightedText();
+            } catch (err) {
+              console.error(err);
+            }
+          });
+        }
 
         self.setReady(true);
+      },
+
+      setStyles(stylesMap) {
+        domManager.setStyles(stylesMap);
+      },
+      removeStyles(ids) {
+        domManager?.removeStyles(ids);
+      },
+
+      globalOffsetsToRelativeOffsets({ start, end }) {
+        return domManager.globalOffsetsToRelativeOffsets(start, end);
+      },
+
+      relativeOffsetsToGlobalOffsets(start, startOffset, end, endOffset) {
+        return domManager.relativeOffsetsToGlobalOffsets(start, startOffset, end, endOffset);
+      },
+
+      rangeToGlobalOffset(range) {
+        return domManager.rangeToGlobalOffset(range);
+      },
+
+      createRangeByGlobalOffsets({ start, end }) {
+        return domManager.createRange(start, end);
+      },
+
+      createSpansByGlobalOffsets({ start, end }) {
+        return domManager.createSpans(start, end);
+      },
+
+      removeSpansInGlobalOffsets(spans, { start, end }) {
+        return domManager?.removeSpans(spans, start, end);
+      },
+
+      getTextFromGlobalOffsets({ start, end }) {
+        return domManager.getText(start, end);
       },
 
       setHighlight(region) {
@@ -268,13 +360,21 @@ const Model = types
 
         if (states.length === 0) return;
 
-        const control = states[0];
+        const [control, ...rest] = states;
         const values = doubleClickLabel?.value ?? control.selectedValues();
         const labels = { [control.valueType]: values };
+        // Clone labels nodes to avoid unselecting them on creating result
+        const restSelectedStates = rest.map(state => cloneNode(state));
 
         const area = self.annotation.createResult(range, labels, control, self);
         const rootEl = self.visibleNodeRef.current;
         const root = rootEl?.contentDocument?.body ?? rootEl;
+
+        //when user is using two different labels tag to draw a region, the other labels will be added to the region
+        restSelectedStates.forEach(state => {
+          area.setValue(state);
+          destroyNode(state);
+        });
 
         area._range = range._range;
 
@@ -285,12 +385,16 @@ const Model = types
         if (range.isText) {
           area.updateTextOffsets(soff, eoff);
         } else {
-          // reapply globalOffsets to original document to get correct xpaths and offsets
-          const original = area._getRootNode(true);
-          const originalRange = findRangeNative(soff, eoff, original);
+          if (isFF(FF_LSDV_4620_3)) {
+            area.updateXPathsFromGlobalOffsets();
+          } else {
+            // reapply globalOffsets to original document to get correct xpaths and offsets
+            const original = area._getRootNode(true);
+            const originalRange = findRangeNative(soff, eoff, original);
 
-          // @todo if originalRange is missed we are really fucked up
-          if (originalRange) area._fixXPaths(originalRange, original);
+            // @todo if originalRange is missed we are really fucked up
+            if (originalRange) area._fixXPaths(originalRange, original);
+          }
         }
 
         area.applyHighlight();
@@ -302,4 +406,4 @@ const Model = types
     };
   });
 
-export const RichTextModel = types.compose("RichTextModel", ProcessAttrsMixin, ObjectBase, RegionsMixin, AnnotationMixin, IsReadyMixin, TagAttrs, Model);
+export const RichTextModel = types.compose('RichTextModel', ProcessAttrsMixin, ObjectBase, RegionsMixin, AnnotationMixin, IsReadyMixin, TagAttrs, Model);

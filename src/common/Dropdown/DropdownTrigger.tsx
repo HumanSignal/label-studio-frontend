@@ -1,7 +1,7 @@
-import { Children, cloneElement, forwardRef, RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { cn } from "../../utils/bem";
-import { Dropdown, DropdownProps, DropdownRef } from "./DropdownComponent";
-import { DropdownContext, DropdownContextValue } from "./DropdownContext";
+import { Children, cloneElement, forwardRef, RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { cn } from '../../utils/bem';
+import { Dropdown, DropdownProps, DropdownRef } from './DropdownComponent';
+import { DropdownContext, DropdownContextValue } from './DropdownContext';
 
 const getMinIndex = (element?: HTMLElement) => {
 
@@ -10,7 +10,7 @@ const getMinIndex = (element?: HTMLElement) => {
   if (element) {
     let parent = element.parentElement;
 
-    while(parent) {
+    while (parent) {
       const parentIndex = parseInt(getComputedStyle(parent).zIndex);
 
       if (!isNaN(parentIndex)) {
@@ -28,6 +28,7 @@ interface DropdownTriggerProps extends DropdownProps {
   tag?: string;
   dropdown?: RefObject<JSX.Element>;
   content?: JSX.Element;
+  dataTestId?: string;
   toggle?: boolean;
   closeOnClickOutside?: boolean;
   disabled?: boolean;
@@ -42,7 +43,7 @@ export const DropdownTrigger = forwardRef<DropdownRef, DropdownTriggerProps>(({
   closeOnClickOutside = true,
   disabled = false,
   ...props
-}, ref ) => {
+}, ref) => {
   const dropdownRef = (ref ?? useRef<DropdownRef>()) as RefObject<DropdownRef>;
   const triggerEL = Children.only(children);
   const childset = useRef(new Set<DropdownContextValue>());
@@ -95,7 +96,7 @@ export const DropdownTrigger = forwardRef<DropdownRef, DropdownTriggerProps>(({
     return {
       ...(triggerEL as any).props,
       tag,
-      key: "dd-trigger",
+      key: 'dd-trigger',
       ref: (el: HTMLElement) => {
         triggerRef.current = triggerRef.current ?? el;
 
@@ -103,7 +104,7 @@ export const DropdownTrigger = forwardRef<DropdownRef, DropdownTriggerProps>(({
           setMinIndex(Math.max(minIndex, getMinIndex(triggerRef.current)));
         }
       },
-      className: cn("dropdown").elem("trigger").mix(props.className),
+      className: cn('dropdown').elem('trigger').mix(props.className),
       onClickCapture: handleToggle,
     };
   }, [triggerEL, triggerRef, props.className, handleToggle]);
@@ -119,9 +120,9 @@ export const DropdownTrigger = forwardRef<DropdownRef, DropdownTriggerProps>(({
   ) : null;
 
   useEffect(() => {
-    document.addEventListener("click", handleClick, { capture: true });
+    document.addEventListener('click', handleClick, { capture: true });
     return () =>
-      document.removeEventListener("click", handleClick, { capture: true });
+      document.removeEventListener('click', handleClick, { capture: true });
   }, [handleClick]);
 
   const contextValue = useMemo((): DropdownContextValue => {

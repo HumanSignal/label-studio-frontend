@@ -1,16 +1,15 @@
-import { getRoot, getType, types } from "mobx-state-tree";
-import { customTypes } from "../../../core/CustomTypes";
-import { guidGenerator, restoreNewsnapshot } from "../../../core/Helpers.ts";
-import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
-import IsReadyMixin from "../../../mixins/IsReadyMixin";
-import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
-import { SyncMixin } from "../../../mixins/SyncMixin";
-import { AudioRegionModel } from "../../../regions/AudioRegion";
-import Utils from "../../../utils";
-import { FF_DEV_2461, isFF } from "../../../utils/feature-flags";
-import { isDefined } from "../../../utils/utilities";
-import ObjectBase from "../Base";
-import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
+import { getRoot, getType, types } from 'mobx-state-tree';
+import { customTypes } from '../../../core/CustomTypes';
+import { guidGenerator } from '../../../core/Helpers.ts';
+import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
+import IsReadyMixin from '../../../mixins/IsReadyMixin';
+import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
+import { SyncableMixin } from '../../../mixins/Syncable';
+import { AudioRegionModel } from '../../../regions/AudioRegion';
+import Utils from '../../../utils';
+import { isDefined } from '../../../utils/utilities';
+import ObjectBase from '../Base';
+import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
 
 
 /**
@@ -27,7 +26,6 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
  *   <Rating name="rate-1" toName="audio-1" />
  *   <Audio name="audio-1" value="$audio" />
  * </View>
- * @name Audio
  * @meta_title Audio Tag for Audio Labeling
  * @meta_description Customize Label Studio with the Audio tag for advanced audio annotation tasks for machine learning and data science projects.
  * @param {string} name - Name of the element
@@ -47,7 +45,6 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from "./constants";
  * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   value: types.maybeNull(types.string),
   muted: types.optional(types.boolean, false),
   zoom: types.optional(types.boolean, true),
@@ -59,25 +56,25 @@ const TagAttrs = types.model({
   hotkey: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
-  height: types.optional(types.string, "88"),
-  cursorwidth: types.optional(types.string, "2"),
-  cursorcolor: types.optional(customTypes.color, "#333"),
-  defaultscale: types.optional(types.string, "1"),
+  height: types.optional(types.string, '88'),
+  cursorwidth: types.optional(types.string, '2'),
+  cursorcolor: types.optional(customTypes.color, '#333'),
+  defaultscale: types.optional(types.string, '1'),
   autocenter: types.optional(types.boolean, true),
   scrollparent: types.optional(types.boolean, true),
 });
 
 export const AudioModel = types.compose(
-  "AudioModel",
+  'AudioModel',
   TagAttrs,
-  SyncMixin,
+  SyncableMixin,
   ProcessAttrsMixin,
   ObjectBase,
   AnnotationMixin,
   IsReadyMixin,
-  types.model("AudioModel", {
-    type: "audio",
-    _value: types.optional(types.string, ""),
+  types.model('AudioModel', {
+    type: 'audio',
+    _value: types.optional(types.string, ''),
 
     playing: types.optional(types.boolean, false),
     regions: types.array(AudioRegionModel),
@@ -96,10 +93,6 @@ export const AudioModel = types.compose(
         return getRoot(self);
       },
 
-      get regs() {
-        return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
-      },
-
       states() {
         return self.annotation.toNames.get(self.name);
       },
@@ -107,7 +100,65 @@ export const AudioModel = types.compose(
       activeStates() {
         const states = self.states();
 
-        return states && states.filter(s => getType(s).name === "LabelsModel" && s.isSelected);
+        return states && states.filter(s => getType(s).name === 'LabelsModel' && s.isSelected);
+      },
+    }))
+    ////// Sync actions
+    .actions(self => ({
+      ////// Outgoing
+      triggerSync(event, data) {
+        if (!self._ws) return;
+
+        self.syncSend({
+          playing: self._ws.isPlaying(),
+          time: self._ws.getCurrentTime(),
+          speed: self._ws.rate ?? 1,
+          ...data,
+        }, event);
+      },
+
+      triggerSyncPlay() {
+        self.triggerSync('play');
+      },
+
+      triggerSyncPause() {
+        self.triggerSync('pause');
+      },
+
+      ////// Incoming
+      handleSyncPlay(data) {
+        if (!self._ws) return;
+        self.handleSyncSeek(data);
+        if (self._ws.isPlaying()) return;
+
+        self._ws?.play();
+      },
+
+      handleSyncPause(data) {
+        if (!self._ws) return;
+        self.handleSyncSeek(data);
+        if (!self._ws.isPlaying()) return;
+
+        self._ws?.pause();
+      },
+
+      handleSyncSpeed() {},
+
+      handleSyncSeek({ time }) {
+        try {
+          if (self._ws && time !== self._ws.getCurrentTime()) {
+            self._ws.setCurrentTime(time);
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      },
+
+      registerSyncHandlers() {
+        self.syncHandlers.set('play', self.handleSyncPlay);
+        self.syncHandlers.set('pause', self.handleSyncPause);
+        self.syncHandlers.set('seek', self.handleSyncSeek);
+        self.syncHandlers.set('speed', self.handleSyncSpeed);
       },
     }))
     .actions(self => ({
@@ -117,32 +168,6 @@ export const AudioModel = types.compose(
 
       onReady() {
         self.setReady(true);
-      },
-
-      handleSyncPlay() {
-        if (!self._ws) return;
-        if (self._ws.isPlaying()) return;
-
-        self._ws?.play();
-      },
-
-      handleSyncPause() {
-        if (!self._ws) return;
-        if (!self._ws.isPlaying()) return;
-
-        self._ws?.pause();
-      },
-
-      handleSyncSpeed() {},
-
-      handleSyncSeek(time) {
-        try {
-          if (self._ws && time !== self._ws.getCurrentTime()) {
-            self._ws.setCurrentTime(time);
-          }
-        } catch (err) {
-          console.log(err);
-        }
       },
 
       handleNewRegions() {
@@ -159,58 +184,6 @@ export const AudioModel = types.compose(
         return false;
       },
 
-      fromStateJSON(obj, fromModel) {
-        let r;
-        let m;
-
-        const fm = self.annotation.names.get(obj.from_name);
-
-        fm.fromStateJSON(obj);
-
-        if (!fm.perregion && fromModel.type !== "labels") return;
-
-        /**
-       *
-       */
-        const tree = {
-          pid: obj.id,
-          start: obj.value.start,
-          end: obj.value.end,
-          normalization: obj.normalization,
-          score: obj.score,
-          readonly: obj.readonly,
-        };
-
-        r = self.findRegion({ start: obj.value.start, end: obj.value.end });
-
-        if (fromModel) {
-          m = restoreNewsnapshot(fromModel);
-          // m.fromStateJSON(obj);
-
-          if (!r) {
-          // tree.states = [m];
-            r = self.createRegion(tree, [m]);
-          // r = self.addRegion(tree);
-          } else {
-            r.states.push(m);
-          }
-        }
-
-        if (self._ws) {
-          self._ws.addRegion({
-            start: r.start,
-            end: r.end,
-          });
-        }
-
-        // if (fm.perregion)
-        //     fm.perRegionCleanup();
-
-        r.updateAppearenceFromState();
-
-        return r;
-      },
-
       setRangeValue(val) {
         self.rangeValue = val;
       },
@@ -221,14 +194,14 @@ export const AudioModel = types.compose(
 
       createRegion(wsRegion, states) {
         let bgColor = self.selectedregionbg;
-        const st = states.find(s => s.type === "labels");
+        const st = states.find(s => s.type === 'labels');
 
         if (st) bgColor = Utils.Colors.convertToRGBA(st.getSelectedColor(), 0.3);
 
         const r = AudioRegionModel.create({
           id: wsRegion.id ? wsRegion.id : guidGenerator(),
           pid: wsRegion.pid ? wsRegion.pid : guidGenerator(),
-          parentID: wsRegion.parent_id === null ? "" : wsRegion.parent_id,
+          parentID: wsRegion.parent_id === null ? '' : wsRegion.parent_id,
           start: wsRegion.start,
           end: wsRegion.end,
           score: wsRegion.score,
@@ -248,7 +221,7 @@ export const AudioModel = types.compose(
       },
 
       selectRange(ev, ws_region) {
-        const selectedRegions = self.regs.filter(r=>r.start >= ws_region.start && r.end <= ws_region.end);
+        const selectedRegions = self.regs.filter(r => r.start >= ws_region.start && r.end <= ws_region.end);
 
         ws_region.remove && ws_region.remove();
         if (!selectedRegions.length) return;
@@ -274,7 +247,7 @@ export const AudioModel = types.compose(
         const states = self.getAvailableStates();
 
         if (states.length === 0) {
-          wsRegion.on("update-end", ev=>self.selectRange(ev,wsRegion));
+          wsRegion.on('update-end', ev => self.selectRange(ev,wsRegion));
           return;
         }
 
@@ -288,26 +261,31 @@ export const AudioModel = types.compose(
       },
 
       /**
-     * Play and stop
-     */
+       * Play and stop
+       */
       handlePlay() {
         if (self._ws) {
           self.playing = !self.playing;
-          self._ws.isPlaying() ? self.triggerSyncPlay() : self.triggerSyncPause();
+          self._ws.isPlaying() ? self.triggerSync('play') : self.triggerSync('pause');
         }
       },
 
       handleSeek() {
-        if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === "paragraphs")) return;
-
-        self.triggerSyncSeek(self._ws.getCurrentTime());
+        self.triggerSync('seek');
       },
 
       handleSpeed(speed) {
-        self.triggerSyncSpeed(speed);
+        self.triggerSync('speed', { speed });
       },
 
       createWsRegion(region) {
+        const _regionOptions = region.wsRegionOptions;
+
+        if (region.annotation.isReadOnly()) {
+          _regionOptions.drag = false;
+          _regionOptions.resize = false;
+        }
+
         const r = self._ws.addRegion(region.wsRegionOptions);
 
         region._ws_region = r;
@@ -344,7 +322,7 @@ export const AudioModel = types.compose(
           }
         } catch (err) {
           self._ws = null;
-          console.warn("Already destroyed");
+          console.warn('Already destroyed');
         }
       },
     })),

@@ -1,14 +1,14 @@
-import { observer } from "mobx-react";
-import { useCallback, useMemo } from "react";
-import { Select } from "../../../common/Select/Select";
-import ColorScheme from "pleasejs";
-import Utils from "../../../utils";
-import styles from "./Paragraphs.module.scss";
+import { observer } from 'mobx-react';
+import { useCallback, useMemo } from 'react';
+import { Select } from '../../../common/Select/Select';
+import ColorScheme from 'pleasejs';
+import Utils from '../../../utils';
+import styles from './Paragraphs.module.scss';
 
 const AuthorTag = ({ name, selected }) => {
   const itemStyle = { border: `2px solid ${Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed: name })[0])}` };
 
-  return <span className={[styles.authorFilter__select__item, selected && styles.authorFilter__select__item_selected].join(" ")} style={itemStyle}>{name}</span>;
+  return <span className={[styles.authorFilter__select__item, selected && styles.authorFilter__select__item_selected].join(' ')} style={itemStyle}>{name}</span>;
 };
 
 const renderMultipleSelected = (selected) => {
@@ -21,7 +21,7 @@ const renderMultipleSelected = (selected) => {
   );
 };
 
-export const AuthorFilter = observer(({ item }) => {
+export const AuthorFilter = observer(({ item, onChange }) => {
   const placeholder = useMemo(() => (<span className={styles.authorFilter__placeholder}>Show all authors</span>), []);
   const value = item.filterByAuthor;
   const options = useMemo(() => item._value.reduce((all, v) => all.includes(v[item.namekey]) ? all : [...all, v[item.namekey]], []).sort(), [item._value, item.namekey]);
@@ -33,6 +33,8 @@ export const AuthorFilter = observer(({ item }) => {
     } else {
       item.setAuthorFilter(next);
     }
+
+    onChange?.();
   }, [item.setAuthorFilter]);
 
   return (

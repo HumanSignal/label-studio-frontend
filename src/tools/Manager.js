@@ -1,5 +1,6 @@
-import { destroy } from "mobx-state-tree";
-import { guidGenerator } from "../utils/unique";
+import { destroy } from 'mobx-state-tree';
+import { guidGenerator } from '../utils/unique';
+import { FF_DEV_4081, isFF } from '../utils/feature-flags';
 
 /** @type {Map<any, ToolsManager>} */
 const INSTANCES = new Map();
@@ -38,6 +39,7 @@ class ToolsManager {
     this.name = name;
     this.tools = {};
     this._default_tool = null;
+    this._prefix = guidGenerator();
   }
 
   get preservedTool() {
@@ -48,13 +50,22 @@ class ToolsManager {
     return root.annotationStore.names.get(this.name);
   }
 
-  addTool(toolName, tool, prefix = guidGenerator()) {
+  addTool(toolName, tool, removeDuplicatesNamed = null, prefix = guidGenerator()) {
     if (tool.smart && tool.smartOnly) return;
     // todo: It seems that key is used only for storing,
     // but not for finding tools, so may be there might
     // be an array instead of an object
     const name = tool.toolName ?? toolName;
-    const key = `${prefix}#${name}`;
+    const key = `${prefix ?? this._prefix}#${name}`;
+
+    if (isFF(FF_DEV_4081) && removeDuplicatesNamed && toolName === removeDuplicatesNamed) {
+      const findme = new RegExp(`^.*?#${name}.*$`);
+
+      if (Object.keys(this.tools).some(entry => findme.test(entry))) {
+        console.log(`Ignoring duplicate tool ${name} because it matches removeDuplicatesNamed ${removeDuplicatesNamed}`);
+        return;
+      }
+    }
 
     this.tools[key] = tool;
 
@@ -77,18 +88,36 @@ class ToolsManager {
     // when one of the tool get selected you need to unselect all
     // other active tools
     Object.values(this.tools).forEach(t => {
-      if (typeof t.selected !== "undefined") t.setSelected(false);
+      if (typeof t.selected !== 'undefined') t.setSelected(false);
     });
 
     const stage = this.obj?.stageRef;
 
     if (stage) {
-      stage.container().style.cursor = "default";
+      stage.container().style.cursor = 'default';
     }
   }
 
   selectTool(tool, selected) {
     const currentTool = this.findSelectedTool();
+    const newSelection = tool?.group;
+
+    // if there are no tools selected, there are no specific labels to unselect
+    // also this will skip annotation init
+    if (currentTool && newSelection === 'segmentation') {
+      const toolType = tool.control.type.replace(/labels$/, '');
+      const currentLabels = tool.obj.activeStates();
+      // labels of different types; we can't create regions with different tools simultaneously, so we have to unselect them
+      const unrelatedLabels = currentLabels.filter(tag => {
+        const type = tag.type.replace(/labels$/, '');
+
+        if (tag.type === 'labels') return false;
+        if (type === toolType) return false;
+        return true;
+      });
+
+      unrelatedLabels.forEach(tag => tag.unselectAll());
+    }
 
     if (currentTool && currentTool.handleToolSwitch) {
       currentTool.handleToolSwitch(tool);
@@ -125,7 +154,7 @@ class ToolsManager {
       const t = s.tools;
 
       Object.keys(t).forEach(k => {
-        self.addTool(k, t[k], s.name || s.id);
+        self.addTool(k, t[k], s.removeDuplicatesNamed, s.name || s.id);
       });
     }
   }
