@@ -185,13 +185,6 @@ export default types
     suggestionsRequest: null,
   }))
   .views(self => ({
-    /**
-     * Get alert
-     */
-    get alert() {
-      return getEnv(self).alert;
-    },
-
     get hasSegmentation() {
       // not an object and not a classification
       const isSegmentation = t => !t.getAvailableStates && !t.perRegionVisible;

@@ -279,14 +279,12 @@ export const FF_LSDV_4930 = 'fflag_fix_front_lsdv_4930_selection_tool_fixes_2404
 
 /**
  * Restore "hide all regions" button functionality in the outliner
- *
- * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4992_hide_all_regions_04052023_short
  */
 export const FF_LSDV_4992 = 'fflag_fix_front_lsdv_4992_hide_all_regions_04052023_short';
 
 /**
  * Resetting shared stores on task change to correctly generate dynamic children
- *
  * @see: ff_dev_2007_dev_2008_dynamic_tag_children_250322_short: To enable dynamic children
  * @see: fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix: To enable shared store
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
@@ -326,6 +324,9 @@ export const FF_PROD_E_111 = 'fflag_feat_front_prod_e_111_annotator_workflow_con
  * Adding a property snap to Polygon, PolygonLabels, KeyPoint and KeyPoinLabels to snap points to image pixel when user sets snap="pixel".
  */
 export const FF_SNAP_TO_PIXEL = 'fflag_feat_front_lsdv_5518_snap_to_pixel_130923_short';
+
+/** Fix taxonomy items init with DEV-3617 FF on; this allows to correctly preselect items on init */
+export const FF_TAXONOMY_SELECTED = 'fflag_fix_front_leap_149_taxonomy_selected_true_short';
 
 /** Skip video to region start when it's selected in the outliner */
 export const FF_LEAP_187 = 'fflag_feat_front_leap_187_video_seek_on_select_short';
