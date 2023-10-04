@@ -273,7 +273,6 @@ export const FF_LSDV_4992 = 'fflag_fix_front_lsdv_4992_hide_all_regions_04052023
 
 /**
  * Resetting shared stores on task change to correctly generate dynamic children
- * @see: ff_dev_2007_dev_2008_dynamic_tag_children_250322_short: To enable dynamic children
  * @see: fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix: To enable shared store
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_4998_missed_dynamic_children_030523_short
  */
@@ -281,7 +280,6 @@ export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_0
 
 /**
  * Add ability to show hints while hover over the choice
- * @see: ff_dev_2007_rework_choices_280322_short: To enable alt version of <Choices/> (it's not necessary)
  */
 export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
 
