@@ -337,6 +337,7 @@ export default types
 
           const entity = annotationStore.selected;
 
+          entity?.submissionInProgress();
 
           if (self.hasInterface('review')) {
             self.acceptAnnotation();
@@ -354,6 +355,10 @@ export default types
       if (self.hasInterface('skip', 'review')) {
         hotkeys.addNamed('annotation:skip', () => {
           if (self.annotationStore.viewingAll) return;
+
+          const entity = self.annotationStore.selected;
+
+          entity?.submissionInProgress();
 
           if (self.hasInterface('review')) {
             self.rejectAnnotation();
@@ -504,12 +509,12 @@ export default types
     }
     /* eslint-enable no-unused-vars */
 
-    function submitDraft(c, params = {}, statusCallback) {
+    function submitDraft(c, params = {}) {
       return new Promise(resolve => {
         const events = getEnv(self).events;
 
         if (!events.hasEvent('submitDraft')) return resolve();
-        const res = events.invokeFirst('submitDraft', self, c, params, statusCallback);
+        const res = events.invokeFirst('submitDraft', self, c, params);
 
         if (res && res.then) res.then(resolve);
         else resolve(res);

@@ -328,6 +328,11 @@ export const FF_TASK_COUNT_FIX = 'fflag_fix_all_optic_79_task_count_is_wrong_sho
  */
 export const FF_PROD_E_111 = 'fflag_feat_front_prod_e_111_annotator_workflow_control_short';
 
+/**
+ * Adding a property snap to Polygon, PolygonLabels, KeyPoint and KeyPoinLabels to snap points to image pixel when user sets snap="pixel".
+ */
+export const FF_SNAP_TO_PIXEL = 'fflag_feat_front_lsdv_5518_snap_to_pixel_130923_short';
+
 /** Skip video to region start when it's selected in the outliner */
 export const FF_LEAP_187 = 'fflag_feat_front_leap_187_video_seek_on_select_short';
 
