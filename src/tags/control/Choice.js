@@ -167,7 +167,7 @@ const Model = types
     return {};
   });
 
-const ChoiceModel = types.compose('ChoiceModel', TagParentMixin, TagAttrs, Model, ProcessAttrsMixin, AnnotationMixin);
+const ChoiceModel = types.compose('ChoiceModel', TagParentMixin, TagAttrs, ProcessAttrsMixin, Model, AnnotationMixin);
 
 function triggerElementGetter(el) {
   return el?.input?.parentNode?.parentNode;

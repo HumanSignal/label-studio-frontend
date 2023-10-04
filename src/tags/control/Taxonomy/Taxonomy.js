@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import { flow, types } from 'mobx-state-tree';
+import { flow, getRoot, types } from 'mobx-state-tree';
 import { Spin } from 'antd';
 
 import Infomodal from '../../../components/Infomodal/Infomodal';
@@ -8,6 +8,7 @@ import { NewTaxonomy } from '../../../components/NewTaxonomy/NewTaxonomy';
 import { Taxonomy } from '../../../components/Taxonomy/Taxonomy';
 import { guidGenerator } from '../../../core/Helpers';
 import Registry from '../../../core/Registry';
+import Tree from '../../../core/Tree';
 import Types from '../../../core/Types';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import DynamicChildrenMixin from '../../../mixins/DynamicChildrenMixin';
@@ -19,7 +20,15 @@ import SelectedChoiceMixin from '../../../mixins/SelectedChoiceMixin';
 import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
 import VisibilityMixin from '../../../mixins/Visibility';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_2007_DEV_2008, FF_DEV_3617, FF_LSDV_4583, FF_TAXONOMY_ASYNC, FF_TAXONOMY_LABELING, isFF } from '../../../utils/feature-flags';
+import {
+  FF_DEV_2007_DEV_2008,
+  FF_DEV_3617,
+  FF_LSDV_4583,
+  FF_TAXONOMY_ASYNC,
+  FF_TAXONOMY_LABELING,
+  FF_TAXONOMY_SELECTED,
+  isFF
+} from '../../../utils/feature-flags';
 import ControlBase from '../Base';
 import ClassificationBase from '../ClassificationBase';
 
@@ -203,6 +212,14 @@ const Model = types
       return 'taxonomy';
     },
 
+    get tiedChildren() {
+      return Tree.filterChildrenOfType(self, 'ChoiceModel');
+    },
+
+    get preselectedValues() {
+      return self.tiedChildren.filter(c => c.selected === true && !c.isSkipped).map(c => c.resultValue);
+    },
+
     get isLoadedByApi() {
       return isFF(FF_TAXONOMY_ASYNC) && !!self.apiurl;
     },
@@ -276,7 +293,14 @@ const Model = types
       const children = ChildrenSnapshots.get(self.name) ?? [];
 
       if (isFF(FF_DEV_3617) && self.store && children.length !== self.children.length) {
-        setTimeout(() => self.updateChildren());
+        if (isFF(FF_TAXONOMY_SELECTED)) {
+          // we have to update it during config parsing to let other code work
+          // with correctly added children.
+          // looks like there are no obstacles to do it in the same tick
+          self.updateChildren();
+        } else {
+          setTimeout(() => self.updateChildren());
+        }
       } else {
         self.loading = false;
       }
@@ -351,10 +375,22 @@ const Model = types
       const children = ChildrenSnapshots.get(self.name) ?? [];
 
       if (children.length) {
+        const root = getRoot(self);
+        // SharedChoiceStore doesn't call `updateValue()` because it's annotation agnostic,
+        // so call it here right after Taxonomy is attached
+        const updateChildrenValue = children => {
+          children?.map(child => {
+            child.updateValue?.(root);
+            updateChildrenValue(child.children);
+          });
+        };
+
         self._children = children;
         self.children = [...children];
         self.store.unlock();
         ChildrenSnapshots.delete(self.name);
+
+        updateChildrenValue(self.children);
       }
 
       self.loading = false;
