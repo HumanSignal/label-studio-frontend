@@ -596,10 +596,11 @@ export const Annotation = types
     },
 
     setDefaultValues() {
+      if (!isFF(FF_DEV_2100_A)) return;
       self.names.forEach(tag => {
-        if (isFF(FF_DEV_2100_A) && tag?.type === 'choices' && tag.preselectedValues?.length) {
+        if (['choices', 'taxonomy'].includes(tag?.type) && tag.preselectedValues?.length) {
           // <Choice selected="true"/>
-          self.createResult({}, { choices: tag.preselectedValues }, tag, tag.toname);
+          self.createResult({}, { [tag?.type]: tag.preselectedValues }, tag, tag.toname);
         }
       });
     },

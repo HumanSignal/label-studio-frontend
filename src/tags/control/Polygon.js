@@ -75,7 +75,7 @@ const Model = types
             if (self.annotation.isDrawing) self.annotation.undo();
           });
           hotkeys.addNamed('polygon:redo', () => {
-            if (self.annotation.isDrawing)  self.annotation.redo();
+            if (self.annotation.isDrawing) self.annotation.redo();
           });
         }
       },

@@ -185,13 +185,6 @@ export default types
     suggestionsRequest: null,
   }))
   .views(self => ({
-    /**
-     * Get alert
-     */
-    get alert() {
-      return getEnv(self).alert;
-    },
-
     get hasSegmentation() {
       // not an object and not a classification
       const isSegmentation = t => !t.getAvailableStates && !t.perRegionVisible;
@@ -333,6 +326,7 @@ export default types
 
           const entity = annotationStore.selected;
 
+          entity?.submissionInProgress();
 
           if (self.hasInterface('review')) {
             self.acceptAnnotation();
@@ -350,6 +344,10 @@ export default types
       if (self.hasInterface('skip', 'review')) {
         hotkeys.addNamed('annotation:skip', () => {
           if (self.annotationStore.viewingAll) return;
+
+          const entity = self.annotationStore.selected;
+
+          entity?.submissionInProgress();
 
           if (self.hasInterface('review')) {
             self.rejectAnnotation();
