@@ -283,14 +283,6 @@ export const FF_LSDV_4998 = 'fflag_fix_front_lsdv_4998_missed_dynamic_children_0
  */
 export const FF_PROD_309 = 'fflag_feat_front_prod_309_choice_hint_080523_short';
 
-// Taxonomy and Choices related FFs, also for Dynamic Children and User Labels
-export const FFS_CHOICES = [
-  FF_DEV_1536,   // user labels
-  FF_DEV_3617,   // memory leaks fix, introduces shared stores
-  FF_DEV_4075,   // taxonomy overlap fix, mostly styles and mock-up
-  FF_LSDV_4998,  // dynamic children with shared stores
-];
-
 /**
  * Fix delay on double-click interactions in Image Segmentation
  * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_lsdv_5248_double_click_delay_280823_short
