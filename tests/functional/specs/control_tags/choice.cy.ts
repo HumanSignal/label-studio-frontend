@@ -3,10 +3,10 @@ import {
   choicesConfig,
   choicesMultipleSelectionConfig, choicesSelectLayoutConfig,
   simpleData
-} from 'data/control_tags/choice';
+} from '../../data/control_tags/choice';
 
 describe('Control Tags - Choice', () => {
-  it('should show hint for <Choise />', () => {
+  it('should show hint for <Choice />', () => {
     LabelStudio.params()
       .config(choicesConfig)
       .data(simpleData)

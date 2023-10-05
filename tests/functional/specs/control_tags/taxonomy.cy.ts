@@ -15,7 +15,7 @@ import {
   FF_TAXONOMY_LABELING
 } from '../../../../src/utils/feature-flags';
 
-const init = (config, data) => {
+const init = (config: string, data: any) => {
   LabelStudio.params()
     .config(config)
     .data(data)
