@@ -316,7 +316,13 @@ export const FF_TAXONOMY_ASYNC = 'fflag_feat_front_lsdv_5451_async_taxonomy_1108
 export const FF_TAXONOMY_LABELING = 'fflag_feat_front_lsdv_5452_taxonomy_labeling_110823_short';
 
 /**
- * Annotator workflow control for lead time calculation
+ * Fix task count on projects with over 100 tasks (switch from task history to queue count)
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_all_optic_79_task_count_is_wrong_short/targeting
+ */
+
+export const FF_TASK_COUNT_FIX = 'fflag_fix_all_optic_79_task_count_is_wrong_short';
+/** 
+* Annotator workflow control for lead time calculation
  */
 export const FF_PROD_E_111 = 'fflag_feat_front_prod_e_111_annotator_workflow_control_short';
 
