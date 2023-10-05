@@ -9,15 +9,15 @@ import React, {
 } from 'react';
 import { Dropdown, Menu } from 'antd';
 
-import { useToggle } from '../../hooks/useToggle';
-import { isArraysEqual } from '../../utils/utilities';
 import { LsChevron } from '../../assets/icons';
+import { Tooltip } from '../../common/Tooltip/Tooltip';
+import { useToggle } from '../../hooks/useToggle';
+import { CNTagName } from '../../utils/bem';
+import { FF_DEV_4075, FF_PROD_309, isFF } from '../../utils/feature-flags';
+import { isArraysEqual } from '../../utils/utilities';
 import TreeStructure from '../TreeStructure/TreeStructure';
 
 import styles from './Taxonomy.module.scss';
-import { FF_DEV_4075, FF_PROD_309, FF_TAXONOMY_LABELING, isFF } from '../../utils/feature-flags';
-import { Tooltip } from '../../common/Tooltip/Tooltip';
-import { CNTagName } from '../../utils/bem';
 
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
