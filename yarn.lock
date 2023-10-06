@@ -10478,8 +10478,9 @@ sass-loader@^11.0.1:
     neo-async "^2.6.2"
 
 sass@^1.32.12:
-  version "1.49.9"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.49.9.tgz#b15a189ecb0ca9e24634bae5d1ebc191809712f9"
+  version "1.69.0"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.69.0.tgz#5195075371c239ed556280cf2f5944d234f42679"
+  integrity sha512-l3bbFpfTOGgQZCLU/gvm1lbsQ5mC/WnLz3djL2v4WCJBDrWm58PO+jgngcGRNnKUh6wSsdm50YaovTqskZ0xDQ==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
     immutable "^4.0.0"
@@ -10564,7 +10565,7 @@ semver@7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.0.0.tgz#5f3ca35761e47e05b206c6daff2cf814f0316b8e"
 
-semver@7.x, semver@^7.3.5, semver@^7.3.7, semver@^7.3.8, semver@^7.5.4:
+semver@7.x, semver@^7.3.5, semver@^7.3.7, semver@^7.3.8:
   version "7.5.4"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.5.4.tgz#483986ec4ed38e1c6c48c34894a9182dbff68a6e"
   dependencies:
