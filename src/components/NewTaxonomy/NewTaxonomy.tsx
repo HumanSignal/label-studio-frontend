@@ -23,6 +23,7 @@ type AntTaxonomyItem = {
   key: string,
   isLeaf?: boolean,
   children?: AntTaxonomyItem[],
+  disableCheckbox?: boolean,
 };
 
 type TaxonomyOptions = {
@@ -47,19 +48,35 @@ type TaxonomyProps = {
   isEditable?: boolean,
 };
 
-const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyItem[] => {
-  return items.map(item => ({
-    title: item.hint ? (
-      <Tooltip title={item.hint} mouseEnterDelay={500}>
-        <span>{item.label}</span>
-      </Tooltip>
-    ) : item.label,
-    value: item.path.join(options.pathSeparator),
-    key: item.path.join(options.pathSeparator),
-    isLeaf: item.isLeaf !== false && !item.children,
-    disableCheckbox: options.leafsOnly && (item.isLeaf === false || !!item.children),
-    children: item.children ? convert(item.children, options) : undefined,
-  }));
+type TaxonomyExtendedOptions = TaxonomyOptions & {
+  maxUsagesReached?: boolean,
+};
+
+const convert = (
+  items: TaxonomyItem[],
+  options: TaxonomyExtendedOptions,
+  selectedPaths: string[],
+): AntTaxonomyItem[] => {
+  const convertItem = (item: TaxonomyItem): AntTaxonomyItem => {
+    const value = item.path.join(options.pathSeparator);
+    const disabledNode = options.leafsOnly && (item.isLeaf === false || !!item.children);
+    const maxUsagesReached = options.maxUsagesReached && !selectedPaths.includes(value);
+
+    return {
+      title: item.hint ? (
+        <Tooltip title={item.hint} mouseEnterDelay={500}>
+          <span>{item.label}</span>
+        </Tooltip>
+      ) : item.label,
+      value,
+      key: value,
+      isLeaf: item.isLeaf !== false && !item.children,
+      disableCheckbox: disabledNode || maxUsagesReached,
+      children: item.children?.map(convertItem),
+    };
+  };
+
+  return items.map(convertItem);
 };
 
 const NewTaxonomy = ({
@@ -78,10 +95,12 @@ const NewTaxonomy = ({
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
+  const maxUsagesReached = !!options.maxUsages && selected.length >= options.maxUsages;
+  const value = selected.map(path => path.join(separator));
 
   useEffect(() => {
-    setTreeData(convert(items, options));
-  }, [items]);
+    setTreeData(convert(items, { ...options, maxUsagesReached }, value));
+  }, [items, maxUsagesReached]);
 
   const loadData = useCallback(async (node: any) => {
     return onLoadData?.(node.value.split(separator));
@@ -90,7 +109,7 @@ const NewTaxonomy = ({
   return (
     <TreeSelect
       treeData={treeData}
-      value={selected.map(path => path.join(separator))}
+      value={value}
       onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
       loadData={loadData}
       treeCheckable
