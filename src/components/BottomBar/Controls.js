@@ -51,10 +51,10 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
     const selected = store.annotationStore?.selected;
 
-    if(addedCommentThisSession){
+    if (addedCommentThisSession) {
       selected?.submissionInProgress();
       callback();
-    } else if((currentComment ?? '').trim()) {
+    } else if ((currentComment ?? '').trim()) {
       e.preventDefault();
       selected?.submissionInProgress();
       await commentFormSubmit();
@@ -75,8 +75,8 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const RejectButton = useMemo(() => {
     return (
       <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
-        <Button aria-label="reject-annotation" disabled={disabled} onClick={async (e)=> {
-          if(store.hasInterface('comments:reject') ?? true) {
+        <Button aria-label="reject-annotation" disabled={disabled} onClick={async (e) => {
+          if (store.hasInterface('comments:reject') ?? true) {
             buttonHandler(e, () => store.rejectAnnotation({}), 'Please enter a comment before rejecting');
           } else {
             const selected = store.annotationStore?.selected;
@@ -130,8 +130,8 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     if (store.hasInterface('skip')) {
       buttons.push(
         <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
-          <Button aria-label="skip-task" disabled={disabled} onClick={async (e)=> {
-            if(store.hasInterface('comments:skip') ?? true) {
+          <Button aria-label="skip-task" disabled={disabled} onClick={async (e) => {
+            if (store.hasInterface('comments:skip') ?? true) {
               buttonHandler(e, () => store.skipTask({}), 'Please enter a comment before skipping');
             } else {
               const selected = store.annotationStore?.selected;
@@ -206,7 +206,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
                   await store.commentStore.commentFormSubmit();
                   store.submitAnnotation();
                 }}
-                icon={useExitOption &&(
+                icon={useExitOption && (
                   <Dropdown.Trigger
                     content={<SubmitOption onClickMethod={store.submitAnnotation} isUpdate={false} />}
                   >
@@ -241,7 +241,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
                 await store.commentStore.commentFormSubmit();
                 store.updateAnnotation();
               }}
-              icon={useExitOption &&(
+              icon={useExitOption && (
                 <Dropdown.Trigger
                   content={<SubmitOption onClickMethod={store.updateAnnotation} isUpdate={isUpdate} />}
                 >

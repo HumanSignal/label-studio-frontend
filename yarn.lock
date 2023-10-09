@@ -2650,7 +2650,7 @@
 
 "@heartexlabs/eslint-plugin-frontend@https://github.com/heartexlabs/eslint-plugin-frontend.git":
   version "1.0.0"
-  resolved "https://github.com/heartexlabs/eslint-plugin-frontend.git#9c807fd4d91b1aa93c1f6daacc2884c6adc2eb73"
+  resolved "https://github.com/heartexlabs/eslint-plugin-frontend.git#c80536fd73e756be7f56093688185bfb8fae11e9"
   dependencies:
     "@typescript-eslint/eslint-plugin" "^5.45.0"
     "@typescript-eslint/parser" "^5.45.0"

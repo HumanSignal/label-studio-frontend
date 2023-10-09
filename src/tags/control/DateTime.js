@@ -348,7 +348,7 @@ const DateTimeModel = types.compose(
   RequiredMixin,
   ReadOnlyControlMixin,
   PerRegionMixin,
-  ...(isFF(FF_LSDV_4583)?[PerItemMixin]:[]),
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin] : []),
   AnnotationMixin,
   TagAttrs,
   Model,
