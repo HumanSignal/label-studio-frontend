@@ -90,7 +90,11 @@ const NewTaxonomy = ({
   return (
     <TreeSelect
       treeData={treeData}
-      value={selected.map(path => path.join(separator))}
+      labelInValue={true}
+      value={selected.map(path => ({
+        label: options.showFullPath ? path.join(separator) : path[path.length - 1],
+        value: path.join(separator),
+      }))}
       onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
       loadData={loadData}
       treeCheckable
