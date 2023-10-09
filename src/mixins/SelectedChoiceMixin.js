@@ -21,35 +21,12 @@ const SelectedChoiceMixin = types
 
       return isDefined(choice1) && isDefined(choice2) && choice1 === choice2;
     },
-    hasChoiceSelection(choiceValue, selectedValues = []) {
+    hasChoiceSelection(choiceValue) {
       if (choiceValue?.length) {
-        // @todo Revisit this and make it more consistent, and refactor this
-        // behaviour out of the SelectedModel mixin and use a singular approach.
-        // This is the original behaviour of other SelectedModel mixin usages
-        // as they are using alias lookups for choices. For now we will keep it as is since it works for all the
-        // other cases currently.
-        if (self.findLabel) {
-          return choiceValue
-            .map(v => self.findLabel(v))
-            .some(c => c && c.sel);
-        }
+        // grab the string value; for taxonomy, it's the last value in the array
+        const selectedValues = self.selectedValues().map(s => Array.isArray(s) ? s.at(-1) : s);
 
-        // Check the selected values of the choices for existence of the choiceValue(s)
-        if (selectedValues.length) {
-          const includesValue = v => {
-            if (self.findItemByValueOrAlias) {
-              const item = self.findItemByValueOrAlias(v);
-
-              v = item?.alias || item?.value || v;
-            }
-
-            return selectedValues.map(s => Array.isArray(s) ? s.at(-1) : s).includes(v);
-          };
-
-          return choiceValue.some(includesValue);
-        }
-
-        return false;
+        return choiceValue.some(value => selectedValues.includes(value));
       }
 
       return self.isSelected;

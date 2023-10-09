@@ -50,7 +50,7 @@ const VisibilityMixin = types
 
             if (!tag?.hasChoiceSelection && !choiceValue?.length) return false;
 
-            return tag.hasChoiceSelection(choiceValue?.split(','), tag.selectedValues());
+            return tag.hasChoiceSelection(choiceValue?.split(','));
           },
 
           'no-region-selected': () => !self.annotation.highlightedNode,
