@@ -33,6 +33,8 @@ import ControlBase from '../Base';
 import ClassificationBase from '../ClassificationBase';
 
 import styles from './Taxonomy.styl';
+import messages from '../../../utils/messages';
+import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
 
 /**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
@@ -360,8 +362,10 @@ const Model = types
           self._items = items;
         }
       } catch (err) {
+        const message = messages.ERR_LOADING_HTTP({ attr: 'apiUrl', error: err, url:self.apiurl });
+
         console.error(err);
-        Infomodal.error(`Failed to load taxonomy "${self.name}" from "${self.apiurl}" by path "${path}".`);
+        self.annotationStore.addErrors([errorBuilder.generalError(message)]);
       }
 
       self.loading = false;
