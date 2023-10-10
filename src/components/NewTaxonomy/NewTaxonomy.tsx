@@ -116,7 +116,6 @@ const NewTaxonomy = ({
         };
       })}
       onChange={items => {
-        console.log('heartex', items);
         onChange(null, items.map(item => item.value.split(separator)));
       }}
       loadData={loadData}
