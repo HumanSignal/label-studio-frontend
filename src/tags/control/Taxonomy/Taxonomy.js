@@ -168,6 +168,35 @@ const TaxonomyLabelingResult = types
           self.result.area.setValue(self);
         }
       },
+
+      /**
+       * @param {string[]} path saved value from Taxonomy
+       * @returns quazi-label object to act as Label in most places
+       */
+      findLabel(path) {
+        let title = '';
+        let items = self.items;
+        let item;
+
+        for (const value of path) {
+          item = items?.find(item => item.path.at(-1) === value);
+
+          if (!item) return null;
+
+          items = item.children;
+          title = self.showfullpath && title ? title + self.pathseparator + item.label : item.label;
+        }
+
+        const label = { value: title, id: path.join(self.pathseparator) };
+
+        if (item.color) {
+          // to conform the current format of our Result#style (and it requires parent)
+          label.background = item.color;
+          label.parent = {};
+        }
+
+        return label;
+      },
     };
   });
 
@@ -288,35 +317,6 @@ const Model = types
       };
 
       return findItem(self.items);
-    },
-
-    /**
-     * @param {string[]} path saved value from Taxonomy
-     * @returns quazi-label object to act as Label in most places
-     */
-    findLabel(path) {
-      let title = '';
-      let items = self.items;
-      let item;
-
-      for (const value of path) {
-        item = items?.find(item => item.path.at(-1) === value);
-
-        if (!item) return null;
-
-        items = item.children;
-        title = self.showfullpath && title ? title + self.pathseparator + item.label : item.label;
-      }
-
-      const label = { value: title, id: path.join(self.pathseparator) };
-
-      if (item.color) {
-        // to conform the current format of our Result#style (and it requires parent)
-        label.background = item.color;
-        label.parent = {};
-      }
-
-      return label;
     },
   }))
   .actions(self => ({
