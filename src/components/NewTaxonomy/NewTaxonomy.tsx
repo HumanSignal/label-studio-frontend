@@ -1,5 +1,5 @@
 import { TreeSelect } from 'antd';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
@@ -48,18 +48,19 @@ type TaxonomyProps = {
 };
 
 const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyItem[] => {
-  return items.map(item => ({
-    title: item.hint ? (
-      <Tooltip title={item.hint} mouseEnterDelay={500}>
-        <span>{item.label}</span>
-      </Tooltip>
-    ) : item.label,
-    value: item.path.join(options.pathSeparator),
-    key: item.path.join(options.pathSeparator),
-    isLeaf: item.isLeaf !== false && !item.children,
-    disableCheckbox: options.leafsOnly && (item.isLeaf === false || !!item.children),
-    children: item.children ? convert(item.children, options) : undefined,
-  }));
+  return items.map(item => {
+    return {
+      title: item.hint ? (
+        <Tooltip title={item.hint} mouseEnterDelay={500}>
+          <span>{item.label}</span>
+        </Tooltip>
+      ) : item.label,
+      value: item.path.join(options.pathSeparator),
+      key: item.path.join(options.pathSeparator),
+      isLeaf: item.isLeaf !== false && !item.children,
+      disableCheckbox: options.leafsOnly && (item.isLeaf === false || !!item.children),
+      children: item.children ? convert(item.children, options) : undefined,
+    };});
 };
 
 const NewTaxonomy = ({
@@ -83,6 +84,17 @@ const NewTaxonomy = ({
     setTreeData(convert(items, options));
   }, [items]);
 
+  const flatten = useMemo(() => {
+    const flatten: TaxonomyItem[] = [];
+    const visitItem = (item: TaxonomyItem) => {
+      flatten.push(item);
+      item.children?.forEach(visitItem);
+    };
+
+    items.forEach(visitItem);
+    return flatten;
+  }, [items]);
+
   const loadData = useCallback(async (node: any) => {
     return onLoadData?.(node.value.split(separator));
   }, []);
@@ -91,11 +103,22 @@ const NewTaxonomy = ({
     <TreeSelect
       treeData={treeData}
       labelInValue={true}
-      value={selected.map(path => ({
-        label: options.showFullPath ? path.join(separator) : path[path.length - 1],
-        value: path.join(separator),
-      }))}
-      onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
+      value={selected.map(path => {
+        const selectedItem = path.map(value => {
+          const label = flatten.find(taxonomyItem => taxonomyItem.path[taxonomyItem.path.length - 1] === value)?.label;
+
+          return label ?? value;
+        });
+
+        return {
+          label: options.showFullPath ? selectedItem.join(separator) : selectedItem[path.length - 1],
+          value: path.join(separator),
+        };
+      })}
+      onChange={items => {
+        console.log('heartex', items);
+        onChange(null, items.map(item => item.value.split(separator)));
+      }}
       loadData={loadData}
       treeCheckable
       treeCheckStrictly
