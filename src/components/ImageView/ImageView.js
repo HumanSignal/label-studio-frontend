@@ -564,7 +564,8 @@ export default observer(
     };
 
     preventDefaultTouch = e => {
-      if (e.type.startsWith('touch')) {
+      // tests can miss type, so null check just in case
+      if (e.type?.startsWith('touch')) {
         e.preventDefault();
       }
     };
