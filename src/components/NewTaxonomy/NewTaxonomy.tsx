@@ -26,6 +26,7 @@ type AntTaxonomyItem = {
   key: string,
   isLeaf?: boolean,
   children?: AntTaxonomyItem[],
+  disableCheckbox?: boolean,
 };
 
 type TaxonomyOptions = {
@@ -50,7 +51,16 @@ type TaxonomyProps = {
   isEditable?: boolean,
 };
 
-const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyItem[] => {
+type TaxonomyExtendedOptions = TaxonomyOptions & {
+  maxUsagesReached?: boolean,
+};
+
+const convert = (
+  items: TaxonomyItem[],
+  options: TaxonomyExtendedOptions,
+  selectedPaths: string[],
+): AntTaxonomyItem[] => {
+  // generate string or component to be the `title` of the item
   const enrich = (item: TaxonomyItem) => {
     const color = (item: TaxonomyItem) => (
       // no BEM here to make it more lightweight
@@ -69,14 +79,22 @@ const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyIt
     );
   };
 
-  return items.map(item => ({
-    title: enrich(item),
-    value: item.path.join(options.pathSeparator),
-    key: item.path.join(options.pathSeparator),
-    isLeaf: item.isLeaf !== false && !item.children,
-    disableCheckbox: options.leafsOnly && (item.isLeaf === false || !!item.children),
-    children: item.children ? convert(item.children, options) : undefined,
-  }));
+  const convertItem = (item: TaxonomyItem): AntTaxonomyItem => {
+    const value = item.path.join(options.pathSeparator);
+    const disabledNode = options.leafsOnly && (item.isLeaf === false || !!item.children);
+    const maxUsagesReached = options.maxUsagesReached && !selectedPaths.includes(value);
+
+    return {
+      title: enrich(item),
+      value,
+      key: value,
+      isLeaf: item.isLeaf !== false && !item.children,
+      disableCheckbox: disabledNode || maxUsagesReached,
+      children: item.children?.map(convertItem),
+    };
+  };
+
+  return items.map(convertItem);
 };
 
 const NewTaxonomy = ({
@@ -94,12 +112,13 @@ const NewTaxonomy = ({
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
-  const value = selected.map(path => path.join(separator)).map(path => ({ title: path, value: path, id: path }));
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
+  const maxUsagesReached = !!options.maxUsages && selected.length >= options.maxUsages;
+  const value = selected.map(path => path.join(separator));
 
   useEffect(() => {
-    setTreeData(convert(items, options));
-  }, [items]);
+    setTreeData(convert(items, { ...options, maxUsagesReached }, value));
+  }, [items, maxUsagesReached]);
 
   const loadData = useCallback(async (node: any) => {
     return onLoadData?.(node.value.split(separator));
