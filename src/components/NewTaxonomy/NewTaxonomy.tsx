@@ -48,19 +48,18 @@ type TaxonomyProps = {
 };
 
 const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyItem[] => {
-  return items.map(item => {
-    return {
-      title: item.hint ? (
-        <Tooltip title={item.hint} mouseEnterDelay={500}>
-          <span>{item.label}</span>
-        </Tooltip>
-      ) : item.label,
-      value: item.path.join(options.pathSeparator),
-      key: item.path.join(options.pathSeparator),
-      isLeaf: item.isLeaf !== false && !item.children,
-      disableCheckbox: options.leafsOnly && (item.isLeaf === false || !!item.children),
-      children: item.children ? convert(item.children, options) : undefined,
-    };});
+  return items.map(item => ({
+    title: item.hint ? (
+      <Tooltip title={item.hint} mouseEnterDelay={500}>
+        <span>{item.label}</span>
+      </Tooltip>
+    ) : item.label,
+    value: item.path.join(options.pathSeparator),
+    key: item.path.join(options.pathSeparator),
+    isLeaf: item.isLeaf !== false && !item.children,
+    disableCheckbox: options.leafsOnly && (item.isLeaf === false || !!item.children),
+    children: item.children ? convert(item.children, options) : undefined,
+  }));
 };
 
 const NewTaxonomy = ({
@@ -115,9 +114,7 @@ const NewTaxonomy = ({
           value: path.join(separator),
         };
       })}
-      onChange={items => {
-        onChange(null, items.map(item => item.value.split(separator)));
-      }}
+      onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
       loadData={loadData}
       treeCheckable
       treeCheckStrictly
