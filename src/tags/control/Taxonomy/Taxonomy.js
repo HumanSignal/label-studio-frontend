@@ -339,6 +339,7 @@ const Model = types
 
       path?.forEach(p => url.searchParams.append('path', p));
 
+
       try {
         const res = yield fetch(url);
         const dataRaw = yield res.json();
@@ -355,6 +356,10 @@ const Model = types
         });
         const items = convert(data, prefix);
 
+        res.catch(err => {
+          self.setError(err);
+        });
+
         if (path) {
           item.children = items;
           self._items = [...self._items];
@@ -362,10 +367,7 @@ const Model = types
           self._items = items;
         }
       } catch (err) {
-        const message = messages.ERR_LOADING_HTTP({ attr: 'apiUrl', error: err, url:self.apiurl });
-
-        console.error(err);
-        self.annotationStore.addErrors([errorBuilder.generalError(message)]);
+        self.setError(err);
       }
 
       self.loading = false;
@@ -399,7 +401,13 @@ const Model = types
 
       self.loading = false;
     },
+    setError(err) {
+      const message = messages.ERR_LOADING_HTTP({ attr: 'apiUrl', error: String(err), url:self.apiurl });
 
+      self.annotationStore.addErrors([errorBuilder.generalError(message)]);
+
+      console.error(err);
+    },
     requiredModal() {
       Infomodal.warning(self.requiredmessage || `Taxonomy "${self.name}" is required.`);
     },
