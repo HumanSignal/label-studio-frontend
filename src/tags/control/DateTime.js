@@ -363,27 +363,12 @@ const HtxDateTime = inject('store')(
       className: 'ant-input',
     };
     const [minTime, maxTime] = [item.min, item.max].map(s => s?.match(/\d?\d:\d\d/)?.[0]);
-    const [dateInputValue, setDateInputValue] = useState('');
 
     const handleDateInputValueChange = event => {
       const value = event.target.value;
       const validDateArray = item.validDateFormat(value);
 
-      setDateInputValue(value);
       if (!value || validDateArray) item.setDate(validDateArray);
-    };
-
-    if (item.updateValue) {
-      if (item.showDate && (item.date === undefined || item.date !== dateInputValue)) {
-        setDateInputValue(item.date || '');
-      }
-      item.setNeedsUpdate(false);
-    }
-
-    const handleDateOnBlur = () => {
-      const dateWasNotSaved = dateInputValue !== item.date;
-
-      if (dateWasNotSaved) setDateInputValue(item.date || '');
     };
 
     return (
@@ -426,11 +411,10 @@ const HtxDateTime = inject('store')(
             type="date"
             readOnly={disabled}
             name={item.name + '-date'}
-            value={dateInputValue}
+            value={item.date ?? ''}
             min={item.min}
             max={item.max}
             onChange={disabled ? undefined : handleDateInputValueChange}
-            onBlur={disabled ? undefined : handleDateOnBlur}
           />
         )}
         {item.showTime && (
