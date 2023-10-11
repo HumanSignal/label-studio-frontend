@@ -15,7 +15,7 @@ env:
 jobs:
   run:
     name: "E2E Tests"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-4c-16gb
     # ci can be skipped with `[skip ci]` prefix in message
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     steps:
@@ -87,7 +87,7 @@ jobs:
           npm list --depth=1 || true
 
       - name: Run e2e test suite
-        timeout-minutes: 40
+        timeout-minutes: 45
         env:
           NODE_ENV: 'production'
           TEST_ENV: true
