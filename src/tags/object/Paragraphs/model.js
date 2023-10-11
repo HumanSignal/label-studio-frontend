@@ -155,6 +155,11 @@ const Model = types
 
       return !self.filterByAuthor.length || self.filterByAuthor.includes(data[self.namekey]);
     },
+  }))
+  .actions(self => ({
+    setCurrentSpan(currentSpan) {
+      self._currentSpan = currentSpan;
+    },
   }));
 
 const PlayableAndSyncable = types.model()
