@@ -94,6 +94,21 @@ const NewTaxonomy = ({
     return flatten;
   }, [items]);
 
+  const formatOutputValue = useMemo(() => {
+    return selected.map(path => {
+      const selectedItem = path.map(value => {
+        const label = flatten.find(taxonomyItem => taxonomyItem.path.at(-1) === value)?.label;
+
+        return label ?? value;
+      });
+
+      return {
+        label: options.showFullPath ? selectedItem.join(separator) : selectedItem[path.length - 1],
+        value: path.join(separator),
+      };
+    });
+  }, [selected]);
+
   const loadData = useCallback(async (node: any) => {
     return onLoadData?.(node.value.split(separator));
   }, []);
@@ -102,18 +117,7 @@ const NewTaxonomy = ({
     <TreeSelect
       treeData={treeData}
       labelInValue={true}
-      value={selected.map(path => {
-        const selectedItem = path.map(value => {
-          const label = flatten.find(taxonomyItem => taxonomyItem.path[taxonomyItem.path.length - 1] === value)?.label;
-
-          return label ?? value;
-        });
-
-        return {
-          label: options.showFullPath ? selectedItem.join(separator) : selectedItem[path.length - 1],
-          value: path.join(separator),
-        };
-      })}
+      value={formatOutputValue}
       onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
       loadData={loadData}
       treeCheckable
