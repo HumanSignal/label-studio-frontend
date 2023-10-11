@@ -400,7 +400,7 @@ class HtxParagraphsView extends Component {
 
         splitBoundaries(range);
 
-        r._range = range;
+        r.setRange(range);
         const spans = r.createSpans();
 
         r.addEventsToSpans(spans);

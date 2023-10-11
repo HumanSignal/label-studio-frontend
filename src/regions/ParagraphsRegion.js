@@ -27,6 +27,7 @@ const Model = types
   .volatile(() => ({
     text: '',
     hideable: true,
+    _range: null,
   }))
   .views(self => ({
     get parent() {
@@ -43,6 +44,10 @@ const Model = types
 
     setText(text) {
       self.text = text;
+    },
+
+    setRange(range) {
+      self._range = range;
     },
 
     fixOffsets(startOffset, endOffset) {

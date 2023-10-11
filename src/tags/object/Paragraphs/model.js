@@ -480,7 +480,7 @@ const ParagraphsLoadingModel = types.model()
         ...p,
       });
 
-      r._range = p._range;
+      r.setRange(p._range);
 
       self.regions.push(r);
       self.annotation.addRegion(r);
@@ -508,7 +508,7 @@ const ParagraphsLoadingModel = types.model()
 
         area.notifyDrawingFinished();
 
-        area._range = range._range;
+        area.setRange(range._range);
         areas.push(area);
       }
       return areas;
@@ -534,7 +534,7 @@ const ParagraphsLoadingModel = types.model()
 
         area.notifyDrawingFinished();
 
-        area._range = range._range;
+        area.setRange(range._range);
         return area;
       }
     },

@@ -240,7 +240,7 @@ export const AudioModel = types.compose(
         if (find_r) {
           find_r.applyCSSClass(wsRegion);
 
-          find_r._ws_region = wsRegion;
+          find_r.setWSRegion(wsRegion);
           return find_r;
         }
 
@@ -255,7 +255,7 @@ export const AudioModel = types.compose(
         const labels = { [control.valueType]: control.selectedValues() };
         const r = self.annotation.createResult(wsRegion, labels, control, self);
 
-        r._ws_region = wsRegion;
+        r.setWSRegion(wsRegion);
         r.updateAppearenceFromState();
         return r;
       },
