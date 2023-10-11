@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import React, { useState } from 'react';
+import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { types } from 'mobx-state-tree';
 

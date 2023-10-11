@@ -78,8 +78,8 @@ export class LabelStudio {
             store={this.store}
             panels={registerPanels(this.options.panels) ?? []}
           />
-        </StrictMode>
-      )
+        </StrictMode>,
+      );
     };
 
     const PERFORM_REACT_CLEANUP = true;
@@ -108,7 +108,7 @@ export class LabelStudio {
         cleanDomAfterReact(childNodes, reactKey);
         cleanDomAfterReact([rootElement], reactKey);
       }
-    }
+    };
 
     const unmountApp = () => {
       cleanupReactNodes(() => {

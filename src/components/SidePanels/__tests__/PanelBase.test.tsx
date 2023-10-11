@@ -2,8 +2,8 @@
 import { PanelBase, PanelProps } from '../PanelBase';
 import { createRef } from 'react';
 import { render } from '@testing-library/react';
-import "@testing-library/jest-dom";
-import userEvent from "@testing-library/user-event";
+import '@testing-library/jest-dom';
+import userEvent from '@testing-library/user-event';
 
 describe('PanelBase', () => {
   test('Panel', async () => {
@@ -90,7 +90,7 @@ describe('PanelBase', () => {
     expect(view.getByText(sampleContent)).toBeInTheDocument();
     expect(isCurrentlyExpanded).toBe(true);
 
-    await userEvent.click(view.getByTestId("panel-toggle-collapsed"));
+    await userEvent.click(view.getByTestId('panel-toggle-collapsed'));
     expect(isCurrentlyExpanded).toBe(false);
   });
 });
