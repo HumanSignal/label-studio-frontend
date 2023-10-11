@@ -351,6 +351,7 @@ Object.assign(window, {
 function getFeatureFlags() {
   return {
     ...(window.APP_SETTINGS?.feature_flags ?? {}),
+    [FF_TAXONOMY_ASYNC]:true,
     // could be used to explicitly set flags for testing, i.e. [FF_DEV_3793]: true
   };
 }

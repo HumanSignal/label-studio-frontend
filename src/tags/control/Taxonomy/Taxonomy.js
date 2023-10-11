@@ -312,6 +312,7 @@ const Model = types
      */
     loadItems: flow(function * (path) {
       if (!self._api) return;
+      let requestOptions = {};
 
       // will be used only to load children for nested items
       // to check that item exists and requires loading
@@ -337,8 +338,17 @@ const Model = types
 
       path?.forEach(p => url.searchParams.append('path', p));
 
+      if (url.username && url.password) {
+        requestOptions = {
+          headers: new Headers({
+            'Authorization': `Basic ${btoa(`${url.username}:${url.password}`)}`,
+          }),
+        };
+      }
+
       try {
-        const res = yield fetch(url);
+        const res = yield fetch(url.origin + url.pathname, requestOptions);
+
         const dataRaw = yield res.json();
         // @todo temporary to support deprecated API response format (just array, no items)
         const data = dataRaw.items ?? dataRaw;
