@@ -105,6 +105,7 @@ const Model = types
     zoomedRange: 0,
     scale: 1,
     headers: [],
+    slices: null,
   }))
   .views(self => ({
     get regionsTimeRanges() {
@@ -259,7 +260,7 @@ const Model = types
         slices[i] = data.slice(slice * i, slice * i + slice + 1);
       }
       slices.push(data.slice(slice * (count - 1)));
-      self.slices = slices;
+      self.setSlices(slices);
       return slices;
     },
 
@@ -280,6 +281,21 @@ const Model = types
       };
     },
 
+    get _format() {
+      const { timedisplayformat: format, isDate } = self;
+
+      if (format === 'date') return formatTrackerTime;
+      else if (format) return isDate ? d3.utcFormat(format) : d3.format(format);
+      else return String;
+    },
+
+    get _formatDuration() {
+      const { durationdisplayformat: format, isDate } = self;
+
+      if (format) return isDate ? d3.utcFormat(format) : d3.format(format);
+      else return String;
+    },
+
     states() {
       return self.annotation.toNames.get(self.name);
     },
@@ -291,23 +307,10 @@ const Model = types
     },
 
     formatTime(time) {
-      if (!self._format) {
-        const { timedisplayformat: format, isDate } = self;
-
-        if (format === 'date') self._format = formatTrackerTime;
-        else if (format) self._format = isDate ? d3.utcFormat(format) : d3.format(format);
-        else self._format = String;
-      }
       return self._format(time);
     },
 
     formatDuration(duration) {
-      if (!self._formatDuration) {
-        const { durationdisplayformat: format, isDate } = self;
-
-        if (format) self._formatDuration = isDate ? d3.utcFormat(format) : d3.format(format);
-        else self._formatDuration = String;
-      }
       return self._formatDuration(duration);
     },
 
@@ -329,6 +332,10 @@ const Model = types
 
     setScale(scale) {
       self.scale = scale;
+    },
+
+    setSlices(slices) {
+      self.slices = slices;
     },
 
     updateView() {
@@ -800,12 +807,6 @@ const Overview = observer(({ item, data, series }) => {
 
 const HtxTimeSeriesViewRTS = ({ item }) => {
   const ref = React.createRef();
-
-  React.useEffect(() => {
-    if (item?.brushRange?.length) {
-      item._nodeReference = ref.current;
-    }
-  }, [item, ref]);
 
   // the last thing updated during initialisation
   if (!item?.brushRange?.length || !item.data)

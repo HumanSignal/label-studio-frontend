@@ -25,6 +25,7 @@ const Model = types
   })
   .volatile(() => ({
     hideable: true,
+    _brushRef: undefined,
   }))
   .views(self => ({
     get parent() {
@@ -44,6 +45,10 @@ const Model = types
 
   }))
   .actions(self => ({
+    setBrushRef(brushRef) {
+      self._brushRef = brushRef;
+    },
+
     growRight(size) {
       self.end = self.end + size;
     },

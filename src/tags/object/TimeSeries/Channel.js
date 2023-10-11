@@ -308,7 +308,7 @@ class ChannelD3 extends React.Component {
         }
 
         if (r._brushRef === undefined || !r._brushRef.isConnected) {
-          r._brushRef = group.select('.selection').node();
+          r.setBrushRef(group.select('.selection').node());
         }
       })
       .merge(brushSelection)
