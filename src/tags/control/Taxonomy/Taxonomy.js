@@ -341,7 +341,15 @@ const Model = types
 
 
       try {
-        const res = yield fetch(url);
+        const res = yield fetch(url)
+          .then(res => {
+            if (!res.ok) {
+              self.setError(res.status);
+            }
+          }).catch(err => {
+            self.setError(err);
+          });
+        
         const dataRaw = yield res.json();
         // @todo temporary to support deprecated API response format (just array, no items)
         const data = dataRaw.items ?? dataRaw;
@@ -356,10 +364,6 @@ const Model = types
         });
         const items = convert(data, prefix);
 
-        res.catch(err => {
-          self.setError(err);
-        });
-
         if (path) {
           item.children = items;
           self._items = [...self._items];
@@ -367,7 +371,7 @@ const Model = types
           self._items = items;
         }
       } catch (err) {
-        self.setError(err);
+        console.error(err);
       }
 
       self.loading = false;
