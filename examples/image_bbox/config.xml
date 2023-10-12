@@ -1,7 +1,9 @@
 <View>
-  <Image name="img" value="$image"></Image>
-  <RectangleLabels name="tag" toName="img" fillOpacity="0.5" strokeWidth="5">
-    <Label value="Planet"></Label>
-    <Label value="Moonwalker" background="blue"></Label>
-  </RectangleLabels>
+  <Layout layout="horizontal">
+    <Image name="img" value="$image"></Image>
+    <RectangleLabels name="tag" toName="img" fillOpacity="0.5" strokeWidth="5">
+      <Label value="Planet" showMandatoryLabel="true" mandatoryLabel="M"></Label>
+      <Label value="Moonwalker" background="blue"></Label>
+    </RectangleLabels>
+  </Layout>
 </View>

@@ -76,7 +76,7 @@ import { ClassificationMixed } from '../examples/classification_mixed';
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ClassificationMixed;
+const data = ImageBbox;
 
 function getData(task) {
   if (task && task.data) {
@@ -143,7 +143,6 @@ function rootElement(element) {
  * @param {object} params
  */
 function configureApplication(params) {
-
   const options = {
     settings: params.settings || {},
     messages: { ...Messages, ...params.messages },

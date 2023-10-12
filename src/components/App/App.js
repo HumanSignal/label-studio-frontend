@@ -1,6 +1,6 @@
 /**
-* Libraries
-*/
+ * Libraries
+ */
 import React, { Component } from 'react';
 import { Result, Spin } from 'antd';
 import { getEnv, getRoot } from 'mobx-state-tree';
@@ -62,11 +62,19 @@ class App extends Component {
   }
 
   renderSuccess() {
-    return <Block name="editor"><Result status="success" title={getEnv(this.props.store).messages.DONE} /></Block>;
+    return (
+      <Block name="editor">
+        <Result status="success" title={getEnv(this.props.store).messages.DONE} />
+      </Block>
+    );
   }
 
   renderNoAnnotation() {
-    return <Block name="editor"><Result status="success" title={getEnv(this.props.store).messages.NO_COMP_LEFT} /></Block>;
+    return (
+      <Block name="editor">
+        <Result status="success" title={getEnv(this.props.store).messages.NO_COMP_LEFT} />
+      </Block>
+    );
   }
 
   renderNothingToLabel(store) {
@@ -90,10 +98,12 @@ class App extends Component {
     );
   }
 
-
-
   renderNoAccess() {
-    return <Block name="editor"><Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} /></Block>;
+    return (
+      <Block name="editor">
+        <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />
+      </Block>
+    );
   }
 
   renderConfigValidationException(store) {
@@ -102,11 +112,7 @@ class App extends Component {
         <Elem name="annotation">
           <TreeValidation errors={this.props.store.annotationStore.validation} />
         </Elem>
-        {!isFF(FF_DEV_3873) && store.hasInterface('infobar') && (
-          <Elem name="infobar">
-            Task #{store.task.id}
-          </Elem>
-        )}
+        {!isFF(FF_DEV_3873) && store.hasInterface('infobar') && <Elem name="infobar">Task #{store.task.id}</Elem>}
       </Block>
     );
   }
@@ -133,19 +139,13 @@ class App extends Component {
     return (
       <>
         {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
-          <Block
-            key={(as.selectedHistory ?? as.selected)?.id}
-            name="main-view"
-            onScrollCapture={this._notifyScroll}
-          >
+          <Block key={(as.selectedHistory ?? as.selected)?.id} name="main-view" onScrollCapture={this._notifyScroll}>
             <Elem name="annotation">
               {<Annotation root={root} annotation={as.selected} />}
               {this.renderRelations(as.selected)}
             </Elem>
-            {(!isFF(FF_DEV_3873)) && getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
-            {as.selected.onlyTextObjects === false && (
-              <DynamicPreannotationsControl />
-            )}
+            {!isFF(FF_DEV_3873) && getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
+            {as.selected.onlyTextObjects === false && <DynamicPreannotationsControl />}
           </Block>
         )}
         {as.viewingAllAnnotations && this.renderAllAnnotations()}

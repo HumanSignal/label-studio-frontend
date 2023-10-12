@@ -3,6 +3,7 @@ import { observer } from 'mobx-react';
 import Tree from 'rc-tree';
 import {
   createContext,
+  createRef,
   FC,
   MouseEvent,
   ReactNode,
@@ -11,7 +12,7 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState
+  useState,
 } from 'react';
 import { IconWarning, LsSparks } from '../../../assets/icons';
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
@@ -46,10 +47,7 @@ interface OutlinerTreeProps {
   footer: ReactNode;
 }
 
-const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
-  regions,
-  footer,
-}) => {
+const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({ regions, footer }) => {
   const rootClass = cn('tree');
   const regionsTree = useDataTree({
     regions,
@@ -62,13 +60,9 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
 
   return (
     <OutlinerContext.Provider value={{ regions }}>
-      <OutlinerInnerTreeComponent
-        regions={regions}
-        regionsTree={regionsTree}
-      />
+      <OutlinerInnerTreeComponent regions={regions} regionsTree={regionsTree} />
     </OutlinerContext.Provider>
   );
-
 };
 
 interface OutlinerInnerTreeProps {
@@ -76,15 +70,18 @@ interface OutlinerInnerTreeProps {
   regionsTree: any[];
 }
 
-const iconGetter = ({ entity }: any) => <NodeIconComponent node={entity}/>;
-const switcherIconGetter = ({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>;
+const iconGetter = ({ entity }: any) => <NodeIconComponent node={entity} />;
+const switcherIconGetter = ({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf} />;
+
 const OutlinerInnerTreeComponent: FC<OutlinerInnerTreeProps> = observer(({ regions, regionsTree }) => {
+  const treeRef = createRef<Tree>();
+
   const blockRef = useRef<HTMLElement>();
   const [height, setHeight] = useState(0);
-  let resizeObserver:ResizeObserver|null = useMemo(() => {
+  let resizeObserver: ResizeObserver | null = useMemo(() => {
     let lastHeight = 0;
 
-    return new ResizeObserver((entities) => {
+    return new ResizeObserver(entities => {
       if (!entities?.[0]?.contentRect || entities?.[0]?.contentRect?.height === lastHeight) {
         return;
       }
@@ -99,7 +96,7 @@ const OutlinerInnerTreeComponent: FC<OutlinerInnerTreeProps> = observer(({ regio
       resizeObserver = null;
     };
   }, []);
-  const setRef = useCallback((ref) => {
+  const setRef = useCallback(ref => {
     if (ref) {
       resizeObserver?.observe(ref);
     } else if (blockRef.current) {
@@ -119,7 +116,12 @@ const OutlinerInnerTreeComponent: FC<OutlinerInnerTreeProps> = observer(({ regio
   const isPersistCollapseEnabled = isFF(FF_DEV_2755) && regions.group === 'label';
 
   if (isFF(FF_DEV_2755)) {
-    const [collapsedPos, setCollapsedPos] = useState(localStorage.getItem(localStoreName)?.split?.(',')?.filter(pos => !!pos) ?? []);
+    const [collapsedPos, setCollapsedPos] = useState(
+      localStorage
+        .getItem(localStoreName)
+        ?.split?.(',')
+        ?.filter(pos => !!pos) ?? [],
+    );
 
     const updateLocalStorage = (collapsedPos: Array<string>) => {
       localStorage.setItem(localStoreName, collapsedPos.join(','));
@@ -139,11 +141,17 @@ const OutlinerInnerTreeComponent: FC<OutlinerInnerTreeProps> = observer(({ regio
       updateLocalStorage(newCollapsedPos);
     };
 
-    expandedKeys = regionsTree.filter((item: any) => !collapsedPos.includes(item.pos)).map((item: any) => item.key) ?? [];
+    expandedKeys =
+      regionsTree.filter((item: any) => !collapsedPos.includes(item.pos)).map((item: any) => item.key) ?? [];
 
-    onExpand = (internalExpandedKeys:Key[], { node }: {
-      node: EventDataNode,
-    }):void => {
+    onExpand = (
+      internalExpandedKeys: Key[],
+      {
+        node,
+      }: {
+        node: EventDataNode;
+      },
+    ): void => {
       const region = regionsTree.find((region: any) => region.key === node.key);
       // pos is equal to label name
       const pos = region.pos;
@@ -152,59 +160,55 @@ const OutlinerInnerTreeComponent: FC<OutlinerInnerTreeProps> = observer(({ regio
     };
   }
 
-  return (
-    <Block name="outliner-tree"
-      {...(
-        isFF(FF_OUTLINER_OPTIM)
-          ? { ref: setRef }
-          : {}
-      )}
-    >
-      {
-        !!height && (
-          <Tree
-            key={regions.group}
-            draggable={regions.group === 'manual'}
-            multiple
-            defaultExpandAll
-            defaultExpandParent={!isPersistCollapseEnabled}
-            autoExpandParent
-            checkable={false}
-            prefixCls="lsf-tree"
-            className={rootClass.toClassName()}
-            treeData={regionsTree}
-            selectedKeys={selectedKeys}
-            icon={iconGetter}
-            switcherIcon={switcherIconGetter}
-            {...(
-              isFF(FF_OUTLINER_OPTIM)
-                ? {
-                  virtual: true,
-                  itemHeight: MIN_REGIONS_TREE_ROW_HEIGHT,
-                  height,
-                }
-                : {}
-            )}
-            {...eventHandlers}
-            {
-              ...(isPersistCollapseEnabled ? {
-                expandedKeys,
-                onExpand,
-              } : {})
-            }
-          />
-        )
+  useEffect(() => {
+    const selectedKey = selectedKeys[0];
+
+    if (selectedKey) {
+      const element = document.getElementById(selectedKey);
+
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
+    }
+  }, [selectedKeys]);
+
+  return (
+    <Block name="outliner-tree" {...(isFF(FF_OUTLINER_OPTIM) ? { ref: setRef } : {})}>
+      <Tree
+        key={regions.group}
+        ref={treeRef}
+        draggable={regions.group === 'manual'}
+        multiple
+        defaultExpandAll
+        defaultExpandParent={!isPersistCollapseEnabled}
+        autoExpandParent
+        checkable={false}
+        prefixCls="lsf-tree"
+        className={rootClass.toClassName()}
+        treeData={regionsTree}
+        selectedKeys={selectedKeys}
+        icon={iconGetter}
+        switcherIcon={switcherIconGetter}
+        {...(isFF(FF_OUTLINER_OPTIM)
+          ? {
+              virtual: true,
+              itemHeight: MIN_REGIONS_TREE_ROW_HEIGHT,
+              height,
+            }
+          : {})}
+        {...eventHandlers}
+        {...(isPersistCollapseEnabled
+          ? {
+              expandedKeys,
+              onExpand,
+            }
+          : {})}
+      />
     </Block>
   );
-
 });
 
-const useDataTree = ({
-  regions,
-  rootClass,
-  footer,
-}: any) => {
+const useDataTree = ({ regions, rootClass, footer }: any) => {
   const processor = useCallback((item: any, idx, _false, _null, _onClick) => {
     const { id, type, hidden, isDrawing } = item ?? {};
     const style = item?.background ?? item?.getOneColor?.();
@@ -217,13 +221,12 @@ const useDataTree = ({
       } else if (type.includes('label')) {
         return item.value;
       } else if (type.includes('region') || type.includes('range')) {
-        const labelsInResults = item.labelings
-          .map((result: any) => result.selectedLabels || []);
+        const labelsInResults = item.labelings.map((result: any) => result.selectedLabels || []);
 
         const labels: any[] = [].concat(...labelsInResults);
 
         return (
-          <Block name="labels-list">
+          <Block name="labels-list" id={id}>
             {labels.map((label, index) => {
               const color = label.background || '#000000';
 
@@ -254,7 +257,10 @@ const useDataTree = ({
         '--text-color': color.css(),
         '--selection-color': color.alpha(0.1).css(),
       },
-      className: rootClass.elem('node').mod(mods).toClassName(),
+      className: rootClass
+        .elem('node')
+        .mod(mods)
+        .toClassName(),
       title: (data: any) => <RootTitle {...data} />,
     };
   }, []);
@@ -265,7 +271,10 @@ const useDataTree = ({
     regionsTreeData.push({
       key: '__footer__',
       disabled: true,
-      className: rootClass.elem('node').mod({ type: 'footer' }).toClassName(),
+      className: rootClass
+        .elem('node')
+        .mod({ type: 'footer' })
+        .toClassName(),
       title: footer,
     });
   }
@@ -400,19 +409,14 @@ const useEventHandlers = () => {
 };
 
 const SwitcherIcon: FC<any> = observer(({ isLeaf }) => {
-  return isLeaf ? null : <IconArrow/>;
+  return isLeaf ? null : <IconArrow />;
 });
 
 const NodeIconComponent: FC<any> = observer(({ node }) => {
-  return node ? <NodeIcon node={node}/> : null;
+  return node ? <NodeIcon node={node} /> : null;
 });
 
-const RootTitle: FC<any> = observer(({
-  item,
-  label,
-  isArea,
-  ...props
-}) => {
+const RootTitle: FC<any> = observer(({ item, label, isArea, ...props }) => {
   const hovered = item?.highlighted;
   const [collapsed, setCollapsed] = useState(false);
 
@@ -425,11 +429,14 @@ const RootTitle: FC<any> = observer(({
     return controls.length > 0;
   }, [controls.length]);
 
-  const toggleCollapsed = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCollapsed(!collapsed);
-  }, [collapsed]);
+  const toggleCollapsed = useCallback(
+    e => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCollapsed(!collapsed);
+    },
+    [collapsed],
+  );
 
   return (
     <Block name="outliner-item">
@@ -456,7 +463,7 @@ const RootTitle: FC<any> = observer(({
           toggleCollapsed={toggleCollapsed}
         />
       </Elem>
-      {(hasControls && isArea) && (
+      {hasControls && isArea && (
         <Elem name="ocr">
           <RegionItemDesc
             item={item}
@@ -482,111 +489,103 @@ interface RegionControlsProps {
   toggleCollapsed: (e: any) => void;
 }
 
-const RegionControls: FC<RegionControlsProps> = observer(({
-  hovered,
-  item,
-  entity,
-  collapsed,
-  regions,
-  hasControls,
-  type,
-  toggleCollapsed,
-}) => {
-  const { regions: regionStore } = useContext(OutlinerContext);
+const RegionControls: FC<RegionControlsProps> = observer(
+  ({ hovered, item, entity, collapsed, regions, hasControls, type, toggleCollapsed }) => {
+    const { regions: regionStore } = useContext(OutlinerContext);
 
-  const hidden = useMemo(() => {
-    if (type?.includes('region') || type?.includes('range')) {
-      return entity.hidden;
-    } else if ((!type || type.includes('label') || type?.includes('tool')) && regions) {
-      return Object.values(regions).every(({ hidden }) => hidden);
-    }
-    return false;
-  }, [entity, type, regions]);
+    const hidden = useMemo(() => {
+      if (type?.includes('region') || type?.includes('range')) {
+        return entity.hidden;
+      } else if ((!type || type.includes('label') || type?.includes('tool')) && regions) {
+        return Object.values(regions).every(({ hidden }) => hidden);
+      }
+      return false;
+    }, [entity, type, regions]);
 
-  const onToggleHidden = useCallback(() => {
-    if (type?.includes('region') || type?.includes('range')) {
-      entity.toggleHidden();
-    } else if (!type || type.includes('label')) {
-      regionStore.setHiddenByLabel(!hidden, entity);
-    } else if (type?.includes('tool')) {
-      regionStore.setHiddenByTool(!hidden, entity);
-    }
-  }, [item, item?.toggleHidden, hidden]);
+    const onToggleHidden = useCallback(() => {
+      if (type?.includes('region') || type?.includes('range')) {
+        entity.toggleHidden();
+      } else if (!type || type.includes('label')) {
+        regionStore.setHiddenByLabel(!hidden, entity);
+      } else if (type?.includes('tool')) {
+        regionStore.setHiddenByTool(!hidden, entity);
+      }
+    }, [item, item?.toggleHidden, hidden]);
 
-  const onToggleCollapsed = useCallback((e: MouseEvent) => {
-    toggleCollapsed(e);
-  }, [toggleCollapsed]);
+    const onToggleCollapsed = useCallback(
+      (e: MouseEvent) => {
+        toggleCollapsed(e);
+      },
+      [toggleCollapsed],
+    );
 
-  const onToggleLocked = useCallback(() => {
-    item.setLocked((locked: boolean) => !locked);
-  }, []);
+    const onToggleLocked = useCallback(() => {
+      item.setLocked((locked: boolean) => !locked);
+    }, []);
 
-  return (
-    <Elem name="controls" mod={{ withControls: hasControls, newUI: isFF(FF_DEV_3873) }}>
-      {isFF(FF_DEV_3873) ? (
-        <Tooltip title={'Confidence Score'}>
-          <Elem name="control-wrapper">
-            <Elem name="control" mod={{ type: 'predict' }}>
-              {item?.origin === 'prediction' && (
-                <LsSparks style={{ width: 18, height: 18 }}/>
-              )}
+    return (
+      <Elem name="controls" mod={{ withControls: hasControls, newUI: isFF(FF_DEV_3873) }}>
+        {isFF(FF_DEV_3873) ? (
+          <Tooltip title={'Confidence Score'}>
+            <Elem name="control-wrapper">
+              <Elem name="control" mod={{ type: 'predict' }}>
+                {item?.origin === 'prediction' && <LsSparks style={{ width: 18, height: 18 }} />}
+              </Elem>
+              <Elem name="control" mod={{ type: 'score' }}>
+                {isDefined(item?.score) && item.score.toFixed(2)}
+              </Elem>
             </Elem>
+          </Tooltip>
+        ) : (
+          <>
             <Elem name="control" mod={{ type: 'score' }}>
               {isDefined(item?.score) && item.score.toFixed(2)}
             </Elem>
+            <Elem name="control" mod={{ type: 'dirty' }}>
+              {/* dirtyness is not implemented yet */}
+            </Elem>
+            <Elem name="control" mod={{ type: 'predict' }}>
+              {item?.origin === 'prediction' && <LsSparks style={{ width: 18, height: 18 }} />}
+            </Elem>
+          </>
+        )}
+        <Elem name={'wrapper'}>
+          <Elem name="control" mod={{ type: 'lock' }}>
+            <LockButton
+              item={item}
+              annotation={item?.annotation}
+              hovered={hovered}
+              locked={item?.locked}
+              onClick={onToggleLocked}
+            />
           </Elem>
-        </Tooltip>
-      ) : (
-        <>
-          <Elem name="control" mod={{ type: 'score' }}>
-            {isDefined(item?.score) && item.score.toFixed(2)}
-          </Elem>
-          <Elem name="control" mod={{ type: 'dirty' }}>
-            {/* dirtyness is not implemented yet */}
-          </Elem>
-          <Elem name="control" mod={{ type: 'predict' }}>
-            {item?.origin === 'prediction' && (
-              <LsSparks style={{ width: 18, height: 18 }}/>
+          <Elem name="control" mod={{ type: 'visibility' }}>
+            {isFF(FF_DEV_3873) ? (
+              <RegionControlButton onClick={onToggleHidden} style={hidden ? undefined : { display: 'none' }}>
+                {hidden ? <IconEyeClosed /> : <IconEyeOpened />}
+              </RegionControlButton>
+            ) : (
+              <RegionControlButton onClick={onToggleHidden}>
+                {hidden ? <IconEyeClosed /> : <IconEyeOpened />}
+              </RegionControlButton>
             )}
           </Elem>
-        </>
-      )}
-      <Elem name={'wrapper'}>
-        <Elem name="control" mod={{ type: 'lock' }}>
-          <LockButton
-            item={item}
-            annotation={item?.annotation}
-            hovered={hovered}
-            locked={item?.locked}
-            onClick={onToggleLocked}
-          />
-        </Elem>
-        <Elem name="control" mod={{ type: 'visibility' }}>
-          {isFF(FF_DEV_3873) ? (
-            <RegionControlButton onClick={onToggleHidden} style={hidden ? undefined : ({ display: 'none' })}>
-              {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
-            </RegionControlButton>
-          ) : (
-            <RegionControlButton onClick={onToggleHidden}>
-              {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
-            </RegionControlButton>
+          {hasControls && (
+            <Elem name="control" mod={{ type: 'visibility' }}>
+              <RegionControlButton onClick={onToggleCollapsed}>
+                <IconChevronLeft
+                  style={{
+                    transform: `rotate(${collapsed ? -90 : 90}deg)`,
+                  }}
+                />
+              </RegionControlButton>
+            </Elem>
           )}
         </Elem>
-        {hasControls && (
-          <Elem name="control" mod={{ type: 'visibility' }}>
-            <RegionControlButton onClick={onToggleCollapsed}>
-              <IconChevronLeft
-                style={{
-                  transform: `rotate(${collapsed ? -90 : 90}deg)`,
-                }}
-              />
-            </RegionControlButton>
-          </Elem>
-        )}
       </Elem>
-    </Elem>
-  );
-});
+    );
+  },
+);
 
 interface RegionItemOCSProps {
   item: any;
@@ -596,21 +595,19 @@ interface RegionItemOCSProps {
   setCollapsed: (value: boolean) => void;
 }
 
-const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
-  item,
-  collapsed,
-  setCollapsed,
-  selected,
-}) => {
+const RegionItemDesc: FC<RegionItemOCSProps> = observer(({ item, collapsed, setCollapsed, selected }) => {
   const controls: any[] = item.perRegionDescControls || [];
 
-  const onClick = useCallback((e) => {
-    e.stopPropagation();
+  const onClick = useCallback(
+    e => {
+      e.stopPropagation();
 
-    if (!selected) {
-      item.annotation.selectArea(item);
-    }
-  }, [item, selected, collapsed]);
+      if (!selected) {
+        item.annotation.selectArea(item);
+      }
+    },
+    [item, selected, collapsed],
+  );
 
   return (
     <Block
@@ -623,7 +620,11 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
         {controls.map((tag, idx) => {
           const View = Registry.getPerRegionView(tag.type, PER_REGION_MODES.REGION_LIST);
           const color = item.getOneColor();
-          const css = color ? chroma(color).alpha(0.2).css() : undefined;
+          const css = color
+            ? chroma(color)
+                .alpha(0.2)
+                .css()
+            : undefined;
 
           return View ? (
             <View
@@ -641,6 +642,5 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
     </Block>
   );
 });
-
 
 export const OutlinerTree = observer(OutlinerTreeComponent);
