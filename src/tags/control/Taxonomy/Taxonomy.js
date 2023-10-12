@@ -404,6 +404,7 @@ const Model = types
 
       self.loading = false;
     },
+
     requiredModal() {
       Infomodal.warning(self.requiredmessage || `Taxonomy "${self.name}" is required.`);
     },
