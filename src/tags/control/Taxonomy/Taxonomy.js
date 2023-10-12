@@ -339,17 +339,12 @@ const Model = types
 
       path?.forEach(p => url.searchParams.append('path', p));
 
-
       try {
-        const res = yield fetch(url)
-          .then(res => {
-            if (!res.ok) {
-              self.setError(res.status);
-            }
-          }).catch(err => {
-            self.setError(err);
-          });
-        
+        const res = yield fetch(url);
+        const { ok, status, statusText } = res;
+
+        if (!ok) throw new Error(`${status} ${statusText}`);
+
         const dataRaw = yield res.json();
         // @todo temporary to support deprecated API response format (just array, no items)
         const data = dataRaw.items ?? dataRaw;
@@ -371,6 +366,10 @@ const Model = types
           self._items = items;
         }
       } catch (err) {
+        const message = messages.ERR_LOADING_HTTP({ attr: 'apiUrl', error: String(err), url: self.apiurl });
+
+        self.annotationStore.addErrors([errorBuilder.generalError(message)]);
+
         console.error(err);
       }
 
@@ -404,13 +403,6 @@ const Model = types
       }
 
       self.loading = false;
-    },
-    setError(err) {
-      const message = messages.ERR_LOADING_HTTP({ attr: 'apiUrl', error: String(err), url:self.apiurl });
-
-      self.annotationStore.addErrors([errorBuilder.generalError(message)]);
-
-      console.error(err);
     },
     requiredModal() {
       Infomodal.warning(self.requiredmessage || `Taxonomy "${self.name}" is required.`);
