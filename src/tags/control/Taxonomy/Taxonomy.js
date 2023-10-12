@@ -112,6 +112,7 @@ function traverse(root) {
     const depth = parents.length;
     const obj = { label, path, depth, hint };
 
+    if (node.color) obj.color = node.color;
     if (node.children) {
       obj.children = visitUnique(node.children, path);
     }
@@ -150,6 +151,10 @@ const TaxonomyLabelingResult = types
 
       return self.annotation.results.find(r => r.from_name === self && r.area === area);
     },
+    get canRemoveItems() {
+      if (!self.isLabeling) return true;
+      return !self.result;
+    },
   }))
   .actions(self => {
     const Super = {
@@ -162,6 +167,35 @@ const TaxonomyLabelingResult = types
         if (self.result) {
           self.result.area.setValue(self);
         }
+      },
+
+      /**
+       * @param {string[]} path saved value from Taxonomy
+       * @returns quazi-label object to act as Label in most places
+       */
+      findLabel(path) {
+        let title = '';
+        let items = self.items;
+        let item;
+
+        for (const value of path) {
+          item = items?.find(item => item.path.at(-1) === value);
+
+          if (!item) return null;
+
+          items = item.children;
+          title = self.showfullpath && title ? title + self.pathseparator + item.label : item.label;
+        }
+
+        const label = { value: title, id: path.join(self.pathseparator) };
+
+        if (item.color) {
+          // to conform the current format of our Result#style (and it requires parent)
+          label.background = item.color;
+          label.parent = {};
+        }
+
+        return label;
       },
     };
   });
@@ -411,6 +445,10 @@ const Model = types
     },
 
     onChange(_node, checked) {
+      // don't remove last label from region if region is selected (so canRemoveItems is false)
+      // should be checked only for Taxonomy as labbeling tool
+      if (self.canRemoveItems === false && !checked.length) return;
+
       self.selected = checked.map(s => s.path ?? s);
       self.maxUsagesReached = self.selected.length >= self.maxusages;
       self.updateResult();
@@ -507,6 +545,7 @@ const HtxTaxonomy = observer(({ item }) => {
     minWidth: item.minwidth,
     dropdownWidth: item.dropdownwidth,
     placeholder: item.placeholder,
+    canRemoveItems: item.canRemoveItems,
   };
 
   return (

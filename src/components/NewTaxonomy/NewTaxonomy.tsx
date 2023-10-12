@@ -3,6 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
+import './NewTaxonomy.styl';
+
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
 type onDeleteLabelCallback = (path: string[]) => any;
@@ -15,6 +17,7 @@ type TaxonomyItem = {
   children?: TaxonomyItem[],
   origin?: 'config' | 'user' | 'session',
   hint?: string,
+  color?: string,
 };
 
 type AntTaxonomyItem = {
@@ -57,17 +60,32 @@ const convert = (
   options: TaxonomyExtendedOptions,
   selectedPaths: string[],
 ): AntTaxonomyItem[] => {
+  // generate string or component to be the `title` of the item
+  const enrich = (item: TaxonomyItem) => {
+    const color = (item: TaxonomyItem) => (
+      // no BEM here to make it more lightweight
+      // global classname to allow to change it in Style tag
+      <span className="htx-taxonomy-item-color" style={{ background: item.color }}>
+        {item.label}
+      </span>
+    );
+
+    if (!item.hint) return item.color ? color(item) : item.label;
+
+    return (
+      <Tooltip title={item.hint} mouseEnterDelay={500}>
+        {item.color ? color(item) : <span>{item.label}</span>}
+      </Tooltip>
+    );
+  };
+
   const convertItem = (item: TaxonomyItem): AntTaxonomyItem => {
     const value = item.path.join(options.pathSeparator);
     const disabledNode = options.leafsOnly && (item.isLeaf === false || !!item.children);
     const maxUsagesReached = options.maxUsagesReached && !selectedPaths.includes(value);
 
     return {
-      title: item.hint ? (
-        <Tooltip title={item.hint} mouseEnterDelay={500}>
-          <span>{item.label}</span>
-        </Tooltip>
-      ) : item.label,
+      title: enrich(item),
       value,
       key: value,
       isLeaf: item.isLeaf !== false && !item.children,

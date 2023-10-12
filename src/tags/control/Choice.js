@@ -44,8 +44,9 @@ import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
  * @param {string} [alias]     - Alias for the choice. If used, the alias replaces the choice value in the annotation results. Alias does not display in the interface.
  * @param {style} [style]      - CSS style of the checkbox element
  * @param {string} [hotkey]    - Hotkey for the selection
- * @param {string} [html]      - can be used to show enriched content[^FF_DEV_2007], it has higher priority than `value`, however `value` will be used in the exported result (should be properly escaped)
+ * @param {string} [html]      - Can be used to show enriched content[^FF_DEV_2007], it has higher priority than `value`, however `value` will be used in the exported result (should be properly escaped)
  * @param {string} [hint]      - Hint for choice on hover[^FF_PROD_309]
+ * @param {string} [color]     - Color for Taxonomy item
  */
 const TagAttrs = types.model({
   ...(isFF(FF_DEV_3391) ? { id: types.identifier } : {}),
@@ -54,6 +55,7 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   style: types.maybeNull(types.string),
+  color: types.maybeNull(types.string),
   ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {}),
   ...(isFF(FF_PROD_309) ? { hint: types.maybeNull(types.string) } : {}),
 });
