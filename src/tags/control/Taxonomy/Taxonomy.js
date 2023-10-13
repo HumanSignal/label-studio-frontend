@@ -344,10 +344,13 @@ const Model = types
             'Authorization': `Basic ${btoa(`${url.username}:${url.password}`)}`,
           }),
         };
+
+        url.username = '';
+        url.password = '';
       }
 
       try {
-        const res = yield fetch(url.origin + url.pathname, requestOptions);
+        const res = yield fetch(url, requestOptions);
 
         const dataRaw = yield res.json();
         // @todo temporary to support deprecated API response format (just array, no items)
