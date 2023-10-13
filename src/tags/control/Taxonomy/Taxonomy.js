@@ -351,7 +351,6 @@ const Model = types
 
       try {
         const res = yield fetch(url, requestOptions);
-
         const dataRaw = yield res.json();
         // @todo temporary to support deprecated API response format (just array, no items)
         const data = dataRaw.items ?? dataRaw;
