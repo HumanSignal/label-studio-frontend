@@ -128,6 +128,7 @@ const NewTaxonomy = ({
     <TreeSelect
       treeData={treeData}
       value={value}
+      labelInValue={true}
       onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
       loadData={loadData}
       treeCheckable
