@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
 import './NewTaxonomy.styl';
+import { debounce } from 'lodash';
 
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
@@ -110,6 +111,7 @@ const NewTaxonomy = ({
   // isEditable = true,
 }: TaxonomyProps) => {
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
+  const [filteredTreeData, setFilteredTreeData] = useState<AntTaxonomyItem[]>([]);
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
@@ -120,17 +122,65 @@ const NewTaxonomy = ({
     setTreeData(convert(items, { ...options, maxUsagesReached }, value));
   }, [items, maxUsagesReached]);
 
+  useEffect(() => {
+    setFilteredTreeData(treeData);
+  }, [treeData]);
+
   const loadData = useCallback(async (node: any) => {
     return onLoadData?.(node.value.split(separator));
   }, []);
 
+  const filterTreeNode = (searchValue: string, treeNode: AntTaxonomyItem) => {
+    const lowerSearchValue = String(searchValue).toLowerCase();
+
+    if (!lowerSearchValue) {
+      return false;
+    }
+
+    return String(treeNode['title']).toLowerCase().includes(lowerSearchValue);
+  };
+
+  const filterTreeData = (treeData: AntTaxonomyItem[], searchValue: string) => {
+    if (!searchValue) {
+      return treeData;
+    }
+
+    const dig = (list: AntTaxonomyItem[], keepAll = false) => {
+      return list.reduce<AntTaxonomyItem[]>((total, dataNode) => {
+        const children = dataNode['children'];
+
+        const match = keepAll || filterTreeNode(searchValue, dataNode);
+        const childList = dig(children || [], match);
+
+        if (match || childList.length) {
+          total.push({
+            ...dataNode,
+            isLeaf: undefined,
+            children: childList,
+          });
+        }
+        return total;
+      }, []);
+    };
+
+    return dig(treeData);
+  };
+
+  const handleSearch = useCallback(debounce(async (inputValue: string) => {
+    // setFilteredTreeData(filterTreeData(treeData, inputValue));
+  }, 2000), [treeData]);
+  
+
   return (
     <TreeSelect
-      treeData={treeData}
+      treeData={filteredTreeData}
       value={value}
       onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
       loadData={loadData}
       treeCheckable
+      onSearch={handleSearch}
+      filterTreeNode={false}
+      treeDefaultExpandAll={true}
       treeCheckStrictly
       showCheckedStrategy={TreeSelect.SHOW_ALL}
       treeExpandAction="click"
