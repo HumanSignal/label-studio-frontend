@@ -94,6 +94,7 @@ const TagAttrs = types.model({
   labeling: types.optional(types.boolean, false),
   leafsonly: types.optional(types.boolean, false),
   showfullpath: types.optional(types.boolean, false),
+  legacy: types.optional(types.boolean, false),
   pathseparator: types.optional(types.string, ' / '),
   apiurl: types.maybeNull(types.string),
   placeholder: '',
@@ -602,7 +603,7 @@ const HtxTaxonomy = observer(({ item }) => {
   return (
     // @todo use BEM class names + literal "taxonomy" for external styling
     <div className={[styles.taxonomy, 'taxonomy'].join(' ')} style={{ ...visibleStyle }}>
-      {isFF(FF_TAXONOMY_ASYNC) ? (
+      {(isFF(FF_TAXONOMY_ASYNC) && !item.legacy) ? (
         <NewTaxonomy
           items={item.items}
           selected={item.selectedItems}
