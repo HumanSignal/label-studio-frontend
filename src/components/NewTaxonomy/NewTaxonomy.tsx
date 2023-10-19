@@ -1,5 +1,5 @@
 import { TreeSelect } from 'antd';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { createRef, useCallback, useEffect, useState } from 'react';
 
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
@@ -118,6 +118,7 @@ const NewTaxonomy = ({
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
   const maxUsagesReached = !!options.maxUsages && selected.length >= options.maxUsages;
   const value = selected.map(path => path.join(separator));
+  const inputRef = createRef<HTMLInputElement>();
 
   useEffect(() => {
     setTreeData(convert(items, { ...options, maxUsagesReached }, value));
@@ -169,7 +170,7 @@ const NewTaxonomy = ({
 
   const handleSearch = useCallback(debounce(async (e: any) => {
     setFilteredTreeData(filterTreeData(treeData, e.target.value));
-  }, 0), [treeData]);
+  }, 500), [treeData]);
 
   const handleSearch2 = useCallback(debounce(async (e: string) => {
     setFilteredTreeData(filterTreeData(treeData, e));
@@ -185,11 +186,18 @@ const NewTaxonomy = ({
         loadData={loadData}
         treeCheckable
         filterTreeNode={false}
+        showSearch={true}
+        onDropdownVisibleChange={() => setDropdownOpen(true)}
         treeDefaultExpandAll={dropdownOpen}
         treeCheckStrictly
         onSearch={handleSearch2}
-        onFocus={() => setDropdownOpen(true)}
-        onBlur={() => setDropdownOpen(false)}
+        onFocus={() => {
+          setDropdownOpen(true);
+          inputRef.current?.focus();
+        }}
+        onBlur={() => {
+          // setDropdownOpen(false)
+        }}
         open={dropdownOpen}
         showCheckedStrategy={TreeSelect.SHOW_ALL}
         treeExpandAction="click"
@@ -199,6 +207,10 @@ const NewTaxonomy = ({
         className="htx-taxonomy"
       />
       <input
+        ref={inputRef}
+        style={{
+          display:dropdownOpen ? 'inline-block' : 'none',
+        }}
         onChange={e => handleSearch(e)}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
