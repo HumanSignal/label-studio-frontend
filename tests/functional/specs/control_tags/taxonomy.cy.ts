@@ -147,7 +147,7 @@ Object.entries(taxonomies).forEach(([title, Taxonomy]) => {
     }
   });
 
-  describe.only('Control Tags - Taxonomy - showFullPath', () => {
+  describe('Control Tags - Taxonomy - showFullPath', () => {
     // Old Taxonomy has bugs in displaying equal aliases
     if (!Taxonomy.isNew) return;
 
