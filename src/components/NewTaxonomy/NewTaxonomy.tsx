@@ -40,9 +40,14 @@ type TaxonomyOptions = {
   placeholder?: string,
 };
 
+type SelectedItem = {
+  label: string,
+  value: string,
+}[];
+
 type TaxonomyProps = {
   items: TaxonomyItem[],
-  selected: TaxonomyPath[],
+  selected: SelectedItem[],
   onChange: (node: any, selected: TaxonomyPath[]) => any,
   onLoadData?: (item: TaxonomyPath) => any,
   onAddLabel?: onAddLabelCallback,
@@ -114,7 +119,11 @@ const NewTaxonomy = ({
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
   const maxUsagesReached = !!options.maxUsages && selected.length >= options.maxUsages;
-  const value = selected.map(path => path.join(separator));
+  const value = selected.map(path => path.map(p => p.value).join(separator));
+  const displayed = selected.map(path => ({
+    value: path.map(p => p.value).join(separator),
+    label: options.showFullPath ? path.map(p => p.label).join(separator) : path.at(-1).label,
+  }));
 
   useEffect(() => {
     setTreeData(convert(items, { ...options, maxUsagesReached }, value));
@@ -127,7 +136,8 @@ const NewTaxonomy = ({
   return (
     <TreeSelect
       treeData={treeData}
-      value={value}
+      value={displayed}
+      labelInValue={true}
       onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
       loadData={loadData}
       treeCheckable
