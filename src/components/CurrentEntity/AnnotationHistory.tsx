@@ -19,7 +19,6 @@ import { Userpic } from '../../common/Userpic/Userpic';
 import { Block, Elem } from '../../utils/bem';
 import { humanDateDiff, userDisplayName } from '../../utils/utilities';
 import './AnnotationHistory.styl';
-import { when } from 'mobx';
 
 type HistoryItemType = (
   'prediction' |
@@ -137,13 +136,9 @@ const AnnotationHistoryComponent: FC<any> = ({
                 annotationStore.selectHistory(isSelected ? null : item);
                 return;
               }
-
-
-              if (hasChanges) {
-                annotation.saveDraftImmediately();
-                // wait for draft to be saved before switching to history
-                await when(() => !annotation.isDraftSaving);
-              }
+              
+              // wait for draft to be saved before switching to history
+              if (hasChanges) await annotation.saveDraftImmediatelyWithResults();
 
               if (isLastItem || isSelected) {
                 // last history state and draft are actual annotation, not from history
