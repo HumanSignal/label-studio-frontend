@@ -112,6 +112,7 @@ const NewTaxonomy = ({
 }: TaxonomyProps) => {
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const [filteredTreeData, setFilteredTreeData] = useState<AntTaxonomyItem[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
@@ -166,29 +167,43 @@ const NewTaxonomy = ({
     return dig(treeData);
   };
 
-  const handleSearch = useCallback(debounce(async (inputValue: string) => {
-    // setFilteredTreeData(filterTreeData(treeData, inputValue));
-  }, 2000), [treeData]);
-  
+  const handleSearch = useCallback(debounce(async (e: any) => {
+    setFilteredTreeData(filterTreeData(treeData, e.target.value));
+  }, 0), [treeData]);
+
+  const handleSearch2 = useCallback(debounce(async (e: string) => {
+    setFilteredTreeData(filterTreeData(treeData, e));
+  }, 500), [treeData]);
+
 
   return (
-    <TreeSelect
-      treeData={filteredTreeData}
-      value={value}
-      onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
-      loadData={loadData}
-      treeCheckable
-      onSearch={handleSearch}
-      filterTreeNode={false}
-      treeDefaultExpandAll={true}
-      treeCheckStrictly
-      showCheckedStrategy={TreeSelect.SHOW_ALL}
-      treeExpandAction="click"
-      dropdownMatchSelectWidth={dropdownWidth}
-      placeholder={options.placeholder || 'Click to add...'}
-      style={style}
-      className="htx-taxonomy"
-    />
+    <>
+      <TreeSelect
+        treeData={filteredTreeData}
+        value={value}
+        onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
+        loadData={loadData}
+        treeCheckable
+        filterTreeNode={false}
+        treeDefaultExpandAll={dropdownOpen}
+        treeCheckStrictly
+        onSearch={handleSearch2}
+        onFocus={() => setDropdownOpen(true)}
+        onBlur={() => setDropdownOpen(false)}
+        open={dropdownOpen}
+        showCheckedStrategy={TreeSelect.SHOW_ALL}
+        treeExpandAction="click"
+        dropdownMatchSelectWidth={dropdownWidth}
+        placeholder={options.placeholder || 'Click to add...'}
+        style={style}
+        className="htx-taxonomy"
+      />
+      <input
+        onChange={e => handleSearch(e)}
+        onFocus={() => setDropdownOpen(true)}
+        onBlur={() => setDropdownOpen(false)}
+      />
+    </>
   );
 };
 
