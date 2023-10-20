@@ -1,8 +1,8 @@
 {
-  "name": "@heartexlabs/label-studio",
-  "version": "1.4.0",
+  "name": "@pareto-engineering/label-studio",
+  "version": "1.4.1",
   "description": "Data Labeling Tool that is backend agnostic and can be embedded into your applications",
-  "homepage": "https://labelstud.io",
+  "homepage": "https://pareto.ai",
   "author": {
     "name": "Heartex Labs",
     "url": "https://github.com/heartexlabs"
@@ -10,7 +10,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/heartexlabs/label-studio-frontend.git"
+    "url": "https://github.com/HelloPareto/label-studio-frontend.git"
   },
   "browser": "build/static/js/main.js",
   "main": "build/static/js/main.js",
@@ -18,7 +18,8 @@
     "build/",
     "images/",
     "CODE_OF_CONDUCT.md",
-    "CONTRIBUTING.md"
+    "CONTRIBUTING.md",
+    "scripts/postinstall.js"
   ],
   "size-limit": [
     {
