@@ -1,10 +1,11 @@
 import { TreeSelect } from 'antd';
-import React, { createRef, useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
 import './NewTaxonomy.styl';
 import { debounce } from 'lodash';
+import { Block } from '../../utils/bem';
 
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
@@ -112,13 +113,13 @@ const NewTaxonomy = ({
 }: TaxonomyProps) => {
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const [filteredTreeData, setFilteredTreeData] = useState<AntTaxonomyItem[]>([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
   const maxUsagesReached = !!options.maxUsages && selected.length >= options.maxUsages;
   const value = selected.map(path => path.join(separator));
-  const inputRef = createRef<HTMLInputElement>();
 
   useEffect(() => {
     setTreeData(convert(items, { ...options, maxUsagesReached }, value));
@@ -132,7 +133,7 @@ const NewTaxonomy = ({
     return onLoadData?.(node.value.split(separator));
   }, []);
 
-  const filterTreeNode = (searchValue: string, treeNode: AntTaxonomyItem) => {
+  const filterTreeNode = useCallback((searchValue: string, treeNode: AntTaxonomyItem) => {
     const lowerSearchValue = String(searchValue).toLowerCase();
 
     if (!lowerSearchValue) {
@@ -140,9 +141,9 @@ const NewTaxonomy = ({
     }
 
     return String(treeNode['title']).toLowerCase().includes(lowerSearchValue);
-  };
+  }, []);
 
-  const filterTreeData = (treeData: AntTaxonomyItem[], searchValue: string) => {
+  const filterTreeData = useCallback((treeData: AntTaxonomyItem[], searchValue: string) => {
     if (!searchValue) {
       return treeData;
     }
@@ -166,16 +167,48 @@ const NewTaxonomy = ({
     };
 
     return dig(treeData);
-  };
+  }, []);
+
+  const findExpandedKeys = useCallback((data: AntTaxonomyItem[]) => {
+    const _result: string[] = [];
+
+    const expandedKeys = (list: AntTaxonomyItem[]) => {
+      list.forEach((item: AntTaxonomyItem) => {
+        _result.push(item.key);
+
+        if(item.children?.length) {
+          expandedKeys(item.children);
+        }
+      });
+    };
+
+    expandedKeys(data);
+
+    return _result;
+  }, []);
 
   const handleSearch = useCallback(debounce(async (e: any) => {
-    setFilteredTreeData(filterTreeData(treeData, e.target.value));
+    const _filteredData = filterTreeData(treeData, e.target.value);
+
+    setFilteredTreeData(_filteredData);
+
+    if (e.target.value !== '') setExpandedKeys(findExpandedKeys(_filteredData));
+    else setExpandedKeys([]);
   }, 500), [treeData]);
 
-  const handleSearch2 = useCallback(debounce(async (e: string) => {
-    setFilteredTreeData(filterTreeData(treeData, e));
-  }, 500), [treeData]);
-
+  const renderDropdown = (origin: any) => {
+    return(
+      <>
+        <Block
+          tag={'input'}
+          onChange={(e: React.FormEvent<HTMLInputElement>) => handleSearch(e)}
+          placeholder={'Search'}
+          name={'taxonomy-search-input'}
+        />
+        {origin}
+      </>
+    );
+  };
 
   return (
     <>
@@ -186,34 +219,17 @@ const NewTaxonomy = ({
         loadData={loadData}
         treeCheckable
         filterTreeNode={false}
-        showSearch={true}
-        onDropdownVisibleChange={() => setDropdownOpen(true)}
-        treeDefaultExpandAll={dropdownOpen}
+        showSearch={false}
+        showArrow={true}
+        dropdownRender={renderDropdown}
+        treeExpandedKeys={expandedKeys}
         treeCheckStrictly
-        onSearch={handleSearch2}
-        onFocus={() => {
-          setDropdownOpen(true);
-          inputRef.current?.focus();
-        }}
-        onBlur={() => {
-          // setDropdownOpen(false)
-        }}
-        open={dropdownOpen}
         showCheckedStrategy={TreeSelect.SHOW_ALL}
         treeExpandAction="click"
         dropdownMatchSelectWidth={dropdownWidth}
         placeholder={options.placeholder || 'Click to add...'}
         style={style}
         className="htx-taxonomy"
-      />
-      <input
-        ref={inputRef}
-        style={{
-          display:dropdownOpen ? 'inline-block' : 'none',
-        }}
-        onChange={e => handleSearch(e)}
-        onFocus={() => setDropdownOpen(true)}
-        onBlur={() => setDropdownOpen(false)}
       />
     </>
   );
