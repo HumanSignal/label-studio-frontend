@@ -1,6 +1,6 @@
 {
   "name": "@pareto-engineering/label-studio",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "Data Labeling Tool that is backend agnostic and can be embedded into your applications",
   "homepage": "https://pareto.ai",
   "author": {
