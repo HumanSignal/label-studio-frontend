@@ -376,7 +376,7 @@ const Model = types
           destroyNode(state);
         });
 
-        area._range = range._range;
+        area.setRange(range._range);
 
         const [soff, eoff] = rangeToGlobalOffset(range._range, root);
 

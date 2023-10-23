@@ -385,7 +385,7 @@ export const AudioModel = types.compose(
             states,
           });
 
-          r._ws_region = wsRegion;
+          r.setWSRegion(wsRegion);
 
           self.regions.push(r);
           self.annotation.addRegion(r);
@@ -399,7 +399,7 @@ export const AudioModel = types.compose(
 
 
           if (find_r) {
-            find_r._ws_region = wsRegion;
+            find_r.setWSRegion(wsRegion);
             find_r.updateColor();
             return find_r;
           }
@@ -420,7 +420,7 @@ export const AudioModel = types.compose(
           const r = self.annotation.createResult(wsRegion, labels, control, self);
           const updatedRegion = wsRegion.convertToRegion(labels.labels);
 
-          r._ws_region = updatedRegion;
+          r.setWSRegion(updatedRegion);
           r.updateColor();
           return r;
         },
@@ -443,7 +443,7 @@ export const AudioModel = types.compose(
 
           const r = self._ws.addRegion(options, false);
 
-          region._ws_region = r;
+          region.setWSRegion(r);
         },
 
         updateWsRegion(region) {
@@ -458,7 +458,7 @@ export const AudioModel = types.compose(
 
         clearRegionMappings() {
           self.regs.forEach(r => {
-            r._ws_region = null;
+            r.clearWSRegion?.();
           });
         },
 

@@ -138,7 +138,9 @@ export class Visualizer extends Events<VisualizerEvents> {
       this._loader = document.createElement('loading-progress-bar');
       this._container.appendChild(this._loader);
     } else {
-      this._container.removeChild(this._loader);
+      if (this._loader.parentNode === this._container) {
+        this._container.removeChild(this._loader);
+      }
     }
   }
 
@@ -254,6 +256,7 @@ export class Visualizer extends Events<VisualizerEvents> {
   }
 
   clear() {
+    this.setLoading(false);
     this.layers.get('main')?.clear();
     this.transferImage();
   }

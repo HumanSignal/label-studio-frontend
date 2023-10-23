@@ -100,7 +100,7 @@ export default types
           // skip it to allow another span to be selected
           if (self.parent._currentSpan !== this) {
             ev.stopPropagation();
-            self.parent._currentSpan = this;
+            self.parent.setCurrentSpan(this);
           }
         };
 

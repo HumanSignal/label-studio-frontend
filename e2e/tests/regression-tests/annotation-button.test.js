@@ -27,7 +27,9 @@ Scenario('Annotation button should keep border width on hover', async ({ I, Labe
     ],
   });
 
-  const borderWidth = await I.executeScript(()=>{
+  LabelStudio.waitForObjectsReady();
+  I.seeElement('.lsf-annotation-button:nth-child(2)');
+  const borderWidth = await I.executeScript(() => {
     const el = document.querySelector('.lsf-annotation-button:nth-child(2)');
     const borderWidth = window.getComputedStyle(el).getPropertyValue('border-width');
 
@@ -36,7 +38,7 @@ Scenario('Annotation button should keep border width on hover', async ({ I, Labe
 
   I.moveCursorTo('.lsf-annotation-button:nth-child(2)');
 
-  const borderWidthHovered = await I.executeScript(()=>{
+  const borderWidthHovered = await I.executeScript(() => {
     const el = document.querySelector('.lsf-annotation-button:nth-child(2)');
     const borderWidth = window.getComputedStyle(el).getPropertyValue('border-width');
 

@@ -9,6 +9,8 @@
   "scripts": {
     "test": "cypress run --quiet --browser chrome",
     "test:ui": "cypress open",
+    "test:ui:e2e:chrome": "cypress open --browser chrome --e2e",
+    "test:ui:e2e:firefox": "cypress open --browser firefox --e2e",
     "test:with-coverage": "COLLECT_COVERAGE=true yarn test:parallel",
     "test:parallel": "cypress-parallel -r spec -b -m -s test -t ${CPU_NUMBER:=2} -d ./specs/",
     "test:reset": "rm -rf output && yarn run cvg:reset",
@@ -18,7 +20,7 @@
     "cvg:summary": "nyc report --temp-dir=.nyc_output --reporter=text-summary --cwd=. --exclude-after-remap false"
   },
   "dependencies": {
-    "@heartexlabs/ls-test": "git+ssh://git@github.com/heartexlabs/ls-frontend-test#b4c8edbe8f15ac1d6ad0d8bb7bd9aede14dc8e06"
+    "@heartexlabs/ls-test": "git+ssh://git@github.com/heartexlabs/ls-frontend-test#2e91f442891def184597e3beb85660b0f964602a"
   },
   "devDependencies": {
     "ts-loader": "^9.4.2",

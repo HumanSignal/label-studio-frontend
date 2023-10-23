@@ -1,4 +1,7 @@
+const NO_CLEANING = true;
+
 export function cutFibers(object) {
+  if (NO_CLEANING) return;
   const objects = [object];
   let obj;
 
@@ -8,7 +11,8 @@ export function cutFibers(object) {
     const isSvg = obj.elementType === 'svg';
 
     // preventing processing svgs due to the problem with props,
-    // props sometimes come from the global variables, so it's tricky to clean them without breaking icons itself
+    // props sometimes come from the global variables, so it's
+    // tricky to clean them without breaking icons itself
     if (isSvg) continue;
 
     for (const key of keys) {
@@ -28,6 +32,7 @@ export function cutFibers(object) {
 }
 
 export function findReactKey(node) {
+  if (NO_CLEANING) return;
   const keys = Object.keys(node);
 
   for (const key of keys) {
@@ -41,6 +46,7 @@ export function findReactKey(node) {
 }
 
 export function cleanDomAfterReact(nodes, reactKey) {
+  if (NO_CLEANING) return;
   for (const node of nodes) {
     if (node.isConnected) return;
     // preventing processing svgs due to the problem with props,
@@ -63,6 +69,7 @@ export function cleanDomAfterReact(nodes, reactKey) {
 const globalCache = new WeakMap();
 
 function createCleaner() {
+  if (NO_CLEANING) return;
   let ref = null;
 
   return (node) => {
@@ -83,6 +90,8 @@ function createCleaner() {
 }
 
 export function reactCleaner(object, key = 'default') {
+  if (NO_CLEANING) return;
+  return void 0;
   if (!globalCache.has(object)) {
     globalCache.set(object, new Map());
   }

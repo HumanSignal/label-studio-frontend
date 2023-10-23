@@ -305,7 +305,7 @@ class HtxParagraphsView extends Component {
       return;
     }
 
-    item._currentSpan = null;
+    item.setCurrentSpan(null);
 
     if (isFF(FF_DEV_2918)) {
       const htxRanges = item.addRegions(selectedRanges);
@@ -400,7 +400,7 @@ class HtxParagraphsView extends Component {
 
         splitBoundaries(range);
 
-        r._range = range;
+        r.setRange(range);
         const spans = r.createSpans();
 
         r.addEventsToSpans(spans);
