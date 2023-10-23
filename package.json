@@ -1,6 +1,6 @@
 {
   "name": "@pareto-engineering/label-studio",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Data Labeling Tool that is backend agnostic and can be embedded into your applications",
   "homepage": "https://pareto.ai",
   "author": {
@@ -46,8 +46,7 @@
     "test:coverage": "yarn test -- --coverage",
     "test:watch": "react-scripts test",
     "test": "yarn jest src",
-    "coverage:merge": "npx nyc merge coverage/ coverage/coverage.json && rm -f coverage/*.coverage.json",
-    "postinstall": "sh scripts/postinstall.sh"
+    "coverage:merge": "npx nyc merge coverage/ coverage/coverage.json && rm -f coverage/*.coverage.json"
   },
   "husky": {
     "hooks": {
