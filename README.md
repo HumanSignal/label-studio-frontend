@@ -36,7 +36,7 @@ import 'label-studio/build/static/css/main.css';
 <div id="label-studio"></div>
 
 <!-- Include the Label Studio library -->
-<script src="https://unpkg.com/@heartexlabs/label-studio@1.4.7/build/static/js/main.js"></script>
+<script src="https://unpkg.com/@heartexlabs/label-studio@1.4.7/build/static/js/664.chunk.js"></script>
 ```
 
 **Initialization**
