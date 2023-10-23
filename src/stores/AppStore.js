@@ -630,9 +630,11 @@ export default types
      */
     async function proxyUrl(url) {
       // Event invocation returns array of results for all handlers.
-      const urls = await getEnv(self).events.invoke('proxyUrl', self, url)
-      const url = urls?.[0]
-      return url
+      const urls = await getEnv(self).events.invoke('proxyUrl', self, url);
+
+      const presignUrl = urls?.[0];
+
+      return presignUrl;
     }
 
     /**
