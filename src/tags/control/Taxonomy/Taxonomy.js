@@ -37,6 +37,17 @@ import messages from '../../../utils/messages';
 import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
 
 /**
+ * @typedef TaxonomyItem
+ * @property {string} label
+ * @property {string[]} path
+ * @property {number} depth
+ * @property {string} [hint]
+ * @property {string} [color]
+ * @property {TaxonomyItem[]} [children]
+ * @property {string} [alias]
+ */
+
+/**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
  *
  * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
@@ -83,6 +94,7 @@ const TagAttrs = types.model({
   labeling: types.optional(types.boolean, false),
   leafsonly: types.optional(types.boolean, false),
   showfullpath: types.optional(types.boolean, false),
+  legacy: types.optional(types.boolean, false),
   pathseparator: types.optional(types.string, ' / '),
   apiurl: types.maybeNull(types.string),
   placeholder: '',
@@ -283,6 +295,25 @@ const Model = types
       }
 
       return fromConfig;
+    },
+
+    get selectedItems() {
+      const full = self.selected.map(path => {
+        /** @type {TaxonomyItem[]} items */
+        let items = self.items;
+        const levels = [];
+
+        for (const value of path) {
+          const item = items.find(item => item.path.at(-1) === value);
+
+          levels.push({ label: item?.label ?? value, value });
+          items = item?.children ?? [];
+        }
+
+        return levels;
+      });
+
+      return full;
     },
 
     get defaultChildType() {
@@ -572,10 +603,10 @@ const HtxTaxonomy = observer(({ item }) => {
   return (
     // @todo use BEM class names + literal "taxonomy" for external styling
     <div className={[styles.taxonomy, 'taxonomy'].join(' ')} style={{ ...visibleStyle }}>
-      {isFF(FF_TAXONOMY_ASYNC) ? (
+      {(isFF(FF_TAXONOMY_ASYNC) && !item.legacy) ? (
         <NewTaxonomy
           items={item.items}
-          selected={item.selected}
+          selected={item.selectedItems}
           onChange={item.onChange}
           onLoadData={item.loadItems}
           onAddLabel={item.userLabels && item.onAddLabel}

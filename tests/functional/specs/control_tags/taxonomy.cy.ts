@@ -1,13 +1,16 @@
 import { LabelStudio, Tooltip } from '@heartexlabs/ls-test/helpers/LSF/index';
 import { useTaxonomy } from '@heartexlabs/ls-test/helpers/LSF';
 import {
+  buildDynamicTaxonomyConfig,
   dataWithPrediction,
   dynamicData,
   dynamicTaxonomyConfig,
   simpleData,
   taxonomyConfig,
   taxonomyConfigWithMaxUsages,
-  taxonomyResultWithAlias
+  taxonomyDataWithSimilarAliases,
+  taxonomyResultWithAlias,
+  taxonomyResultWithSimilarAliases
 } from '../../data/control_tags/taxonomy';
 import {
   FF_DEV_2007,
@@ -134,6 +137,7 @@ Object.entries(taxonomies).forEach(([title, Taxonomy]) => {
           });
   
           init(config, data);
+          // create new annotation and check that preselected choices are selected already
           cy.get('.lsf-annotations-list').click();
           cy.get('.lsf-annotations-list__create').click();
           Taxonomy.open();
@@ -141,5 +145,31 @@ Object.entries(taxonomies).forEach(([title, Taxonomy]) => {
         });
       }
     }
+  });
+
+  describe('Control Tags - Taxonomy - showFullPath', () => {
+    // Old Taxonomy has bugs in displaying equal aliases
+    if (!Taxonomy.isNew) return;
+
+    it('should show full path with true', () => {
+      LabelStudio.params()
+        .config(buildDynamicTaxonomyConfig({ showFullPath: true }))
+        .data(taxonomyDataWithSimilarAliases)
+        .withResult([taxonomyResultWithSimilarAliases])
+        .init();
+
+      Taxonomy.hasSelected('Book 1 / Chapter 2 / Section 2.1');
+    });
+
+    it('should show only last item with false', () => {
+      LabelStudio.params()
+        .config(buildDynamicTaxonomyConfig({ showFullPath: false }))
+        .data(taxonomyDataWithSimilarAliases)
+        .withResult([taxonomyResultWithSimilarAliases])
+        .init();
+
+      Taxonomy.hasSelected('Section 2.1');
+      Taxonomy.hasNoSelected('Book 1 / Chapter 2 / Section 2.1');
+    });
   });
 });

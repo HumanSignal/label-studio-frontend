@@ -42,9 +42,14 @@ type TaxonomyOptions = {
   placeholder?: string,
 };
 
+type SelectedItem = {
+  label: string,
+  value: string,
+}[];
+
 type TaxonomyProps = {
   items: TaxonomyItem[],
-  selected: TaxonomyPath[],
+  selected: SelectedItem[],
   onChange: (node: any, selected: TaxonomyPath[]) => any,
   onLoadData?: (item: TaxonomyPath) => any,
   onAddLabel?: onAddLabelCallback,
@@ -114,12 +119,15 @@ const NewTaxonomy = ({
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const [filteredTreeData, setFilteredTreeData] = useState<AntTaxonomyItem[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
-
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
   const maxUsagesReached = !!options.maxUsages && selected.length >= options.maxUsages;
-  const value = selected.map(path => path.join(separator));
+  const value = selected.map(path => path.map(p => p.value).join(separator));
+  const displayed = selected.map(path => ({
+    value: path.map(p => p.value).join(separator),
+    label: options.showFullPath ? path.map(p => p.label).join(separator) : path.at(-1).label,
+  }));
 
   useEffect(() => {
     setTreeData(convert(items, { ...options, maxUsagesReached }, value));
@@ -194,7 +202,7 @@ const NewTaxonomy = ({
 
     if (e.target.value !== '') setExpandedKeys(findExpandedKeys(_filteredData));
     else setExpandedKeys([]);
-  }, 500), [treeData]);
+  }, 300), [treeData]);
 
   const renderDropdown = (origin: any) => {
     return(
@@ -211,27 +219,26 @@ const NewTaxonomy = ({
   };
 
   return (
-    <>
-      <TreeSelect
-        treeData={filteredTreeData}
-        value={value}
-        onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
-        loadData={loadData}
-        treeCheckable
-        filterTreeNode={false}
-        showSearch={false}
-        showArrow={true}
-        dropdownRender={renderDropdown}
-        treeExpandedKeys={expandedKeys}
-        treeCheckStrictly
-        showCheckedStrategy={TreeSelect.SHOW_ALL}
-        treeExpandAction="click"
-        dropdownMatchSelectWidth={dropdownWidth}
-        placeholder={options.placeholder || 'Click to add...'}
-        style={style}
-        className="htx-taxonomy"
-      />
-    </>
+    <TreeSelect
+      treeData={filteredTreeData}
+      value={displayed}
+      labelInValue={true}
+      onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
+      loadData={loadData}
+      treeCheckable
+      filterTreeNode={false}
+      showSearch={false}
+      showArrow={true}
+      dropdownRender={renderDropdown}
+      treeExpandedKeys={expandedKeys}
+      treeCheckStrictly
+      showCheckedStrategy={TreeSelect.SHOW_ALL}
+      treeExpandAction="click"
+      dropdownMatchSelectWidth={dropdownWidth}
+      placeholder={options.placeholder || 'Click to add...'}
+      style={style}
+      className="htx-taxonomy"
+    />
   );
 };
 

@@ -70,14 +70,12 @@ export const taxonomyConfig = `<View>
   </Taxonomy>
 </View>`;
 export const taxonomyConfigWithMaxUsages = `<View>
-  <View>
   <Text name="text" value="$text"/>
   <Taxonomy name="taxonomy" toName="text" maxUsages="1">
     <Choice value="Archaea" />
     <Choice value="Bacteria" />
     <Choice value="Eukarya" />
   </Taxonomy>
-</View>
 </View>`;
 
 export const dynamicData = {
@@ -89,10 +87,61 @@ export const dynamicData = {
   ],
 };
 
+export const taxonomyDataWithSimilarAliases = {
+  text: 'This text exists for no reason',
+  items: [
+    { value: 'Book 1', alias: '1', children: [
+      { value: 'Chapter 1', alias: '1' },
+      { value: 'Chapter 2', alias: '2', children: [
+        { value: 'Section 2.1', alias: '1' },
+        { value: 'Section 2.2', alias: '2' },
+        { value: 'Section 2.3', alias: '3' },
+      ] },
+      { value: 'Chapter 3', alias: '3', children: [
+        { value: 'Section 3.1', alias: '1' },
+        { value: 'Section 3.2', alias: '2' },
+        { value: 'Section 3.3', alias: '3' },
+      ] },
+    ] },
+    { value: 'Book 2', alias: '2', children: [
+      { value: 'Chapter 1', alias: '1' },
+      { value: 'Chapter 2', alias: '2', children: [
+        { value: 'Section 2.1', alias: '1' },
+        { value: 'Section 2.2', alias: '2' },
+        { value: 'Section 2.3', alias: '3' },
+      ] },
+    ] },
+    { value: 'Book 3', alias: '3' },
+  ],
+};
+
+export const taxonomyResultWithSimilarAliases = {
+  'id': 'aliased',
+  'type': 'taxonomy',
+  'value': {
+    'taxonomy': [['1', '2', '1']],
+  },
+  'to_name': 'text',
+  'from_name': 'choices',
+};
+
 export const dynamicTaxonomyConfig = `<View>
-  <Text name="text"/>
-  <Taxonomy name="choices" toName="text" value="$items">
-  </Taxonomy>
+  <Text name="text" value="$text"/>
+  <Taxonomy name="choices" toName="text" value="$items" showFullPath="true"/>
+</View>`;
+
+
+type TaxonomyOptions = {
+  showFullPath?: boolean,
+};
+export const buildDynamicTaxonomyConfig = (options: TaxonomyOptions) => `<View>
+  <Text name="text" value="$text"/>
+  <Taxonomy
+    name="choices"
+    toName="text"
+    value="$items"
+    showFullPath="${JSON.stringify(options.showFullPath ?? false)}"
+  />
 </View>`;
 
 export const taxonomyResultWithAlias = {
