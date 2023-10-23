@@ -30,13 +30,13 @@ import 'label-studio/build/static/css/';
 
 ```xhtml
 <!-- Include Label Studio stylesheet -->
-<link href="https://unpkg.com/@heartexlabs/label-studio@1.4.7/build/static/css/" rel="stylesheet">
+<link href="https://unpkg.com/@heartexlabs/label-studio@1.4.8/build/static/css/" rel="stylesheet">
 
 <!-- Create the Label Studio container -->
 <div id="label-studio"></div>
 
 <!-- Include the Label Studio library -->
-<script src="https://unpkg.com/@heartexlabs/label-studio@1.4.7/build/static/js/664.chunk.js"></script>
+<script src="https://unpkg.com/@heartexlabs/label-studio@1.4.8/build/static/js/664.chunk.js"></script>
 ```
 
 **Initialization**
