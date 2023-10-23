@@ -12,8 +12,8 @@
     "type": "git",
     "url": "https://github.com/HelloPareto/label-studio-frontend.git"
   },
-  "browser": "build/static/js/main.js",
-  "main": "build/static/js/main.js",
+  "browser": "build/main.js",
+  "main": "build/main.js",
   "files": [
     "build/",
     "images/",
@@ -23,7 +23,7 @@
   ],
   "size-limit": [
     {
-      "path": "build/static/js/*.js"
+      "path": "build/*.js"
     }
   ],
   "scripts": {
