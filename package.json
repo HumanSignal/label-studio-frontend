@@ -19,7 +19,7 @@
     "images/",
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
-    "scripts/postinstall.js"
+    "scripts/"
   ],
   "size-limit": [
     {
