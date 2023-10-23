@@ -23,14 +23,14 @@ npm install @heartexlabs/label-studio
 
 ```js
 import LabelStudio from '@heartexlabs/label-studio';
-import 'label-studio/build/static/css/main.css';
+import 'label-studio/build/static/css/';
 ```
 
 **With UNPKG.com**
 
 ```xhtml
 <!-- Include Label Studio stylesheet -->
-<link href="https://unpkg.com/@heartexlabs/label-studio@1.4.7/build/static/css/main.css" rel="stylesheet">
+<link href="https://unpkg.com/@heartexlabs/label-studio@1.4.7/build/static/css/" rel="stylesheet">
 
 <!-- Create the Label Studio container -->
 <div id="label-studio"></div>
