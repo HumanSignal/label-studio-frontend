@@ -518,7 +518,7 @@ const Model = types
         if (!self.isLoadedByApi) return Super.updateValue?.(store);
 
         self._api = parseValue(self.apiurl, store.task.dataObj);
-        self._api = store.onProxyUrl?.(self._api) ?? self._api;
+        self._api = (yield store.proxyUrl(self._api)) ?? self._api;
 
         yield self.loadItems();
       }),
