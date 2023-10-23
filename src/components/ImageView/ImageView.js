@@ -1016,6 +1016,13 @@ export default observer(
             className={containerClassName}
             style={containerStyle}
           >
+            <div
+              ref={node => {
+                this.filler = node;
+              }}
+              className={styles.filler}
+              style={{ width: '100%', marginTop: item.fillerHeight }}
+            />
 
             {isFF(FF_LSDV_4583_6) ? (
               <Image
