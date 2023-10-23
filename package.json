@@ -1,6 +1,6 @@
 {
   "name": "@pareto-engineering/label-studio",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "Data Labeling Tool that is backend agnostic and can be embedded into your applications",
   "homepage": "https://pareto.ai",
   "author": {
@@ -12,8 +12,8 @@
     "type": "git",
     "url": "https://github.com/HelloPareto/label-studio-frontend.git"
   },
-  "browser": "build/main.js",
-  "main": "build/main.js",
+  "browser": "build/static/js/main.js",
+  "main": "build/static/js/main.js",
   "files": [
     "build/",
     "images/",
@@ -23,7 +23,7 @@
   ],
   "size-limit": [
     {
-      "path": "build/*.js"
+      "path": "build/static/js/*.js"
     }
   ],
   "scripts": {
