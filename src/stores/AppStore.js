@@ -628,9 +628,9 @@ export default types
     /**
      * Exchange storage url for presigned url for task
      */
-    async function proxyUrl(url) {
+    async function presignUrlForProject(url) {
       // Event invocation returns array of results for all handlers.
-      const urls = await getEnv(self).events.invoke('proxyUrl', self, url);
+      const urls = await getEnv(self).events.invoke('presignUrlForProject', self, url);
 
       const presignUrl = urls?.[0];
 
@@ -846,7 +846,7 @@ export default types
       updateAnnotation,
       acceptAnnotation,
       rejectAnnotation,
-      proxyUrl,
+      presignUrlForProject,
       setUsers,
       mergeUsers,
 
