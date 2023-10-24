@@ -587,6 +587,12 @@ const TaxonomyModel = types.compose('TaxonomyModel',
 );
 
 const HtxTaxonomy = observer(({ item }) => {
+  // literal "taxonomy" class name is for external styling
+  const className = [
+    styles.taxonomy,
+    'taxonomy',
+    isFF(FF_TAXONOMY_ASYNC) ? styles.taxonomy__new : '',
+  ].filter(Boolean).join(' ');
   const visibleStyle = item.perRegionVisible() && item.isVisible ? {} : { display: 'none' };
   const options = {
     showFullPath: item.showfullpath,
@@ -600,9 +606,18 @@ const HtxTaxonomy = observer(({ item }) => {
     canRemoveItems: item.canRemoveItems,
   };
 
+  if (item.loading && isFF(FF_DEV_3617)) {
+    return (
+      <div className={className} style={visibleStyle}>
+        <div className={styles.taxonomy__loading}>
+          <Spin size="small"/>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    // @todo use BEM class names + literal "taxonomy" for external styling
-    <div className={[styles.taxonomy, 'taxonomy'].join(' ')} style={{ ...visibleStyle }}>
+    <div className={className} style={visibleStyle}>
       {(isFF(FF_TAXONOMY_ASYNC) && !item.legacy) ? (
         <NewTaxonomy
           items={item.items}
@@ -615,21 +630,15 @@ const HtxTaxonomy = observer(({ item }) => {
           isEditable={!item.isReadOnly()}
         />
       ) : (
-        item.loading && isFF(FF_DEV_3617) ? (
-          <div className={styles.taxonomy__loading}>
-            <Spin size="small"/>
-          </div>
-        ) : (
-          <Taxonomy
-            items={item.items}
-            selected={item.selected}
-            onChange={item.onChange}
-            onAddLabel={item.userLabels && item.onAddLabel}
-            onDeleteLabel={item.userLabels && item.onDeleteLabel}
-            options={options}
-            isEditable={!item.isReadOnly()}
-          />
-        )
+        <Taxonomy
+          items={item.items}
+          selected={item.selected}
+          onChange={item.onChange}
+          onAddLabel={item.userLabels && item.onAddLabel}
+          onDeleteLabel={item.userLabels && item.onDeleteLabel}
+          options={options}
+          isEditable={!item.isReadOnly()}
+        />
       )}
     </div>
   );
