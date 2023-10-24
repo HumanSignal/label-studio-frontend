@@ -27,6 +27,8 @@
     "webpack-cli": "^5.0.1"
   },
   "resolutions": {
-    "@cypress/code-coverage/istanbul-lib-coverage": "^3.2.0"
+    "@cypress/code-coverage/istanbul-lib-coverage": "^3.2.0",
+    "debug": "^4.3.4",
+    "get-func-name": "^2.0.1"
   }
 }
