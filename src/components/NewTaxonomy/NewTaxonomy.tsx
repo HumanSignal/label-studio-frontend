@@ -1,11 +1,10 @@
 import { TreeSelect } from 'antd';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
 import './NewTaxonomy.styl';
-import { debounce } from 'lodash';
-import { Block } from '../../utils/bem';
+import { TaxonomySearch } from './TaxonomySearch';
 
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
@@ -22,7 +21,7 @@ type TaxonomyItem = {
   color?: string,
 };
 
-type AntTaxonomyItem = {
+export type AntTaxonomyItem = {
   title: string | JSX.Element,
   value: string,
   key: string,
@@ -141,82 +140,20 @@ const NewTaxonomy = ({
     return onLoadData?.(node.value.split(separator));
   }, []);
 
-  const filterTreeNode = useCallback((searchValue: string, treeNode: AntTaxonomyItem) => {
-    const lowerSearchValue = String(searchValue).toLowerCase();
-
-    if (!lowerSearchValue) {
-      return false;
-    }
-
-    return String(treeNode['title']).toLowerCase().includes(lowerSearchValue);
+  const handleSearch = useCallback((list: AntTaxonomyItem[], expandedKeys: string[]) => {
+    setExpandedKeys(expandedKeys);
+    setFilteredTreeData(list);
   }, []);
 
-  const filterTreeData = useCallback((treeData: AntTaxonomyItem[], searchValue: string) => {
-    if (!searchValue) {
-      return treeData;
-    }
-
-    const dig = (list: AntTaxonomyItem[], keepAll = false) => {
-      return list.reduce<AntTaxonomyItem[]>((total, dataNode) => {
-        const children = dataNode['children'];
-
-        const match = keepAll || filterTreeNode(searchValue, dataNode);
-        const childList = dig(children || [], match);
-
-        if (match || childList.length) {
-          total.push({
-            ...dataNode,
-            isLeaf: undefined,
-            children: childList,
-          });
-        }
-        return total;
-      }, []);
-    };
-
-    return dig(treeData);
-  }, []);
-
-  const findExpandedKeys = useCallback((data: AntTaxonomyItem[]) => {
-    const _result: string[] = [];
-
-    const expandedKeys = (list: AntTaxonomyItem[]) => {
-      list.forEach((item: AntTaxonomyItem) => {
-        _result.push(item.key);
-
-        if(item.children?.length) {
-          expandedKeys(item.children);
-        }
-      });
-    };
-
-    expandedKeys(data);
-
-    return _result;
-  }, []);
-
-  const handleSearch = useCallback(debounce(async (e: any) => {
-    const _filteredData = filterTreeData(treeData, e.target.value);
-
-    setFilteredTreeData(_filteredData);
-
-    if (e.target.value !== '') setExpandedKeys(findExpandedKeys(_filteredData));
-    else setExpandedKeys([]);
-  }, 300), [treeData]);
-
-  const renderDropdown = (origin: any) => {
+  const renderDropdown = useCallback((origin: ReactNode) => {
     return(
-      <>
-        <Block
-          tag={'input'}
-          onChange={(e: React.FormEvent<HTMLInputElement>) => handleSearch(e)}
-          placeholder={'Search'}
-          name={'taxonomy-search-input'}
-        />
-        {origin}
-      </>
+      <TaxonomySearch
+        treeData={treeData}
+        origin={origin}
+        onChange={handleSearch}
+      />
     );
-  };
+  }, [treeData]);
 
   return (
     <TreeSelect
