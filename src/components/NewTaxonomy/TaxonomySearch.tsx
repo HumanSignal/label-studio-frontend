@@ -8,7 +8,7 @@ import { debounce } from 'lodash';
 type TaxonomySearchProps = {
   treeData: AntTaxonomyItem[],
   origin: ReactNode,
-  onChange: (list: AntTaxonomyItem[], expandedKeys: string[]) => void,
+  onChange: (list: AntTaxonomyItem[], expandedKeys: string[] | undefined) => void,
 }
 
 const TaxonomySearch = ({
@@ -30,8 +30,12 @@ const TaxonomySearch = ({
 
   // It's running recursively through treeData and its children filtering the content that match with the search value
   const filterTreeData = useCallback((treeData: AntTaxonomyItem[], searchValue: string) => {
+    const _expandedKeys: string[] = [];
+
     if (!searchValue) {
-      return treeData;
+      return {
+        filteredDataTree:treeData,
+      };
     }
 
     const dig = (list: AntTaxonomyItem[], keepAll = false) => {
@@ -42,47 +46,29 @@ const TaxonomySearch = ({
         const childList = dig(children || [], match);
 
         if (match || childList.length) {
+          _expandedKeys.push(dataNode.key);
+          
           total.push({
             ...dataNode,
             isLeaf: undefined,
             children: childList,
           });
         }
+
         return total;
       }, []);
     };
 
-    return dig(treeData);
-  }, []);
-
-  // After filter the treeData result, this method is used to check which keys must be expanded
-  const findExpandedKeys = useCallback((data: AntTaxonomyItem[]) => {
-    const _result: string[] = [];
-
-    const expandedKeys = (list: AntTaxonomyItem[]) => {
-      list.forEach((item: AntTaxonomyItem) => {
-        _result.push(item.key);
-
-        if(item.children?.length) {
-          expandedKeys(item.children);
-        }
-      });
+    return {
+      filteredDataTree:dig(treeData),
+      expandedKeys:_expandedKeys,
     };
-
-    expandedKeys(data);
-
-    return _result;
   }, []);
 
   const handleSearch = useCallback(debounce(async (e: ChangeEvent<HTMLInputElement>) => {
     const _filteredData = filterTreeData(treeData, e.target.value);
-    let _expandedKeys: string[] = [];
 
-
-    if (e.target.value !== '')
-      _expandedKeys = findExpandedKeys(_filteredData);
-
-    onChange(_filteredData, _expandedKeys);
+    onChange(_filteredData.filteredDataTree, _filteredData.expandedKeys);
   }, 300), [treeData]);
 
   return(

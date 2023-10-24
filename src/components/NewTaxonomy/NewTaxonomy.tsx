@@ -117,7 +117,7 @@ const NewTaxonomy = ({
 }: TaxonomyProps) => {
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const [filteredTreeData, setFilteredTreeData] = useState<AntTaxonomyItem[]>([]);
-  const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [expandedKeys, setExpandedKeys] = useState<string[] | undefined>();
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
