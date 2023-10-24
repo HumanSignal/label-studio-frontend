@@ -92,6 +92,7 @@ const TaxonomySearch = ({
         onChange={handleSearch}
         onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => e.stopPropagation()}
         placeholder={'Search'}
+        data-testid={'taxonomy-search'}
         name={'taxonomy-search-input'}
       />
       {origin}
