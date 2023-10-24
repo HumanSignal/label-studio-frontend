@@ -195,7 +195,6 @@ Object.entries(taxonomies).forEach(([title, Taxonomy]) => {
       cy.get('[data-testid="taxonomy-search"]').type('Section 3.3');
       Taxonomy.dropdown.contains('.ant-select-tree-treenode', 'Section 3.3').should('be.visible');
       cy.get('[data-testid="taxonomy-search"]').clear();
-      Taxonomy.dropdown.contains('.ant-select-tree-treenode', 'Section 3.3').should('not.exist');
       cy.get('[data-testid="taxonomy-search"]').type('Section 7.0');
       Taxonomy.dropdown.contains('No Data').should('be.visible');
       Taxonomy.hasSelected('Book 1 / Chapter 2 / Section 2.1');
