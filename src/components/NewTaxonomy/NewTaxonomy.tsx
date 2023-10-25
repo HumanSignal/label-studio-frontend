@@ -3,6 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
+import './NewTaxonomy.styl';
+
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
 type onDeleteLabelCallback = (path: string[]) => any;
@@ -15,6 +17,7 @@ type TaxonomyItem = {
   children?: TaxonomyItem[],
   origin?: 'config' | 'user' | 'session',
   hint?: string,
+  color?: string,
 };
 
 type AntTaxonomyItem = {
@@ -23,6 +26,7 @@ type AntTaxonomyItem = {
   key: string,
   isLeaf?: boolean,
   children?: AntTaxonomyItem[],
+  disableCheckbox?: boolean,
 };
 
 type TaxonomyOptions = {
@@ -36,9 +40,14 @@ type TaxonomyOptions = {
   placeholder?: string,
 };
 
+type SelectedItem = {
+  label: string,
+  value: string,
+}[];
+
 type TaxonomyProps = {
   items: TaxonomyItem[],
-  selected: TaxonomyPath[],
+  selected: SelectedItem[],
   onChange: (node: any, selected: TaxonomyPath[]) => any,
   onLoadData?: (item: TaxonomyPath) => any,
   onAddLabel?: onAddLabelCallback,
@@ -47,19 +56,50 @@ type TaxonomyProps = {
   isEditable?: boolean,
 };
 
-const convert = (items: TaxonomyItem[], options: TaxonomyOptions): AntTaxonomyItem[] => {
-  return items.map(item => ({
-    title: item.hint ? (
+type TaxonomyExtendedOptions = TaxonomyOptions & {
+  maxUsagesReached?: boolean,
+};
+
+const convert = (
+  items: TaxonomyItem[],
+  options: TaxonomyExtendedOptions,
+  selectedPaths: string[],
+): AntTaxonomyItem[] => {
+  // generate string or component to be the `title` of the item
+  const enrich = (item: TaxonomyItem) => {
+    const color = (item: TaxonomyItem) => (
+      // no BEM here to make it more lightweight
+      // global classname to allow to change it in Style tag
+      <span className="htx-taxonomy-item-color" style={{ background: item.color }}>
+        {item.label}
+      </span>
+    );
+
+    if (!item.hint) return item.color ? color(item) : item.label;
+
+    return (
       <Tooltip title={item.hint} mouseEnterDelay={500}>
-        <span>{item.label}</span>
+        {item.color ? color(item) : <span>{item.label}</span>}
       </Tooltip>
-    ) : item.label,
-    value: item.path.join(options.pathSeparator),
-    key: item.path.join(options.pathSeparator),
-    isLeaf: item.isLeaf !== false && !item.children,
-    disableCheckbox: options.leafsOnly && (item.isLeaf === false || !!item.children),
-    children: item.children ? convert(item.children, options) : undefined,
-  }));
+    );
+  };
+
+  const convertItem = (item: TaxonomyItem): AntTaxonomyItem => {
+    const value = item.path.join(options.pathSeparator);
+    const disabledNode = options.leafsOnly && (item.isLeaf === false || !!item.children);
+    const maxUsagesReached = options.maxUsagesReached && !selectedPaths.includes(value);
+
+    return {
+      title: enrich(item),
+      value,
+      key: value,
+      isLeaf: item.isLeaf !== false && !item.children,
+      disableCheckbox: disabledNode || maxUsagesReached,
+      children: item.children?.map(convertItem),
+    };
+  };
+
+  return items.map(convertItem);
 };
 
 const NewTaxonomy = ({
@@ -78,10 +118,16 @@ const NewTaxonomy = ({
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
+  const maxUsagesReached = !!options.maxUsages && selected.length >= options.maxUsages;
+  const value = selected.map(path => path.map(p => p.value).join(separator));
+  const displayed = selected.map(path => ({
+    value: path.map(p => p.value).join(separator),
+    label: options.showFullPath ? path.map(p => p.label).join(separator) : path.at(-1).label,
+  }));
 
   useEffect(() => {
-    setTreeData(convert(items, options));
-  }, [items]);
+    setTreeData(convert(items, { ...options, maxUsagesReached }, value));
+  }, [items, maxUsagesReached]);
 
   const loadData = useCallback(async (node: any) => {
     return onLoadData?.(node.value.split(separator));
@@ -90,7 +136,8 @@ const NewTaxonomy = ({
   return (
     <TreeSelect
       treeData={treeData}
-      value={selected.map(path => path.join(separator))}
+      value={displayed}
+      labelInValue={true}
       onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
       loadData={loadData}
       treeCheckable
