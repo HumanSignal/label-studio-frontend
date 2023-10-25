@@ -500,10 +500,6 @@ const ParagraphsLoadingModel = types.model()
       for (const range of ranges) {
         const area = self.annotation.createResult(range, labels, control, self);
 
-        if (getRoot(self).autoAnnotation) {
-          area.makeDynamic();
-        }
-
         area.setText(range.text);
 
         area.notifyDrawingFinished();
@@ -525,10 +521,6 @@ const ParagraphsLoadingModel = types.model()
         const control = states[0];
         const labels = { [control.valueType]: control.selectedValues() };
         const area = self.annotation.createResult(range, labels, control, self);
-
-        if (getRoot(self).autoAnnotation) {
-          area.makeDynamic();
-        }
 
         area.setText(range.text);
 

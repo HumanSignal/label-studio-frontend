@@ -63,13 +63,7 @@ const BaseTool = types
         return null;
       },
       get smartEnabled() {
-        const smart = self.control?.smart || false;
-        const autoAnnotation = self.control ? getRoot(self.control)?.autoAnnotation ?? false : false;
-
-        return (autoAnnotation && smart) || self.smartOnly;
-      },
-      get smartOnly() {
-        return self.control?.smartonly ?? false;
+        return self.control?.smartEnabled ?? false;
       },
     };
   })

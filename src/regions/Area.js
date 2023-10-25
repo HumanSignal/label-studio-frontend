@@ -27,6 +27,11 @@ const ClassificationArea = types.compose(
       // true only for global classifications
       classification: true,
     })
+    .views(self => ({
+      get supportSuggestions() {
+        return false;
+      },
+    }))
     .actions(() => ({
       serialize: () => ({}),
     })),
