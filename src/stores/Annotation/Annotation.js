@@ -253,6 +253,7 @@ export const Annotation = types
     draftSelected: false,
     autosaveDelay: 5000,
     isDraftSaving: false,
+    submissionStarted: 0,
     versions: {},
     resultSnapshot: '',
   }))
@@ -595,10 +596,11 @@ export const Annotation = types
     },
 
     setDefaultValues() {
+      if (!isFF(FF_DEV_2100_A)) return;
       self.names.forEach(tag => {
-        if (isFF(FF_DEV_2100_A) && tag?.type === 'choices' && tag.preselectedValues?.length) {
+        if (['choices', 'taxonomy'].includes(tag?.type) && tag.preselectedValues?.length) {
           // <Choice selected="true"/>
-          self.createResult({}, { choices: tag.preselectedValues }, tag, tag.toname);
+          self.createResult({}, { [tag?.type]: tag.preselectedValues }, tag, tag.toname);
         }
       });
     },
@@ -666,6 +668,8 @@ export const Annotation = types
     }),
 
     async saveDraft(params) {
+      // There is no draft to save as it was already saved as an annotation
+      if (self.submissionStarted) return;
       // if this is now a history item or prediction don't save it
       if (!self.editable) return;
 
@@ -679,8 +683,13 @@ export const Annotation = types
       self.setDraftSaving(true);
       return self.store.submitDraft(self, params).then((res) => {
         self.onDraftSaved(res);
+
         return res;
       });
+    },
+
+    submissionInProgress() {
+      self.submissionStarted = Date.now();
     },
 
     saveDraftImmediately() {
@@ -688,6 +697,9 @@ export const Annotation = types
     },
 
     async saveDraftImmediatelyWithResults() {
+      // There is no draft to save as it was already saved as an annotation
+      if (self.submissionStarted) return {};
+
       const res = await self.saveDraft(null);
 
       return res;

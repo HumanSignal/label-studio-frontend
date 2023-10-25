@@ -211,6 +211,10 @@ export default class TransformerComponent extends Component {
           dragBoundFunc={this.dragBoundFunc}
           onDragEnd={() => {
             this.unfreeze();
+            setTimeout(this.checkNode);
+          }}
+          onTransformEnd={() => {
+            setTimeout(this.checkNode);
           }}
           backSelector={this.props.draggableBackgroundSelector}
         />
@@ -253,6 +257,10 @@ export default class TransformerComponent extends Component {
           dragBoundFunc={this.dragBoundFunc}
           onDragEnd={() => {
             this.unfreeze();
+            setTimeout(this.checkNode);
+          }}
+          onTransformEnd={() => {
+            setTimeout(this.checkNode);
           }}
           backSelector={this.props.draggableBackgroundSelector}
         />
