@@ -1125,7 +1125,7 @@ const EntireStage = observer(({
       y: item.zoomingPositionY + item.alignmentOffset.y,
     };
   } else {
-    size =  { ...item.canvasSize };
+    size = { ...item.canvasSize };
     position = {
       x: item.zoomingPositionX,
       y: item.zoomingPositionY,

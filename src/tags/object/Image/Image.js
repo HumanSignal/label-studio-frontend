@@ -458,7 +458,7 @@ const Model = types.model({
   },
 
   get alignmentOffset() {
-    const offset = { x:0,y:0 };
+    const offset = { x: 0, y: 0 };
 
     if (isFF(FF_ZOOM_OPTIM)) {
       switch (self.horizontalalignment) {
