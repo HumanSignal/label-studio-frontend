@@ -63,14 +63,6 @@ const TaxonomySearch = React.forwardRef<TaxonomySearchRef, TaxonomySearchProps>(
     return String(lowerResultValue).toLowerCase().includes(lowerSearchValue);
   }, []);
 
-  const fillLegacyProps = (dataNode: AntTaxonomyItem) => {
-    if (!dataNode) {
-      return dataNode;
-    }
-
-    return { ...dataNode };
-  };
-
   // It's running recursively through treeData and its children filtering the content that match with the search value
   const filterTreeData = useCallback((treeData: AntTaxonomyItem[], searchValue: string) => {
     const _expandedKeys: React.Key[] = [];
@@ -86,7 +78,7 @@ const TaxonomySearch = React.forwardRef<TaxonomySearchRef, TaxonomySearchProps>(
       return list.reduce<AntTaxonomyItem[]>((total, dataNode) => {
         const children = dataNode['children'];
 
-        const match = keepAll || filterTreeNode(searchValue, fillLegacyProps(dataNode));
+        const match = keepAll || filterTreeNode(searchValue, dataNode);
         const childList = dig(children || [], match);
 
         if (match || childList.length) {
