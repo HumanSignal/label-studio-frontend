@@ -8,7 +8,7 @@ import {
   simpleConfigTR,
   simpleResult
 } from 'data/image_segmentation/image_position';
-import { Generator } from '../../../../../../ls-frontend-test/helpers/common/Generator';
+import { Generator } from '@heartexlabs/ls-test/helpers/common/Generator';
 
 describe('Image Segmentation - Image position', () => {
   beforeEach(() => {
@@ -23,7 +23,7 @@ describe('Image Segmentation - Image position', () => {
       .then((imageData) => {
         LabelStudio.params()
           .config(simpleConfigTL)
-          .data( { image: imageData } )
+          .data({ image: imageData })
           .withResult(simpleResult)
           .init();
       });
