@@ -17,6 +17,7 @@ import {
   FF_DEV_2007_DEV_2008,
   FF_DEV_2100_A,
   FF_DEV_3617,
+  FF_LEAP_218,
   FF_TAXONOMY_ASYNC,
   FF_TAXONOMY_LABELING
 } from '../../../../src/utils/feature-flags';
@@ -178,6 +179,7 @@ Object.entries(taxonomies).forEach(([title, Taxonomy]) => {
       if (Taxonomy.isNew) {
         LabelStudio.addFeatureFlagsOnPageLoad({
           [FF_TAXONOMY_ASYNC]: true,
+          [FF_LEAP_218]: true,
         });
       }
     });

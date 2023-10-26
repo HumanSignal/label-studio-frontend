@@ -1,10 +1,10 @@
 import { TreeSelect } from 'antd';
-import React, { ReactNode, useCallback, useEffect, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
 import './NewTaxonomy.styl';
-import { TaxonomySearch } from './TaxonomySearch';
+import { TaxonomySearch, TaxonomySearchRef } from './TaxonomySearch';
 
 type TaxonomyPath = string[];
 type onAddLabelCallback = (path: string[]) => any;
@@ -55,6 +55,7 @@ type TaxonomyProps = {
   onDeleteLabel?: onDeleteLabelCallback,
   options: TaxonomyOptions,
   isEditable?: boolean,
+  defaultSearch?: boolean,
 };
 
 type TaxonomyExtendedOptions = TaxonomyOptions & {
@@ -108,6 +109,7 @@ const NewTaxonomy = ({
   selected,
   onChange,
   onLoadData,
+  defaultSearch = true,
   // @todo implement user labels
   // onAddLabel,
   // onDeleteLabel,
@@ -115,9 +117,10 @@ const NewTaxonomy = ({
   // @todo implement readonly mode
   // isEditable = true,
 }: TaxonomyProps) => {
+  const refInput = useRef<TaxonomySearchRef>(null);
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const [filteredTreeData, setFilteredTreeData] = useState<AntTaxonomyItem[]>([]);
-  const [expandedKeys, setExpandedKeys] = useState<string[] | undefined>();
+  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
@@ -132,42 +135,61 @@ const NewTaxonomy = ({
     setTreeData(convert(items, { ...options, maxUsagesReached }, value));
   }, [items, maxUsagesReached]);
 
-  useEffect(() => {
-    setFilteredTreeData(treeData);
-  }, [treeData]);
-
   const loadData = useCallback(async (node: any) => {
     return onLoadData?.(node.value.split(separator));
   }, []);
 
-  const handleSearch = useCallback((list: AntTaxonomyItem[], expandedKeys: string[]) => {
-    setExpandedKeys(expandedKeys);
+  const handleSearch = useCallback((list: AntTaxonomyItem[], expandedKeys: React.Key[]) => {
     setFilteredTreeData(list);
+    setExpandedKeys(expandedKeys);
   }, []);
 
   const renderDropdown = useCallback((origin: ReactNode) => {
-    return(
-      <TaxonomySearch
-        treeData={treeData}
-        origin={origin}
-        onChange={handleSearch}
-      />
-    );
+    if (!defaultSearch) {
+      return (
+        <TaxonomySearch
+          ref={refInput}
+          treeData={treeData}
+          origin={origin}
+          onChange={handleSearch}
+        />
+      );
+    } else {
+      return (
+        <>
+          {origin}
+        </>
+      );
+    }
   }, [treeData]);
+
+  const handleDropdownChange = useCallback((open: boolean) => {
+    if (open) {
+      // handleDropdownChange is being called before the dropdown is rendered, 100ms is the time that we have to wait to dropdown be rendered
+      setTimeout(() => {
+        refInput.current?.focus();
+      }, 100);
+    } else {
+      refInput.current?.changeValue();
+    }
+  }, [refInput]);
 
   return (
     <TreeSelect
-      treeData={filteredTreeData}
+      treeData={defaultSearch ? treeData : filteredTreeData}
       value={displayed}
       labelInValue={true}
       onChange={items => onChange(null, items.map(item => item.value.split(separator)))}
       loadData={loadData}
       treeCheckable
-      filterTreeNode={false}
-      showSearch={false}
-      showArrow={true}
+      showSearch={defaultSearch}
+      showArrow={!defaultSearch}
       dropdownRender={renderDropdown}
+      onDropdownVisibleChange={handleDropdownChange}
       treeExpandedKeys={expandedKeys}
+      onTreeExpand={(expandedKeys: React.Key[]) => {
+        setExpandedKeys(expandedKeys);
+      }}
       treeCheckStrictly
       showCheckedStrategy={TreeSelect.SHOW_ALL}
       treeExpandAction="click"

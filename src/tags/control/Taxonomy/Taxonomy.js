@@ -23,6 +23,7 @@ import { parseValue } from '../../../utils/data';
 import {
   FF_DEV_2007_DEV_2008,
   FF_DEV_3617,
+  FF_LEAP_218,
   FF_LSDV_4583,
   FF_TAXONOMY_ASYNC,
   FF_TAXONOMY_LABELING,
@@ -612,6 +613,7 @@ const HtxTaxonomy = observer(({ item }) => {
           onAddLabel={item.userLabels && item.onAddLabel}
           onDeleteLabel={item.userLabels && item.onDeleteLabel}
           options={options}
+          defaultSearch={!isFF(FF_LEAP_218)}
           isEditable={!item.isReadOnly()}
         />
       ) : (
