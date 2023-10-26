@@ -47,7 +47,7 @@ describe('Image Segmentation - Image position', () => {
       });
 
     ImageView.waitForImage();
-    ImageView.clickAtRelative(0.5,0.005);
+    ImageView.clickAtStageRelative(0.5,0.005);
 
     Sidebar.hasSelectedRegions(1);
     Sidebar.hasSelectedRegion(1);
@@ -65,7 +65,7 @@ describe('Image Segmentation - Image position', () => {
       });
 
     ImageView.waitForImage();
-    ImageView.clickAtRelative(0.995,0.005);
+    ImageView.clickAtStageRelative(0.995,0.005);
 
     Sidebar.hasSelectedRegions(1);
     Sidebar.hasSelectedRegion(2);
@@ -83,7 +83,7 @@ describe('Image Segmentation - Image position', () => {
       });
 
     ImageView.waitForImage();
-    ImageView.clickAtRelative(0.005,0.5);
+    ImageView.clickAtStageRelative(0.005,0.5);
 
     Sidebar.hasSelectedRegions(1);
     Sidebar.hasSelectedRegion(3);
@@ -101,7 +101,7 @@ describe('Image Segmentation - Image position', () => {
       });
 
     ImageView.waitForImage();
-    ImageView.clickAtRelative(0.5,0.5);
+    ImageView.clickAtStageRelative(0.5,0.5);
 
     Sidebar.hasSelectedRegions(1);
     Sidebar.hasSelectedRegion(4);
@@ -122,7 +122,7 @@ describe('Image Segmentation - Image position', () => {
     // wait for ImageView to correctly resize a stage according to the container size
     // otherwise, cypress performs the click in the wrong coordinates
     cy.wait(32);
-    ImageView.clickAtRelative(0.5,0.5);
+    ImageView.clickAtStageRelative(0.5,0.5);
 
     Sidebar.hasSelectedRegions(1);
     Sidebar.hasSelectedRegion(4);
@@ -140,7 +140,7 @@ describe('Image Segmentation - Image position', () => {
       });
 
     ImageView.waitForImage();
-    ImageView.clickAtRelative(0.995,0.995);
+    ImageView.clickAtStageRelative(0.995,0.995);
 
     Sidebar.hasSelectedRegions(1);
     Sidebar.hasSelectedRegion(8);
@@ -158,7 +158,7 @@ describe('Image Segmentation - Image position', () => {
       });
 
     ImageView.waitForImage();
-    ImageView.clickAtRelative(0.995,0.995);
+    ImageView.clickAtStageRelative(0.995,0.995);
 
     Sidebar.hasSelectedRegions(1);
     Sidebar.hasSelectedRegion(8);
@@ -178,7 +178,7 @@ describe('Image Segmentation - Image position', () => {
     ImageView.waitForImage();
     ImageView.rotateRight();
 
-    ImageView.clickAtRelative(0.5,0.5);
+    ImageView.clickAtStageRelative(0.5,0.5);
 
     Sidebar.hasSelectedRegions(1);
     Sidebar.hasSelectedRegion(4);
