@@ -36,7 +36,7 @@ const createShape = {
     byMultipleClicks(x, y, radius, opts = {}) {
       const points = [];
 
-      for (let i = 5; i--; ) {
+      for (let i = 5; i--;) {
         points.push([x + Math.sin(((2 * Math.PI) / 5) * i) * radius, y - Math.cos(((2 * Math.PI) / 5) * i) * radius]);
         points.push([
           x + (Math.sin(((2 * Math.PI) / 5) * (i - 0.5)) * radius) / 3,
@@ -180,7 +180,7 @@ Scenario('Creating regions by various gestures', async function({ I, AtImageView
   await I.executeScript(initLabelStudio, params);
   AtImageView.waitForImage();
   AtSidebar.seeRegions(0);
-  const canvasSize = await AtImageView.getCanvasSize();
+  const canvasSize = await AtImageView.getImageFrameSize();
   const convertToImageSize = getSizeConvertor(canvasSize.width, canvasSize.height);
   const cellSize = { width: 100, height: 100 };
   const gridSize = {
@@ -209,7 +209,7 @@ Scenario('Creating regions by various gestures', async function({ I, AtImageView
   for (const [idx, region] of Object.entries(regions)) {
     I.pressKey(region.hotKey);
     AtImageView[region.action](...region.params);
-    AtSidebar.seeRegions(+idx+1);
+    AtSidebar.seeRegions(+idx + 1);
   }
   const result = await I.executeScript(serialize);
 

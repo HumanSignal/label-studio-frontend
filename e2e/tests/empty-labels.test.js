@@ -228,7 +228,7 @@ Scenario('Consistency of empty labels', async ({ I, LabelStudio, AtSidebar, AtIm
 
   assert.strictEqual(shapesNum, 1);
   const restored = await LabelStudio.serialize();
-  const canvasSize = await AtImageView.getCanvasSize();
+  const canvasSize = await AtImageView.getImageFrameSize();
   const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
 
   Asserts.deepEqualWithTolerance(
