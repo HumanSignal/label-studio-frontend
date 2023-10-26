@@ -606,7 +606,12 @@ const HtxTaxonomy = observer(({ item }) => {
     canRemoveItems: item.canRemoveItems,
   };
 
-  if (item.loading && isFF(FF_DEV_3617)) {
+  // without full api there will be just one initial loading;
+  // with full api we should not block UI with spinner on nested requests —
+  // they are indicated by loading icon on the item itself
+  const firstLoad = item.isLoadedByApi ? !item.items.length : true;
+
+  if (item.loading && isFF(FF_DEV_3617) && firstLoad) {
     return (
       <div className={className} style={visibleStyle}>
         <div className={styles.taxonomy__loading}>
