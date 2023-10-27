@@ -82,7 +82,8 @@ const TaxonomySearch = React.forwardRef<TaxonomySearchRef, TaxonomySearchProps>(
         const childList = dig(children || [], match);
 
         if (match || childList.length) {
-          _expandedKeys.push(dataNode.key);
+          if (!keepAll)
+            _expandedKeys.push(dataNode.key);
 
           total.push({
             ...dataNode,
