@@ -94,7 +94,7 @@ jobs:
         run: |
           set -euo pipefail
           cd e2e
-          yarn run test:ci ${{ steps.cpu-info.outputs.cores-count }} --debug --verbose
+          yarn run test:ci ${{ steps.cpu-info.outputs.cores-count }}
 
       - name: "Upload e2e output" 
         uses: ./.github/actions/upload-artifact
