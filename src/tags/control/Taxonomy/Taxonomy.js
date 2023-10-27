@@ -21,7 +21,6 @@ import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
 import VisibilityMixin from '../../../mixins/Visibility';
 import { parseValue } from '../../../utils/data';
 import {
-  FF_DEV_2007_DEV_2008,
   FF_DEV_3617,
   FF_LSDV_4583,
   FF_TAXONOMY_ASYNC,
@@ -102,7 +101,7 @@ const TagAttrs = types.model({
   maxwidth: types.maybeNull(types.string),
   dropdownwidth: types.maybeNull(types.string),
   maxusages: types.maybeNull(types.string),
-  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, '') } : {}),
+  value: types.optional(types.string, ''),
 });
 
 function traverse(root) {
@@ -135,7 +134,7 @@ function traverse(root) {
   };
 
   if (!root) return [];
-  if (isFF(FF_DEV_2007_DEV_2008) && !Array.isArray(root)) return visitUnique([root]);
+  if (!Array.isArray(root)) return visitUnique([root]);
   return visitUnique(root);
 }
 
@@ -573,7 +572,7 @@ const TaxonomyModel = types.compose('TaxonomyModel',
   ControlBase,
   ClassificationBase,
   TagAttrs,
-  ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
+  DynamicChildrenMixin,
   AnnotationMixin,
   RequiredMixin,
   Model,
