@@ -630,7 +630,7 @@ export default types
      */
     async function presignUrlForProject(url) {
       // Event invocation returns array of results for all handlers.
-      const urls = await getEnv(self).events.invoke('presignUrlForProject', self, url);
+      const urls = await self.events.invoke('presignUrlForProject', self, url);
 
       const presignUrl = urls?.[0];
 
