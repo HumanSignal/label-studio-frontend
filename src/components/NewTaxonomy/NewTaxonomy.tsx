@@ -139,28 +139,25 @@ const NewTaxonomy = ({
     return onLoadData?.(node.value.split(separator));
   }, []);
 
-  const handleSearch = useCallback((list: AntTaxonomyItem[], expandedKeys: React.Key[]) => {
+  const handleSearch = useCallback((list: AntTaxonomyItem[], expandedKeys: React.Key[] | null) => {
     setFilteredTreeData(list);
-    setExpandedKeys(expandedKeys);
+    if (expandedKeys)
+      setExpandedKeys(expandedKeys);
   }, []);
 
   const renderDropdown = useCallback((origin: ReactNode) => {
-    if (!defaultSearch) {
-      return (
-        <TaxonomySearch
-          ref={refInput}
-          treeData={treeData}
-          origin={origin}
-          onChange={handleSearch}
-        />
-      );
-    } else {
-      return (
-        <>
-          {origin}
-        </>
-      );
-    }
+    return (
+      <>
+        {!defaultSearch && (
+          <TaxonomySearch
+            ref={refInput}
+            treeData={treeData}
+            onChange={handleSearch}
+          />
+        )}
+        {origin}
+      </>
+    );
   }, [treeData]);
 
   const handleDropdownChange = useCallback((open: boolean) => {
