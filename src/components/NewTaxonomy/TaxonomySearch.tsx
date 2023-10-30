@@ -80,9 +80,9 @@ const TaxonomySearch = React.forwardRef<TaxonomySearchRef, TaxonomySearchProps>(
         const children = dataNode['children'];
 
         const match = keepAll || filterTreeNode(searchValue, dataNode);
-        const childList = dig(children || [], match);
+        const childList = children ? dig(children || [], match) : undefined;
 
-        if (match || childList.length) {
+        if (match || childList?.length) {
           if (!keepAll)
             _expandedKeys.push(dataNode.key);
 
