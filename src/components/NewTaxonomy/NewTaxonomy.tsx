@@ -167,7 +167,7 @@ const NewTaxonomy = ({
         refInput.current?.focus();
       }, 100);
     } else {
-      refInput.current?.changeValue();
+      refInput.current?.resetValue();
     }
   }, [refInput]);
 

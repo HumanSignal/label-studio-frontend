@@ -11,7 +11,7 @@ type TaxonomySearchProps = {
 }
 
 export type TaxonomySearchRef = {
-  changeValue: () => void,
+  resetValue: () => void,
   focus: () => void,
 }
 
@@ -21,7 +21,7 @@ const TaxonomySearch = React.forwardRef<TaxonomySearchRef, TaxonomySearchProps>(
 }, ref) => {
   useImperativeHandle(ref, (): TaxonomySearchRef => {
     return {
-      changeValue() {
+      resetValue() {
         setInputValue('');
         onChange(treeData, []);
       },
