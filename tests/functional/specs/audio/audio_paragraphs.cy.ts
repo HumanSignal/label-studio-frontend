@@ -1,4 +1,4 @@
-import { AudioView, LabelStudio, Sidebar } from '@heartexlabs/ls-test/helpers/LSF/index';
+import { AudioView, LabelStudio, Sidebar } from '@heartexlabs/ls-test/helpers/LSF';
 import * as audioFixtures from 'data/audio/audio_paragraphs';
 import { FF_LSDV_E_278 } from '../../../../src/utils/feature-flags';
 
