@@ -46,8 +46,6 @@ const TaxonomySearch = React.forwardRef<TaxonomySearchRef, TaxonomySearchProps>(
   const getTitle = useCallback((treeNodeTitle: any): string => {
     if (!treeNodeTitle.props) return treeNodeTitle;
 
-    // The title can be on the first level of props.children, but it may be on the second level or deeper
-    // This recursive function validate where the title is and return to the filterTreeNode
     if (typeof treeNodeTitle.props.children === 'object')
       return getTitle(treeNodeTitle.props.children);
 
