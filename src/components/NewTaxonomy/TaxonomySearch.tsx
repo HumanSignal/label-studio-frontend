@@ -44,7 +44,7 @@ const TaxonomySearch = React.forwardRef<TaxonomySearchRef, TaxonomySearchProps>(
   // the `treeNode.title` is not a string but a react component,
   // so we have to look for the title in children (1 or 2 levels deep)
   const getTitle = useCallback((treeNodeTitle: any): string => {
-    if (!treeNodeTitle.props) return treeNodeTitle;
+    if (typeof treeNodeTitle === 'string') return treeNodeTitle;
 
     if (typeof treeNodeTitle.props.children === 'object')
       return getTitle(treeNodeTitle.props.children);
