@@ -141,8 +141,7 @@ const NewTaxonomy = ({
 
   const handleSearch = useCallback((list: AntTaxonomyItem[], expandedKeys: React.Key[] | null) => {
     setFilteredTreeData(list);
-    if (expandedKeys)
-      setExpandedKeys(expandedKeys);
+    if (expandedKeys) setExpandedKeys(expandedKeys);
   }, []);
 
   const renderDropdown = useCallback((origin: ReactNode) => {
