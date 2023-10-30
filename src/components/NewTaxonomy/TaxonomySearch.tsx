@@ -40,7 +40,9 @@ const TaxonomySearch = React.forwardRef<TaxonomySearchRef, TaxonomySearchProps>(
     onChange(_filteredData.filteredDataTree, null);
   }, [treeData]);
 
-  // When the treeData is being loaded as async API call, the _treeNode.title_ is not a string but an object, so we have to treat this value to get the title from props.children
+  // When the treeNode has additional formatting because of `hint` or `color` props,
+  // the `treeNode.title` is not a string but a react component,
+  // so we have to look for the title in children (1 or 2 levels deep)
   const getTitle = useCallback((treeNodeTitle: any): string => {
     if (!treeNodeTitle.props) return treeNodeTitle;
 
