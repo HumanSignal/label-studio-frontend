@@ -183,7 +183,7 @@ const NewTaxonomy = ({
       showArrow={!defaultSearch}
       dropdownRender={renderDropdown}
       onDropdownVisibleChange={handleDropdownChange}
-      treeExpandedKeys={expandedKeys}
+      treeExpandedKeys={!defaultSearch ? expandedKeys : undefined}
       onTreeExpand={(expandedKeys: React.Key[]) => {
         setExpandedKeys(expandedKeys);
       }}
