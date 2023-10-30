@@ -52,7 +52,7 @@ const TaxonomySearch = React.forwardRef<TaxonomySearchRef, TaxonomySearchProps>(
     return treeNodeTitle.props.children;
   }, []);
 
-  //To filter the treeData items that match with the searchValue
+  // To filter the treeData items that match with the searchValue
   const filterTreeNode = useCallback((searchValue: string, treeNode: AntTaxonomyItem) => {
     const lowerSearchValue = String(searchValue).toLowerCase();
     const lowerResultValue = getTitle(treeNode.title);
