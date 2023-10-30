@@ -162,7 +162,8 @@ const NewTaxonomy = ({
 
   const handleDropdownChange = useCallback((open: boolean) => {
     if (open) {
-      // handleDropdownChange is being called before the dropdown is rendered, 100ms is the time that we have to wait to dropdown be rendered
+      // handleDropdownChange is being called before the dropdown is rendered,
+      // 100ms is the time that we have to wait to dropdown be rendered
       setTimeout(() => {
         refInput.current?.focus();
       }, 100);
