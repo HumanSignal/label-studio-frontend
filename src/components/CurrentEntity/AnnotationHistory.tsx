@@ -109,7 +109,6 @@ const AnnotationHistoryComponent: FC<any> = ({
 
   // if user makes changes at the first time there are no draft yet
   const isDraftSelected = !annotationStore.selectedHistory && (annotation.draftSelected || (!annotation.versions.draft && hasChanges));
-   
   return (
     <Block name="annotation-history" mod={{ inline }}>
       {showDraft && (
