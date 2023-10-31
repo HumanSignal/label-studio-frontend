@@ -14,6 +14,7 @@ import {
 } from '../../data/control_tags/taxonomy';
 import {
   FF_DEV_3617,
+  FF_LEAP_218,
   FF_TAXONOMY_ASYNC,
   FF_TAXONOMY_LABELING
 } from '../../../../src/utils/feature-flags';
@@ -159,6 +160,35 @@ Object.entries(taxonomies).forEach(([title, Taxonomy]) => {
 
       Taxonomy.hasSelected('Section 2.1');
       Taxonomy.hasNoSelected('Book 1 / Chapter 2 / Section 2.1');
+    });
+  });
+
+  describe('Control Tags - Taxonomy - search', () => {
+    beforeEach(() => {
+      if (Taxonomy.isNew) {
+        LabelStudio.addFeatureFlagsOnPageLoad({
+          [FF_TAXONOMY_ASYNC]: true,
+          [FF_LEAP_218]: true,
+        });
+      }
+    });
+
+    it('should input search and filter treeData', () => {
+      if (!Taxonomy.isNew) return;
+
+      LabelStudio.params()
+        .config(buildDynamicTaxonomyConfig({ showFullPath: true }))
+        .data(taxonomyDataWithSimilarAliases)
+        .withResult([taxonomyResultWithSimilarAliases])
+        .init();
+
+      Taxonomy.open();
+      cy.get('[data-testid="taxonomy-search"]').type('Section 3.3');
+      Taxonomy.dropdown.contains('.ant-select-tree-treenode', 'Section 3.3').should('be.visible');
+      cy.get('[data-testid="taxonomy-search"]').clear();
+      cy.get('[data-testid="taxonomy-search"]').type('Section 7.0');
+      Taxonomy.dropdown.contains('No Data').should('be.visible');
+      Taxonomy.hasSelected('Book 1 / Chapter 2 / Section 2.1');
     });
   });
 });
