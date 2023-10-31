@@ -268,10 +268,6 @@ const RegionsMixin = types
         self.perRegionFocusRequest = null;
       },
 
-      revokeSuggestion() {
-        self.fromSuggestion = false;
-      }, 
-
       setHighlight(val) {
         self._highlighted = val;
       },
