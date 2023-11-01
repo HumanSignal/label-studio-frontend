@@ -121,6 +121,7 @@ const NewTaxonomy = ({
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const [filteredTreeData, setFilteredTreeData] = useState<AntTaxonomyItem[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
+  const [defaultExpandedKeys, setDefaultExpandedKeys] = useState<React.Key[]>([]);
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
@@ -183,9 +184,9 @@ const NewTaxonomy = ({
       showArrow={!defaultSearch}
       dropdownRender={renderDropdown}
       onDropdownVisibleChange={handleDropdownChange}
-      treeExpandedKeys={!defaultSearch ? expandedKeys : undefined}
+      treeExpandedKeys={!defaultSearch ? [...expandedKeys, ...defaultExpandedKeys] : undefined}
       onTreeExpand={(expandedKeys: React.Key[]) => {
-        setExpandedKeys(expandedKeys);
+        setDefaultExpandedKeys(expandedKeys);
       }}
       treeCheckStrictly
       showCheckedStrategy={TreeSelect.SHOW_ALL}
