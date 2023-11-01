@@ -72,11 +72,11 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
 
   // useRef to get the reading line element
   const readingLineRef = useCallback(node => {
-    if(observer) {
+    if (observer) {
       observer.disconnect();
     }
 
-    if(node !== null) {
+    if (node !== null) {
       const duration = item._value[playingId]?.duration || item._value[playingId]?.end - item._value[playingId]?.start;
 
       if (!isNaN(duration)) {
@@ -132,7 +132,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
   const val = item._value.map((v, idx) => {
     const isActive = playingId === idx;
     const isPlaying = isActive && item.playing;
-    const style = (isFF(FF_LSDV_E_278) && !isActive) ? item.layoutStyles(v).inactive: item.layoutStyles(v);
+    const style = (isFF(FF_LSDV_E_278) && !isActive) ? item.layoutStyles(v).inactive : item.layoutStyles(v);
     const classNames = [cls.phrase];
     const isContentVisible = item.isVisibleForAuthorFilter(v);
 
