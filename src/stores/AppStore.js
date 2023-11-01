@@ -22,7 +22,7 @@ import AnnotationStore from './Annotation/store';
 import Project from './ProjectStore';
 import Settings from './SettingsStore';
 import Task from './TaskStore';
-import { UserExtended } from './UserStore'; 
+import { UserExtended } from './UserStore';
 import { UserLabels } from './UserLabels';
 import { FF_DEV_1536, FF_DEV_2715, FF_LLM_EPIC, FF_LSDV_4620_3_ML, FF_LSDV_4998, isFF } from '../utils/feature-flags';
 import { CommentStore } from './Comment/CommentStore';
@@ -154,9 +154,9 @@ export default types
     users: types.optional(types.array(UserExtended), []),
 
     userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
-    
+
     queueTotal: types.optional(types.number, 0),
-    
+
     queuePosition: types.optional(types.number, 0),
   })
   .preProcessSnapshot((sn) => {
@@ -189,6 +189,9 @@ export default types
     suggestionsRequest: null,
   }))
   .views(self => ({
+    get events() {
+      return getEnv(self).events;
+    },
     get hasSegmentation() {
       // not an object and not a classification
       const isSegmentation = t => !t.getAvailableStates && !t.perRegionVisible;
@@ -623,6 +626,18 @@ export default types
     }
 
     /**
+     * Exchange storage url for presigned url for task
+     */
+    async function presignUrlForProject(url) {
+      // Event invocation returns array of results for all handlers.
+      const urls = await self.events.invoke('presignUrlForProject', self, url);
+
+      const presignUrl = urls?.[0];
+
+      return presignUrl;
+    }
+
+    /**
      * Reset annotation store
      */
     function resetState() {
@@ -772,7 +787,7 @@ export default types
     }
 
     function nextTask() {
-      
+
       if (self.canGoNextTask) {
         const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
 
@@ -831,6 +846,7 @@ export default types
       updateAnnotation,
       acceptAnnotation,
       rejectAnnotation,
+      presignUrlForProject,
       setUsers,
       mergeUsers,
 

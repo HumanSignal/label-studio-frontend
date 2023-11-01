@@ -549,6 +549,8 @@ const Model = types
         if (!self.isLoadedByApi) return Super.updateValue?.(store);
 
         self._api = parseValue(self.apiurl, store.task.dataObj);
+        // trying to presign this url if needed and if handler is passed into LSF
+        self._api = (yield store.presignUrlForProject(self._api)) ?? self._api;
 
         yield self.loadItems();
       }),
