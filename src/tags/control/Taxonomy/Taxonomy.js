@@ -21,8 +21,8 @@ import { SharedStoreMixin } from '../../../mixins/SharedChoiceStore/mixin';
 import VisibilityMixin from '../../../mixins/Visibility';
 import { parseValue } from '../../../utils/data';
 import {
-  FF_DEV_2007_DEV_2008,
   FF_DEV_3617,
+  FF_LEAP_218,
   FF_LSDV_4583,
   FF_TAXONOMY_ASYNC,
   FF_TAXONOMY_LABELING,
@@ -35,6 +35,17 @@ import ClassificationBase from '../ClassificationBase';
 import styles from './Taxonomy.styl';
 import messages from '../../../utils/messages';
 import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
+
+/**
+ * @typedef TaxonomyItem
+ * @property {string} label
+ * @property {string[]} path
+ * @property {number} depth
+ * @property {string} [hint]
+ * @property {string} [color]
+ * @property {TaxonomyItem[]} [children]
+ * @property {string} [alias]
+ */
 
 /**
  * The `Taxonomy` tag is used to create one or more hierarchical classifications, storing both choice selections and their ancestors in the results. Use for nested classification tasks with the `Choice` tag.
@@ -83,6 +94,7 @@ const TagAttrs = types.model({
   labeling: types.optional(types.boolean, false),
   leafsonly: types.optional(types.boolean, false),
   showfullpath: types.optional(types.boolean, false),
+  legacy: types.optional(types.boolean, false),
   pathseparator: types.optional(types.string, ' / '),
   apiurl: types.maybeNull(types.string),
   placeholder: '',
@@ -90,7 +102,7 @@ const TagAttrs = types.model({
   maxwidth: types.maybeNull(types.string),
   dropdownwidth: types.maybeNull(types.string),
   maxusages: types.maybeNull(types.string),
-  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, '') } : {}),
+  value: types.optional(types.string, ''),
 });
 
 function traverse(root) {
@@ -123,7 +135,7 @@ function traverse(root) {
   };
 
   if (!root) return [];
-  if (isFF(FF_DEV_2007_DEV_2008) && !Array.isArray(root)) return visitUnique([root]);
+  if (!Array.isArray(root)) return visitUnique([root]);
   return visitUnique(root);
 }
 
@@ -283,6 +295,25 @@ const Model = types
       }
 
       return fromConfig;
+    },
+
+    get selectedItems() {
+      const full = self.selected.map(path => {
+        /** @type {TaxonomyItem[]} items */
+        let items = self.items;
+        const levels = [];
+
+        for (const value of path) {
+          const item = items.find(item => item.path.at(-1) === value);
+
+          levels.push({ label: item?.label ?? value, value });
+          items = item?.children ?? [];
+        }
+
+        return levels;
+      });
+
+      return full;
     },
 
     get defaultChildType() {
@@ -518,6 +549,8 @@ const Model = types
         if (!self.isLoadedByApi) return Super.updateValue?.(store);
 
         self._api = parseValue(self.apiurl, store.task.dataObj);
+        // trying to presign this url if needed and if handler is passed into LSF
+        self._api = (yield store.presignUrlForProject(self._api)) ?? self._api;
 
         yield self.loadItems();
       }),
@@ -542,7 +575,7 @@ const TaxonomyModel = types.compose('TaxonomyModel',
   ControlBase,
   ClassificationBase,
   TagAttrs,
-  ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
+  DynamicChildrenMixin,
   AnnotationMixin,
   RequiredMixin,
   Model,
@@ -556,6 +589,12 @@ const TaxonomyModel = types.compose('TaxonomyModel',
 );
 
 const HtxTaxonomy = observer(({ item }) => {
+  // literal "taxonomy" class name is for external styling
+  const className = [
+    styles.taxonomy,
+    'taxonomy',
+    isFF(FF_TAXONOMY_ASYNC) ? styles.taxonomy__new : '',
+  ].filter(Boolean).join(' ');
   const visibleStyle = item.perRegionVisible() && item.isVisible ? {} : { display: 'none' };
   const options = {
     showFullPath: item.showfullpath,
@@ -569,36 +608,45 @@ const HtxTaxonomy = observer(({ item }) => {
     canRemoveItems: item.canRemoveItems,
   };
 
+  // without full api there will be just one initial loading;
+  // with full api we should not block UI with spinner on nested requests —
+  // they are indicated by loading icon on the item itself
+  const firstLoad = item.isLoadedByApi ? !item.items.length : true;
+
+  if (item.loading && isFF(FF_DEV_3617) && firstLoad) {
+    return (
+      <div className={className} style={visibleStyle}>
+        <div className={styles.taxonomy__loading}>
+          <Spin size="small"/>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    // @todo use BEM class names + literal "taxonomy" for external styling
-    <div className={[styles.taxonomy, 'taxonomy'].join(' ')} style={{ ...visibleStyle }}>
-      {isFF(FF_TAXONOMY_ASYNC) ? (
+    <div className={className} style={visibleStyle}>
+      {(isFF(FF_TAXONOMY_ASYNC) && !item.legacy) ? (
         <NewTaxonomy
           items={item.items}
-          selected={item.selected}
+          selected={item.selectedItems}
           onChange={item.onChange}
           onLoadData={item.loadItems}
           onAddLabel={item.userLabels && item.onAddLabel}
           onDeleteLabel={item.userLabels && item.onDeleteLabel}
           options={options}
+          defaultSearch={!isFF(FF_LEAP_218)}
           isEditable={!item.isReadOnly()}
         />
       ) : (
-        item.loading && isFF(FF_DEV_3617) ? (
-          <div className={styles.taxonomy__loading}>
-            <Spin size="small"/>
-          </div>
-        ) : (
-          <Taxonomy
-            items={item.items}
-            selected={item.selected}
-            onChange={item.onChange}
-            onAddLabel={item.userLabels && item.onAddLabel}
-            onDeleteLabel={item.userLabels && item.onDeleteLabel}
-            options={options}
-            isEditable={!item.isReadOnly()}
-          />
-        )
+        <Taxonomy
+          items={item.items}
+          selected={item.selected}
+          onChange={item.onChange}
+          onAddLabel={item.userLabels && item.onAddLabel}
+          onDeleteLabel={item.userLabels && item.onDeleteLabel}
+          options={options}
+          isEditable={!item.isReadOnly()}
+        />
       )}
     </div>
   );

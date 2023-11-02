@@ -15,7 +15,6 @@ import {
   FF_DEV_1284,
   FF_DEV_1598,
   FF_DEV_2100,
-  FF_DEV_2100_A,
   FF_DEV_2432,
   FF_DEV_3391, FF_LLM_EPIC,
   FF_LSDV_3009,
@@ -596,7 +595,6 @@ export const Annotation = types
     },
 
     setDefaultValues() {
-      if (!isFF(FF_DEV_2100_A)) return;
       self.names.forEach(tag => {
         if (['choices', 'taxonomy'].includes(tag?.type) && tag.preselectedValues?.length) {
           // <Choice selected="true"/>
@@ -752,13 +750,6 @@ export const Annotation = types
         // may come handy when you have a tag that acts or depends
         // on other elements in the tree.
         if (node.annotationAttached) node.annotationAttached();
-
-
-        // @todo special place to init such predefined values; `afterAttach` of the tag?
-        // preselected choices
-        if (!isFF(FF_DEV_2100_A) && !self.pk && node?.type === 'choices' && node.preselectedValues?.length) {
-          self.createResult({}, { choices: node.preselectedValues }, node, node.toname);
-        }
       });
 
       self.history.onUpdate(self.updateObjects);
