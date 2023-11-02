@@ -207,7 +207,8 @@
   "resolutions": {
     "d3-color": "3.1.0",
     "loader-utils": "2.0.4",
-    "@babel/traverse": "7.23.2"
+    "@babel/traverse": "7.23.2",
+    "postcss": "8.4.31"
   },
   "nohoist": [
     "**/babel-preset-react-app/@babel/runtime"
