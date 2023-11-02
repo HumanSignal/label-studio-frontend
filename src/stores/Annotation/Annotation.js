@@ -696,8 +696,8 @@ export const Annotation = types
 
     async saveDraftImmediatelyWithResults() {
       // There is no draft to save as it was already saved as an annotation
-      if (self.submissionStarted) return {};
-
+      if (self.submissionStarted || self.isDraftSaving) return {};
+      self.setDraftSaving(true);
       const res = await self.saveDraft(null);
 
       return res;

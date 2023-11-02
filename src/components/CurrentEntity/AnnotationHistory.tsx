@@ -106,9 +106,10 @@ const AnnotationHistoryComponent: FC<any> = ({
   const annotation = annotationStore.selected;
   const lastItem = history?.length ? history[0] : null;
   const hasChanges = annotation.history.hasChanges;
+
   // if user makes changes at the first time there are no draft yet
   const isDraftSelected = !annotationStore.selectedHistory && (annotation.draftSelected || (!annotation.versions.draft && hasChanges));
-
+  
   return (
     <Block name="annotation-history" mod={{ inline }}>
       {showDraft && (
@@ -121,6 +122,7 @@ const AnnotationHistoryComponent: FC<any> = ({
         const isSelected = isLastItem && !selectedHistory && showDraft
           ? !isDraftSelected
           : selectedHistory?.id === item.id;
+        
 
         return (
           <HistoryItem
@@ -137,14 +139,11 @@ const AnnotationHistoryComponent: FC<any> = ({
                 annotationStore.selectHistory(isSelected ? null : item);
                 return;
               }
-
-
               if (hasChanges) {
                 annotation.saveDraftImmediately();
                 // wait for draft to be saved before switching to history
                 await when(() => !annotation.isDraftSaving);
               }
-
               if (isLastItem || isSelected) {
                 // last history state and draft are actual annotation, not from history
                 // and if user clicks on already selected item we should switch to last state
