@@ -1,5 +1,5 @@
 import { TreeSelect } from 'antd';
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
@@ -120,8 +120,7 @@ const NewTaxonomy = ({
   const refInput = useRef<TaxonomySearchRef>(null);
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const [filteredTreeData, setFilteredTreeData] = useState<AntTaxonomyItem[]>([]);
-  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
-  const [defaultExpandedKeys, setDefaultExpandedKeys] = useState<React.Key[]>([]);
+  const [expandedKeys, setExpandedKeys] = useState<React.Key[] | undefined>([]);
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
@@ -136,17 +135,15 @@ const NewTaxonomy = ({
     setTreeData(convert(items, { ...options, maxUsagesReached }, value));
   }, [items, maxUsagesReached]);
 
-  const treeExpandedKeys = useMemo(() => {
-    return refInput.current?.value ? expandedKeys : defaultExpandedKeys;
-  }, [expandedKeys, defaultExpandedKeys]);
-
   const loadData = useCallback(async (node: any) => {
     return onLoadData?.(node.value.split(separator));
   }, []);
 
   const handleSearch = useCallback((list: AntTaxonomyItem[], expandedKeys: React.Key[] | null) => {
     setFilteredTreeData(list);
-    if (expandedKeys) setExpandedKeys(expandedKeys);
+    if (expandedKeys?.length) setExpandedKeys(expandedKeys);
+    else setExpandedKeys(undefined);
+
   }, []);
 
   const renderDropdown = useCallback((origin: ReactNode) => {
@@ -188,10 +185,9 @@ const NewTaxonomy = ({
       showArrow={!defaultSearch}
       dropdownRender={renderDropdown}
       onDropdownVisibleChange={handleDropdownChange}
-      treeExpandedKeys={!defaultSearch ? treeExpandedKeys : undefined}
+      treeExpandedKeys={!defaultSearch ? expandedKeys : undefined}
       onTreeExpand={(expandedKeys: React.Key[]) => {
         setExpandedKeys(expandedKeys);
-        setDefaultExpandedKeys(expandedKeys);
       }}
       treeCheckStrictly
       showCheckedStrategy={TreeSelect.SHOW_ALL}
