@@ -13,6 +13,7 @@ type TaxonomySearchProps = {
 export type TaxonomySearchRef = {
   resetValue: () => void,
   focus: () => void,
+  value: string,
 }
 
 const TaxonomySearch = React.forwardRef<TaxonomySearchRef, TaxonomySearchProps>(({
@@ -23,11 +24,12 @@ const TaxonomySearch = React.forwardRef<TaxonomySearchRef, TaxonomySearchProps>(
     return {
       resetValue() {
         setInputValue('');
-        onChange(treeData, []);
+        onChange(treeData, null);
       },
       focus() {
         return inputRef.current?.focus();
       },
+      value: inputValue,
     };
   });
 

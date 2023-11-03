@@ -1,5 +1,5 @@
 import { TreeSelect } from 'antd';
-import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 
@@ -136,6 +136,10 @@ const NewTaxonomy = ({
     setTreeData(convert(items, { ...options, maxUsagesReached }, value));
   }, [items, maxUsagesReached]);
 
+  const treeExpandedKeys = useMemo(() => {
+    return refInput.current?.value ? expandedKeys : defaultExpandedKeys;
+  }, [expandedKeys, defaultExpandedKeys]);
+
   const loadData = useCallback(async (node: any) => {
     return onLoadData?.(node.value.split(separator));
   }, []);
@@ -184,8 +188,9 @@ const NewTaxonomy = ({
       showArrow={!defaultSearch}
       dropdownRender={renderDropdown}
       onDropdownVisibleChange={handleDropdownChange}
-      treeExpandedKeys={!defaultSearch ? [...expandedKeys, ...defaultExpandedKeys] : undefined}
+      treeExpandedKeys={!defaultSearch ? treeExpandedKeys : undefined}
       onTreeExpand={(expandedKeys: React.Key[]) => {
+        setExpandedKeys(expandedKeys);
         setDefaultExpandedKeys(expandedKeys);
       }}
       treeCheckStrictly
