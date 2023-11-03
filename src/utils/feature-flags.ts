@@ -325,6 +325,12 @@ export const FF_TAXONOMY_SELECTED = 'fflag_fix_front_leap_149_taxonomy_selected_
 /** Skip video to region start when it's selected in the outliner */
 export const FF_LEAP_187 = 'fflag_feat_front_leap_187_video_seek_on_select_short';
 
+/**
+ * Optimize stage rendering for large number of regions and zoom interactions
+ * @link https://app.launchdarkly.com/default/production/features/fflag_fix_front_leap_32_zoom_perf_190923_short/targeting
+ */
+export const FF_ZOOM_OPTIM = 'fflag_fix_front_leap_32_zoom_perf_190923_short';
+
 
 Object.assign(window, {
   APP_SETTINGS: {
