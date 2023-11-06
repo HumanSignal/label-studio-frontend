@@ -167,7 +167,7 @@ const NewTaxonomy = ({
       // 100ms is the time that we have to wait to dropdown be rendered
       setTimeout(() => {
         refInput.current?.focus();
-      }, 100);
+      }, 200);
     } else {
       refInput.current?.resetValue();
     }
