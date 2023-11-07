@@ -12,7 +12,7 @@ interface BoardProps {
   readonly?: boolean;
 }
 type CollapsedMap = Record<string, boolean>;
-type CollapsedContextType = React.Context<[CollapsedMap, (id: string, value: boolean) => void]>;
+type CollapsedContextType = React.Context<[CollapsedMap, (idOrIds: string | string[], value: boolean) => void]>;
 
 const CollapsedContext: CollapsedContextType = createContext([{}, (_id, _value) => {}]);
 
@@ -20,8 +20,11 @@ const CollapsedContext: CollapsedContextType = createContext([{}, (_id, _value) 
 const Ranker = ({ inputData, handleChange, readonly }: BoardProps) => {
   const [data, setData] = useState(inputData);
   const [collapsed, setCollapsed] = useState<CollapsedMap>({});
-  const toggleCollapsed = useCallback((id: string, value: boolean) => {
-    setCollapsed(c => ({ ...c, [id]: value }));
+  const toggleCollapsed = useCallback((idOrIds: string | string[], value: boolean) => {
+    const ids = Array.isArray(idOrIds) ? idOrIds : [idOrIds];
+    const values = ids.reduce((acc, id) => ({ ...acc, [id]: value }), {});
+
+    setCollapsed(c => ({ ...c, ...values }));
   }, []);
 
   // Update data when inputData changes

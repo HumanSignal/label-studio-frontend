@@ -27,6 +27,32 @@
   & + & {
     margin-left: var(--ranker-gap);
   }
+
+  .columnTitle {
+    display: flex;
+
+    button {
+      margin-left: auto;
+      background: none;
+      border: none;
+      font-size: 0.75em;
+      width: 2em;
+      cursor: pointer;
+    }
+
+    button span::after {
+      content: '△';
+    }
+    button:hover span::after {
+      content: '▲';
+    }
+    &.collapsed button span::after {
+      content: '▽';
+    }
+    &.collapsed button:hover span::after {
+      content: '▼';
+    }
+  }
 }
 
 .item {

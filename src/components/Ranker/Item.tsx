@@ -4,6 +4,7 @@ import { Draggable } from 'react-beautiful-dnd';
 import { sanitizeHtml } from '../../utils/html';
 import { InputItem } from './createData';
 import { CollapsedContext } from './Ranker';
+
 import styles from './Ranker.module.scss';
 
 interface ItemProps {
