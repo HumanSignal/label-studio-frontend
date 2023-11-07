@@ -2,19 +2,77 @@ import React, { Fragment, useContext } from 'react';
 import { Circle } from 'react-konva';
 import { getRoot, types } from 'mobx-state-tree';
 
+import Registry from '../core/Registry';
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
-import Registry from '../core/Registry';
-import { ImageModel } from '../tags/object/Image';
-import { guidGenerator } from '../core/Helpers';
-import { LabelOnKP } from '../components/ImageView/LabelOnRegion';
-import { AreaMixin } from '../mixins/AreaMixin';
-import { useRegionStyles } from '../hooks/useRegionColor';
-import { AliveRegion } from './AliveRegion';
-import { KonvaRegionMixin } from '../mixins/KonvaRegion';
-import { createDragBoundFunc } from '../utils/image';
+
 import { ImageViewContext } from '../components/ImageView/ImageViewContext';
+import { LabelOnKP } from '../components/ImageView/LabelOnRegion';
+import { guidGenerator } from '../core/Helpers';
+import { useRegionStyles } from '../hooks/useRegionColor';
+import { AreaMixin } from '../mixins/AreaMixin';
+import { KonvaRegionMixin } from '../mixins/KonvaRegion';
+import { ImageModel } from '../tags/object/Image';
+import { FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { createDragBoundFunc } from '../utils/image';
+import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
+import Constants from '../core/Constants';
+
+const KeyPointRegionAbsoluteCoordsDEV3793 = types
+  .model({
+    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
+  })
+  .volatile(() => ({
+    relativeX: 0,
+    relativeY: 0,
+  }))
+  .actions(self => ({
+    afterCreate() {
+      if (self.coordstype === 'perc') {
+        // deserialization
+        self.relativeX = self.x;
+        self.relativeY = self.y;
+        self.checkSizes();
+      } else {
+        // creation
+        const { stageWidth: width, stageHeight: height } = self.parent;
+
+        if (width && height) {
+          self.relativeX = (self.x / width) * RELATIVE_STAGE_WIDTH;
+          self.relativeY = (self.y / height) * RELATIVE_STAGE_HEIGHT;
+        }
+      }
+    },
+
+    setPosition(x, y) {
+      const point = self.control?.getSnappedPoint({
+        x: self.parent.canvasToInternalX(x),
+        y: self.parent.canvasToInternalY(y),
+      });
+
+      self.x = point.x;
+      self.y = point.y;
+
+      self.relativeX = (point.x / self.parent.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (point.y / self.parent.stageHeight) * RELATIVE_STAGE_HEIGHT;
+    },
+
+    updateImageSize(wp, hp, sw, sh) {
+      if (self.coordstype === 'px') {
+        self.x = (sw * self.relativeX) / RELATIVE_STAGE_WIDTH;
+        self.y = (sh * self.relativeY) / RELATIVE_STAGE_HEIGHT;
+      }
+
+      if (self.coordstype === 'perc') {
+        self.x = (sw * self.x) / RELATIVE_STAGE_WIDTH;
+        self.y = (sh * self.y) / RELATIVE_STAGE_HEIGHT;
+        self.width = (sw * self.width) / RELATIVE_STAGE_WIDTH;
+        self.coordstype = 'px';
+      }
+    },
+  }));
 
 const Model = types
   .model({
@@ -27,12 +85,9 @@ const Model = types
     y: types.number,
 
     width: types.number,
-    coordstype: types.optional(types.enumeration(['px', 'perc']), 'perc'),
     negative: false,
   })
   .volatile(() => ({
-    relativeX: 0,
-    relativeY: 0,
     hideable: true,
     _supportsTransform: true,
     useTransformer: false,
@@ -55,53 +110,28 @@ const Model = types
         bottom: self.y + self.width,
       };
     },
+    get canvasX() {
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.x) : self.x;
+    },
+    get canvasY() {
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.y) : self.y;
+    },
+    get canvasWidth() {
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.width) : self.width;
+    },
   }))
   .actions(self => ({
-    afterCreate() {
-      if (self.coordstype === 'perc') {
-        // deserialization
-        self.relativeX = self.x;
-        self.relativeY = self.y;
-        self.checkSizes();
-      } else {
-        // creation
-        const { stageWidth: width, stageHeight: height } = self.parent;
-
-        if (width && height) {
-          self.relativeX = (self.x / width) * 100;
-          self.relativeY = (self.y / height) * 100;
-        }
-      }
-    },
-
-    // @todo not used
-    rotate(degree) {
-      const p = self.rotatePoint(self, degree);
-
-      self.setPosition(p.x, p.y);
-    },
-
     setPosition(x, y) {
-      self.x = x;
-      self.y = y;
+      const point = self.control?.getSnappedPoint({
+        x: self.parent.canvasToInternalX(x),
+        y: self.parent.canvasToInternalY(y),
+      });
 
-      self.relativeX = (x / self.parent.stageWidth) * 100;
-      self.relativeY = (y / self.parent.stageHeight) * 100;
+      self.x = point.x;
+      self.y = point.y;
     },
 
-    updateImageSize(wp, hp, sw, sh) {
-      if (self.coordstype === 'px') {
-        self.x = (sw * self.relativeX) / 100;
-        self.y = (sh * self.relativeY) / 100;
-      }
-
-      if (self.coordstype === 'perc') {
-        self.x = (sw * self.x) / 100;
-        self.y = (sh * self.y) / 100;
-        self.width = (sw * self.width) / 100;
-        self.coordstype = 'px';
-      }
-    },
+    updateImageSize() {},
 
     /**
      * @example
@@ -130,14 +160,13 @@ const Model = types
      * @return {KeyPointRegionResult}
      */
     serialize() {
-      const result = {
-        ...self.parent.serializableValues(self.item_index),
-        value: {
-          x: self.convertXToPerc(self.x),
-          y: self.convertYToPerc(self.y),
-          width: self.convertHDimensionToPerc(self.width),
-        },
+      const value = {
+        x: isFF(FF_DEV_3793) ? self.x : self.convertXToPerc(self.x),
+        y: isFF(FF_DEV_3793) ? self.y : self.convertYToPerc(self.y),
+        width: isFF(FF_DEV_3793) ? self.width : self.convertHDimensionToPerc(self.width),
       };
+
+      const result = self.parent.createSerializedResult(self, value);
 
       if (self.dynamic) {
         result.is_positive = !self.negative;
@@ -156,14 +185,12 @@ const KeyPointRegionModel = types.compose(
   KonvaRegionMixin,
   EditableRegion,
   Model,
+  ...(isFF(FF_DEV_3793) ? [] : [KeyPointRegionAbsoluteCoordsDEV3793]),
 );
 
-const HtxKeyPointView = ({ item }) => {
+const HtxKeyPointView = ({ item, setShapeRef }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
-
-  const x = item.x;
-  const y = item.y;
 
   const regionStyles = useRegionStyles(item, {
     includeFill: true,
@@ -178,21 +205,24 @@ const HtxKeyPointView = ({ item }) => {
     opacity: 1,
     fill: regionStyles.fillColor,
     stroke: regionStyles.strokeColor,
-    strokeWidth: Math.max(2, regionStyles.strokeWidth),
+    strokeWidth: Math.max(1, regionStyles.strokeWidth),
     strokeScaleEnabled: false,
     shadowBlur: 0,
   };
 
-  const stage = item.parent.stageRef;
+  const stage = item.parent?.stageRef;
+
+  if (!item.parent) return null;
+  if (!item.inViewPort) return null;
 
   return (
     <Fragment>
       <Circle
-        x={x}
-        y={y}
-        ref={el => item.setShapeRef(el)}
+        x={item.canvasX}
+        y={item.canvasY}
+        ref={el => setShapeRef(el)}
         // keypoint should always be the same visual size
-        radius={Math.max(item.width, 2) / item.parent.zoomScale}
+        radius={Math.max(item.canvasWidth, 2) / item.parent?.zoomScale}
         // fixes performance, but opactity+borders might look not so good
         perfectDrawEnabled={false}
         // for some reason this scaling doesn't work, so moved this to radius
@@ -210,6 +240,8 @@ const HtxKeyPointView = ({ item }) => {
           const t = e.target;
 
           item.setPosition(t.getAttr('x'), t.getAttr('y'));
+          t.setAttr('x', item.canvasX);
+          t.setAttr('y', item.canvasY);
           item.annotation.history.unfreeze(item.id);
           item.notifyDrawingFinished();
         }}
@@ -245,7 +277,7 @@ const HtxKeyPointView = ({ item }) => {
           if (item.parent.getSkipInteractions()) return;
 
           if (store.annotationStore.selected.relationMode) {
-            stage.container().style.cursor = 'default';
+            stage.container().style.cursor = Constants.DEFAULT_CURSOR;
           }
 
           item.setHighlight(false);

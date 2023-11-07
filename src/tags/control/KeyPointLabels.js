@@ -34,6 +34,8 @@ import ControlBase from './Base';
  * @param {boolean} [showInline=true]    - Show labels in the same visual line
  * @param {float=} [opacity=0.9]         - Opacity of the keypoint
  * @param {number=} [strokeWidth=1]      - Width of the stroke
+ * @param {pixel|none} [snap=none]       - Snap keypoint to image pixels
+ *
  */
 
 const Validation = types.model({
@@ -54,13 +56,13 @@ const ModelAttrs = types
   }));
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   KeyPointModel,
   Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: 'LabelModel' }),
-  ControlBase,
 );
 
 const KeyPointLabelsModel = types.compose('KeyPointLabelsModel', Composition);

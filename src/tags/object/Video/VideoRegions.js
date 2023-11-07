@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Layer, Rect, Stage, Transformer } from 'react-konva';
 import Constants from '../../../core/Constants';
 import { Annotation } from '../../../stores/Annotation/Annotation';
-import { fixMobxObserve } from '../TimeSeries/helpers';
+import { fixMobxObserve } from '../../../utils/utilities';
 import { Rectangle } from './Rectangle';
 import { createBoundingBoxGetter, createOnDragMoveHandler } from './TransformTools';
 
@@ -46,7 +46,9 @@ const VideoRegionsPure = ({
   const [newRegion, setNewRegion] = useState();
   const [isDrawing, setDrawingMode] = useState(false);
 
-  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.isReadOnly());
+  const selected = regions.filter((reg) => {
+    return (reg.selected || reg.inSelection) && !reg.hidden && !reg.isReadOnly() && reg.isInLifespan(item.frame);
+  });
   const listenToEvents = !locked;
 
   // if region is not in lifespan, it's not rendered,
@@ -156,7 +158,7 @@ const VideoRegionsPure = ({
   };
 
   const handleMouseMove = e => {
-    if (!isDrawing || item.annotation?.isReadOnly) return false;
+    if (!isDrawing || item.annotation?.isReadOnly()) return false;
 
     const { x, y } = limitCoordinates(normalizeMouseOffsets(e.evt.offsetX, e.evt.offsetY));
 
@@ -223,7 +225,7 @@ const VideoRegionsPure = ({
         <Layer {...layerProps}>
           <SelectionRect {...newRegion}/>
         </Layer>
-      ): null}
+      ) : null}
       {!item.annotation?.isReadOnly() && selected?.length > 0 ? (
         <Layer>
           <Transformer
@@ -235,7 +237,7 @@ const VideoRegionsPure = ({
             onDragMove={createOnDragMoveHandler(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
           />
         </Layer>
-      ): null}
+      ) : null}
     </Stage>
   );
 };
@@ -260,7 +262,7 @@ const RegionsLayer = observer(({
           workingArea={workinAreaCoordinates}
           draggable={!reg.isReadOnly() && !isDrawing && !locked}
           selected={reg.selected || reg.inSelection}
-          listening={!reg.locked}
+          listening={!reg.locked && !reg.hidden}
           stageRef={stageRef}
           onDragMove={onDragMove}
         />

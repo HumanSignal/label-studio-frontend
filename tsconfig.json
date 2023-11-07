@@ -10,6 +10,6 @@
     "typeRoots": ["./types", "./node_modules/@types"],
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "forceConsistentCasingInFileNames": true
   }
 }

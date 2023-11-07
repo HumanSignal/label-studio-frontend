@@ -15,7 +15,7 @@ interface RegionItemProps {
   compact?: boolean;
   withIds?: boolean;
   mainDetails?: FC<{region: any}>;
-  metaDetails?: FC<{region: any, editMode?: boolean, cancelEditMode?: () => void}>;
+  metaDetails?: FC<{ region: any, editMode?: boolean, cancelEditMode?: () => void, enterEditMode: () => void }>;
 }
 
 export const RegionItem: FC<RegionItemProps> = observer(({
@@ -53,7 +53,7 @@ export const RegionItem: FC<RegionItemProps> = observer(({
       {region?.isDrawing && (
         <Elem name="warning">
           <IconWarning />
-          <Elem name="warning-text">Incomplete polygon</Elem>
+          <Elem name="warning-text">Incomplete {region.type.replace('region', '')}</Elem>
         </Elem>
       )}
       {withActions && (
@@ -92,7 +92,9 @@ const RegionAction: FC<any> = observer(({
       key="relation"
       icon={<IconLink/>}
       primary={annotation.relationMode}
-      onClick={() => {
+      onClick={(_e: any, hotkey?: any) => {
+        // If this is triggered by a hotkey, defer to the global bound handler for relations to avoid contention.
+        if (hotkey) return;
         if (annotation.relationMode) {
           annotation.stopRelationMode();
         } else {
@@ -100,6 +102,7 @@ const RegionAction: FC<any> = observer(({
         }
       }}
       hotkey="region:relation"
+      aria-label="Create Relation"
     />
   ));
 
@@ -133,7 +136,6 @@ const RegionAction: FC<any> = observer(({
         <RegionActionButton
           icon={region.hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
           onClick={region.toggleHidden}
-          hotkey="region:visibility"
         />
         <RegionActionButton
           danger

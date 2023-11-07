@@ -3,12 +3,24 @@
   overflow hidden
   position relative
 
+  &_newLabelingUI
+    .sidepanels
+      --panel-border-color rgba(137, 128, 152, 0.16)
+      &__wrapper
+        &_align_left
+          border-right 1px solid var(--panel-border-color)
+        &_align_right
+          border-left 1px solid var(--panel-border-color)
+
   &__content
     height 100%
     position relative
     z-index 1
-    overflow auto
     styled-scrollbars()
+
+    & .main-content
+      overflow auto
+      padding-bottom calc(var(--bottombar-height) + 8px);
 
     &_resizing
       position relative
@@ -30,7 +42,7 @@
   &__wrapper
     --snap-rotation 90deg
     top 0
-    z-index 10
+    z-index 11
     height 100%
     min-width 10px
     position absolute
@@ -40,7 +52,7 @@
       top 8px
       left 0
       bottom 8px
-      z-index 10
+      z-index 150
       width 5px
       content ""
       display block
@@ -51,6 +63,7 @@
       border-radius 0 4px 4px 0
 
     &_align_right&_snap::before
+      left: calc(100% - 6px);
       border-radius 4px 0 0 4px
 
     &_align

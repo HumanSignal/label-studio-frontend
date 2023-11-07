@@ -5,10 +5,33 @@ const Helpers = require('../tests/helpers');
 
 module.exports = {
   _stageSelector: '.konvajs-content',
+  _stageFrameSelector: '[class^="frame--"]',
   _stageBBox: null,
 
   _toolBarSelector: '.lsf-toolbar',
   _zoomPresetsSelector: '[title^="Zoom presets"]',
+
+  _rootSelector: '[class^="lsf-object wrapperComponent--"]',
+  _paginationSelector: '[class^="pagination--"]',
+  _paginationPrevBtnSelector: '.lsf-pagination__btn_arrow-left:not(.lsf-pagination__btn_arrow-left-double)',
+  _paginationNextBtnSelector: '.lsf-pagination__btn_arrow-right:not(.lsf-pagination__btn_arrow-right-double)',
+
+
+  locateRoot() {
+    return locate(this._rootSelector);
+  },
+
+  locate(locator) {
+    const rootLocator = this.locateRoot();
+
+    return locator ? rootLocator.find(locator) : rootLocator;
+  },
+
+  locatePagination(locator) {
+    const paginationLocator = this.locate(this._paginationSelector);
+
+    return locator ? paginationLocator.find(locator) : paginationLocator;
+  },
 
   percToX(xPerc) {
     return this._stageBBox.width * xPerc / 100;
@@ -19,7 +42,7 @@ module.exports = {
   },
 
   async grabStageBBox() {
-    const bbox = await I.grabElementBoundingRect(this._stageSelector);
+    const bbox = await I.grabElementBoundingRect(this._stageFrameSelector);
 
     return bbox;
   },
@@ -50,9 +73,9 @@ module.exports = {
     return this._stageBBox?.y ?? 0;
   },
 
-  waitForImage() {
+  async waitForImage() {
     I.say('Waiting for image to be loaded');
-    I.executeScript(Helpers.waitForImage);
+    await I.executeScript(Helpers.waitForImage);
     I.waitForVisible('canvas', 5);
   },
 
@@ -254,8 +277,7 @@ module.exports = {
   },
   dblClickAt(x, y) {
     I.scrollPageToTop();
-    I.clickAt(this.stageBBox().x + x, this.stageBBox().y + y);
-    I.clickAt(this.stageBBox().x + x, this.stageBBox().y + y);
+    I.dblClickAt(this.stageBBox().x + x, this.stageBBox().y + y);
   },
   drawByClick(x, y) {
     I.scrollPageToTop();
@@ -299,5 +321,31 @@ module.exports = {
   selectMoveTool() {
     I.say('Select move tool');
     I.pressKey('V');
+  },
+
+  async multiImageGoForwardWithHotkey() {
+    I.say('Attempting to go to the next image');
+    I.pressKey('Ctrl+d');
+
+    await this.waitForImage();
+  },
+
+  async multiImageGoBackwardWithHotkey() {
+    I.say('Attempting to go to the next image');
+    I.pressKey('Ctrl+a');
+
+    await this.waitForImage();
+  },
+
+  async multiImageGoForward() {
+    I.click(this.locatePagination(this._paginationNextBtnSelector));
+
+    await this.waitForImage();
+  },
+
+  async multiImageGoBackward() {
+    I.click(this.locatePagination(this._paginationPrevBtnSelector));
+
+    await this.waitForImage();
   },
 };

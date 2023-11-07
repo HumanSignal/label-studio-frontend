@@ -1,8 +1,13 @@
 import { getParent, types } from 'mobx-state-tree';
-import { FF_DEV_1372, isFF } from '../utils/feature-flags';
 
-/*
- * Per Region Mixin
+/**
+ * Controls visibility of the element depending on other tags.
+ * `visibleWhen` is required parameter, can refer to choices or regions, both selected or unselected:
+ * - region-selected, can specify tag and label value, both are optional
+ * - choice-selected, can specify tag, and with tag specified can specify choice value
+ * - no-region-selected, can't specify anything else
+ * - choice-unselected, can specify tag, and with tag specified can specify choice value
+ * Can be applied to `View` and `Choices` tags.
  */
 const VisibilityMixin = types
   .model({
@@ -43,26 +48,15 @@ const VisibilityMixin = types
 
             const tag = self.annotation.names.get(tagName);
 
-            if (!tag) return false;
+            if (!tag?.hasChoiceSelection && !choiceValue?.length) return false;
 
-            if (choiceValue) {
-              const choicesSelected = choiceValue
-                .split(',')
-                .map(v => tag.findLabel(v))
-                .some(c => c && c.sel);
-
-              return choicesSelected;
-            }
-
-            return tag.isSelected;
+            return tag.hasChoiceSelection(choiceValue?.split(','), tag.selectedValues());
           },
 
           'no-region-selected': () => !self.annotation.highlightedNode,
+          'choice-unselected': params => !fns['choice-selected'](params),
         };
 
-        if (isFF(FF_DEV_1372)) {
-          fns['choice-unselected'] = params => !fns['choice-selected'](params);
-        }
         if (Object.keys(fns).includes(self.visiblewhen)) {
           const res = fns[self.visiblewhen]({
             tagName: self.whentagname,
@@ -77,7 +71,7 @@ const VisibilityMixin = types
           const choicesList = choices?.selectedValues?.();
 
           if (choicesList?.length) {
-            for (const obj of choicesList){
+            for (const obj of choicesList) {
               if (obj === self.whenchoicevalue)
                 return true;
             }

@@ -1,9 +1,10 @@
-import { destroy, getParentOfType, getRoot, isValidReference, types } from 'mobx-state-tree';
+import { destroy, getParentOfType, getRoot, isAlive, isValidReference, types } from 'mobx-state-tree';
 
 import { cloneNode, guidGenerator } from '../core/Helpers';
 import { RelationsModel } from '../tags/control/Relations';
 import { TRAVERSE_SKIP } from '../core/Tree';
 import Area from '../regions/Area';
+import { isDefined } from '../utils/utilities';
 
 /**
  * Relation between two different nodes
@@ -33,6 +34,25 @@ const Relation = types
       const r = self.relations;
 
       return r && r.children && r.children.length > 0;
+    },
+
+    get shouldRender() {
+      if (!isAlive(self)) return false;
+      const { node1: start, node2: end } = self;
+      const [sIdx, eIdx] = [start.item_index, end.item_index];
+
+      // as we don't currently have a unified solution for multi-object segmentation
+      // and the Image tag is the only one to support it, we rely on its API
+      // TODO: make multi-object solution more generic
+      if (isDefined(sIdx) &&
+          start.object.multiImage && 
+          sIdx !== start.object.currentImage) return false;
+
+      if (isDefined(eIdx) &&
+          end.object.multiImage && 
+          eIdx !== end.object.currentImage) return false;
+
+      return true;
     },
   }))
   .actions(self => ({
@@ -142,7 +162,7 @@ const RelationStore = types
     },
 
     deleteRelation(rl) {
-      self._relations = self._relations.filter( r => r.id !== rl.id);
+      self._relations = self._relations.filter(r => r.id !== rl.id);
       destroy(rl);
     },
 
@@ -151,6 +171,11 @@ const RelationStore = types
       const rl = self.findRelations(node);
 
       rl.length && rl.forEach(self.deleteRelation);
+    },
+
+    deleteAllRelations() {
+      self._relations.forEach(rl => destroy(rl));
+      self._relations = [];
     },
 
     serializeAnnotation() {

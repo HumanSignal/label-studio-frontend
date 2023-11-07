@@ -85,8 +85,7 @@ export class HtxTextBox extends React.Component {
   };
 
   updateHeight = throttle(() => {
-    const borders = 2;
-    const height = (this.inputRef.current?.scrollHeight || 0) + borders;
+    const height = this.inputRef.current?.scrollHeight || 0;
 
     if (height && height !== this.state.height) {
       this.setState({ height });
@@ -104,7 +103,7 @@ export class HtxTextBox extends React.Component {
       autoFocus: true,
       ref: this.inputRef,
       value,
-      onBlur: isFF(FF_DEV_1566) ? ()=>{
+      onBlur: isFF(FF_DEV_1566) ? () => {
         onChange(this.state.value);
       } : this.save,
       onFocus,

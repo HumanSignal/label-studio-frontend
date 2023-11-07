@@ -2,6 +2,7 @@ const { recorder, event } = require('codeceptjs');
 const Container = require('codeceptjs/lib/container');
 
 const defaultConfig = {
+  defaultFeatureFlags: {},
 };
 
 const supportedHelpers = ['Playwright'];
@@ -27,7 +28,7 @@ module.exports = function(config) {
     return;
   }
 
-  const options = Object.assign(defaultConfig, helper.options, config);
+  const options = Object.assign({}, defaultConfig, helper.options, config);
 
   if (options.enable) return;
 
@@ -39,7 +40,7 @@ module.exports = function(config) {
   }
 
   event.dispatcher.on(event.test.before, async () => {
-    ffs = {};
+    ffs = { ...options.defaultFeatureFlags };
   });
 
   event.dispatcher.on(event.step.before, async (step) => {
@@ -47,22 +48,18 @@ module.exports = function(config) {
       recorder.add('set feature flags', async () => {
         try {
           helper.page.once('requestfinished',
-            request => {
-              const url = request.url();
-
-              if (url.startsWith(options.url + step.args[0])) {
-                helper.page.evaluate((config) => {
-                  if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
-                  if (!window.APP_SETTINGS.feature_flags) window.APP_SETTINGS.feature_flags = {};
-                  window.APP_SETTINGS.feature_flags = {
-                    ...window.APP_SETTINGS.feature_flags,
-                    ...config.feature_flags,
-                  };
-                  if (typeof config.feature_flags_default_value === 'boolean') {
-                    window.APP_SETTINGS.feature_flags_default_value = config.feature_flags_default_value;
-                  }
-                }, { feature_flags: ffs, feature_flags_default_value: defaultValue });
-              }
+            () => {
+              helper.page.evaluate((config) => {
+                if (!window.APP_SETTINGS) window.APP_SETTINGS = {};
+                if (!window.APP_SETTINGS.feature_flags) window.APP_SETTINGS.feature_flags = {};
+                window.APP_SETTINGS.feature_flags = {
+                  ...window.APP_SETTINGS.feature_flags,
+                  ...config.feature_flags,
+                };
+                if (typeof config.feature_flags_default_value === 'boolean') {
+                  window.APP_SETTINGS.feature_flags_default_value = config.feature_flags_default_value;
+                }
+              }, { feature_flags: ffs, feature_flags_default_value: defaultValue });
             },
           );
         } catch (err) {

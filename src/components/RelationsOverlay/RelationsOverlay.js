@@ -152,7 +152,7 @@ const RelationItemObserver = observer(({ relation, startNode, endNode, visible, 
 
       if (render !== nodesExist) {
         setRender(nodesExist);
-      } else if(render === false) {
+      } else if (render === false) {
         timer = setTimeout(watchRegionAppear, 30);
       }
     };
@@ -164,7 +164,7 @@ const RelationItemObserver = observer(({ relation, startNode, endNode, visible, 
 
   const visibility = visible && relation.visible;
 
-  return render ? (
+  return (render && relation.shouldRender) ? (
     <RelationItem
       id={relation.id}
       startNode={startNode}

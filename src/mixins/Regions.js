@@ -3,6 +3,7 @@ import { guidGenerator } from '../core/Helpers';
 import { isDefined } from '../utils/utilities';
 import { AnnotationMixin } from './AnnotationMixin';
 import { ReadOnlyRegionMixin } from './ReadOnlyMixin';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
 const RegionsMixin = types
   .model({
@@ -12,6 +13,8 @@ const RegionsMixin = types
     score: types.maybeNull(types.number),
 
     hidden: types.optional(types.boolean, false),
+
+    filtered: types.optional(types.boolean, false),
 
     parentID: types.optional(types.string, ''),
 
@@ -77,13 +80,16 @@ const RegionsMixin = types
       return self.parent.findImageEntity(self.item_index ?? 0);
     },
 
-    getConnectedDynamicRegions(selfExcluding) {
+    getConnectedDynamicRegions(excludeSelf) {
       const { regions = [] } = getRoot(self).annotationStore?.selected || {};
+      const { type, labelName } = self;
 
-      return regions.filter(r => {
-        if (selfExcluding && r === self) return false;
-        return r.dynamic && r.type === self.type && r.labelName === self.labelName;
+      const result = regions.filter(region => {
+        if (excludeSelf && region === self) return false;
+        return region.dynamic && region.type === type && region.labelName === labelName;
       });
+
+      return result;
     },
 
   }))
@@ -123,62 +129,21 @@ const RegionsMixin = types
         self.dynamic = true;
       },
 
-      // All of the below accept size as an argument
-      moveTop() {},
-      moveBottom() {},
-      moveLeft() {},
-      moveRight() {},
-
-      sizeRight() {},
-      sizeLeft() {},
-      sizeTop() {},
-      sizeBottom() {},
-
-      // "web" degree is opposite to mathematical, -90 is 90 actually
-      // swapSizes = true when canvas is already rotated at this moment
-      // @todo not used
-      rotatePoint(point, degree, swapSizes = true) {
-        const { x, y } = point;
-
-        if (!degree) return { x, y };
-
-        degree = (360 + degree) % 360;
-        // transform origin is (w/2, w/2) for ccw rotation
-        // (h/2, h/2) for cw rotation
-        const w = self.currentImageEntity.stageWidth;
-        const h = self.currentImageEntity.stageHeight;
-        // actions: translate to fit origin, rotate, translate back
-        //   const shift = size / 2;
-        //   const newX = (x - shift) * cos + (y - shift) * sin + shift;
-        //   const newY = -(x - shift) * sin + (y - shift) * cos + shift;
-        // for ortogonal degrees it's simple:
-
-        if (degree === 270) return { x: y, y: (swapSizes ? h : w) - x };
-        if (degree === 90) return { x: (swapSizes ? w : h) - y, y: x };
-        if (Math.abs(degree) === 180) return { x: w - x, y: h - y };
-        return { x, y };
-      },
-
-      // @todo not used
-      rotateDimensions({ width, height }, degree) {
-        if ((degree + 360) % 180 === 0) return { width, height };
-        return { width: height, height: width };
-      },
-
+      // @todo this conversion methods should be removed after removing FF_DEV_3793
       convertXToPerc(x) {
-        return (x * 100) / self.currentImageEntity.stageWidth;
+        return (x * RELATIVE_STAGE_WIDTH) / self.currentImageEntity.stageWidth;
       },
 
       convertYToPerc(y) {
-        return (y * 100) / self.parent.stageHeight;
+        return (y * RELATIVE_STAGE_HEIGHT) / self.currentImageEntity.stageHeight;
       },
 
       convertHDimensionToPerc(hd) {
-        return (hd * (self.scaleX || 1) * 100) / self.currentImageEntity.stageWidth;
+        return (hd * (self.scaleX || 1) * RELATIVE_STAGE_WIDTH) / self.currentImageEntity.stageWidth;
       },
 
       convertVDimensionToPerc(vd) {
-        return (vd * (self.scaleY || 1) * 100) / self.currentImageEntity.stageHeight;
+        return (vd * (self.scaleY || 1) * RELATIVE_STAGE_HEIGHT) / self.currentImageEntity.stageHeight;
       },
 
       // update region appearence based on it's current states, for
@@ -188,53 +153,6 @@ const RegionsMixin = types
 
       serialize() {
         console.error('Region class needs to implement serialize');
-      },
-
-      toStateJSON() {
-        const parent = self.parent;
-        const buildTree = control => {
-          const tree = {
-            id: self.pid,
-            from_name: control.name,
-            to_name: parent.name,
-            source: parent.value,
-            type: control.type,
-            parent_id: self.parentID === '' ? null : self.parentID,
-          };
-
-          if (self.normalization) tree['normalization'] = self.normalization;
-
-          return tree;
-        };
-
-        if (self.states && self.states.length) {
-          return self.states
-            .map(s => {
-              const ser = self.serialize(s, parent);
-
-              if (!ser) return null;
-
-              const tree = {
-                ...buildTree(s),
-                ...ser,
-              };
-
-              // in case of labels it's gonna be, labels: ["label1", "label2"]
-
-              return tree;
-            })
-            .filter(Boolean);
-        } else {
-          const obj = self.annotation.toNames.get(parent.name);
-          const control = obj.length ? obj[0] : obj;
-
-          const tree = {
-            ...buildTree(control),
-            ...self.serialize(control, parent),
-          };
-
-          return tree;
-        }
       },
 
       selectRegion() {},
@@ -310,6 +228,10 @@ const RegionsMixin = types
         self.perRegionFocusRequest = null;
       },
 
+      revokeSuggestion() {
+        self.fromSuggestion = false;
+      }, 
+
       setHighlight(val) {
         self._highlighted = val;
       },
@@ -318,7 +240,14 @@ const RegionsMixin = types
         self.setHighlight(!self._highlighted);
       },
 
-      toggleHidden(e) {
+      toggleFiltered(e) {
+        self.filtered = !self.filtered;
+        self.toggleHidden(e, true);
+        e && e.stopPropagation();
+      },
+
+      toggleHidden(e, isFiltered = false) {
+        if (!isFiltered) self.filtered = false;
         self.hidden = !self.hidden;
         e && e.stopPropagation();
       },
@@ -328,7 +257,7 @@ const RegionsMixin = types
           self.origin = 'prediction-changed';
         }
 
-        // everything above is related to dynamic preannotations
+        // everything below is related to dynamic preannotations
         if (!self.dynamic || self.fromSuggestion) return;
 
         clearTimeout(self.drawingTimeout);
@@ -338,7 +267,9 @@ const RegionsMixin = types
           const env = getEnv(self);
 
           self.drawingTimeout = setTimeout(() => {
-            env.events.invoke('regionFinishedDrawing', self, self.getConnectedDynamicRegions(destroy));
+            const connectedRegions = self.getConnectedDynamicRegions(destroy);
+
+            env.events.invoke('regionFinishedDrawing', self, connectedRegions);
           }, timeout);
         }
       },

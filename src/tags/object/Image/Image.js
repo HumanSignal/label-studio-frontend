@@ -14,13 +14,25 @@ import { RectRegionModel } from '../../../regions/RectRegion';
 import * as Tools from '../../../tools';
 import ToolsManager from '../../../tools/Manager';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_3377, FF_DEV_3666, FF_DEV_4081, FF_LSDV_4583, FF_LSDV_4583_6, isFF } from '../../../utils/feature-flags';
+import {
+  FF_DEV_3377,
+  FF_DEV_3666,
+  FF_DEV_3793,
+  FF_DEV_4081,
+  FF_LSDV_4583,
+  FF_LSDV_4583_6,
+  FF_LSDV_4711,
+  FF_ZOOM_OPTIM,
+  isFF
+} from '../../../utils/feature-flags';
 import { guidGenerator } from '../../../utils/unique';
 import { clamp, isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import { DrawingRegion } from './DrawingRegion';
 import { ImageEntityMixin } from './ImageEntityMixin';
 import { ImageSelection } from './ImageSelection';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH, SNAP_TO_PIXEL_MODE } from '../../../components/ImageView/Image';
+import MultiItemObjectBase from '../MultiItemObjectBase';
 
 const IMAGE_PRELOAD_COUNT = 3;
 
@@ -30,39 +42,35 @@ const IMAGE_PRELOAD_COUNT = 3;
  * Use with the following data types: images.
  *
  * When you annotate image regions with this tag, the annotations are saved as percentages of the original size of the image, from 0-100.
+ *
  * @example
  * <!--Labeling configuration to display an image on the labeling interface-->
  * <View>
  *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
  *   <Image name="image" value="$url" rotateControl="true" zoomControl="true"></Image>
  * </View>
- *  * @example
+ *
+ * @example
  * <!--Labeling configuration to perform multi-image segmentation-->
  *
- * Config:
- * ```xml
  * <View>
  *   <!-- Retrieve the image url from the url field in JSON or column in CSV -->
  *   <Image name="image" valueList="$images" rotateControl="true" zoomControl="true"></Image>
  * </View>
- * ```
- *
- * Data:
- * ```json
- * {
+ * <!-- {
  *   "data": {
  *     "images": [
  *       "https://images.unsplash.com/photo-1556740734-7f3a7d7f0f9c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
  *       "https://images.unsplash.com/photo-1556740734-7f3a7d7f0f9c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
  *     ]
  *   }
- * }
- * ```
+ * } -->
  * @name Image
  * @meta_title Image Tags for Images
  * @meta_description Customize Label Studio with the Image tag to annotate images for computer vision machine learning and data science projects.
  * @param {string} name                       - Name of the element
  * @param {string} value                      - Data field containing a path or URL to the image
+ * @param {string} [valueList]                - References a variable that holds a list of image URLs
  * @param {boolean} [smoothing]               - Enable smoothing, by default it uses user settings
  * @param {string=} [width=100%]              - Image width
  * @param {string=} [maxWidth=750px]          - Maximum image width
@@ -71,17 +79,16 @@ const IMAGE_PRELOAD_COUNT = 3;
  * @param {float=} [zoomBy=1.1]               - Scale factor
  * @param {boolean=} [grid=false]             - Whether to show a grid
  * @param {number=} [gridSize=30]             - Specify size of the grid
- * @param {string=} [gridColor="#EEEEF4"]     - Color of the grid in hex, opacity is 0.15
+ * @param {string=} [gridColor=#EEEEF4]       - Color of the grid in hex, opacity is 0.15
  * @param {boolean} [zoomControl=false]       - Show zoom controls in toolbar
  * @param {boolean} [brightnessControl=false] - Show brightness control in toolbar
  * @param {boolean} [contrastControl=false]   - Show contrast control in toolbar
  * @param {boolean} [rotateControl=false]     - Show rotate control in toolbar
  * @param {boolean} [crosshair=false]         - Show crosshair cursor
- * @param {string} [horizontalAlignment="left"] - Where to align image horizontally. Can be one of "left", "center" or "right"
- * @param {string} [verticalAlignment="top"]    - Where to align image vertically. Can be one of "top", "center" or "bottom"
- * @param {string} [defaultZoom="fit"]          - Specify the initial zoom of the image within the viewport while preserving it’s ratio. Can be one of "auto", "original" or "fit"
- * @param {string} [valuelist]                  - References a variable that holds a list of image URLs
- * @param {string} [crossOrigin="none"]         - Configures CORS cross domain behavior for this image, either "none", "anonymous", or "use-credentials", similar to [DOM `img` crossOrigin property](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/crossOrigin).
+ * @param {left|center|right} [horizontalAlignment=left]      - Where to align image horizontally. Can be one of "left", "center", or "right"
+ * @param {top|center|bottom} [verticalAlignment=top]         - Where to align image vertically. Can be one of "top", "center", or "bottom"
+ * @param {auto|original|fit} [defaultZoom=fit]               - Specify the initial zoom of the image within the viewport while preserving its ratio. Can be one of "auto", "original", or "fit"
+ * @param {none|anonymous|use-credentials} [crossOrigin=none] - Configures CORS cross domain behavior for this image, either "none", "anonymous", or "use-credentials", similar to [DOM `img` crossOrigin property](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/crossOrigin).
  */
 const TagAttrs = types.model({
   value: types.maybeNull(types.string),
@@ -174,7 +181,12 @@ const Model = types.model({
   },
 
   get multiImage() {
-    return isFF(FF_LSDV_4583) && isDefined(self.valuelist);
+    return !!self.isMultiItem;
+  },
+
+  // an alias of currentImage to make an interface reusable
+  get currentItemIndex() {
+    return self.currentImage;
   },
 
   get parsedValue() {
@@ -210,16 +222,6 @@ const Model = types.model({
     return states && states.length > 0;
   },
 
-  get regs() {
-    const regions = self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
-
-    if (isFF(FF_LSDV_4583) && self.valuelist) {
-      return regions.filter(r => (r.item_index ?? 0) === self.currentImage);
-    }
-
-    return regions;
-  },
-
   get selectedRegions() {
     return self.regs.filter(region => region.inSelection);
   },
@@ -230,10 +232,9 @@ const Model = types.model({
     self.selectedRegions.forEach((region) => {
       const regionBBox = region.bboxCoords;
 
-      if (!bboxCoords && !region.bboxCoords) return;
+      if (!regionBBox) return;
 
       if (bboxCoords) {
-
         bboxCoords = {
           left: Math.min(regionBBox?.left, bboxCoords.left),
           top: Math.min(regionBBox?.top, bboxCoords.top),
@@ -241,7 +242,7 @@ const Model = types.model({
           bottom: Math.max(regionBBox?.bottom, bboxCoords.bottom),
         };
       } else {
-        bboxCoords = region.bboxCoords;
+        bboxCoords = regionBBox;
       }
     });
     return bboxCoords;
@@ -288,6 +289,8 @@ const Model = types.model({
   get imageCrossOrigin() {
     const value = self.crossorigin.toLowerCase();
 
+    if (isFF(FF_LSDV_4711) && (!value || value === 'none')) return 'anonymous';
+
     if (!isFF(FF_DEV_4081)) {
       return null;
     } else if (!value || value === 'none') {
@@ -305,24 +308,74 @@ const Model = types.model({
       : `${naturalHeight / naturalWidth * 100}%`;
   },
 
-  serializableValues(index) {
-    index = index ?? 0;
-    const currentImageEntity = self.multiImage
-      ? self.findImageEntity(index)
-      : self;
+  get zoomedPixelSize() {
+    const { naturalWidth, naturalHeight } = self;
 
-    const value = {
+    if (isFF(FF_DEV_3793)) {
+      return {
+        x: 100 / naturalWidth,
+        y: 100 / naturalHeight,
+      };
+    }
+
+    return {
+      x: self.stageWidth / naturalWidth,
+      y: self.stageHeight / naturalHeight,
+    };
+
+  },
+
+  isSamePixel({ x: x1, y: y1 }, { x: x2, y: y2 }) {
+    const zoomedPixelSizeX = self.zoomedPixelSize.x;
+    const zoomedPixelSizeY = self.zoomedPixelSize.y;
+
+    return Math.abs(x1 - x2) < zoomedPixelSizeX / 2 && Math.abs(y1 - y2) < zoomedPixelSizeY / 2;
+  },
+
+  snapPointToPixel({ x,y }, snapMode = SNAP_TO_PIXEL_MODE.EDGE) {
+    const zoomedPixelSizeX = self.zoomedPixelSize.x;
+    const zoomedPixelSizeY = self.zoomedPixelSize.y;
+
+    switch (snapMode) {
+      case SNAP_TO_PIXEL_MODE.EDGE: {
+        return {
+          x: Math.round(x / zoomedPixelSizeX) * zoomedPixelSizeX,
+          y: Math.round(y / zoomedPixelSizeY) * zoomedPixelSizeY,
+        };
+      }
+      case SNAP_TO_PIXEL_MODE.CENTER: {
+        return {
+          x: Math.floor(x / zoomedPixelSizeX) * zoomedPixelSizeX + zoomedPixelSizeX / 2,
+          y: Math.floor(y / zoomedPixelSizeY) * zoomedPixelSizeY + zoomedPixelSizeY / 2,
+        };
+      }
+    }
+  },
+
+  createSerializedResult(region, value) {
+    const index = region.item_index ?? 0;
+    const currentImageEntity = self.findImageEntity(index);
+
+    const imageDimension = {
       original_width: currentImageEntity.naturalWidth,
       original_height: currentImageEntity.naturalHeight,
       image_rotation: currentImageEntity.rotation,
     };
 
     if (self.multiImage && isDefined(index)) {
-      value.item_index = index;
+      imageDimension.item_index = index;
     }
 
-    return {
-      ...value,
+    // We're using raw region result instead of calulated one when
+    // the image data is not available (image is not yet loaded)
+    // As the serialization also happens during region creation,
+    // we have to forsee this scenario and avoid using raw result
+    // as it can only be present for already created (submitter) regions
+    const useRawResult = !currentImageEntity.imageLoaded && isDefined(region._rawResult);
+
+    return useRawResult ? structuredClone(region._rawResult) : {
+      ...imageDimension,
+      value,
     };
   },
 
@@ -404,6 +457,34 @@ const Model = types.model({
     };
   },
 
+  get alignmentOffset() {
+    const offset = { x: 0, y: 0 };
+
+    if (isFF(FF_ZOOM_OPTIM)) {
+      switch (self.horizontalalignment) {
+        case 'center': {
+          offset.x = (self.containerWidth - self.canvasSize.width) / 2;
+          break;
+        }
+        case 'right': {
+          offset.x = (self.containerWidth - self.canvasSize.width);
+          break;
+        }
+      }
+      switch (self.verticalalignment) {
+        case 'center': {
+          offset.y = (self.containerHeight - self.canvasSize.height) / 2;
+          break;
+        }
+        case 'bottom': {
+          offset.y = (self.containerHeight - self.canvasSize.height);
+          break;
+        }
+      }
+    }
+    return offset;
+  },
+
   get zoomBy() {
     return parseFloat(self.zoomby);
   },
@@ -459,6 +540,38 @@ const Model = types.model({
       ? Math.max(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
       : Math.max(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
   },
+
+  get viewPortBBoxCoords() {
+    let width = self.canvasSize.width / self.zoomScale;
+    let height = self.canvasSize.height / self.zoomScale;
+    const leftOffset = -self.zoomingPositionX / self.zoomScale;
+    const topOffset = -self.zoomingPositionY / self.zoomScale;
+    const rightOffset = self.stageComponentSize.width - (leftOffset + width);
+    const bottomOffset = self.stageComponentSize.height - (topOffset + height);
+    const offsets = [leftOffset, topOffset, rightOffset, bottomOffset];
+
+    if (self.isSideways) {
+      [width, height] = [height, width];
+    }
+    if (self.rotation) {
+      const rotateCount = (self.rotation / 90) % 4;
+
+      for (let k = 0; k < rotateCount; k++) {
+        offsets.push(offsets.shift());
+      }
+    }
+    const left = offsets[0];
+    const top = offsets[1];
+
+    return {
+      left,
+      top,
+      right: left + width,
+      bottom: top + height,
+      width,
+      height,
+    };
+  },
 }))
 
   // actions for the tools
@@ -468,7 +581,7 @@ const Model = types.model({
 
     function createImageEntities() {
       if (!self.store.task) return;
-    
+
       const parsedValue = self.multiImage
         ? self.parsedValueList
         : self.parsedValue;
@@ -511,6 +624,14 @@ const Model = types.model({
       createImageEntities();
     }
 
+    function afterResultCreated(region) {
+      if (!region) return;
+      if (region.classification) return;
+      if (!self.multiImage) return;
+
+      region.setItemIndex?.(self.currentImage);
+    }
+
     function getToolsManager() {
       return manager;
     }
@@ -518,6 +639,7 @@ const Model = types.model({
     return {
       afterAttach,
       getToolsManager,
+      afterResultCreated,
     };
   }).extend((self) => {
     let skipInteractions = false;
@@ -623,9 +745,15 @@ const Model = types.model({
       self.gridsize = String(value);
     },
 
+    // an alias of setCurrentImage for making an interface reusable
+    setCurrentItem(index = 0) {
+      self.setCurrentImage(index);
+    },
+
     setCurrentImage(index = 0) {
       index = index ?? 0;
       if (index === self.currentImage) return;
+
       self.currentImage = index;
       self.currentImageEntity = self.findImageEntity(index);
       if (isFF(FF_LSDV_4583_6)) self.preloadImages();
@@ -940,7 +1068,7 @@ const Model = types.model({
       //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
       if (_historyLength <= 1) {
         // Don't force unselection of regions during the updateObjects callback from history reinit
-        setTimeout(() => self.annotation.reinitHistory(false), 0);
+        setTimeout(() => self.annotation?.reinitHistory(false), 0);
       }
     },
 
@@ -963,7 +1091,7 @@ const Model = types.model({
         self.sizeToAuto();
       }
       // Don't force unselection of regions during the updateObjects callback from history reinit
-      setTimeout(() => self.annotation.reinitHistory(false), 0);
+      setTimeout(() => self.annotation?.reinitHistory(false), 0);
     },
 
     checkLabels() {
@@ -988,6 +1116,27 @@ const Model = types.model({
       shape.selectRegion();
     },
 
+    /**
+     * Resize of image canvas
+     * @param {*} width
+     * @param {*} height
+     */
+    onResize(width, height, userResize) {
+      self._updateImageSize({ width, height, userResize });
+    },
+
+    event(name, ev, screenX, screenY) {
+      const [canvasX, canvasY] = self.fixZoomedCoords([screenX, screenY]);
+
+      const x = self.canvasToInternalX(canvasX);
+      const y = self.canvasToInternalY(canvasY);
+
+      self.getToolsManager().event(name, ev.evt || ev, x, y, canvasX, canvasY);
+    },
+  }));
+
+const CoordsCalculations = types.model()
+  .actions(self => ({
     // convert screen coords to image coords considering zoom
     fixZoomedCoords([x, y]) {
       if (!self.stageRef) {
@@ -1035,34 +1184,49 @@ const Model = types.model({
 
       return asArray ? zoomed : { x: zoomed[0], y: zoomed[1] };
     },
+  }))
+  // putting this transforms to views forces other getters to be recalculated on resize
+  .views(self => ({
+    // helps to calculate rotation because internal coords are square and real one usually aren't
+    get whRatio() {
+      // don't need this for absolute coords
+      if (!isFF(FF_DEV_3793)) return 1;
 
-    /**
-     * Resize of image canvas
-     * @param {*} width
-     * @param {*} height
-     */
-    onResize(width, height, userResize) {
-      self._updateImageSize({ width, height, userResize });
+      return self.stageWidth / self.stageHeight;
     },
 
-    event(name, ev, ...coords) {
-      self.getToolsManager().event(name, ev.evt || ev, ...self.fixZoomedCoords(coords));
+    // @todo scale?
+    canvasToInternalX(n) {
+      return n / self.stageWidth * RELATIVE_STAGE_WIDTH;
     },
 
-    /**
-     * Transform JSON data (annotations and predictions) to format
-     */
-    fromStateJSON(obj, fromModel) {
-      const tools = self.getToolsManager().allTools();
+    canvasToInternalY(n) {
+      return n / self.stageHeight * RELATIVE_STAGE_HEIGHT;
+    },
 
-      // when there is only the image classification and nothing else, we need to handle it here
-      if (tools.length === 0 && obj.value.choices) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
+    internalToCanvasX(n) {
+      return n / RELATIVE_STAGE_WIDTH * self.stageWidth;
+    },
 
-        return;
-      }
+    internalToCanvasY(n) {
+      return n / RELATIVE_STAGE_HEIGHT * self.stageHeight;
+    },
+  }));
 
-      tools.forEach(t => t.fromStateJSON && t.fromStateJSON(obj, fromModel));
+// mock coords calculations to transparently pass coords with FF 3793 off
+const AbsoluteCoordsCalculations = CoordsCalculations
+  .views(() => ({
+    canvasToInternalX(n) {
+      return n;
+    },
+    canvasToInternalY(n) {
+      return n;
+    },
+    internalToCanvasX(n) {
+      return n;
+    },
+    internalToCanvasY(n) {
+      return n;
     },
   }));
 
@@ -1070,10 +1234,12 @@ const ImageModel = types.compose(
   'ImageModel',
   TagAttrs,
   ObjectBase,
+  ...(isFF(FF_LSDV_4583) ? [MultiItemObjectBase] : []),
   AnnotationMixin,
   IsReadyWithDepsMixin,
   ImageEntityMixin,
   Model,
+  isFF(FF_DEV_3793) ? CoordsCalculations : AbsoluteCoordsCalculations,
 );
 
 const HtxImage = inject('store')(ImageView);

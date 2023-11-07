@@ -173,9 +173,6 @@ Scenario('Check removing unexpected results based on visibleWhen parameter', asy
   };
 
   I.amOnPage('/');
-  LabelStudio.setFeatureFlags({
-    ff_front_dev_1372_visible_when_choice_unselected_11022022_short: true,
-  });
   LabelStudio.init(params);
 
   I.see('Neutral');

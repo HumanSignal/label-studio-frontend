@@ -1,5 +1,13 @@
 import { rgba, RgbaColorArray } from '../Common/Color';
-import { clamp, defaults, findLast, getCursorPositionX, getCursorPositionY, isInRange, pixelsToTime } from '../Common/Utils';
+import {
+  clamp,
+  defaults,
+  findLast,
+  getCursorPositionX,
+  getCursorPositionY,
+  isInRange,
+  pixelsToTime
+} from '../Common/Utils';
 import { CursorSymbol } from '../Cursor/Cursor';
 import { LayerGroup } from '../Visual/LayerGroup';
 import { Visualizer } from '../Visual/Visualizer';
@@ -75,7 +83,12 @@ export class Regions {
 
   renderAll() {
     this.layerGroup.clear();
-    this.regions.forEach(region => region.render());
+    const currentTime = this.waveform.currentTime;
+
+    this.regions.forEach(region => {
+      region.highlighted = (region.start <= currentTime && region.end >= currentTime);
+      region.render();
+    });
   }
 
   regionDrawableTarget() {
@@ -92,12 +105,20 @@ export class Regions {
 
   clearSegments(selectedOnly = false) {
     this.regions = this.regions.filter(region => {
-      if (!region.isRegion && (!selectedOnly || region.selected)) {
+      if (!region.isRegion && (!selectedOnly || region.selected) && !region.external) {
         region.destroy();
         return false;
       }
       return true;
     });
+  }
+
+  addRegions(regions: RegionOptions[], render = true) {
+    regions.forEach(region => this.addRegion(region, false));
+
+    if (render) {
+      this.redraw();
+    }
   }
 
   addRegion(options: RegionOptions, render = true) {
@@ -138,6 +159,22 @@ export class Regions {
     return region;
   }
 
+  convertToSegment(id: string, render = true): Segment {
+    let segment = this.findRegion(id) as Segment;
+
+    const regionIndex = this.regions.findIndex(region => region.id === id);
+
+    segment = new Segment(segment.options, this.waveform, this.visualizer, this);
+
+    this.regions[regionIndex] = segment;
+
+    if (render) {
+      this.redraw();
+    }
+
+    return segment;
+  }
+
   updateRegion(options: RegionOptions, render = true) {
     if (!this.updateable || !options.id) return;
 
@@ -169,6 +206,12 @@ export class Regions {
     if (render) {
       this.redraw();
     }
+  }
+
+  bringRegionToFront(regionId: string) {
+    const originalIndex = this.regions.findIndex(reg => reg.id === regionId);
+
+    this.regions.push(...this.regions.splice(originalIndex, 1));
   }
 
   destroy() {
@@ -215,6 +258,10 @@ export class Regions {
 
   get selected() {
     return this.regions.filter(region => region.selected);
+  }
+
+  get timelineRegions() {
+    return this.regions.filter(region => region.showInTimeline);
   }
 
   get visible() {
@@ -363,7 +410,6 @@ export class Regions {
     if (this.layerGroup.isVisible && region?.updateable) {
       e.preventDefault();
       e.stopPropagation();
-
       region.invoke('mouseDown', [region, e]);
     }
   };
@@ -382,7 +428,7 @@ export class Regions {
 
     if (e.target && mainLayer?.canvas?.contains(e.target)) {
       const region = this.findRegionUnderCursor(e);
-  
+
       if (this.layerGroup.isVisible && region) {
         region.invoke('click', [region, e]);
       }

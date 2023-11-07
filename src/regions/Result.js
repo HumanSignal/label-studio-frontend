@@ -4,7 +4,7 @@ import Registry from '../core/Registry';
 import Tree from '../core/Tree';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { isDefined } from '../utils/utilities';
-import { FF_DEV_1372, FF_LSDV_4583, isFF } from '../utils/feature-flags';
+import { FF_LSDV_4583, isFF } from '../utils/feature-flags';
 
 const Result = types
   .model('Result', {
@@ -56,9 +56,11 @@ const Result = types
       'rating',
       'pairwise',
       'videorectangle',
+      'ranker',
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
+      ranker: types.union(types.array(types.string), types.frozen(), types.null),
       datetime: types.maybe(types.string),
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
@@ -82,7 +84,7 @@ const Result = types
       sequence: types.frozen(),
     }),
     // info about object and region
-    // meta: types.frozen(),
+    meta: types.frozen(),
   })
   .views(self => ({
     get perRegionStates() {
@@ -104,7 +106,7 @@ const Result = types
     },
 
     mergeMainValue(value) {
-      value =  value?.toJSON ? value.toJSON() : value;
+      value = value?.toJSON ? value.toJSON() : value;
       const mainValue = self.mainValue?.toJSON?.() ? self.mainValue?.toJSON?.() : self.mainValue;
 
       if (typeof value !== typeof mainValue) return null;
@@ -138,17 +140,20 @@ const Result = types
       return self.mainValue?.join(joinstr) || '';
     },
 
+    // @todo check all usages of selectedLabels:
+    //       — check usages of non-array values (like `if selectedValues ...`)
+    //       - check empty labels, they should be returned as an array
     get selectedLabels() {
       if (self.mainValue?.length === 0 && self.from_name.allowempty) {
         return self.from_name.findLabel(null);
       }
-      return self.mainValue?.map(value => self.from_name.findLabel(value)).filter(Boolean);
+      return self.mainValue?.map(value => self.from_name.findLabel(value)).filter(Boolean) ?? [];
     },
 
     /**
      * Checks perRegion and Visibility params
      */
-    get isSubmitable() {
+    get canBeSubmitted() {
       const control = self.from_name;
 
       if (control.perregion) {
@@ -157,10 +162,14 @@ const Result = types
         if (label && !self.area.hasLabel(label)) return false;
       }
 
+      // picks leaf's (last item in a path) value for Taxonomy or usual Choice value for Choices
+      const innerResults = (r) =>
+        r.map(s => Array.isArray(s) ? s.at(-1) : s);
+
       const isChoiceSelected = () => {
         const tagName = control.whentagname;
-        const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(',') : null;
-        const results = self.annotation.results.filter(r => r.type === 'choices' && r !== self);
+        const choiceValues = control.whenchoicevalue?.split(',') ?? null;
+        const results = self.annotation.results.filter(r => ['choices', 'taxonomy'].includes(r.type) && r !== self);
 
         if (tagName) {
           const result = results.find(r => {
@@ -170,18 +179,18 @@ const Result = types
           });
 
           if (!result) return false;
-          if (choiceValues && !choiceValues.some(v => result.mainValue.includes(v))) return false;
+          if (choiceValues && !choiceValues.some(v => innerResults(result.mainValue).some(vv => result.from_name.selectedChoicesMatch(v, vv)))) return false;
         } else {
           if (!results.length) return false;
           // if no given choice value is selected in any choice result
-          if (choiceValues && !choiceValues.some(v => results.some(r => r.mainValue.includes(v)))) return false;
+          if (choiceValues && !results.some(r => choiceValues.some(v => innerResults(r.mainValue).some(vv => r.from_name.selectedChoicesMatch(v, vv))))) return false;
         }
         return true;
       };
 
       if (control.visiblewhen === 'choice-selected') {
         return isChoiceSelected();
-      } else if (isFF(FF_DEV_1372) && control.visiblewhen === 'choice-unselected') {
+      } else if (control.visiblewhen === 'choice-unselected') {
         return !isChoiceSelected();
       }
 
@@ -198,7 +207,7 @@ const Result = types
 
     get style() {
       if (!self.tag) return null;
-      const fillcolor = self.tag.background || self.tag.parent.fillcolor;
+      const fillcolor = self.tag.background || self.tag.parent?.fillcolor;
 
       if (!fillcolor) return null;
       const strokecolor = self.tag.background || self.tag.parent.strokecolor;
@@ -252,13 +261,18 @@ const Result = types
       self.parentID = id;
     },
 
+    setMetaValue(key, value) {
+      self.meta = { ...self.meta, [key]: value };
+    },
+
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
-    updateAppearenceFromState() {},
+    updateAppearenceFromState() { },
 
     serialize(options) {
-      const { type, score, value, ...sn } = getSnapshot(self);
+      const sn = getSnapshot(self);
+      const { type, score, value, meta } = sn;
       const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize(options) : {};
       // cut off annotation id
@@ -267,7 +281,7 @@ const Result = types
       const to_name = Tree.cleanUpId(sn.to_name);
 
       if (!data) return null;
-      if (!self.isSubmitable) return null;
+      if (!self.canBeSubmitted) return null;
 
       if (!isDefined(data.value)) data.value = {};
       // with `mergeLabelsAndResults` control uses only one result even with external `Labels`
@@ -286,6 +300,10 @@ const Result = types
 
       if (areaMeta && Object.keys(areaMeta).length) {
         data.meta = { ...data.meta, ...areaMeta };
+      }
+
+      if (meta) {
+        data.meta = { ...data.meta, ...meta };
       }
 
       if (self.area.parentID) {
@@ -307,53 +325,6 @@ const Result = types
       }
 
       return data;
-    },
-
-    toStateJSON() {
-      const parent = self.parent;
-      const buildTree = control => {
-        const tree = {
-          id: self.pid,
-          from_name: control.name,
-          to_name: parent.name,
-          source: parent.value,
-          type: control.type,
-          parent_id: self.parentID === '' ? null : self.parentID,
-        };
-
-        if (self.normalization) tree['normalization'] = self.normalization;
-
-        return tree;
-      };
-
-      if (self.states && self.states.length) {
-        return self.states
-          .map(s => {
-            const ser = self.serialize(s, parent);
-
-            if (!ser) return null;
-
-            const tree = {
-              ...buildTree(s),
-              ...ser,
-            };
-
-            // in case of labels it's gonna be, labels: ["label1", "label2"]
-
-            return tree;
-          })
-          .filter(Boolean);
-      } else {
-        const obj = self.annotation.toNames.get(parent.name);
-        const control = obj.length ? obj[0] : obj;
-
-        const tree = {
-          ...buildTree(control),
-          ...self.serialize(control, parent),
-        };
-
-        return tree;
-      }
     },
 
     /**

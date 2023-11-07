@@ -1,7 +1,8 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
-import { Waveform, WaveformOptions } from '../Waveform';
-import { Layer } from '../Visual/Layer';
+
 import { isTimeRelativelySimilar } from '../Common/Utils';
+import { Layer } from '../Visual/Layer';
+import { Waveform, WaveformOptions } from '../Waveform';
 
 export const useWaveform = (
   containter: MutableRefObject<HTMLElement | null | undefined>,
@@ -67,10 +68,8 @@ export const useWaveform = (
     wf.on('durationChanged', setDuration);
     wf.on('volumeChanged', setVolume);
     wf.on('rateChanged', (newRate) => {
-      if (newRate !== rate) {
-        options?.onRateChange?.(newRate);
-        setRate(newRate);
-      }
+      options?.onRateChange?.(newRate);
+      setRate(newRate);
     });
     wf.on('layersUpdated', (layers) => {
       const layersArray = [];

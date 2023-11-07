@@ -91,7 +91,7 @@ const CollapseModel = types.compose('CollapseModel', Model, ProcessAttrsMixin);
 const HtxCollapse = observer(({ item }) => {
   return (
     <Collapse bordered={item.bordered} accordion={item.accordion}>
-      {Tree.filterChildrenOfType(item, 'PanelModel').map(i => (
+      {item.children.filter(i => i.type === 'panel').map(i => (
         <Panel key={i._value} header={i._value}>{Tree.renderChildren(i, item.annotation)}</Panel>
       ))}
     </Collapse>

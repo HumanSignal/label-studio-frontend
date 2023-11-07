@@ -46,12 +46,14 @@ export const TimeDurationControl: FC<TimerProps> = ({
         readonly={startTimeReadonly}
         value={_currentTime}
         onChange={handleChangeCurrentTime}
+        data-testid="timebox-current-time"
       />
       <TimeBox
         sidepanel={isSidepanel}
         readonly={endTimeReadonly}
         value={endTime}
         onChange={handleChangeEndTime}
+        data-testid="timebox-end-time"
         inverted
       />
     </Block>

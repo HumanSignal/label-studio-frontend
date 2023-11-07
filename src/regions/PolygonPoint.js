@@ -5,9 +5,59 @@ import { getParent, getRoot, hasParent, types } from 'mobx-state-tree';
 
 import { guidGenerator } from '../core/Helpers';
 import { useRegionStyles } from '../hooks/useRegionColor';
-import { FF_DEV_2431, isFF } from '../utils/feature-flags';
+import { FF_DEV_2431, FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
-const PolygonPoint = types
+const PolygonPointAbsoluteCoordsDEV3793 = types.model()
+  .volatile(() => ({
+    relativeX: 0,
+    relativeY: 0,
+    initX: 0,
+    initY: 0,
+  }))
+  .actions(self => ({
+    afterCreate() {
+      self.initX = self.x;
+      self.initY = self.y;
+
+      if (self.parent.coordstype === 'perc') {
+        self.relativeX = self.x;
+        self.relativeY = self.y;
+      } else {
+        self.relativeX = (self.x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
+        self.relativeY = (self.y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
+      }
+    },
+    movePoint(offsetX, offsetY) {
+      self.initX = self.initX + offsetX;
+      self.initY = self.initY + offsetY;
+      self.x = self.x + offsetX;
+      self.y = self.y + offsetY;
+
+      self.relativeX = (self.x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (self.y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
+    },
+    _setPos(x, y) {
+      self.initX = x;
+      self.initY = y;
+
+      self.relativeX = (x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
+
+      self.x = x;
+      self.y = y;
+    },
+    _movePoint(x, y) {
+      const point = self.parent.control?.getSnappedPoint({
+        x: self.stage.canvasToInternalX(x),
+        y: self.stage.canvasToInternalY(y),
+      });
+
+      self._setPos(point.x, point.y);
+    },
+  }));
+
+const PolygonPointRelativeCoords = types
   .model('PolygonPoint', {
     id: types.optional(types.identifier, guidGenerator),
 
@@ -21,10 +71,6 @@ const PolygonPoint = types
   })
   .volatile(() => ({
     selected: false,
-    relativeX: 0,
-    relativeY: 0,
-    initX: 0,
-    initY: 0,
   }))
   .views(self => ({
     get parent() {
@@ -39,24 +85,14 @@ const PolygonPoint = types
     get annotation() {
       return getRoot(self).annotationStore.selected;
     },
+    get canvasX() {
+      return isFF(FF_DEV_3793) ? self.stage?.internalToCanvasX(self.x) : self.x;
+    },
+    get canvasY() {
+      return isFF(FF_DEV_3793) ? self.stage?.internalToCanvasY(self.y) : self.y;
+    },
   }))
   .actions(self => ({
-    /**
-     * Triggered after create model
-     */
-    afterCreate() {
-      self.initX = self.x;
-      self.initY = self.y;
-
-      if (self.parent.coordstype === 'perc') {
-        self.relativeX = self.x;
-        self.relativeY = self.y;
-      } else {
-        self.relativeX = (self.x / self.stage.stageWidth) * 100;
-        self.relativeY = (self.y / self.stage.stageHeight) * 100;
-      }
-    },
-
     /**
      * External function for Polygon Parent
      * @param {number} x
@@ -64,24 +100,24 @@ const PolygonPoint = types
      */
 
     movePoint(offsetX, offsetY) {
-      self.initX = self.initX + offsetX;
-      self.initY = self.initY + offsetY;
-      self.x = self.x + offsetX;
-      self.y = self.y + offsetY;
+      const dx = self.stage.canvasToInternalX(offsetX);
+      const dy = self.stage.canvasToInternalY(offsetY);
 
-      self.relativeX = (self.x / self.stage.stageWidth) * 100;
-      self.relativeY = (self.y / self.stage.stageHeight) * 100;
+      self.x = self.x + dx;
+      self.y = self.y + dy;
     },
 
-    _movePoint(x, y) {
-      self.initX = x;
-      self.initY = y;
-
-      self.relativeX = (x / self.stage.stageWidth) * 100;
-      self.relativeY = (y / self.stage.stageHeight) * 100;
-
+    _setPos(x, y) {
       self.x = x;
       self.y = y;
+    },
+    _movePoint(canvasX, canvasY) {
+      const point = self.parent.control?.getSnappedPoint({
+        x: self.stage.canvasToInternalX(canvasX),
+        y: self.stage.canvasToInternalY(canvasY),
+      });
+
+      self._setPos(point.x, point.y);
     },
 
     /**
@@ -159,6 +195,10 @@ const PolygonPoint = types
     },
   }));
 
+const PolygonPoint = isFF(FF_DEV_3793)
+  ? PolygonPointRelativeCoords
+  : types.compose('PolygonPoint', PolygonPointRelativeCoords, PolygonPointAbsoluteCoordsDEV3793);
+
 const PolygonPointView = observer(({ item, name }) => {
   if (!item.parent) return;
 
@@ -192,7 +232,8 @@ const PolygonPointView = observer(({ item, name }) => {
     onDragMove: e => {
       if (item.getSkipInteractions()) return false;
       if (e.target !== e.currentTarget) return;
-      let { x, y } = e.target.attrs;
+      const shape = e.target;
+      let { x, y } = shape.attrs;
 
       if (x < 0) x = 0;
       if (y < 0) y = 0;
@@ -200,6 +241,8 @@ const PolygonPointView = observer(({ item, name }) => {
       if (y > item.stage.stageHeight) y = item.stage.stageHeight;
 
       item._movePoint(x, y);
+      shape.setAttr('x', item.canvasX);
+      shape.setAttr('y', item.canvasY);
     },
 
     onDragStart: () => {
@@ -249,14 +292,16 @@ const PolygonPointView = observer(({ item, name }) => {
       <Circle
         key={name}
         name={name}
-        x={item.x}
-        y={item.y}
+        x={item.canvasX}
+        y={item.canvasY}
         radius={w}
         fill={fill}
         stroke="black"
         strokeWidth={stroke[item.size]}
         dragOnTop={false}
         strokeScaleEnabled={false}
+        perfectDrawEnabled={false}
+        shadowForStrokeEnabled={false}
         scaleX={1 / (item.stage.zoomScale || 1)}
         scaleY={1 / (item.stage.zoomScale || 1)}
         onDblClick={() => {
@@ -292,6 +337,9 @@ const PolygonPointView = observer(({ item, name }) => {
         fill={fill}
         stroke="black"
         strokeWidth={stroke[item.size]}
+        strokeScaleEnabled={false}
+        perfectDrawEnabled={false}
+        shadowForStrokeEnabled={false}
         dragOnTop={false}
         {...dragOpts}
         {...startPointAttr}

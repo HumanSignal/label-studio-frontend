@@ -6,11 +6,12 @@ import * as d3 from 'd3';
 import Registry from '../../../core/Registry';
 import Types from '../../../core/Types';
 import { cloneNode, guidGenerator } from '../../../core/Helpers';
-import { checkD3EventLoop, fixMobxObserve, getOptimalWidth, getRegionColor, sparseValues } from './helpers';
+import { checkD3EventLoop, getOptimalWidth, getRegionColor, sparseValues } from './helpers';
 import { markerSymbol } from './symbols';
 import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
 import { TagParentMixin } from '../../../mixins/TagParentMixin';
-import { FF_DEV_3391, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_3391, FF_LSDV_4881, isFF } from '../../../utils/feature-flags';
+import { fixMobxObserve } from '../../../utils/utilities';
 
 /**
  * Channel tag can be used to label time series data
@@ -302,7 +303,7 @@ class ChannelD3 extends React.Component {
         // all other space is taken by brushCreator
         group.selectAll('.overlay').style('pointer-events', 'none');
 
-        if(r.isReadOnly()) {
+        if (r.isReadOnly()) {
           group.selectAll('.handle').remove();
         }
 
@@ -315,7 +316,7 @@ class ChannelD3 extends React.Component {
         const group = d3.select(this);
         const selection = group.selectAll('.selection');
 
-        group.style('display', r.hidden ?  'none' : 'block');
+        group.style('display', r.hidden ? 'none' : 'block');
 
         const color = getRegionColor(r);
 
@@ -367,7 +368,7 @@ class ChannelD3 extends React.Component {
       })
       .on('end', this.newBrushHandler)
       // replacing default filter to allow ctrl-click action
-      .filter(()=>{
+      .filter(() => {
         return !d3.event.button;
       })
     );
@@ -383,7 +384,7 @@ class ChannelD3 extends React.Component {
 
     this.trackerX = dataX;
     this.tracker.attr('transform', `translate(${this.x(dataX) + 0.5},0)`);
-    this.trackerTime.text(`${this.formatTime(dataX)}${brushWidth === 0 ? '' :  ` [${this.formatDuration(brushWidth)}]`}`);
+    this.trackerTime.text(`${this.formatTime(dataX)}${brushWidth === 0 ? '' : ` [${this.formatDuration(brushWidth)}]`}`);
     this.trackerValue.text(this.formatValue(dataY) + ' ' + this.props.item.units);
     this.trackerPoint.attr('cy', this.y(dataY));
     this.tracker.attr('text-anchor', screenX > width - 100 ? 'end' : 'start');
@@ -542,6 +543,17 @@ class ChannelD3 extends React.Component {
 
     this.useOptimizedData = series.length > optimizedWidthWithZoom;
 
+    let originalSeries, originalTimes;
+
+    if (isFF(FF_LSDV_4881)) {
+      originalSeries = series.filter(x => {
+        return x[column] !== null;
+      });
+      originalTimes = originalSeries.map(x => {
+        return x[time];
+      });
+    }
+
     if (this.useOptimizedData) {
       this.optimizedSeries = sparseValues(series, optimizedWidthWithZoom);
       series = this.optimizedSeries;
@@ -606,10 +618,11 @@ class ChannelD3 extends React.Component {
 
     const stick = screenX => {
       const dataX = x.invert(screenX);
-      let i = d3.bisectRight(times, dataX, 0, times.length - 1);
+      const stickTimes = isFF(FF_LSDV_4881) ? originalTimes : times;
+      let i = d3.bisectRight(stickTimes, dataX, 0, stickTimes.length - 1);
 
-      if (times[i] - dataX > dataX - times[i - 1]) i--;
-      return [times[i], values[i]];
+      if (stickTimes[i] - dataX > dataX - stickTimes[i - 1]) i--;
+      return [stickTimes[i], isFF(FF_LSDV_4881) ? originalSeries[i][column] : values[i]];
     };
 
     this.x = x;
@@ -835,7 +848,7 @@ class ChannelD3 extends React.Component {
   }
 
   render() {
-    this.props.ranges.map(r => fixMobxObserve(r.start, r.end,  r.selected, r.inSelection, r.highlighted, r.hidden, r.style?.fillcolor));
+    this.props.ranges.map(r => fixMobxObserve(r.start, r.end, r.selected, r.inSelection, r.highlighted, r.hidden, r.style?.fillcolor));
     fixMobxObserve(this.props.range.map(Number));
 
     return <div className="htx-timeseries-channel" ref={this.ref} />;
