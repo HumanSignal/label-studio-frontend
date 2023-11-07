@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 
 import { sanitizeHtml } from '../../utils/html';
 import { InputItem } from './createData';
+import { CollapsedContext } from './Ranker';
 import styles from './Ranker.module.scss';
 
 interface ItemProps {
@@ -20,6 +21,9 @@ const Item = (props: ItemProps) => {
 
   // @todo document html parameter later after proper tests
   const html = useMemo(() => item.html ? sanitizeHtml(item.html) : '', [item.html]);
+  const [collapsedMap, toggleCollapsed] = useContext(CollapsedContext);
+  const collapsed = collapsedMap[item.id] ?? false;
+  const toggle = () => toggleCollapsed(item.id, !collapsed);
 
   return (
     <Draggable draggableId={item.id} index={index} isDragDisabled={readonly}>
@@ -33,10 +37,14 @@ const Item = (props: ItemProps) => {
             ref={provided.innerRef}
             data-ranker-id={item.id}
           >
-            {item.title && <h3 className={styles.itemLine}>{item.title}</h3>}
-            {item.body && <p className={styles.itemLine}>{item.body}</p>}
-            {item.html && <p className={styles.itemLine} dangerouslySetInnerHTML={{ __html: html }} />}
-            <p className={styles.itemLine}>{item.id}</p>
+            {item.title && <h3 className={styles.itemLine} onClick={toggle}>{item.title}</h3>}
+            {!collapsed && (
+              <>
+                {item.body && <p className={styles.itemLine}>{item.body}</p>}
+                {item.html && <p className={styles.itemLine} dangerouslySetInnerHTML={{ __html: html }} />}
+                <p className={styles.itemLine}>{item.id}</p>
+              </>
+            )}
           </div>
         );
       }}

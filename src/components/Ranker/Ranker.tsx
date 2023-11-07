@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 
 import Column from './Column';
@@ -11,10 +11,18 @@ interface BoardProps {
   handleChange?: (ids: Record<string, string[]>) => void;
   readonly?: boolean;
 }
+type CollapsedMap = Record<string, boolean>;
+type CollapsedContextType = React.Context<[CollapsedMap, (id: string, value: boolean) => void]>;
+
+const CollapsedContext: CollapsedContextType = createContext([{}, (_id, _value) => {}]);
 
 // Component for a drag and drop board with 1+ columns
 const Ranker = ({ inputData, handleChange, readonly }: BoardProps) => {
   const [data, setData] = useState(inputData);
+  const [collapsed, setCollapsed] = useState<CollapsedMap>({});
+  const toggleCollapsed = useCallback((id: string, value: boolean) => {
+    setCollapsed(c => ({ ...c, [id]: value }));
+  }, []);
 
   // Update data when inputData changes
   useEffect(() => {
@@ -86,7 +94,7 @@ const Ranker = ({ inputData, handleChange, readonly }: BoardProps) => {
   };
 
   return (
-    <>
+    <CollapsedContext.Provider value={[collapsed, toggleCollapsed]}>
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className={styles.board}>
           <>
@@ -98,8 +106,9 @@ const Ranker = ({ inputData, handleChange, readonly }: BoardProps) => {
           </>
         </div>
       </DragDropContext>
-    </>
+    </CollapsedContext.Provider>
   );
 };
 
+export { CollapsedContext };
 export default Ranker;
