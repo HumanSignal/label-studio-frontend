@@ -62,6 +62,8 @@ const SettingsModel = types
     enableSmoothing: types.optional(types.boolean, true),
 
     videoHopSize: types.optional(types.number, 10),
+
+    isDestroying: types.optional(types.boolean, false),
   })
   .views(self => ({
     get annotation() {
@@ -72,6 +74,9 @@ const SettingsModel = types
     },
   }))
   .actions(self => ({
+    beforeDestroy() {
+      self.isDestroying = true;
+    },
     afterCreate() {
       // sandboxed environment may break even on check of this property
       try {
@@ -99,9 +104,9 @@ const SettingsModel = types
         const env = getEnv(self);
 
         Object.keys(EditorSettings).map((obj) => {
-          if( typeof env.settings[obj] === 'boolean'){
+          if (typeof env.settings[obj] === 'boolean') {
             self[obj] = env.settings[obj];
-          }else{
+          } else {
             self[obj] = EditorSettings[obj].defaultValue;
           }
         });
@@ -109,7 +114,11 @@ const SettingsModel = types
 
       // capture changes and save it
       onSnapshot(self, ss => {
-        localStorage.setItem(lsKey, JSON.stringify(ss));
+        // it's necessary to wait 1 tick before check if self.isDestroying is true
+        setTimeout(() => {
+          if (!self.isDestroying)
+            localStorage.setItem(lsKey, JSON.stringify(ss));
+        });
       });
     },
 

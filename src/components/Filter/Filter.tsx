@@ -65,6 +65,10 @@ export const Filter: FC<FilterInterface> = ({
 
       newList.splice(index, 1);
 
+      if (newList[0]) {
+        newList[0].logic = 'and';
+      }
+
       onChange(FilterItems(filterData, newList));
 
       return newList;
@@ -120,9 +124,9 @@ export const Filter: FC<FilterInterface> = ({
           <IconFilter />
         </Elem>
         <Elem name={'text'} style={{
-          fontSize:isFF(FF_DEV_3873) && 12,
-          fontWeight:isFF(FF_DEV_3873) && 500,
-          lineHeight:isFF(FF_DEV_3873) && '24px',
+          fontSize: isFF(FF_DEV_3873) && 12,
+          fontWeight: isFF(FF_DEV_3873) && 500,
+          lineHeight: isFF(FF_DEV_3873) && '24px',
         }}>Filter</Elem>
         {filterList.length > 0 && <Elem name={'filter-length'} data-testid={'filter-length'}>{filterList.length}</Elem>}
       </Block>

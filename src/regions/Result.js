@@ -4,7 +4,7 @@ import Registry from '../core/Registry';
 import Tree from '../core/Tree';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { isDefined } from '../utils/utilities';
-import { FF_DEV_1372, FF_LSDV_4583, isFF } from '../utils/feature-flags';
+import { FF_LSDV_4583, isFF } from '../utils/feature-flags';
 
 const Result = types
   .model('Result', {
@@ -84,7 +84,7 @@ const Result = types
       sequence: types.frozen(),
     }),
     // info about object and region
-    // meta: types.frozen(),
+    meta: types.frozen(),
   })
   .views(self => ({
     get perRegionStates() {
@@ -140,11 +140,14 @@ const Result = types
       return self.mainValue?.join(joinstr) || '';
     },
 
+    // @todo check all usages of selectedLabels:
+    //       — check usages of non-array values (like `if selectedValues ...`)
+    //       - check empty labels, they should be returned as an array
     get selectedLabels() {
       if (self.mainValue?.length === 0 && self.from_name.allowempty) {
         return self.from_name.findLabel(null);
       }
-      return self.mainValue?.map(value => self.from_name.findLabel(value)).filter(Boolean);
+      return self.mainValue?.map(value => self.from_name.findLabel(value)).filter(Boolean) ?? [];
     },
 
     /**
@@ -187,7 +190,7 @@ const Result = types
 
       if (control.visiblewhen === 'choice-selected') {
         return isChoiceSelected();
-      } else if (isFF(FF_DEV_1372) && control.visiblewhen === 'choice-unselected') {
+      } else if (control.visiblewhen === 'choice-unselected') {
         return !isChoiceSelected();
       }
 
@@ -204,7 +207,7 @@ const Result = types
 
     get style() {
       if (!self.tag) return null;
-      const fillcolor = self.tag.background || self.tag.parent.fillcolor;
+      const fillcolor = self.tag.background || self.tag.parent?.fillcolor;
 
       if (!fillcolor) return null;
       const strokecolor = self.tag.background || self.tag.parent.strokecolor;
@@ -258,13 +261,18 @@ const Result = types
       self.parentID = id;
     },
 
+    setMetaValue(key, value) {
+      self.meta = { ...self.meta, [key]: value };
+    },
+
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
     updateAppearenceFromState() { },
 
     serialize(options) {
-      const { type, score, value, ...sn } = getSnapshot(self);
+      const sn = getSnapshot(self);
+      const { type, score, value, meta } = sn;
       const { valueType } = self.from_name;
       const data = self.area ? self.area.serialize(options) : {};
       // cut off annotation id
@@ -292,6 +300,10 @@ const Result = types
 
       if (areaMeta && Object.keys(areaMeta).length) {
         data.meta = { ...data.meta, ...areaMeta };
+      }
+
+      if (meta) {
+        data.meta = { ...data.meta, ...meta };
       }
 
       if (self.area.parentID) {

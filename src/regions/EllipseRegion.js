@@ -38,7 +38,7 @@ const EllipseRegionAbsoluteCoordsDEV3793 = types
       self.startX = self.x;
       self.startY = self.y;
 
-      switch (self.coordstype)  {
+      switch (self.coordstype) {
         case 'perc': {
           self.relativeX = self.x;
           self.relativeY = self.y;
@@ -167,16 +167,16 @@ const Model = types
       return rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y: self.y }, self.parent.whRatio);
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.y) : self.y;
     },
     get canvasRadiusX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.radiusX) : self.radiusX;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.radiusX) : self.radiusX;
     },
     get canvasRadiusY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.radiusY) : self.radiusY;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.radiusY) : self.radiusY;
     },
   }))
   .actions(self => ({
@@ -302,25 +302,30 @@ const EllipseRegionModel = types.compose(
   ...(isFF(FF_DEV_3793) ? [] : [EllipseRegionAbsoluteCoordsDEV3793]),
 );
 
-const HtxEllipseView = ({ item }) => {
+const HtxEllipseView = ({ item, setShapeRef }) => {
   const { store } = item;
 
   const regionStyles = useRegionStyles(item);
-  const stage = item.parent.stageRef;
+  const stage = item.parent?.stageRef;
   const { suggestion } = useContext(ImageViewContext) ?? {};
+
+  if (!item.parent) return null;
+  if (!item.inViewPort) return null;
 
   return (
     <Fragment>
       <Ellipse
         x={item.canvasX}
         y={item.canvasY}
-        ref={el => item.setShapeRef(el)}
+        ref={el => setShapeRef(el)}
         radiusX={item.canvasRadiusX}
         radiusY={item.canvasRadiusY}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}
         strokeScaleEnabled={false}
+        perfectDrawEnabled={false}
+        shadowForStrokeEnabled={false}
         shadowBlur={0}
         scaleX={item.scaleX}
         scaleY={item.scaleY}

@@ -25,12 +25,12 @@ jobs:
       - uses: hmarr/debug-action@v2.1.0
 
       - name: "Checkout codebase"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.sha }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "${{ env.NODE }}"
 
@@ -59,6 +59,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1 || true
+
       - name: Build distribution package
         timeout-minutes: 10
         run: yarn run build:module
@@ -69,7 +73,7 @@ jobs:
 
       # upload this build as artifact to current Action
       - name: Upload bundle
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         with:
           name: LSF-${{ inputs.build_for_coverage && 'coverage-' || '' }}${{ inputs.sha }}
           path: build/

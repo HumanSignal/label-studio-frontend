@@ -22,7 +22,14 @@ import { isDefined } from '../../utils/utilities';
 import { TimelineContext } from './Context';
 import './Controls.styl';
 import * as SideControls from './SideControls';
-import { TimelineControlsFormatterOptions, TimelineControlsProps, TimelineControlsStepHandler, TimelineCustomControls, TimelineProps, TimelineStepFunction } from './Types';
+import {
+  TimelineControlsFormatterOptions,
+  TimelineControlsProps,
+  TimelineControlsStepHandler,
+  TimelineCustomControls,
+  TimelineProps,
+  TimelineStepFunction
+} from './Types';
 import { FF_DEV_2715, isFF } from '../../utils/feature-flags';
 import { AudioControl } from './Controls/AudioControl';
 import { ConfigControl } from './Controls/ConfigControl';
@@ -230,7 +237,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
               </>
             )}
           />
-          <ControlButton onClick={handlePlay} hotkey={settings?.playpauseHotkey}>
+          <ControlButton data-testid={`playback-button:${playing ? 'pause' : 'play'}`} onClick={handlePlay} hotkey={settings?.playpauseHotkey}>
             {playing ? <IconPause/> : <IconPlay/>}
           </ControlButton>
           <AltControls

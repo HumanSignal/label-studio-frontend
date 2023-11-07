@@ -87,7 +87,7 @@ const result = [
         start: 69,
         end: 121,
       },
-      text: 'appreciated.\n\nVincent: Look, Mr. Wolfe, I respect you.',
+      text: 'appreciated.\\n\\nVincent: Look, Mr. Wolfe, I respect you.',
       hypertextlabels: ['Date'],
     },
   },

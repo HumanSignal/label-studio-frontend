@@ -135,10 +135,13 @@ const DrawingTool = types
           return value;
         }, { coordstype: 'px', dynamic: self.dynamic });
 
-        const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
+        const [main, ...rest] = currentArea.results;
+        const newArea = self.annotation.createResult(value, main.value.toJSON(), control, obj);
+
+        //when user is using two different labels tag to draw a region, the other labels will be added to the region
+        rest.forEach(r => newArea.addResult(r.toJSON()));
 
         currentArea.setDrawing(false);
-        self.applyActiveStates(newArea);
         self.deleteRegion();
         newArea.notifyDrawingFinished();
         return newArea;
@@ -301,6 +304,8 @@ const TwoPointsDrawingTool = DrawingTool.named('TwoPointsDrawingTool')
 
       clickEv(_, [x, y]) {
         if (!self.canStartDrawing()) return;
+        // @todo: here is a potential problem with endPoint
+        // it may be incorrect due to it may be not set at this moment
         if (startPoint && endPoint && !self.comparePointsWithThreshold(startPoint, endPoint)) return;
         if (currentMode === DEFAULT_MODE) {
           modeAfterMouseMove = TWO_CLICKS_MODE;

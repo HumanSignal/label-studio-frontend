@@ -5,13 +5,11 @@ import { guidGenerator } from '../../../core/Helpers.ts';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
-import { SyncMixin } from '../../../mixins/SyncMixin';
 import { SyncableMixin } from '../../../mixins/Syncable';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_LSDV_3012, isFF } from '../../../utils/feature-flags';
+import { FF_LSDV_E_278, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
-import { isTimeSimilar } from '../../../lib/AudioUltra';
 import ObjectBase from '../Base';
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
 
@@ -112,6 +110,7 @@ const TagAttrs = types.model({
   defaultscale: types.optional(types.string, '1'),
   autocenter: types.optional(types.boolean, true),
   scrollparent: types.optional(types.boolean, true),
+  splitchannels: types.optional(types.boolean, false),
   decoder: types.optional(types.enumeration(['ffmpeg', 'webaudio']), 'webaudio'),
   player: types.optional(types.enumeration(['html5', 'webaudio']), 'html5'),
 });
@@ -119,7 +118,7 @@ const TagAttrs = types.model({
 export const AudioModel = types.compose(
   'AudioModel',
   TagAttrs,
-  isFF(FF_LSDV_3012) ? SyncableMixin : SyncMixin,
+  SyncableMixin,
   ProcessAttrsMixin,
   ObjectBase,
   AnnotationMixin,
@@ -166,7 +165,7 @@ export const AudioModel = types.compose(
       },
     }))
     ////// Sync actions
-    .actions(!isFF(FF_LSDV_3012) ? (() => ({})) : self => ({
+    .actions(self => ({
       ////// Outgoing
 
       triggerSync(event, data) {
@@ -256,62 +255,6 @@ export const AudioModel = types.compose(
       },
     }))
     .actions(self => {
-      if (isFF(FF_LSDV_3012)) return {};
-
-      const Super = {
-        triggerSyncPlay: self.triggerSyncPlay,
-        triggerSyncPause: self.triggerSyncPause,
-      };
-
-      return {
-        triggerSyncPlay() {
-          if (self.syncedObject) {
-            Super.triggerSyncPlay();
-          } else {
-            self.handleSyncPlay();
-          }
-        },
-
-        triggerSyncPause() {
-          if (self.syncedObject) {
-            Super.triggerSyncPause();
-          } else {
-            self.handleSyncPause();
-          }
-        },
-
-        handleSyncPlay() {
-          if (!self._ws) return;
-          if (self._ws.playing && self.isCurrentlyPlaying) return;
-
-          self.isCurrentlyPlaying = true;
-          self._ws?.play();
-        },
-
-        handleSyncPause() {
-          if (!self._ws) return;
-          if (!self._ws.playing && !self.isCurrentlyPlaying) return;
-
-          self.isCurrentlyPlaying = false;
-          self._ws?.pause();
-        },
-
-        handleSyncSpeed() { },
-        handleSyncDuration() { },
-
-        handleSyncSeek(time) {
-          if (!self._ws?.loaded || isTimeSimilar(time, self._ws.currentTime)) return;
-
-          try {
-            self._ws.currentTime = time;
-            self._ws.syncCursor(); // sync cursor with other tags
-          } catch (err) {
-            console.log(err);
-          }
-        },
-      };
-    })
-    .actions(self => {
       let dispose;
       let updateTimeout = null;
 
@@ -362,6 +305,24 @@ export const AudioModel = types.compose(
 
         onRateChange(rate) {
           self.triggerSyncSpeed(rate);
+        },
+
+        /**
+         * Load any synced paragraph text segments which contain start and end values
+         * as Audio segments for visualization of the excerpts within the audio track
+         **/
+        loadSyncedParagraphs() {
+          if (!self.syncManager) return;
+
+          // find synced paragraphs if any
+          // and add their regions to the audio
+          const syncedParagraphs = Array.from(self.syncManager.syncTargets, ([,value]) => value).filter(target => target.type === 'paragraphs' && target.contextscroll);
+
+          syncedParagraphs.forEach(paragraph => {
+            const segments = Object.values(paragraph.regionsStartEnd).map(({ start, end }) => ({ start, end, showInTimeline: true, external: true, locked: true }));
+
+            self._ws.addRegions(segments);
+          });
         },
 
         handleNewRegions() {
@@ -505,9 +466,11 @@ export const AudioModel = types.compose(
           self.clearRegionMappings();
           self._ws = ws;
 
-          if (!isFF(FF_LSDV_3012)) self.setSyncedDuration(self._ws.duration);
           self.onReady();
           self.needsUpdate();
+          if (isFF(FF_LSDV_E_278)) {
+            self.loadSyncedParagraphs();
+          }
         },
 
         onSeek(time) {

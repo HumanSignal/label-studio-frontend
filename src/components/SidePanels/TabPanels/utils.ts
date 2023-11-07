@@ -50,7 +50,7 @@ export const setActiveDefaults = (state: Record<string, PanelBBox>) => {
   Object.keys(state).forEach((panelKey: string) => {
     const firstActiveTab = newState[panelKey].panelViews.findIndex((view) => view.active) ;
     
-    newState[panelKey].panelViews[firstActiveTab > 0 ? firstActiveTab :  0].active = true;
+    newState[panelKey].panelViews[firstActiveTab > 0 ? firstActiveTab : 0].active = true;
   });
 
   return newState;
@@ -242,17 +242,49 @@ export const resizers = [
   'left',
 ];
 
-export const restorePanel = (showComments: boolean) => {
-  const panelData = window.localStorage.getItem('panelState');
-  const parsed = panelData && JSON.parse(panelData);
-  const allTabs = panelData && Object.entries(parsed).map(([_, panel]: any) => panel.panelViews).flat(1);
-  
-  if (!allTabs || allTabs.length !== (panelViews.length - (showComments ? 1 : 0)))
-    return showComments ? openSourcePanelDefault : enterprisePanelDefault;
-  const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
-  const withActiveDefaults = setActiveDefaults(noEmptyPanels);
 
-  return restoreComponentsToState(withActiveDefaults);
+export const checkCollapsedPanelsHaveData = (
+  collapsedSide: { [key: string]: boolean },
+  panelData: Record<string, PanelBBox>,
+) => {
+  const collapsedCopy = { ...collapsedSide };
+  const collapsedPanels = Object.keys(collapsedCopy).filter((side) => collapsedCopy[side]);
+
+  collapsedPanels.forEach((side) => {
+    const hasData = Object.keys(panelData).some((panel) => {
+      return panelData[panel].alignment === side && !panelData[panel].detached;
+    });
+
+    if (!hasData) collapsedCopy[side] = false;
+  });
+
+  return collapsedCopy;
+};
+
+export const restorePanel = (showComments: boolean) => {
+  const perviousState = window.localStorage.getItem('panelState');
+  const parsed = perviousState && JSON.parse(perviousState);
+  const panelData = parsed && parsed.panelData;
+  const defaultCollapsedSide = { [Side.left]: false, [Side.right]: false };
+  const collapsedSide = parsed?.collapsedSide ? parsed.collapsedSide : defaultCollapsedSide;
+
+  const allTabs =
+    panelData &&
+    Object.entries(panelData)
+      .map(([_, panel]: any) => panel.panelViews)
+      .flat(1);
+
+  if (!allTabs || allTabs.length !== (panelViews.length - (showComments ? 1 : 0))) {
+    const defaultPanel = showComments ? openSourcePanelDefault : enterprisePanelDefault;
+
+    return { panelData: defaultPanel, collapsedSide: defaultCollapsedSide };
+  }
+
+  const noEmptyPanels = stateRemovePanelEmptyViews(panelData);
+  const withActiveDefaults = setActiveDefaults(noEmptyPanels);
+  const safeCollapsedSide = checkCollapsedPanelsHaveData(collapsedSide, withActiveDefaults) as { [Side.left]: boolean, [Side.right]: boolean };
+
+  return { panelData: restoreComponentsToState(withActiveDefaults), collapsedSide: safeCollapsedSide };
 };
 
 export const restoreComponentsToState = (panelData: Record<string, PanelBBox>) => {
@@ -269,12 +301,12 @@ export const restoreComponentsToState = (panelData: Record<string, PanelBBox>) =
   return updatedPanels; 
 };
 
-export const savePanels = (panelData: Record<string, PanelBBox>) => {
-  window.localStorage.setItem('panelState', JSON.stringify(panelData));
+export const savePanels = (panelData: Record<string, PanelBBox>, collapsedSide: { [Side.left]: boolean, [Side.right]: boolean }) => {
+  window.localStorage.setItem('panelState', JSON.stringify({ panelData, collapsedSide }));
 };
 
-export const getLeftKeys = (state: Record<string, PanelBBox>) =>  Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.left);
-export const getRightKeys = (state: Record<string, PanelBBox>) =>  Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.right);
+export const getLeftKeys = (state: Record<string, PanelBBox>) => Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.left);
+export const getRightKeys = (state: Record<string, PanelBBox>) => Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.right);
 
 export const getAttachedPerSide = (state: Record<string, PanelBBox>, side: string) => {
   if (side === Side.left) return getLeftKeys(state).sort((a, b) => state[a].order - state[b].order);

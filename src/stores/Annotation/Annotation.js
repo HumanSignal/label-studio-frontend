@@ -15,12 +15,12 @@ import {
   FF_DEV_1284,
   FF_DEV_1598,
   FF_DEV_2100,
-  FF_DEV_2100_A,
   FF_DEV_2432,
-  FF_DEV_3391,
+  FF_DEV_3391, FF_LLM_EPIC,
   FF_LSDV_3009,
   FF_LSDV_4583,
   FF_LSDV_4832,
+  FF_LSDV_4988,
   isFF
 } from '../../utils/feature-flags';
 import { delay, isDefined } from '../../utils/utilities';
@@ -177,7 +177,7 @@ export const Annotation = types
     get results() {
       const results = [];
 
-      self.areas.forEach(a => a.results.forEach(r => results.push(r)));
+      if (isAlive(self)) self.areas.forEach(a => a.results.forEach(r => results.push(r)));
       return results;
     },
 
@@ -252,6 +252,7 @@ export const Annotation = types
     draftSelected: false,
     autosaveDelay: 5000,
     isDraftSaving: false,
+    submissionStarted: 0,
     versions: {},
     resultSnapshot: '',
   }))
@@ -595,9 +596,9 @@ export const Annotation = types
 
     setDefaultValues() {
       self.names.forEach(tag => {
-        if (isFF(FF_DEV_2100_A) && tag?.type === 'choices' && tag.preselectedValues?.length) {
+        if (['choices', 'taxonomy'].includes(tag?.type) && tag.preselectedValues?.length) {
           // <Choice selected="true"/>
-          self.createResult({}, { choices: tag.preselectedValues }, tag, tag.toname);
+          self.createResult({}, { [tag?.type]: tag.preselectedValues }, tag, tag.toname);
         }
       });
     },
@@ -664,7 +665,9 @@ export const Annotation = types
       onSnapshot(self.areas, self.autosave);
     }),
 
-    saveDraft(params) {
+    async saveDraft(params) {
+      // There is no draft to save as it was already saved as an annotation
+      if (self.submissionStarted) return;
       // if this is now a history item or prediction don't save it
       if (!self.editable) return;
 
@@ -676,12 +679,28 @@ export const Annotation = types
       self.setDraftSelected();
       self.versions.draft = result;
       self.setDraftSaving(true);
+      return self.store.submitDraft(self, params).then((res) => {
+        self.onDraftSaved(res);
 
-      return self.store.submitDraft(self, params).then(self.onDraftSaved);
+        return res;
+      });
+    },
+
+    submissionInProgress() {
+      self.submissionStarted = Date.now();
     },
 
     saveDraftImmediately() {
       if (self.autosave) self.autosave.flush();
+    },
+
+    async saveDraftImmediatelyWithResults() {
+      // There is no draft to save as it was already saved as an annotation
+      if (self.submissionStarted || self.isDraftSaving) return {};
+      self.setDraftSaving(true);
+      const res = await self.saveDraft(null);
+
+      return res;
     },
 
     pauseAutosave() {
@@ -731,13 +750,6 @@ export const Annotation = types
         // may come handy when you have a tag that acts or depends
         // on other elements in the tree.
         if (node.annotationAttached) node.annotationAttached();
-
-
-        // @todo special place to init such predefined values; `afterAttach` of the tag?
-        // preselected choices
-        if (!isFF(FF_DEV_2100_A) && !self.pk && node?.type === 'choices' && node.preselectedValues?.length) {
-          self.createResult({}, { choices: node.preselectedValues }, node, node.toname);
-        }
       });
 
       self.history.onUpdate(self.updateObjects);
@@ -880,8 +892,8 @@ export const Annotation = types
           setTimeout(() => isAlive(area) && self.selectArea(area));
         }
       } else {
-        // unselect labels after use, but consider "keep labels selected" settings
-        if (control.type.includes('labels')) self.unselectAll(true);
+        // unselect labeling tools after use, but consider "keep labels selected" settings
+        if (control.isLabeling) self.unselectAll(true);
       }
     },
 
@@ -944,7 +956,9 @@ export const Annotation = types
             if (key.endsWith('labels')) {
               const hasControlTag = tagNames.has(obj.from_name) || tagNames.has('labels');
 
-              if (hasControlTag) {
+              // remove non-existent labels, it actually breaks dynamic labels
+              // and makes no reason overall — labels from predictions can be out of config
+              if (!isFF(FF_LSDV_4988) && hasControlTag) {
                 const labelsContainer = tagNames.get(obj.from_name) ?? tagNames.get('labels');
                 const value = obj.value[key];
 
@@ -966,6 +980,9 @@ export const Annotation = types
                 }
               }
 
+              // detect most relevant label tags if that one from from_name is missing
+              // can be useful for predictions in old format with config in new format:
+              // Rectangle + Labels -> RectangleLabels
               if (
                 !tagNames.has(obj.from_name) ||
                 (!obj.value[key].length && !tagNames.get(obj.from_name).allowempty)
@@ -1027,6 +1044,7 @@ export const Annotation = types
 
       self.suggestions.clear();
 
+      if (!rawSuggestions) return;
       self.deserializeResults(rawSuggestions, {
         suggestions: true,
       });
@@ -1038,7 +1056,15 @@ export const Annotation = types
         self.acceptAllSuggestions();
       } else {
         self.suggestions.forEach((suggestion) => {
-          if (['richtextregion', 'text', 'textrange'].includes(suggestion.type)) {
+          // regions that can't be accepted in usual way, should be auto-accepted;
+          // textarea will have simple classification area with no type, so check result.
+          // @todo per-regions is tough thing here as they can be in generated result,
+          // connected to manual region, will check it later
+          const results = suggestion.results ?? [];
+          const onlyAutoAccept = ['richtextregion', 'text', 'textrange'].includes(suggestion.type)
+            || results.findIndex(r => r.type === 'textarea') >= 0;
+
+          if (onlyAutoAccept) {
             self.acceptSuggestion(suggestion.id);
             if (isFF(FF_DEV_1284)) {
               // This is necessary to prevent the occurrence of new steps in the history after updating objects at the end of current method
@@ -1051,7 +1077,7 @@ export const Annotation = types
       if (!isFF(FF_DEV_1284)) {
         history.freeze('richtext:suggestions');
       }
-      self.objects.forEach(obj => obj.needsUpdate?.({ suggestions: true }));
+      self.names.forEach(tag => tag.needsUpdate?.({ suggestions: true }));
       if (!isFF(FF_DEV_1284)) {
         history.setReplaceNextUndoState(true);
         history.unfreeze('richtext:suggestions');
@@ -1260,18 +1286,56 @@ export const Annotation = types
 
     acceptSuggestion(id) {
       const item = self.suggestions.get(id);
+      let itemId = id;
+      const isGlobalClassification = item.classification;
 
-      self.areas.set(id, {
+      // this piece of code prevents from creating duplicated global classifications
+      if (isFF(FF_LLM_EPIC)) {
+        if (isGlobalClassification) {
+          const itemResult = item.results[0];
+          const areasIterator = self.areas.values();
+
+          for (const area of areasIterator) {
+            const areaResult = area.results[0];
+            const isFound = areaResult.from_name === itemResult.from_name
+              && areaResult.to_name === itemResult.to_name
+              && areaResult.item_index === itemResult.item_index;
+
+            if (isFound) {
+              itemId = area.id;
+              break;
+            }
+          }
+        } else {
+          const area = self.areas.get(item.cleanId);
+
+          if (area) {
+            itemId = area.id;
+          }
+        }
+      }
+
+      self.areas.set(itemId, {
         ...item.toJSON(),
+        id: itemId,
         fromSuggestion: true,
       });
-      const area = self.areas.get(id);
+      const area = self.areas.get(itemId);
       const activeStates = area.object.activeStates();
 
       activeStates.forEach(state => {
         area.setValue(state);
       });
       self.suggestions.delete(id);
+      
+      // hack to unlock sending textarea results
+      // to the ML backen every time
+      // it just sets `fromSuggestion` back to `false`
+      const isTextArea = area.results.findIndex(r => r.type === 'textarea') >= 0;
+
+      // This is temporary exception until we find the way to do it right
+      // and this was done to keep notifications on prompt editing or fixing answer from ML backend
+      if (isTextArea) area.revokeSuggestion();
     },
 
     rejectSuggestion(id) {

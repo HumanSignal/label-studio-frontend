@@ -149,7 +149,10 @@ const REGIONS = [
   },
 ];
 
-Scenario('Drawing multiple blank regions and then attaching labels', async ({ I, LabelStudio, AtImageView, AtSettings, AtLabels, AtSidebar }) => {
+Scenario('Drawing multiple blank regions and then attaching labels', async ({ I, LabelStudio, AtImageView, AtSettings, AtLabels, AtOutliner }) => {
+  LabelStudio.setFeatureFlags({
+    'ff_front_1170_outliner_030222_short': true,
+  });
   I.amOnPage('/');
   LabelStudio.init({ config: createConfig( ), data });
   AtImageView.waitForImage();
@@ -168,13 +171,14 @@ Scenario('Drawing multiple blank regions and then attaching labels', async ({ I,
   for (const region of regions) {
     AtImageView.drawByDrag(region.x, region.y, region.width, region.height);
   }
-  AtSidebar.seeRegions(regions.length);
+  AtOutliner.seeRegions(regions.length);
+
   I.say('Labeling');
-  for (const [idx, region] of Object.entries(regions)) {
+  for (const region of Object.values(regions)) {
     AtImageView.dblClickAt(region.x + region.width / 2, region.y + region.height / 2);
     AtLabels.clickLabel(region.label);
     if (region.text) {
-      I.fillField(AtSidebar.locate('.lsf-region-item').withText(`${+idx+1}`).find('.lsf-textarea-tag__input'), region.text);
+      I.fillField(AtOutliner.locateSelectedItem().find('.lsf-textarea-tag__input'), region.text);
     }
   }
   const results = await LabelStudio.serialize();
@@ -190,10 +194,10 @@ Scenario('Drawing multiple blank regions and then attaching labels', async ({ I,
     I.amOnPage('/');
     LabelStudio.init({ config: createConfig( ), data, annotations: [{ id: 'test', result: results }] });
     AtImageView.waitForImage();
-    AtSidebar.seeRegions(regions.length);
+    AtOutliner.seeRegions(regions.length);
     for (const [idx, region] of Object.entries(regions)) {
       if (region.text) {
-        I.seeInField(AtSidebar.locate('.lsf-region-item').withText(`${+idx+1}`).find('.lsf-textarea-tag__input'), region.text);
+        I.seeInField(AtOutliner.locateRegionIndex((+idx)+1).find('.lsf-textarea-tag__input'), region.text);
       }
     }
   });

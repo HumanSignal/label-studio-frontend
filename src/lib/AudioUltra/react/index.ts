@@ -1,6 +1,5 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
 
-import { FF_LSDV_3012, isFF } from '../../../utils/feature-flags';
 import { isTimeRelativelySimilar } from '../Common/Utils';
 import { Layer } from '../Visual/Layer';
 import { Waveform, WaveformOptions } from '../Waveform';
@@ -69,10 +68,8 @@ export const useWaveform = (
     wf.on('durationChanged', setDuration);
     wf.on('volumeChanged', setVolume);
     wf.on('rateChanged', (newRate) => {
-      if (isFF(FF_LSDV_3012) || newRate !== rate) {
-        options?.onRateChange?.(newRate);
-        setRate(newRate);
-      }
+      options?.onRateChange?.(newRate);
+      setRate(newRate);
     });
     wf.on('layersUpdated', (layers) => {
       const layersArray = [];

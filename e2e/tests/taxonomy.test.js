@@ -5,7 +5,7 @@ Feature('Taxonomy');
 
 Before(({ LabelStudio }) => {
   LabelStudio.setFeatureFlags({
-    ff_dev_2007_dev_2008_dynamic_tag_children_250322_short: true,
+    fflag_feat_front_lsdv_5451_async_taxonomy_110823_short: false,
     fflag_fix_front_dev_3617_taxonomy_memory_leaks_fix: true,
     ff_front_dev_1536_taxonomy_user_labels_150222_long: true,
     ff_front_1170_outliner_030222_short: true,
@@ -320,9 +320,7 @@ Scenario('Taxonomy read only in history', async ({ I, LabelStudio, AtTaxonomy })
   AtTaxonomy.seeCheckedItemByText('c');
 });
 
-/* todo: looks like we have a bug */
-// eslint-disable-next-line
-xScenario('Taxonomy readonly result', async ({ I, LabelStudio, AtTaxonomy }) => {
+Scenario('Taxonomy readonly result', async ({ I, LabelStudio, AtTaxonomy }) => {
   I.amOnPage('/');
   LabelStudio.init({
     config: `

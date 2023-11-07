@@ -1,4 +1,4 @@
-import { FC, MutableRefObject, RefObject, useCallback, useEffect, useRef } from 'react';
+import { FC, FocusEvent, MutableRefObject, RefObject, useCallback, useEffect, useRef } from 'react';
 import { debounce } from 'lodash';
 import { cn } from '../../utils/bem';
 import { isMacOS } from '../../utils/utilities';
@@ -72,7 +72,7 @@ export const TextArea: FC<TextAreaProps> = ({
 
     let newHeight: number;
 
-    if(textarea.scrollHeight > autoGrowRef.current.maxHeight){
+    if (textarea.scrollHeight > autoGrowRef.current.maxHeight) {
       textarea.style.overflowY = 'scroll';
       newHeight = autoGrowRef.current.maxHeight;
     } else {
@@ -156,6 +156,13 @@ export const TextArea: FC<TextAreaProps> = ({
 
 
   return (
-    <textarea ref={mergeRefs(textAreaRef, ref)} className={classList} rows={autoGrowRef.current.rows} onChange={onChange} onInput={onInput} {...props}></textarea>
+    <textarea
+      ref={mergeRefs(textAreaRef, ref)}
+      className={classList}
+      rows={autoGrowRef.current.rows}
+      onChange={onChange}
+      onInput={onInput}
+      {...props}
+    />
   );
 };
