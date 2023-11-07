@@ -44,6 +44,29 @@
 .itemLine {
   margin: 0;
 }
+.itemTitle {
+  margin: 0;
+  display: flex;
+  cursor: pointer;
+}
+
+.item.collapsed > *:not(.itemTitle) {
+  display: none;
+}
+
+.itemTitle::after {
+  content: '△';
+  margin-left: auto;
+}
+.itemTitle:hover::after {
+  content: '▲';
+}
+.item.collapsed > .itemTitle::after {
+  content: '▽';
+}
+.item.collapsed > .itemTitle:hover::after {
+  content: '▼';
+}
 
 .dropArea {
   min-height: 50%;

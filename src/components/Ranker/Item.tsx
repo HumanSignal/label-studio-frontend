@@ -33,18 +33,14 @@ const Item = (props: ItemProps) => {
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             style={{ ...provided.draggableProps.style }}
-            className={[styles.item, 'htx-ranker-item'].join(' ')}
+            className={[styles.item, collapsed ? styles.collapsed : '', 'htx-ranker-item'].join(' ')}
             ref={provided.innerRef}
             data-ranker-id={item.id}
           >
-            {item.title && <h3 className={styles.itemLine} onClick={toggle}>{item.title}</h3>}
-            {!collapsed && (
-              <>
-                {item.body && <p className={styles.itemLine}>{item.body}</p>}
-                {item.html && <p className={styles.itemLine} dangerouslySetInnerHTML={{ __html: html }} />}
-                <p className={styles.itemLine}>{item.id}</p>
-              </>
-            )}
+            {item.title && <h3 className={styles.itemTitle} onClick={toggle}>{item.title}</h3>}
+            {item.body && <p className={styles.itemLine}>{item.body}</p>}
+            {item.html && <p className={styles.itemLine} dangerouslySetInnerHTML={{ __html: html }} />}
+            <p className={styles.itemLine}>{item.id}</p>
           </div>
         );
       }}
