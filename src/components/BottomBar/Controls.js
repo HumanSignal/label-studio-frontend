@@ -48,10 +48,15 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     
     if (isInProgress) return;
     setIsInProgress(true);
-    if(addedCommentThisSession){
+
+    const selected = store.annotationStore?.selected;
+
+    if (addedCommentThisSession) {
+      selected?.submissionInProgress();
       callback();
-    } else if((currentComment ?? '').trim()) {
+    } else if ((currentComment ?? '').trim()) {
       e.preventDefault();
+      selected?.submissionInProgress();
       await commentFormSubmit();
       callback();
     } else {
@@ -70,11 +75,13 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
   const RejectButton = useMemo(() => {
     return (
       <ButtonTooltip key="reject" title="Reject annotation: [ Ctrl+Space ]">
-        <Button aria-label="reject-annotation" disabled={disabled} onClick={async (e)=> {
-          if(store.hasInterface('comments:reject') ?? true) {
+        <Button aria-label="reject-annotation" disabled={disabled} onClick={async (e) => {
+          if (store.hasInterface('comments:reject') ?? true) {
             buttonHandler(e, () => store.rejectAnnotation({}), 'Please enter a comment before rejecting');
           } else {
-            console.log('rejecting');
+            const selected = store.annotationStore?.selected;
+
+            selected?.submissionInProgress();
             await store.commentStore.commentFormSubmit();
             store.rejectAnnotation({});
           }
@@ -91,6 +98,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     buttons.push(
       <ButtonTooltip key="accept" title="Accept annotation: [ Ctrl+Enter ]">
         <Button aria-label="accept-annotation" disabled={disabled} look="primary" onClick={async () => {
+          const selected = store.annotationStore?.selected;
+
+          selected?.submissionInProgress();
           await store.commentStore.commentFormSubmit();
           store.acceptAnnotation();
         }}>
@@ -106,6 +116,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     buttons.push(
       <ButtonTooltip key="cancel-skip" title="Cancel skip: []">
         <Button aria-label="cancel-skip" disabled={disabled} look="primary" onClick={async () => {
+          const selected = store.annotationStore?.selected;
+
+          selected?.submissionInProgress();
           await store.commentStore.commentFormSubmit();
           store.unskipTask();
         }}>
@@ -117,10 +130,13 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
     if (store.hasInterface('skip')) {
       buttons.push(
         <ButtonTooltip key="skip" title="Cancel (skip) task: [ Ctrl+Space ]">
-          <Button aria-label="skip-task" disabled={disabled} onClick={async (e)=> {
-            if(store.hasInterface('comments:skip') ?? true) {
+          <Button aria-label="skip-task" disabled={disabled} onClick={async (e) => {
+            if (store.hasInterface('comments:skip') ?? true) {
               buttonHandler(e, () => store.skipTask({}), 'Please enter a comment before skipping');
             } else {
+              const selected = store.annotationStore?.selected;
+
+              selected?.submissionInProgress();
               await store.commentStore.commentFormSubmit();
               store.skipTask({});
             }
@@ -146,6 +162,10 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
             onClick={async (event) => {
               event.preventDefault();
               
+              const selected = store.annotationStore?.selected;
+
+              selected?.submissionInProgress();
+
               if ('URLSearchParams' in window) {
                 const searchParams = new URLSearchParams(window.location.search);
 
@@ -154,6 +174,7 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
 
                 window.history.pushState(null, '', newRelativePathQuery);
               }
+
               await store.commentStore.commentFormSubmit();
               onClickMethod();
             }}
@@ -179,10 +200,13 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
                 mod={{ has_icon: useExitOption, disabled: isDisabled }}
                 onClick={async (event) => {
                   if (event.target.classList.contains('lsf-dropdown__trigger')) return;  
+                  const selected = store.annotationStore?.selected;
+
+                  selected?.submissionInProgress();
                   await store.commentStore.commentFormSubmit();
                   store.submitAnnotation();
                 }}
-                icon={useExitOption &&(
+                icon={useExitOption && (
                   <Dropdown.Trigger
                     content={<SubmitOption onClickMethod={store.submitAnnotation} isUpdate={false} />}
                   >
@@ -211,10 +235,13 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
               mod={{ has_icon: useExitOption, disabled: isDisabled }}
               onClick={async (event) => {
                 if (event.target.classList.contains('lsf-dropdown__trigger')) return;
+                const selected = store.annotationStore?.selected;
+
+                selected?.submissionInProgress();
                 await store.commentStore.commentFormSubmit();
                 store.updateAnnotation();
               }}
-              icon={useExitOption &&(
+              icon={useExitOption && (
                 <Dropdown.Trigger
                   content={<SubmitOption onClickMethod={store.updateAnnotation} isUpdate={isUpdate} />}
                 >
@@ -241,6 +268,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
           <ButtonTooltip key="submit" title={title}>
             <Elem name="tooltip-wrapper">
               <Button aria-label="submit" disabled={disabled || submitDisabled} look={look} onClick={async () => {
+                const selected = store.annotationStore?.selected;
+
+                selected?.submissionInProgress();
                 await store.commentStore.commentFormSubmit();
                 store.submitAnnotation();
               }}>
@@ -256,6 +286,9 @@ export const Controls = controlsInjector(observer(({ store, history, annotation 
         const button = (
           <ButtonTooltip key="update" title="Update this task: [ Alt+Enter ]">
             <Button aria-label="submit" disabled={disabled || submitDisabled} look={look} onClick={async () => {
+              const selected = store.annotationStore?.selected;
+
+              selected?.submissionInProgress();
               await store.commentStore.commentFormSubmit();
               store.updateAnnotation();
             }}>
