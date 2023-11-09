@@ -15,7 +15,6 @@ import {
   FF_DEV_1284,
   FF_DEV_1598,
   FF_DEV_2100,
-  FF_DEV_2100_A,
   FF_DEV_2432,
   FF_DEV_3391, FF_LLM_EPIC,
   FF_LSDV_3009,
@@ -597,9 +596,9 @@ export const Annotation = types
 
     setDefaultValues() {
       self.names.forEach(tag => {
-        if (isFF(FF_DEV_2100_A) && tag?.type === 'choices' && tag.preselectedValues?.length) {
+        if (['choices', 'taxonomy'].includes(tag?.type) && tag.preselectedValues?.length) {
           // <Choice selected="true"/>
-          self.createResult({}, { choices: tag.preselectedValues }, tag, tag.toname);
+          self.createResult({}, { [tag?.type]: tag.preselectedValues }, tag, tag.toname);
         }
       });
     },
@@ -697,8 +696,8 @@ export const Annotation = types
 
     async saveDraftImmediatelyWithResults() {
       // There is no draft to save as it was already saved as an annotation
-      if (self.submissionStarted) return {};
-
+      if (self.submissionStarted || self.isDraftSaving) return {};
+      self.setDraftSaving(true);
       const res = await self.saveDraft(null);
 
       return res;
@@ -751,13 +750,6 @@ export const Annotation = types
         // may come handy when you have a tag that acts or depends
         // on other elements in the tree.
         if (node.annotationAttached) node.annotationAttached();
-
-
-        // @todo special place to init such predefined values; `afterAttach` of the tag?
-        // preselected choices
-        if (!isFF(FF_DEV_2100_A) && !self.pk && node?.type === 'choices' && node.preselectedValues?.length) {
-          self.createResult({}, { choices: node.preselectedValues }, node, node.toname);
-        }
       });
 
       self.history.onUpdate(self.updateObjects);

@@ -522,7 +522,7 @@ class HtxParagraphsView extends Component {
             }, _timeoutDelay);
           }} />
         )}
-        {this.props.item.contextscroll && (
+        {item.contextscroll && (
           <div className={styles.wrapper_header__buttons}>
             <Toggle
               data-testid={'auto-scroll-toggle'}
