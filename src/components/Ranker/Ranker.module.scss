@@ -40,10 +40,10 @@
       cursor: pointer;
     }
 
-    button span::after {
+    &.expanded button span::after {
       content: '△';
     }
-    button:hover span::after {
+    &.expanded button:hover span::after {
       content: '▲';
     }
     &.collapsed button span::after {
@@ -80,15 +80,16 @@
   display: none;
 }
 
-.itemTitle::after {
+.item.expanded > .itemTitle::after {
   content: '△';
   margin-left: auto;
 }
-.itemTitle:hover::after {
+.item.expanded > .itemTitle:hover::after {
   content: '▲';
 }
 .item.collapsed > .itemTitle::after {
   content: '▽';
+  margin-left: auto;
 }
 .item.collapsed > .itemTitle:hover::after {
   content: '▼';

@@ -22,9 +22,14 @@ const Item = (props: ItemProps) => {
 
   // @todo document html parameter later after proper tests
   const html = useMemo(() => item.html ? sanitizeHtml(item.html) : '', [item.html]);
-  const [collapsedMap, toggleCollapsed] = useContext(CollapsedContext);
+  const [collapsible, collapsedMap, toggleCollapsed] = useContext(CollapsedContext);
   const collapsed = collapsedMap[item.id] ?? false;
-  const toggle = () => toggleCollapsed(item.id, !collapsed);
+  const toggle = collapsible
+    ? () => toggleCollapsed(item.id, !collapsed)
+    : undefined;
+  const classNames = [styles.item, 'htx-ranker-item'];
+
+  if (collapsible) classNames.push(collapsed ? styles.collapsed : styles.expanded);
 
   return (
     <Draggable draggableId={item.id} index={index} isDragDisabled={readonly}>
@@ -34,7 +39,7 @@ const Item = (props: ItemProps) => {
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             style={{ ...provided.draggableProps.style }}
-            className={[styles.item, collapsed ? styles.collapsed : '', 'htx-ranker-item'].join(' ')}
+            className={classNames.join(' ')}
             ref={provided.innerRef}
             data-ranker-id={item.id}
           >
