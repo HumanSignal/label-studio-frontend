@@ -16,7 +16,7 @@
   border-radius: 2px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   overflow-y: scroll;
 
   [data-rbd-droppable-id] {
@@ -64,7 +64,6 @@
   border-radius: 2px;
   background-color: #f5f5f5;
   color: black;
-  max-width: 400px;
 }
 
 .itemLine {
