@@ -120,7 +120,7 @@ const NewTaxonomy = ({
   const refInput = useRef<TaxonomySearchRef>(null);
   const [treeData, setTreeData] = useState<AntTaxonomyItem[]>([]);
   const [filteredTreeData, setFilteredTreeData] = useState<AntTaxonomyItem[]>([]);
-  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
+  const [expandedKeys, setExpandedKeys] = useState<React.Key[] | undefined>([]);
   const separator = options.pathSeparator;
   const style = { minWidth: options.minWidth ?? 200, maxWidth: options.maxWidth };
   const dropdownWidth = options.dropdownWidth === undefined ? true : +options.dropdownWidth;
@@ -141,7 +141,9 @@ const NewTaxonomy = ({
 
   const handleSearch = useCallback((list: AntTaxonomyItem[], expandedKeys: React.Key[] | null) => {
     setFilteredTreeData(list);
-    if (expandedKeys) setExpandedKeys(expandedKeys);
+    if (expandedKeys?.length) setExpandedKeys(expandedKeys);
+    else setExpandedKeys(undefined);
+
   }, []);
 
   const renderDropdown = useCallback((origin: ReactNode) => {
@@ -162,10 +164,10 @@ const NewTaxonomy = ({
   const handleDropdownChange = useCallback((open: boolean) => {
     if (open) {
       // handleDropdownChange is being called before the dropdown is rendered,
-      // 100ms is the time that we have to wait to dropdown be rendered
+      // 200ms is the time that we have to wait to dropdown be rendered and animated
       setTimeout(() => {
         refInput.current?.focus();
-      }, 100);
+      }, 200);
     } else {
       refInput.current?.resetValue();
     }

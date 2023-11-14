@@ -30,6 +30,29 @@ import styles from './Paragraphs.module.scss';
  *     <Label value="Random talk"></Label>
  *   </ParagraphLabels>
  * </View>
+ * @example
+ * <!-- Paragraphs with audio -->
+ * <View>
+ *   <Paragraphs audioUrl="$audio" value="$para" name="paragraphs"
+ *               layout="dialogue" textKey="text" nameKey="author"
+ *               showPlayer="true"
+ *               />
+ *   
+ *   <Choices name="choices" toName="paragraphs" choice="multiple">
+ *       <Choice value="Good quality"/>
+ *       <Choice value="Fast speech"/>
+ *   </Choices>    
+ * </View>
+ * 
+ * <!-- {"data": { 
+ *   "para": [
+ *     {"text": "test 1", "author": "A", "start": 0.0, "end": 1.0},
+ *     {"text": "test 2", "author": "B", "start": 1.0, "end": 2.0},
+ *     {"text": "test 3", "author": "A", "start": 2.0, "end": 3.0}
+ *   ], 
+ *   "audio": "/static/samples/game.wav"
+ * }}
+ * -->
  * @name Paragraphs
  * @regions ParagraphsRegion
  * @meta_title Paragraph Tags for Paragraphs
@@ -37,8 +60,8 @@ import styles from './Paragraphs.module.scss';
  * @param {string} name                   - Name of the element
  * @param {string} value                  - Data field containing the paragraph content
  * @param {json|url} [valueType=json]     - Whether the data is stored directly in uploaded JSON data or needs to be loaded from a URL
- * @param {string} audioUrl               - Audio to sync phrases with
- * @param {string} [sync]                 - object name to sync with
+ * @param {string} [audioUrl]             - Audio to sync phrases with
+ * @param {string} [sync]                 - Object name to sync with
  * @param {boolean} [showPlayer=false]    - Whether to show audio player above the paragraphs. Ignored if sync object is audio
  * @param {no|yes} [saveTextResult=yes]   - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
  * @param {none|dialogue} [layout=none]   - Whether to use a dialogue-style layout or not

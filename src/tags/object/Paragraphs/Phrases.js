@@ -32,7 +32,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
   // default function to animate the reading line
   const animateElement = useCallback(
     (element, start, duration, isPlaying = true) => {
-      if (!element || !isFF(FF_LSDV_E_278)) return;
+      if (!element || (!isFF(FF_LSDV_E_278) || !item.contextscroll)) return;
 
       const _animationKeyFrame = element.animate(
         [{ top: `${start}%` }, { top: '100%' }],
@@ -55,7 +55,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
   // this function is used to animate the reading line when user seek audio
   const setSeekAnimation = useCallback(
     (isSeeking) => {
-      if (!isFF(FF_LSDV_E_278)) return;
+      if (!isFF(FF_LSDV_E_278) || !item.contextscroll) return;
 
       const duration = item._value[playingId]?.duration || item._value[playingId]?.end - item._value[playingId]?.start;
       const endTime = !item._value[playingId]?.end ? item._value[playingId]?.start + item._value[playingId]?.duration : item._value[playingId]?.end;
@@ -94,7 +94,7 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
   }, [playingId]);
 
   useEffect(() => {
-    if (!isFF(FF_LSDV_E_278)) return;
+    if (!isFF(FF_LSDV_E_278) || !item.contextscroll) return;
 
     item.syncHandlers?.set('seek', seek => {
       item.handleSyncPlay(seek);
@@ -122,8 +122,8 @@ export const Phrases = observer(({ item, playingId, activeRef, setIsInViewport }
 
   // when user click on play/pause button, the useEffect will be triggered and pause or play the reading line animation
   useEffect(() => {
-    if (!isFF(FF_LSDV_E_278)) return;
-
+    if (!isFF(FF_LSDV_E_278) || !item.contextscroll) return;
+    
     if (item.playing) animationKeyFrame?.play();
     else animationKeyFrame?.pause();
   }, [item.playing]);
