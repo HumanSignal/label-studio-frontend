@@ -195,7 +195,7 @@ export const Hotkey = (
 
             e.stopPropagation();
             e.preventDefault();
-
+            //fb-optic-9: event logging: on hotkey press
             func(...args);
           };
 

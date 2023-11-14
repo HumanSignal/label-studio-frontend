@@ -179,6 +179,7 @@ const Model = types
       },
 
       addPoint(x, y) {
+        //fb-optic-9: event logging: polygon draw events addPoint
         if (self.closed) return;
 
         const point = self.control?.getSnappedPoint({ x, y });

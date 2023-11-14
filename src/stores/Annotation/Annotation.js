@@ -514,7 +514,7 @@ export const Annotation = types
       if (region.type === 'polygonregion') {
         detach(region);
       }
-
+      //fb-optic-9: event logging: mouse deleteArea'
       destroy(region);
 
       // If the annotation was in a drawing state and the user deletes it, we need to reset the drawing state
@@ -775,6 +775,7 @@ export const Annotation = types
       }
 
       if (self.userGenerate && !self.sentUserGenerate) {
+        //fb-optic-9: event logging: annotation loaded
         self.loadedDate = new Date();
       }
     },

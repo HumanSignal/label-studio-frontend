@@ -87,6 +87,7 @@ export const Seeker: FC<SeekerProps> = ({
       const percent = newOffset / parentWidth;
       const newPosition = Math.ceil(length * percent);
 
+      //fb-optic-9: event logging: onSeekerDrag
       onSeek?.(newPosition);
     };
 

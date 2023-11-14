@@ -270,6 +270,7 @@ const RegionsMixin = types
             const connectedRegions = self.getConnectedDynamicRegions(destroy);
 
             env.events.invoke('regionFinishedDrawing', self, connectedRegions);
+            //fb-optic-9: event logging: onRegionFinishedDrawing
           }, timeout);
         }
       },
