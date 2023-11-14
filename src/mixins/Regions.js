@@ -113,9 +113,7 @@ const RegionsMixin = types
       // If object tag doesn't support suggestions - every region works as dynamic with auto suggestions
       const canBeReasonOfNotification = self.supportSuggestions ? self.dynamic && !self.fromSuggestion : true;
 
-      const isSmartEnabled = self.results.some(r => {
-        return r.from_name.smartEnabled;
-      });
+      const isSmartEnabled = self.results.some(r => r.from_name.smartEnabled);
 
       return isSmartEnabled && canBeReasonOfNotification;
     },
