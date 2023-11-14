@@ -28,7 +28,7 @@ jobs:
           ref: ${{ inputs.sha }}
 
       - name: "Setup NodeJS"
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "${{ env.NODE }}"
 
@@ -51,6 +51,10 @@ jobs:
         run: |
           set -euo pipefail
           yarn install --frozen-lockfile
+
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1 || true
 
       - name: Run ESLint
         uses: tj-actions/eslint-changed-files@v21

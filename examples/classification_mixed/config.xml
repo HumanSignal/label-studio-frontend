@@ -19,7 +19,7 @@
   </Choices>
 
   <Taxonomy name="taxonomy" toName="text">
-    <Choice value="Choice 1" background="#5b5"/>
+    <Choice value="Choice 1" background="#5b5" selected="true"/>
     <Choice value="Choice 2" background="#55f">
       <Choice value="Choice 2.1" background="#5b5"/>
       <Choice value="Choice 2.2" background="#55f"/>
