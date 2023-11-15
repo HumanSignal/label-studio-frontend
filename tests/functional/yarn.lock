@@ -264,9 +264,9 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
   integrity sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==
 
-"@heartexlabs/ls-test@git+ssh://git@github.com/heartexlabs/ls-frontend-test#255cb0da255027f1b448fb396c5ce7693615c702":
+"@heartexlabs/ls-test@git+ssh://git@github.com/heartexlabs/ls-frontend-test#52b30035b489891095e7ec596371a76f8648103e":
   version "1.0.8"
-  resolved "git+ssh://git@github.com/heartexlabs/ls-frontend-test#255cb0da255027f1b448fb396c5ce7693615c702"
+  resolved "git+ssh://git@github.com/heartexlabs/ls-frontend-test#52b30035b489891095e7ec596371a76f8648103e"
   dependencies:
     "@cypress/code-coverage" "^3.10.0"
     "@cypress/webpack-preprocessor" "^5.17.0"
@@ -286,9 +286,9 @@
     webpack-cli "^5.0.1"
     yargs "^17.7.1"
 
-"@heartexlabs/ls-test@git+ssh://git@github.com/heartexlabs/ls-frontend-test#34801fc90af333861dc7a1b5c774aaf4ee757c60":
+"@heartexlabs/ls-test@git+ssh://git@github.com/heartexlabs/ls-frontend-test#da154cf51369f4e47e7ddefd49cfffd10e706de2":
   version "1.0.8"
-  resolved "git+ssh://git@github.com/heartexlabs/ls-frontend-test#34801fc90af333861dc7a1b5c774aaf4ee757c60"
+  resolved "git+ssh://git@github.com/heartexlabs/ls-frontend-test#da154cf51369f4e47e7ddefd49cfffd10e706de2"
   dependencies:
     "@cypress/code-coverage" "^3.10.0"
     "@cypress/webpack-preprocessor" "^5.17.0"
