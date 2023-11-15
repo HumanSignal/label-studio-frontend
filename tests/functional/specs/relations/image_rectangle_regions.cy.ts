@@ -100,6 +100,8 @@ describe('Relations: Image Rectangle Regions', () => {
       task,
     });
 
+    LabelStudio.waitForObjectsReady();
+
     Relations.hasRelations(0);
 
     // Select the first region

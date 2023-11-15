@@ -96,6 +96,9 @@ const Model = types
 
       return bbox;
     },
+    get flattenedPoints() {
+      return getFlattenedPoints(this.points);
+    },
   }))
   .actions(self => {
     return {
@@ -337,15 +340,25 @@ const PolygonRegionModel = types.compose(
 function getAnchorPoint({ flattenedPoints, cursorX, cursorY }) {
   const [point1X, point1Y, point2X, point2Y] = flattenedPoints;
   const y =
-    ((point2X - point1X) * (point2X * point1Y - point1X * point2Y) +
+    (
+      (point2X - point1X) * (point2X * point1Y - point1X * point2Y) +
       (point2X - point1X) * (point2Y - point1Y) * cursorX +
-      (point2Y - point1Y) * (point2Y - point1Y) * cursorY) /
-    ((point2Y - point1Y) * (point2Y - point1Y) + (point2X - point1X) * (point2X - point1X));
+      (point2Y - point1Y) * (point2Y - point1Y) * cursorY
+    ) /
+    (
+      (point2Y - point1Y) * (point2Y - point1Y) +
+      (point2X - point1X) * (point2X - point1X)
+    );
   const x =
     cursorX -
-    ((point2Y - point1Y) *
-      (point2X * point1Y - point1X * point2Y + cursorX * (point2Y - point1Y) - cursorY * (point2X - point1X))) /
-      ((point2Y - point1Y) * (point2Y - point1Y) + (point2X - point1X) * (point2X - point1X));
+    (
+      (point2Y - point1Y) *
+      (point2X * point1Y - point1X * point2Y + cursorX * (point2Y - point1Y) - cursorY * (point2X - point1X))
+    ) /
+    (
+      (point2Y - point1Y) * (point2Y - point1Y) +
+      (point2X - point1X) * (point2X - point1X)
+    );
 
   return [x, y];
 }
@@ -399,9 +412,8 @@ function removeHoverAnchor({ layer }) {
 }
 
 const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
-  const { points } = item;
+  const { flattenedPoints } = item;
   const name = 'poly';
-  const flattenedPoints = getFlattenedPoints(points);
 
   return (
     <Group key={name} name={name}>
@@ -412,6 +424,8 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
         stroke={colors.strokeColor}
         strokeWidth={colors.strokeWidth}
         strokeScaleEnabled={false}
+        perfectDrawEnabled={false}
+        shadowForStrokeEnabled={false}
         points={flattenedPoints}
         fill={colors.fillColor}
         closed={true}
@@ -452,6 +466,85 @@ const Poly = memo(observer(({ item, colors, dragProps, draggable }) => {
   );
 }));
 
+/**
+ * Line between 2 points
+ */
+function Edge({ name, item, idx, p1, p2, closed, regionStyles }) {
+  const insertIdx = idx + 1; // idx1 + 1 or idx2
+  const flattenedPoints = useMemo(() => {
+    return getFlattenedPoints([p1, p2]);
+  }, [p1, p2]);
+
+  const lineProps = closed ? {
+    stroke: 'transparent',
+    strokeWidth: regionStyles.strokeWidth,
+    strokeScaleEnabled: false,
+  } : {
+    stroke: regionStyles.strokeColor,
+    strokeWidth: regionStyles.strokeWidth,
+    strokeScaleEnabled: false,
+  };
+
+  return (
+    <Group
+      key={name}
+      name={name}
+      onClick={e => item.handleLineClick({ e, flattenedPoints, insertIdx })}
+      onMouseMove={e => {
+        if (!item.closed || !item.selected || item.isReadOnly()) return;
+
+        item.handleMouseMove({ e, flattenedPoints });
+      }}
+      onMouseLeave={e => item.handleMouseLeave({ e })}
+    >
+      <Line
+        lineJoin="round"
+        opacity={1}
+        points={flattenedPoints}
+        hitStrokeWidth={20}
+        strokeScaleEnabled={false}
+        perfectDrawEnabled={false}
+        shadowForStrokeEnabled={false}
+        {...lineProps}
+      />
+    </Group>
+  );
+}
+
+const Edges = memo(observer(({ item, regionStyles }) => {
+  const { points,closed } = item;
+  const name = 'borders';
+
+  if (item.closed && (item.parent.useTransformer || !item.selected)) {
+    return null;
+  }
+  return (
+    <Group key={name} name={name}>
+      {points.map((p, idx) => {
+        const idx1 = idx;
+        const idx2 = idx === points.length - 1 ? 0 : idx + 1;
+
+        if (!closed && idx2 === 0) {
+          return null;
+        }
+
+        return (
+          <Edge
+            key={`border_${idx1}_${idx2}`}
+            name={`border_${idx1}_${idx2}`}
+            item={item}
+            idx={idx1}
+            p1={points[idx]}
+            p2={points[idx2]}
+            closed={closed}
+            regionStyles={regionStyles}
+          />
+        );
+      })}
+    </Group>
+  );
+}));
+
 const HtxPolygonView = ({ item, setShapeRef }) => {
   const { store } = item;
   const { suggestion } = useContext(ImageViewContext) ?? {};
@@ -459,65 +552,6 @@ const HtxPolygonView = ({ item, setShapeRef }) => {
   const regionStyles = useRegionStyles(item, {
     useStrokeAsFill: true,
   });
-
-  /**
-   * Render line between 2 points
-   */
-  function renderLine({ points, idx1, idx2, closed }) {
-    const name = `border_${idx1}_${idx2}`;
-
-    if (!item.closed && idx2 === 0) return null;
-
-    const insertIdx = idx1 + 1; // idx1 + 1 or idx2
-    const flattenedPoints = getFlattenedPoints([points[idx1], points[idx2]]);
-
-    const lineProps = closed ? {
-      stroke: 'transparent',
-      strokeWidth: regionStyles.strokeWidth,
-      strokeScaleEnabled: false,
-    } : {
-      stroke: regionStyles.strokeColor,
-      strokeWidth: regionStyles.strokeWidth,
-      strokeScaleEnabled: false,
-    };
-
-    return (
-      <Group
-        key={name}
-        name={name}
-        onClick={e => item.handleLineClick({ e, flattenedPoints, insertIdx })}
-        onMouseMove={e => {
-          if (!item.closed || !item.selected || item.isReadOnly()) return;
-
-          item.handleMouseMove({ e, flattenedPoints });
-        }}
-        onMouseLeave={e => item.handleMouseLeave({ e })}
-      >
-        <Line
-          lineJoin="round"
-          opacity={1}
-          points={flattenedPoints}
-          hitStrokeWidth={20}
-          {...lineProps}
-        />
-      </Group>
-    );
-  }
-
-  function renderLines(points, closed) {
-    const name = 'borders';
-
-    return (
-      <Group key={name} name={name} listening={!(item.parent.useTransformer && item.closed)}>
-        {points.map((p, idx) => {
-          const idx1 = idx;
-          const idx2 = idx === points.length - 1 ? 0 : idx + 1;
-
-          return renderLine({ points, idx1, idx2, closed });
-        })}
-      </Group>
-    );
-  }
 
   function renderCircle({ points, idx }) {
     const name = `anchor_${points.length}_${idx}`;
@@ -531,7 +565,9 @@ const HtxPolygonView = ({ item, setShapeRef }) => {
   function renderCircles(points) {
     const name = 'anchors';
 
-    if (item.parent.useTransformer && item.closed) return null;
+    if (item.closed && (item.parent.useTransformer || !item.selected)) {
+      return null;
+    }
     return (
       <Group key={name} name={name}>
         {points.map((p, idx) => renderCircle({ points, idx }))}
@@ -588,6 +624,7 @@ const HtxPolygonView = ({ item, setShapeRef }) => {
   }, [item.closed]);
 
   if (!item.parent) return null;
+  if (!item.inViewPort) return null;
 
   const stage = item.parent?.stageRef;
 
@@ -636,7 +673,7 @@ const HtxPolygonView = ({ item, setShapeRef }) => {
       {item.mouseOverStartPoint}
 
       {item.points && item.closed ? <Poly item={item} colors={regionStyles} dragProps={dragProps} draggable={!item.isReadOnly() && item.inSelection && item.parent?.selectedRegions?.length > 1}/> : null}
-      {(item.points && !item.isReadOnly()) ? renderLines(item.points, item.closed) : null}
+      {(item.points && !item.isReadOnly()) ? <Edges item={item} regionStyles={regionStyles}/> : null}
       {(item.points && !item.isReadOnly()) ? renderCircles(item.points) : null}
     </Group>
   );

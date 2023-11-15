@@ -212,6 +212,9 @@ const HtxKeyPointView = ({ item, setShapeRef }) => {
 
   const stage = item.parent?.stageRef;
 
+  if (!item.parent) return null;
+  if (!item.inViewPort) return null;
+
   return (
     <Fragment>
       <Circle
