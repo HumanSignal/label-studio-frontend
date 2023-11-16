@@ -252,6 +252,7 @@ export const Annotation = types
     draftSelected: false,
     autosaveDelay: 5000,
     isDraftSaving: false,
+    // This flag indicates that we are accepting suggestions right now (an accepting is started and not finished yet)
     isSuggestionsAccepting: false,
     submissionStarted: 0,
     versions: {},
