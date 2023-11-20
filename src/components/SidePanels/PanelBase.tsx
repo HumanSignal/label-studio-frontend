@@ -32,6 +32,7 @@ const resizers = [
 interface PanelBaseProps {
   root: MutableRefObject<HTMLDivElement | undefined>;
   name: PanelType;
+  mix?: string|string[];
   title: string;
   tooltip: string;
   top: number;
@@ -68,6 +69,7 @@ const distance = (x1: number, x2: number, y1: number, y2: number) => {
 
 export const PanelBase: FC<PanelBaseProps> = ({
   name,
+  mix,
   root,
   title,
   width,
@@ -230,7 +232,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
       const target = e.target as HTMLElement;
       const type = target.dataset.resize;
       const shift = (() => {
-        switch(type) {
+        switch (type) {
           case 'top-left':
             return 'top-left';
           case 'top':
@@ -337,7 +339,7 @@ export const PanelBase: FC<PanelBaseProps> = ({
         )}
         {visible && (
           <Elem name="body">
-            <Block name={name}>
+            <Block name={name} mix={mix}>
               {children}
             </Block>
           </Elem>

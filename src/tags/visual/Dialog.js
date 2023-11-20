@@ -32,27 +32,12 @@ const TagAttrs = types.model({
   name: types.maybeNull(types.string),
 });
 
-function DialogActions(self) {
-  return {
-    fromStateJSON(obj) {
-      if (obj.value.choices) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-      }
-
-      if (obj.value.text) {
-        self.annotation.names.get(obj.from_name).fromStateJSON(obj);
-      }
-    },
-  };
-}
-
 const Model = types
   .model({
     id: types.optional(types.identifier, guidGenerator),
     type: 'Dialog',
     data: types.map(Replica),
-  })
-  .actions(self => DialogActions(self));
+  });
 
 const DialogModel = types.compose('DialogModel', TagAttrs, Model, AnnotationMixin);
 

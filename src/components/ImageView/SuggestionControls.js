@@ -8,7 +8,7 @@ import { observer } from 'mobx-react';
 import { isDefined } from '../../utils/utilities';
 
 const getItemPosition = (item) => {
-  const { shapeRef: shape, bboxCoords: bbox } = item;
+  const { shapeRef: shape, bboxCoordsCanvas: bbox } = item;
   let width, height, x, y;
 
   if (isDefined(bbox)) {
@@ -101,7 +101,7 @@ export const SuggestionControls = observer(({ item, useLayer }) => {
 
     return useLayer ? (
       <Layer {...size} {...layerPosition}>{content}</Layer>
-    ): content;
+    ) : content;
   } else {
     return null;
   }

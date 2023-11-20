@@ -124,12 +124,12 @@ export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
   const input = useRef<HTMLTextAreaElement | null>();
 
   const saveMeta = (value: string) => {
-    region.setMetaInfo(value);
+    region.setMetaText(value);
     region.setNormInput(value);
   };
 
   useEffect(() => {
-    if (editMode &&  input.current) {
+    if (editMode && input.current) {
       const { current } = input;
 
       current.focus();
@@ -185,7 +185,7 @@ export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
   //           type="delete"
   //           style={{ cursor: "pointer" }}
   //           onClick={() => {
-  //             region.deleteMetaInfo();
+  //             region.deleteMetaText();
   //           }}
   //         />
   //       </Elem>

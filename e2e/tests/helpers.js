@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 const assert = require('assert');
 
 /**
@@ -114,7 +112,7 @@ function linkFunctions(value) {
    return fns[value];
  }
  return value;
-}  
+}
 function ${createMethodInjectionIntoScript('initLabelStudio', initLabelStudio)}
 const fns = {${fns.join(',')}};
 const params = ${JSON.stringify(preparedParams)};
@@ -166,7 +164,7 @@ const waitForImage = () => {
 
     if (!img || img.complete) return resolve();
     // this should be rewritten to isReady when it is ready
-    img.onload = ()=>{
+    img.onload = () => {
       setTimeout(resolve, 100);
     };
   });
@@ -180,7 +178,7 @@ const waitForAudio = async () => {
 
   await Promise.all(
     [...audios].map(audio => {
-      if (audio.readyState === 4) return true;
+      if (audio.readyState === 4) return Promise.resolve(true);
       return new Promise(resolve => {
         audio.addEventListener('durationchange', () => {
           resolve(true);
@@ -211,12 +209,20 @@ const waitForObjectsReady = async () => {
 };
 
 /**
- * Get the currentTime of the audio element(s)
+ * Get the metadata of media type element(s)
  */
-const getCurrentAudioTime = () => {
-  const audios = document.querySelectorAll('audio');
+const getCurrentMedia = (type) => {
+  const media = document.querySelectorAll(type);
 
-  return [...audios].map(audio => audio.currentTime);
+  return [...media].map(m => ({
+    currentTime: m.currentTime,
+    duration: m.duration,
+    playbackRate: m.playbackRate,
+    paused: m.paused,
+    muted: m.muted,
+    volume: m.volume,
+    src: m.src,
+  }));
 };
 
 /**
@@ -291,18 +297,18 @@ const emulateClick = source => {
 
 const emulateKeypress = (params) => {
   document.activeElement.dispatchEvent(
-    new KeyboardEvent( 'keydown', {
+    new KeyboardEvent('keydown', {
       bubbles: true,
       cancelable: true,
       ...params,
-    } ),
+    }),
   );
   document.activeElement.dispatchEvent(
-    new KeyboardEvent( 'keyup', {
+    new KeyboardEvent('keyup', {
       bubbles: true,
       cancelable: true,
       ...params,
-    } ),
+    }),
   );
 };
 
@@ -359,7 +365,13 @@ const polygonKonva = async (points) => {
     const stage = window.Konva.stages[0];
 
     for (const point of points) {
+      stage.fire('mousedown', {
+        evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
+      });
       stage.fire('click', {
+        evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
+      });
+      stage.fire('mouseup', {
         evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
       });
       await delay(50);
@@ -418,7 +430,7 @@ const hasKonvaPixelColorAtPoint = ([x, y, rgbArray, tolerance]) => {
   let result = false;
 
   const areEqualRGB = (a, b) => {
-    for (let i = 3; i--; ) {
+    for (let i = 3; i--;) {
       if (Math.abs(a[i] - b[i]) > tolerance) {
         return false;
       }
@@ -438,7 +450,7 @@ const hasKonvaPixelColorAtPoint = ([x, y, rgbArray, tolerance]) => {
 };
 
 const areEqualRGB = (a, b, tolerance) => {
-  for (let i = 3; i--; ) {
+  for (let i = 3; i--;) {
     if (Math.abs(a[i] - b[i]) > tolerance) {
       return false;
     }
@@ -522,11 +534,11 @@ async function generateImageUrl({ width, height }) {
 }
 
 const getCanvasSize = () => {
-  const stage = window.Konva.stages[0];
+  const imageObject = window.Htx.annotationStore.selected.objects.find(o => o.type === 'image');
 
   return {
-    width: stage.width(),
-    height: stage.height(),
+    width: imageObject.canvasSize.width,
+    height: imageObject.canvasSize.height,
   };
 };
 const getImageSize = () => {
@@ -564,7 +576,7 @@ const countKonvaShapes = async () => {
   let count = 0;
 
   regions.forEach(region => {
-    count +=  stage.find('.'+region.id).filter(node => node.isVisible()).length;
+    count += stage.find('.' + region.id).filter(node => node.isVisible()).length;
   });
 
   return count;
@@ -572,16 +584,32 @@ const countKonvaShapes = async () => {
 
 const isTransformerExist = async () => {
   const stage = window.Konva.stages[0];
-  const achors = stage.find('._anchor').filter(shape => shape.getAttr('visible') !== false);
+  const anchors = stage.find('._anchor').filter(shape => shape.getAttr('visible') !== false);
 
-  return !!achors.length;
+  return !!anchors.length;
 };
 
 const isRotaterExist = async () => {
   const stage = window.Konva.stages[0];
-  const achors = stage.find('.rotater').filter(shape => shape.getAttr('visible') !== false);
+  const rotaters = stage.find('.rotater').filter(shape => shape.getAttr('visible') !== false);
 
-  return !!achors.length;
+  return !!rotaters.length;
+};
+
+const getRegionAbsoultePosition = async (shapeId) => {
+  const stage = window.Konva.stages[0];
+  const region = stage.findOne(shape => String(shape._id) === String(shapeId));
+
+  if (!region) return null;
+
+  const regionPosition = region.getAbsolutePosition();
+
+  return {
+    x: regionPosition.x,
+    y: regionPosition.y,
+    width: region.width(),
+    height: region.height(),
+  };
 };
 
 const switchRegionTreeView = (viewName) => {
@@ -591,8 +619,18 @@ const switchRegionTreeView = (viewName) => {
 const serialize = () => window.Htx.annotationStore.selected.serializeAnnotation();
 
 const selectText = async ({ selector, rangeStart, rangeEnd }) => {
+  let [doc, win] = [document, window];
+
+  let elem = document.querySelector(selector);
+
+  if (elem.matches('iframe')) {
+    doc = elem.contentDocument;
+    win = elem.contentWindow;
+    elem = doc.body;
+  }
+
   const findOnPosition = (root, position, borderSide = 'left') => {
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
+    const walker = doc.createTreeWalker(root, NodeFilter.SHOW_ALL);
 
     let lastPosition = 0;
     let currentNode = walker.nextNode();
@@ -620,18 +658,17 @@ const selectText = async ({ selector, rangeStart, rangeEnd }) => {
     }
   };
 
-  const elem = document.querySelector(selector);
-
   const start = findOnPosition(elem, rangeStart, 'right');
   const end = findOnPosition(elem, rangeEnd, 'left');
 
-  const range = new Range();
+  const range = new win.Range();
+  const selection = win.getSelection();
 
   range.setStart(start.node, start.position);
   range.setEnd(end.node, end.position);
 
-  window.getSelection().removeAllRanges();
-  window.getSelection().addRange(range);
+  selection.removeAllRanges();
+  selection.addRange(range);
 
   const evt = new MouseEvent('mouseup');
 
@@ -639,11 +676,77 @@ const selectText = async ({ selector, rangeStart, rangeEnd }) => {
   elem.dispatchEvent(evt);
 };
 
+const getSelectionCoordinates = ({ selector, rangeStart, rangeEnd }) => {
+  let [doc, win] = [document, window];
+  let isIFrame = false;
+  let elem = document.querySelector(selector);
+
+  if (elem.matches('iframe')) {
+    doc = elem.contentDocument;
+    win = elem.contentWindow;
+    elem = doc.body;
+    isIFrame = true;
+  }
+
+  const findOnPosition = (root, position, borderSide = 'left') => {
+    const walker = doc.createTreeWalker(root, NodeFilter.SHOW_ALL);
+
+    let lastPosition = 0;
+    let currentNode = walker.nextNode();
+    let nextNode = walker.nextNode();
+
+    while (currentNode) {
+      const isText = currentNode.nodeType === Node.TEXT_NODE;
+      const isBR = currentNode.nodeName === 'BR';
+
+      if (isText || isBR) {
+        const length = currentNode.length ? currentNode.length : 1;
+
+        if (length + lastPosition >= position || !nextNode) {
+          if (borderSide === 'right' && length + lastPosition === position && nextNode) {
+            return { node: nextNode, position: 0 };
+          }
+          return { node: currentNode, position: isBR ? 0 : Math.min(Math.max(position - lastPosition, 0), length) };
+        } else {
+          lastPosition += length;
+        }
+      }
+
+      currentNode = nextNode;
+      nextNode = walker.nextNode();
+    }
+  };
+
+  const start = findOnPosition(elem, rangeStart, 'right');
+  const end = findOnPosition(elem, rangeEnd, 'left');
+
+
+  const range = new win.Range();
+  const selection = win.getSelection();
+
+  range.setStart(start.node, start.position);
+  range.setEnd(end.node, end.position);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+
+  const rangeRects = Array.from(range.getClientRects());
+  const bboxes = [rangeRects.at(0), rangeRects.at(-1)];
+  const iframeOffset = isIFrame ? elem.getBoundingClientRect() : { left: 0, top: 0 };
+
+  return bboxes.map(bbox => ({
+    x: bbox.left + iframeOffset.left,
+    y: bbox.top + iframeOffset.top,
+    width: bbox.width,
+    height: bbox.height,
+  }));
+};
+
 // Only for debugging
 const whereIsPixel = ([rgbArray, tolerance]) => {
   const stage = window.Konva.stages[0];
   const areEqualRGB = (a, b) => {
-    for (let i = 3; i--; ) {
+    for (let i = 3; i--;) {
       if (Math.abs(a[i] - b[i]) > tolerance) {
         return false;
       }
@@ -722,6 +825,25 @@ async function doDrawingAction(I, { msg, fromX, fromY, toX, toY }) {
   I.wait(1); // Ensure that the tool is fully finished being created.
 }
 
+// `mulberry32` (simple generator with a 32-bit state)
+function createRandomWithSeed(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function createRandomIntWithSeed(seed) {
+  const random = createRandomWithSeed(seed);
+
+  return function(min, max) {
+    return Math.floor(random() * (max - min + 1) + min);
+  };
+}
+
 module.exports = {
   initLabelStudio,
   createLabelStudioInitFunction,
@@ -731,7 +853,7 @@ module.exports = {
   createAddEventListenerScript,
   waitForImage,
   waitForAudio,
-  getCurrentAudioTime,
+  getCurrentMedia,
   waitForObjectsReady,
   delay,
 
@@ -751,6 +873,7 @@ module.exports = {
   getCanvasSize,
   getImageSize,
   getImageFrameSize,
+  getRegionAbsoultePosition,
   setKonvaLayersOpacity,
   setZoom,
   whereIsPixel,
@@ -765,6 +888,7 @@ module.exports = {
 
   serialize,
   selectText,
+  getSelectionCoordinates,
 
   saveDraftLocally,
   getLocallySavedDraft,
@@ -773,4 +897,6 @@ module.exports = {
   dumpJSON,
 
   doDrawingAction,
+  createRandomWithSeed,
+  createRandomIntWithSeed,
 };

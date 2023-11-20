@@ -1,16 +1,15 @@
 import { observe } from 'mobx';
-import { getRoot, getType, types } from 'mobx-state-tree';
+import { getEnv, getRoot, getType, types } from 'mobx-state-tree';
 import { customTypes } from '../../../core/CustomTypes';
-import { guidGenerator, restoreNewsnapshot } from '../../../core/Helpers.ts';
+import { guidGenerator } from '../../../core/Helpers.ts';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import IsReadyMixin from '../../../mixins/IsReadyMixin';
 import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
-import { SyncMixin } from '../../../mixins/SyncMixin';
+import { SyncableMixin } from '../../../mixins/Syncable';
 import { AudioRegionModel } from '../../../regions/AudioRegion';
 import Utils from '../../../utils';
-import { FF_DEV_2461, isFF } from '../../../utils/feature-flags';
+import { FF_LSDV_E_278, isFF } from '../../../utils/feature-flags';
 import { isDefined } from '../../../utils/utilities';
-import { isTimeSimilar } from '../../../lib/AudioUltra';
 import ObjectBase from '../Base';
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
 
@@ -19,7 +18,32 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  *
  * Use with the following data types: audio
  * @example
- * <!--Labeling configuration to label regions of audio and rate the audio sample-->
+ * <!-- Play audio on the labeling interface -->
+ * <View>
+ *   <Audio name="audio" value="$audio" />
+ * </View>
+ * @example
+ * <!-- Play audio with multichannel support -->
+ * <View>
+ *   <Audio name="audio" value="$audio" splitchannels="true" />
+ * </View>
+ * @example
+ * <!-- Audio classification -->
+ * <View>
+ *   <Audio name="audio" value="$audio" />
+ *   <Choices name="ch" toName="audio">
+ *     <Choice value="Positive" />
+ *     <Choice value="Negative" />
+ *   </Choices>
+ * </View>
+ * @example
+ * <!-- Audio transcription -->
+ * <View>
+ *   <Audio name="audio" value="$audio" />
+ *   <TextArea name="ta" toName="audio" />
+ * </View>
+ * @example
+ * <!-- Labeling configuration to label regions of audio and rate the audio sample-->
  * <View>
  *   <Labels name="lbl-1" toName="audio-1">
  *     <Label value="Guitar" />
@@ -28,26 +52,43 @@ import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
  *   <Rating name="rate-1" toName="audio-1" />
  *   <Audio name="audio-1" value="$audio" />
  * </View>
- * @name Audio
+ * @example
+ * <!-- Sync with video -->
+ * <View>
+ *   <Video name="video-1" value="$video" sync="audio-1" />
+ *   <Labels name="lbl-1" toName="audio-1">
+ *     <Label value="Guitar" />
+ *     <Label value="Drums" />
+ *   </Labels>
+ *   <Audio name="audio-1" value="$video" sync="video-1" />
+ * </View>
+ * @example
+ * <!-- Sync with paragraphs -->
+ * <View>
+ *   <Labels name="lbl-1" toName="audio-1">
+ *     <Label value="Guitar" />
+ *     <Label value="Drums" />
+ *   </Labels>
+ *   <Audio name="audio-1" value="$audio" sync="txt-1" />
+ *   <Paragraphs audioUrl="$audio" sync="audio-1" name="txt-1" value="$text" layout="dialogue" showplayer="true" />
+ * </View>
+ * @regions AudioRegion
  * @meta_title Audio Tag for Audio Labeling
  * @meta_description Customize Label Studio with the Audio tag for advanced audio annotation tasks for machine learning and data science projects.
+ * @name Audio
  * @param {string} name - Name of the element
- * @param {string} value - Data field containing path or a URL to the audio
- * @param {boolean=} [volume=false] - Whether to show a volume slider (from 0 to 1)
- * @param {string} [defaultvolume=1] - Default volume level (from 0 to 1)
- * @param {boolean} [speed=false] - Whether to show a speed slider (from 0.5 to 3)
- * @param {string} [defaultspeed=1] - Default speed level (from 0.5 to 2)
- * @param {boolean} [zoom=true] - Whether to show the zoom slider
- * @param {string} [defaultzoom=1] - Default zoom level (from 1 to 1500)
- * @param {string} [hotkey] - Hotkey used to play or pause audio
- * @param {string} [sync] object name to sync with
- * @param {string} [height=94] - Total height of the audio player
- * @param {string} [cursorwidth=1] - Audio pane cursor width. it's Measured in pixels.
- * @param {string} [cursorcolor=#333] - Audio pane cursor color. Color should be specify in hex decimal string
- * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform
- * @param {boolean} [autocenter=true] – Always place cursor in the middle of the view
- * @param {boolean} [scrollparent=true] – Wave scroll smoothly follows the cursor
- * @param {boolean} [splitchannels=false] – Display stereo channels separately
+ * @param {string} value - Data field containing path or a URL to the audio.
+ * @param {string} [defaultspeed=1] - Default speed level (from 0.5 to 2).
+ * @param {string} [defaultscale=1] - Audio pane default y-scale for waveform.
+ * @param {string} [defaultzoom=1] - Default zoom level for waveform. (from 1 to 1500).
+ * @param {string} [defaultvolume=1] - Default volume level (from 0 to 1).
+ * @param {string} [hotkey] - Hotkey used to play or pause audio.
+ * @param {string} [sync] Object name to sync with.
+ * @param {string} [height=96] - Total height of the audio player.
+ * @param {string} [waveheight=32] - Minimum height of a waveform when in `splitchannels` mode with multiple channels to display.
+ * @param {boolean} [splitchannels=false] - Display multiple audio channels separately, if the audio file has more than one channel. (**NOTE: Requires more memory to operate.**)
+ * @param {string} [decoder=webaudio] - Decoder type to use to decode audio data. (`"webaudio"` or `"ffmpeg"`)
+ * @param {string} [player=html5] - Player type to use to play audio data. (`"html5"` or `"webaudio"`)
  */
 const TagAttrs = types.model({
   name: types.identifier,
@@ -62,19 +103,22 @@ const TagAttrs = types.model({
   hotkey: types.maybeNull(types.string),
   showlabels: types.optional(types.boolean, false),
   showscores: types.optional(types.boolean, false),
-  height: types.optional(types.string, '94'),
+  height: types.optional(types.string, '96'),
+  waveheight: types.optional(types.string, '32'),
   cursorwidth: types.optional(types.string, '2'),
   cursorcolor: types.optional(customTypes.color, '#333'),
   defaultscale: types.optional(types.string, '1'),
   autocenter: types.optional(types.boolean, true),
   scrollparent: types.optional(types.boolean, true),
   splitchannels: types.optional(types.boolean, false),
+  decoder: types.optional(types.enumeration(['ffmpeg', 'webaudio']), 'webaudio'),
+  player: types.optional(types.enumeration(['html5', 'webaudio']), 'html5'),
 });
 
 export const AudioModel = types.compose(
   'AudioModel',
   TagAttrs,
-  SyncMixin,
+  SyncableMixin,
   ProcessAttrsMixin,
   ObjectBase,
   AnnotationMixin,
@@ -96,10 +140,6 @@ export const AudioModel = types.compose(
 
       get store() {
         return getRoot(self);
-      },
-
-      get regs() {
-        return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
       },
 
       states() {
@@ -124,14 +164,99 @@ export const AudioModel = types.compose(
         return state?.selectedValues()?.[0];
       },
     }))
+    ////// Sync actions
+    .actions(self => ({
+      ////// Outgoing
+
+      triggerSync(event, data) {
+        if (!self._ws) return;
+
+        self.syncSend({
+          playing: self._ws.playing,
+          time: self._ws.currentTime,
+          speed: self._ws.rate,
+          ...data,
+        }, event);
+      },
+
+      triggerSyncSpeed(speed) {
+        self.triggerSync('speed', { speed });
+      },
+
+      triggerSyncPlay() {
+        // @todo should not be handled like this
+        self.handleSyncPlay();
+        // trigger play only after it actually started to play
+        self.triggerSync('play', { playing: true });
+      },
+
+      triggerSyncPause() {
+        // @todo should not be handled like this
+        self.handleSyncPause();
+        self.triggerSync('pause', { playing: false });
+      },
+
+      triggerSyncSeek(time) {
+        self.triggerSync('seek', { time });
+      },
+
+      ////// Incoming
+
+      registerSyncHandlers() {
+        ['play', 'pause', 'seek'].forEach(event => {
+          self.syncHandlers.set(event, self.handleSync);
+        });
+        self.syncHandlers.set('speed', self.handleSyncSpeed);
+      },
+
+      handleSync(data) {
+        if (!self._ws?.loaded) return;
+
+        self.handleSyncSeek(data);
+        if (data.playing) {
+          if (!self._ws.playing) self._ws?.play();
+        } else {
+          if (self._ws.playing) self._ws?.pause();
+        }
+      },
+
+      // @todo remove both of these methods
+      handleSyncPlay() {
+        if (self._ws?.playing) return;
+
+        self._ws?.play();
+      },
+
+      handleSyncPause() {
+        if (!self._ws?.playing) return;
+
+        self._ws?.pause();
+      },
+
+      handleSyncSeek({ time }) {
+        if (!self._ws?.loaded || !isDefined(time)) return;
+
+        try {
+          self._ws.setCurrentTime(time, true);
+          self._ws.syncCursor(); // sync cursor with current time
+        } catch (err) {
+          console.log(err);
+        }
+      },
+
+      handleSyncSpeed({ speed }) {
+        if (!self._ws) return;
+        self._ws.rate = speed;
+      },
+
+      syncMuted(muted) {
+        if (!self._ws) return;
+        self._ws.muted = muted;
+      },
+    }))
     .actions(self => {
       let dispose;
       let updateTimeout = null;
-
-      const Super = {
-        triggerSyncPlay: self.triggerSyncPlay,
-        triggerSyncPause: self.triggerSyncPause,
-      };
 
       return {
         afterCreate() {
@@ -182,50 +307,22 @@ export const AudioModel = types.compose(
           self.triggerSyncSpeed(rate);
         },
 
-        triggerSyncPlay() {
-          if (self.syncedObject) {
-            Super.triggerSyncPlay();
-          } else {
-            self.handleSyncPlay();
-          }
-        },
+        /**
+         * Load any synced paragraph text segments which contain start and end values
+         * as Audio segments for visualization of the excerpts within the audio track
+         **/
+        loadSyncedParagraphs() {
+          if (!self.syncManager) return;
 
-        triggerSyncPause() {
-          if (self.syncedObject) {
-            Super.triggerSyncPause();
-          } else {
-            self.handleSyncPause();
-          }
-        },
+          // find synced paragraphs if any
+          // and add their regions to the audio
+          const syncedParagraphs = Array.from(self.syncManager.syncTargets, ([,value]) => value).filter(target => target.type === 'paragraphs' && target.contextscroll);
 
-        handleSyncPlay() {
-          if (!self._ws) return;
-          if (self._ws.playing && self.isCurrentlyPlaying) return;
+          syncedParagraphs.forEach(paragraph => {
+            const segments = Object.values(paragraph.regionsStartEnd).map(({ start, end }) => ({ start, end, showInTimeline: true, external: true, locked: true }));
 
-          self.isCurrentlyPlaying = true;
-          self._ws?.play();
-        },
-
-        handleSyncPause() {
-          if (!self._ws) return;
-          if (!self._ws.playing && !self.isCurrentlyPlaying) return;
-
-          self.isCurrentlyPlaying = false;
-          self._ws?.pause();
-        },
-
-        handleSyncSpeed() {},
-        handleSyncDuration() {},
-
-        handleSyncSeek(time) {
-          if (!self._ws?.loaded || isTimeSimilar(time, self._ws.currentTime)) return;
-
-          try {
-            self._ws.currentTime = time;
-            self._ws.syncCursor(); // sync cursor with other tags
-          } catch (err) {
-            console.log(err);
-          }
+            self._ws.addRegions(segments);
+          });
         },
 
         handleNewRegions() {
@@ -258,48 +355,6 @@ export const AudioModel = types.compose(
           e && e.preventDefault();
           self._ws.togglePlay();
           return false;
-        },
-
-        fromStateJSON(obj, fromModel) {
-          let r;
-          let m;
-
-          const fm = self.annotation.names.get(obj.from_name);
-
-          fm.fromStateJSON(obj);
-
-          if (!fm.perregion && fromModel.type !== 'labels') return;
-
-          const tree = {
-            pid: obj.id,
-            start: obj.value.start,
-            end: obj.value.end,
-            normalization: obj.normalization,
-            score: obj.score,
-            readonly: obj.readonly,
-          };
-
-          r = self.findRegion({ start: obj.value.start, end: obj.value.end });
-
-          if (fromModel) {
-            m = restoreNewsnapshot(fromModel);
-
-            if (!r) {
-              r = self.createRegion(tree, [m]);
-            } else {
-              r.states.push(m);
-            }
-          }
-
-          if (self._ws) {
-            self._ws.addRegion({
-              start: r.start,
-              end: r.end,
-              color: r.getColor(),
-            });
-          }
-
-          return r;
         },
 
         setRangeValue(val) {
@@ -339,7 +394,7 @@ export const AudioModel = types.compose(
         },
 
         addRegion(wsRegion) {
-        // area id is assigned to WS region during deserealization
+          // area id is assigned to WS region during deserealization
           const find_r = self.annotation.areas.get(wsRegion.id);
 
 
@@ -352,7 +407,11 @@ export const AudioModel = types.compose(
           const states = self.getAvailableStates();
 
           if (states.length === 0) {
-          // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
+            // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
+            if (wsRegion.isRegion) {
+              wsRegion.convertToSegment().handleSelected();
+            }
+
             return;
           }
 
@@ -373,21 +432,6 @@ export const AudioModel = types.compose(
 
           r.onUpdateEnd();
           return r;
-        },
-
-        /**
-         * Play and stop
-         */
-        handlePlay() {
-          if (self._ws) {
-            self.isCurrentlyPlaying ? self.triggerSyncPlay() : self.triggerSyncPause();
-          }
-        },
-
-        handleSeek() {
-          if (!self._ws || (isFF(FF_DEV_2461) && self.syncedObject?.type === 'paragraphs')) return;
-
-          self.triggerSyncSeek(self._ws.currentTime);
         },
 
         createWsRegion(region) {
@@ -422,9 +466,11 @@ export const AudioModel = types.compose(
           self.clearRegionMappings();
           self._ws = ws;
 
-          self.setSyncedDuration(self._ws.duration);
-          self.needsUpdate();
           self.onReady();
+          self.needsUpdate();
+          if (isFF(FF_LSDV_E_278)) {
+            self.loadSyncedParagraphs();
+          }
         },
 
         onSeek(time) {
@@ -433,14 +479,26 @@ export const AudioModel = types.compose(
 
         onPlaying(playing) {
           if (playing) {
+            // @todo self.play();
             self.triggerSyncPlay();
           } else {
+            // @todo self.pause();
             self.triggerSyncPause();
           }
         },
 
         onError(error) {
-          self.errors = [error];
+          let messageHandler;
+
+          if (error.name === 'HTTPError') {
+            messageHandler = 'ERR_LOADING_HTTP';
+          } else {
+            messageHandler = 'ERR_LOADING_AUDIO';
+          }
+
+          const message = getEnv(self.store).messages[messageHandler]({ attr: self.value, url: self._value, error: error.message });
+
+          self.errors = [message];
         },
 
         beforeDestroy() {

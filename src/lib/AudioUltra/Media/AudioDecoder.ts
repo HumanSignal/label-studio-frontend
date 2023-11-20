@@ -1,120 +1,39 @@
-import { AudioDecoderWorker, getAudioDecoderWorker } from 'audio-file-decoder';
+import { AudioDecoderWorker, getAudioDecoderWorker } from '@martel/audio-file-decoder';
 // eslint-disable-next-line
 // @ts-ignore
-import DecodeAudioWasm from 'audio-file-decoder/decode-audio.wasm';
-import { Events } from '../Common/Events';
+import DecodeAudioWasm from '@martel/audio-file-decoder/decode-audio.wasm';
+import { BaseAudioDecoder } from './BaseAudioDecoder';
 import { clamp, info } from '../Common/Utils';
+import { SplitChannel } from './SplitChannel';
 
 const DURATION_CHUNK_SIZE = 60 * 30; // 30 minutes
 
-export const DEFAULT_FREQUENCY_HZ = 44100;
-
-interface AudioDecoderEvents {
-  progress: (chunk: number, total: number) => void;
-}
-
-export class AudioDecoder extends Events<AudioDecoderEvents> {
-  chunks?: Float32Array[];
-  private cancelled = false;
-  private decodeId = 0; // if id=0, decode is not in progress
+export class AudioDecoder extends BaseAudioDecoder {
   private worker: AudioDecoderWorker | undefined;
-  private _dataLength = 0;
-  private _dataSize = 0;
-  private _channelCount = 1;
-  private _sampleRate = DEFAULT_FREQUENCY_HZ;
-  private _duration = 0;
-  private decodingResolve?: () => void;
-  decodingPromise: Promise<void> | undefined;
 
   /**
-   * Timeout for removal of the decoder from the cache.
-   * Any subsequent requests for the same source will renew the decoder and cancel the removal.
+   * Total number of chunks to decode.
+   *
+   * This is used to allocate the number of chunks to decode and to calculate the progress.
+   * Influenced by the number of channels and the duration of the audio file, as this will cause errors
+   * if the decoder tries to decode and return too much data at once.
+   *
+   * @example
+   * 1hour 44.1kHz 2ch = 1 * 60 * 60 * 44100 * 2 = 158760000 samples -> 4 chunks (39690000 samples/chunk)
+   * 1hour 44.1kHz 1ch = 1 * 60 * 60 * 44100 * 1 = 79380000 samples -> 2 chunks (39690000 samples/chunk)
    */
-  removalId: any = null;
-
-  constructor(private src: string) {
-    super();
-  }
-
-  get channelCount() {
-    return this._channelCount;
-  }
-
-  get sampleRate() {
-    return this._sampleRate;
-  }
-
-  get duration() {
-    return this._duration;
-  }
-
-  get dataLength() {
-    if (this.chunks && !this._dataLength) {
-      this._dataLength = this.chunks?.reduce((a, b) => a + b.length, 0) ?? 0;
-    }
-    return this._dataLength;
-  }
-
-  get dataSize() {
-    if (this.chunks && !this._dataSize) {
-      this._dataSize = this.chunks?.reduce((a, b) => a + b.byteLength, 0) ?? 0;
-    }
-    return this._dataSize;
-  }
-
-  get sourceDecoded() {
-    return this.chunks !== undefined;
-  }
-
-  get sourceDecodeCancelled() {
-    return this.cancelled && this.decodeId === 0;
+  getTotalChunks() {
+    return Math.ceil((this._duration * this._channelCount) / DURATION_CHUNK_SIZE);
   }
 
   /**
-   * Cancel the decoding process.
-   * This will stop the generator and dispose the worker.
+   * Total size in duration seconds per chunk to decode.
+   *
+   * This is used to work out the number of samples to decode per chunk, as the decoder will
+   * return an error if too much data is requested at once. This is influenced by the number of channels.
    */
-  cancel() {
-    if (!this.cancelled) {
-      info('decode:cancelled', this.src);
-    }
-    this.cancelled = true;
-    this.decodeId = 0;
-
-    this.disposeWorker();
-  }
-
-  /**
-   * Renew the decoder instance to allow reuse of the same decoder with any resultant encoding data.
-   */
-  renew() {
-    this.cancelled = false;
-  }
-
-  /**
-   * Since this is a singleton, we don't want to destroy the instance but clear all active
-   * subscriptions and cancel any pending decoding work
-   */
-  destroy() {
-    super.removeAllListeners();
-    this.cancel();
-  }
-
-  /**
-   * Resolve and remove the shared decoding promise.
-   */
-  cleanupResolvers() {
-    this.decodingResolve?.();
-    this.decodingResolve = undefined;
-    this.decodingPromise = undefined;
-    info('decode:cleanup', this.src);
-  }
-
-  /**
-   * Total number of chunks to decode
-   */
-  getTotalChunks(duration: number) {
-    return Math.ceil(duration / DURATION_CHUNK_SIZE);
+  getChunkDuration() {
+    return DURATION_CHUNK_SIZE / this._channelCount;
   }
 
   /**
@@ -122,7 +41,6 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
    */
   async init(arraybuffer: ArrayBuffer) {
     if (this.worker) return;
-
     this.worker = await getAudioDecoderWorker(DecodeAudioWasm, arraybuffer);
 
     info('decode:worker:ready', this.src);
@@ -152,19 +70,25 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     // Generate a unique id for this decode operation
     this.decodeId = Date.now();
     // This is a shared promise which will be observed by all instances of the same source
-    this.decodingPromise =  new Promise(resolve => (this.decodingResolve = resolve as any));
+    this.decodingPromise = new Promise(resolve => (this.decodingResolve = resolve as any));
+
+    let splitChannels: SplitChannel | undefined = undefined;
 
     try {
       // Set the worker instance and resolve the decoder promise
-      this._channelCount = this.worker.channelCount;
+      this._channelCount = options?.multiChannel ? this.worker.channelCount : 1;
       this._sampleRate = this.worker.sampleRate;
       this._duration = this.worker.duration;
 
       let chunkIndex = 0;
-      const totalChunks = this.getTotalChunks(this.worker.duration);
+      const totalChunks = this.getTotalChunks();
       const chunkIterator = this.chunkDecoder(options);
 
-      const chunks = Array.from({ length: totalChunks }) as Float32Array[];
+      splitChannels = this._channelCount > 1 ? new SplitChannel(this._channelCount) : undefined;
+
+      const chunks = Array.from({ length: this._channelCount }).map(
+        () => Array.from({ length: totalChunks }) as Float32Array[],
+      );
 
       info('decode:chunk:start', this.src, chunkIndex, totalChunks);
 
@@ -183,7 +107,22 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
           if (this.sourceDecodeCancelled) return;
 
           if (value) {
-            chunks[chunkIndex] = value;
+            // Only 1 channel, just copy the data of the chunk directly
+            if (this._channelCount === 1) {
+              chunks[0][chunkIndex] = value;
+            } else {
+              if (!splitChannels) throw new Error('AudioDecoder: splitChannels not initialized');
+
+              // Multiple channels, split the data into separate channels within a web worker
+              // This is done to avoid blocking the UI thread
+              const channels = await splitChannels.split(value);
+
+              if (this.sourceDecodeCancelled) return;
+
+              channels.forEach((channel, index) => {
+                chunks[index][chunkIndex] = channel;
+              });
+            }
           }
 
           this.invoke('progress', [chunkIndex + 1, totalChunks]);
@@ -202,14 +141,15 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
 
       info('decode:complete', this.src);
     } finally {
-      this.disposeWorker();
+      splitChannels?.destroy();
+      this.dispose();
     }
   }
 
   /**
    * Web worker containing the ffmpeg wasm decoder must be disposed of to prevent memory leaks.
    */
-  private disposeWorker() {
+  protected dispose() {
     if (this.worker) {
       this.worker.dispose();
       this.worker = undefined;
@@ -232,13 +172,15 @@ export class AudioDecoder extends Events<AudioDecoderEvents> {
     // The duration start is offset by 1 second in the actual wasm decoder.
     // This is to ensure we correctly capture the entire data set for the waveform,
     // aligning it with the audio data when played back via the media element.
+    // For whatever reason, this is not always an issue with all files (duration does not seem to be a factor here).
+    // This does not negatively impact others which do not require this offset.
     let durationOffset = -1;
 
     while (true) {
       yield new Promise((resolve, reject) => {
         if (!this.worker || this.sourceDecodeCancelled) return resolve(null);
 
-        const nextChunkDuration = clamp(totalDuration - durationOffset, 0, DURATION_CHUNK_SIZE);
+        const nextChunkDuration = clamp(totalDuration - durationOffset, 0, this.getChunkDuration());
         const currentOffset = durationOffset;
 
         durationOffset += nextChunkDuration;

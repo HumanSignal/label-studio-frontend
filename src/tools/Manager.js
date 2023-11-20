@@ -39,6 +39,7 @@ class ToolsManager {
     this.name = name;
     this.tools = {};
     this._default_tool = null;
+    this._prefix = guidGenerator();
   }
 
   get preservedTool() {
@@ -55,7 +56,7 @@ class ToolsManager {
     // but not for finding tools, so may be there might
     // be an array instead of an object
     const name = tool.toolName ?? toolName;
-    const key = `${prefix}#${name}`;
+    const key = `${prefix ?? this._prefix}#${name}`;
 
     if (isFF(FF_DEV_4081) && removeDuplicatesNamed && toolName === removeDuplicatesNamed) {
       const findme = new RegExp(`^.*?#${name}.*$`);
@@ -99,6 +100,24 @@ class ToolsManager {
 
   selectTool(tool, selected) {
     const currentTool = this.findSelectedTool();
+    const newSelection = tool?.group;
+
+    // if there are no tools selected, there are no specific labels to unselect
+    // also this will skip annotation init
+    if (currentTool && newSelection === 'segmentation') {
+      const toolType = tool.control.type.replace(/labels$/, '');
+      const currentLabels = tool.obj.activeStates();
+      // labels of different types; we can't create regions with different tools simultaneously, so we have to unselect them
+      const unrelatedLabels = currentLabels.filter(tag => {
+        const type = tag.type.replace(/labels$/, '');
+
+        if (tag.type === 'labels') return false;
+        if (type === toolType) return false;
+        return true;
+      });
+
+      unrelatedLabels.forEach(tag => tag.unselectAll());
+    }
 
     if (currentTool && currentTool.handleToolSwitch) {
       currentTool.handleToolSwitch(tool);

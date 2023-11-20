@@ -1,4 +1,3 @@
-/* global inject, locate */
 const { I } = inject();
 
 module.exports = {
@@ -43,7 +42,7 @@ module.exports = {
     this.goToTab('General');
     this._setSettings(settings);
   },
-  setLayoutSettings(settings = {}){
+  setLayoutSettings(settings = {}) { 
     this.goToTab('Layout');
     this._setSettings(settings);
   },

@@ -63,7 +63,7 @@ const TagAttrs = types.model({
   granularity: types.maybeNull(types.enumeration(['symbol', 'word', 'sentence', 'paragraph'])),
   groupcancontain: types.maybeNull(types.string),
   // childrencheck: types.optional(types.enumeration(["any", "all"]), "any")
-  ...(isFF(FF_DEV_2128) ? { html: types.maybeNull(types.string) } : {} ),
+  ...(isFF(FF_DEV_2128) ? { html: types.maybeNull(types.string) } : {}),
 });
 
 const Model = types.model({
@@ -118,7 +118,7 @@ const Model = types.model({
     // connected to the region on the same object tag that is
     // right now highlighted, and if that region is readonly
 
-    if(self.annotation.selectedDrawingRegions.length > 0){
+    if (self.annotation.selectedDrawingRegions.length > 0) {
       /*  here we are validating if we are drawing a new region or if region is already closed
           the way that new drawing region and a finished regions work is similar, but new drawing region
           doesn't visualy select the polygons when you are drawing.
@@ -126,7 +126,7 @@ const Model = types.model({
       sameObjectSelectedRegions = self.annotation.selectedDrawingRegions.filter(region => {
         return region.parent?.name === self.parent?.toname;
       });
-    } else if(self.annotation.selectedRegions.length > 0) {
+    } else if (self.annotation.selectedRegions.length > 0) {
       sameObjectSelectedRegions = self.annotation.selectedRegions.filter(region => {
         return region.parent?.name === self.parent?.toname;
       });
@@ -134,11 +134,11 @@ const Model = types.model({
 
 
     const affectedRegions = sameObjectSelectedRegions.filter(region => {
-      return region.editable;
+      return !region.isReadOnly();
     });
 
     // one more check if that label can be selected
-    if (!self.annotation.editable) return;
+    if (self.annotation.isReadOnly()) return;
 
     if (sameObjectSelectedRegions.length > 0 && affectedRegions.length === 0) return;
 
@@ -153,16 +153,29 @@ const Model = types.model({
     // check if there is a region selected and if it is and user
     // is changing the label we need to make sure that region is
     // not going to end up without labels at all
-    const applicableRegions =  affectedRegions.filter(region => {
+    const applicableRegions = affectedRegions.filter(region => {
+      // if that's the only selected label, the only labelset assigned to region,
+      // and we are trying to unselect it, then don't allow that
+      // (except for rare labelsets that allow empty labels)
       if (
         labels.selectedLabels.length === 1 &&
         self.selected &&
         region.labelings.length === 1 &&
-        (!self.parent?.allowempty || self.isEmpty)
+        (!labels?.allowempty || self.isEmpty)
       )
         return false;
-      if (self.parent?.type !== 'labels' && !self.parent?.type.includes(region.results[0].type)) return false;
-      return true;
+
+      // @todo rewrite this check and add more named vars
+      // @todo select only related specific labels
+      // @todo unselect any label, but only if that won't leave region without specific labels!
+      // @todo but check for regions created by tools
+      // @todo lot of tests!
+      if (self.selected) return true; // we are unselecting a label which is always ok
+      if (labels.type === 'labels') return true; // universal labels are fine to select
+      if (labels.type.includes(region.type.replace(/region$/, ''))) return true; // region type is in label type
+      if (labels.type.includes(region.results[0].type)) return true; // any result type of the region is in label type
+      
+      return false;
     });
 
     if (sameObjectSelectedRegions.length > 0 && applicableRegions.length === 0) return;
@@ -291,7 +304,7 @@ const HtxLabelView = inject('store')(
         selected={item.selected}
         onClick={item.onClick}
       >
-        {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
+        {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> : item._value }
         {item.showalias === true && item.alias && (
           <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
         )}

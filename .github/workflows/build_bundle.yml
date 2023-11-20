@@ -6,15 +6,18 @@ on:
       sha:
         required: true
         type: string
+      build_for_coverage:
+        required: false
+        type: boolean
 
 env:
   # increment it in case if you need to reset cache
   CACHE_NAME_PREFIX: v3
-  NODE: '14'
+  NODE: '18'
 
 jobs:
   build:
-    name: "Build"
+    name: "Build${{ inputs.build_for_coverage && ' Coverage' || '' }}"
     runs-on: ubuntu-latest
     # ci can be skipped with `[skip ci]` prefix in message
     if: "!contains(github.event.head_commit.message, 'skip ci')"
@@ -22,12 +25,12 @@ jobs:
       - uses: hmarr/debug-action@v2.1.0
 
       - name: "Checkout codebase"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.sha }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "${{ env.NODE }}"
 
@@ -56,16 +59,21 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1 || true
+
       - name: Build distribution package
         timeout-minutes: 10
         run: yarn run build:module
         env:
           CI: false # on true webpack breaks on warnings, and we have them a lot
           NODE_ENV: 'production'
+          TEST_ENV: ${{ inputs.build_for_coverage }} # needed to create a separate build with the counters for the coverage report
 
       # upload this build as artifact to current Action
       - name: Upload bundle
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         with:
-          name: LSF-${{ inputs.sha }}
+          name: LSF-${{ inputs.build_for_coverage && 'coverage-' || '' }}${{ inputs.sha }}
           path: build/

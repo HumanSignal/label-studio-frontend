@@ -1,6 +1,3 @@
-
-/* global Feature, Scenario */
-
 Feature('Audio Controls');
 
 const config = `
@@ -19,7 +16,7 @@ const config = `
     <Choice value="Pop" />
   </Choices>
   <Header value="Listen the audio:"></Header>
-  <AudioPlus name="audio" value="$url"></AudioPlus>
+  <Audio name="audio" value="$url"></Audio>
 </View>
 `;
 
@@ -57,6 +54,11 @@ const annotations = [
 const params = { annotations: [{ id: 'test', result: annotations }], config, data };
 
 Scenario('Check the audio controls work', async function({ I, LabelStudio, AtAudioView, AtSidebar }) {
+  async function doNotSeeErrors() {
+    await I.wait(2);
+    // The potential errors should be caught by `errorsCollector` plugin
+  }
+
   LabelStudio.setFeatureFlags({
     ff_front_dev_2715_audio_3_280722_short: true,
   });
@@ -65,9 +67,6 @@ Scenario('Check the audio controls work', async function({ I, LabelStudio, AtAud
   LabelStudio.init(params);
 
   await AtAudioView.waitForAudio();
-
-  I.waitForDetached('loading-progress-bar', 10);
-
   await AtAudioView.lookForStage();
 
   AtSidebar.seeRegions(1);
@@ -115,4 +114,10 @@ Scenario('Check the audio controls work', async function({ I, LabelStudio, AtAud
   AtAudioView.clickPauseButton();
 
   await AtAudioView.seeIsPlaying(false);
+
+  I.say('Check the waveform can be zoomed without error');
+
+  await AtAudioView.zoomToPoint(-120);
+
+  await doNotSeeErrors();
 });

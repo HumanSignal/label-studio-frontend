@@ -1,5 +1,3 @@
-/* global Feature, Scenario */
-
 Feature('Hotkeys').tag('@regress');
 
 const AUDIO_URL = 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3';
@@ -41,7 +39,7 @@ Scenario('Hotkeys on re-initing lsf', async function({ I, LabelStudio, AtAudioVi
 
   await AtAudioView.lookForStage();
   I.pressKey('1');
-  AtAudioView.dragAudioRegion(50, 300);
+  AtAudioView.dragAudioElement(50, 300);
   I.pressKey('u');
   AtSidebar.seeRegions(1);
 
@@ -57,7 +55,7 @@ Scenario('Hotkeys on re-initing lsf', async function({ I, LabelStudio, AtAudioVi
 
   for (let k = 0; k < 5; k++) {
     I.pressKey('2');
-    AtAudioView.dragAudioRegion(50 + 50 * k, 30);
+    AtAudioView.dragAudioElement(50 + 50 * k, 30);
     I.pressKey('u');
   }
   AtSidebar.seeRegions(5);

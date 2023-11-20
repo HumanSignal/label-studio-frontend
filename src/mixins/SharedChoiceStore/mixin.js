@@ -98,7 +98,6 @@ export const SharedStoreMixin = types.model('SharedStoreMixin', {
   });
 
 export const destroy = () => {
-  console.log('destroying');
   Stores.clear();
   StoreIds.clear();
 };

@@ -96,8 +96,8 @@ export const AudioRegionModel = types
 
       const lastClassList = el.className.split(' ');
 
-      for(const obj in lastClassList){
-        if(lastClassList[obj].indexOf('htx-label') >= 0){
+      for (const obj in lastClassList) {
+        if (lastClassList[obj].indexOf('htx-label') >= 0) {
           lastClassList.splice(obj, 1);
         }
       }
@@ -162,6 +162,19 @@ export const AudioRegionModel = types
       if (self._ws_region) self._ws_region.remove();
     },
 
+    setLocked(locked) {
+      if (locked instanceof Function) {
+        self.locked = locked(self.locked);
+      } else {
+        self.locked = locked;
+      }
+
+      if (self._ws_region) {
+        self._ws_region.drag = !self.locked;
+        self._ws_region.resize = !self.locked;
+      }
+    },
+
     onClick(wavesurfer, ev) {
       // if (! self.editable) return;
 
@@ -200,7 +213,7 @@ export const AudioRegionModel = types
 
     toggleHidden(e) {
       self.hidden = !self.hidden;
-      self._ws_region.element.style.display = self.hidden ?  'none' : 'block';
+      self._ws_region.element.style.display = self.hidden ? 'none' : 'block';
       e?.stopPropagation();
     },
   }));

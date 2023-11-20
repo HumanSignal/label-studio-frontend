@@ -1,7 +1,8 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
-import { Waveform, WaveformOptions } from '../Waveform';
-import { Layer } from '../Visual/Layer';
+
 import { isTimeRelativelySimilar } from '../Common/Utils';
+import { Layer } from '../Visual/Layer';
+import { Waveform, WaveformOptions } from '../Waveform';
 
 export const useWaveform = (
   containter: MutableRefObject<HTMLElement | null | undefined>,
@@ -10,6 +11,7 @@ export const useWaveform = (
     onSeek?: (time: number) => void,
     onPlaying?: (playing: boolean) => void,
     onRateChange?: (rate: number) => void,
+    onError?: (error: Error) => void,
     autoLoad?: boolean,
     showLabels?: boolean,
   },
@@ -46,6 +48,9 @@ export const useWaveform = (
     wf.on('pause', () => {
       setPlaying(false);
     });
+    wf.on('error', (error) => {
+      options?.onError?.(error);
+    });
     wf.on('playing', (time: number) => {
       if (playing && !isTimeRelativelySimilar(time, currentTime, duration)) {
         options?.onSeek?.(time);
@@ -63,10 +68,8 @@ export const useWaveform = (
     wf.on('durationChanged', setDuration);
     wf.on('volumeChanged', setVolume);
     wf.on('rateChanged', (newRate) => {
-      if (newRate !== rate) {
-        options?.onRateChange?.(newRate);
-        setRate(newRate);
-      }
+      options?.onRateChange?.(newRate);
+      setRate(newRate);
     });
     wf.on('layersUpdated', (layers) => {
       const layersArray = [];

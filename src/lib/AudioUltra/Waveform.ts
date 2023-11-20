@@ -1,6 +1,8 @@
 import { Events } from './Common/Events';
 import { MediaLoader } from './Media/MediaLoader';
 import { Player } from './Controls/Player';
+import { Html5Player } from './Controls/Html5Player';
+import { WebAudioPlayer } from './Controls/WebAudioPlayer';
 import { Tooltip, TooltipOptions } from './Tooltip/Tooltip';
 import { Cursor, CursorOptions, CursorSymbol } from './Cursor/Cursor';
 import { RegionGlobalEvents, RegionOptions } from './Regions/Region';
@@ -24,6 +26,12 @@ export interface WaveformOptions {
    * @default 110
    * */
   height?: number;
+
+  /**
+   * Height of a single waveform per channel.
+   * @default 30
+   * */
+  waveHeight?: number;
 
   /**
    * Zoom factor. 1 – no zoom
@@ -65,6 +73,16 @@ export interface WaveformOptions {
    * Show channels separately
    * */
   splitChannels?: boolean;
+
+  /**
+   * Decoder used to decode the audio to waveform data.
+   */
+  decoderType?: 'webaudio' | 'ffmpeg';
+
+  /**
+   * Player used to play the audio data.
+   */
+  playerType?: 'html5' | 'webaudio';
 
   /**
    * Center the view to the cursor when zoomin
@@ -143,20 +161,21 @@ export interface WaveformOptions {
   };
 }
 interface WaveformEventTypes extends RegionsGlobalEvents, RegionGlobalEvents {
-  'load': () => void;
-  'resize': (wf: Waveform, width: number, height: number) => void;
-  'pause': () => void;
-  'play': () => void;
-  'playing': (currentTime: number) => void;
-  'seek': (currentTime: number) => void;
-  'playend': () => void;
-  'zoom': (zoom: number) => void;
-  'muted': (muted: boolean) => void;
-  'volumeChanged': (value: number) => void;
-  'rateChanged': (value: number) => void;
-  'durationChanged': (duration: number) => void;
-  'scroll': (scroll: number) => void;
-  'layersUpdated': (layers: Map<string, Layer>) => void;
+  load: () => void;
+  error: (error: Error) => void;
+  resize: (wf: Waveform, width: number, height: number) => void;
+  pause: () => void;
+  play: () => void;
+  playing: (currentTime: number) => void;
+  seek: (currentTime: number) => void;
+  playend: () => void;
+  zoom: (zoom: number) => void;
+  muted: (muted: boolean) => void;
+  volumeChanged: (value: number) => void;
+  rateChanged: (value: number) => void;
+  durationChanged: (duration: number) => void;
+  scroll: (scroll: number) => void;
+  layersUpdated: (layers: Map<string, Layer>) => void;
 }
 
 export class Waveform extends Events<WaveformEventTypes> {
@@ -182,6 +201,11 @@ export class Waveform extends Events<WaveformEventTypes> {
       params.timeline = { placement: 'top' };
     }
 
+    params.decoderType = params.decoderType ?? 'webaudio';
+    // Need to restrict ffmpeg to html5 player as it doesn't support webaudio
+    // because of chunked decoding raw Float32Arrays and no AudioBuffer support
+    params.playerType = params.decoderType === 'ffmpeg' ? 'html5' : params.playerType ?? 'html5';
+
     this.src = params.src;
     this.params = params;
 
@@ -195,12 +219,15 @@ export class Waveform extends Events<WaveformEventTypes> {
 
     this.tooltip = new Tooltip(this.params?.tooltip);
     this.visualizer = new Visualizer(this.params, this);
-    this.cursor = new Cursor({
-      x: 0,
-      y: 0,
-      width: this.params?.cursorWidth ?? 1,
-      ...this.params?.cursor,
-    }, this.visualizer);
+    this.cursor = new Cursor(
+      {
+        x: 0,
+        y: 0,
+        width: this.params?.cursorWidth ?? 1,
+        ...this.params?.cursor,
+      },
+      this.visualizer,
+    );
     this.timeline = new Timeline(
       {
         gridColor: this.params.gridColor,
@@ -210,13 +237,17 @@ export class Waveform extends Events<WaveformEventTypes> {
       this,
       this.visualizer,
     );
-    this.regions = new Regions({
-      ...this.params?.regions,
-    }, this, this.visualizer);
+    this.regions = new Regions(
+      {
+        ...this.params?.regions,
+      },
+      this,
+      this.visualizer,
+    );
 
     this.autoPlayNewSegments = this.params.autoPlayNewSegments ?? this.autoPlayNewSegments;
 
-    this.player = new Player(this);
+    this.player = this.params.playerType === 'html5' ? new Html5Player(this) : new WebAudioPlayer(this);
 
     this.initEvents();
 
@@ -257,6 +288,15 @@ export class Waveform extends Events<WaveformEventTypes> {
 
     // Initialize the visualizer and player
     if (audio) {
+      // Draw the timeline once the audio is decoded.
+      // This is only required for webaudio as it requires the entire file to be decoded
+      // to render the timline with the correct duration.
+      if (this.params.playerType === 'webaudio') {
+        this.media.duration = audio.duration;
+        this.renderTimeline();
+        this.visualizer.draw(true);
+      }
+
       this.player.init(audio);
       this.visualizer.init(audio);
       this.loaded = true;
@@ -289,11 +329,11 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   scrollToRegion(time: number) {
-    if(this.zoom === 1) return;
+    if (this.zoom === 1) return;
 
-    const offset = (this.visualizer.width / 2) / this.visualizer.zoomedWidth;
+    const offset = this.visualizer.width / 2 / this.visualizer.zoomedWidth;
 
-    const scrollLeft = clamp((time / this.duration) - offset, 0, 1);
+    const scrollLeft = clamp(time / this.duration - offset, 0, 1);
 
     this.visualizer.setScrollLeft(scrollLeft, true, true);
     this.invoke('scroll', [scrollLeft]);
@@ -334,8 +374,9 @@ export class Waveform extends Events<WaveformEventTypes> {
     this.visualizer.setDecodingProgress(chunk, total);
   }
 
-  setError(error: string) {
-    this.visualizer.setError(error);
+  setError(errorMessage: string, error?: Error) {
+    this.invoke('error', [error || new Error(errorMessage)]);
+    this.visualizer.setError(errorMessage);
   }
 
   /**
@@ -361,6 +402,10 @@ export class Waveform extends Events<WaveformEventTypes> {
     super.destroy(); // Events -> Destructable
   }
 
+  addRegions(regions: RegionOptions[], render = true) {
+    this.regions.addRegions(regions, render);
+  }
+
   addRegion(options: RegionOptions, render = true) {
     return this.regions.addRegion(options, render);
   }
@@ -369,7 +414,7 @@ export class Waveform extends Events<WaveformEventTypes> {
     return this.regions.updateRegion(options, render);
   }
 
-  updateLabelVisibility(visible: boolean){
+  updateLabelVisibility(visible: boolean) {
     this.regions.updateLabelVisibility(visible);
   }
 
@@ -432,12 +477,12 @@ export class Waveform extends Events<WaveformEventTypes> {
    * @default 1
    */
   get scroll() {
-    return (this.duration * this.visualizer.getScrollLeft()) / this.zoom * 1000;
+    return ((this.duration * this.visualizer.getScrollLeft()) / this.zoom) * 1000;
   }
 
   set scroll(time: number) {
-    const scrollLeft = time / this.duration * this.zoom;
-    
+    const scrollLeft = (time / this.duration) * this.zoom;
+
     this.visualizer.setScrollLeft(scrollLeft);
     this.invoke('scroll', [scrollLeft]);
   }
@@ -462,7 +507,15 @@ export class Waveform extends Events<WaveformEventTypes> {
   }
 
   set currentTime(value: number) {
-    this.player.seek(value);
+    this.setCurrentTime(value, true);
+  }
+
+  setCurrentTime(value: number, notify = false) {
+    if (notify) {
+      this.player.seek(value);
+    } else {
+      this.player.seekSilent(value);
+    }
   }
 
   /**
@@ -505,17 +558,17 @@ export class Waveform extends Events<WaveformEventTypes> {
     if (e.target && this.visualizer.container.contains(e.target as Node)) {
       if (this.loaded && this.cursor.inView) {
         if (this.focusTimeout) clearTimeout(this.focusTimeout);
-  
+
         this.focusTimeout = setTimeout(() => {
           if (!this.cursor.hasFocus()) {
             this.cursor.set(CursorSymbol.crosshair);
           }
         }, 1);
-  
+
         const cursorTime = getCursorTime(e, this.visualizer, this.duration);
         const timeDate = new Date(cursorTime * 1000);
         const onlyTime = timeDate.toISOString().match(/T(.*?)Z/)?.[1];
-  
+
         this.tooltip.show(e.pageX, e.pageY + 16, onlyTime);
       } else {
         this.cursor.set(CursorSymbol.default);

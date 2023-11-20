@@ -10,7 +10,7 @@ const getMinIndex = (element?: HTMLElement) => {
   if (element) {
     let parent = element.parentElement;
 
-    while(parent) {
+    while (parent) {
       const parentIndex = parseInt(getComputedStyle(parent).zIndex);
 
       if (!isNaN(parentIndex)) {
@@ -28,6 +28,7 @@ interface DropdownTriggerProps extends DropdownProps {
   tag?: string;
   dropdown?: RefObject<JSX.Element>;
   content?: JSX.Element;
+  dataTestId?: string;
   toggle?: boolean;
   closeOnClickOutside?: boolean;
   disabled?: boolean;
@@ -42,7 +43,7 @@ export const DropdownTrigger = forwardRef<DropdownRef, DropdownTriggerProps>(({
   closeOnClickOutside = true,
   disabled = false,
   ...props
-}, ref ) => {
+}, ref) => {
   const dropdownRef = (ref ?? useRef<DropdownRef>()) as RefObject<DropdownRef>;
   const triggerEL = Children.only(children);
   const childset = useRef(new Set<DropdownContextValue>());

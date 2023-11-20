@@ -51,13 +51,6 @@ const _Tool = types
         return DEFAULT_DIMENSIONS.polygon;
       },
 
-      moreRegionParams(obj) {
-        return {
-          x: obj.value.points[0][0],
-          y: obj.value.points[0][1],
-        };
-      },
-
       createRegionOptions({ x, y }) {
         return Super.createRegionOptions({
           points: [[x, y]],
@@ -120,13 +113,15 @@ const _Tool = types
       },
 
       startDrawing(x, y) {
+        const point = self.control?.getSnappedPoint({ x, y });
+
         if (isFF(FF_DEV_2432)) {
           self.mode = 'drawing';
-          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }), true);
+          self.currentArea = self.createRegion(self.createRegionOptions({ x: point.x, y: point.y }), true);
           self.setDrawing(true);
           self.applyActiveStates(self.currentArea);
         } else {
-          Super.startDrawing(x, y);
+          Super.startDrawing(point.x, point.y);
         }
       },
 

@@ -1,4 +1,3 @@
-/* global Feature, Scenario, locate */
 const { initLabelStudio } = require('./helpers');
 const assert = require('assert');
 
@@ -198,15 +197,11 @@ Object.entries(scenarios).forEach(([title, scenario]) =>
     scenario.assert(I);
   }));
 
-Scenario('TimeSeries with optimized data', async ({ I, LabelStudio, ErrorsCollector, AtTimeSeries }) => {
+Scenario('TimeSeries with optimized data', async ({ I, LabelStudio, AtTimeSeries }) => {
   async function doNotSeeProblems() {
     await I.wait(2);
     I.seeElement('.htx-timeseries');
-    const errors = await ErrorsCollector.grabErrors();
-
-    if (errors.length) {
-      assert.fail(`Got an error: ${errors[0]}`);
-    }
+    // The potential errors should be caught by `errorsCollector` plugin
 
     const counters = await I.executeScript(() => {
       return {
@@ -226,11 +221,10 @@ Scenario('TimeSeries with optimized data', async ({ I, LabelStudio, ErrorsCollec
   }
 
   I.amOnPage('/');
-  await ErrorsCollector.run();
 
   const SLICES_COUNT = 10;
   const BAD_MULTIPLIER = 1.9;
-  const screenWidth = await I.executeScript(()=>{
+  const screenWidth = await I.executeScript(() => {
     return window.screen.width * window.devicePixelRatio;
   });
   const stepsToGenerate = screenWidth * SLICES_COUNT * BAD_MULTIPLIER;
@@ -274,4 +268,26 @@ Scenario('TimeSeries with optimized data', async ({ I, LabelStudio, ErrorsCollec
   await doNotSeeProblems();
   await AtTimeSeries.selectOverviewRange(.9, .8999);
   await doNotSeeProblems();
+
+  I.say('check that every timestamps from timeseries data is available to display');
+  await AtTimeSeries.selectOverviewRange(.001, .000);
+  for (let i = 0; i < 20; i++) {
+    await AtTimeSeries.zoomByMouse(-100, { x: .001 });
+  }
+
+  let lastTimestamp;
+
+  for (let i = 0; i < 15;i++) {
+    AtTimeSeries.moveMouseOverChannel({ x: .01 + .025 * i });
+    const timestamp = await AtTimeSeries.grabStickTime();
+
+    if (lastTimestamp !== undefined) {
+      I.say(`I see ${timestamp}`);
+    
+      assert(timestamp === lastTimestamp || timestamp - lastTimestamp === 1,
+        `Timestamps should not be skipped. Got ${lastTimestamp} and ${timestamp} but ${timestamp -  1} is missed`);
+    }
+    lastTimestamp = timestamp;
+  }
+
 });

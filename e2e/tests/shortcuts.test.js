@@ -1,5 +1,3 @@
-/* global Feature, DataTable, Data, locate, locate */
-
 Feature('Shortcuts functional');
 
 const createConfig = ({ rows = '1' }) => {
@@ -10,7 +8,7 @@ const createConfig = ({ rows = '1' }) => {
     <Shortcut alias="[!]" value="!" hotkey="3" />
     <Shortcut alias="[make a ninja]" value="‍👤" hotkey="4" />
   </TextArea>
-  <AudioPlus name="audio" value="$audio"/>
+  <Audio name="audio" value="$audio"/>
   <Labels name="labels" toName="audio" allowempty="true">
     <Label value="Label1"/>
     <Label value="Label2"/>
@@ -162,7 +160,7 @@ Data(configParams).Scenario('Should work with existent regions.', async ({ I, La
   AtSidebar.seeRegions(1);
 
   // Start editing
-  I.click('[aria-label="edit"]');
+  I.click('[aria-label="Edit Region"]');
 
   // Try to use shortcuts
   // A B|
@@ -285,7 +283,7 @@ Data(configParams).Scenario('Should work with existent regions.', async ({ I, La
     I.pressKey(['Shift', 'Enter']);
 
     I.say('Check that shortcuts still work in the edit mode');
-    I.click('[aria-label="edit"]');
+    I.click('[aria-label="Edit Region"]');
     I.click(locate('.ant-tag').withText('Shortcut'));
     I.waitForValue('[name^="comment:"]', 'ShortcutShortcut');
 

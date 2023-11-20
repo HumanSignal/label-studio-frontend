@@ -1,5 +1,3 @@
-/* global Feature, DataTable, Data */
-
 Feature('Max usage');
 
 const IMAGE = 'https://user.fm/files/v2-901310d5cb3fa90e0616ca10590bacb3/spacexmoon-800x501.jpg';
@@ -129,7 +127,7 @@ Data(maxUsageImageToolsDataTable).Scenario('Max usages of separated labels in Im
       'value': {
         'x': k,
         'y': 1,
-        'width':0.6666666666666666,
+        'width': 0.6666666666666666,
         'labels': [
           'Label_1',
         ],
@@ -213,7 +211,7 @@ Data(maxUsageDataTable).Scenario('Max usages of labels in Audio on region creati
     <Label value="Label_0" />
     <Label value="Label_1" hotkey="1"/>
   </Labels>
-  <AudioPlus name="audio" value="$audio" />
+  <Audio name="audio" value="$audio" />
 </View>`,
     data: {
       audio: 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/audio/barradeen-emotional.mp3',
@@ -226,11 +224,11 @@ Data(maxUsageDataTable).Scenario('Max usages of labels in Audio on region creati
 
   for (let k = 0; k < maxUsage; k++) {
     I.pressKey('1');
-    AtAudioView.dragAudioRegion(10 + 40 * k,30);
+    AtAudioView.dragAudioElement(10 + 40 * k,30);
     I.pressKey('u');
   }
   I.pressKey('1');
-  AtAudioView.dragAudioRegion(10 + 40 * maxUsage,30);
+  AtAudioView.dragAudioElement(10 + 40 * maxUsage,30);
 
   AtSidebar.seeRegions(maxUsage);
   I.see(`You can't use Label_1 more than ${maxUsage} time(s)`);
@@ -295,11 +293,11 @@ Data(maxUsageDataTable).Scenario('Max usages of labels in Paragraphs on region c
 
   for (let k = 0; k < maxUsage; k++) {
     I.pressKey('1');
-    AtParagraphs.selectTextByOffset(k+1, 0, 3);
+    AtParagraphs.selectTextByOffset(k + 1, 0, 3);
     I.pressKey('u');
   }
   I.pressKey('1');
-  AtParagraphs.selectTextByOffset(maxUsage+1, 0, 3);
+  AtParagraphs.selectTextByOffset(maxUsage + 1, 0, 3);
 
   I.see(`You can't use Label_1 more than ${maxUsage} time(s)`);
 });

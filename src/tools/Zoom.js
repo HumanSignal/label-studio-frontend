@@ -89,7 +89,7 @@ const _Tool = types
     },
 
     updateCursor() {
-      if (!self.selected || !self.obj.stageRef) return;
+      if (!self.selected || !self.obj?.stageRef) return;
 
       self.stageContainer.style.cursor = 'grab';
     },

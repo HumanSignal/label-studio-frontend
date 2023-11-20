@@ -3,38 +3,115 @@ import { WaveformAudio } from '../Media/WaveformAudio';
 import { clamp } from '../Common/Utils';
 import { Waveform } from '../Waveform';
 
-export class Player extends Destructable {
-  private audio?: WaveformAudio;
-  private wf: Waveform;
-  private timer!: number;
-  private loop:  {start: number, end: number}|null = null;
-  private timestamp = 0;
-  private time = 0;
-  private connected = false;
-  private bufferPromise?: Promise<void>;
-  private bufferResolve?: () => void;
-  private ended = false;
-  private _rate = 1;
+export abstract class Player extends Destructable {
+  protected audio?: WaveformAudio;
+  protected wf: Waveform;
+  protected timer!: number;
+  protected loop: { start: number, end: number } | null = null;
+  protected timestamp = 0;
+  protected time = 0;
+  protected connected = false;
+  protected bufferPromise?: Promise<void>;
+  protected bufferResolve?: () => void;
+  protected ended = false;
+  protected _rate = 1;
+  protected _volume = 1;
+  protected _savedVolume = 1;
 
   playing = false;
+  hasPlayed = false;
 
   constructor(wf: Waveform) {
     super();
 
     this.wf = wf;
     this._rate = wf.params.rate ?? this._rate;
+    this.volume = wf.params.volume ?? this._volume;
+    this._savedVolume = this.volume;
+    if (wf.params.muted) {
+      this.muted = true;
+    }
+  }
+
+  get currentTime() {
+    return this.time;
+  }
+
+  protected set currentTime(value: number) {
+    this.ended = false;
+    this.setCurrentTime(value, true);
+  }
+
+  setCurrentTime(value: number, notify = false) {
+    const timeChanged = this.time !== value;
+
+    this.time = value;
+
+    this.updateCurrentSourceTime(timeChanged);
+
+    if (notify && timeChanged) {
+      this.wf.invoke('seek', [this.time]);
+    }
+  }
+
+  protected abstract updateCurrentSourceTime(timeChanged: boolean): void;
+
+  protected canPause() {
+    return this.hasPlayed;
+  }
+
+  get volume() {
+    return this._volume ?? 1;
+  }
+
+  set volume(value: number) {
+    const volumeChanged = this.volume !== value;
+
+    if (volumeChanged) {
+      if (value === 0) {
+        this.muted = true;
+      } else if (this.muted) {
+        this.muted = false;
+      } else {
+        this._volume = value;
+      }
+      this.adjustVolume();
+
+      this.wf.invoke('volumeChanged', [this.volume]);
+    }
+  }
+
+  protected abstract adjustVolume(): void;
+
+  get muted() {
+    return this._volume === 0 ;
+  }
+
+  set muted(muted: boolean) {
+    if (this.muted === muted) return;
+
+    if (muted) {
+      this.mute();
+    } else {
+      this.unmute();
+    }
+
+    this.wf.invoke('muted', [this.muted]);
+  }
+
+  mute() {
+    this._savedVolume = this.volume || 1;
+    this._volume = 0;
+  }
+
+  unmute() {
+    this._volume = this._savedVolume || 1; // 1 is the default volume, if manually muted this will be 0 and we want to restore to 1
   }
 
   /**
    * Get current playback speed
    */
   get rate() {
-    if (this.audio) {
-      if (this.audio.speed !== this._rate) {
-        this.audio.speed = this._rate; // restore the correct rate
-      }
-    }
-
     return this._rate;
   }
 
@@ -46,73 +123,13 @@ export class Player extends Destructable {
 
     this._rate = value;
 
-    if (this.audio) {
-      this.audio.speed = value;
-
-      if (rateChanged) {
-        this.wf.invoke('rateChanged', [value]);
-      }
+    if (rateChanged) {
+      this.wf.invoke('rateChanged', [value]);
     }
   }
 
   get duration() {
     return this.audio?.duration ?? 0;
-  }
-
-  get volume() {
-    return this.audio?.volume ?? 1;
-  }
-
-  set volume(value: number) {
-    if (this.audio) {
-
-      const volumeChanged = this.volume !== value;
-
-      if (volumeChanged) {
-        if (value === 0) {
-          this.muted = true;
-        } else if(this.muted) {
-          this.muted = false;
-        } else {
-          this.audio.volume = value;
-        }
-
-        this.wf.invoke('volumeChanged', [this.volume]);
-      }
-    }
-  }
-
-  get currentTime() {
-    return this.time;
-  }
-
-  private set currentTime(value: number) {
-    this.ended = false;
-    this.setCurrentTime(value, true);
-  }
-
-  setCurrentTime(value: number, notify = false) {
-    this.time = value;
-    if (notify) {
-      this.wf.invoke('seek', [this.time]);
-    }
-  }
-
-  get muted() {
-    return this.audio?.muted ?? false;
-  }
-
-  set muted(muted: boolean) {
-    if (!this.audio) return;
-    if (this.muted === muted) return;
-
-    if (muted) {
-      this.audio.mute();
-    } else {
-      this.audio.unmute();
-    }
-
-    this.wf.invoke('muted', [this.audio.muted]);
   }
 
   init(audio: WaveformAudio) {
@@ -130,6 +147,17 @@ export class Player extends Destructable {
     }
   }
 
+  seekSilent(time: number) {
+    const newTime = clamp(time, 0, this.duration);
+
+    this.ended = false;
+    this.setCurrentTime(newTime);
+
+    if (this.playing) {
+      this.updatePlayback();
+    }
+  }
+
   play(from?: number, to?: number) {
     if (this.isDestroyed || this.playing || !this.audio) return;
     if (this.ended) {
@@ -140,12 +168,20 @@ export class Player extends Destructable {
     this.playRange(start, end);
   }
 
-  handleEnded = () => {
+  protected handlePlayed = () => {
+    this.hasPlayed = true;
+  };
+
+  protected handlePaused = () => {
+    this.hasPlayed = false;
+  };
+
+  protected handleEnded = () => {
     if (this.loop) return;
     this.updateCurrentTime(true);
   };
 
-  handleCanPlay = () => {
+  protected handleCanPlay = () => {
     this.bufferResolve?.();
   };
 
@@ -181,13 +217,13 @@ export class Player extends Destructable {
     super.destroy();
   }
 
-  private updatePlayback() {
+  protected updatePlayback() {
     const { start, end } = this.playSelection();
 
     this.playSource(start, end);
   }
 
-  private playRange(start?: number, end?: number) {
+  protected playRange(start?: number, end?: number) {
     if (start) {
       this.currentTime = start;
     }
@@ -195,9 +231,8 @@ export class Player extends Destructable {
     this.wf.invoke('play');
   }
 
-  private playSource(start?: number, duration?: number) {
+  protected playSource(start?: number, duration?: number) {
     this.stopWatch();
-    this.timestamp = performance.now();
     this.connectSource();
 
     if (!this.audio) return;
@@ -213,29 +248,12 @@ export class Player extends Destructable {
       start = clamp(this.loop.start, 0, duration);
     }
 
-    if (this.audio.el) {
-      this.audio.el.currentTime = this.currentTime;
-      this.audio.el.addEventListener('ended', this.handleEnded);
-      this.bufferPromise = new Promise(resolve => {
-        this.bufferResolve = resolve;
-      });
-
-      const promise = this.audio.el.play();
-
-      // Ensure that the audio can play before invoking the timer updates
-      promise.then(() => {
-        if (this.bufferPromise) {
-          this.bufferPromise.then(() => {
-            this.watch();
-          });
-        } else {
-          this.watch();
-        }
-      });
-    }
+    this.playAudio(start, duration);
   }
 
-  private playSelection(from?: number, to?: number) {
+  protected abstract playAudio(start?: number, duration?: number): void;
+
+  protected playSelection(from?: number, to?: number) {
     const selected = this.wf.regions.selected;
 
     const looping = selected.length > 0;
@@ -252,38 +270,45 @@ export class Player extends Destructable {
         start,
         end: regionsEnd,
       };
-    } 
+    }
     const start = from ?? this.currentTime;
-    const end = to !== undefined ? (to - start) : undefined;
+    const end = to !== undefined ? to - start : undefined;
 
     return { start, end };
   }
 
-  private connectSource() {
+  protected connectSource() {
     if (this.isDestroyed || !this.audio || this.connected) return;
     this.connected = true;
-    this.audio.disconnect();
+
+    // Control pausing playback with checks to whether the audio has been asynchronously played already
+    // This is to prevent DomException: The play() request was interrupted by a call to pause()
+    if (this.canPause()) {
+      this.audio.disconnect();
+    }
   }
 
-  private disconnectSource() {
-    if (this.isDestroyed || !this.audio || !this.connected) return;
+  protected disconnectSource(): boolean {
+    if (this.isDestroyed || !this.audio || !this.connected) return false;
     this.connected = false;
 
-    if (this.audio.el) {
-      this.audio.el.removeEventListener('ended', this.handleEnded);
+    // Control pausing playback with checks to whether the audio has been asynchronously played already
+    // This is to prevent DomException: The play() request was interrupted by a call to pause()
+    if (this.canPause()) {
+      this.audio.disconnect();
     }
-    this.audio.disconnect();
+
+    return true;
   }
 
-  private cleanupSource() {
+  protected cleanupSource() {
     if (this.isDestroyed || !this.audio) return;
     this.disconnectSource();
     this.audio.destroy();
     delete this.audio;
   }
 
-
-  private watch = () => {
+  protected watch = () => {
     if (!this.playing) return;
 
     this.updateCurrentTime();
@@ -292,7 +317,7 @@ export class Player extends Destructable {
     this.timer = requestAnimationFrame(this.watch);
   };
 
-  private updateLoop(time: number) {
+  protected updateLoop(time: number) {
     if (this.isDestroyed || !this.loop) return;
     if (time >= this.loop.end) {
       this.currentTime = this.loop.start;
@@ -301,7 +326,7 @@ export class Player extends Destructable {
     }
   }
 
-  private updateCurrentTime(forceEnd = false) {
+  protected updateCurrentTime(forceEnd = false) {
     const now = performance.now();
     const tick = ((now - this.timestamp) / 1000) * this.rate;
 
@@ -309,7 +334,7 @@ export class Player extends Destructable {
 
     const end = this.loop?.end ?? this.duration;
 
-    const newTime = forceEnd ? this.duration : clamp(this.time + tick, 0, end); 
+    const newTime = forceEnd ? this.duration : clamp(this.time + tick, 0, end);
 
     this.time = newTime;
 
@@ -322,7 +347,7 @@ export class Player extends Destructable {
     }
   }
 
-  private stopWatch() {
+  protected stopWatch() {
     cancelAnimationFrame(this.timer);
   }
 }

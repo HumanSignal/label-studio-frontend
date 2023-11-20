@@ -1,5 +1,3 @@
-/* global inject */
-
 const { I } = inject();
 const Helpers = require('../tests/helpers');
 
@@ -35,8 +33,20 @@ module.exports = {
     I.executeScript(Helpers.clearModalIfPresent);
   },
 
-  waitForObjectsReady() {
-    I.executeScript(Helpers.waitForObjectsReady);
+  async waitForObjectsReady() {
+    await I.executeScript(Helpers.waitForObjectsReady);
+  },
+
+  async resultsNotChanged(result, fractionDigits = 2) {
+    const serialized = (await this.serialize());
+
+    I.assertDeepEqualWithTolerance(result, serialized, fractionDigits, 'Results must be equal');
+  },
+
+  async resultsChanged(result, fractionDigits = 2) {
+    const serialized = (await this.serialize());
+
+    I.assertNotDeepEqualWithTolerance(result, serialized, fractionDigits, 'Results must be different');
   },
 
   async grabUserLabels() {
@@ -53,5 +63,27 @@ module.exports = {
     return I.executeScript((userLabels) => {
       window.Htx.userLabels?.init(userLabels);
     }, userLabels);
+  },
+
+  enableSetting(settingName) {
+    I.say('Attempting to open settings menu'); 
+    I.click('[aria-label=Settings]');
+    I.see('Settings');
+    I.say('Attempt to enable setting');
+    I.click(settingName);
+    I.seeCheckboxIsChecked(settingName);
+    I.click('[aria-label=Close]');
+    I.dontSee('Settings');
+  },
+
+  disableSetting(settingName) {
+    I.say('Attempting to open settings menu'); 
+    I.click('[aria-label=Settings]');
+    I.see('Settings');
+    I.say('Attempt to disable setting');
+    I.click(settingName);
+    I.seeCheckboxIsChecked(settingName);
+    I.click('[aria-label=Close]');
+    I.dontSee('Settings');
   },
 };

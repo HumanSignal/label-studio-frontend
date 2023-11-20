@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Select } from 'antd';
+import { Select } from 'antd';
 import { observer } from 'mobx-react';
 import { types } from 'mobx-state-tree';
 
@@ -19,16 +19,25 @@ import './Choices/Choises.styl';
 
 import './Choice';
 import DynamicChildrenMixin from '../../mixins/DynamicChildrenMixin';
-import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from '../../utils/feature-flags';
+import { FF_LSDV_4583, isFF } from '../../utils/feature-flags';
+import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
+import SelectedChoiceMixin from '../../mixins/SelectedChoiceMixin';
+import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
+import ClassificationBase from './ClassificationBase';
+import PerItemMixin from '../../mixins/PerItem';
+import Infomodal from '../../components/Infomodal/Infomodal';
 
 const { Option } = Select;
 
 /**
  * The `Choices` tag is used to create a group of choices, with radio buttons or checkboxes. It can be used for single or multi-class classification. Also, it is used for advanced classification tasks where annotators can choose one or multiple answers.
  *
- * Choices can have dynamic value to load labels from task. This task data should contain a list of options to create underlying <Choice>s. All the parameters from options will be transferred to corresponding tags.
+ * Choices can have dynamic value to load labels from task. This task data should contain a list of options to create underlying `<Choice>`s. All the parameters from options will be transferred to corresponding tags.
  *
  * The `Choices` tag can be used with any data types.
+ *
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality.
+ *
  * @example
  * <!--Basic text classification labeling configuration-->
  * <View>
@@ -42,6 +51,10 @@ const { Option } = Select;
  * </View>
  *
  * @example <caption>This config with dynamic labels</caption>
+ * <!--
+ *   `Choice`s can be loaded dynamically from task data. It should be an array of objects with attributes.
+ *   `html` can be used to show enriched content, it has higher priority than `value`, however `value` will be used in the exported result.
+ * -->
  * <View>
  *   <Audio name="audio" value="$audio" />
  *   <Choices name="transcription" toName="audio" value="$variants" />
@@ -49,13 +62,14 @@ const { Option } = Select;
  * <!-- {
  *   "data": {
  *     "variants": [
- *       { "value": "Do or doughnut. There is no try." },
- *       { "value": "Do or do not. There is no trial." },
+ *       { "value": "Do or doughnut. There is no try.", "html": "<img src='https://labelstud.io/images/logo.png'>" },
+ *       { "value": "Do or do not. There is no trial.", "html": "<h1>You can use hypertext here</h2>" },
  *       { "value": "Do or do not. There is no try." },
  *       { "value": "Duo do not. There is no try." }
  *     ]
  *   }
  * } -->
+ * 
  * @example <caption>is equivalent to this config</caption>
  * <View>
  *   <Audio name="audio" value="$audio" />
@@ -75,25 +89,21 @@ const { Option } = Select;
  * @param {boolean} [showInline=false] - Show choices in the same visual line
  * @param {boolean} [required=false]   - Validate whether a choice has been selected
  * @param {string} [requiredMessage]   - Show a message if validation fails
- * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] - Control visibility of the choices.
+ * @param {region-selected|no-region-selected|choice-selected|choice-unselected} [visibleWhen] - Control visibility of the choices. Can also be used with `when*` attributes below to narrow down visibility
  * @param {string} [whenTagName]       - Use with visibleWhen. Narrow down visibility by name of the tag. For regions, use the name of the object tag, for choices, use the name of the choices tag
- * @param {string} [whenLabelValue]    - Narrow down visibility by label value
- * @param {string} [whenChoiceValue]   - Narrow down visibility by choice value
+ * @param {string} [whenLabelValue]    - Use with visibleWhen="region-selected". Narrow down visibility by label value
+ * @param {string} [whenChoiceValue]   - Use with visibleWhen ("choice-selected" or "choice-unselected") and whenTagName, both are required. Narrow down visibility by choice value
  * @param {boolean} [perRegion]        - Use this tag to select a choice for a specific region instead of the entire task
+ * @param {boolean} [perItem]          - Use this tag to select a choice for a specific item inside the object instead of the whole object[^FF_LSDV_4583]
  * @param {string} [value]             - Task data field containing a list of dynamically loaded choices (see example below)
  * @param {boolean} [allowNested]      - Allow to use `children` field in dynamic choices to nest them. Submitted result will contain array of arrays, every item is a list of values from topmost parent choice down to selected one.
  */
 const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
-
   showinline: types.maybeNull(types.boolean),
-
   choice: types.optional(types.enumeration(['single', 'single-radio', 'multiple']), 'single'),
-
   layout: types.optional(types.enumeration(['select', 'inline', 'vertical']), 'vertical'),
-
-  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, '') } : {}),
-
+  value: types.optional(types.string, ''),
   allownested: types.optional(types.boolean, false),
 });
 
@@ -101,7 +111,6 @@ const Model = types
   .model({
     pid: types.optional(types.string, guidGenerator),
 
-    readonly: types.optional(types.boolean, false),
     visible: types.optional(types.boolean, true),
 
     type: 'choices',
@@ -122,17 +131,6 @@ const Model = types
       if (choices && choices.length) return { choices };
 
       return null;
-    },
-
-    get result() {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
-
-        if (!area) return null;
-
-        return self.annotation.results.find(r => r.from_name === self && r.area === area);
-      }
-      return self.annotation.results.find(r => r.from_name === self);
     },
 
     get preselectedValues() {
@@ -183,12 +181,6 @@ const Model = types
       InfoModal.warning(self.requiredmessage || `Checkbox "${self.name}" is required.`);
     },
 
-    copyState(choices) {
-      choices.selectedValues().forEach(l => {
-        self.findLabel(l).setSelected(true);
-      });
-    },
-
     // this is not labels, unselect affects result, so don't unselect on random reason
     unselectAll() {},
 
@@ -202,81 +194,61 @@ const Model = types
     },
 
     setResult(values) {
-      self.tiedChildren.forEach(choice => choice.setSelected(
-        !choice.isSkipped && values?.some?.((value) => {
-          if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
-            return value.length === choice.resultValue.length && value.every?.((val, idx) => val === choice.resultValue?.[idx]);
-          } else {
-            return value === choice.resultValue;
-          }
-        }),
-      ));
-    },
+      self.tiedChildren.forEach(choice => {
+        let isSelected = false;
 
-    // update result in the store with current selected choices
-    updateResult() {
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          self.annotation.createResult({}, { choices: self.selectedValues() }, self, self.toname);
+        if (!choice.isSkipped) {
+          isSelected = values?.some?.((value) => {
+            if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
+              if (value.length !== choice.resultValue.length) return false;
+              return value.every?.((val, idx) => val === choice.resultValue?.[idx]);
+            } else {
+              return value === choice.resultValue;
+            }
+          });
         }
-      }
-    },
 
-    toStateJSON() {
-      const names = self.selectedValues();
-
-      if (names && names.length) {
-        const toname = self.toname || self.name;
-
-        return {
-          id: self.pid,
-          from_name: self.name,
-          to_name: toname,
-          type: self.type,
-          value: {
-            choices: names,
-          },
-        };
-      }
-    },
-
-    fromStateJSON(obj) {
-      self.unselectAll();
-
-      if (!obj.value.choices) throw new Error('No labels param');
-
-      if (obj.id) self.pid = obj.id;
-
-      self.readonly = obj.readonly;
-
-      obj.value.choices.forEach(l => {
-        const choice = self.findLabel(l);
-
-        if (!choice) throw new Error('No label ' + l);
-
-        choice.setSelected(true);
+        choice.setSelected(isSelected);
       });
     },
-  }));
+  })).actions(self => {
+    const Super = {
+      validate: self.validate,
+    };
+
+    return {
+      validate() {
+        if (!Super.validate() || (self.choice !== 'multiple' && self.checkResultLength() > 1)) return false;
+      },
+
+      checkResultLength() {
+        const _resultFiltered = self.children.filter(c => c._sel);
+
+        return _resultFiltered.length;
+      },
+
+      beforeSend() {
+        if (self.choice !== 'multiple' && self.checkResultLength() > 1)
+          Infomodal.warning(`The number of options selected (${self.checkResultLength()}) exceed the maximum allowed (1). To proceed, first unselect excess options for:\r\n • Choices (${self.name})`);
+      },
+    };
+  });
 
 const ChoicesModel = types.compose(
   'ChoicesModel',
   ControlBase,
-  TagAttrs,
+  ClassificationBase,
   SelectedModelMixin.props({ _child: 'ChoiceModel' }),
   RequiredMixin,
   PerRegionMixin,
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin] : []),
+  ReadOnlyControlMixin,
+  SelectedChoiceMixin,
   VisibilityMixin,
-  ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
-  Model,
+  DynamicChildrenMixin,
   AnnotationMixin,
+  TagAttrs,
+  Model,
 );
 
 const ChoicesSelectLayout = observer(({ item }) => {
@@ -285,6 +257,7 @@ const ChoicesSelectLayout = observer(({ item }) => {
       style={{ width: '100%' }}
       value={item.selectedLabels.map(l => l._value)}
       mode={item.choice === 'multiple' ? 'multiple' : ''}
+      disabled={item.isReadOnly()}
       onChange={function(val) {
         if (Array.isArray(val)) {
           item.resetSelected();
@@ -301,7 +274,9 @@ const ChoicesSelectLayout = observer(({ item }) => {
     >
       {item.tiedChildren.map(i => (
         <Option key={i._value} value={i._value}>
-          {i._value}
+          <HintTooltip title={i.hint} wrapper="div">
+            {i._value}
+          </HintTooltip>
         </Option>
       ))}
     </Select>
@@ -314,9 +289,7 @@ const HtxChoices = observer(({ item }) => {
       {item.layout === 'select' ? (
         <ChoicesSelectLayout item={item} />
       ) : (
-        !isFF(FF_DEV_2007)
-          ? <Form layout={item.layout}>{Tree.renderChildren(item, item.annotation)}</Form>
-          : Tree.renderChildren(item, item.annotation)
+        Tree.renderChildren(item, item.annotation)
       )}
     </Block>
   );

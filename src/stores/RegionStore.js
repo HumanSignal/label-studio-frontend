@@ -53,10 +53,10 @@ const SelectionMap = types.model(
     afterUnselect(region) {
       region.afterUnselectRegion?.();
     },
-    drawingSelect(region){
+    drawingSelect(region) {
       self.drawingSelected.put(region);
     },
-    drawingUnselect(){
+    drawingUnselect() {
       Array.from(self.drawingSelected.values()).forEach(region => {
         self.drawingSelected.delete(region.id);
       });
@@ -69,10 +69,15 @@ const SelectionMap = types.model(
         // @todo some backward compatibility, should be rewritten to state handling
         // @todo but there are some actions should be performed like scroll to region
         self.highlighted.perRegionTags.forEach(tag => tag.updateFromResult?.(undefined));
+        // special case for Taxonomy as labeling tool
+        self.highlighted.labelingTags.forEach(tag => tag.updateFromResult?.(undefined));
         updateResultsFromSelection();
       } else {
         updateResultsFromSelection();
       }
+
+      // hook for side effects after region selected
+      region.object?.afterRegionSelected?.(region);
     },
     _updateResultsFromSelection() {
       self._updateResultsFromRegions(self.selected.values());
@@ -121,7 +126,6 @@ const SelectionMap = types.model(
     highlight(region) {
       self.clear();
       self.select(region);
-      region?.shapeRef?.parent?.canvas?._canvas?.scrollIntoView?.();
     },
   };
 });
@@ -142,6 +146,8 @@ export default types.model('RegionStore', {
     () => window.localStorage.getItem(localStorageKeys.group) ?? 'manual',
   ),
 
+  filter: types.maybeNull(types.array(types.safeReference(AllRegionsType)), null),
+
   view: types.optional(
     types.enumeration(['regions', 'labels']),
     window.localStorage.getItem(localStorageKeys.view) ?? 'regions',
@@ -153,7 +159,7 @@ export default types.model('RegionStore', {
     const regions = [];
     let clickedRegionsFound = 0;
 
-    Tree.traverseTree({ children:tree }, (node) => {
+    Tree.traverseTree({ children: tree }, (node) => {
       if (!node.isArea) return;
       if (node.item === lastClickedItem || node.item === item || clickedRegionsFound === 1) {
         if (node.item) regions.push(node.item);
@@ -192,7 +198,7 @@ export default types.model('RegionStore', {
     };
   };
 
-  return{
+  return {
     get annotation() {
       return getParent(self);
     },
@@ -210,6 +216,10 @@ export default types.model('RegionStore', {
       return Array.from(self.annotation.areas.values()).filter(area => !area.classification);
     },
 
+    get filteredRegions() {
+      return self.filter || self.regions;
+    },
+
     get suggestions() {
       return Array.from(self.annotation.suggestions.values()).filter(area => !area.classification);
     },
@@ -220,8 +230,8 @@ export default types.model('RegionStore', {
 
     get sortedRegions() {
       const sorts = {
-        date: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.ouid - a.ouid : (a, b) => a.ouid - b.ouid),
-        score: isDesc => [...self.regions].sort(isDesc ? (a, b) => b.score - a.score : (a, b) => a.score - b.score),
+        date: isDesc => [...self.filteredRegions].sort(isDesc ? (a, b) => b.ouid - a.ouid : (a, b) => a.ouid - b.ouid),
+        score: isDesc => [...self.filteredRegions].sort(isDesc ? (a, b) => b.score - a.score : (a, b) => a.score - b.score),
       };
 
       const sorted = sorts[self.sort](self.sortOrder === 'desc');
@@ -302,7 +312,7 @@ export default types.model('RegionStore', {
         const groupId = group.id;
         const labelHotKey = getRegionLabel(region)?.[0]?.hotkey;
 
-        if( isFF( FF_DEV_2755 ) ) {
+        if (isFF(FF_DEV_2755)) {
           group.hotkey = labelHotKey;
           group.pos = groupId.slice(0, groupId.indexOf('#'));
         }
@@ -314,7 +324,7 @@ export default types.model('RegionStore', {
       };
       const addRegionsToLabelGroup = (labels, region) => {
         if (labels) {
-          for(const label of labels) {
+          for (const label of labels) {
             addToLabelGroup(`${label.value}#${label.id}`, label, region);
           }
         } else {
@@ -330,7 +340,7 @@ export default types.model('RegionStore', {
 
       const groupsArray = Object.values(groups);
 
-      if( isFF( FF_DEV_2755 ) ) {
+      if (isFF(FF_DEV_2755)) {
         groupsArray.sort((a, b) => a.hotkey > b.hotkey ? 1 : a.hotkey < b.hotkey ? -1 : 0);
       }
       result.push(
@@ -366,7 +376,6 @@ export default types.model('RegionStore', {
           isArea: false,
           children: [],
           isGroup: true,
-          type: region.type,
           entity: region,
         };
       };
@@ -420,9 +429,8 @@ export default types.model('RegionStore', {
   },
 
   setView(view) {
-    if( isFF( FF_DEV_2755 ) ) {
+    if (isFF(FF_DEV_2755)) {
       window.localStorage.setItem(localStorageKeys.view, view);
-      console.log('setView', window.localStorage.getItem(localStorageKeys.view));
     }
     self.view = view;
   },
@@ -444,6 +452,24 @@ export default types.model('RegionStore', {
   setGrouping(group) {
     self.group = group;
     window.localStorage.setItem(localStorageKeys.group, self.group);
+  },
+
+  setFilteredRegions(filter) {
+
+    if (self.regions.length === filter.length) {
+      self.filter = null;
+      self.regions.forEach((region) => region.filtered && region.toggleFiltered());
+    } else {
+      const filteredIds = filter.map((filter) => filter.id);
+      
+      self.filter = filter;
+
+      self.regions.forEach((region) => {
+        if (!region.hideable || (region.hidden && !region.filtered)) return;
+        if (filteredIds.includes(region.id)) region.hidden && region.toggleFiltered();
+        else if (!region.hidden) region.toggleFiltered();
+      });
+    }
   },
 
   /**
@@ -538,7 +564,13 @@ export default types.model('RegionStore', {
       }
     });
   },
-
+  setHiddenByTool(shouldBeHidden, label) {
+    self.regions.forEach(area => {
+      if (area.hidden !== shouldBeHidden && area.type === label.type) {
+        area.toggleHidden();
+      }
+    });
+  },
   setHiddenByLabel(shouldBeHidden, label) {
     self.regions.forEach(area => {
       if (area.hidden !== shouldBeHidden) {
