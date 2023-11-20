@@ -587,6 +587,11 @@ export default observer(
       if (p && p.className === 'Transformer') return;
 
       const handleMouseDown = () => {
+        if (e.evt.button === 1) {
+          // prevent middle click from scrolling page
+          e.evt.preventDefault();
+        }
+
         const isRightElementToCatchToolInteractions = el => {
           // It could be ruler ot segmentation
           if (el.nodeType === 'Group') {
