@@ -188,6 +188,9 @@ const Model = types
       years.push(y);
     }
 
+    // every month should have this day, so current day is bad:
+    // on Oct 30th when you change month to February it resets to March
+    date.setDate(1);
     for (let m = 0; m < 12; m++) {
       date.setMonth(m);
       months[m] = monthName(date);

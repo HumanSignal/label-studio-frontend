@@ -36,18 +36,6 @@ jobs:
         id: "cpu-info"
         run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
 
-      - name: Setup SSH agent
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-          SSH_DIR: /home/runner/.ssh
-        run: |
-          mkdir $SSH_DIR
-          ssh-keyscan github.com >> $SSH_DIR/known_hosts
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > $SSH_DIR/package_rsa
-          chmod 600 $SSH_DIR/package_rsa
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-          ssh-add $SSH_DIR/package_rsa
-
       - name: Upgrade Yarn
         run: npm install -g yarn@1.22
 
@@ -91,8 +79,6 @@ jobs:
 
       - name: "Setup Cypress"
         timeout-minutes: 1
-        env: 
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           set -euo pipefail
           cd ./tests/functional
