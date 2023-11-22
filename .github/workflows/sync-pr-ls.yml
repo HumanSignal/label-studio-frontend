@@ -16,7 +16,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
 
 env:
-  DOWNSTREAM_REPOSITORY: "label-studio-enterprise"
+  DOWNSTREAM_REPOSITORY: "label-studio"
   DOWNSTREAM_EVENT_TYPE: "upstream_repo_update"
 
 jobs:
