@@ -1,20 +1,19 @@
-import React, { Component } from "react";
-import { MIN_SIZE } from "../../tools/Base";
-import { fixRectToFit, getBoundingBoxAfterChanges } from "../../utils/image";
-import LSTransformer from "./LSTransformer";
-import { Rect } from "react-konva";
-import { Portal } from "react-konva-utils";
-import Constants from "../../core/Constants";
+import React, { Component } from 'react';
+import { MIN_SIZE } from '../../tools/Base';
+import { getBoundingBoxAfterChanges } from '../../utils/image';
+import LSTransformer from './LSTransformer';
+import LSTransformerOld from './LSTransformerOld';
+import { FF_DEV_2671, FF_ZOOM_OPTIM, isFF } from '../../utils/feature-flags';
+
+const EPSILON = 0.001;
 
 export default class TransformerComponent extends Component {
-  backgroundRef = React.createRef()
-
   componentDidMount() {
-    setTimeout(()=>this.checkNode());
+    setTimeout(this.checkNode);
   }
 
   componentDidUpdate() {
-    setTimeout(()=>this.checkNode());
+    setTimeout(this.checkNode);
   }
 
   get freezeKey() {
@@ -37,7 +36,7 @@ export default class TransformerComponent extends Component {
     item.annotation.history.unfreeze(freezeKey);
   }
 
-  checkNode() {
+  checkNode = () => {
     if (!this.transformer) return;
 
     // here we need to manually attach or detach Transformer node
@@ -60,66 +59,103 @@ export default class TransformerComponent extends Component {
       });
 
       if (!shapeContainer) return;
-      if (shapeContainer.hasName("_transformable")) selectedNodes.push(shapeContainer);
+      if (shapeContainer.hasName('_transformable')) selectedNodes.push(shapeContainer);
       if (!shapeContainer.find) return;
 
       const transformableElements = shapeContainer.find(node => {
-        return node.hasName("_transformable");
+        return node.hasName('_transformable');
       }, true);
 
       selectedNodes.push(...transformableElements);
     });
     const prevNodes = this.transformer.nodes();
     // do nothing if selected node is already attached
+    const nodesWereNotChanged = selectedNodes?.length === prevNodes?.length && !selectedNodes.find((node, idx) => node !== prevNodes[idx]);
 
-    if (selectedNodes?.length === prevNodes?.length && !selectedNodes.find((node, idx) => node !== prevNodes[idx])) {
+    if (nodesWereNotChanged) {
       return;
     }
 
     if (selectedNodes.length) {
-      // attach to another node
-      if (this.backgroundRef.current) {
-        selectedNodes.push(this.backgroundRef.current);
-      }
       this.transformer.nodes(selectedNodes);
     } else {
       // remove transformer
       this.transformer.nodes([]);
     }
     this.transformer.getLayer().batchDraw();
+  };
+
+  fitBBoxToScaledStage(box, stage) {
+    let { x, y, width, height } = box;
+
+    const [realX, realY] = [box.x - stage.x, box.y - stage.y];
+
+    if (realX < 0) {
+      x = isFF(FF_ZOOM_OPTIM) ? stage.x : 0;
+      width += realX;
+    } else if (realX + box.width > stage.width) {
+      width = stage.width - realX;
+    }
+
+    if (realY < 0) {
+      y = isFF(FF_ZOOM_OPTIM) ? stage.y : 0;
+      height += realY;
+    } else if (realY + box.height > stage.height) {
+      height = stage.height - realY;
+    }
+
+    return { ...box, x, y, width, height };
+  }
+
+  getStageAbsoluteDimensions() {
+    const stage = this.transformer.getStage();
+    const { stageWidth, stageHeight } = this.props.item;
+
+    let [scaledStageWidth, scaledStageHeight] = [stageWidth * stage.scaleX(), stageHeight * stage.scaleY()];
+
+    if (isFF(FF_ZOOM_OPTIM) && this.props.item.isSideways) {
+      [scaledStageWidth, scaledStageHeight] = [scaledStageHeight, scaledStageWidth];
+    }
+    const [stageX, stageY] = [stage.x(), stage.y()];
+
+    return {
+      width: scaledStageWidth,
+      height: scaledStageHeight,
+      x: stageX,
+      y: stageY,
+    };
   }
 
   constrainSizes = (oldBox, newBox) => {
     // it's important to compare against `undefined` because it can be missed (not rotated box?)
     const rotation = newBox.rotation !== undefined ? newBox.rotation : oldBox.rotation;
     const isRotated = rotation !== oldBox.rotation;
-
-    const stage = this.transformer.getStage();
+    const stageDimensions = this.getStageAbsoluteDimensions();
 
     if (newBox.width < MIN_SIZE) newBox.width = MIN_SIZE;
     if (newBox.height < MIN_SIZE) newBox.height = MIN_SIZE;
 
-    // it's harder to fix sizes for rotated box, so just block changes out of stage
+    // // it's harder to fix sizes for rotated box, so just block changes out of stage
     if (rotation || isRotated) {
       const { x, y, width, height } = newBox;
       const selfRect = { x: 0, y: 0, width, height };
 
       // bounding box, got by applying current shift and rotation to normalized box
       const clientRect = getBoundingBoxAfterChanges(selfRect, { x, y }, rotation);
-      const fixed = fixRectToFit(clientRect, stage.width(), stage.height());
+      const fixed = this.fitBBoxToScaledStage(clientRect, stageDimensions);
 
       // if bounding box is out of stage — do nothing
-      if (["x", "y", "width", "height"].some(key => fixed[key] !== clientRect[key])) return oldBox;
+      if (['x', 'y', 'width', 'height'].some(key => Math.abs(fixed[key] - clientRect[key]) > EPSILON)) return oldBox;
       return newBox;
     } else {
-      return fixRectToFit(newBox, stage.width(), stage.height());
+      return this.fitBBoxToScaledStage(newBox, stageDimensions);
     }
   };
 
   dragBoundFunc = (pos) => {
     const { item } = this.props;
-    
-    return item.fixForZoomWrapper(pos,pos => {
+
+    return item.fixForZoomWrapper(pos, pos => {
       if (!this.transformer || !item) return;
 
       let { x, y } = pos;
@@ -134,64 +170,36 @@ export default class TransformerComponent extends Component {
 
       return { x, y };
     });
-  }
+  };
 
-  get draggableBackground() {
-    const { draggableBackgroundAt, item } = this.props;
-    const { selectedRegionsBBox } = item;
-
-    return draggableBackgroundAt ? (
-      <Portal selector={draggableBackgroundAt}>
-        {selectedRegionsBBox && (
-          <Rect
-            ref={this.backgroundRef}
-            x={selectedRegionsBBox.left}
-            y={selectedRegionsBBox.top}
-            width={selectedRegionsBBox.right-selectedRegionsBBox.left}
-            height={selectedRegionsBBox.bottom-selectedRegionsBBox.top}
-            fill="rgba(0,0,0,0)"
-            draggable
-            onClick={()=>{
-              item.annotation.unselectAreas();
-            }}
-            onMouseOver={() => {
-              if (!item.annotation.relationMode) {
-                this.backgroundRef.current.getStage().container().style.cursor = Constants.POINTER_CURSOR;
-              }
-            }}
-            onMouseOut={() => {
-              this.backgroundRef.current.getStage().container().style.cursor = Constants.DEFAULT_CURSOR;
-            }}
-          />
-        )}
-      </Portal>
-    ) : null;
-  }
-
-  render() {
-    if (!this.props.supportsTransform) return null;
-    const { draggableBackground } = this;
-
+  renderLSTransformer() {
     return (
       <>
-        { draggableBackground }
         <LSTransformer
+          ref={node => {
+            this.transformer = node;
+
+            if (this.transformer) {
+              this.transformer.rotateEnabled(false);
+            }
+          }}
           resizeEnabled={true}
           ignoreStroke={true}
-          keepRatio={false}
-          useSingleNodeRotation={this.props.rotateEnabled}
+          keepRatio={this.props.singleNodeMode !== true}
+          useSingleNodeRotation={this.props.useSingleNodeRotation}
           rotateEnabled={this.props.rotateEnabled}
           borderDash={[3, 1]}
           // borderStroke={"red"}
           boundBoxFunc={this.constrainSizes}
           anchorSize={8}
           flipEnabled={false}
+          zoomedIn={this.props.item.zoomScale > 1}
           onDragStart={e => {
             const { item: { selectedRegionsBBox } } = this.props;
 
             this.freeze();
 
-            if (!this.transformer|| e.target !== e.currentTarget || !selectedRegionsBBox) return;
+            if (!this.transformer || e.target !== e.currentTarget || !selectedRegionsBBox) return;
 
             this.draggingAreaBBox = {
               x: selectedRegionsBBox.left,
@@ -201,13 +209,72 @@ export default class TransformerComponent extends Component {
             };
           }}
           dragBoundFunc={this.dragBoundFunc}
-          onDragEnd ={() => {
+          onDragEnd={() => {
             this.unfreeze();
+            setTimeout(this.checkNode);
           }}
+          onTransformEnd={() => {
+            setTimeout(this.checkNode);
+          }}
+          backSelector={this.props.draggableBackgroundSelector}
+        />
+      </>
+    );
+  }
+
+  renderOldLSTransformer() {
+    return (
+      <>
+        <LSTransformerOld
           ref={node => {
             this.transformer = node;
           }}
-        /></>
+          resizeEnabled={true}
+          ignoreStroke={true}
+          keepRatio={this.props.singleNodeMode !== true}
+          useSingleNodeRotation={this.props.useSingleNodeRotation}
+          rotateEnabled={this.props.rotateEnabled}
+          borderDash={[3, 1]}
+          // borderStroke={"red"}
+          boundBoxFunc={this.constrainSizes}
+          anchorSize={8}
+          flipEnabled={false}
+          zoomedIn={this.props.item.zoomScale > 1}
+          onDragStart={e => {
+            const { item: { selectedRegionsBBox } } = this.props;
+
+            this.freeze();
+
+            if (!this.transformer || e.target !== e.currentTarget || !selectedRegionsBBox) return;
+
+            this.draggingAreaBBox = {
+              x: selectedRegionsBBox.left,
+              y: selectedRegionsBBox.top,
+              width: selectedRegionsBBox.right - selectedRegionsBBox.left,
+              height: selectedRegionsBBox.bottom - selectedRegionsBBox.top,
+            };
+          }}
+          dragBoundFunc={this.dragBoundFunc}
+          onDragEnd={() => {
+            this.unfreeze();
+            setTimeout(this.checkNode);
+          }}
+          onTransformEnd={() => {
+            setTimeout(this.checkNode);
+          }}
+          backSelector={this.props.draggableBackgroundSelector}
+        />
+      </>
     );
+  }
+
+  render() {
+    if (!this.props.supportsTransform) return null;
+
+    if (isFF(FF_DEV_2671)) {
+      return this.renderLSTransformer();
+    } else {
+      return this.renderOldLSTransformer();
+    }
   }
 }

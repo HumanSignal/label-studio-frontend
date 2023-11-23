@@ -1,5 +1,5 @@
-import External from "../core/External";
-import Messages from "../utils/messages";
+import External from '../core/External';
+import Messages from '../utils/messages';
 
 function getData(task) {
   if (task && task.data) {
@@ -26,13 +26,13 @@ function getState(task) {
 function rootElement(element) {
   let root;
 
-  if (typeof element === "string") {
+  if (typeof element === 'string') {
     root = document.getElementById(element);
   } else {
     root = element;
   }
 
-  root.innerHTML = "";
+  root.innerHTML = '';
 
   return root;
 }
@@ -55,7 +55,7 @@ function configureApplication(params) {
     // remove: params.remove || Requests.remover,
 
     // communication with the user
-    alert: m => console.log(m), // Noop for demo: window.alert(m)
+    settings: params.settings || {},
     messages: { ...Messages, ...params.messages },
 
     // callbacks and event handlers
@@ -63,7 +63,9 @@ function configureApplication(params) {
     onUpdateAnnotation: params.onUpdateAnnotation ? ouCB : External.onUpdateAnnotation,
     onDeleteAnnotation: params.onDeleteAnnotation ? odCB : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
+    onUnskipTask: params.onUnskipTask ? params.onUnskipTask : External.onUnskipTask,
     onSubmitDraft: params.onSubmitDraft,
+    onPresignUrlForProject: params.onPresignUrlForProject,
     onTaskLoad: params.onTaskLoad || External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad || External.onLabelStudioLoad,
     onEntityCreate: params.onEntityCreate || External.onEntityCreate,
@@ -75,6 +77,10 @@ function configureApplication(params) {
     onStorageInitialized: params.onStorageInitialized || External.onStorageInitialized,
     onNextTask: params.onNextTask || External.onNextTask,
     onPrevTask: params.onPrevTask || External.onPrevTask,
+
+    // other settings aka flags
+    forceAutoAnnotation: params.forceAutoAnnotation ?? false,
+    forceAutoAcceptSuggestions: params.forceAutoAcceptSuggestions ?? false,
   };
 
   return options;

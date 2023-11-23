@@ -1,15 +1,17 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import Registry from "../../core/Registry";
-import ControlBase from "./Base";
-import { customTypes } from "../../core/CustomTypes";
-import SeparatedControlMixin from "../../mixins/SeparatedControlMixin";
-import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
+import Registry from '../../core/Registry';
+import ControlBase from './Base';
+import { customTypes } from '../../core/CustomTypes';
+import { AnnotationMixin } from '../../mixins/AnnotationMixin';
+import SeparatedControlMixin from '../../mixins/SeparatedControlMixin';
+import { ToolManagerMixin } from '../../mixins/ToolManagerMixin';
+import { SNAP_TO_PIXEL_MODE } from '../../components/ImageView/Image';
 
 /**
- * Use the KeyPoint tag to add a key point to an image without selecting a label. This can be useful when you have only one label to assign to the key point.
+ * The `KeyPoint` tag is used to add a key point to an image without selecting a label. This can be useful when you have only one label to assign to the key point.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic keypoint image labeling configuration-->
  * <View>
@@ -27,22 +29,23 @@ import { ToolManagerMixin } from "../../mixins/ToolManagerMixin";
  * @param {string=} [strokeColor=#8bad00] - Keypoint stroke color in hexadecimal
  * @param {boolean} [smart]              - Show smart tool for interactive pre-annotations
  * @param {boolean} [smartOnly]          - Only show smart tool for interactive pre-annotations
+ * @param {pixel|none} [snap=none]       - Snap keypoint to image pixels
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
 
-  opacity: types.optional(customTypes.range(), "0.9"),
-  fillcolor: types.optional(customTypes.color, "#8bad00"),
+  opacity: types.optional(customTypes.range(), '0.9'),
+  fillcolor: types.optional(customTypes.color, '#8bad00'),
 
-  strokecolor: types.optional(customTypes.color, "#8bad00"),
-  strokewidth: types.optional(types.string, "2"),
+  snap: types.optional(types.string, 'none'),
+
+  strokecolor: types.optional(customTypes.color, '#8bad00'),
+  strokewidth: types.optional(types.string, '2'),
 });
 
 const Model = types
   .model({
-    type: "keypoint",
-
+    type: 'keypoint',
     // tools: types.array(BaseTool)
   })
   .views(self => ({
@@ -54,10 +57,12 @@ const Model = types
   }))
   .volatile(() => ({
     toolNames: ['KeyPoint'],
+    snapMode: SNAP_TO_PIXEL_MODE.CENTER,
   }));
 
-const KeyPointModel = types.compose("KeyPointModel",
+const KeyPointModel = types.compose('KeyPointModel',
   ControlBase,
+  AnnotationMixin,
   SeparatedControlMixin,
   TagAttrs,
   Model,
@@ -68,6 +73,6 @@ const HtxView = () => {
   return null;
 };
 
-Registry.addTag("keypoint", KeyPointModel, HtxView);
+Registry.addTag('keypoint', KeyPointModel, HtxView);
 
 export { HtxView, KeyPointModel };

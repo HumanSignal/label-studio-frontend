@@ -1,37 +1,54 @@
-import React, { forwardRef, useCallback, useEffect, useRef } from "react";
-import { Button, Form, Input } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
-import { observer } from "mobx-react";
-import { destroy, isAlive, types } from "mobx-state-tree";
+import React, { createRef, useCallback } from 'react';
+import Button from 'antd/lib/button/index';
+import Form from 'antd/lib/form/index';
+import Input from 'antd/lib/input/index';
+import { observer } from 'mobx-react';
+import { destroy, isAlive, types } from 'mobx-state-tree';
 
-import ProcessAttrsMixin from "../../../mixins/ProcessAttrs";
-import RequiredMixin from "../../../mixins/Required";
-import PerRegionMixin, { PER_REGION_MODES } from "../../../mixins/PerRegion";
-import InfoModal from "../../../components/Infomodal/Infomodal";
-import Registry from "../../../core/Registry";
-import Tree from "../../../core/Tree";
-import Types from "../../../core/Types";
-import { HtxTextAreaRegion, TextAreaRegionModel } from "../../../regions/TextAreaRegion";
-import { cloneNode } from "../../../core/Helpers";
-import ControlBase from "../Base";
-import { AnnotationMixin } from "../../../mixins/AnnotationMixin";
-import styles from "../../../components/HtxTextBox/HtxTextBox.module.scss";
-import { Block, Elem } from "../../../utils/bem";
-import "./TextArea.styl";
+import InfoModal from '../../../components/Infomodal/Infomodal';
+import Registry from '../../../core/Registry';
+import Tree from '../../../core/Tree';
+import Types from '../../../core/Types';
+import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
+import LeadTimeMixin from '../../../mixins/LeadTime';
+import PerItemMixin from '../../../mixins/PerItem';
+import PerRegionMixin, { PER_REGION_MODES } from '../../../mixins/PerRegion';
+import ProcessAttrsMixin from '../../../mixins/ProcessAttrs';
+import { ReadOnlyControlMixin } from '../../../mixins/ReadOnlyMixin';
+import RequiredMixin from '../../../mixins/Required';
+import { HtxTextAreaRegion, TextAreaRegionModel } from '../../../regions/TextAreaRegion';
+import {
+  FF_DEV_1564_DEV_1565,
+  FF_DEV_3730,
+  FF_LEAD_TIME,
+  FF_LSDV_4583,
+  FF_LSDV_4659,
+  isFF
+} from '../../../utils/feature-flags';
+import ControlBase from '../Base';
+import ClassificationBase from '../ClassificationBase';
+import './TextAreaRegionView';
+
+import './TextArea.styl';
 
 const { TextArea } = Input;
 
 /**
- * Use the TextArea tag to display a text area for user input. Use for transcription, paraphrasing, or captioning tasks.
+ * The `TextArea` tag is used to display a text area for user input. Use for transcription, paraphrasing, or captioning tasks.
  *
- * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video
+ * Use with the following data types: audio, image, HTML, paragraphs, text, time series, video.
+ *
+ * [^FF_LSDV_4659]: `fflag_feat_front_lsdv_4659_skipduplicates_060323_short` should be enabled to use `skipDuplicates` attribute
+ * [^FF_LSDV_4712]: `fflag_feat_front_lsdv_4712_skipduplicates_editing_110423_short` should be enabled to keep submissions unique during editing existed results
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
+ *
  * @example
  * <!--Basic labeling configuration to display only a text area -->
  * <View>
  *   <TextArea name="ta"></TextArea>
  * </View>
  * @example
- * <!--You can combine the TextArea tag with other tags for OCR or other transcription tasks-->
+ * <!--You can combine the `TextArea` tag with other tags for OCR or other transcription tasks-->
  * <View>
  *   <Image name="image" value="$ocr"/>
  *   <Labels name="label" toName="image">
@@ -40,6 +57,14 @@ const { TextArea } = Input;
  *   </Labels>
  *   <Rectangle name="bbox" toName="image" strokeWidth="3"/>
  *   <TextArea name="transcription" toName="image" editable="true" perRegion="true" required="true" maxSubmissions="1" rows="5" placeholder="Recognized Text" displayMode="region-list"/>
+ * </View>
+ * @example
+ * <!--
+ *  You can keep submissions unique[^FF_LSDV_4659][^FF_LSDV_4712]
+ * -->
+ * <View>
+ *   <Audio name="audio" value="$audio"/>
+ *   <TextArea name="genre" toName="audio" skipDuplicates="true" />
  * </View>
  * @name TextArea
  * @meta_title Textarea Tag for Text areas
@@ -51,41 +76,54 @@ const { TextArea } = Input;
  * @param {string=} [placeholder]          - Placeholder text
  * @param {string=} [maxSubmissions]       - Maximum number of submissions
  * @param {boolean=} [editable=false]      - Whether to display an editable textarea
+ * @param {boolean} [skipDuplicates=false] - Prevent duplicates in textarea inputs[^FF_LSDV_4659][^FF_LSDV_4712] (see example below)
  * @param {boolean=} [transcription=false] - If false, always show editor
  * @param {number} [rows]                  - Number of rows in the textarea
  * @param {boolean} [required=false]       - Validate whether content in textarea is required
  * @param {string} [requiredMessage]       - Message to show if validation fails
  * @param {boolean=} [showSubmitButton]    - Whether to show or hide the submit button. By default it shows when there are more than one rows of text, such as in textarea mode.
  * @param {boolean} [perRegion]            - Use this tag to label regions instead of whole objects
+ * @param {boolean} [perItem]              - Use this tag to label items inside objects instead of whole objects[^FF_LSDV_4583]
  */
 const TagAttrs = types.model({
-  name: types.identifier,
   toname: types.maybeNull(types.string),
   allowsubmit: types.optional(types.boolean, true),
-  label: types.optional(types.string, ""),
+  label: types.optional(types.string, ''),
   value: types.maybeNull(types.string),
-  rows: types.optional(types.string, "1"),
-  showsubmitbutton: types.optional(types.boolean, false),
+  rows: types.optional(types.string, '1'),
+  showsubmitbutton: types.maybeNull(types.boolean),
   placeholder: types.maybeNull(types.string),
   maxsubmissions: types.maybeNull(types.string),
   editable: types.optional(types.boolean, false),
   transcription: false,
+  ...(isFF(FF_LSDV_4659) ? {
+    skipduplicates: types.optional(types.boolean, false),
+  } : {}),
 });
 
 const Model = types.model({
-  type: "textarea",
+  type: 'textarea',
+  // @todo rename to textarearegions to avoid confusion, they are not real regions or results
   regions: types.array(TextAreaRegionModel),
-
-  _value: types.optional(types.string, ""),
-  children: Types.unionArray(["shortcut"]),
+  _value: types.optional(types.string, ''),
+  children: Types.unionArray(['shortcut']),
 
 }).volatile(() => {
   return {
     focusable: true,
+    textareaRef: createRef(),
   };
 }).views(self => ({
+  get isEditable() {
+    return self.editable && self.annotation.editable;
+  },
+
+  get isDeleteable() {
+    return !self.isReadOnly();
+  },
+
   get valueType() {
-    return "text";
+    return 'text';
   },
 
   get holdsState() {
@@ -115,210 +153,291 @@ const Model = types.model({
     return self.regions.map(r => r._value);
   },
 
-  get area() {
-    if (self.perregion) {
-      return self.annotation.highlightedNode;
-    }
-    return null;
+  hasResult(text) {
+    if (!self.result) return false;
+    let value = self.result.mainValue;
+
+    if (!Array.isArray(value)) value = [value];
+    text = text.toLowerCase();
+    return value.some(val => val.toLowerCase() === text);
   },
+})).actions(() => isFF(FF_LEAD_TIME)
+  ? {}
+  : { countTime: () => {} },
+).actions(self => {
+  let lastActiveElement = null;
+  let lastActiveElementModel = null;
 
-  get result() {
-    return self.annotation.results.find(r => r.from_name === self && (!self.area || r.area === self.area));
-  },
-})).actions(self => ({
-  getSerializableValue() {
-    const texts = self.regions.map(s => s._value);
+  const isAvailableElement = (element, elementModel) => {
+    if (!element || !elementModel || !isAlive(elementModel)) return false;
+    // Not available if active element is disappeared
+    if (self === elementModel && !self.showSubmit) return false;
+    if (!element.parentElement) return false;
+    return true;
+  };
 
-    if (texts.length === 0) return;
+  return {
+    getSerializableValue() {
+      const texts = self.regions.map(s => s._value);
 
-    return { text: texts };
-  },
+      if (texts.length === 0) return;
 
-  needsUpdate() {
-    self.updateFromResult(self.result?.mainValue);
-  },
+      return { text: texts };
+    },
 
-  requiredModal() {
-    InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
-  },
+    needsUpdate() {
+      self.updateFromResult(self.result?.mainValue);
+    },
 
-  setResult(value) {
-    const values = Array.isArray(value) ? value : [value];
+    requiredModal() {
+      InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
+    },
 
-    values.forEach(v => self.createRegion(v));
-  },
+    uniqueModal() {
+      InfoModal.warning('There is already an entry with that text. Please enter unique text.');
+    },
 
-  updateFromResult(value) {
-    self.regions = [];
-    value && self.setResult(value);
-  },
+    setResult(value) {
+      const values = Array.isArray(value) ? value : [value];
 
-  setValue(value) {
-    self._value = value;
-  },
+      values.forEach(v => self.createRegion(v));
+    },
 
-  remove(region) {
-    const index = self.regions.indexOf(region);
+    updateFromResult(value) {
+      self.regions = [];
+      value && self.setResult(value);
+    },
 
-    if (index < 0) return;
-    self.regions.splice(index, 1);
-    destroy(region);
-    self.onChange();
-  },
+    setValue(value) {
+      self._value = value;
+    },
 
-  copyState(obj) {
-    self.regions = obj.regions.map(r => cloneNode(r));
-  },
+    remove(region) {
+      const index = self.regions.indexOf(region);
 
-  perRegionCleanup() {
-    self.regions = [];
-  },
+      if (index < 0) return;
+      self.regions.splice(index, 1);
+      destroy(region);
+      self.onChange(region);
+    },
 
-  createRegion(text, pid) {
-    const r = TextAreaRegionModel.create({ pid, _value: text });
+    perRegionCleanup() {
+      self.regions = [];
+    },
 
-    self.regions.push(r);
+    createRegion(text, pid, leadTime) {
+      const r = TextAreaRegionModel.create({ pid, leadTime, _value: text });
 
-    return r;
-  },
+      self.regions.push(r);
+      return r;
+    },
 
-  onChange() {
-    if (self.result) {
-      self.result.area.setValue(self);
-    } else {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
+    onChange(area) {
+      self.updateResult();
+      const currentArea = (area ?? self.result?.area);
+      
+      currentArea?.notifyDrawingFinished();
+    },
 
-        if (!area) return null;
-        area.setValue(self);
-      } else {
-        self.annotation.createResult({}, { text: self.selectedValues() }, self, self.toname);
+    validateValue(text) {
+      if (isFF(FF_LSDV_4659) && self.skipduplicates && self.hasResult(text)) {
+        self.uniqueModal();
+        return false;
       }
-    }
-  },
+      return true;
+    },
 
-  addText(text, pid) {
-    self.createRegion(text, pid);
-    self.onChange();
-  },
+    addText(text, pid) {
+      if (!self.validateValue(text)) return;
 
-  beforeSend() {
-    if (self._value && self._value.length) {
-      self.addText(self._value);
-      self._value = "";
-    }
-  },
+      self.createRegion(text, pid, self.leadTime);
+      // actually creates a new result
+      self.onChange();
 
-  // add unsubmitted text when user switches region
-  submitChanges() {
-    self.beforeSend();
-  },
+      // should go after `onChange` because it uses result and area
+      self.updateLeadTime();
+    },
 
-  deleteText(text) {
-    destroy(text);
-  },
+    /**
+     * `lead_time` should be stored inside connected results,
+     *   we shouldn't store it in TextAreaRegions,
+     *   because TextAreaRegions are not safe, they can be rewritten
+     *   on undo/redo, on switching annotations, on switching regions...
+     * After adding lead_time to the result, we should reset all lead_time numbers
+     */
+    updateLeadTime() {
+      if (!isFF(FF_LEAD_TIME)) return;
 
-  onShortcut(value) {
-    self.setValue(self._value + value);
-  },
+      const result = self.result;
 
-  toStateJSON() {
-    if (!self.regions.length) return;
+      if (!result) return;
 
-    const toname = self.toname || self.name;
-    const tree = {
-      id: self.pid,
-      from_name: self.name,
-      to_name: toname,
-      type: "textarea",
-      value: {
-        text: self.regions.map(r => r._value),
-      },
-    };
+      // add current stored leadTime to the main stored lead_time
+      result.setMetaValue('lead_time', (result.meta?.lead_time ?? 0) + self.leadTime / 1000);
 
-    return tree;
-  },
+      self.leadTime = 0;
+      self.resetLeadTimeCounters();
+    },
 
-  fromStateJSON(obj) {
-    let { text } = obj.value;
+    addTextToResult(text, result) {
+      if (!self.validateValue(text)) return;
 
-    if (!Array.isArray(text)) text = [text];
+      const newValue = result.mainValue.toJSON();
 
-    text.forEach(t => self.addText(t, obj.id));
-  },
-}));
+      newValue.push(text);
+      result.setValue(newValue);
+    },
+
+    beforeSend() {
+      if (self._value && self._value.length) {
+        self.addText(self._value);
+        self._value = '';
+      }
+    },
+
+    // add unsubmitted text when user switches region
+    submitChanges() {
+      self.beforeSend();
+    },
+
+    deleteText(text) {
+      destroy(text);
+    },
+
+    onShortcut(value) {
+      if (isFF(FF_DEV_1564_DEV_1565)) {
+        if (!isAvailableElement(lastActiveElement, lastActiveElementModel)) {
+          if (isFF(FF_DEV_3730)) {
+          // Try to use main textarea element
+            const textareaElement = self.textareaRef.current?.input || self.textareaRef.current?.resizableTextArea?.textArea;
+
+            if (isAvailableElement(textareaElement, self)) {
+              lastActiveElement = textareaElement;
+              lastActiveElementModel = self;
+            } else {
+              return;
+            }
+          } else {
+            return;
+          }
+        }
+        lastActiveElement.setRangeText(value, lastActiveElement.selectionStart, lastActiveElement.selectionEnd, 'end');
+        lastActiveElementModel.setValue(lastActiveElement.value);
+      } else {
+        self.setValue(self._value + value);
+      }
+    },
+
+    setLastFocusedElement(element, model = self) {
+      lastActiveElement = element;
+      lastActiveElementModel = model;
+    },
+
+    returnFocus() {
+      lastActiveElement?.focus?.();
+    },
+  };
+});
 
 const TextAreaModel = types.compose(
-  "TextAreaModel",
+  'TextAreaModel',
   ControlBase,
+  ClassificationBase,
   TagAttrs,
+  ...(isFF(FF_LEAD_TIME) ? [LeadTimeMixin] : []),
   ProcessAttrsMixin,
   RequiredMixin,
   PerRegionMixin,
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin] : []),
   AnnotationMixin,
+  ReadOnlyControlMixin,
   Model,
 );
 
 const HtxTextArea = observer(({ item }) => {
   const rows = parseInt(item.rows);
+  const onFocus = useCallback((ev, model) => {
+    if (isFF(FF_DEV_1564_DEV_1565)) {
+      item.setLastFocusedElement(ev.target, model);
+    }
+  }, [item]);
 
   const props = {
     name: item.name,
     value: item._value,
     rows: item.rows,
-    className: "is-search",
+    className: 'is-search',
     label: item.label,
     placeholder: item.placeholder,
+    disabled: item.isReadOnly(),
+    readOnly: item.isReadOnly(),
     onChange: ev => {
+      if (item.annotation.isReadOnly()) return;
       const { value } = ev.target;
 
       item.setValue(value);
     },
+    onFocus,
+    ref: item.textareaRef,
+    onKeyPress: item.countTime,
+    onKeyDown: item.countTime,
+    onKeyUp: item.countTime,
+    onMouseDown: item.countTime,
+    onMouseUp: item.countTime,
+    onMouseMove: ev => (ev.button || ev.buttons) && item.countTime(),
   };
 
   if (rows > 1) {
     // allow to add multiline text with shift+enter
     props.onKeyDown = e => {
-      if (e.key === "Enter" && e.shiftKey && item.allowsubmit && item._value) {
+      if (
+        e.key === 'Enter' &&
+        e.shiftKey &&
+        item.allowsubmit &&
+        item._value &&
+        !item.annotation.isReadOnly()
+      ) {
         e.preventDefault();
         e.stopPropagation();
         item.addText(item._value);
-        item.setValue("");
+        item.setValue('');
+      } else {
+        item.countTime();
       }
     };
   }
 
-  if (!item.annotation.editable) props["disabled"] = true;
+  const visibleStyle = item.perRegionVisible() ? {} : { display: 'none' };
 
-  const visibleStyle = item.perRegionVisible() ? {} : { display: "none" };
-
-  const showAddButton = (item.annotation.editable && rows !== 1) || item.showSubmitButton;
+  const showAddButton = !item.isReadOnly() && (item.showsubmitbutton ?? rows !== 1);
   const itemStyle = {};
 
-  if (showAddButton) itemStyle["marginBottom"] = 0;
+  if (showAddButton) itemStyle['marginBottom'] = 0;
 
-  visibleStyle["marginTop"] = "4px";
+  visibleStyle['marginTop'] = '4px';
 
   return (item.displaymode === PER_REGION_MODES.TAG ? (
-    <div style={visibleStyle}>
-      {Tree.renderChildren(item)}
+    <div className='lsf-text-area' style={visibleStyle}>
+      {Tree.renderChildren(item, item.annotation)}
 
       {item.showSubmit && (
         <Form
           onFinish={() => {
-            if (item.allowsubmit && item._value) {
+            if (item.allowsubmit && item._value && !item.annotation.isReadOnly()) {
               item.addText(item._value);
-              item.setValue("");
+              item.setValue('');
             }
 
             return false;
           }}
         >
           <Form.Item style={itemStyle}>
-            {rows === 1 ? <Input {...props} /> : <TextArea {...props} />}
+            {rows === 1
+              ? <Input {...props} aria-label="TextArea Input"/>
+              : <TextArea {...props} aria-label="TextArea Input"/>}
             {showAddButton && (
               <Form.Item>
-                <Button style={{ marginTop: "10px" }} type="primary" htmlType="submit">
+                <Button style={{ marginTop: '10px' }} type="primary" htmlType="submit">
                     Add
                 </Button>
               </Form.Item>
@@ -328,9 +447,9 @@ const HtxTextArea = observer(({ item }) => {
       )}
 
       {item.regions.length > 0 && (
-        <div style={{ marginBottom: "1em" }}>
+        <div style={{ marginBottom: '1em' }}>
           {item.regions.map(t => (
-            <HtxTextAreaRegion key={t.id} item={t}/>
+            <HtxTextAreaRegion key={t.id} item={t} onFocus={onFocus}/>
           ))}
         </div>
       )}
@@ -339,173 +458,6 @@ const HtxTextArea = observer(({ item }) => {
   );
 });
 
-const HtxTextAreaResultLine = forwardRef(({ idx, value, onChange, onDelete, onFocus, control }, ref) => {
-  const rows = parseInt(control.rows);
-  const isTextarea = rows > 1;
-  const inputRef = useRef();
-
-  const inputProps = {
-    ref: inputRef,
-    className: "ant-input " + styles.input,
-    value,
-    autoSize: isTextarea ? { minRows: 1 } : null,
-    onChange: e => {
-      onChange(idx, e.target.value);
-    },
-    onFocus,
-  };
-
-  if (isTextarea) {
-    inputProps.onKeyDown = e => {
-      if ((e.key === "Enter" && !e.shiftKey) || e.key === "Escape") {
-        e.preventDefault();
-        e.stopPropagation();
-        e.target?.blur?.();
-      }
-    };
-  }
-  return (
-    <Elem name="item">
-      <Elem name="input" tag={isTextarea ? TextArea : Input} {...inputProps} ref={ref}/>
-      <Elem name="action" tag={Button} icon={<DeleteOutlined />} size="small" type="text" onClick={()=>{onDelete(idx);}}/>
-    </Elem>
-  );
-});
-
-const HtxTextAreaResult = observer(({ item, control, firstResultInputRef, onFocus }) => {
-  const value = item.mainValue;
-  const changeHandler = useCallback((idx, val) => {
-    const newValue = value.toJSON();
-
-    newValue.splice(idx, 1, val);
-    item.setValue(newValue);
-  }, [value]);
-  const deleteHandler = useCallback((idx) => {
-    const newValue = value.toJSON();
-
-    newValue.splice(idx, 1);
-    item.setValue(newValue);
-  }, [value]);
-
-  return value.map((line, idx) => {
-    return (
-      <HtxTextAreaResultLine key={idx} idx={idx} value={line} onChange={changeHandler} onDelete={deleteHandler} control={control} ref={idx === 0 ? firstResultInputRef : null}
-        onFocus={onFocus}/>
-    );
-  });
-});
-
-const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed }) => {
-  const rows = parseInt(item.rows);
-  const isTextArea = rows > 1;
-  const isActive = item.area === area;
-  const shouldFocus = area.isCompleted && area.perRegionFocusTarget === item && area.perRegionFocusRequest;
-  const value = isActive ? item._value : "";
-  const result = area.results.find(r => r.from_name === item);
-
-  const expand = useCallback(() => {
-    if (collapsed) {
-      setCollapsed(false);
-    }
-  }, [collapsed]);
-
-  const submitValue = useCallback(() => {
-    if (result) {
-      const newValue = result.mainValue.toJSON();
-
-      newValue.push(item._value);
-      result.setValue(newValue);
-      item.setValue("");
-    } else {
-      item.addText(item._value);
-      item.setValue("");
-    }
-  }, [item, result]);
-
-  const mainInputRef = useRef();
-  const firstResultInputRef = useRef();
-  const lastFocusRequest = useRef(0);
-
-  useEffect(() => {
-    if (isActive && shouldFocus && lastFocusRequest.current < area.perRegionFocusRequest) {
-      (mainInputRef.current || firstResultInputRef.current)?.focus({ cursor: 'end' });
-      lastFocusRequest.current = area.perRegionFocusRequest;
-    }
-  }, [isActive, shouldFocus]);
-
-  useEffect(() => {
-    if (collapsed && item._value) {
-      submitValue();
-    }
-  }, [collapsed]);
-
-  const props = {
-    ref: mainInputRef,
-    value,
-    rows: item.rows,
-    className: "is-search",
-    label: item.label,
-    placeholder: item.placeholder,
-    autoSize: isTextArea ? { minRows: 1 } : null,
-    onChange: ev => {
-      const { value } = ev.target;
-
-      item.setValue(value);
-    },
-    onFocus: () => {
-      if (!area.isSelected) {
-        area.annotation.selectArea(area);
-      }
-    },
-  };
-
-  if (isTextArea) {
-    // allow to add multiline text with shift+enter
-    props.onKeyDown = e => {
-      if ((e.key === "Enter" && !e.shiftKey) || e.key === "Escape") {
-        e.preventDefault();
-        e.stopPropagation();
-        if (item.allowsubmit && item._value) {
-          submitValue();
-        } else {
-          e.target?.blur?.();
-        }
-      }
-    };
-  }
-
-  if (!item.annotation.editable) props["disabled"] = true;
-
-  const showAddButton = (item.annotation.editable && rows !== 1) || item.showSubmitButton;
-  const itemStyle = {};
-
-  if (showAddButton) itemStyle["marginBottom"] = 0;
-
-  const showSubmit = !result || !result?.mainValue?.length || (item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions));
-
-  if (!isAlive(item) || !isAlive(area)) return null;
-  return (
-    <Block name="textarea-tag" mod={{ mode: item.mode }}>
-      {result ? <HtxTextAreaResult control={item} item={result} firstResultInputRef={firstResultInputRef} onFocus={expand}/> : null}
-
-      {showSubmit && (
-        <Elem name="form"
-          tag={Form}
-          onFinish={() => {
-            if (item.allowsubmit && item._value) {
-              submitValue();
-            }
-            return false;
-          }}
-        >
-          <Elem name="input" tag={isTextArea ? TextArea : Input} {...props} />
-        </Elem>
-      )}
-    </Block>
-  );
-});
-
-Registry.addTag("textarea", TextAreaModel, HtxTextArea);
-Registry.addPerRegionView("textarea", PER_REGION_MODES.REGION_LIST, HtxTextAreaRegionView);
+Registry.addTag('textarea', TextAreaModel, HtxTextArea);
 
 export { TextAreaModel, HtxTextArea };

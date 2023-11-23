@@ -1,13 +1,14 @@
-import { types } from "mobx-state-tree";
+import { types } from 'mobx-state-tree';
 
-import Tree from "../core/Tree";
-import { isDefined } from "../utils/utilities";
+import Tree from '../core/Tree';
+import { isDefined } from '../utils/utilities';
+import { FF_DEV_3666, isFF } from '../utils/feature-flags';
 
 const SelectedModelMixin = types
   .model()
   .volatile(() => {
     return {
-      isSeparated: false,
+      isSeparated: false, 
     };
   })
   .views(self => ({
@@ -57,7 +58,7 @@ const SelectedModelMixin = types
       return self.selectedLabels.filter(c => c.alias).map(c => c.alias);
     },
 
-    getSelectedString(joinstr = " ") {
+    getSelectedString(joinstr = ' ') {
       return self.selectedValues().join(joinstr);
     },
 
@@ -80,10 +81,14 @@ const SelectedModelMixin = types
     },
 
     checkMaxUsages() {
-      const list = self.tiedChildren.filter(c => !c.canBeUsed());
+      if (isFF(FF_DEV_3666)) {
+        return self.tiedChildren.filter(c => !c.canBeUsed());
+      } else {
+        const list = self.tiedChildren.filter(c => !c.canBeUsed());
 
-      if (list.length) list.forEach(c => c.setSelected(false));
-      return list;
+        if (list.length) list.forEach(c => c.setSelected(false));
+        return list;
+      }
     },
 
     selectFirstVisible() {

@@ -1,9 +1,11 @@
-import { inject, observer } from "mobx-react";
-import React, { useEffect } from "react";
-import { Block } from "../../utils/bem";
-import { AnnotationHistory } from "./AnnotationHistory";
-import "./CurrentEntity.styl";
-import { DraftPanel } from "../DraftPanel/DraftPanel";
+import { inject, observer } from 'mobx-react';
+import { Space } from '../../common/Space/Space';
+import { Block, Elem } from '../../utils/bem';
+import { FF_DEV_2290, isFF } from '../../utils/feature-flags';
+import { DraftPanel } from '../DraftPanel/DraftPanel';
+import { AnnotationHistory } from './AnnotationHistory.tsx';
+import { useRegionsCopyPaste } from '../../hooks/useRegionsCopyPaste';
+import './CurrentEntity.styl';
 
 const injector = inject('store');
 
@@ -11,64 +13,9 @@ export const CurrentEntity = injector(observer(({
   entity,
   showHistory = true,
 }) => {
+  const showDraftInHistory = isFF(FF_DEV_2290);
 
-  useEffect(()=>{
-    const copyToClipboard = (ev) => {
-      const { clipboardData } = ev;
-      const results = entity.serializedSelection;
-
-      clipboardData.setData('application/json', JSON.stringify(results));
-      ev.preventDefault();
-
-    };
-    const pasteFromClipboard = (ev) => {
-      const { clipboardData } = ev;
-      const data = clipboardData.getData('application/json');
-
-      try {
-        const results = JSON.parse(data);
-
-        entity.appendResults(results);
-        ev.preventDefault();
-      } catch (e) {
-        return;
-      }
-    };
-
-    const copyHandler = (ev) =>{
-      const selection = window.getSelection();
-
-      if (!selection.isCollapsed) return;
-
-      copyToClipboard(ev);
-    };
-    const pasteHandler = (ev) =>{
-      const selection = window.getSelection();
-
-      if (Node.ELEMENT_NODE === selection.focusNode?.nodeType && selection.focusNode?.focus) return;
-
-      pasteFromClipboard(ev);
-    };
-    const cutHandler = (ev) =>{
-      const selection = window.getSelection();
-
-      if (!selection.isCollapsed) return;
-
-      copyToClipboard(ev);
-      entity.deleteSelectedRegions();
-
-      console.log("Window event: cutHandler", ev);
-    };
-
-    window.addEventListener("copy", copyHandler);
-    window.addEventListener("paste", pasteHandler);
-    window.addEventListener("cut", cutHandler);
-    return () => {
-      window.removeEventListener("copy", copyHandler);
-      window.removeEventListener("paste", pasteHandler);
-      window.removeEventListener("cut", cutHandler);
-    };
-  }, [entity.pk ?? entity.id]);
+  useRegionsCopyPaste(entity);
 
   return entity ? (
     <Block name="annotation" onClick={e => e.stopPropagation()}>
@@ -103,11 +50,21 @@ export const CurrentEntity = injector(observer(({
       {/* </Space>
       </Elem> */}
 
-      <DraftPanel item={entity} />
-
-      {showHistory && !entity.userGenerate && (
-        <AnnotationHistory/>
+      {!showDraftInHistory && (
+        <DraftPanel item={entity} />
       )}
+
+      {/* {showHistory && !entity.userGenerate && ( */}
+      {showHistory && (
+        <Elem tag={Space} spread name="title">
+          Annotation History
+          <Elem name="id">#{entity.pk ?? entity.id}</Elem>
+        </Elem>
+      )}
+      <AnnotationHistory
+        enabled={showHistory}
+        showDraft={showDraftInHistory}
+      />
     </Block>
   ) : null;
 }));

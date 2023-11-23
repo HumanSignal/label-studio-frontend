@@ -1,16 +1,20 @@
 .topbar
-  top 0
-  height 48px
+  height var(--topbar-height)
   width 100%
   z-index 101
   flex none
   display flex
-  position sticky
   align-items stretch
   justify-content space-between
   background-color #fff
   border-bottom 1px solid rgba(#000, 0.1)
   user-select none
+  position sticky
+  top 0
+
+  &__button
+    &:hover
+      background-color rgba(9, 109, 217, 0.12)
 
   &__group
     display flex
@@ -27,3 +31,14 @@
 
     & + &
       border-left 1px solid rgba(#000, 0.1)
+  &_newLabelingUI
+    display block
+    background-color #FAFAFA
+    height 42px
+    border-bottom #D8D5DD 1px solid
+
+    .topbar
+      &__group
+        height 42px
+        flex 1
+        align-items center

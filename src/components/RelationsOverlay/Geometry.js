@@ -14,7 +14,7 @@
  * y3: number,
  * y4: number}} RectCoordinates Represents 4 corners coordinates of rectangle
  */
-import { clamp } from "../../utils/utilities";
+import { clamp } from '../../utils/utilities';
 
 export class Geometry {
   /**
@@ -140,7 +140,7 @@ export class Geometry {
     };
   }
 
-  static modifyBBoxCoords(bbox, modifier = x=>x) {
+  static modifyBBoxCoords(bbox, modifier = x => x) {
     const p1 = modifier([bbox.x, bbox.y]);
     const p2 = modifier([bbox.width + bbox.x, bbox.height + bbox.y]);
 

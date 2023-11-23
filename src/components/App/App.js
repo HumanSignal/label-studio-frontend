@@ -1,46 +1,53 @@
 /**
- * Libraries
- */
-import React, { Component } from "react";
-import { Result, Spin } from "antd";
-import { getEnv, getRoot } from "mobx-state-tree";
-import { observer, Provider } from "mobx-react";
+* Libraries
+*/
+import React, { Component } from 'react';
+import { Result, Spin } from 'antd';
+import { getEnv, getRoot } from 'mobx-state-tree';
+import { observer, Provider } from 'mobx-react';
+import { InstructionsModal } from '../InstructionsModal/InstructionsModal';
 
 /**
  * Core
  */
-import Tree from "../../core/Tree";
+import Tree from '../../core/Tree';
 
 /**
  * Components
  */
-import { TopBar } from "../TopBar/TopBar";
-import Debug from "../Debug";
-import Segment from "../Segment/Segment";
-import Settings from "../Settings/Settings";
-import { RelationsOverlay } from "../RelationsOverlay/RelationsOverlay";
+import { TopBar } from '../TopBar/TopBar';
+import Debug from '../Debug';
+import Segment from '../Segment/Segment';
+import Settings from '../Settings/Settings';
+import { RelationsOverlay } from '../RelationsOverlay/RelationsOverlay';
+import { BottomBar } from '../BottomBar/BottomBar';
 
 /**
  * Tags
  */
-import "../../tags/object";
-import "../../tags/control";
-import "../../tags/visual";
+import '../../tags/object';
+import '../../tags/control';
+import '../../tags/visual';
 
 /**
  * Styles
  */
-import styles from "./App.module.scss";
-import { TreeValidation } from "../TreeValidation/TreeValidation";
-import { guidGenerator } from "../../utils/unique";
-import Grid from "./Grid";
-import { SidebarPage, SidebarTabs } from "../SidebarTabs/SidebarTabs";
-import { AnnotationTab } from "../AnnotationTab/AnnotationTab";
-import { Block, Elem } from "../../utils/bem";
+import { TreeValidation } from '../TreeValidation/TreeValidation';
+import { guidGenerator } from '../../utils/unique';
+import Grid from './Grid';
+import { SidebarPage, SidebarTabs } from '../SidebarTabs/SidebarTabs';
+import { AnnotationTab } from '../AnnotationTab/AnnotationTab';
+import { SidePanels } from '../SidePanels/SidePanels';
+import { SideTabsPanels } from '../SidePanels/TabPanels/SideTabsPanels';
+import { Block, Elem } from '../../utils/bem';
 import './App.styl';
-import { Space } from "../../common/Space/Space";
-import { DynamicPreannotationsControl } from "../AnnotationTab/DynamicPreannotationsControl";
-import { isDefined } from "../../utils/utilities";
+import { Space } from '../../common/Space/Space';
+import { DynamicPreannotationsControl } from '../AnnotationTab/DynamicPreannotationsControl';
+import { isDefined } from '../../utils/utilities';
+import { FF_DEV_1170, FF_DEV_3873, FF_LSDV_4620_3_ML, isFF } from '../../utils/feature-flags';
+import { Annotation } from './Annotation';
+import { Button } from '../../common/Button/Button';
+import { reactCleaner } from '../../utils/reactCleaner';
 
 /**
  * App
@@ -48,20 +55,45 @@ import { isDefined } from "../../utils/utilities";
 class App extends Component {
   relationsRef = React.createRef();
 
+  componentDidMount() {
+    // Hack to activate app hotkeys
+    window.blur();
+    document.body.focus();
+  }
+
   renderSuccess() {
-    return <Result status="success" title={getEnv(this.props.store).messages.DONE} />;
+    return <Block name="editor"><Result status="success" title={getEnv(this.props.store).messages.DONE} /></Block>;
   }
 
   renderNoAnnotation() {
-    return <Result status="success" title={getEnv(this.props.store).messages.NO_COMP_LEFT} />;
+    return <Block name="editor"><Result status="success" title={getEnv(this.props.store).messages.NO_COMP_LEFT} /></Block>;
   }
 
-  renderNothingToLabel() {
-    return <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />;
+  renderNothingToLabel(store) {
+    return (
+      <Block
+        name="editor"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          paddingBottom: '30vh',
+        }}
+      >
+        <Result status="success" title={getEnv(this.props.store).messages.NO_NEXT_TASK} />
+        <Block name="sub__result">You have completed all tasks in the queue!</Block>
+        <Button onClick={e => store.prevTask(e, true)} look="outlined" style={{ margin: '16px 0' }}>
+          Go to Previous Task
+        </Button>
+      </Block>
+    );
   }
+
+
 
   renderNoAccess() {
-    return <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />;
+    return <Block name="editor"><Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} /></Block>;
   }
 
   renderConfigValidationException(store) {
@@ -70,7 +102,7 @@ class App extends Component {
         <Elem name="annotation">
           <TreeValidation errors={this.props.store.annotationStore.validation} />
         </Elem>
-        {store.hasInterface('infobar') && (
+        {!isFF(FF_DEV_3873) && store.hasInterface('infobar') && (
           <Elem name="infobar">
             Task #{store.task.id}
           </Elem>
@@ -107,11 +139,11 @@ class App extends Component {
             onScrollCapture={this._notifyScroll}
           >
             <Elem name="annotation">
-              {Tree.renderItem(root)}
+              {<Annotation root={root} annotation={as.selected} />}
               {this.renderRelations(as.selected)}
             </Elem>
-            {getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
-            {as.selected.onlyTextObjects === false && (
+            {(!isFF(FF_DEV_3873)) && getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
+            {as.selected.hasSuggestionsSupport && (
               <DynamicPreannotationsControl />
             )}
           </Block>
@@ -167,7 +199,7 @@ class App extends Component {
 
     if (store.isLoading) return this.renderLoader();
 
-    if (store.noTask) return this.renderNothingToLabel();
+    if (store.noTask) return this.renderNothingToLabel(store);
 
     if (store.noAccess) return this.renderNoAccess();
 
@@ -176,55 +208,107 @@ class App extends Component {
     if (!root) return this.renderNoAnnotation();
 
     const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
-    const stEditor = settings.fullscreen ? styles.editorfs : styles.editor;
-    const stCommon = [
-      settings.bottomSidePanel ? styles.commonbsp : styles.common,
-      viewingAll ? styles["view-all"] : "",
-      "ls-common",
-    ].join(" ");
-    const stMenu = settings.bottomSidePanel ? styles.menubsp : styles.menu;
 
-    const mainContainerClass = [styles["main-content-wrapper"]];
+    // tags can be styled in config when user is awaiting for suggestions from ML backend
+    const mainContent = (
+      <Block name="main-content" mix={store.awaitingSuggestions ? ['requesting'] : []}>
+        {as.validation === null
+          ? this._renderUI(as.selectedHistory?.root ?? root, as)
+          : this.renderConfigValidationException(store)}
+      </Block>
+    );
 
-    if (store.hasInterface("side-column")) mainContainerClass.push(styles["with-side-column"]);
+    const outlinerEnabled = isFF(FF_DEV_1170);
+    const newUIEnabled = isFF(FF_DEV_3873);
 
     return (
-      <div className={stEditor + " ls-editor"}>
+      <Block
+        name="editor"
+        mod={{ fullscreen: settings.fullscreen, _auto_height: !outlinerEnabled }}
+        ref={isFF(FF_LSDV_4620_3_ML) ? reactCleaner(this) : null}
+      >
         <Settings store={store} />
         <Provider store={store}>
-          {store.showingDescription && (
-            <Segment>
-              <div dangerouslySetInnerHTML={{ __html: store.description }} />
-            </Segment>
+          {newUIEnabled ? (
+            <InstructionsModal
+              visible={store.showingDescription}
+              onCancel={() => store.toggleDescription()}
+              title="Labeling Instructions"
+            >
+              {store.description}
+            </InstructionsModal>
+          ) : (
+            <>
+              {store.showingDescription && (
+                <Segment>
+                  <div dangerouslySetInnerHTML={{ __html: store.description }} />
+                </Segment>
+              )}
+            </>
           )}
 
-          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
-          <div className={stCommon}>
-            <div className={mainContainerClass.join(" ")}>
-              {as.validation === null
-                ? this._renderUI(as.selectedHistory?.root ?? root, as)
-                : this.renderConfigValidationException(store)}
-            </div>
-            {(viewingAll === false) && (
-              <div className={stMenu + " ls-menu"}>
-                {store.hasInterface("side-column") && (
-                  <SidebarTabs active="annotation">
-                    <SidebarPage name="annotation" title="Annotation">
-                      <AnnotationTab store={store}/>
-                    </SidebarPage>
-                    {this.props.panels.map(({ name, title, Component }) => (
-                      <SidebarPage key={name} name={name} title={title}>
-                        <Component/>
-                      </SidebarPage>
-                    ))}
-                  </SidebarTabs>
+          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store} />}
+          <Block
+            name="wrapper"
+            mod={{
+              viewAll: viewingAll,
+              bsp: settings.bottomSidePanel,
+              outliner: outlinerEnabled,
+              showingBottomBar: newUIEnabled,
+            }}
+          >
+            {outlinerEnabled ? (
+              isFF(FF_DEV_3873) ? (
+                <SideTabsPanels
+                  panelsHidden={viewingAll}
+                  currentEntity={as.selectedHistory ?? as.selected}
+                  regions={as.selected.regionStore}
+                  showComments={!store.hasInterface('annotations:comments')}
+                  focusTab={store.commentStore.tooltipMessage ? 'comments' : null}
+                >
+                  {mainContent}
+                  {isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+                </SideTabsPanels>
+              ) : (
+                <SidePanels
+                  panelsHidden={viewingAll}
+                  currentEntity={as.selectedHistory ?? as.selected}
+                  regions={as.selected.regionStore}
+                >
+                  {mainContent}
+
+                  {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+                </SidePanels>
+              )
+            ) : (
+              <>
+                {mainContent}
+
+                {viewingAll === false && (
+                  <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
+                    {store.hasInterface('side-column') && (
+                      <SidebarTabs active="annotation">
+                        <SidebarPage name="annotation" title="Annotation">
+                          <AnnotationTab store={store} />
+                        </SidebarPage>
+
+                        {this.props.panels.map(({ name, title, Component }) => (
+                          <SidebarPage key={name} name={name} title={title}>
+                            <Component />
+                          </SidebarPage>
+                        ))}
+                      </SidebarTabs>
+                    )}
+                  </Block>
                 )}
-              </div>
+
+                {newUIEnabled && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+              </>
             )}
-          </div>
+          </Block>
         </Provider>
-        {store.hasInterface("debug") && <Debug store={store} />}
-      </div>
+        {store.hasInterface('debug') && <Debug store={store} />}
+      </Block>
     );
   }
 

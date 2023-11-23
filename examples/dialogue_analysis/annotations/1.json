@@ -17,7 +17,7 @@
                 {
                     "from_name": "answer",
                     "id": "QH2yjxSYRV",
-                    "to_name": "answer",
+                    "to_name": "dialog",
                     "type": "textarea",
                     "value": {
                         "text": "5/5"

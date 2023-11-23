@@ -1,14 +1,16 @@
-import { observer } from "mobx-react";
-import { LsRedo, LsRemove, LsUndo } from "../../assets/icons";
-import { Button } from "../../common/Button/Button";
-import { Tooltip } from "../../common/Tooltip/Tooltip";
-import { Block, Elem } from "../../utils/bem";
-import "./HistoryActions.styl";
+import { observer } from 'mobx-react';
+import { LsRedo, LsRemove, LsUndo } from '../../assets/icons';
+import { Button } from '../../common/Button/Button';
+import { Tooltip } from '../../common/Tooltip/Tooltip';
+import { Block, Elem } from '../../utils/bem';
+import './HistoryActions.styl';
 import { Hotkey } from '../../core/Hotkey';
 
-export const HistoryActions = observer(({ history }) => {
+export const HistoryActions = observer(({ annotation }) => {
+  const { history } = annotation;
+
   return (
-    <Block name="history">
+    <Block name="history-buttons">
       <Hotkey.Tooltip name="annotation:undo">
         <Elem
           tag={Button}
@@ -16,7 +18,7 @@ export const HistoryActions = observer(({ history }) => {
           type="text"
           aria-label="Undo"
           disabled={!history?.canUndo}
-          onClick={() => history?.canUndo && history.undo()}
+          onClick={() => annotation.undo()}
           icon={<LsUndo />}
         />
       </Hotkey.Tooltip>
@@ -27,7 +29,7 @@ export const HistoryActions = observer(({ history }) => {
           type="text"
           aria-label="Redo"
           disabled={!history?.canRedo}
-          onClick={() => history?.canRedo && history.redo()}
+          onClick={() => annotation.redo()}
           icon={<LsRedo />}
         />
       </Hotkey.Tooltip>

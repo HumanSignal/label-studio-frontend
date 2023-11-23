@@ -1,19 +1,19 @@
-import React from "react";
-import { observer } from "mobx-react";
-import { types } from "mobx-state-tree";
+import React from 'react';
+import { observer } from 'mobx-react';
+import { types } from 'mobx-state-tree';
 
-import LabelMixin from "../../mixins/LabelMixin";
-import Registry from "../../core/Registry";
-import SelectedModelMixin from "../../mixins/SelectedModel";
-import Types from "../../core/Types";
-import { HtxLabels, LabelsModel } from "./Labels/Labels";
-import { EllipseModel } from "./Ellipse";
-import ControlBase from "./Base";
+import LabelMixin from '../../mixins/LabelMixin';
+import Registry from '../../core/Registry';
+import SelectedModelMixin from '../../mixins/SelectedModel';
+import Types from '../../core/Types';
+import { HtxLabels, LabelsModel } from './Labels/Labels';
+import { EllipseModel } from './Ellipse';
+import ControlBase from './Base';
 
 /**
- * The EllipseLabels tag creates labeled ellipses. Use to apply labels to ellipses for semantic segmentation.
+ * The `EllipseLabels` tag creates labeled ellipses. Use to apply labels to ellipses for semantic segmentation.
  *
- * Use with the following data types: image
+ * Use with the following data types: image.
  * @example
  * <!--Basic semantic image segmentation labeling configuration-->
  * <View>
@@ -38,32 +38,27 @@ import ControlBase from "./Base";
  * @param {number=} [strokeWidth=1]   - Width of stroke
  * @param {boolean=} [canRotate=true] - Show or hide rotation option
  */
-const TagAttrs = types.model({
-  name: types.identifier,
-  toname: types.maybeNull(types.string),
-});
 
-const ModelAttrs = types.model("EllipseLabelsModel", {
-  type: "ellipselabels",
-  children: Types.unionArray(["label", "header", "view", "hypertext"]),
+const ModelAttrs = types.model('EllipseLabelsModel', {
+  type: 'ellipselabels',
+  children: Types.unionArray(['label', 'header', 'view', 'hypertext']),
 });
 
 const Composition = types.compose(
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   EllipseModel,
-  TagAttrs,
   LabelMixin,
-  SelectedModelMixin.props({ _child: "LabelModel" }),
-  ControlBase,
+  SelectedModelMixin.props({ _child: 'LabelModel' }),
 );
 
-const EllipseLabelsModel = types.compose("EllipseLabelsModel", Composition);
+const EllipseLabelsModel = types.compose('EllipseLabelsModel', Composition);
 
 const HtxEllipseLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;
 });
 
-Registry.addTag("ellipselabels", EllipseLabelsModel, HtxEllipseLabels);
+Registry.addTag('ellipselabels', EllipseLabelsModel, HtxEllipseLabels);
 
 export { HtxEllipseLabels, EllipseLabelsModel };

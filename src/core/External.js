@@ -10,7 +10,6 @@ function onSubmitAnnotation() {}
  * Callback on update annotation
  */
 function onUpdateAnnotation() {}
-
 /**
  * Callback on delete annotation
  */
@@ -20,6 +19,11 @@ function onDeleteAnnotation() {}
  * Callback on skip task
  */
 function onSkipTask() {}
+
+/**
+ * Callback on unskip task
+ */
+function onUnskipTask() {}
 
 /**
  * Callback on task load
@@ -54,12 +58,12 @@ function onSelectAnnotation(annotation, previousAnnotation) {}
 /**
  * Called when "Accept" or "Fix + Accept" is pressed
  */
-function onAcceptAnnotation(store, entity){}
+function onAcceptAnnotation(store, entity) {}
 
 /**
  * Called when "Reject" is pressed
  */
-function onRejectAnnotation(store, entity){}
+function onRejectAnnotation(store, entity) {}
 
 /**
  * Called when storage gets initialized for the first time
@@ -79,6 +83,7 @@ export default {
   onGroundTruth,
   onLabelStudioLoad,
   onSkipTask,
+  onUnskipTask,
   onSubmitAnnotation,
   onSubmitDraft,
   onTaskLoad,
