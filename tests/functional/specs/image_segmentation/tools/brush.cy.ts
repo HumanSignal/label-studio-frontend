@@ -1,6 +1,6 @@
-import { ImageView, Labels, LabelStudio, Sidebar } from '../../../../../../../ls-frontend-test/helpers/LSF';
+import { ImageView, Labels, LabelStudio, Sidebar } from '@heartexlabs/ls-test/helpers/LSF';
 import { brushCenteredConfig, brushConfig, brushImageData } from '../../../data/image_segmentation/tools/brush';
-import { Generator } from '../../../../../../../ls-frontend-test/helpers/common/Generator';
+import { Generator } from '@heartexlabs/ls-test/helpers/common/Generator';
 
 describe('Brush tool', () => {
   it('Should be able to draw over the same brush region', () => {
