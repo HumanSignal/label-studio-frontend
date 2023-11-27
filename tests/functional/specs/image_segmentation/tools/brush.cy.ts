@@ -82,7 +82,6 @@ describe('Brush tool', () => {
         ImageView.waitForImage();
 
         Labels.select('Label A');
-        ImageView.drawingArea.trigger('mousemove', 353, 282);
         ImageView.drawPolylineRelative([[0.5, 0.3], [2, 0.7]], {
           beforeMouseup() {
             ImageView.pixelRelativeShouldBe(0.5, 0.3, '#fafafa');
