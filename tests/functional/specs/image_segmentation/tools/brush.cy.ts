@@ -58,15 +58,15 @@ describe('Brush tool', () => {
         ImageView.waitForImage();
 
         Labels.select('Label A');
-        ImageView.drawPolylineRelative([[0.1, 0.3], [2, 0.7]], {
+        ImageView.drawPolylineRelative([[0.1, 0.3], [2, 0.1]], {
           beforeMouseup() {
             ImageView.pixelRelativeShouldBe(0.1, 0.3, '#64b164');
-            ImageView.pixelRelativeShouldBe(2, 0.7, '#fafafa');
+            ImageView.pixelRelativeShouldBe(2, 0.1, '#fafafa');
           },
         });
 
         ImageView.pixelRelativeShouldBe(0.1, 0.3, '#64b164');
-        ImageView.pixelRelativeShouldBe(2, 0.7, '#fafafa');
+        ImageView.pixelRelativeShouldBe(2, 0.1, '#fafafa');
       });
   });
 
@@ -82,17 +82,17 @@ describe('Brush tool', () => {
         ImageView.waitForImage();
 
         Labels.select('Label A');
-        ImageView.drawPolylineRelative([[0.5, 0.3], [2, 0.7]], {
+        ImageView.drawPolylineRelative([[0.5, 0.3], [2, 0.1]], {
           beforeMouseup() {
             ImageView.pixelRelativeShouldBe(0.5, 0.3, '#fafafa');
-            ImageView.pixelRelativeShouldBe(1, 0.433, '#64b164');
-            ImageView.pixelRelativeShouldBe(2, 0.7, '#fafafa');
+            ImageView.pixelRelativeShouldBe(1, 0.234, '#64b164');
+            ImageView.pixelRelativeShouldBe(2, 0.1, '#fafafa');
           },
         });
 
         ImageView.pixelRelativeShouldBe(0.5, 0.3, '#fafafa');
-        ImageView.pixelRelativeShouldBe(1, 0.433, '#64b164');
-        ImageView.pixelRelativeShouldBe(2, 0.7, '#fafafa');
+        ImageView.pixelRelativeShouldBe(1, 0.234, '#64b164');
+        ImageView.pixelRelativeShouldBe(2, 0.1, '#fafafa');
       });
   });
 });
