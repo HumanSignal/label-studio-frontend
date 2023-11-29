@@ -85,6 +85,11 @@ const _Tool = types
     let closed;
 
     return {
+      shouldSkipInteractions() {
+        const activePolygon = self.getActivePolygon;
+
+        return activePolygon && !activePolygon.mouseOverStartPoint;
+      },
       handleToolSwitch(tool) {
         self.stopListening();
         if (self.getCurrentArea()?.isDrawing && tool.toolName !== 'ZoomPanTool') {
