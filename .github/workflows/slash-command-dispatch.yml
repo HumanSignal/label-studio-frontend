@@ -1,4 +1,4 @@
-name: "/Slash Command Dispatch"
+name: Slash Command Dispatch
 on:
   issue_comment:
     types: [created]
@@ -7,6 +7,7 @@ env:
   commands_list: |
     help
     git
+    jira
 
 jobs:
   slashCommandDispatch:
@@ -18,7 +19,7 @@ jobs:
 
       - name: 'Validate command'
         id: determine_command
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         env:
           COMMANDS_LIST: ${{ env.commands_list }}
         with:
@@ -39,7 +40,7 @@ jobs:
 
       - name: Slash Command Dispatch
         id: scd
-        if: steps.determine_command.outputs.command_state != 'unknown'
+        if: ${{ steps.determine_command.outputs.command_state != 'unknown' }}
         uses: peter-evans/slash-command-dispatch@v3
         with:
           token: ${{ secrets.GIT_PAT }}
@@ -48,7 +49,7 @@ jobs:
           commands: ${{ env.commands_list }}
 
       - name: Edit comment with error message
-        if: steps.determine_command.outputs.command_state == 'unknown'
+        if: ${{ steps.determine_command.outputs.command_state == 'unknown' }}
         uses: peter-evans/create-or-update-comment@v3
         with:
           comment-id: ${{ github.event.comment.id }}
