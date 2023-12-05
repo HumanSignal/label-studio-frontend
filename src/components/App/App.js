@@ -130,27 +130,23 @@ class App extends Component {
   }
 
   _renderUI(root, as) {
+    if (as.viewingAll) return this.renderAllAnnotations();
+
     return (
-      <>
-        {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
-          <Block
-            key={(as.selectedHistory ?? as.selected)?.id}
-            name="main-view"
-            onScrollCapture={this._notifyScroll}
-          >
-            <Elem name="annotation">
-              {<Annotation root={root} annotation={as.selected} />}
-              {this.renderRelations(as.selected)}
-            </Elem>
-            {(!isFF(FF_DEV_3873)) && getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
-            {as.selected.hasSuggestionsSupport && (
-              <DynamicPreannotationsControl />
-            )}
-          </Block>
+      <Block
+        key={(as.selectedHistory ?? as.selected)?.id}
+        name="main-view"
+        onScrollCapture={this._notifyScroll}
+      >
+        <Elem name="annotation">
+          {<Annotation root={root} annotation={as.selected} />}
+          {this.renderRelations(as.selected)}
+        </Elem>
+        {(!isFF(FF_DEV_3873)) && getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
+        {as.selected.hasSuggestionsSupport && (
+          <DynamicPreannotationsControl />
         )}
-        {as.viewingAllAnnotations && this.renderAllAnnotations()}
-        {as.viewingAllPredictions && this.renderAllPredictions()}
-      </>
+      </Block>
     );
   }
 
@@ -167,13 +163,9 @@ class App extends Component {
   }
 
   renderAllAnnotations() {
-    const cs = this.props.store.annotationStore;
+    const as = this.props.store.annotationStore;
 
-    return <Grid store={cs} annotations={[...cs.annotations, ...cs.predictions]} root={cs.root} />;
-  }
-
-  renderAllPredictions() {
-    return this._renderAll(this.props.store.annotationStore.predictions);
+    return <Grid store={as} annotations={[...as.annotations, ...as.predictions]} root={as.root} />;
   }
 
   renderRelations(selectedStore) {
@@ -207,7 +199,7 @@ class App extends Component {
 
     if (!root) return this.renderNoAnnotation();
 
-    const viewingAll = as.viewingAllAnnotations || as.viewingAllPredictions;
+    const viewingAll = as.viewingAll;
 
     // tags can be styled in config when user is awaiting for suggestions from ML backend
     const mainContent = (
