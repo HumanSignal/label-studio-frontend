@@ -540,7 +540,7 @@ function sanitizeHtml(html = []) {
     'ontimeupdate', 'ontoggle', 'onunhandledrejection', 'onunload',
     'onvolumechange', 'onwaiting', 'onwheel'];
 
-  const cleanHTML = sanitizeHTML(html, {
+  return sanitizeHTML(html, {
     allowedTags: false,
     allowedAttributes: false,
     disallowedTagsMode: 'discard',
@@ -561,8 +561,6 @@ function sanitizeHtml(html = []) {
       },
     },
   });
-
-  return cleanHTML;
 }
 
 export {
