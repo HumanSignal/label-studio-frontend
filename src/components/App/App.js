@@ -35,7 +35,7 @@ import '../../tags/visual';
 import { TreeValidation } from '../TreeValidation/TreeValidation';
 import { guidGenerator } from '../../utils/unique';
 import Grid from './Grid';
-import { SidebarPage, SidebarTabs } from '../SidebarTabs/SidebarTabs';
+import { SidebarTabs } from '../SidebarTabs/SidebarTabs';
 import { AnnotationTab } from '../AnnotationTab/AnnotationTab';
 import { SidePanels } from '../SidePanels/SidePanels';
 import { SideTabsPanels } from '../SidePanels/TabPanels/SideTabsPanels';
@@ -250,7 +250,7 @@ class App extends Component {
             }}
           >
             {outlinerEnabled ? (
-              isFF(FF_DEV_3873) ? (
+              newUIEnabled ? (
                 <SideTabsPanels
                   panelsHidden={viewingAll}
                   currentEntity={as.selectedHistory ?? as.selected}
@@ -259,7 +259,7 @@ class App extends Component {
                   focusTab={store.commentStore.tooltipMessage ? 'comments' : null}
                 >
                   {mainContent}
-                  {isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+                  {store.hasInterface('topbar') && <BottomBar store={store} />}
                 </SideTabsPanels>
               ) : (
                 <SidePanels
@@ -268,8 +268,6 @@ class App extends Component {
                   regions={as.selected.regionStore}
                 >
                   {mainContent}
-
-                  {isFF(FF_DEV_3873) && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
                 </SidePanels>
               )
             ) : (
@@ -279,22 +277,14 @@ class App extends Component {
                 {viewingAll === false && (
                   <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
                     {store.hasInterface('side-column') && (
-                      <SidebarTabs active="annotation">
-                        <SidebarPage name="annotation" title="Annotation">
-                          <AnnotationTab store={store} />
-                        </SidebarPage>
-
-                        {this.props.panels.map(({ name, title, Component }) => (
-                          <SidebarPage key={name} name={name} title={title}>
-                            <Component />
-                          </SidebarPage>
-                        ))}
+                      <SidebarTabs>
+                        <AnnotationTab store={store} />
                       </SidebarTabs>
                     )}
                   </Block>
                 )}
 
-                {newUIEnabled && isDefined(store) && store.hasInterface('topbar') && <BottomBar store={store} />}
+                {newUIEnabled && store.hasInterface('topbar') && <BottomBar store={store} />}
               </>
             )}
           </Block>

@@ -10,11 +10,14 @@ import legacyEvents from './core/External';
 import { Hotkey } from './core/Hotkey';
 import defaultOptions from './defaultOptions';
 import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
-import { registerPanels } from './registerPanels';
 import { EventInvoker } from './utils/events';
 import { FF_LSDV_4620_3_ML, isFF } from './utils/feature-flags';
 import { cleanDomAfterReact, findReactKey } from './utils/reactCleaner';
 import { isDefined } from './utils/utilities';
+
+declare global {
+  interface Window { Htx: any }
+}
 
 configure({
   isolateGlobalState: true,
@@ -31,7 +34,6 @@ type LSFTask = any;
 type LSFOptions = Record<string, any> & {
   interfaces: string[],
   keymap: Keymap,
-  panels: any,
   user: LSFUser,
   users: LSFUser[],
   task: LSFTask,
@@ -112,10 +114,7 @@ export class LabelStudio {
         clearRenderedApp();
       }
       render((
-        <App
-          store={this.store}
-          panels={registerPanels(this.options.panels) ?? []}
-        />
+        <App store={this.store} />
       ), rootElement);
     };
 
