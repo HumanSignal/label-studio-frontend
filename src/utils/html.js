@@ -514,17 +514,16 @@ function findNodeAt(context, at) {
 /**
  * Sanitize html from scripts and iframes
  * @param {string} html
- * @param {array} [allowedTags]
  * @param {object} [allowedAttributes]
  * @returns {string}
  */
-function sanitizeHtml(html, allowedTags = [], allowedAttributes = {}) {
+function sanitizeHtml(html = [], allowedAttributes = {}) {
   if (!html) return '';
 
-  console.log('heartex', html);
-
-  const s = sanitizeHTML(html, {
-    allowedTags: sanitizeHTML.defaults.allowedTags.concat([...allowedTags, 'img', 'embed', 'video', 'audio', 'source']),
+  return sanitizeHTML(html, {
+    allowedTags: false,
+    disallowedTagsMode: 'discard',
+    disallowedTags: ['script', 'iframe'],
     allowedAttributes: {
       ...sanitizeHTML.defaults.allowedAttributes,
       ...allowedAttributes,
@@ -536,10 +535,6 @@ function sanitizeHtml(html, allowedTags = [], allowedAttributes = {}) {
       '*': ['data-*'],
     },
   });
-
-  console.log('heartex', s);
-
-  return s;
 }
 
 export {
