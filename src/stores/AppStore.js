@@ -674,9 +674,14 @@ export default types
      * Given annotations and predictions
      * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
      */
-    function initializeStore({ annotations, completions, predictions, annotationHistory }) {
+    function initializeStore({ annotations = [], completions = [], predictions = [], annotationHistory }) {
       const as = self.annotationStore;
+      // @todo will become a feature flag
+      const simpleInit = window.SIMPLE_INIT ?? true;
 
+      console.log('SIMPLE INIT', simpleInit);
+
+      // some hacks to properly clear react and mobx structures
       as.afterReset?.();
 
       if (!as.initialized) {
@@ -686,31 +691,59 @@ export default types
         }
       }
 
-      // eslint breaks on some optional chaining https://github.com/eslint/eslint/issues/12822
-      /* eslint-disable no-unused-expressions */
-      (predictions ?? []).forEach(p => {
-        const obj = as.addPrediction(p);
+      if (simpleInit) {
+        // add predictions and annotations to the store;
+        // `hidden` will stop them from calling any rendering helpers;
+        // correct annotation will be selected at the end and everything will be called inside.
+        predictions.forEach(p => {
+          const obj = as.addPrediction(p);
+          const results = p.result.map(r => ({ ...r, origin: 'prediction' }));
 
-        as.selectPrediction(obj.id);
-        obj.deserializeResults(p.result.map(r => ({
-          ...r,
-          origin: 'prediction',
-        })));
-      });
+          obj.deserializeResults(results, { hidden: true });
+        });
 
-      [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
-        const obj = as.addAnnotation(c);
+        [...completions, ...annotations].forEach((c) => {
+          const obj = as.addAnnotation(c);
 
-        as.selectAnnotation(obj.id);
-        obj.deserializeResults(c.draft || c.result);
-        obj.reinitHistory();
-      });
+          obj.deserializeResults(c.draft || c.result, { hidden: true });
+        });
 
-      const current = as.annotations.at(-1);
+        const current = as.annotations.at(-1);
+        const currentPrediction = !current && as.predictions.at(-1);
 
-      if (current) current.setInitialValues();
+        if (current) {
+          as.selectAnnotation(current.id);
+        } else if (currentPrediction) {
+          as.selectPrediction(currentPrediction.id);
+        }
 
-      self.setHistory(annotationHistory);
+        // annotation history is set when annotation is selected,
+        // so no need to set it here
+      } else {
+        (predictions ?? []).forEach(p => {
+          const obj = as.addPrediction(p);
+
+          as.selectPrediction(obj.id);
+          obj.deserializeResults(p.result.map(r => ({
+            ...r,
+            origin: 'prediction',
+          })));
+        });
+
+        [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
+          const obj = as.addAnnotation(c);
+
+          as.selectAnnotation(obj.id);
+          obj.deserializeResults(c.draft || c.result);
+          obj.reinitHistory();
+        });
+
+        const current = as.annotations.at(-1);
+
+        if (current) current.setInitialValues();
+
+        self.setHistory(annotationHistory);
+      }
 
       if (!self.initialized) {
         self.initialized = true;
