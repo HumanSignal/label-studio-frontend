@@ -57,7 +57,9 @@ const Relation = types
   }))
   .actions(self => ({
     afterAttach() {
-      const annotation = getParent(self);
+      // @todo this should be rewritten to not have any connections to the tree
+      // @todo and to store labels only as strings
+      const annotation = getParent(self.parent);
 
       // find <Relations> tag in the tree
       let relations = null;
