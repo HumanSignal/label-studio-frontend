@@ -692,6 +692,8 @@ export default types
       }
 
       if (simpleInit) {
+        window.STORE_INIT_OK = false;
+
         // add predictions and annotations to the store;
         // `hidden` will stop them from calling any rendering helpers;
         // correct annotation will be selected at the end and everything will be called inside.
@@ -707,6 +709,9 @@ export default types
 
           obj.deserializeResults(c.draft || c.result, { hidden: true });
         });
+
+        console.log('WE DID THE INIT!');
+        window.STORE_INIT_OK = true;
 
         const current = as.annotations.at(-1);
         const currentPrediction = !current && as.predictions.at(-1);
