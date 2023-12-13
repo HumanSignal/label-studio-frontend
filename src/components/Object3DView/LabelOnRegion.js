@@ -5,7 +5,7 @@ import { getRoot } from 'mobx-state-tree';
 
 import Utils from '../../utils';
 import Constants from '../../core/Constants';
-import { ImageViewContext } from './ImageViewContext';
+import { Object3DViewContext } from './Object3DViewContext';
 
 const NON_ADJACENT_CORNER_RADIUS = 4;
 const ADJACENT_CORNER_RADIUS = [4, 4, 0, 0];
@@ -40,7 +40,7 @@ const LabelOnBbox = ({
   const horizontalPaddings = paddingLeft + paddingRight;
   const textMaxWidth = Math.max(0, maxWidth * zoomScale - horizontalPaddings - scoreSpace);
   const isSticking = !!textMaxWidth;
-  const { suggestion } = useContext(ImageViewContext) ?? {};
+  const { suggestion } = useContext(Object3DViewContext) ?? {};
 
   const width = useMemo(() => {
     if (!showLabels || !textEl || !maxWidth) return null;
