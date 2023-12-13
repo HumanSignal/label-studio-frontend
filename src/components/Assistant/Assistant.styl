@@ -45,18 +45,6 @@
     gap 4px
     width 100%
 
-    &__assist-text
-      display flex
-      align-items center
-      min-height 40px !important
-      border 1px solid #DFDFDF !important
-      border-radius 4px !important
-      background-color #FAFAFA !important
-      padding 8px 16px !important
-      font-size 16px !important
-      line-height 24px !important
-      letter-spacing 0.5px !important
-
     &__primary-action
       height 100%
       width 100%
@@ -65,6 +53,8 @@
       align-items flex-start
       flex-shrink 0
       flex-grow 0
+      grid-row 1 / 2
+      grid-column 2 / -1
 
       button
         margin-top 4px
@@ -78,18 +68,12 @@
         background-color transparent
         color var(--primary-action-color)
         border-radius var(--primary-action-border-radius)
+        padding 0
+        height calc(var(--text-input-min-height) - 8px);
+        width calc(var(--text-input-min-height) - 8px);
 
         &:hover
           background-color var(--primary-action-surface-color-hover)
-
-        ~/_inline &
-          padding 0
-          height calc(var(--text-input-min-height) - 8px);
-          width calc(var(--text-input-min-height) - 8px);
-
-      ~/_inline &
-        grid-row 1 / 2
-        grid-column 2 / -1
 
     &__tooltipMessage
       color var(--tooltip-text-color)

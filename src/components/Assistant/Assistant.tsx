@@ -1,11 +1,11 @@
-import { ChangeEvent, FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { observer } from 'mobx-react';
 import { Block, Elem } from '../../utils/bem';
 import { ReactComponent as IconSend } from '../../assets/icons/send.svg';
 import { IconCross } from '../../assets/icons';
-import Input from '../../common/Input/Input';
 
 import './Assistant.styl';
+import { TextArea } from '../../common/TextArea/TextArea';
 
 
 export const Assistant: FC<{ }> = observer(() => {
@@ -39,7 +39,7 @@ export const Assistant: FC<{ }> = observer(() => {
     if (_history.length > 5) {
       _history.pop();
     }
-    
+
     setHistoryValue(_history);
   }, [historyValue]);
 
@@ -88,12 +88,11 @@ export const Assistant: FC<{ }> = observer(() => {
   return (
     <Block name="assistant">
       <Block tag="form" name="assist-form" mod={{ inline: true }} onSubmit={onSubmit}>
-        <Elem
-          tag={Input}
+        <TextArea
           name="assist-text"
           placeholder="Type your message here"
           value={value}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
+          onChange={setValue}
           onSubmit={onSubmit}
         />
         <Elem tag="div" name="primary-action">
