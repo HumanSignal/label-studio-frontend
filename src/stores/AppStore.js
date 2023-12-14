@@ -640,6 +640,7 @@ export default types
       const result = await self.events.invoke('assistantPrompt', self, prompt);
 
       self.annotationStore.selected.deserializeResults(result[0]);
+      self.annotationStore.selected.updateObjects();
 
       return result;
     }
