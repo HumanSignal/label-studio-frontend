@@ -10,7 +10,7 @@ export const Comment = types.model('Comment', {
   updatedAt: types.optional(types.string, Utils.UDate.currentISODate()),
   resolvedAt: types.optional(types.maybeNull(types.string), null),
   createdBy: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
-  isResolved: false,
+  isResolved: types.optional(types.boolean, false),
   isEditMode: types.optional(types.boolean, false),
   isDeleted: types.optional(types.boolean, false),
   isConfirmDelete: types.optional(types.boolean, false),

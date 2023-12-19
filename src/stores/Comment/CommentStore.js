@@ -152,7 +152,7 @@ export const CommentStore = types
       }
     }
 
-    const addComment = flow(function* (text) {
+    const addComment = flow(function* (text, canPost = true) {
       if (self.loading === 'addComment') return;
 
       self.setLoading('addComment');
@@ -199,7 +199,7 @@ export const CommentStore = types
       // @todo setComments?
       self.comments.unshift(comment);
       self.setAddedCommentThisSession(true);
-      if (self.canPersist) {
+      if (self.canPersist && canPost) {
         try {
           const [newComment] = yield self.sdk.invoke('comments:create', comment);
 
@@ -222,7 +222,7 @@ export const CommentStore = types
     const addCurrentComment = flow(function* () {
       if (!self.currentComment) return;
 
-      yield addComment(self.currentComment);
+      // yield addComment(self.currentComment);
     });
 
     function setComments(comments) {
