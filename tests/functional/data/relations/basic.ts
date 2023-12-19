@@ -79,3 +79,9 @@ export const simpleImageResultWithRelationsAndLabels = [
   rectangleResult('Id_2', 25, 25, 5, 5),
   relationResult('Id_1', 'Id_2', 'right', ['Blue label', 'Red label']),
 ];
+
+export const simpleImageResultWithRelationsAndLabelsAlt = [
+  rectangleResult('Id_1', 5, 5, 5, 5),
+  rectangleResult('Id_2', 25, 25, 5, 5),
+  relationResult('Id_1', 'Id_2', 'right', ['Green label']),
+];

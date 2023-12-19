@@ -148,7 +148,7 @@ const RelationMeta: FC<any> = ({ relation }) => {
         mode={selectionMode}
         style={{ width: '100%' }}
         placeholder="Select labels"
-        defaultValue={selectedValues}
+        value={selectedValues}
         onChange={onChange}
       >
         {children.map((c: any) => (

@@ -1,10 +1,10 @@
-import { ImageView, LabelStudio, Relations } from '@heartexlabs/ls-test/helpers/LSF';
+import { ImageView, LabelStudio, Relations, ToolBar } from '@heartexlabs/ls-test/helpers/LSF';
 import {
   imageConfigWithRelations,
   simpleImageConfig,
   simpleImageData,
   simpleImageResultWithRelation,
-  simpleImageResultWithRelations, simpleImageResultWithRelationsAndLabels
+  simpleImageResultWithRelations, simpleImageResultWithRelationsAndLabels, simpleImageResultWithRelationsAndLabelsAlt
 } from '../../data/relations/basic';
 
 describe('Relations: Basic', () => {
@@ -120,6 +120,48 @@ describe('Relations: Basic', () => {
 
     Relations.hoverRelation(0);
     Relations.clickShowRelationLabels(0);
+    Relations.hasRelationLabels(['Blue label', 'Red label'], 0);
+  });
+
+  it('should rerender relation labels input on annotation switching', () => {
+    LabelStudio.params()
+      .config(imageConfigWithRelations)
+      .data(simpleImageData)
+      .withAnnotation({
+        id: 2,
+        result: simpleImageResultWithRelationsAndLabelsAlt,
+      })
+      .withAnnotation({
+        id: 1,
+        result: simpleImageResultWithRelationsAndLabels,
+      })
+      .init();
+
+    ImageView.waitForImage();
+
+    Relations.hasRelations(1);
+
+    // open relation labels
+    Relations.hoverRelation(0);
+    Relations.clickShowRelationLabels(0);
+
+    // open annotation list
+    ToolBar.toggleAnnotationsList();
+    // switch to the second annotation
+    ToolBar.selectAnnotation(1);
+
+    // open relation labels as well
+    Relations.hoverRelation(0);
+    Relations.clickShowRelationLabels(0);
+
+    // just check the current state
+    Relations.hasRelationLabels(['Green label'], 0);
+
+    // go to the first annotation
+    ToolBar.toggleAnnotationsList();
+    ToolBar.selectAnnotation(0);
+
+    // check that relations in the input are changed according to the first annotation result
     Relations.hasRelationLabels(['Blue label', 'Red label'], 0);
   });
 });
