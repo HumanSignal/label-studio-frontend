@@ -288,9 +288,9 @@
     webpack-cli "^5.0.1"
     yargs "^17.7.1"
 
-"@heartexlabs/ls-test@heartexlabs/ls-frontend-test#a771403374e3d2809b7d818bd33c0cc183bc97ab":
+"@heartexlabs/ls-test@heartexlabs/ls-frontend-test#82ed8ce353a84a087f285a107f86768bbcb3e133":
   version "1.0.8"
-  resolved "https://codeload.github.com/heartexlabs/ls-frontend-test/tar.gz/a771403374e3d2809b7d818bd33c0cc183bc97ab"
+  resolved "https://codeload.github.com/heartexlabs/ls-frontend-test/tar.gz/82ed8ce353a84a087f285a107f86768bbcb3e133"
   dependencies:
     "@cypress/code-coverage" "^3.10.0"
     "@cypress/webpack-preprocessor" "^5.17.0"
