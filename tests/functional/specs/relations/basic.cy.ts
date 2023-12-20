@@ -97,12 +97,12 @@ describe('Relations: Basic', () => {
 
     ImageView.waitForImage();
 
-    Relations.hoverRelation(0);
+    Relations.hoverOverRelation(0);
     Relations.clickShowRelationLabels(0);
 
     Relations.hasRelationLabels([], 0);
 
-    Relations.addRelationLabel('Blue label', 0);
+    Relations.addLabelToRelation('Blue label', 0);
 
     Relations.hasRelationLabels(['Blue label'], 0);
   });
@@ -118,7 +118,7 @@ describe('Relations: Basic', () => {
 
     Relations.hasRelations(1);
 
-    Relations.hoverRelation(0);
+    Relations.hoverOverRelation(0);
     Relations.clickShowRelationLabels(0);
     Relations.hasRelationLabels(['Blue label', 'Red label'], 0);
   });
@@ -142,7 +142,7 @@ describe('Relations: Basic', () => {
     Relations.hasRelations(1);
 
     // open relation labels
-    Relations.hoverRelation(0);
+    Relations.hoverOverRelation(0);
     Relations.clickShowRelationLabels(0);
 
     // open annotation list
@@ -151,7 +151,7 @@ describe('Relations: Basic', () => {
     ToolBar.selectAnnotation(1);
 
     // open relation labels as well
-    Relations.hoverRelation(0);
+    Relations.hoverOverRelation(0);
     Relations.clickShowRelationLabels(0);
 
     // just check the current state
