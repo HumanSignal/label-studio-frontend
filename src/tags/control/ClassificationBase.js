@@ -40,6 +40,20 @@ const ClassificationBase = types.model('ClassificationBase', {
     };
   }).actions(self => {
     return {
+      validate() {
+        if (self.perregion) {
+          return self._validatePerRegion();
+        }
+        else {
+          return self._validatePerObject();
+        }
+      },
+      validateValue(value) {
+        return true;
+      },
+      _validatePerObject() {
+        return self.validateValue(self.selectedValues());
+      },
       createPerObjectResult(areaValues = {}) {
         self.annotation.createResult(
           areaValues,
