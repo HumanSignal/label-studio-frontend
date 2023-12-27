@@ -66,7 +66,7 @@ describe('Control Tags - Number', () => {
     Number.type('-100');
     ToolBar.clickSubmit();
     Modals.hasWarning('-100');
-    Modals.hasWarning('Value must be greater that or equal to 2');
+    Modals.hasWarning('Value must be greater than or equal to 2');
   });
 
   it('should show errors for max validation', () => {
@@ -82,7 +82,7 @@ describe('Control Tags - Number', () => {
     Number.type('148');
     ToolBar.clickSubmit();
     Modals.hasWarning('148');
-    Modals.hasWarning('Value must be less that or equal to 128');
+    Modals.hasWarning('Value must be less than or equal to 128');
   });
 
   it('should show errors for step validation', () => {
