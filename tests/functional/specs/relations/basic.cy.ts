@@ -2,7 +2,7 @@ import { ImageView, LabelStudio, Relations, ToolBar } from '@heartexlabs/ls-test
 import {
   imageConfigWithRelations,
   simpleImageConfig,
-  simpleImageData,
+  simpleImageData, simpleImageResult,
   simpleImageResultWithRelation,
   simpleImageResultWithRelations, simpleImageResultWithRelationsAndLabels, simpleImageResultWithRelationsAndLabelsAlt
 } from '../../data/relations/basic';
@@ -163,5 +163,157 @@ describe('Relations: Basic', () => {
 
     // check that relations in the input are changed according to the first annotation result
     Relations.hasRelationLabels(['Blue label', 'Red label'], 0);
+  });
+
+  it('Should create correct step in history by adding relation', () => {
+    LabelStudio.params()
+      .config(simpleImageConfig)
+      .data(simpleImageData)
+      .withResult(simpleImageResult)
+      .init();
+
+    ImageView.waitForImage();
+
+    Relations.hasRelations(0);
+
+    ImageView.clickAtRelative(.30, .30);
+    Relations.toggleCreationWithHotkey();
+    ImageView.clickAtRelative(.60, .60);
+
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
+    });
+
+    cy.get('body').type('{ctrl+z}');
+    Relations.hasRelations(0);
+    cy.get('body').type('{ctrl+shift+z}');
+    Relations.hasRelations(1);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
+    });
+  });
+
+  it('Should create correct step in history by deleting relation', () => {
+    LabelStudio.params()
+      .config(simpleImageConfig)
+      .data(simpleImageData)
+      .withResult(simpleImageResultWithRelation)
+      .init();
+
+    ImageView.waitForImage();
+
+    Relations.hasRelations(1);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(1);
+    });
+
+    Relations.deleteRelationAction(0);
+
+    Relations.hasRelations(0);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
+    });
+
+    cy.get('body').type('{ctrl+z}');
+    Relations.hasRelations(1);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
+    });
+
+    cy.get('body').type('{ctrl+shift+z}');
+    Relations.hasRelations(0);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
+    });
+  });
+
+  it('Should create correct step in history by changing relation direction', () => {
+    LabelStudio.params()
+      .config(simpleImageConfig)
+      .data(simpleImageData)
+      .withResult(simpleImageResultWithRelation)
+      .init();
+
+    ImageView.waitForImage();
+
+    Relations.hasRelations(1);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(1);
+    });
+
+    Relations.toggleRelationDirection(0);
+
+    Relations.hasRelations(1);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
+    });
+  });
+
+  it('Should create correct step in history by adding label to relation', () => {
+    LabelStudio.params()
+      .config(imageConfigWithRelations)
+      .data(simpleImageData)
+      .withResult(simpleImageResultWithRelation)
+      .init();
+
+    ImageView.waitForImage();
+
+    Relations.hasRelations(1);
+    Relations.hoverOverRelation(0);
+    Relations.clickShowRelationLabels(0);
+    Relations.addLabelToRelation('Blue label', 0);
+    Relations.hasRelationLabels(['Blue label'], 0);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
+    });
+
+    cy.get('body').type('{ctrl+z}');
+    Relations.hasRelationLabels([], 0);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
+    });
+
+    cy.get('body').type('{ctrl+shift+z}');
+    Relations.hasRelationLabels(['Blue label'], 0);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
+    });
+  });
+
+  it('Should not create step in history by highlighting relation', () => {
+    LabelStudio.params()
+      .config(simpleImageConfig)
+      .data(simpleImageData)
+      .withResult(simpleImageResultWithRelation)
+      .init();
+
+    ImageView.waitForImage();
+
+    Relations.hoverOverRelation(0);
+    Relations.stopHoveringOverRelation(0);
+
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(1);
+    });
+  });
+
+  it('Should not create step in history by hiding relation', () => {
+    LabelStudio.params()
+      .config(simpleImageConfig)
+      .data(simpleImageData)
+      .withResult(simpleImageResultWithRelation)
+      .init();
+
+    ImageView.waitForImage();
+
+    Relations.hasRelations(1);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(1);
+    });
+
+    Relations.hideRelationAction(0);
+    cy.window().then((win) => {
+      expect(win.Htx.annotationStore.selected.history.history.length).to.equal(1);
+    });
   });
 });
