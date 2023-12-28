@@ -1,6 +1,6 @@
 Main description of what's done here, shortly, with reasoning, references, thoughts and ideas for better understanding.
-This text is intended to be removed and replaced with actual description. Other items can also be removed or edited if not relevant. If any of following items require more description, it should also go in this block.
-Please, read all items and make an action every time to create more conscious PR. Thanks!
+This text is intended to be replaced with actual description. Other items should be filled in or removed if not relevant. If any of following items require more description, it should also go in this block.
+Please read all items and ensure each section has been **filled in or removed** to create more consistent pull requests! Thanks!
 
 ### PR fulfills these requirements
 - [ ] Tests for the changes have been added/updated
@@ -9,11 +9,13 @@ Please, read all items and make an action every time to create more conscious PR
 - [ ] Self-reviewed and ran all changes on a local instance
 
 ### Describe the reason for change
-(if it's not clear from description)
+_(if it's not clear from description — otherwise remove section)_
 
 ### What feature flags were used to cover this change?
+_(feature flags created for this pull request or used to cover changes in this pull request)_
 
 ### What alternative approaches were there?
+_(if there are multiple ways to go, describe them and the reasoning for chosing the current way)_
 
 ### This change affects (describe how if yes)
 - [ ] Performance
@@ -32,4 +34,4 @@ Please, read all items and make an action every time to create more conscious PR
 - [ ] unit (jest)
 
 ### Which logical domain(s) does this change affect?
-(comma-separated list like "Taxonomy, Dynamic Children")
+_(comma-separated list like "Taxonomy, Dynamic Children" - if that's not clear from description, otherwise remove section)_
