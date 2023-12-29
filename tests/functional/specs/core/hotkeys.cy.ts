@@ -1,8 +1,8 @@
-import { Labels, LabelStudio } from '../../../../../../ls-frontend-test/helpers/LSF';
+import { Labels, LabelStudio } from '@heartexlabs/ls-test/helpers/LSF';
 import {
   createConfigWithHotkey
 } from '../../data/core/hotkeys';
-import { Generator } from '../../../../../../ls-frontend-test/helpers/common/Generator';
+import { Generator } from '@heartexlabs/ls-test/helpers/common/Generator';
 
 describe('Hotkeys', () => {
   const hotkeysToCheck = [
