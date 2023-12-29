@@ -144,17 +144,27 @@ export const Hotkey = (
     });
   };
 
+  const getKeys = (key: string) => {
+    const tokenRegex = /((?:\w+\+)*(?:[^,]+|,)),?/g;
+
+    return [...key.replace(/\s/,'').matchAll(tokenRegex)].map(match => match[1]);
+  };
+
   const unbind = () => {
     for (const scope of [DEFAULT_SCOPE, INPUT_SCOPE]) {
       for (const key of Object.keys(_hotkeys_map)) {
-        if (isFF(FF_LSDV_1148)) {
-          removeKeyHandlerRef(scope, key);
-          keymaster.unbind(key, scope);
-          rebindKeyHandlers(scope, key);
-        } else {
-          keymaster.unbind(key, scope);
+        const keys = getKeys(key);
+
+        for (const key of keys) {
+          if (isFF(FF_LSDV_1148)) {
+            removeKeyHandlerRef(scope, key);
+            keymaster.unbind(key, scope);
+            rebindKeyHandlers(scope, key);
+          } else {
+            keymaster.unbind(key, scope);
+          }
+          delete _hotkeys_desc[key];
         }
-        delete _hotkeys_desc[key];
       }
     }
 
