@@ -81,6 +81,6 @@ jobs:
     permissions:
       checks: write
       contents: read
-      pull-requests: read
+      pull-requests: write
     with:
       sha: ${{ github.event.pull_request.head.sha || github.event.after }}
