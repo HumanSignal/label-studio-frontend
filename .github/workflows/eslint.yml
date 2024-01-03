@@ -58,6 +58,8 @@ jobs:
 
       - name: Run ESLint
         uses: tj-actions/eslint-changed-files@v21
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           config_path: ".eslintrc.js"
           ignore_path: ".eslintignore"
