@@ -12,16 +12,17 @@ env:
   CACHE_NAME_PREFIX: v3
   NODE: '18'
 
+permissions:
+  checks: write
+  contents: read
+  pull-requests: read
+
 jobs:
   run:
     name: Run ESLint
     runs-on: ubuntu-latest
     # ci can be skipped with `[skip ci]` prefix in message
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    permissions:
-      checks: write
-      contents: read
-      pull-requests: read
     steps:
       - uses: hmarr/debug-action@v2.1.0
 
