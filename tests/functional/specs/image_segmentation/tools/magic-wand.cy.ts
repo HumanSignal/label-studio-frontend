@@ -1,7 +1,7 @@
 import { ImageView, LabelStudio, Sidebar } from '@heartexlabs/ls-test/helpers/LSF';
 import { magicWandConfig, magicWandImageData } from '../../../data/image_segmentation/tools/magic-wand';
 import { FF_DEV_4081, FF_LSDV_4583 } from '../../../../../src/utils/feature-flags';
-import { Generator } from '../../../../../../../ls-frontend-test/helpers/common/Generator';
+import { Generator } from '@heartexlabs/ls-test/helpers/common/Generator';
 
 describe('Magic Wand tool', () => {
   beforeEach(() => {
