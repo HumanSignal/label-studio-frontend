@@ -1,15 +1,6 @@
 /* global LSF_VERSION */
 
-import {
-  destroy,
-  detach,
-  flow,
-  getEnv, getParent,
-  getSnapshot,
-  isRoot,
-  types,
-  walk
-} from 'mobx-state-tree';
+import { destroy, detach, flow, getEnv, getParent, getSnapshot, isRoot, types, walk } from 'mobx-state-tree';
 
 import uniqBy from 'lodash/uniqBy';
 import InfoModal from '../components/Infomodal/Infomodal';
@@ -636,6 +627,27 @@ export default types
       return presignUrl;
     }
 
+    async function onAssistantPrompt(prompt) {
+      self.setFlags({ awaitingSuggestions: true });
+
+      const tags = [...self.annotationStore.selected.names.values()];
+      const labels = tags.find(t => t.type === 'labels').children.map(l => l._value);
+
+      const fullPrompt = `Provide json containing list for each of the following entities:
+      ${labels.join(', ')} mentioned in the text. No explanations and assumptions, please.
+      Provide empty lists in the json for the entities that are not required.
+      Respect this constraint and request: ${prompt}`;
+
+      const result = await self.events.invoke('assistantPrompt', self, fullPrompt);
+
+      self.annotationStore.selected.deserializeResults(result[0]);
+      self.annotationStore.selected.updateObjects();
+
+      self.setFlags({ awaitingSuggestions: false });
+
+      return result;
+    }
+
     /**
      * Reset annotation store
      */
@@ -848,6 +860,8 @@ export default types
       presignUrlForProject,
       setUsers,
       mergeUsers,
+
+      onAssistantPrompt,
 
       showModal,
       toggleComments,
