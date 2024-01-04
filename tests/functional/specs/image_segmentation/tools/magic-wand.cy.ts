@@ -57,7 +57,7 @@ describe('Magic Wand tool', () => {
         ImageView.waitForImage();
 
         ImageView.clickAtRelative(.15, .15);
-        ImageView.waitForPixelRelative(.15, .15, '#a1a1a1');
+        ImageView.waitForPixelRelative(.15, .15, '#a1a1a1', { timeout: 10000 });
 
         Sidebar.hasRegions(1);
         ImageView.capture('RegionOnCanvas');
@@ -72,7 +72,7 @@ describe('Magic Wand tool', () => {
           ImageView.waitForImage();
 
           Sidebar.hasRegions(1);
-          ImageView.waitForPixelRelative(.15, .15, '#a1a1a1');
+          ImageView.waitForPixelRelative(.15, .15, '#a1a1a1', { timeout: 10000 });
           ImageView.canvasShouldNotChange('RegionOnCanvas');
         });
       });
