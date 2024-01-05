@@ -274,7 +274,13 @@ export const restorePanel = (showComments: boolean) => {
       .map(([_, panel]: any) => panel.panelViews)
       .flat(1);
 
-  if (!allTabs || allTabs.length !== (panelViews.length - (showComments ? 0 : 1))) {
+  // don't use comments tab anywhere if it's disabled
+  const countOfAllAvailableTabs = panelViews.length - (showComments ? 0 : 1);
+
+  // stored state can have less tabs than available, for example if it was stored on old version
+  // or if comments were enabled; then return default state
+  // @todo if comments were disabled they might still be displayed causing unexpected behavior
+  if (!allTabs || allTabs.length !== countOfAllAvailableTabs) {
     const defaultPanel = showComments ? enterprisePanelDefault : openSourcePanelDefault;
 
     return { panelData: defaultPanel, collapsedSide: defaultCollapsedSide };
