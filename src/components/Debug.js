@@ -37,7 +37,7 @@ const DebugComponent = ({ store }) => {
 
     if (!input) return;
     const annotation = store.annotationStore.selected;
-    const json = await Promise.all([toJSON(annotation)]);
+    const json = await toJSON(annotation);
 
     input.value = JSON.stringify(json, null, 2);
   }, []);
