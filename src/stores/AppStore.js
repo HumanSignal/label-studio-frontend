@@ -713,8 +713,11 @@ export default types
         console.log('WE DID THE INIT!');
         window.STORE_INIT_OK = true;
 
-        const current = as.annotations.at(-1);
-        const currentPrediction = !current && as.predictions.at(-1);
+        // previously items were selected one by one and the last one left selected,
+        // but because they were added to the beginning of the array, the last one was first.
+        // keeping this logic here
+        const current = as.annotations[0];
+        const currentPrediction = !current && as.predictions[0];
 
         if (current) {
           as.selectAnnotation(current.id);
