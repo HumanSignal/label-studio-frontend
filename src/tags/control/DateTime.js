@@ -12,6 +12,9 @@ import RequiredMixin from '../../mixins/Required';
 import { isDefined } from '../../utils/utilities';
 import ControlBase from './Base';
 import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
+import ClassificationBase from './ClassificationBase';
+import PerItemMixin from '../../mixins/PerItem';
+import { FF_LSDV_4583, isFF } from '../../utils/feature-flags';
 
 const FORMAT_FULL = '%Y-%m-%dT%H:%M';
 const FORMAT_DATE = '%Y-%m-%d';
@@ -25,6 +28,9 @@ const zero = n => (n < 10 ? '0' : '') + n;
  * The DateTime tag adds date and time selection to the labeling interface. Use this tag to add a date, timestamp, month, or year to an annotation.
  *
  * Use with the following data types: audio, image, HTML, paragraph, text, time series, video
+ *
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality
+ *
  * @example
  * <View>
  *   <Text name="txt" value="$text" />
@@ -40,11 +46,12 @@ const zero = n => (n < 10 ? '0' : '') + n;
  *        when both date and time are displayed, by default shows ISO with a "T" separator;
  *        when only date is displayed, by default shows ISO date;
  *        when only time is displayed, by default shows a 24 hour time with leading zero
- * @param {string} [min]             - Set a minimum datetime value for only=date, minimum year for only=year
- * @param {string} [max]             - Set a maximum datetime value for only=date, maximum year for only=year
+ * @param {string} [min]             - Set a minimum datetime value for only=date in ISO format, or minimum year for only=year
+ * @param {string} [max]             - Set a maximum datetime value for only=date in ISO format, or maximum year for only=year
  * @param {boolean} [required=false] - Whether datetime is required or not
  * @param {string} [requiredMessage] - Message to show if validation fails
  * @param {boolean} [perRegion]      - Use this option to label regions instead of the whole object
+ * @param {boolean} [perItem]        - Use this option to label items inside the object instead of the whole object[^FF_LSDV_4583]
  */
 const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
@@ -94,12 +101,34 @@ const Model = types
       return self.only?.includes('year');
     },
 
+    /**
+     * Results store only formatted values and we need ISO for validation
+     * @param {string} value already formatted value from result
+     * @returns {string} ISO date
+     */
+    getISODate(value) {
+      if (self.onlyYear) return value;
+      if (self.onlyTime) return undefined;
+
+      /** @type {Date} parsed date in local timezone */
+      const date = self.parseDateTime(value);
+
+      // we can't use toISOString() because it may shift timezone and return different day
+      return [date.getFullYear(), zero(date.getMonth() + 1), zero(date.getDate())].join('-');
+    },
+
+    /**
+     * @returns {string} current year or date in ISO format
+     */
     get date() {
       if (self.only?.includes('year')) return self.year;
       if (!self.month || !self.year) return undefined;
       return [self.year, zero(self.month), zero(self.day)].join('-');
     },
 
+    /**
+     * @returns {string} main value stored in result, already formatted
+     */
     get datetime() {
       const timeStr = self.time || '00:00';
 
@@ -114,15 +143,10 @@ const Model = types
       return self.formatDateTime(date);
     },
 
-    get result() {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
-
-        if (!area) return null;
-
-        return self.annotation.results.find(r => r.from_name === self && r.area === area);
-      }
-      return self.annotation.results.find(r => r.from_name === self);
+    get isValid() {
+      if (self.min && self.date < self.min) return false;
+      if (self.max && self.date > self.max) return false;
+      return true;
     },
   }))
   .volatile(() => ({
@@ -131,8 +155,6 @@ const Model = types
     month: undefined,
     year: undefined,
     time: undefined,
-    formatDate: d3.timeFormat(FORMAT_DATE),
-    formatTime: d3.timeFormat(FORMAT_TIME),
   }))
   .volatile(self => {
     let format;
@@ -144,6 +166,7 @@ const Model = types
     else format = FORMAT_FULL;
 
     return {
+      formatTime: d3.timeFormat(FORMAT_TIME),
       formatDateTime: d3.timeFormat(format),
       parseDateTime: d3.timeParse(format),
     };
@@ -165,6 +188,9 @@ const Model = types
       years.push(y);
     }
 
+    // every month should have this day, so current day is bad:
+    // on Oct 30th when you change month to February it resets to March
+    date.setDate(1);
     for (let m = 0; m < 12; m++) {
       date.setMonth(m);
       months[m] = monthName(date);
@@ -219,27 +245,13 @@ const Model = types
 
       if (!date) return self.resetDateTime();
 
+      // @todo month and year inputs may need only one value to be set
       self.day = date.getDate();
       self.month = date.getMonth() + 1;
       self.year = date.getFullYear();
 
       if (self.showTime) {
         self.time = self.formatTime(date);
-      }
-    },
-
-    updateResult() {
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
-
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          self.annotation.createResult({}, { datetime: self.datetime }, self, self.toname);
-        }
       }
     },
 
@@ -279,17 +291,70 @@ const Model = types
     requiredModal() {
       InfoModal.warning(self.requiredmessage || `DateTime "${self.name}" is required.`);
     },
-  }));
+  }))
+  .actions(self => {
+    const Super = { validate: self.validate };
+
+    return {
+      validate() {
+        if (!Super.validate()) return false;
+
+        const { min, max } = self;
+
+        if (!min && !max) return true;
+
+        function validateValue(value) {
+          const errors = [];
+
+          if (!value) return true;
+
+          let date = self.getISODate(value);
+
+          if (self.only?.includes('year')) date = date.slice(0, 4);
+
+          if (min && date < min) errors.push(`min date is ${min}`);
+          if (max && date > max) errors.push(`max date is ${max}`);
+
+          if (errors.length) {
+            InfoModal.warning(`Date "${date}" is not valid: ${errors.join(', ')}.`);
+            return false;
+          }
+          return true;
+        }
+
+        // per-region results are not visible, so we have to check their values
+        if (self.perregion) {
+          const objectTag = self.toNameTag;
+
+          for (const reg of objectTag.allRegs) {
+            const date = reg.results.find(s => s.from_name === self)?.mainValue;
+            const isValid = validateValue(date);
+
+            if (!isValid) {
+              self.annotation.selectArea(reg);
+              return false;
+            }
+          }
+
+          return true;
+        } else {
+          return validateValue(self.datetime);
+        }
+      },
+    };
+  });
 
 const DateTimeModel = types.compose(
   'DateTimeModel',
   ControlBase,
-  TagAttrs,
-  Model,
+  ClassificationBase,
   RequiredMixin,
   ReadOnlyControlMixin,
   PerRegionMixin,
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin] : []),
   AnnotationMixin,
+  TagAttrs,
+  Model,
 );
 
 const HtxDateTime = inject('store')(
@@ -297,7 +362,7 @@ const HtxDateTime = inject('store')(
     const disabled = item.isReadOnly();
     const visibleStyle = item.perRegionVisible() ? { margin: '0 0 1em' } : { display: 'none' };
     const visual = {
-      style: { width: 'auto', marginRight: '4px' },
+      style: { width: 'auto', marginRight: '4px', borderColor: item.isValid ? undefined : 'red' },
       className: 'ant-input',
     };
     const [minTime, maxTime] = [item.min, item.max].map(s => s?.match(/\d?\d:\d\d/)?.[0]);
@@ -325,7 +390,7 @@ const HtxDateTime = inject('store')(
     };
 
     return (
-      <div style={visibleStyle}>
+      <div className="htx-datetime" style={visibleStyle}>
         {item.showMonth && (
           <select
             {...visual}

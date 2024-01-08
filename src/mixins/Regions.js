@@ -3,6 +3,7 @@ import { guidGenerator } from '../core/Helpers';
 import { isDefined } from '../utils/utilities';
 import { AnnotationMixin } from './AnnotationMixin';
 import { ReadOnlyRegionMixin } from './ReadOnlyMixin';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
 const RegionsMixin = types
   .model({
@@ -10,8 +11,6 @@ const RegionsMixin = types
     pid: types.optional(types.string, guidGenerator),
 
     score: types.maybeNull(types.number),
-
-    hidden: types.optional(types.boolean, false),
 
     filtered: types.optional(types.boolean, false),
 
@@ -21,8 +20,6 @@ const RegionsMixin = types
 
     // Dynamic preannotations enabled
     dynamic: false,
-
-    locked: false,
 
     origin: types.optional(types.enumeration([
       'prediction',
@@ -35,6 +32,8 @@ const RegionsMixin = types
   .volatile(() => ({
     // selected: false,
     _highlighted: false,
+    hidden: false,
+    locked: false,
     isDrawing: false,
     perRegionFocusRequest: null,
     shapeRef: null,
@@ -79,15 +78,43 @@ const RegionsMixin = types
       return self.parent.findImageEntity(self.item_index ?? 0);
     },
 
-    getConnectedDynamicRegions(selfExcluding) {
+    getConnectedDynamicRegions(excludeSelf) {
       const { regions = [] } = getRoot(self).annotationStore?.selected || {};
+      const { type, labelName } = self;
 
-      return regions.filter(r => {
-        if (selfExcluding && r === self) return false;
-        return r.dynamic && r.type === self.type && r.labelName === self.labelName;
+      const result = regions.filter(region => {
+        if (excludeSelf && region === self) return false;
+        const canBePartOfNotification = self.supportSuggestions ? self.dynamic : true;
+
+        return canBePartOfNotification
+          && region.type === type
+          && region.labelName === labelName
+          && region.results?.[0]?.to_name === self.results?.[0]?.to_name;
       });
+
+      return result;
     },
 
+    // Indicates that it is not temporary region created just to display data like Textarea's one
+    // and is not a suggestion
+    get isRealRegion() {
+      return self.annotation?.areas?.has(self.id);
+    },
+
+    get shouldNotifyDrawingFinished() {
+      // extra calls on destroying will be skipped
+      // @see beforeDestroy action
+      if (!self.isRealRegion) return false;
+      if (self.annotation.isSuggestionsAccepting) return false;
+      // There are two modes:
+      // If object tag support suggestions - the region should be marked as a dynamic one to make notifications
+      // If object tag doesn't support suggestions - every region works as dynamic with auto suggestions
+      const canBeReasonOfNotification = self.supportSuggestions ? self.dynamic && !self.fromSuggestion : true;
+
+      const isSmartEnabled = self.results.some(r => r.from_name.smartEnabled);
+
+      return isSmartEnabled && canBeReasonOfNotification;
+    },
   }))
   .actions(self => {
     return {
@@ -110,6 +137,19 @@ const RegionsMixin = types
       },
 
       beforeDestroy() {
+        // beforeDestroy may be called by accident for Textarea and etc. as part of updateObjects action
+        // in that case the region already has no results
+
+        // The other bad behaviour is that beforeDestroy may be called on accepting suggestions 'cause they are deleting in that case
+
+        // So if you see this bad thing during debugging - now you know why
+        // and why we need this check
+        if (self.isRealRegion) {
+          return self.beforeDestroyArea();
+        }
+      },
+
+      beforeDestroyArea() {
         self.notifyDrawingFinished({ destroy: true });
       },
 
@@ -127,19 +167,19 @@ const RegionsMixin = types
 
       // @todo this conversion methods should be removed after removing FF_DEV_3793
       convertXToPerc(x) {
-        return (x * 100) / self.currentImageEntity.stageWidth;
+        return (x * RELATIVE_STAGE_WIDTH) / self.currentImageEntity.stageWidth;
       },
 
       convertYToPerc(y) {
-        return (y * 100) / self.currentImageEntity.stageHeight;
+        return (y * RELATIVE_STAGE_HEIGHT) / self.currentImageEntity.stageHeight;
       },
 
       convertHDimensionToPerc(hd) {
-        return (hd * (self.scaleX || 1) * 100) / self.currentImageEntity.stageWidth;
+        return (hd * (self.scaleX || 1) * RELATIVE_STAGE_WIDTH) / self.currentImageEntity.stageWidth;
       },
 
       convertVDimensionToPerc(vd) {
-        return (vd * (self.scaleY || 1) * 100) / self.currentImageEntity.stageHeight;
+        return (vd * (self.scaleY || 1) * RELATIVE_STAGE_HEIGHT) / self.currentImageEntity.stageHeight;
       },
 
       // update region appearence based on it's current states, for
@@ -249,8 +289,8 @@ const RegionsMixin = types
           self.origin = 'prediction-changed';
         }
 
-        // everything above is related to dynamic preannotations
-        if (!self.dynamic || self.fromSuggestion) return;
+        // everything below is related to dynamic preannotations
+        if (!self.shouldNotifyDrawingFinished) return;
 
         clearTimeout(self.drawingTimeout);
 
@@ -259,7 +299,9 @@ const RegionsMixin = types
           const env = getEnv(self);
 
           self.drawingTimeout = setTimeout(() => {
-            env.events.invoke('regionFinishedDrawing', self, self.getConnectedDynamicRegions(destroy));
+            const connectedRegions = self.getConnectedDynamicRegions(destroy);
+
+            env.events.invoke('regionFinishedDrawing', self, connectedRegions);
           }, timeout);
         }
       },

@@ -19,6 +19,7 @@ import { FF_DEV_3793, isFF } from '../utils/feature-flags';
 import { createDragBoundFunc } from '../utils/image';
 import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
 const EllipseRegionAbsoluteCoordsDEV3793 = types
   .model({
@@ -37,7 +38,7 @@ const EllipseRegionAbsoluteCoordsDEV3793 = types
       self.startX = self.x;
       self.startY = self.y;
 
-      switch (self.coordstype)  {
+      switch (self.coordstype) {
         case 'perc': {
           self.relativeX = self.x;
           self.relativeY = self.y;
@@ -65,11 +66,11 @@ const EllipseRegionAbsoluteCoordsDEV3793 = types
       self.radiusX = radiusX;
       self.radiusY = radiusY;
 
-      self.relativeX = (x / self.parent?.stageWidth) * 100;
-      self.relativeY = (y / self.parent?.stageHeight) * 100;
+      self.relativeX = (x / self.parent?.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (y / self.parent?.stageHeight) * RELATIVE_STAGE_HEIGHT;
 
-      self.relativeRadiusX = (radiusX / self.parent?.stageWidth) * 100;
-      self.relativeRadiusY = (radiusY / self.parent?.stageHeight) * 100;
+      self.relativeRadiusX = (radiusX / self.parent?.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeRadiusY = (radiusY / self.parent?.stageHeight) * RELATIVE_STAGE_HEIGHT;
 
       self.rotation = (rotation + 360) % 360;
     },
@@ -81,15 +82,15 @@ const EllipseRegionAbsoluteCoordsDEV3793 = types
       self.sh = sh;
 
       if (self.coordstype === 'px') {
-        self.x = (sw * self.relativeX) / 100;
-        self.y = (sh * self.relativeY) / 100;
-        self.radiusX = (sw * self.relativeRadiusX) / 100;
-        self.radiusY = (sh * self.relativeRadiusY) / 100;
+        self.x = (sw * self.relativeX) / RELATIVE_STAGE_WIDTH;
+        self.y = (sh * self.relativeY) / RELATIVE_STAGE_HEIGHT;
+        self.radiusX = (sw * self.relativeRadiusX) / RELATIVE_STAGE_WIDTH;
+        self.radiusY = (sh * self.relativeRadiusY) / RELATIVE_STAGE_HEIGHT;
       } else if (self.coordstype === 'perc') {
-        self.x = (sw * self.x) / 100;
-        self.y = (sh * self.y) / 100;
-        self.radiusX = (sw * self.radiusX) / 100;
-        self.radiusY = (sh * self.radiusY) / 100;
+        self.x = (sw * self.x) / RELATIVE_STAGE_WIDTH;
+        self.y = (sh * self.y) / RELATIVE_STAGE_HEIGHT;
+        self.radiusX = (sw * self.radiusX) / RELATIVE_STAGE_WIDTH;
+        self.radiusY = (sh * self.radiusY) / RELATIVE_STAGE_HEIGHT;
         self.coordstype = 'px';
       }
     },
@@ -166,16 +167,16 @@ const Model = types
       return rotateBboxCoords(bboxCoords, self.rotation, { x: self.x, y: self.y }, self.parent.whRatio);
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.y) : self.y;
     },
     get canvasRadiusX() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasX(self.radiusX) : self.radiusX;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasX(self.radiusX) : self.radiusX;
     },
     get canvasRadiusY() {
-      return isFF(FF_DEV_3793) ? self.parent.internalToCanvasY(self.radiusY) : self.radiusY;
+      return isFF(FF_DEV_3793) ? self.parent?.internalToCanvasY(self.radiusY) : self.radiusY;
     },
   }))
   .actions(self => ({
@@ -301,25 +302,30 @@ const EllipseRegionModel = types.compose(
   ...(isFF(FF_DEV_3793) ? [] : [EllipseRegionAbsoluteCoordsDEV3793]),
 );
 
-const HtxEllipseView = ({ item }) => {
+const HtxEllipseView = ({ item, setShapeRef }) => {
   const { store } = item;
 
   const regionStyles = useRegionStyles(item);
-  const stage = item.parent.stageRef;
+  const stage = item.parent?.stageRef;
   const { suggestion } = useContext(ImageViewContext) ?? {};
+
+  if (!item.parent) return null;
+  if (!item.inViewPort) return null;
 
   return (
     <Fragment>
       <Ellipse
         x={item.canvasX}
         y={item.canvasY}
-        ref={el => item.setShapeRef(el)}
+        ref={el => setShapeRef(el)}
         radiusX={item.canvasRadiusX}
         radiusY={item.canvasRadiusY}
         fill={regionStyles.fillColor}
         stroke={regionStyles.strokeColor}
         strokeWidth={regionStyles.strokeWidth}
         strokeScaleEnabled={false}
+        perfectDrawEnabled={false}
+        shadowForStrokeEnabled={false}
         shadowBlur={0}
         scaleX={item.scaleX}
         scaleY={item.scaleY}

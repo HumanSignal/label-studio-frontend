@@ -50,7 +50,7 @@ export const setActiveDefaults = (state: Record<string, PanelBBox>) => {
   Object.keys(state).forEach((panelKey: string) => {
     const firstActiveTab = newState[panelKey].panelViews.findIndex((view) => view.active) ;
     
-    newState[panelKey].panelViews[firstActiveTab > 0 ? firstActiveTab :  0].active = true;
+    newState[panelKey].panelViews[firstActiveTab > 0 ? firstActiveTab : 0].active = true;
   });
 
   return newState;
@@ -121,7 +121,7 @@ const panelViews = [
     name: 'history',
     title: 'History',
     component: panelComponents['history'] as FC<PanelProps>,
-    active: true,
+    active: false,
   },
 
   {
@@ -134,7 +134,7 @@ const panelViews = [
     name: 'info',
     title: 'Info',
     component: panelComponents['info'] as FC<PanelProps>,
-    active: false,
+    active: true,
   },
   {
     name: 'comments',
@@ -145,22 +145,7 @@ const panelViews = [
 ];
 
 export const enterprisePanelDefault: Record<string, PanelBBox> = {
-  'regions-info': {
-    order: 1,
-    top: 0,
-    left: 0,
-    relativeLeft: 0,
-    relativeTop: 0,
-    zIndex: 10,
-    width: DEFAULT_PANEL_WIDTH,
-    height: DEFAULT_PANEL_HEIGHT,
-    visible: true,
-    detached: false,
-    alignment: Side.left,
-    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[0], panelViews[4]],
-  },
-  'history-comments-relations': {
+  'info-comments-history': {
     order: 1,
     top: 0,
     left: 0,
@@ -173,27 +158,27 @@ export const enterprisePanelDefault: Record<string, PanelBBox> = {
     detached: false,
     alignment: Side.right,
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[1], panelViews[2], panelViews[3]],
+    panelViews: [panelViews[3], panelViews[4], panelViews[1]],
+  },
+  'regions-relations': {
+    order: 2,
+    top: 0,
+    left: 0,
+    relativeLeft: 0,
+    relativeTop: 0,
+    zIndex: 10,
+    width: DEFAULT_PANEL_WIDTH,
+    height: DEFAULT_PANEL_HEIGHT,
+    visible: true,
+    detached: false,
+    alignment: Side.right,
+    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
+    panelViews: [panelViews[0], panelViews[2]],
   },
 };
 
 export const openSourcePanelDefault: Record<string, PanelBBox> = {
-  'regions-info': {
-    order: 1,
-    top: 0,
-    left: 0,
-    relativeLeft: 0,
-    relativeTop: 0,
-    zIndex: 10,
-    width: DEFAULT_PANEL_WIDTH,
-    height: DEFAULT_PANEL_HEIGHT,
-    visible: true,
-    detached: false,
-    alignment: Side.left,
-    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[0]],
-  },
-  'history-comments-relations': {
+  'info-history': {
     order: 1,
     top: 0,
     left: 0,
@@ -206,7 +191,22 @@ export const openSourcePanelDefault: Record<string, PanelBBox> = {
     detached: false,
     alignment: Side.right,
     maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
-    panelViews: [panelViews[1], panelViews[2], panelViews[3]],
+    panelViews: [panelViews[3], panelViews[1]],
+  },
+  'regions-relations': {
+    order: 2,
+    top: 0,
+    left: 0,
+    relativeLeft: 0,
+    relativeTop: 0,
+    zIndex: 10,
+    width: DEFAULT_PANEL_WIDTH,
+    height: DEFAULT_PANEL_HEIGHT,
+    visible: true,
+    detached: false,
+    alignment: Side.right,
+    maxHeight: DEFAULT_PANEL_MAX_HEIGHT,
+    panelViews: [panelViews[0], panelViews[2]],
   },
 };
 
@@ -242,17 +242,49 @@ export const resizers = [
   'left',
 ];
 
-export const restorePanel = (showComments: boolean) => {
-  const panelData = window.localStorage.getItem('panelState');
-  const parsed = panelData && JSON.parse(panelData);
-  const allTabs = panelData && Object.entries(parsed).map(([_, panel]: any) => panel.panelViews).flat(1);
-  
-  if (!allTabs || allTabs.length !== (panelViews.length - (showComments ? 1 : 0)))
-    return showComments ? openSourcePanelDefault : enterprisePanelDefault;
-  const noEmptyPanels = stateRemovePanelEmptyViews(parsed);
-  const withActiveDefaults = setActiveDefaults(noEmptyPanels);
 
-  return restoreComponentsToState(withActiveDefaults);
+export const checkCollapsedPanelsHaveData = (
+  collapsedSide: { [key: string]: boolean },
+  panelData: Record<string, PanelBBox>,
+) => {
+  const collapsedCopy = { ...collapsedSide };
+  const collapsedPanels = Object.keys(collapsedCopy).filter((side) => collapsedCopy[side]);
+
+  collapsedPanels.forEach((side) => {
+    const hasData = Object.keys(panelData).some((panel) => {
+      return panelData[panel].alignment === side && !panelData[panel].detached;
+    });
+
+    if (!hasData) collapsedCopy[side] = false;
+  });
+
+  return collapsedCopy;
+};
+
+export const restorePanel = (showComments: boolean) => {
+  const perviousState = window.localStorage.getItem('panelState');
+  const parsed = perviousState && JSON.parse(perviousState);
+  const panelData = parsed && parsed.panelData;
+  const defaultCollapsedSide = { [Side.left]: false, [Side.right]: false };
+  const collapsedSide = parsed?.collapsedSide ? parsed.collapsedSide : defaultCollapsedSide;
+
+  const allTabs =
+    panelData &&
+    Object.entries(panelData)
+      .map(([_, panel]: any) => panel.panelViews)
+      .flat(1);
+
+  if (!allTabs || allTabs.length !== (panelViews.length - (showComments ? 1 : 0))) {
+    const defaultPanel = showComments ? openSourcePanelDefault : enterprisePanelDefault;
+
+    return { panelData: defaultPanel, collapsedSide: defaultCollapsedSide };
+  }
+
+  const noEmptyPanels = stateRemovePanelEmptyViews(panelData);
+  const withActiveDefaults = setActiveDefaults(noEmptyPanels);
+  const safeCollapsedSide = checkCollapsedPanelsHaveData(collapsedSide, withActiveDefaults) as { [Side.left]: boolean, [Side.right]: boolean };
+
+  return { panelData: restoreComponentsToState(withActiveDefaults), collapsedSide: safeCollapsedSide };
 };
 
 export const restoreComponentsToState = (panelData: Record<string, PanelBBox>) => {
@@ -269,12 +301,12 @@ export const restoreComponentsToState = (panelData: Record<string, PanelBBox>) =
   return updatedPanels; 
 };
 
-export const savePanels = (panelData: Record<string, PanelBBox>) => {
-  window.localStorage.setItem('panelState', JSON.stringify(panelData));
+export const savePanels = (panelData: Record<string, PanelBBox>, collapsedSide: { [Side.left]: boolean, [Side.right]: boolean }) => {
+  window.localStorage.setItem('panelState', JSON.stringify({ panelData, collapsedSide }));
 };
 
-export const getLeftKeys = (state: Record<string, PanelBBox>) =>  Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.left);
-export const getRightKeys = (state: Record<string, PanelBBox>) =>  Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.right);
+export const getLeftKeys = (state: Record<string, PanelBBox>) => Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.left);
+export const getRightKeys = (state: Record<string, PanelBBox>) => Object.keys(state).filter((key) => !state[key].detached && state[key].alignment === Side.right);
 
 export const getAttachedPerSide = (state: Record<string, PanelBBox>, side: string) => {
   if (side === Side.left) return getLeftKeys(state).sort((a, b) => state[a].order - state[b].order);
@@ -486,8 +518,6 @@ export const newPanelInState = (
 ) => {
   const newPanel = newPanelFromTab(state, name, movingPanel, movingTab, left, top, viewportSize);
   const stateWithRemovals = stateRemovedTab(state, movingPanel, movingTab);
-
-  // Object.keys(stateWithRemovals).forEach(panelKey => (stateWithRemovals[panelKey].zIndex = 10));
   const panelsWithRemovals = stateRemovePanelEmptyViews(stateWithRemovals);
   const panelWithAdditions = { ...panelsWithRemovals, [`${newPanel.name}`]: newPanel };
   const renamedKeys = renameKeys(panelWithAdditions);
@@ -526,4 +556,11 @@ export const findZIndices = (state: Record<string, PanelBBox>, focusedKey: strin
   if (newState[focusedKey].detached) newState[focusedKey].zIndex = detached.length + 12;
 
   return newState;
+};
+
+export const findPanelViewByName = (state: Record<string, PanelBBox>, name: string): { panelName: string, tab: PanelView, panelViewIndex: number } | undefined => {
+  const panelName = Object.keys(state).find(panelKey => panelKey.includes(name)) || '';
+  const panelViewIndex = state[panelName]?.panelViews.findIndex((view: { name: string }) => view.name === name);
+
+  return panelViewIndex >= 0 ? { panelName, tab: state[panelName].panelViews[panelViewIndex], panelViewIndex } : undefined;
 };

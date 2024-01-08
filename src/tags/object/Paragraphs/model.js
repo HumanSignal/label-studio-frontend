@@ -6,18 +6,14 @@ import { errorBuilder } from '../../../core/DataValidator/ConfigValidator';
 import { AnnotationMixin } from '../../../mixins/AnnotationMixin';
 import RegionsMixin from '../../../mixins/Regions';
 import { SyncableMixin } from '../../../mixins/Syncable';
-import { SyncMixin } from '../../../mixins/SyncMixin';
 import { ParagraphsRegionModel } from '../../../regions/ParagraphsRegion';
 import Utils from '../../../utils';
 import { parseValue } from '../../../utils/data';
-import { FF_DEV_2461, FF_DEV_2669, FF_DEV_2918, FF_DEV_3666, FF_LSDV_3012, FF_LSDV_4711, isFF } from '../../../utils/feature-flags';
+import { FF_DEV_2669, FF_DEV_2918, FF_DEV_3666, FF_LSDV_E_278, isFF } from '../../../utils/feature-flags';
 import messages from '../../../utils/messages';
 import { clamp, isDefined, isValidObjectURL } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import styles from './Paragraphs.module.scss';
-
-const isFFDev2461 = isFF(FF_DEV_2461);
-const isFFLsdv4711 = isFF(FF_LSDV_4711);
 
 /**
  * The `Paragraphs` tag displays paragraphs of text on the labeling interface. Use to label dialogue transcripts for NLP and NER projects.
@@ -34,20 +30,44 @@ const isFFLsdv4711 = isFF(FF_LSDV_4711);
  *     <Label value="Random talk"></Label>
  *   </ParagraphLabels>
  * </View>
+ * @example
+ * <!-- Paragraphs with audio -->
+ * <View>
+ *   <Paragraphs audioUrl="$audio" value="$para" name="paragraphs"
+ *               layout="dialogue" textKey="text" nameKey="author"
+ *               showPlayer="true"
+ *               />
+ *   
+ *   <Choices name="choices" toName="paragraphs" choice="multiple">
+ *       <Choice value="Good quality"/>
+ *       <Choice value="Fast speech"/>
+ *   </Choices>    
+ * </View>
+ * 
+ * <!-- {"data": { 
+ *   "para": [
+ *     {"text": "test 1", "author": "A", "start": 0.0, "end": 1.0},
+ *     {"text": "test 2", "author": "B", "start": 1.0, "end": 2.0},
+ *     {"text": "test 3", "author": "A", "start": 2.0, "end": 3.0}
+ *   ], 
+ *   "audio": "/static/samples/game.wav"
+ * }}
+ * -->
  * @name Paragraphs
  * @regions ParagraphsRegion
  * @meta_title Paragraph Tags for Paragraphs
  * @meta_description Customize Label Studio with the Paragraphs tag to annotate paragraphs for NLP and NER machine learning and data science projects.
- * @param {string} name                  - Name of the element
- * @param {string} value                 - Data field containing the paragraph content
- * @param {json|url} [valueType=json]    - Whether the data is stored directly in uploaded JSON data or needs to be loaded from a URL
- * @param {string} audioUrl              - Audio to sync phrases with
- * @param {string} [sync]                - object name to sync with
- * @param {boolean} [showPlayer=false]   - Whether to show audio player above the paragraphs. Ignored if sync object is audio
- * @param {no|yes} [saveTextResult=yes]  - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
- * @param {none|dialogue} [layout=none]  - Whether to use a dialogue-style layout or not
- * @param {string} [nameKey=author]      - The key field to use for name
- * @param {string} [textKey=text]        - The key field to use for the text
+ * @param {string} name                   - Name of the element
+ * @param {string} value                  - Data field containing the paragraph content
+ * @param {json|url} [valueType=json]     - Whether the data is stored directly in uploaded JSON data or needs to be loaded from a URL
+ * @param {string} [audioUrl]             - Audio to sync phrases with
+ * @param {string} [sync]                 - Object name to sync with
+ * @param {boolean} [showPlayer=false]    - Whether to show audio player above the paragraphs. Ignored if sync object is audio
+ * @param {no|yes} [saveTextResult=yes]   - Whether to store labeled text along with the results. By default, doesn't store text for `valueType=url`
+ * @param {none|dialogue} [layout=none]   - Whether to use a dialogue-style layout or not
+ * @param {string} [nameKey=author]       - The key field to use for name
+ * @param {string} [textKey=text]         - The key field to use for the text
+ * @param {boolean} [contextScroll=false] - Turn on contextual scroll mode
  */
 const TagAttrs = types.model('ParagraphsModel', {
   value: types.maybeNull(types.string),
@@ -67,6 +87,7 @@ const TagAttrs = types.model('ParagraphsModel', {
 
   namekey: types.optional(types.string, 'author'),
   textkey: types.optional(types.string, 'text'),
+  contextscroll: types.optional(types.boolean, false),
 });
 
 const Model = types
@@ -85,11 +106,6 @@ const Model = types
       return getRoot(self);
     },
 
-    get syncedAudioVideo() {
-      if (!isFFDev2461) return false;
-      return self.syncedObject?.type?.startsWith('audio') || self.syncedObject?.type?.startsWith('video');
-    },
-
     get audio() {
       if (!self.audiourl) return null;
       if (self.audiourl[0] === '$') {
@@ -101,17 +117,31 @@ const Model = types
       return self.audiourl;
     },
 
-    get regs() {
-      return self.annotation.regionStore.regions.filter(r => r.object === self);
-    },
-
     layoutStyles(data) {
       if (self.layout === 'dialogue') {
         const seed = data[self.namekey];
+        const color = ColorScheme.make_color({ seed })[0];
 
-        return {
-          phrase: { backgroundColor: Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed })[0], 0.25) },
-        };
+        if (isFF(FF_LSDV_E_278)) {
+          return {
+            phrase: {
+              '--highlight-color': color,
+              '--background-color': '#FFF',
+            },
+            name: { color },
+            inactive: {
+              phrase: {
+                '--highlight-color': Utils.Colors.convertToRGBA(color, 0.4),
+                '--background-color': '#FAFAFA',
+              },
+              name: { color: Utils.Colors.convertToRGBA(color, 0.9) },
+            },
+          };
+        } else {
+          return {
+            phrase: { backgroundColor: Utils.Colors.convertToRGBA(color, 0.25) },
+          };
+        }
       }
 
       return {};
@@ -159,7 +189,7 @@ const PlayableAndSyncable = types.model()
     playing: false, // just internal state for UI
     audioRef: createRef(),
     audioDuration: null,
-    audioStopHandler: null,
+    audioFrameHandler: null,
   }))
   .views(self => ({
     /**
@@ -197,6 +227,9 @@ const PlayableAndSyncable = types.model()
         return { start, end };
       });
     },
+    get regionsValues() {
+      return Object.values(self.regionsStartEnd);
+    },
   }))
   .actions(self => ({
     /**
@@ -225,20 +258,15 @@ const PlayableAndSyncable = types.model()
 
     handleSyncPlay({ time, playing }) {
       const audio = self.audioRef.current;
-      const indices = self.regionIndicesByTime(time);
 
       if (!audio) return;
-      // if we left current region's time, reset
-      if (!indices.includes(self.playingId)) {
-        self.stopNow();
-        self.reset();
-        return;
-      }
 
       // so we are changing time inside current region only
       audio.currentTime = time;
       if (audio.paused && playing) {
-        self.play(self.playingId);
+        self.play();
+      } else {
+        self.trackPlayingId();
       }
     },
 
@@ -264,9 +292,9 @@ const PlayableAndSyncable = types.model()
     reset() {
       self.playingId = -1;
 
-      if (self.audioStopHandler) {
-        cancelAnimationFrame(self.audioStopHandler);
-        self.audioStopHandler = null;
+      if (self.audioFrameHandler) {
+        cancelAnimationFrame(self.audioFrameHandler);
+        self.audioFrameHandler = null;
       }
     },
 
@@ -296,7 +324,7 @@ const PlayableAndSyncable = types.model()
       const { end } = self.regionsStartEnd[self.playingId] ?? {};
 
       if (audio.currentTime < end) {
-        self.audioStopHandler = requestAnimationFrame(self.stopAtTheEnd);
+        self.audioFrameHandler = requestAnimationFrame(self.stopAtTheEnd);
         return;
       }
 
@@ -304,7 +332,51 @@ const PlayableAndSyncable = types.model()
       self.reset();
     },
 
+    trackPlayingId() {
+      if (self.audioFrameHandler) cancelAnimationFrame(self.audioFrameHandler);
+
+      const audio = self.audioRef.current;
+      const currentTime = audio?.currentTime;
+      const endTime = audio?.duration;
+
+      if (!isDefined(currentTime) || !isDefined(endTime) || currentTime >= endTime) {
+        self.reset();
+        return;
+      }
+
+      const regions = self.regionsValues;
+
+      self.playingId = regions.findIndex(({ start, end }) => {
+        return currentTime >= start && currentTime < end;
+      });
+
+      if (!audio.paused) {
+        self.audioFrameHandler = requestAnimationFrame(self.trackPlayingId);
+      }
+    },
+
+    playAny() {
+      const audio = self.audioRef?.current;
+
+      if (!isDefined(audio)) return;
+
+      const isPaused = audio.paused;
+
+      if (isPaused) {
+        audio.play();
+        self.triggerSync('play');
+      }
+
+      self.playing = true;
+      self.trackPlayingId();
+    },
+
     play(idx) {
+      if (!isDefined(idx)) {
+        self.playAny();
+        return;
+      }
+
       const { start, end } = self.regionsStartEnd[idx] ?? {};
       const audio = self.audioRef?.current;
 
@@ -326,7 +398,7 @@ const PlayableAndSyncable = types.model()
       self.playing = true;
       self.playingId = idx;
       self.triggerSync('play');
-      self.stopAtTheEnd();
+      self.trackPlayingId();
     },
   }))
   .actions(self => ({
@@ -338,215 +410,6 @@ const PlayableAndSyncable = types.model()
       self.filterByAuthor = value;
     },
   }));
-
-const OldPlayAndSync = types.model()
-  .volatile(() => ({
-    _value: '',
-    filterByAuthor: [],
-    searchAuthor: '',
-    playingId: -1,
-  }))
-  .actions(self => {
-    const audioRef = createRef();
-    let audioStopHandler = null;
-    let endDuration = 0;
-    let currentId = -1;
-    let currentSourceTime = 0;
-    let hasLoadedSource = false;
-    let reloadingSource = false;
-    let wasPlayingId = -1;
-
-    function stop() {
-      const audio = audioRef.current;
-
-      if (!audio) return;
-
-      const isPaused = isFFDev2461 ? !self.isCurrentlyPlaying : audio.paused;
-
-      if (isPaused) return;
-
-      const currentTime = audio.currentTime;
-
-      if (currentTime < endDuration) {
-        stopIn(endDuration - currentTime);
-        return;
-      }
-      audioStopHandler = null;
-      endDuration = 0;
-      if (isFFDev2461) {
-        self.handlePause();
-      } else {
-        audio.pause();
-      }
-      self.reset();
-    }
-
-    function stopIn(seconds) {
-      audioStopHandler = window.setTimeout(stop, 1000 * seconds);
-    }
-
-    return {
-      getRef() {
-        return audioRef;
-      },
-
-      reset(hard = true) {
-        self.playingId = -1;
-
-        if (!isFFDev2461 || hard) {
-          currentId = -1;
-        }
-      },
-
-      handleError() {
-        if (!isFFLsdv4711) return;
-
-        const audio = audioRef.current;
-
-        // if the source has succesfully loaded before, we can try to reload it
-        // as it may be an expired presigned url or temporary network issue
-        if (audio && hasLoadedSource) {
-          hasLoadedSource = false;
-          reloadingSource = true;
-          wasPlayingId = self.playingId;
-          currentSourceTime = isNaN(audio.currentTime) ? currentSourceTime : audio.currentTime;
-          stop();
-          audio.load();
-        }
-      },
-
-      handleCanPlay() {
-        if (!isFFLsdv4711) return;
-
-        const audio = audioRef.current;
-
-        hasLoadedSource = true;
-
-        if (audio && reloadingSource) {
-          reloadingSource = false;
-          audio.currentTime = currentSourceTime;
-
-          if (wasPlayingId > -1) self.play(wasPlayingId);
-        }
-      },
-
-      handleSyncSeek(time) {
-        if (audioRef.current) {
-          currentSourceTime = time;
-          audioRef.current.currentTime = time;
-        }
-      },
-
-      handleSyncPlay() {
-        self.isCurrentlyPlaying = true;
-        self.muteSelfWhenSynced();
-
-        if (audioRef.current) {
-          audioRef.current.play();
-        }
-      },
-
-      handleSyncPause() {
-        self.isCurrentlyPlaying = false;
-        self.reset(false);
-
-        if (audioRef.current) {
-          audioRef.current.pause();
-        }
-      },
-
-      handleSyncSpeed(speed) {
-        if (!audioRef.current) return;
-        audioRef.current.playbackRate = speed;
-      },
-
-      handleSyncDuration() {},
-
-      handlePause() {
-        if (self.syncedAudioVideo) {
-          self.triggerSyncPause();
-        } else {
-          self.handleSyncPause();
-        }
-      },
-
-      handlePlay() {
-        if (self.syncedAudioVideo) {
-          self.triggerSyncPlay();
-        } else {
-          self.handleSyncPlay();
-        }
-      },
-
-      handleSeek(time) {
-        if (self.syncedAudioVideo) {
-          self.triggerSyncSeek(time);
-        } else {
-          self.handleSyncSeek(time);
-        }
-      },
-
-      muteSelfWhenSynced() {
-        if (self.syncedAudioVideo && audioRef.current) {
-          audioRef.current.muted = true;
-        }
-      },
-
-      play(idx) {
-        const value = self._value[idx] || {};
-        const { start, duration } = value;
-        const end = duration ? start + duration : value.end || 0;
-
-        if (!audioRef || isNaN(start) || isNaN(end)) return;
-        const audio = audioRef.current;
-
-        if (audioStopHandler) {
-          window.clearTimeout(audioStopHandler);
-          audioStopHandler = null;
-        }
-
-        const isPlaying = isFFDev2461 ? self.isCurrentlyPlaying : !audio.paused;
-
-        if (isPlaying && currentId === idx) {
-          if (isFFDev2461) {
-            self.handlePause();
-          } else {
-            audio.pause();
-            self.playingId = -1;
-          }
-          return;
-        }
-
-        if (idx !== currentId) {
-          if (isFFDev2461) {
-            self.handleSeek(start);
-          } else {
-            audio.currentTime = start;
-          }
-        }
-
-        if (isFFDev2461) {
-          self.handlePlay();
-        } else {
-          audio.play();
-        }
-
-        endDuration = end;
-        self.playingId = idx;
-        currentId = idx;
-
-        end && stopIn(end - start);
-      },
-
-      setAuthorSearch(value) {
-        self.searchAuthor = value;
-      },
-
-      setAuthorFilter(value) {
-        self.filterByAuthor = value;
-      },
-    };
-  });
 
 const ParagraphsLoadingModel = types.model()
   .actions(self => ({
@@ -617,7 +480,20 @@ const ParagraphsLoadingModel = types.model()
         ]);
         return;
       }
-      self._value = val;
+      const contextScroll = isFF(FF_LSDV_E_278) && self.contextscroll;
+
+      const value = contextScroll ? val.sort((a, b) => {
+
+        if (!a.start) return 1;
+        if (!b.start) return -1;
+        const aEnd = a.end ? a.end : a.start + a.duration || 0;
+        const bEnd = b.end ? b.end : b.start + b.duration || 0;
+
+        if (a.start === b.start) return aEnd - bEnd;
+        return a.start - b.start;
+      }) : val;
+      
+      self._value = value;
       self.needsUpdate();
     },
 
@@ -647,10 +523,6 @@ const ParagraphsLoadingModel = types.model()
       for (const range of ranges) {
         const area = self.annotation.createResult(range, labels, control, self);
 
-        if (getRoot(self).autoAnnotation) {
-          area.makeDynamic();
-        }
-
         area.setText(range.text);
 
         area.notifyDrawingFinished();
@@ -673,10 +545,6 @@ const ParagraphsLoadingModel = types.model()
         const labels = { [control.valueType]: control.selectedValues() };
         const area = self.annotation.createResult(range, labels, control, self);
 
-        if (getRoot(self).autoAnnotation) {
-          area.makeDynamic();
-        }
-
         area.setText(range.text);
 
         area.notifyDrawingFinished();
@@ -690,13 +558,11 @@ const ParagraphsLoadingModel = types.model()
 const paragraphModelMixins = [
   RegionsMixin,
   TagAttrs,
-  isFFDev2461 && !isFF(FF_LSDV_3012) && SyncMixin,
-  isFF(FF_LSDV_3012) && SyncableMixin,
+  SyncableMixin,
   ObjectBase,
   AnnotationMixin,
   Model,
-  !isFF(FF_LSDV_3012) && OldPlayAndSync,
-  isFF(FF_LSDV_3012) && PlayableAndSyncable,
+  PlayableAndSyncable,
   ParagraphsLoadingModel,
 ].filter(Boolean);
 

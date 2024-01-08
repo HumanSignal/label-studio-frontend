@@ -79,6 +79,14 @@ keymaster.filter = function(event) {
   return true;
 };
 
+const ALIASES = {
+  'plus': '=', // "ctrl plus" is actually a "ctrl =" because shift is not used
+  'minus': '-',
+  // Here is a magic trick. Keymaster doesn't work with comma correctly (it breaks down everything upon unbinding), but the key code for comma it expects is 188
+  // And the magic is that '¼' has the same keycode. So we are going to trick keymaster to handle this in the right way.
+  ',': '¼',
+};
+
 export const Hotkey = (
   namespace = 'global',
   description = 'Hotkeys',
@@ -139,17 +147,27 @@ export const Hotkey = (
     });
   };
 
+  const getKeys = (key: string) => {
+    const tokenRegex = /((?:\w+\+)*(?:[^,]+|,)),?/g;
+
+    return [...key.replace(/\s/,'').matchAll(tokenRegex)].map(match => match[1]);
+  };
+
   const unbind = () => {
     for (const scope of [DEFAULT_SCOPE, INPUT_SCOPE]) {
       for (const key of Object.keys(_hotkeys_map)) {
-        if (isFF(FF_LSDV_1148)) {
-          removeKeyHandlerRef(scope, key);
-          keymaster.unbind(key, scope);
-          rebindKeyHandlers(scope, key);
-        } else {
-          keymaster.unbind(key, scope);
+        const keys = getKeys(key);
+
+        for (const key of keys) {
+          if (isFF(FF_LSDV_1148)) {
+            removeKeyHandlerRef(scope, key);
+            keymaster.unbind(key, scope);
+            rebindKeyHandlers(scope, key);
+          } else {
+            keymaster.unbind(key, scope);
+          }
+          delete _hotkeys_desc[key];
         }
-        delete _hotkeys_desc[key];
       }
     }
 
@@ -159,6 +177,13 @@ export const Hotkey = (
   _destructors.push(unbind);
 
   return {
+    applyAliases(key: string) {
+      const keys = getKeys(key);
+
+      return keys
+        .map(k => k.split('+').map(k => ALIASES[k.trim()] ?? k).join('+'))
+        .join(',');
+    },
     /**
      * Add key
      */
@@ -169,7 +194,7 @@ export const Hotkey = (
         console.warn(`Key already added: ${key}. It's possibly a bug.`);
       }
 
-      const keyName = key.toLowerCase();
+      const keyName = this.applyAliases(key.toLowerCase());
 
       _hotkeys_map[keyName] = func;
       if (desc) _hotkeys_desc[keyName] = desc;

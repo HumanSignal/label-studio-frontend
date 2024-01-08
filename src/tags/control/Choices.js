@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Select } from 'antd';
+import { Select } from 'antd';
 import { observer } from 'mobx-react';
 import { types } from 'mobx-state-tree';
 
@@ -19,9 +19,13 @@ import './Choices/Choises.styl';
 
 import './Choice';
 import DynamicChildrenMixin from '../../mixins/DynamicChildrenMixin';
-import { FF_DEV_2007, FF_DEV_2007_DEV_2008, isFF } from '../../utils/feature-flags';
+import { FF_LSDV_4583, isFF } from '../../utils/feature-flags';
 import { ReadOnlyControlMixin } from '../../mixins/ReadOnlyMixin';
 import SelectedChoiceMixin from '../../mixins/SelectedChoiceMixin';
+import { HintTooltip } from '../../components/Taxonomy/Taxonomy';
+import ClassificationBase from './ClassificationBase';
+import PerItemMixin from '../../mixins/PerItem';
+import Infomodal from '../../components/Infomodal/Infomodal';
 
 const { Option } = Select;
 
@@ -31,6 +35,9 @@ const { Option } = Select;
  * Choices can have dynamic value to load labels from task. This task data should contain a list of options to create underlying `<Choice>`s. All the parameters from options will be transferred to corresponding tags.
  *
  * The `Choices` tag can be used with any data types.
+ *
+ * [^FF_LSDV_4583]: `fflag_feat_front_lsdv_4583_multi_image_segmentation_short` should be enabled for `perItem` functionality.
+ *
  * @example
  * <!--Basic text classification labeling configuration-->
  * <View>
@@ -47,8 +54,6 @@ const { Option } = Select;
  * <!--
  *   `Choice`s can be loaded dynamically from task data. It should be an array of objects with attributes.
  *   `html` can be used to show enriched content, it has higher priority than `value`, however `value` will be used in the exported result.
- *   *ff_dev_2007_dev_2008_dynamic_tag_children_250322_short* should be enabled to use dynamic options.
- *   *ff_dev_2007_rework_choices_280322_short* should be enabled to use `html` attribute.
  * -->
  * <View>
  *   <Audio name="audio" value="$audio" />
@@ -84,25 +89,21 @@ const { Option } = Select;
  * @param {boolean} [showInline=false] - Show choices in the same visual line
  * @param {boolean} [required=false]   - Validate whether a choice has been selected
  * @param {string} [requiredMessage]   - Show a message if validation fails
- * @param {region-selected|choice-selected|no-region-selected} [visibleWhen] - Control visibility of the choices.
+ * @param {region-selected|no-region-selected|choice-selected|choice-unselected} [visibleWhen] - Control visibility of the choices. Can also be used with `when*` attributes below to narrow down visibility
  * @param {string} [whenTagName]       - Use with visibleWhen. Narrow down visibility by name of the tag. For regions, use the name of the object tag, for choices, use the name of the choices tag
- * @param {string} [whenLabelValue]    - Narrow down visibility by label value
- * @param {string} [whenChoiceValue]   - Narrow down visibility by choice value
+ * @param {string} [whenLabelValue]    - Use with visibleWhen="region-selected". Narrow down visibility by label value
+ * @param {string} [whenChoiceValue]   - Use with visibleWhen ("choice-selected" or "choice-unselected") and whenTagName, both are required. Narrow down visibility by choice value
  * @param {boolean} [perRegion]        - Use this tag to select a choice for a specific region instead of the entire task
+ * @param {boolean} [perItem]          - Use this tag to select a choice for a specific item inside the object instead of the whole object[^FF_LSDV_4583]
  * @param {string} [value]             - Task data field containing a list of dynamically loaded choices (see example below)
  * @param {boolean} [allowNested]      - Allow to use `children` field in dynamic choices to nest them. Submitted result will contain array of arrays, every item is a list of values from topmost parent choice down to selected one.
  */
 const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
-
   showinline: types.maybeNull(types.boolean),
-
   choice: types.optional(types.enumeration(['single', 'single-radio', 'multiple']), 'single'),
-
   layout: types.optional(types.enumeration(['select', 'inline', 'vertical']), 'vertical'),
-
-  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, '') } : {}),
-
+  value: types.optional(types.string, ''),
   allownested: types.optional(types.boolean, false),
 });
 
@@ -130,17 +131,6 @@ const Model = types
       if (choices && choices.length) return { choices };
 
       return null;
-    },
-
-    get result() {
-      if (self.perregion) {
-        const area = self.annotation.highlightedNode;
-
-        if (!area) return null;
-
-        return self.annotation.results.find(r => r.from_name === self && r.area === area);
-      }
-      return self.annotation.results.find(r => r.from_name === self);
     },
 
     get preselectedValues() {
@@ -221,37 +211,44 @@ const Model = types
         choice.setSelected(isSelected);
       });
     },
+  })).actions(self => {
+    const Super = {
+      validate: self.validate,
+    };
 
-    // update result in the store with current selected choices
-    updateResult() {
-      if (self.result) {
-        self.result.area.setValue(self);
-      } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
+    return {
+      validate() {
+        if (!Super.validate() || (self.choice !== 'multiple' && self.checkResultLength() > 1)) return false;
+      },
 
-          if (!area) return null;
-          area.setValue(self);
-        } else {
-          self.annotation.createResult({}, { choices: self.selectedValues() }, self, self.toname);
-        }
-      }
-    },
-  }));
+      checkResultLength() {
+        const _resultFiltered = self.children.filter(c => c._sel);
+
+        return _resultFiltered.length;
+      },
+
+      beforeSend() {
+        if (self.choice !== 'multiple' && self.checkResultLength() > 1)
+          Infomodal.warning(`The number of options selected (${self.checkResultLength()}) exceed the maximum allowed (1). To proceed, first unselect excess options for:\r\n • Choices (${self.name})`);
+      },
+    };
+  });
 
 const ChoicesModel = types.compose(
   'ChoicesModel',
   ControlBase,
-  TagAttrs,
+  ClassificationBase,
   SelectedModelMixin.props({ _child: 'ChoiceModel' }),
   RequiredMixin,
   PerRegionMixin,
+  ...(isFF(FF_LSDV_4583) ? [PerItemMixin] : []),
   ReadOnlyControlMixin,
   SelectedChoiceMixin,
   VisibilityMixin,
-  ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
-  Model,
+  DynamicChildrenMixin,
   AnnotationMixin,
+  TagAttrs,
+  Model,
 );
 
 const ChoicesSelectLayout = observer(({ item }) => {
@@ -277,7 +274,9 @@ const ChoicesSelectLayout = observer(({ item }) => {
     >
       {item.tiedChildren.map(i => (
         <Option key={i._value} value={i._value}>
-          {i._value}
+          <HintTooltip title={i.hint} wrapper="div">
+            {i._value}
+          </HintTooltip>
         </Option>
       ))}
     </Select>
@@ -290,9 +289,7 @@ const HtxChoices = observer(({ item }) => {
       {item.layout === 'select' ? (
         <ChoicesSelectLayout item={item} />
       ) : (
-        !isFF(FF_DEV_2007)
-          ? <Form layout={item.layout}>{Tree.renderChildren(item, item.annotation)}</Form>
-          : Tree.renderChildren(item, item.annotation)
+        Tree.renderChildren(item, item.annotation)
       )}
     </Block>
   );

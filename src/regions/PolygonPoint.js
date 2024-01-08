@@ -6,6 +6,7 @@ import { getParent, getRoot, hasParent, types } from 'mobx-state-tree';
 import { guidGenerator } from '../core/Helpers';
 import { useRegionStyles } from '../hooks/useRegionColor';
 import { FF_DEV_2431, FF_DEV_3793, isFF } from '../utils/feature-flags';
+import { RELATIVE_STAGE_HEIGHT, RELATIVE_STAGE_WIDTH } from '../components/ImageView/Image';
 
 const PolygonPointAbsoluteCoordsDEV3793 = types.model()
   .volatile(() => ({
@@ -23,8 +24,8 @@ const PolygonPointAbsoluteCoordsDEV3793 = types.model()
         self.relativeX = self.x;
         self.relativeY = self.y;
       } else {
-        self.relativeX = (self.x / self.stage.stageWidth) * 100;
-        self.relativeY = (self.y / self.stage.stageHeight) * 100;
+        self.relativeX = (self.x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
+        self.relativeY = (self.y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
       }
     },
     movePoint(offsetX, offsetY) {
@@ -33,18 +34,26 @@ const PolygonPointAbsoluteCoordsDEV3793 = types.model()
       self.x = self.x + offsetX;
       self.y = self.y + offsetY;
 
-      self.relativeX = (self.x / self.stage.stageWidth) * 100;
-      self.relativeY = (self.y / self.stage.stageHeight) * 100;
+      self.relativeX = (self.x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (self.y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
     },
-    _movePoint(x, y) {
+    _setPos(x, y) {
       self.initX = x;
       self.initY = y;
 
-      self.relativeX = (x / self.stage.stageWidth) * 100;
-      self.relativeY = (y / self.stage.stageHeight) * 100;
+      self.relativeX = (x / self.stage.stageWidth) * RELATIVE_STAGE_WIDTH;
+      self.relativeY = (y / self.stage.stageHeight) * RELATIVE_STAGE_HEIGHT;
 
       self.x = x;
       self.y = y;
+    },
+    _movePoint(x, y) {
+      const point = self.parent.control?.getSnappedPoint({
+        x: self.stage.canvasToInternalX(x),
+        y: self.stage.canvasToInternalY(y),
+      });
+
+      self._setPos(point.x, point.y);
     },
   }));
 
@@ -77,10 +86,10 @@ const PolygonPointRelativeCoords = types
       return getRoot(self).annotationStore.selected;
     },
     get canvasX() {
-      return isFF(FF_DEV_3793) ? self.stage.internalToCanvasX(self.x) : self.x;
+      return isFF(FF_DEV_3793) ? self.stage?.internalToCanvasX(self.x) : self.x;
     },
     get canvasY() {
-      return isFF(FF_DEV_3793) ? self.stage.internalToCanvasY(self.y) : self.y;
+      return isFF(FF_DEV_3793) ? self.stage?.internalToCanvasY(self.y) : self.y;
     },
   }))
   .actions(self => ({
@@ -98,9 +107,17 @@ const PolygonPointRelativeCoords = types
       self.y = self.y + dy;
     },
 
+    _setPos(x, y) {
+      self.x = x;
+      self.y = y;
+    },
     _movePoint(canvasX, canvasY) {
-      self.x = self.stage.canvasToInternalX(canvasX);
-      self.y = self.stage.canvasToInternalY(canvasY);
+      const point = self.parent.control?.getSnappedPoint({
+        x: self.stage.canvasToInternalX(canvasX),
+        y: self.stage.canvasToInternalY(canvasY),
+      });
+
+      self._setPos(point.x, point.y);
     },
 
     /**
@@ -215,7 +232,8 @@ const PolygonPointView = observer(({ item, name }) => {
     onDragMove: e => {
       if (item.getSkipInteractions()) return false;
       if (e.target !== e.currentTarget) return;
-      let { x, y } = e.target.attrs;
+      const shape = e.target;
+      let { x, y } = shape.attrs;
 
       if (x < 0) x = 0;
       if (y < 0) y = 0;
@@ -223,6 +241,8 @@ const PolygonPointView = observer(({ item, name }) => {
       if (y > item.stage.stageHeight) y = item.stage.stageHeight;
 
       item._movePoint(x, y);
+      shape.setAttr('x', item.canvasX);
+      shape.setAttr('y', item.canvasY);
     },
 
     onDragStart: () => {
@@ -280,6 +300,8 @@ const PolygonPointView = observer(({ item, name }) => {
         strokeWidth={stroke[item.size]}
         dragOnTop={false}
         strokeScaleEnabled={false}
+        perfectDrawEnabled={false}
+        shadowForStrokeEnabled={false}
         scaleX={1 / (item.stage.zoomScale || 1)}
         scaleY={1 / (item.stage.zoomScale || 1)}
         onDblClick={() => {
@@ -315,6 +337,9 @@ const PolygonPointView = observer(({ item, name }) => {
         fill={fill}
         stroke="black"
         strokeWidth={stroke[item.size]}
+        strokeScaleEnabled={false}
+        perfectDrawEnabled={false}
+        shadowForStrokeEnabled={false}
         dragOnTop={false}
         {...dragOpts}
         {...startPointAttr}

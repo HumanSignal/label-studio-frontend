@@ -22,13 +22,13 @@ jobs:
       - uses: hmarr/debug-action@v2.1.0
 
       - name: "Checkout codebase"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.sha }}
 
       - name: "Setup NodeJS"
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "${{ env.NODE }}"
 
@@ -47,8 +47,15 @@ jobs:
           restore-keys: |
             yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
+      - name: Install dependencies for unit tests
+        run: yarn install --frozen-lockfile
+
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1 || true
+
       - name: Run unit tests
-        run: yarn install --frozen-lockfile && yarn test:coverage
+        run: yarn test:coverage
 
       # - name: Upload coverage to Codecov
       #   uses: codecov/codecov-action@v3.1.1
@@ -58,7 +65,7 @@ jobs:
       #     token: ${{ secrets.CODECOV_TOKEN }}
       - name: Upload coverage to Artifacts
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         with:
           name: unit-tests-coverage
           path: coverage/

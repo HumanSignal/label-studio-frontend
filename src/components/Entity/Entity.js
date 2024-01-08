@@ -147,7 +147,7 @@ export default observer(({ store, annotation }) => {
               type="delete"
               style={{ cursor: 'pointer' }}
               onClick={() => {
-                node.deleteMetaInfo();
+                node.deleteMetaText();
               }}
             />
           </Text>
@@ -205,7 +205,7 @@ export default observer(({ store, annotation }) => {
         <Form
           style={{ marginTop: '0.5em', marginBottom: '0.5em' }}
           onFinish={() => {
-            node.setMetaInfo(node.normInput);
+            node.setMetaText(node.normInput);
             setEditMode(false);
           }}
         >

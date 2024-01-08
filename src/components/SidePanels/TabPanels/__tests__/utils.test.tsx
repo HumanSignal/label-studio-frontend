@@ -1,6 +1,6 @@
 import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH } from '../../constants';
 import { JoinOrder, PanelBBox, Side } from '../types';
-import { determineDroppableArea, determineLeftOrRight, findZIndices, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
+import { checkCollapsedPanelsHaveData, determineDroppableArea, determineLeftOrRight, findPanelViewByName, findZIndices, getSnappedHeights, joinPanelColumns, redistributeHeights, setActive, setActiveDefaults, splitPanelColumns, stateAddedTab, stateRemovedTab, stateRemovePanelEmptyViews } from '../utils';
 
 
 const dummyPanels: Record<string, PanelBBox> = {
@@ -308,7 +308,7 @@ describe('splitPanelColumns', () => {
   const panel3 = 'panel3';
   const totalHeight = 1000;
   const panelAttributes = {
-    panelViews:[{ name: 'view1', component: () => null }],
+    panelViews: [{ name: 'view1', component: () => null }],
     order: 0,
     width: DEFAULT_PANEL_WIDTH,
     height: DEFAULT_PANEL_HEIGHT,
@@ -453,7 +453,7 @@ describe('joinPanelColumns', () => {
       panel3,
       panel4: {
         width: 300,
-        zIndex:10,
+        zIndex: 10,
         height: 400,
         top: 0,
         left: 500,
@@ -474,7 +474,7 @@ describe('joinPanelColumns', () => {
       panel3,
       panel4: {
         width: 250,
-        zIndex:10,
+        zIndex: 10,
         height: 400,
         top: 0,
         left: 500,
@@ -641,5 +641,115 @@ describe('findZIndices', () => {
     const result = findZIndices(newState, focusedKey);
 
     expect(result).toEqual(expectedState);
+  });
+});
+
+
+describe('findPanelViewByName', () => {
+  const state = {
+    'view1-view2-view3': {
+      panelViews: [
+        { name: 'view1' },
+        { name: 'view2' },
+        { name: 'view3' },
+      ],
+    },
+    'view4-view5': {
+      panelViews: [
+        { name: 'View 4' },
+        { name: 'View 5' },
+      ],
+    },
+  };
+
+  it('should return the correct panel view when it exists', () => {
+    const name = 'view2';
+    const expected = {
+      panelName: 'view1-view2-view3',
+      tab: { name: 'view2' },
+      panelViewIndex: 1,
+    };
+
+    const result = findPanelViewByName(state, name);
+
+    expect(result).toEqual(expected);
+  });
+
+  it('should return undefined when the panel view does not exist', () => {
+    const name = 'Non-existent View';
+
+    const result = findPanelViewByName(state, name);
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should handle an empty state object', () => {
+    const name = 'View';
+
+    const result = findPanelViewByName({}, name);
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should handle an empty panelViews array', () => {
+    const stateWithEmptyPanel = {
+      panel1: {
+        panelViews: [],
+      },
+    };
+    const name = 'View';
+
+    const result = findPanelViewByName(stateWithEmptyPanel, name);
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should handle a state object with no matching panel views', () => {
+
+    const name = 'Non-existent View';
+
+    const result = findPanelViewByName(state, name);
+
+    expect(result).toBeUndefined();
+  });
+});
+
+describe('checkCollapsedPanelsHaveData', () => {
+  const collapsedSide = {
+    left: true,
+    right: false,
+  };
+
+  const panelData = {
+    panel1: { alignment: 'left', detached: false },
+    panel2: { alignment: 'right', detached: false },
+    panel3: { alignment: 'top', detached: true },
+    panel4: { alignment: 'bottom', detached: false },
+  };
+
+  it('should update collapsedSide correctly when there is data in collapsed panels', () => {
+    const expected = {
+      left: true,
+      right: false,
+    };
+
+    const result = checkCollapsedPanelsHaveData(collapsedSide, panelData);
+
+    expect(result).toEqual(expected);
+  });
+
+  it('should not update collapsedSide when there is no data in collapsed panels', () => {
+    const collapsedSideWithNoData = {
+      left: true,
+      right: true,
+    };
+    const expected = { ...collapsedSideWithNoData };
+
+    const result = checkCollapsedPanelsHaveData(
+      collapsedSideWithNoData,
+      panelData,
+    );
+
+    expect(result).toEqual(expected);
   });
 });

@@ -20,7 +20,7 @@ const ANNOTATIONS = [
           'startOffset':0,
           'endOffset':134,
           'paragraphlabels': ['Important Stuff'],
-          'text': 'Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?I dont know. Thats a good question.Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+          'text': 'Uncomfortable silences. Why do we feel its necessary to yak about nonsense in order to be comfortable?I dont know. Thats a good question.Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
         },
       },
     ],
@@ -44,7 +44,7 @@ const DATA = {
     },
     {
       author: 'Mia Wallace:',
-      text: 'Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?',
+      text: 'Uncomfortable silences. Why do we feel its necessary to yak about nonsense in order to be comfortable?',
     },
     {
       start: 90,
@@ -54,7 +54,7 @@ const DATA = {
     {
       author: 'Mia Wallace:',
       text:
-        'Thats when you know you found somebody really special. When you can just shut the fuck up for a minute, and comfortably share silence.',
+        'Thats when you know you found somebody really special. When you can just shut the door closed a minute, and comfortably share silence.',
     },
   ],
 };
@@ -503,7 +503,7 @@ Scenario('Selecting the end character on a paragraph phrase to the very start of
   AtParagraphs.setSelection(
     AtParagraphs.locateText('Dont you hate that?'),
     18,
-    AtParagraphs.locateText('Uncomfortable silences. Why do we feel its necessary to yak about bullshit in order to be comfortable?'),
+    AtParagraphs.locateText('Uncomfortable silences. Why do we feel its necessary to yak about nonsense in order to be comfortable?'),
     0,
   );
 

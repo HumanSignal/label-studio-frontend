@@ -69,6 +69,8 @@ const SelectionMap = types.model(
         // @todo some backward compatibility, should be rewritten to state handling
         // @todo but there are some actions should be performed like scroll to region
         self.highlighted.perRegionTags.forEach(tag => tag.updateFromResult?.(undefined));
+        // special case for Taxonomy as labeling tool
+        self.highlighted.labelingTags.forEach(tag => tag.updateFromResult?.(undefined));
         updateResultsFromSelection();
       } else {
         updateResultsFromSelection();
@@ -374,7 +376,6 @@ export default types.model('RegionStore', {
           isArea: false,
           children: [],
           isGroup: true,
-          type: region.type,
           entity: region,
         };
       };
@@ -430,7 +431,6 @@ export default types.model('RegionStore', {
   setView(view) {
     if (isFF(FF_DEV_2755)) {
       window.localStorage.setItem(localStorageKeys.view, view);
-      console.log('setView', window.localStorage.getItem(localStorageKeys.view));
     }
     self.view = view;
   },
@@ -455,15 +455,21 @@ export default types.model('RegionStore', {
   },
 
   setFilteredRegions(filter) {
-    self.filter = filter;
 
-    const filteredIds = filter.map((filter) => filter.id);
-    
-    self.regions.forEach((region) => {
-      if (!region.hideable || (region.hidden && !region.filtered)) return;
-      if (filteredIds.includes(region.id)) region.hidden && region.toggleFiltered();
-      else if (!region.hidden) region.toggleFiltered();
-    });
+    if (self.regions.length === filter.length) {
+      self.filter = null;
+      self.regions.forEach((region) => region.filtered && region.toggleFiltered());
+    } else {
+      const filteredIds = filter.map((filter) => filter.id);
+      
+      self.filter = filter;
+
+      self.regions.forEach((region) => {
+        if (!region.hideable || (region.hidden && !region.filtered)) return;
+        if (filteredIds.includes(region.id)) region.hidden && region.toggleFiltered();
+        else if (!region.hidden) region.toggleFiltered();
+      });
+    }
   },
 
   /**
@@ -558,7 +564,13 @@ export default types.model('RegionStore', {
       }
     });
   },
-
+  setHiddenByTool(shouldBeHidden, label) {
+    self.regions.forEach(area => {
+      if (area.hidden !== shouldBeHidden && area.type === label.type) {
+        area.toggleHidden();
+      }
+    });
+  },
   setHiddenByLabel(shouldBeHidden, label) {
     self.regions.forEach(area => {
       if (area.hidden !== shouldBeHidden) {

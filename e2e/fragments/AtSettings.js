@@ -42,7 +42,7 @@ module.exports = {
     this.goToTab('General');
     this._setSettings(settings);
   },
-  setLayoutSettings(settings = {}){
+  setLayoutSettings(settings = {}) { 
     this.goToTab('Layout');
     this._setSettings(settings);
   },

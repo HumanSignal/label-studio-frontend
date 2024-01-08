@@ -2,10 +2,11 @@ import { cloneElement, CSSProperties, forwardRef, MouseEvent, useCallback, useCo
 import { createPortal } from 'react-dom';
 import { useFullscreen } from '../../hooks/useFullscreen';
 import { Block, cn } from '../../utils/bem';
-import { alignElements } from '../../utils/dom';
+import { alignElements, ElementAlignment } from '../../utils/dom';
 import { aroundTransition } from '../../utils/transition';
 import './Dropdown.styl';
 import { DropdownContext } from './DropdownContext';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 let lastIndex = 1;
 
@@ -20,9 +21,11 @@ export interface DropdownRef {
 export interface DropdownProps {
   animated?: boolean;
   visible?: boolean;
+  alignment?: ElementAlignment;
   enabled?: boolean;
   inline?: boolean;
   className?: string;
+  dataTestId?: string;
   style?: CSSProperties;
   children?: JSX.Element;
   onToggle?: (visible: boolean) => void;
@@ -49,7 +52,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
   const calculatePosition = useCallback(() => {
     const dropdownEl = dropdown.current!;
     const parent = (triggerRef?.current ?? dropdownEl.parentNode) as HTMLElement;
-    const { left, top } = alignElements(parent!, dropdownEl, 'bottom-left');
+    const { left, top } = alignElements(parent!, dropdownEl, props.alignment || 'bottom-left');
 
     setOffset({ left, top });
   }, [triggerRef, minIndex]);
@@ -197,8 +200,12 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(({
     <Block
       ref={dropdown}
       name="dropdown"
+      data-testid={props.dataTestId}
       mix={[props.className, visibilityClasses]}
-      style={compositeStyles}
+      style={{
+        ...compositeStyles,
+        borderRadius: isFF(FF_DEV_3873) && 4,
+      }}
       onClick={(e: MouseEvent) => e.stopPropagation()}
     >
       {content}

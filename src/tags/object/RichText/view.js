@@ -10,12 +10,14 @@ import { isAlive } from 'mobx-state-tree';
 import { LoadingOutlined } from '@ant-design/icons';
 import { Block, cn, Elem } from '../../../utils/bem';
 import { observe } from 'mobx';
+import { FF_LSDV_4620_3, isFF } from '../../../utils/feature-flags';
 
 const DBLCLICK_TIMEOUT = 450; // ms
 const DBLCLICK_RANGE = 5; // px
 
 class RichTextPieceView extends Component {
   _regionSpanSelector = '.htx-highlight';
+  _regionVisibleSpanSelector = '.htx-highlight:not(.__hidden)';
 
   loadingRef = React.createRef();
 
@@ -32,7 +34,7 @@ class RichTextPieceView extends Component {
     while (walker.nextNode()) {
       const node = walker.currentNode;
 
-      if (node.nodeName === 'SPAN' && node.matches(this._regionSpanSelector) && selection.containsNode(node)) {
+      if (node.nodeName === 'SPAN' && node.matches(isFF(FF_LSDV_4620_3) ? this._regionVisibleSpanSelector : this._regionSpanSelector) && selection.containsNode(node)) {
         const region = this._determineRegion(node);
 
         regions.push(region);
@@ -82,7 +84,6 @@ class RichTextPieceView extends Component {
       normedRange._range = range;
       normedRange.text = selectionText;
       normedRange.isText = item.type === 'text';
-      normedRange.dynamic = this.props.store.autoAnnotation;
       item.addRegion(normedRange, this.doubleClickSelection);
     }, {
       window: rootEl?.contentWindow ?? window,
@@ -139,7 +140,7 @@ class RichTextPieceView extends Component {
   _moveElements(src, dest, withSubstitution) {
     const fragment = document.createDocumentFragment();
 
-    for (let i = 0;i < src.childNodes.length;  withSubstitution && i++){
+    for (let i = 0;i < src.childNodes.length; withSubstitution && i++) {
       const currentChild = src.childNodes[i];
 
       if (withSubstitution) {
@@ -233,8 +234,10 @@ class RichTextPieceView extends Component {
    * @param {HTMLElement} element
    */
   _determineRegion(element) {
-    if (matchesSelector(element, this._regionSpanSelector)) {
-      const span = element.tagName === 'SPAN' ? element : element.closest(this._regionSpanSelector);
+    const spanSelector = isFF(FF_LSDV_4620_3) ? this._regionVisibleSpanSelector : this._regionSpanSelector;
+    
+    if (matchesSelector(element, spanSelector)) {
+      const span = element.tagName === 'SPAN' && (!isFF(FF_LSDV_4620_3) || element.matches(spanSelector)) ? element : element.closest(spanSelector);
       const { item } = this.props;
 
       return item.regs.find(region => region.find(span));
@@ -244,10 +247,12 @@ class RichTextPieceView extends Component {
   componentDidMount() {
     const { item } = this.props;
 
-    item.setNeedsUpdateCallbacks(
-      this._moveElementsToWorkingNode,
-      this._returnElementsFromWorkingNode,
-    );
+    if (!isFF(FF_LSDV_4620_3)) {
+      item.setNeedsUpdateCallbacks(
+        this._moveElementsToWorkingNode,
+        this._returnElementsFromWorkingNode,
+      );
+    }
 
     if (!item.inline) {
       this.dispose = observe(item, '_isReady', this.updateLoadingVisibility, true);
@@ -388,19 +393,23 @@ class RichTextPieceView extends Component {
             dangerouslySetInnerHTML={{ __html: val }}
             {...eventHandlers}
           />
-          <Elem
-            key="orig"
-            name="orig-container"
-            ref={item.originalContentRef}
-            className="htx-richtext-orig"
-            dangerouslySetInnerHTML={{ __html: val }}
-          />
-          <Elem
-            key="work"
-            name="work-container"
-            ref={item.workingNodeRef}
-            className="htx-richtext-work"
-          />
+          {isFF(FF_LSDV_4620_3) ? null : (
+            <>
+              <Elem
+                key="orig"
+                name="orig-container"
+                ref={item.originalContentRef}
+                className="htx-richtext-orig"
+                dangerouslySetInnerHTML={{ __html: val }}
+              />
+              <Elem
+                key="work"
+                name="work-container"
+                ref={item.workingNodeRef}
+                className="htx-richtext-work"
+              />
+            </>
+          )}
         </Block>
       );
     } else {
@@ -428,25 +437,28 @@ class RichTextPieceView extends Component {
             srcDoc={val}
             onLoad={this.onIFrameLoad}
           />
-          <Elem
-            key="orig"
-            name="orig-iframe"
-            tag="iframe"
-            referrerPolicy="no-referrer"
-            sandbox="allow-same-origin allow-scripts"
-            ref={item.originalContentRef}
-            className="htx-richtext-orig"
-            srcDoc={val}
-          />
-          <Elem
-            key="work"
-            name="work-iframe"
-            tag="iframe"
-            referrerPolicy="no-referrer"
-            sandbox="allow-same-origin allow-scripts"
-            ref={item.workingNodeRef}
-            className="htx-richtext-work"
-          />
+          {isFF(FF_LSDV_4620_3) ? null : (
+            <><Elem
+              key="orig"
+              name="orig-iframe"
+              tag="iframe"
+              referrerPolicy="no-referrer"
+              sandbox="allow-same-origin allow-scripts"
+              ref={item.originalContentRef}
+              className="htx-richtext-orig"
+              srcDoc={val}
+            />
+            <Elem
+              key="work"
+              name="work-iframe"
+              tag="iframe"
+              referrerPolicy="no-referrer"
+              sandbox="allow-same-origin allow-scripts"
+              ref={item.workingNodeRef}
+              className="htx-richtext-work"
+            />
+            </>
+          )}
         </Block>
       );
     }

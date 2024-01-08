@@ -15,19 +15,19 @@ env:
 jobs:
   run:
     name: "E2E Tests"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-4c-16gb
     # ci can be skipped with `[skip ci]` prefix in message
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     steps:
       - uses: hmarr/debug-action@v2.1.0
 
       - name: "Checkout codebase"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.sha }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "${{ env.NODE }}"
 
@@ -54,11 +54,9 @@ jobs:
         run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
       - name: "Download bundle"
-        uses: actions/download-artifact@v3
+        uses: ./.github/actions/download-artifact
         with:
           name: LSF-coverage-${{ inputs.sha }}
-
-          path: build/
 
       # run http-server with build in background (will be killed after job ends)
       # do this only for master branch (so only for push event)
@@ -79,14 +77,17 @@ jobs:
           done
 
       - name: "Setup e2e"
-        timeout-minutes: 1
         run: |
           set -euo pipefail
           cd e2e
           yarn install --frozen-lockfile
 
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1 || true
+
       - name: Run e2e test suite
-        timeout-minutes: 40
+        timeout-minutes: 45
         env:
           NODE_ENV: 'production'
           TEST_ENV: true
@@ -96,10 +97,10 @@ jobs:
           yarn run test:ci ${{ steps.cpu-info.outputs.cores-count }}
 
       - name: "Upload e2e output" 
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         if: ${{ failure() }}
         with:
-          name: e2e output
+          name: e2e-output
           path: e2e/output/
 
       - name: Merge coverage reports
@@ -109,7 +110,7 @@ jobs:
           yarn coverage:merge 
 
       - name: Upload coverage to Artifact
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         if: ${{ success() }}
         with:
           name: e2e-tests-coverage

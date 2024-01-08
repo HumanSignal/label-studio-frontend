@@ -6,7 +6,7 @@ on:
 
 env:
   LSF_DIR: 'label-studio-frontend'
-  TARGET_REPO: 'heartexlabs/label-studio'
+  TARGET_REPO_NAME: 'label-studio'
   LS_DIR: 'label-studio'
   NODE: '18'
   CACHE_NAME_PREFIX: v1
@@ -20,13 +20,13 @@ jobs:
       - uses: hmarr/debug-action@v2.1.0
 
       - name: Checkout LSF
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GIT_PAT }}
           fetch-depth: 1
           path: ${{ env.LSF_DIR }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "${{ env.NODE }}"
 
@@ -46,7 +46,7 @@ jobs:
 
       - name: Get GitHub user details
         id: get-github-user
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         env:
           ACTOR_USERNAME: ${{ github.event.sender.login }}
         with:
@@ -78,11 +78,11 @@ jobs:
           git config --global user.email '${{ steps.get-github-user.outputs.user_email }}'
 
       - name: Checkout LS
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GIT_PAT }}
           fetch-depth: 1
-          repository: ${{ env.TARGET_REPO }}
+          repository: "${{ github.repository_owner }}/${{ env.TARGET_REPO_NAME }}"
           path: ${{ env.LS_DIR }}
 
       - name: Commit docs

@@ -23,30 +23,18 @@ jobs:
       - uses: hmarr/debug-action@v2.1.0
 
       - name: "Checkout codebase"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.sha }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "${{ env.NODE }}"
 
       - name: Get CPU info
         id: "cpu-info"
         run: echo "cores-count=$(cat /proc/cpuinfo  | grep processor | wc -l)" >> $GITHUB_OUTPUT
-
-      - name: Setup SSH agent
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-          SSH_DIR: /home/runner/.ssh
-        run: |
-          mkdir $SSH_DIR
-          ssh-keyscan github.com >> $SSH_DIR/known_hosts
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > $SSH_DIR/package_rsa
-          chmod 600 $SSH_DIR/package_rsa
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-          ssh-add $SSH_DIR/package_rsa
 
       - name: Upgrade Yarn
         run: npm install -g yarn@1.22
@@ -67,10 +55,9 @@ jobs:
         run: du -d 0 -h ${{ steps.yarn-cache-dir-path.outputs.dir }}
 
       - name: "Download bundle"
-        uses: actions/download-artifact@v3
+        uses: ./.github/actions/download-artifact
         with:
           name: LSF-coverage-${{ inputs.sha }}
-          path: build/
 
       # run http-server with build in background (will be killed after job ends)
       # do this only for master branch (so only for push event)
@@ -92,12 +79,14 @@ jobs:
 
       - name: "Setup Cypress"
         timeout-minutes: 1
-        env: 
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           set -euo pipefail
           cd ./tests/functional
           yarn install --frozen-lockfile
+
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1 || true
 
       - name: Run Cypress test suite
         timeout-minutes: 40
@@ -110,8 +99,14 @@ jobs:
           cd ./tests/functional
           yarn run test:parallel
 
+      - name: Prepare suite output
+        if: ${{ failure() }}
+        run: |
+          cd ./tests/functional
+          rm -rf node_modules
+
       - name: "Upload suite output" 
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         if: ${{ failure() }}
         with:
           name: failure-result
@@ -125,7 +120,7 @@ jobs:
           yarn cvg:report
 
       - name: Upload coverage to Artifact
-        uses: actions/upload-artifact@v3
+        uses: ./.github/actions/upload-artifact
         if: ${{ success() }}
         with:
           name: cypress-tests-coverage

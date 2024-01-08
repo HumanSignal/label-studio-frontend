@@ -18,6 +18,7 @@ import ToolsManager from '../../tools/Manager';
 import Utils from '../../utils';
 import { parseValue } from '../../utils/data';
 import { FF_DEV_2128, isFF } from '../../utils/feature-flags';
+import { sanitizeHtml } from '../../utils/html';
 
 /**
  * The `Label` tag represents a single label. Use with the `Labels` tag, including `BrushLabels`, `EllipseLabels`, `HyperTextLabels`, `KeyPointLabels`, and other `Labels` tags to specify the value of a specific label.
@@ -154,15 +155,28 @@ const Model = types.model({
     // is changing the label we need to make sure that region is
     // not going to end up without labels at all
     const applicableRegions = affectedRegions.filter(region => {
+      // if that's the only selected label, the only labelset assigned to region,
+      // and we are trying to unselect it, then don't allow that
+      // (except for rare labelsets that allow empty labels)
       if (
         labels.selectedLabels.length === 1 &&
         self.selected &&
         region.labelings.length === 1 &&
-        (!self.parent?.allowempty || self.isEmpty)
+        (!labels?.allowempty || self.isEmpty)
       )
         return false;
-      if (self.parent?.type !== 'labels' && !self.parent?.type.includes(region.results[0].type)) return false;
-      return true;
+
+      // @todo rewrite this check and add more named vars
+      // @todo select only related specific labels
+      // @todo unselect any label, but only if that won't leave region without specific labels!
+      // @todo but check for regions created by tools
+      // @todo lot of tests!
+      if (self.selected) return true; // we are unselecting a label which is always ok
+      if (labels.type === 'labels') return true; // universal labels are fine to select
+      if (labels.type.includes(region.type.replace(/region$/, ''))) return true; // region type is in label type
+      if (labels.type.includes(region.results[0].type)) return true; // any result type of the region is in label type
+      
+      return false;
     });
 
     if (sameObjectSelectedRegions.length > 0 && applicableRegions.length === 0) return;
@@ -291,7 +305,7 @@ const HtxLabelView = inject('store')(
         selected={item.selected}
         onClick={item.onClick}
       >
-        {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: item.html }}/> : item._value }
+        {item.html ? <div title={item._value} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.html) }}/> : item._value }
         {item.showalias === true && item.alias && (
           <span style={Utils.styleToProp(item.aliasstyle)}>&nbsp;{item.alias}</span>
         )}

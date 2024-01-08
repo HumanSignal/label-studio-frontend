@@ -1,4 +1,4 @@
-import { getEnv, getRoot, getSnapshot, getType, types } from 'mobx-state-tree';
+import { getEnv, getSnapshot, getType, types } from 'mobx-state-tree';
 import { observer } from 'mobx-react';
 import React from 'react';
 import { Tool } from '../components/Toolbar/Tool';
@@ -30,6 +30,7 @@ const BaseTool = types
   .volatile(() => ({
     dynamic: false,
     index: 1,
+    canInteractWithRegions: true,
   }))
   .views(self => {
     return {
@@ -63,18 +64,12 @@ const BaseTool = types
         return null;
       },
       get smartEnabled() {
-        const smart = self.control?.smart || false;
-        const autoAnnotation = self.control ? getRoot(self.control)?.autoAnnotation ?? false : false;
-
-        return (autoAnnotation && smart) || self.smartOnly;
-      },
-      get smartOnly() {
-        return self.control?.smartonly ?? false;
+        return self.control?.smartEnabled ?? false;
       },
     };
   })
   .actions((self) => {
-    return  {
+    return {
       afterCreate() {
         if (self.smart && self.control?.smart) {
           const currentEnv = getEnv(self);

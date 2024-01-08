@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree';
+import { isAlive, types } from 'mobx-state-tree';
 
 import NormalizationMixin from '../mixins/Normalization';
 import RegionsMixin from '../mixins/Regions';
@@ -30,7 +30,7 @@ const Model = types
   }))
   .views(self => ({
     get parent() {
-      return self.object;
+      return isAlive(self) ? self.object : null;
     },
     getRegionElement() {
       return self._spans?.[0];
@@ -64,7 +64,7 @@ const Model = types
      * @typedef {Object} ParagraphsRegionResult
      * @property {Object} value
      * @property {number} value.start index of paragraph where the region starts
-     * @property {number} value.end index of paragraph where the region ends (xpath)
+     * @property {number} value.end index of paragraph where the region ends
      * @property {number} value.startOffset offset within start paragraph
      * @property {number} value.endOffset offset within end paragraph
      * @property {string} [value.text] text content of the region, can be skipped

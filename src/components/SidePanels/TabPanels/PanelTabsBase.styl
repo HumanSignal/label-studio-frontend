@@ -1,8 +1,8 @@
 .tabs-panel
-  --header-height: 24px
+  --header-height 24px
   --header-border-radius 0
   --header-background #e1e0e2
-  --icon-color #898098 
+  --icon-color #898098
 
   height 100%
   z-index 10
@@ -12,17 +12,17 @@
   &__header
     padding 4px
 
+    &:hover
+      --icon-color #096DD9
+      --header-background #d8e7f9
+
   &__header-right,
   &__header-left
     display flex
-    alignItems center 
+    align-items center
 
   &__header-left
-    pointerEvents: none
-
-    &:hover
-        --icon-color #096DD9
-        --header-background #d8e7f9
+    pointer-events none
 
   &_alignment
     &_left
@@ -40,7 +40,7 @@
     left 0
     position absolute
     border 1px solid rgba(137, 128, 152, 0.16)
-    box-shadow: 0px 6px 10px 4px rgba(38, 38, 38, 0.15), 0px 2px 3px rgba(38, 38, 38, 0.3);
+    box-shadow 0px 6px 10px 4px rgba(38, 38, 38, 0.15), 0px 2px 3px rgba(38, 38, 38, 0.3);
 
   &_hidden
     top 0
@@ -87,25 +87,30 @@
     &_collapsed
       height 100%
       display flex
+      justify-content center
       padding 0
       cursor pointer
+      --icon-color #898098
 
       svg
         transform rotate(180deg)
 
   &__toggle
-    width 24px
-    height 24px
+    width 16px
+    height 16px
     display flex
     position relative
     align-items center
     justify-content center
     color var(--icon-color)
-    transform scale(0.85)
-    cursor pointer
+    padding-left 4px
+
+      svg
+        width 16px
+        height 16px
 
     &:hover
-      background-color rgba(#096DD9, 0.16)
+      cursor pointer
         
       &::before
         color #fff
@@ -140,7 +145,7 @@
     &:not(&_detached):not(&_collapsed):not(&_alignment_right)
       &::before
         left -58%
-        transform translate(58%, -120%)
+        transform translate(35%, -100%)
 
     &:not(&_detached):not(&_collapsed):not(&_alignment_left)
       &::before

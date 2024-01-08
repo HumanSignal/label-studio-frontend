@@ -363,7 +363,13 @@ const polygonKonva = async (points) => {
     const stage = window.Konva.stages[0];
 
     for (const point of points) {
+      stage.fire('mousedown', {
+        evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
+      });
       stage.fire('click', {
+        evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
+      });
+      stage.fire('mouseup', {
         evt: { offsetX: point[0], offsetY: point[1], timeStamp: Date.now(), preventDefault: () => {} },
       });
       await delay(50);
@@ -526,11 +532,11 @@ async function generateImageUrl({ width, height }) {
 }
 
 const getCanvasSize = () => {
-  const stage = window.Konva.stages[0];
+  const imageObject = window.Htx.annotationStore.selected.objects.find(o => o.type === 'image');
 
   return {
-    width: stage.width(),
-    height: stage.height(),
+    width: imageObject.canvasSize.width,
+    height: imageObject.canvasSize.height,
   };
 };
 const getImageSize = () => {
@@ -613,11 +619,12 @@ const serialize = async () => await window.Htx.annotationStore.selected.serializ
 const selectText = async ({ selector, rangeStart, rangeEnd }) => {
   let [doc, win] = [document, window];
 
-  const elem = document.querySelector(selector);
+  let elem = document.querySelector(selector);
 
   if (elem.matches('iframe')) {
     doc = elem.contentDocument;
     win = elem.contentWindow;
+    elem = doc.body;
   }
 
   const findOnPosition = (root, position, borderSide = 'left') => {
@@ -806,6 +813,24 @@ function hasSelectedRegion() {
   return !!Htx.annotationStore.selected.highlightedNode;
 }
 
+// `mulberry32` (simple generator with a 32-bit state)
+function createRandomWithSeed(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function createRandomIntWithSeed(seed) {
+  const random = createRandomWithSeed(seed);
+
+  return function(min, max) {
+    return Math.floor(random() * (max - min + 1) + min);
+  };
+}
+
 module.exports = {
   initLabelStudio,
   createLabelStudioInitFunction,
@@ -857,4 +882,7 @@ module.exports = {
 
   omitBy,
   dumpJSON,
+
+  createRandomWithSeed,
+  createRandomIntWithSeed,
 };

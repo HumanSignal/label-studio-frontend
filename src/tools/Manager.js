@@ -51,7 +51,7 @@ class ToolsManager {
   }
 
   addTool(toolName, tool, removeDuplicatesNamed = null, prefix = guidGenerator()) {
-    if (tool.smart && tool.smartOnly) return;
+    if (tool.smart && tool.control?.smartonly) return;
     // todo: It seems that key is used only for storing,
     // but not for finding tools, so may be there might
     // be an array instead of an object
@@ -100,6 +100,24 @@ class ToolsManager {
 
   selectTool(tool, selected) {
     const currentTool = this.findSelectedTool();
+    const newSelection = tool?.group;
+
+    // if there are no tools selected, there are no specific labels to unselect
+    // also this will skip annotation init
+    if (currentTool && newSelection === 'segmentation') {
+      const toolType = tool.control.type.replace(/labels$/, '');
+      const currentLabels = tool.obj.activeStates();
+      // labels of different types; we can't create regions with different tools simultaneously, so we have to unselect them
+      const unrelatedLabels = currentLabels.filter(tag => {
+        const type = tag.type.replace(/labels$/, '');
+
+        if (tag.type === 'labels') return false;
+        if (type === toolType) return false;
+        return true;
+      });
+
+      unrelatedLabels.forEach(tag => tag.unselectAll());
+    }
 
     if (currentTool && currentTool.handleToolSwitch) {
       currentTool.handleToolSwitch(tool);

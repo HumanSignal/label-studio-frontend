@@ -1,6 +1,15 @@
 /* global LSF_VERSION */
 
-import { destroy, detach, flow, getEnv, getSnapshot, types } from 'mobx-state-tree';
+import {
+  destroy,
+  detach,
+  flow,
+  getEnv, getParent,
+  getSnapshot,
+  isRoot,
+  types,
+  walk
+} from 'mobx-state-tree';
 
 import uniqBy from 'lodash/uniqBy';
 import InfoModal from '../components/Infomodal/Infomodal';
@@ -8,14 +17,14 @@ import { Hotkey } from '../core/Hotkey';
 import ToolsManager from '../tools/Manager';
 import Utils from '../utils';
 import { guidGenerator } from '../utils/unique';
-import { delay, isDefined } from '../utils/utilities';
+import { clamp, delay, isDefined } from '../utils/utilities';
 import AnnotationStore from './Annotation/store';
 import Project from './ProjectStore';
 import Settings from './SettingsStore';
 import Task from './TaskStore';
 import { UserExtended } from './UserStore';
 import { UserLabels } from './UserLabels';
-import { FF_DEV_1536, FF_DEV_2715, FF_LSDV_4998, isFF } from '../utils/feature-flags';
+import { FF_DEV_1536, FF_DEV_2715, FF_LSDV_4620_3_ML, FF_LSDV_4998, isFF } from '../utils/feature-flags';
 import { CommentStore } from './Comment/CommentStore';
 import { destroy as destroySharedStore } from '../mixins/SharedChoiceStore/mixin';
 
@@ -145,6 +154,10 @@ export default types
     users: types.optional(types.array(UserExtended), []),
 
     userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
+
+    queueTotal: types.optional(types.number, 0),
+
+    queuePosition: types.optional(types.number, 0),
   })
   .preProcessSnapshot((sn) => {
     // This should only be handled if the sn.user value is an object, and converted to a reference id for other
@@ -176,13 +189,9 @@ export default types
     suggestionsRequest: null,
   }))
   .views(self => ({
-    /**
-     * Get alert
-     */
-    get alert() {
-      return getEnv(self).alert;
+    get events() {
+      return getEnv(self).events;
     },
-
     get hasSegmentation() {
       // not an object and not a classification
       const isSegmentation = t => !t.getAvailableStates && !t.perRegionVisible;
@@ -223,6 +232,19 @@ export default types
     },
   }))
   .actions(self => {
+    let appControls;
+
+    function setAppControls(controls) {
+      appControls = controls;
+    }
+
+    function clearApp() {
+      appControls?.clear();
+    }
+
+    function renderApp() {
+      appControls?.render();
+    }
     /**
      * Update settings display state
      */
@@ -310,6 +332,7 @@ export default types
 
           const entity = annotationStore.selected;
 
+          entity?.submissionInProgress();
 
           if (self.hasInterface('review')) {
             self.acceptAnnotation();
@@ -327,6 +350,10 @@ export default types
       if (self.hasInterface('skip', 'review')) {
         hotkeys.addNamed('annotation:skip', () => {
           if (self.annotationStore.viewingAll) return;
+
+          const entity = self.annotationStore.selected;
+
+          entity?.submissionInProgress();
 
           if (self.hasInterface('review')) {
             self.rejectAnnotation();
@@ -348,7 +375,7 @@ export default types
       });
 
       // create relation
-      hotkeys.overwriteNamed('region:relation', () => {
+      hotkeys.addNamed('region:relation', () => {
         const c = self.annotationStore.selected;
 
         if (c && c.highlightedNode && !c.relationMode) {
@@ -496,6 +523,8 @@ export default types
       if (self.isSubmitting) return;
       self.setFlags({ isSubmitting: true });
       const res = fn();
+
+      self.commentStore.setAddedCommentThisSession(false);
       // Wait for request, max 5s to not make disabled forever broken button;
       // but block for at least 0.2s to prevent from double clicking.
 
@@ -505,6 +534,9 @@ export default types
           console.error(err);
         })
         .then(() => self.setFlags({ isSubmitting: false }));
+    }
+    function incrementQueuePosition(number = 1) {
+      self.queuePosition = clamp(self.queuePosition + number, 1, self.queueTotal);
     }
 
     function submitAnnotation() {
@@ -520,8 +552,9 @@ export default types
       entity.sendUserGenerate();
       handleSubmittingFlag(async () => {
         await getEnv(self).events.invoke(event, self, entity);
-        entity.dropDraft();
+        self.incrementQueuePosition();
       });
+      entity.dropDraft();
     }
 
     function updateAnnotation(extraData) {
@@ -535,15 +568,16 @@ export default types
 
       handleSubmittingFlag(async () => {
         await getEnv(self).events.invoke('updateAnnotation', self, entity, extraData);
-        entity.dropDraft();
-        !entity.sentUserGenerate && entity.sendUserGenerate();
+        self.incrementQueuePosition();
       });
+      entity.dropDraft();
     }
 
     function skipTask(extraData) {
       if (self.isSubmitting) return;
       handleSubmittingFlag(() => {
         getEnv(self).events.invoke('skipTask', self, extraData);
+        self.incrementQueuePosition();
       }, 'Error during skip, try again');
     }
 
@@ -567,6 +601,7 @@ export default types
 
         entity.dropDraft();
         await getEnv(self).events.invoke('acceptAnnotation', self, { isDirty, entity });
+        self.incrementQueuePosition();
       }, 'Error during accept, try again');
     }
 
@@ -583,7 +618,21 @@ export default types
 
         entity.dropDraft();
         await getEnv(self).events.invoke('rejectAnnotation', self, { isDirty, entity, comment });
+        self.incrementQueuePosition(-1);
+
       }, 'Error during reject, try again');
+    }
+
+    /**
+     * Exchange storage url for presigned url for task
+     */
+    async function presignUrlForProject(url) {
+      // Event invocation returns array of results for all handlers.
+      const urls = await self.events.invoke('presignUrlForProject', self, url);
+
+      const presignUrl = urls?.[0];
+
+      return presignUrl;
     }
 
     /**
@@ -622,7 +671,7 @@ export default types
     }
 
     /**
-     * Function to initilaze annotation store
+     * Function to initialize annotation store
      * Given annotations and predictions
      * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
      */
@@ -633,6 +682,9 @@ export default types
 
       if (!as.initialized) {
         as.initRoot(self.config);
+        if (isFF(FF_LSDV_4620_3_ML) && !appControls?.isRendered()) {
+          appControls?.render();
+        }
       }
 
       // Allow tags to decide whether to load individual data (audio, video, etc)
@@ -674,17 +726,18 @@ export default types
     }
 
     function setHistory(history = []) {
-      console.log("Setting annotation history");
+      console.log('Setting annotation history');
       const as = self.annotationStore;
 
       const selected = as.selected?.toJSON();
-      console.log({pk: selected?.pk, id: selected?.id});
+
+      console.log({ pk: selected?.pk, id: selected?.id });
 
       as.clearHistory();
 
       // always check that history is for correct and submitted annotation
-      if (Array.isArray(history) && !history.length || !as.selected?.pk) return console.warn("Invalid history record", history);
-      if (Number(as.selected.pk) !== Number(history[0].annotation_id)) return console.log("Mismatched annotation history id", history);
+      if (Array.isArray(history) && !history.length || !as.selected?.pk) return console.warn('Invalid history record', history);
+      if (Number(as.selected.pk) !== Number(history[0].annotation_id)) return console.log('Mismatched annotation history id', history);
 
       history.forEach(item => {
         const obj = as.addHistory(item);
@@ -728,21 +781,24 @@ export default types
     async function postponeTask() {
       const annotation = self.annotationStore.selected;
 
-      if (!annotation.versions.draft) {
-        // annotation created from prediction, so no draft was created
-        annotation.versions.draft = annotation.versions.result;
-      }
-
-      await self.submitDraft(annotation, { was_postponed: true });
+      // save draft before postponing; this can be new draft with FF_DEV_4174 off
+      // or annotation created from prediction
+      await annotation.saveDraft({ was_postponed: true });
       await getEnv(self).events.invoke('nextTask');
+      self.incrementQueuePosition();
+
     }
 
     function nextTask() {
+
       if (self.canGoNextTask) {
         const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
 
         getEnv(self).events.invoke('nextTask', taskId, annotationId);
+        self.incrementQueuePosition();
+
       }
+
     }
 
     function prevTask(e, shouldGoBack = false) {
@@ -752,6 +808,8 @@ export default types
         const { taskId, annotationId } = self.taskHistory[length];
 
         getEnv(self).events.invoke('prevTask', taskId, annotationId);
+        self.incrementQueuePosition(-1);
+
       }
     }
 
@@ -791,6 +849,7 @@ export default types
       updateAnnotation,
       acceptAnnotation,
       rejectAnnotation,
+      presignUrlForProject,
       setUsers,
       mergeUsers,
 
@@ -807,8 +866,31 @@ export default types
       nextTask,
       prevTask,
       postponeTask,
+      incrementQueuePosition,
       beforeDestroy() {
         ToolsManager.removeAllTools();
+        appControls = null;
+      },
+
+      setAppControls,
+      clearApp,
+      renderApp,
+      selfDestroy() {
+        const children = [];
+
+        walk(self, (node) => {
+          if (!isRoot(node) && getParent(node) === self) children.push(node);
+        });
+
+        let node;
+
+        while ((node = children.shift())) {
+          try {
+            destroy(node);
+          } catch (e) {
+            console.log('Problem: ', e);
+          }
+        }
       },
     };
   });

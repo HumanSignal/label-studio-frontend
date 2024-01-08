@@ -9,18 +9,19 @@ import './Filter.styl';
 import { FilterInterface, FilterListInterface } from './FilterInterfaces';
 import { FilterRow } from './FilterRow';
 import { FilterItems } from './filter-util';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
 
 export const Filter: FC<FilterInterface> = ({
   availableFilters,
   filterData,
   onChange,
+  animated = true,
 }) => {
   const [filterList, setFilterList] = useState<FilterListInterface[]>([]);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
-    if(filterList.length > 0) {
-      onChange(FilterItems(filterData, filterList[0]));
-    }
+    onChange(FilterItems(filterData, filterList));
   }, [filterData]);
 
   const addNewFilterListItem = useCallback(() => {
@@ -64,6 +65,10 @@ export const Filter: FC<FilterInterface> = ({
 
       newList.splice(index, 1);
 
+      if (newList[0]) {
+        newList[0].logic = 'and';
+      }
+
       onChange(FilterItems(filterData, newList));
 
       return newList;
@@ -103,16 +108,28 @@ export const Filter: FC<FilterInterface> = ({
     );
   }, [filterList, renderFilterList, addNewFilterListItem]);
 
+  const onToggle = useCallback((isOpen: boolean) => {
+    setActive(isOpen);
+  }, []);
+
   return (
     <Dropdown.Trigger
       content={renderFilter}
+      dataTestId={'dropdown'}
+      animated={animated}
+      onToggle={onToggle}
     >
-      <Button data-cy={'filter-button'} type="text" style={{ padding: 0, whiteSpace: 'nowrap' }}>
+      <Block data-testid={'filter-button'} name={'filter-button'} mod={{ active }}>
         <Elem name={'icon'}>
           <IconFilter />
         </Elem>
-        <Elem name={'text'}>Filter</Elem>
-      </Button>
+        <Elem name={'text'} style={{
+          fontSize: isFF(FF_DEV_3873) && 12,
+          fontWeight: isFF(FF_DEV_3873) && 500,
+          lineHeight: isFF(FF_DEV_3873) && '24px',
+        }}>Filter</Elem>
+        {filterList.length > 0 && <Elem name={'filter-length'} data-testid={'filter-length'}>{filterList.length}</Elem>}
+      </Block>
     </Dropdown.Trigger>
   );
 };

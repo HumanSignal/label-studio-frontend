@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Group, Image, Layer, Shape } from 'react-konva';
 import { observer } from 'mobx-react';
-import { getParent, getRoot, getType, hasParent, types } from 'mobx-state-tree';
+import { getParent, getRoot, getType, hasParent, isAlive, types } from 'mobx-state-tree';
 
 import Registry from '../core/Registry';
 import NormalizationMixin from '../mixins/Normalization';
@@ -18,7 +18,7 @@ import IsReadyMixin from '../mixins/IsReadyMixin';
 import { KonvaRegionMixin } from '../mixins/KonvaRegion';
 import { ImageModel } from '../tags/object/Image';
 import { colorToRGBAArray, rgbArrayToHex } from '../utils/colors';
-import { FF_DEV_3793, FF_DEV_4081, isFF } from '../utils/feature-flags';
+import { FF_DEV_3793, FF_DEV_4081, FF_ZOOM_OPTIM, isFF } from '../utils/feature-flags';
 import { AliveRegion } from './AliveRegion';
 import { RegionWrapper } from './RegionWrapper';
 
@@ -158,7 +158,7 @@ const Model = types
   .views(self => {
     return {
       get parent() {
-        return self.object;
+        return isAlive(self) ? self.object : null;
       },
       get colorParts() {
         const style = self.style || self.tag || defaultStyle;
@@ -271,6 +271,16 @@ const Model = types
         const ctx = layer.canvas.context;
 
         ctx.save();
+        if (isFF(FF_ZOOM_OPTIM)) {
+          ctx.beginPath();
+          ctx.rect(
+            self.parent.alignmentOffset.x,
+            self.parent.alignmentOffset.y,
+            self.parent.stageWidth * self.parent.stageScale,
+            self.parent.stageHeight * self.parent.stageScale,
+          );
+          ctx.clip();
+        }
         ctx.beginPath();
         if (cachedPoints.length / 2 > 3) {
           ctx.moveTo(...self.prepareCoords([lastPointX, lastPointY]));
@@ -436,7 +446,7 @@ const BrushRegionModel = types.compose(
   Model,
 );
 
-const HtxBrushLayer = observer(({ item, pointsList }) => {
+const HtxBrushLayer = observer(({ item, setShapeRef, pointsList }) => {
   const drawLine = useCallback((ctx, { points, strokeWidth, strokeColor, compositeOperation }) => {
     ctx.save();
     ctx.beginPath();
@@ -481,10 +491,10 @@ const HtxBrushLayer = observer(({ item, pointsList }) => {
     [pointsList, pointsList.length],
   );
 
-  return <Shape ref={node => item.setShapeRef(node)} sceneFunc={sceneFunc} hitFunc={hitFunc} />;
+  return <Shape ref={node => setShapeRef(node)} sceneFunc={sceneFunc} hitFunc={hitFunc} />;
 });
 
-const HtxBrushView = ({ item }) => {
+const HtxBrushView = ({ item, setShapeRef }) => {
   const [image, setImage] = useState();
   const { suggestion } = useContext(ImageViewContext) ?? {};
 
@@ -535,7 +545,11 @@ const HtxBrushView = ({ item }) => {
       if (image) {
         if (!imageData) {
           context.drawImage(image, 0, 0, item.parent.stageWidth, item.parent.stageHeight);
-          imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
+          if (isFF(FF_ZOOM_OPTIM)) {
+            imageData = context.getImageData(item.parent.alignmentOffset.x, item.parent.alignmentOffset.y, item.parent.stageWidth, item.parent.stageHeight);
+          } else {
+            imageData = context.getImageData(0, 0, item.parent.stageWidth, item.parent.stageHeight);
+          }
           const colorParts = colorToRGBAArray(shape.colorKey);
 
           for (let i = imageData.data.length / 4 - 1; i >= 0; i--) {
@@ -593,7 +607,7 @@ const HtxBrushView = ({ item }) => {
   }, [
     item.touches.length,
     item.strokeColor,
-    item.parent.stageScale,
+    item.parent?.stageScale,
     store.annotationStore.selected?.id,
     item.parent?.zoomingPositionX,
     item.parent?.zoomingPositionY,
@@ -604,16 +618,43 @@ const HtxBrushView = ({ item }) => {
     image,
   ]);
 
+  const setLayerRef = useCallback((ref) => {
+    if (isAlive(item)) {
+      item.setLayerRef(ref);
+    }
+  },[item]);
+
   if (!item.parent) return null;
 
   const stage = item.parent?.stageRef;
+  const highlightProps = isFF(FF_ZOOM_OPTIM) ? {
+    scaleX: 1 / item.parent.zoomScale,
+    scaleY: 1 / item.parent.zoomScale,
+    x: -(item.parent.zoomingPositionX + item.parent.alignmentOffset.x) / item.parent.zoomScale,
+    y: -(item.parent.zoomingPositionY + item.parent.alignmentOffset.y) / item.parent.zoomScale,
+    width: item.containerWidth,
+    height: item.containerHeight,
+  } : {
+    scaleX: 1 / item.parent.stageScale,
+    scaleY: 1 / item.parent.stageScale,
+    x: -item.parent.zoomingPositionX / item.parent.stageScale,
+    y: -item.parent.zoomingPositionY / item.parent.stageScale,
+    width: item.parent.canvasSize.width,
+    height: item.parent.canvasSize.height,
+  };
+  const clip = isFF(FF_ZOOM_OPTIM) ? {
+    x: 0,
+    y: 0,
+    width: item.parent.stageWidth,
+    height: item.parent.stageHeight,
+  } : null;
 
   return (
     <RegionWrapper item={item}>
       <Layer
         id={item.cleanId}
         ref={ref => {
-          item.setLayerRef(ref);
+          setLayerRef(ref);
           layerRef.current = ref;
         }}
         onDraw={() => {
@@ -621,6 +662,7 @@ const HtxBrushView = ({ item }) => {
         }}
         clearBeforeDraw={!item.isDrawing}
         visible={!item.hidden}
+        clip={clip}
       >
         <Group
           attrMy={item.needsUpdate}
@@ -658,10 +700,12 @@ const HtxBrushView = ({ item }) => {
               return;
             }
 
-            const tool = item.parent.getToolsManager().findSelectedTool();
-            const isMoveTool = tool && getType(tool).name === 'MoveTool';
+            if (!isFF(FF_ZOOM_OPTIM)) {
+              const tool = item.parent.getToolsManager().findSelectedTool();
+              const isMoveTool = tool && getType(tool).name === 'MoveTool';
 
-            if (tool && !isMoveTool) return;
+              if (tool && !isMoveTool) return;
+            }
 
             if (store.annotationStore.selected.relationMode) {
               stage.container().style.cursor = 'default';
@@ -682,7 +726,7 @@ const HtxBrushView = ({ item }) => {
 
           {/* Touches */}
           <Group>
-            <HtxBrushLayer store={store} item={item} pointsList={item.touches} />
+            <HtxBrushLayer store={store} item={item} pointsList={item.touches} setShapeRef={setShapeRef} />
           </Group>
 
           {/* Highlight */}
@@ -692,12 +736,7 @@ const HtxBrushView = ({ item }) => {
             sceneFunc={highlightedRef.current.highlighted ? null : () => { }}
             hitFunc={() => { }}
             {...highlightedRef.current.highlight}
-            scaleX={1 / item.parent.stageScale}
-            scaleY={1 / item.parent.stageScale}
-            x={-item.parent.zoomingPositionX / item.parent.stageScale}
-            y={-item.parent.zoomingPositionY / item.parent.stageScale}
-            width={item.parent.stageWidth}
-            height={item.parent.stageHeight}
+            {...highlightProps}
             listening={false}
           />
         </Group>
@@ -719,7 +758,10 @@ const HtxBrushView = ({ item }) => {
   );
 };
 
-const HtxBrush = AliveRegion(HtxBrushView, { renderHidden: true });
+const HtxBrush = AliveRegion(HtxBrushView, {
+  renderHidden: true,
+  shouldNotUsePortal: true,
+});
 
 Registry.addTag('brushregion', BrushRegionModel, HtxBrush);
 Registry.addRegionType(BrushRegionModel, 'image', value => value.rle || value.touches || value.maskDataURL);

@@ -13,19 +13,32 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Dump the client payload context
-        env:
-          PAYLOAD_CONTEXT: ${{ toJson(github.event.client_payload) }}
-        run: echo "$PAYLOAD_CONTEXT"
+      - uses: hmarr/debug-action@v2.1.0
+
+      - name: Add Workflow link to command comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          token: ${{ secrets.GIT_PAT }}
+          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          body: |
+            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Checkout on chat command
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GIT_PAT }}
           repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
           submodules: 'recursive'
           fetch-depth: 0
+
+      - name: Configure git
+        shell: bash
+        run: |
+          set -xeuo pipefail
+          git config --global user.name '${{ github.event.client_payload.github.actor }}'
+          git config --global user.email '${{ github.event.client_payload.github.actor }}@users.noreply.github.com'
 
       - name: Check for merge conflict
         id: check-conflict
@@ -34,8 +47,6 @@ jobs:
         shell: bash
         run: |
           set -xeuo pipefail
-          git config --global user.name '${{ github.event.client_payload.github.actor }}'
-          git config --global user.email '${{ github.event.client_payload.github.actor }}@users.noreply.github.com'
           echo "merge_conflict=$(git merge-tree $(git merge-base HEAD origin/$SLASH_COMMAND_ARG_BRANCH) origin/$SLASH_COMMAND_ARG_BRANCH HEAD | grep '<<')" >> $GITHUB_OUTPUT
 
       - name: Add reaction to command comment on merge conflict
@@ -46,9 +57,7 @@ jobs:
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: |
-            > **Error**: Merge conflict detected, please resolve it using the git command line.
-            >
-            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            > **Error**: Merge conflict detected, please resolve it using the command line.
           reactions: "-1"
 
       - name: Merge branch into current branch
@@ -79,8 +88,6 @@ jobs:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: |
             > Already up-to-date. Nothing to commit.
-            >
-            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           reactions: "confused"
 
       - name: Add reaction to command comment on success
@@ -93,8 +100,6 @@ jobs:
           body: |
             > Successfully pushed new changes:
             > ${{ steps.commit_and_push.outputs.last_commit_msg }} (${{ steps.commit_and_push.outputs.last_commit_sha }})
-            >
-            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           reactions: "+1"
 
       - name: Add reaction to command comment on failure
@@ -106,8 +111,6 @@ jobs:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: |
             > **Error**: failed to execute "${{ github.event.client_payload.slash_command.args.unnamed.arg1 }}" command
-            >
-            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           reactions: "-1"
 
   help:

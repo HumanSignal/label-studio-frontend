@@ -65,6 +65,7 @@ import { Repeater } from '../examples/repeater';
 import { Table } from '../examples/table';
 import { TableCsv } from '../examples/table_csv';
 import { Ranker } from '../examples/ranker';
+import { Buckets } from '../examples/ranker_buckets';
 
 import { TimeSeries } from '../examples/timeseries';
 import { TimeSeriesSingle } from '../examples/timeseries_single';
@@ -75,7 +76,7 @@ import { ClassificationMixed } from '../examples/classification_mixed';
  */
 // import { AllTypes } from "../examples/all_types";
 
-const data = ImageBbox;
+const data = ClassificationMixed;
 
 function getData(task) {
   if (task && task.data) {
@@ -145,13 +146,13 @@ function configureApplication(params) {
 
   const options = {
     settings: params.settings || {},
-    alert: m => console.log(m), // Noop for demo: window.alert(m)
     messages: { ...Messages, ...params.messages },
     onSubmitAnnotation: params.onSubmitAnnotation ? params.onSubmitAnnotation : External.onSubmitAnnotation,
     onUpdateAnnotation: params.onUpdateAnnotation ? params.onUpdateAnnotation : External.onUpdateAnnotation,
     onDeleteAnnotation: params.onDeleteAnnotation ? params.onDeleteAnnotation : External.onDeleteAnnotation,
     onSkipTask: params.onSkipTask ? params.onSkipTask : External.onSkipTask,
     onUnskipTask: params.onUnskipTask ? params.onUnskipTask : External.onUnskipTask,
+    onPresignUrlForProject: params.onPresignUrlForProject,
     onSubmitDraft: params.onSubmitDraft,
     onTaskLoad: params.onTaskLoad ? params.onTaskLoad : External.onTaskLoad,
     onLabelStudioLoad: params.onLabelStudioLoad ? params.onLabelStudioLoad : External.onLabelStudioLoad,

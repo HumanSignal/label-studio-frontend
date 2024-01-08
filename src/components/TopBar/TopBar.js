@@ -24,9 +24,10 @@ export const TopBar = observer(({ store }) => {
       {isFF(FF_DEV_3873) ? (
         <Elem name="group">
           <CurrentTask store={store}/>
-          {store.hasInterface('annotations:view-all')  && (
+          {store.hasInterface('annotations:view-all') && (
             <Tooltip title="View all annotations">
               <Button
+                className={'topbar__button'}
                 icon={<IconViewAll />}
                 type="text"
                 aria-label="View All"
@@ -36,6 +37,7 @@ export const TopBar = observer(({ store }) => {
                   height: 36,
                   width: 36,
                   padding: 0,
+                  marginRight: isFF(FF_DEV_3873) && 8,
                 }}
               />
             </Tooltip>
@@ -44,6 +46,7 @@ export const TopBar = observer(({ store }) => {
             <Tooltip placement="topLeft" title="Create a new annotation">
               <Button
                 icon={<LsPlus />}
+                className={'topbar__button'}
                 type="text"
                 aria-label="View All"
                 onClick={event => {

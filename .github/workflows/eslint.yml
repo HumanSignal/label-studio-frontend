@@ -12,6 +12,11 @@ env:
   CACHE_NAME_PREFIX: v3
   NODE: '18'
 
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
 jobs:
   run:
     name: Run ESLint
@@ -22,13 +27,13 @@ jobs:
       - uses: hmarr/debug-action@v2.1.0
 
       - name: "Checkout codebase"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.sha }}
 
       - name: "Setup NodeJS"
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "${{ env.NODE }}"
 
@@ -48,13 +53,18 @@ jobs:
             yarn-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-
 
       - name: "Install dependencies"
-        timeout-minutes: 1
         run: |
           set -euo pipefail
           yarn install --frozen-lockfile
 
+      - name: "[DEBUG] Print installed npm packages"
+        run: |
+          npm list --depth=1 || true
+
       - name: Run ESLint
-        uses: tj-actions/eslint-changed-files@v18
+        uses: tj-actions/eslint-changed-files@v21
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           config_path: ".eslintrc.js"
           ignore_path: ".eslintignore"

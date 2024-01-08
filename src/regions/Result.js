@@ -4,7 +4,7 @@ import Registry from '../core/Registry';
 import Tree from '../core/Tree';
 import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { isDefined } from '../utils/utilities';
-import { FF_DEV_1372, FF_LSDV_4583, isFF } from '../utils/feature-flags';
+import { FF_LSDV_4583, isFF } from '../utils/feature-flags';
 
 const Result = types
   .model('Result', {
@@ -60,7 +60,7 @@ const Result = types
     ]),
     // @todo much better to have just a value, not a hash with empty fields
     value: types.model({
-      ranker: types.maybe(types.array(types.string)),
+      ranker: types.union(types.array(types.string), types.frozen(), types.null),
       datetime: types.maybe(types.string),
       number: types.maybe(types.number),
       rating: types.maybe(types.number),
@@ -84,7 +84,7 @@ const Result = types
       sequence: types.frozen(),
     }),
     // info about object and region
-    // meta: types.frozen(),
+    meta: types.frozen(),
   })
   .views(self => ({
     get perRegionStates() {
@@ -140,11 +140,14 @@ const Result = types
       return self.mainValue?.join(joinstr) || '';
     },
 
+    // @todo check all usages of selectedLabels:
+    //       — check usages of non-array values (like `if selectedValues ...`)
+    //       - check empty labels, they should be returned as an array
     get selectedLabels() {
       if (self.mainValue?.length === 0 && self.from_name.allowempty) {
         return self.from_name.findLabel(null);
       }
-      return self.mainValue?.map(value => self.from_name.findLabel(value)).filter(Boolean);
+      return self.mainValue?.map(value => self.from_name.findLabel(value)).filter(Boolean) ?? [];
     },
 
     /**
@@ -159,12 +162,13 @@ const Result = types
         if (label && !self.area.hasLabel(label)) return false;
       }
 
+      // picks leaf's (last item in a path) value for Taxonomy or usual Choice value for Choices
       const innerResults = (r) =>
         r.map(s => Array.isArray(s) ? s.at(-1) : s);
 
       const isChoiceSelected = () => {
         const tagName = control.whentagname;
-        const choiceValues = control.whenchoicevalue ? control.whenchoicevalue.split(',') : null;
+        const choiceValues = control.whenchoicevalue?.split(',') ?? null;
         const results = self.annotation.results.filter(r => ['choices', 'taxonomy'].includes(r.type) && r !== self);
 
         if (tagName) {
@@ -186,7 +190,7 @@ const Result = types
 
       if (control.visiblewhen === 'choice-selected') {
         return isChoiceSelected();
-      } else if (isFF(FF_DEV_1372) && control.visiblewhen === 'choice-unselected') {
+      } else if (control.visiblewhen === 'choice-unselected') {
         return !isChoiceSelected();
       }
 
@@ -203,7 +207,7 @@ const Result = types
 
     get style() {
       if (!self.tag) return null;
-      const fillcolor = self.tag.background || self.tag.parent.fillcolor;
+      const fillcolor = self.tag.background || self.tag.parent?.fillcolor;
 
       if (!fillcolor) return null;
       const strokecolor = self.tag.background || self.tag.parent.strokecolor;
@@ -257,13 +261,18 @@ const Result = types
       self.parentID = id;
     },
 
+    setMetaValue(key, value) {
+      self.meta = { ...self.meta, [key]: value };
+    },
+
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
     updateAppearenceFromState() { },
 
     async serialize(options) {
-      const { type, score, value, ...sn } = getSnapshot(self);
+      const sn = getSnapshot(self);
+      const { type, score, value, meta } = sn;
       const { valueType } = self.from_name;
       const data = self.area ? await self.area.serialize(options) : {};
       // cut off annotation id
@@ -291,6 +300,10 @@ const Result = types
 
       if (areaMeta && Object.keys(areaMeta).length) {
         data.meta = { ...data.meta, ...areaMeta };
+      }
+
+      if (meta) {
+        data.meta = { ...data.meta, ...meta };
       }
 
       if (self.area.parentID) {

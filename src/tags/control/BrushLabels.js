@@ -45,13 +45,13 @@ const ModelAttrs = types.model('BrushLabelsModel', {
 
 const BrushLabelsModel = types.compose(
   'BrushLabelsModel',
+  ControlBase,
   LabelsModel,
   ModelAttrs,
   BrushModel,
   Validation,
   LabelMixin,
   SelectedModelMixin.props({ _child: 'LabelModel' }),
-  ControlBase,
 );
 
 const HtxBrushLabels = observer(({ item }) => {

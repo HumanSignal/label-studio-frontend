@@ -15,10 +15,57 @@
       height 40px
       font-size 16px
       line-height 24px
-      &_look_primary
-        background-color #096DD9
       &_look_danger
         border-color #e1e0e2
+
+    .submit
+      border-radius 4px
+      background #09F
+      box-shadow 0px 4px 4px 0px rgba(0, 0, 0, 0.25)
+      display flex
+      width 160px
+      height 40px
+      justify-content center
+      align-items center
+      color #FFF
+      text-align center
+      font-size 16px
+      font-style normal
+      font-weight 500
+      line-height 24px
+      letter-spacing 0.15px
+      flex-direction row-reverse
+      padding 0
+
+      &_disabled 
+        color: rgba(255,255,255,0.8);
+        background-color: #bbb;
+
+      &__has_icon
+        justify-content space-between
+
+      span  
+        width 100%
+
+      &__icon
+        display flex
+        max-width 40px 
+        height 100%
+        justify-content center
+        align-items center
+        align-self stretch
+        border-left 1px solid rgba(255, 255, 255, 0.16)
+
+        div
+          width 100%
+          height 100%
+          display flex
+          align-items center
+          justify-content center
+
+        svg 
+          pointer-events none
+          transform: rotate(180deg) scale(1.1)
 
     &__skipped-info
       display flex
@@ -51,4 +98,35 @@
     &__footer
       display flex
       flex-direction row
-      justify-content end
+      justify-content flex-end
+
+.submit-option
+  padding 12px 24px
+  display flex
+  align-items center
+  align-self stretch
+  color #1F1F1F
+  text-overflow ellipsis
+  white-space nowrap
+  font-family Roboto
+  font-size 16px
+  font-style normal
+  font-weight 400
+  line-height 24px 
+  letter-spacing 0.5px
+  box-shadow: 0px 1px 3px 1px rgba(38, 38, 38, 0.15), 0px 1px 2px 0px rgba(38, 38, 38, 0.30);
+
+  &:hover:before 
+    content ''
+    z-index auto
+    background #00f
+    width calc(100% - 16px)
+    height calc(100% - 16px)
+    position absolute
+    left 0
+    top 0
+    margin 8px
+    border-radius 4px
+    opacity 0.08
+    background rgb(9 109 217)
+    pointer-events none
