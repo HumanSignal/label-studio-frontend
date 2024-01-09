@@ -1,4 +1,4 @@
-import { LabelStudio, Tooltip } from '@heartexlabs/ls-test/helpers/LSF/index';
+import { LabelStudio, ToolBar, Tooltip } from '@heartexlabs/ls-test/helpers/LSF/index';
 import { useTaxonomy } from '@heartexlabs/ls-test/helpers/LSF';
 import {
   buildDynamicTaxonomyConfig,
@@ -128,8 +128,8 @@ Object.entries(taxonomies).forEach(([title, Taxonomy]) => {
 
           init(config, data);
           // create new annotation and check that preselected choices are selected already
-          cy.get('.lsf-annotations-list').click();
-          cy.get('.lsf-annotations-list__create').click();
+          ToolBar.toggleAnnotationsList();
+          ToolBar.createNewAnnotation();
           Taxonomy.open();
           Taxonomy.hasSelected('Choice 3');
         });
