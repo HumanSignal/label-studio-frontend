@@ -20,7 +20,7 @@
     "cvg:summary": "nyc report --temp-dir=.nyc_output --reporter=text-summary --cwd=. --exclude-after-remap false"
   },
   "dependencies": {
-    "@heartexlabs/ls-test": "heartexlabs/ls-frontend-test#e760e117af39c187065ec8c704ce174e5d001eff"
+    "@heartexlabs/ls-test": "heartexlabs/ls-frontend-test#fa441d3d82b9aa238bf68a9bdcc33f7d8f6ec361"
   },
   "devDependencies": {
     "ts-loader": "^9.4.2",
