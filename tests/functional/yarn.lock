@@ -264,9 +264,9 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
   integrity sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==
 
-"@heartexlabs/ls-test@heartexlabs/ls-frontend-test#e760e117af39c187065ec8c704ce174e5d001eff":
+"@heartexlabs/ls-test@heartexlabs/ls-frontend-test#9ff949fc19abaf124477dfd41c6f230b00665ab3":
   version "1.0.8"
-  resolved "https://codeload.github.com/heartexlabs/ls-frontend-test/tar.gz/e760e117af39c187065ec8c704ce174e5d001eff"
+  resolved "https://codeload.github.com/heartexlabs/ls-frontend-test/tar.gz/9ff949fc19abaf124477dfd41c6f230b00665ab3"
   dependencies:
     "@cypress/code-coverage" "^3.10.0"
     "@cypress/webpack-preprocessor" "^5.17.0"
@@ -288,9 +288,9 @@
     webpack-cli "^5.0.1"
     yargs "^17.7.1"
 
-"@heartexlabs/ls-test@heartexlabs/ls-frontend-test#fa441d3d82b9aa238bf68a9bdcc33f7d8f6ec361":
+"@heartexlabs/ls-test@heartexlabs/ls-frontend-test#df8e7ea65179f5d143a4a299428116646f2236c4":
   version "1.0.8"
-  resolved "https://codeload.github.com/heartexlabs/ls-frontend-test/tar.gz/fa441d3d82b9aa238bf68a9bdcc33f7d8f6ec361"
+  resolved "https://codeload.github.com/heartexlabs/ls-frontend-test/tar.gz/df8e7ea65179f5d143a4a299428116646f2236c4"
   dependencies:
     "@cypress/code-coverage" "^3.10.0"
     "@cypress/webpack-preprocessor" "^5.17.0"
