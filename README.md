@@ -14,7 +14,7 @@ Frontend, as its name suggests, is the frontend library developed using React an
 ## Install
 
 ```bash
-npm install @heartexlabs/label-studio
+npm install @heartexlabs/label-studio 
 ```
 
 ## Usage
