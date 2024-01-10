@@ -264,9 +264,9 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
   integrity sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==
 
-"@heartexlabs/ls-test@https://github.com/humansignal/ls-frontend-test#fb051d1353c6c44cb48624f7f34e5d19279d5dfc":
+"@heartexlabs/ls-test@humansignal/ls-frontend-test#fb051d1353c6c44cb48624f7f34e5d19279d5dfc":
   version "1.0.8"
-  resolved "https://github.com/humansignal/ls-frontend-test#fb051d1353c6c44cb48624f7f34e5d19279d5dfc"
+  resolved "https://codeload.github.com/humansignal/ls-frontend-test/tar.gz/fb051d1353c6c44cb48624f7f34e5d19279d5dfc"
   dependencies:
     "@cypress/code-coverage" "^3.10.0"
     "@cypress/webpack-preprocessor" "^5.17.0"
@@ -278,30 +278,6 @@
     cypress-plugin-snapshots "^1.4.4"
     cypress-terminal-report "^5.1.1"
     del "^7.1.0"
-    pixelmatch "^5.3.0"
-    pngjs "^7.0.0"
-    proper-lockfile "^4.1.2"
-    sinon "^16.1.0"
-    sinon-chai "^3.7.0"
-    ts-loader "^9.4.2"
-    typescript "^4.9.5"
-    webpack "^5.77.0"
-    webpack-cli "^5.0.1"
-    yargs "^17.7.1"
-
-"@heartexlabs/ls-test@humansignal/ls-frontend-test#5e6257fff86bba17055a711d94a762ac9d9f193b":
-  version "1.0.8"
-  resolved "https://codeload.github.com/humansignal/ls-frontend-test/tar.gz/5e6257fff86bba17055a711d94a762ac9d9f193b"
-  dependencies:
-    "@cypress/code-coverage" "^3.10.0"
-    "@cypress/webpack-preprocessor" "^5.17.0"
-    chai "^4.3.7"
-    cypress "12.17.4"
-    cypress-image-snapshot "^4.0.1"
-    cypress-multi-reporters "^1.6.2"
-    cypress-parallel "^0.12.0"
-    cypress-plugin-snapshots "^1.4.4"
-    cypress-terminal-report "^5.1.1"
     pixelmatch "^5.3.0"
     pngjs "^7.0.0"
     proper-lockfile "^4.1.2"
