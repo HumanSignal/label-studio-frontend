@@ -881,6 +881,7 @@ export default types
         let node;
 
         while ((node = children?.shift())) {
+          console.log(node.annotations?.[0].trackedState.areas);
           try {
             destroy(node);
           } catch (e) {
