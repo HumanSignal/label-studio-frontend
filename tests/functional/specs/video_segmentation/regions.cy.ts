@@ -2,7 +2,7 @@ import { Labels, LabelStudio, Sidebar, VideoView } from '@heartexlabs/ls-test/he
 import { simpleVideoConfig, simpleVideoData, simpleVideoResult } from 'data/video_segmentation/regions';
 
 describe('Video segmentation', () => {
-  it('Should be able to draw a simple rectangle', ()=>{
+  it('Should be able to draw a simple rectangle', () => {
     LabelStudio.params()
       .config(simpleVideoConfig)
       .data(simpleVideoData)
@@ -36,7 +36,7 @@ describe('Video segmentation', () => {
   });
 
   describe('Rectangle', () => {
-    it('Should be invisible out of the lifespan', () =>{
+    it('Should be invisible out of the lifespan', () => {
       LabelStudio.params()
         .config(simpleVideoConfig)
         .data(simpleVideoData)
@@ -52,7 +52,7 @@ describe('Video segmentation', () => {
   });
 
   describe('Transformer', () => {
-    it.only('Should be invisible out of the lifespan', () =>{
+    it('Should be invisible out of the lifespan', () => {
       LabelStudio.params()
         .config(simpleVideoConfig)
         .data(simpleVideoData)
