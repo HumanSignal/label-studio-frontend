@@ -69,7 +69,6 @@ export const Annotation = types
 
     // created by user during this session
     userGenerate: types.optional(types.boolean, true),
-    update: types.optional(types.boolean, false),
     sentUserGenerate: types.optional(types.boolean, false),
     localUpdate: types.optional(types.boolean, false),
 
