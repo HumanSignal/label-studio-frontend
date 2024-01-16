@@ -875,14 +875,12 @@ export default types
         const children = [];
 
         walk(self, (node) => {
-          if (!isRoot(node) && getParent(node) === self) {
-            children.push(node);
-          }
+          if (!isRoot(node) && getParent(node) === self) children.push(node);
         });
 
         let node;
 
-        while (node = children.shift()) {
+        while ((node = children.shift())) {
           try {
             destroy(node);
           } catch (e) {
