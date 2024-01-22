@@ -437,6 +437,7 @@ const RootTitle: FC<any> = observer(({
         {!props.isGroup && <Elem name="index">{props.idx + 1}</Elem>}
         <Elem name="title">
           {label}
+          {item.text && <Elem name="text">{item.text.replace(/\\n/g, '\n')}</Elem>}
           {item?.isDrawing && (
             <Elem tag="span" name="incomplete">
               <Tooltip title="Incomplete polygon">
