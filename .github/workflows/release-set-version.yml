@@ -31,7 +31,7 @@ jobs:
           node-version: "${{ env.NODE }}"
 
       - name: Cache node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: npm-${{ env.CACHE_NAME_PREFIX }}-${{ runner.os }}-node-${{ env.NODE }}-jsdoc-to-markdown
@@ -46,7 +46,7 @@ jobs:
 
       - name: Get GitHub user details
         id: get-github-user
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         env:
           ACTOR_USERNAME: ${{ github.event.sender.login }}
         with:

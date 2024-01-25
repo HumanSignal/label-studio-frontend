@@ -175,6 +175,7 @@ const Model = types.model({
   selectionArea: types.optional(ImageSelection, { start: null, end: null }),
 }).volatile(() => ({
   currentImage: undefined,
+  supportSuggestions: true,
 })).views(self => ({
   get store() {
     return getRoot(self);
@@ -647,11 +648,25 @@ const Model = types.model({
     return {
       views: {
         getSkipInteractions() {
-          const manager = self.getToolsManager();
+          if (isFF(FF_ZOOM_OPTIM)) {
+            if (skipInteractions) return true;
 
-          const isPanning = manager.findSelectedTool()?.toolName === 'ZoomPanTool';
+            const relationMode = self.annotation.relationMode;
 
-          return skipInteractions || isPanning;
+            if (relationMode) return false;
+
+            const manager = self.getToolsManager();
+            const tool = manager.findSelectedTool();
+            const canInteractWithRegions = tool?.canInteractWithRegions;
+
+            return !canInteractWithRegions;
+          } else {
+            const manager = self.getToolsManager();
+
+            const isPanning = manager.findSelectedTool()?.toolName === 'ZoomPanTool';
+
+            return skipInteractions || isPanning;
+          }
         },
       },
       actions: {
