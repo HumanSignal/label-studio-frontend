@@ -260,8 +260,7 @@ Scenario('NER Text with SECURE MODE', async function({ I, LabelStudio }) {
   });
 });
 
-// eslint-disable-next-line codeceptjs/no-exclusive-tests
-Scenario.only('NER Text regions in Outliner', async function({ I, LabelStudio }) {
+Scenario('NER Text regions in Outliner', async function({ I, LabelStudio }) {
   const params = {
     annotations: [{ id: 'TestCmpl', result: resultsFromUrl }],
     config: configUrl,
