@@ -325,7 +325,7 @@ export const FF_TAXONOMY_SELECTED = 'fflag_fix_front_leap_149_taxonomy_selected_
 /** Skip video to region start when it's selected in the outliner */
 export const FF_LEAP_187 = 'fflag_feat_front_leap_187_video_seek_on_select_short';
 
-export const FF_SIMPLE_INIT = 'fflag_fix_front_leap_443_select-annotation-once';
+export const FF_SIMPLE_INIT = 'fflag_fix_front_leap_443_select_annotation_once';
 
 /**
  * Optimize stage rendering for large number of regions and zoom interactions
