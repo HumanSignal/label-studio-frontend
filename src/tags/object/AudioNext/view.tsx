@@ -53,6 +53,7 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   }, []);
 
   const handlePlay = useCallback(() => {
+    //fb-optic-9: event logging: start playing audio
     setPlaying((playing) => {
       if (!item._ws) return false;
 
@@ -69,6 +70,7 @@ const AudioNextView: FC<AudioNextProps> = ({ item }) => {
   }, [item, playing]);
 
   const handlePause = useCallback(() => {
+    //fb-optic-9: event logging: stop playing audio
     setPlaying((playing) => {
       if (!item._ws) return false;
 

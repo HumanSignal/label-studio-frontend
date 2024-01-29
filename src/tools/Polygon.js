@@ -113,6 +113,7 @@ const _Tool = types
       },
 
       startDrawing(x, y) {
+        //fb-optic-9: event logging: polygon draw events startDrawing
         const point = self.control?.getSnappedPoint({ x, y });
 
         if (isFF(FF_DEV_2432)) {
@@ -126,6 +127,7 @@ const _Tool = types
       },
 
       _finishDrawing() {
+        //fb-optic-9: event logging: polygon draw events _finishDrawing
         if (isFF(FF_DEV_2432)) {
           const { currentArea, control } = self;
 

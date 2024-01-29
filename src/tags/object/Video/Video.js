@@ -129,10 +129,12 @@ const Model = types
     },
 
     triggerSyncPlay() {
+      //fb-optic-9: event logging: start playing video
       self.triggerSync('play', { playing: true });
     },
 
     triggerSyncPause() {
+      //fb-optic-9: event logging: start playing audio
       self.triggerSync('pause', { playing: false });
     },
 

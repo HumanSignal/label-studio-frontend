@@ -94,6 +94,7 @@ export const Controls: FC<TimelineControlsProps> = memo(({
 
   const handlePlay = useCallback(() => {
     playing ? onPause?.() : onPlay?.();
+    //fb-optic-9: event logging: Play/Pause video
   }, [playing, onPlay, onPause]);
 
   const onSetVolumeModal = (e: MouseEvent<HTMLButtonElement>) => {
