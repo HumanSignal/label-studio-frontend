@@ -76,6 +76,7 @@ const RequiredMixin = types
         }
         return true;
       },
-    }; });
+    };
+  });
 
 export default RequiredMixin;
