@@ -1,5 +1,5 @@
 import {
-  numberConfigMinMax, numberPerItemConfig, numberPerItemResult,
+  numberConfigMinMax, numberPerItemConfig,
   numberPerRegionConfig,
   numberPerRegionResult,
   numberResult,
