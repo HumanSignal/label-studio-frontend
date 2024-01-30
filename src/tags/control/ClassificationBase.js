@@ -50,7 +50,7 @@ const ClassificationBase = types.model('ClassificationBase', {
        * In this case, the parent method call is added at the beginning or end
        * of the method to maintain all functionality in a predictable manner.
        *
-       * @returns {boolean} - Returns true if the validation is successful, false otherwise.
+       * @returns {boolean}
        */
       validate() {
         if (self.perregion) {
@@ -64,9 +64,8 @@ const ClassificationBase = types.model('ClassificationBase', {
       /**
        * Validates the value.
        *
-       * This is commonly the validateValue method being overridden.
-       * When overridden, the validation will automatically support
-       * perItem, perRegion, and perObject modes.
+       * Override to add your custom validation logic specific for the tag.
+       * Per-item, per-region and per-object validation will be applied automatically.
        *
        * @example
        * SomeModel.actions(self => {
@@ -82,7 +81,7 @@ const ClassificationBase = types.model('ClassificationBase', {
        * });
        *
        * @param {*} value - The value to be validated.
-       * @returns {boolean} - Returns true if the value is valid, otherwise false.
+       * @returns {boolean}
        *
        */
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -95,7 +94,7 @@ const ClassificationBase = types.model('ClassificationBase', {
        * - This method should not be overridden.
        * - It is used only in validate method of the ClassificationBase mixin.
        *
-       * @returns {boolean} - The validated value.
+       * @returns {boolean}
        * @private
        */
       _validatePerObject() {

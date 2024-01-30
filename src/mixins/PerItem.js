@@ -28,7 +28,7 @@ const PerItemMixin = types
      * - This method should not be overridden.
      * - It is used only in validate method of the ClassificationBase mixin.
      *
-     * @returns {boolean} - The validated value.
+     * @returns {boolean}
      * @private
      */
     _validatePerItem() {
