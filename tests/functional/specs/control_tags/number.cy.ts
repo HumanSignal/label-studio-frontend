@@ -46,11 +46,11 @@ describe('Control Tags - Number', () => {
 
     LabelStudio.waitForObjectsReady();
 
-    Number.type('126{upArrow}{upArrow}');
+    Number.type('126{upArrow}{upArrow}{upArrow}');
     Number.hasValue('128');
 
     Number.selectAll();
-    Number.type('6{downArrow}{downArrow}{downArrow}{downArrow}');
+    Number.type('6{downArrow}{downArrow}{downArrow}{downArrow}{downArrow}');
     Number.hasValue('2');
   });
   it('should show errors for min validation', () => {
@@ -118,6 +118,7 @@ describe('Control Tags - Number', () => {
     Number.type('8');
 
 
+    cy.log('43 is not a multiple of 2, which is set as a step in the configuration, so there should be a warning on submit');
     ToolBar.clickSubmit();
     Modals.hasWarning('43');
   });
