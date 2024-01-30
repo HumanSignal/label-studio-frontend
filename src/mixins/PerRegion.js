@@ -55,6 +55,15 @@ const PerRegionMixin = types
     },
   }))
   .actions(self => ({
+    /**
+     * Validates all values related to the current classification per region.
+     *
+     * - This method should not be overridden.
+     * - It is used only in validate method of the ClassificationBase mixin.
+     *
+     * @returns {boolean} - The validated value.
+     * @private
+     */
     _validatePerRegion() {
       const objectTag = self.toNameTag;
 

@@ -151,6 +151,8 @@ const Model = types
 
         if (!isNaN(value)) {
           self.setNumber(value);
+          // without this line we can have `7` in model field while it's displayed as `007`.
+          // at least it is bad for testing cases
           e.target.value = isDefined(self.number) ? self.number : '';
         }
       },
