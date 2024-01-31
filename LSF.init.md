@@ -38,8 +38,8 @@ Main flow: LabelStudio -> constructor -> createApp -> configureStore -> initiali
 Also it's called at these places right after `assignTask()`:
 - AnnotationPreview (?)
 - Config/Preview
-- ReviewPage -> setLSFTask
-- lsf-sdk -> setTask
+- ReviewPage -> setTask
+- lsf-sdk -> setLSFTask
 
 ## `hydrated`
 
@@ -107,7 +107,7 @@ for every annotation: addAnnotation, selectAnnotation, deserializeResults, reini
 
 setInitialValues for last annotation
 
-setHistory to set annotation history — some meesed up thing in general
+setHistory to set annotation history — some messed up thing in general
 
 set initialized = true and invoke storageInitialized
 
