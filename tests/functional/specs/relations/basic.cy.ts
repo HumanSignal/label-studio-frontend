@@ -1,10 +1,13 @@
-import { ImageView, LabelStudio, Relations, ToolBar } from '@heartexlabs/ls-test/helpers/LSF';
+import { Hotkeys, ImageView, LabelStudio, Relations, ToolBar } from '@heartexlabs/ls-test/helpers/LSF';
 import {
   imageConfigWithRelations,
   simpleImageConfig,
-  simpleImageData, simpleImageResult,
+  simpleImageData,
+  simpleImageResult,
   simpleImageResultWithRelation,
-  simpleImageResultWithRelations, simpleImageResultWithRelationsAndLabels, simpleImageResultWithRelationsAndLabelsAlt
+  simpleImageResultWithRelations,
+  simpleImageResultWithRelationsAndLabels,
+  simpleImageResultWithRelationsAndLabelsAlt
 } from '../../data/relations/basic';
 
 describe('Relations: Basic', () => {
@@ -176,19 +179,19 @@ describe('Relations: Basic', () => {
 
     Relations.hasRelations(0);
 
-    ImageView.clickAtRelative(.30, .30);
+    ImageView.clickAtRelative(0.3, 0.3);
     Relations.toggleCreationWithHotkey();
-    ImageView.clickAtRelative(.60, .60);
+    ImageView.clickAtRelative(0.6, 0.6);
 
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
     });
 
-    cy.get('body').type('{ctrl+z}');
+    Hotkeys.undo();
     Relations.hasRelations(0);
-    cy.get('body').type('{ctrl+shift+z}');
+    Hotkeys.redo();
     Relations.hasRelations(1);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
     });
   });
@@ -203,26 +206,26 @@ describe('Relations: Basic', () => {
     ImageView.waitForImage();
 
     Relations.hasRelations(1);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(1);
     });
 
     Relations.deleteRelationAction(0);
 
     Relations.hasRelations(0);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
     });
 
-    cy.get('body').type('{ctrl+z}');
+    Hotkeys.undo();
     Relations.hasRelations(1);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
     });
 
-    cy.get('body').type('{ctrl+shift+z}');
+    Hotkeys.redo();
     Relations.hasRelations(0);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
     });
   });
@@ -237,14 +240,14 @@ describe('Relations: Basic', () => {
     ImageView.waitForImage();
 
     Relations.hasRelations(1);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(1);
     });
 
     Relations.toggleRelationDirection(0);
 
     Relations.hasRelations(1);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
     });
   });
@@ -263,19 +266,19 @@ describe('Relations: Basic', () => {
     Relations.clickShowRelationLabels(0);
     Relations.addLabelToRelation('Blue label', 0);
     Relations.hasRelationLabels(['Blue label'], 0);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
     });
 
-    cy.get('body').type('{ctrl+z}');
+    Hotkeys.undo();
     Relations.hasRelationLabels([], 0);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
     });
 
-    cy.get('body').type('{ctrl+shift+z}');
+    Hotkeys.redo();
     Relations.hasRelationLabels(['Blue label'], 0);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(2);
     });
   });
@@ -292,7 +295,7 @@ describe('Relations: Basic', () => {
     Relations.hoverOverRelation(0);
     Relations.stopHoveringOverRelation(0);
 
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(1);
     });
   });
@@ -307,12 +310,12 @@ describe('Relations: Basic', () => {
     ImageView.waitForImage();
 
     Relations.hasRelations(1);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(1);
     });
 
     Relations.hideRelationAction(0);
-    cy.window().then((win) => {
+    cy.window().then(win => {
       expect(win.Htx.annotationStore.selected.history.history.length).to.equal(1);
     });
   });
