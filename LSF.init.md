@@ -17,6 +17,10 @@ Components:
 - medium (FF_1170): `SidePanels` + `OutlinerTree`
 - old: `SidebarTabs` + `AnnotationTab` + `Entities/RegionTree` and surprisingly `BottomBar` if FF_3873 enabled without FF_1170
 
+They all have `TopBar` with 2 different layouts:
+- modern (FF_3873): annotations tab by `AnnotationsCarousel` + custom actions
+- medium and old: annotations dropdown by `TopBar/Annotations` + `TopBar/Actions`
+
 ## configureStore, environments and init
 
 configureStore() has the idea of environment, which comes from development/production run
