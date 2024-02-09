@@ -4573,9 +4573,10 @@ ansi-styles@^5.0.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-5.2.0.tgz#07449690ad45777d1924ac2abb2fc8895dba836b"
 
-antd@^4.3.3:
+antd@4.19.1:
   version "4.19.1"
   resolved "https://registry.yarnpkg.com/antd/-/antd-4.19.1.tgz#af44c0972b7086588ee3d031e3fbe0af006371f9"
+  integrity sha512-bPy/MSLzJGcHQH549B3WpTRitt1O3b35cD6UhAR+4AhKZjFmOqNc+gSUY5j+IsaKfdv+FeOGmUOqAr2jrc3Oyg==
   dependencies:
     "@ant-design/colors" "^6.0.0"
     "@ant-design/icons" "^4.7.0"
