@@ -88,7 +88,7 @@ const SCENARIO_PARAMS = {
   },
 };
 
-Data(scenarioDataTable).only.Scenario('Skip duplicate values on entering', async ({ I, LabelStudio, AtSidebar, Modals, current }) => {
+Data(scenarioDataTable).Scenario('Skip duplicate values on entering', async ({ I, LabelStudio, AtSidebar, Modals, current }) => {
   const scenarioKey = current.scenarioKey;
   const {
     data,
