@@ -19,7 +19,7 @@ const SCENARIO_PARAMS = {
     data: { question: 'Is it a question?' },
     config: `<View>
   <Text name="question" value="$question"/>
-  <TextArea name="answer" toName="question" skipDuplicates="true"/>
+  <TextArea name="answer" toName="question" skipDuplicates="true" required="true"/>
 </View>`,
     fieldSelector: '[name="answer"]',
     text: 'Isn\'t it?',
