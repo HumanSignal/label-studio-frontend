@@ -34,6 +34,15 @@ const RatingResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
   );
 });
 
+
+const TaxonomyResult: FC<{mainValue: string[]}> = observer(({ mainValue }) => {
+  return (
+    <Text mark>
+      {mainValue.join(', ')}
+    </Text>
+  );
+});
+
 const ResultItem: FC<{result: any}> = observer(({ result }) => {
   const { type, mainValue } = result;
   /**
@@ -71,6 +80,17 @@ const ResultItem: FC<{result: any}> = observer(({ result }) => {
           </Elem>
         </Elem>
       );
+    } else if (type === 'taxonomy') {
+      return (
+        <Elem name="result">
+          <Text>Taxonomy: </Text>
+          <Elem name="value">
+            <TaxonomyResult mainValue={mainValue}/>
+          </Elem>
+        </Elem>
+      );
+    } else {
+      console.log("Tag type not supported:", type)
     }
   }, [type, mainValue]);
 
