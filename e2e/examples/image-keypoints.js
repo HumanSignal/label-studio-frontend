@@ -18,8 +18,8 @@ const result = [
     from_name: 'tag',
     to_name: 'img',
     image_rotation: 0,
-    original_height: 501,
-    original_width: 800,
+    original_height: 576,
+    original_width: 768,
     type: 'keypointlabels',
     origin: 'manual',
     value: {
@@ -34,8 +34,8 @@ const result = [
     from_name: 'tag',
     to_name: 'img',
     image_rotation: 0,
-    original_height: 501,
-    original_width: 800,
+    original_height: 576,
+    original_width: 768,
     type: 'keypointlabels',
     origin: 'manual',
     value: {
