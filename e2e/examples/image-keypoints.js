@@ -9,7 +9,7 @@ const config = `
 `;
 
 const data = {
-  image: 'https://user.fm/files/v2-901310d5cb3fa90e0616ca10590bacb3/spacexmoon-800x501.jpg',
+  image: 'https://data.heartex.net/open-images/train_0/mini/0030019819f25b28.jpg',
 };
 
 const result = [
