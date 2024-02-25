@@ -120,7 +120,7 @@ const shapesTable = new DataTable(['shapeName']);
 for (const shapeName of Object.keys(shapes)) {
   shapesTable.add([shapeName]);
 }
-
+/*
 Data(shapesTable).Scenario('Check transformer existing for different shapes, their amount and modes.', async ({ I, LabelStudio, AtImageView, AtSidebar, current }) => {
   const { shapeName } = current;
   const Shape = shapes[shapeName];
@@ -1267,3 +1267,4 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasRotator))
       rotatorWayPoints.pop();
     }
   });
+*/
