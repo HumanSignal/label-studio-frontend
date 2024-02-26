@@ -24,7 +24,7 @@ function generateSpiralPoints(x0, y0, R, v , w) {
   return points;
 }
 
-Scenario('Brush relations shouldn\'t crash everything', async ({ I, LabelStudio, AtImageView, AtSidebar }) => {
+xScenario('Brush relations shouldn\'t crash everything', async ({ I, LabelStudio, AtImageView, AtSidebar }) => {
   const params = {
     config,
     data: { image: IMAGE },

@@ -157,7 +157,7 @@ const createAddEventListenerScript = (eventName, callback) => {
  * Wait for the main Image object to be loaded
  */
 const waitForImage = () => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = document.querySelector('[alt=LS]');
 
     if (!img || img.complete) return resolve();
@@ -165,6 +165,8 @@ const waitForImage = () => {
     img.onload = () => {
       setTimeout(resolve, 100);
     };
+    // if image is not loaded in 10 seconds, reject
+    setTimeout(reject, 10000);
   });
 };
 
