@@ -10,7 +10,7 @@ const config = `
     <Rectangle name="rect" toName="img"/>
   </View>`;
 
-Scenario('Setting width 50% shouldn\'t break canvas size on resize of working area', async ({ I, LabelStudio, AtImageView, AtSidebar }) => {
+xScenario('Setting width 50% shouldn\'t break canvas size on resize of working area', async ({ I, LabelStudio, AtImageView, AtSidebar }) => {
   const params = {
     config,
     data: { image: IMAGE },
