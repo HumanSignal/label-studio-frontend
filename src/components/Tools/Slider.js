@@ -15,9 +15,11 @@ export default observer(
             max={this.props.max || 50}
             min={1}
             vertical
-            tipFormatter={null}
             style={{ height: this.props.height || 100 }}
             onChange={this.props.onChange}
+            tooltip={{
+              formatter: null,
+            }}
           />
           <Tooltip title={this.props.title} placement="left">
             <Button

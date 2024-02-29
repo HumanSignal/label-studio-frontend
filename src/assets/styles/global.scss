@@ -1,8 +1,6 @@
-@import "~antd/dist/antd.css";
-
-@import "./variables";
-@import "./mixins";
-@import "./functions";
+@import './variables';
+@import './mixins';
+@import './functions';
 
 .ant-divider-horizontal.ant-divider-with-text-center::before,
 .ant-divider-horizontal.ant-divider-with-text-left::before,
@@ -66,7 +64,7 @@
 }
 
 .htx-yoyo:after {
-  content: "Yoyo";
+  content: 'Yoyo';
 }
 
 @keyframes fadeInOpacity {

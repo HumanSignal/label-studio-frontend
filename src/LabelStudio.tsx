@@ -16,7 +16,9 @@ import { cleanDomAfterReact, findReactKey } from './utils/reactCleaner';
 import { isDefined } from './utils/utilities';
 
 declare global {
-  interface Window { Htx: any }
+  interface Window {
+    Htx: any;
+  }
 }
 
 configure({
@@ -32,12 +34,12 @@ type LSFTask = any;
 // because those options will go as initial values for AppStore
 // but it's not types yet, so here is some excerpt of its params
 type LSFOptions = Record<string, any> & {
-  interfaces: string[],
-  keymap: Keymap,
-  user: LSFUser,
-  users: LSFUser[],
-  task: LSFTask,
-}
+  interfaces: string[];
+  keymap: Keymap;
+  user: LSFUser;
+  users: LSFUser[];
+  task: LSFTask;
+};
 
 export class LabelStudio {
   static Component = LabelStudioReact;
@@ -113,9 +115,7 @@ export class LabelStudio {
       if (isRendered) {
         clearRenderedApp();
       }
-      render((
-        <App store={this.store} />
-      ), rootElement);
+      render(<App store={this.store} />, rootElement);
     };
 
     const clearRenderedApp = () => {
