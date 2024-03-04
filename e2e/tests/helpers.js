@@ -234,7 +234,7 @@ const convertToFixed = (data, fractionDigits = 2) => {
   if (['string', 'number'].includes(typeof data)) {
     const n = Number(data);
 
-    return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +Number(n).toFixed(fractionDigits);
+    return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +n.toFixed(fractionDigits);
   }
   if (Array.isArray(data)) {
     return data.map(n => convertToFixed(n, fractionDigits));
