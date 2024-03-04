@@ -3,7 +3,6 @@ const {
   hasKonvaPixelColorAtPoint,
   setKonvaLayersOpacity,
   serialize,
-  waitForImage,
 } = require('./helpers');
 const assert = require('assert');
 

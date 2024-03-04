@@ -1,7 +1,6 @@
 Feature('Select region by clicking on it');
 
-const IMAGE =
-  'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg';
+const IMAGE = 'https://data.heartex.net/open-images/train_0/mini/0030019819f25b28.jpg';
 
 const BLUEVIOLET = {
   color: '#8A2BE2',

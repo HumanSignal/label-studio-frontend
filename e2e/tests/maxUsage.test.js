@@ -1,6 +1,6 @@
 Feature('Max usage');
 
-const IMAGE = 'https://user.fm/files/v2-901310d5cb3fa90e0616ca10590bacb3/spacexmoon-800x501.jpg';
+const IMAGE = 'https://data.heartex.net/open-images/train_0/mini/0030019819f25b28.jpg';
 
 const createImageToolsConfig = ({ maxUsage }) => `
 <View> 
@@ -116,7 +116,7 @@ const maxUsageDataTable = new DataTable(['maxUsage']);
 [1,3].forEach(maxUsage => {
   maxUsageDataTable.add([maxUsage]);
 });
-/*
+
 Data(maxUsageImageToolsDataTable).Scenario('Max usages of separated labels in ImageView on region creating', async function({ I, LabelStudio, AtImageView, AtSidebar, current }) {
   const { maxUsage, shapeName } = current;
   const shape = shapes[shapeName];
@@ -338,4 +338,3 @@ Data(maxUsageDataTable).Scenario('Max usages of labels in Timeseries on region c
 
   I.see(`You can't use Label_1 more than ${maxUsage} time(s)`);
 });
-*/

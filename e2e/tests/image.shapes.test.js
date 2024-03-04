@@ -19,8 +19,7 @@ const getConfigWithShape = (shape, props = '') => `
     <${shape} ${props} name="tag" toName="img" />
   </View>`;
 
-const IMAGE =
-  'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg';
+const IMAGE = 'https://data.heartex.net/open-images/train_0/mini/0030019819f25b28.jpg';
 
 // precalculated image size on the screen; may change because of different reasons
 const WIDTH = 706;

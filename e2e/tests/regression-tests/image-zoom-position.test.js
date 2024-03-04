@@ -3,7 +3,7 @@ const Helpers = require('../helpers');
 
 Feature('Image zoom position').tag('@regress');
 
-const IMAGE = 'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg';
+const IMAGE = 'https://data.heartex.net/open-images/train_0/mini/005eb6e2010fa7aa.jpg';
 
 const config = `
   <View>

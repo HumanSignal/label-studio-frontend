@@ -62,8 +62,7 @@ const annotationWithPerRegion = {
   result: [annotationMoonwalker.result[0], createRegion('answer', 'textarea', { text: ['blah'] })],
 };
 
-const image =
-  'https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg';
+const image = 'https://data.heartex.net/open-images/train_0/mini/0030019819f25b28.jpg';
 
 Scenario('Check Rect region for Image', async function({ I, AtImageView, AtSidebar }) {
   const params = {
@@ -148,10 +147,10 @@ Scenario('Image with perRegion tags', async function({ I, AtImageView, AtSidebar
   assert.deepStrictEqual(result[0].value.rectanglelabels, ['Moonwalker']);
 });
 
-const outOfBoundsFFs = new DataTable(['FF_DEV_3793'])
+const outOfBoundsFFs = new DataTable(['FF_DEV_3793']);
 
 outOfBoundsFFs.add([true]);
-outOfBoundsFFs.add([false])
+outOfBoundsFFs.add([false]);
 
 Data(outOfBoundsFFs)
   .Scenario('Can\'t create rectangles outside of canvas', async ({
