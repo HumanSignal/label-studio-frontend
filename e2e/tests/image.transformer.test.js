@@ -916,7 +916,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionTr
     // Drag shapes by holding onto the transformer background
     dragShapes(transformerBboxCenter, { x: 150, y: 150 }, false);
     // Move back throught history to check that transformer's background moving with it
-    I.pressKey(['Control', 'z']);
+    I.pressKey(['CommandOrControl', 'z']);
     // Drag shapes by holding onto the transformer background again
     dragShapes(transformerBboxCenter, { x: 100, y: 100 }, false);
 
@@ -998,7 +998,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       Shape.byBBox(bbox.width, bbox.y + bbox.height, -bbox.width, -bbox.height).result.x,
     );
     // reset position by undo
-    I.pressKey(['Control', 'z']);
+    I.pressKey(['CommandOrControl', 'z']);
 
     I.say('Drag the region over the top border');
     AtImageView.drawThroughPoints([
@@ -1013,7 +1013,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       Shape.byBBox(bbox.x + bbox.width, bbox.height, -bbox.width, -bbox.height).result.y,
     );
     // reset position by undo
-    I.pressKey(['Control', 'z']);
+    I.pressKey(['CommandOrControl', 'z']);
 
     I.say('Drag the region over the right border');
     AtImageView.drawThroughPoints([
@@ -1029,7 +1029,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       Shape.byBBox(canvasSize.width, bbox.y + bbox.height, -bbox.width, -bbox.height).result.x,
     );
     // reset position by undo
-    I.pressKey(['Control', 'z']);
+    I.pressKey(['CommandOrControl', 'z']);
 
     I.say('Drag the region over the bottom border');
     AtImageView.drawThroughPoints([
@@ -1142,7 +1142,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       Shape.byBBox(bbox2.width, transformerBbox.y + bbox2.height, -bbox2.width, -bbox2.height).result.x,
     );
     // reset position by undo
-    I.pressKey(['Control', 'z']);
+    I.pressKey(['CommandOrControl', 'z']);
 
     I.say('Drag the region over the top border');
     AtImageView.drawThroughPoints([
@@ -1161,7 +1161,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       Shape.byBBox(transformerBbox.x + bbox2.width, bbox2.height, -bbox2.width, -bbox2.height).result.y,
     );
     // reset position by undo
-    I.pressKey(['Control', 'z']);
+    I.pressKey(['CommandOrControl', 'z']);
 
     I.say('Drag the region over the right border');
     AtImageView.drawThroughPoints([
@@ -1181,7 +1181,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRo
       Shape.byBBox(canvasSize.width - transformerBbox.width + bbox2.width, transformerBbox.y + bbox2.height, -bbox2.width, -bbox2.height).result.x,
     );
     // reset position by undo
-    I.pressKey(['Control', 'z']);
+    I.pressKey(['CommandOrControl', 'z']);
 
     I.say('Drag the region over the bottom border');
     AtImageView.drawThroughPoints([
@@ -1262,7 +1262,7 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasRotator))
       );
 
       // undo rotation
-      I.pressKey(['Control', 'z']);
+      I.pressKey(['CommandOrControl', 'z']);
       // clear unnecessary waypoints
       rotatorWayPoints.pop();
     }
