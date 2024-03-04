@@ -25,7 +25,7 @@ const result = [
     value: {
       x: 49.60000000000001,
       y: 52.34042553191488,
-      width: 0.6471078324314267,
+      width: 0.6120428759942558,
       keypointlabels: ['Hello'],
     },
   },
@@ -41,7 +41,7 @@ const result = [
     value: {
       x: 47.73333333333334,
       y: 52.765957446808514,
-      width: 0.6666666666666666,
+      width: 0.6305418719211823,
       keypointlabels: ['World'],
     },
   },
