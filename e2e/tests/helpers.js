@@ -533,6 +533,14 @@ async function generateImageUrl({ width, height }) {
   return canvas.toDataURL();
 }
 
+const getNaturalSize = () => {
+  const imageObject = window.Htx.annotationStore.selected.objects.find(o => o.type === 'image');
+
+  return {
+    width: imageObject.naturalWidth,
+    height: imageObject.naturalHeight,
+  };
+};
 const getCanvasSize = () => {
   const imageObject = window.Htx.annotationStore.selected.objects.find(o => o.type === 'image');
 
@@ -859,6 +867,7 @@ module.exports = {
   areEqualRGB,
   hasKonvaPixelColorAtPoint,
   getKonvaPixelColorFromPoint,
+  getNaturalSize,
   getCanvasSize,
   getImageSize,
   getImageFrameSize,

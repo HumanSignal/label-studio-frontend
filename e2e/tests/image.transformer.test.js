@@ -246,17 +246,22 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMoveToolTransfor
     const { shapeName } = current;
     const Shape = shapes[shapeName];
 
-    I.amOnPage('/');
-
     LabelStudio.setFeatureFlags({
       'ff_front_dev_2394_zoomed_transforms_260522_short': true,
+      'fflag_fix_front_dev_3377_image_regions_shift_on_resize_280922_short': true,
+      'fflag_fix_front_dev_3793_relative_coords_short': true,
     });
+
+    I.amOnPage('/');
 
     LabelStudio.init(getParamsWithShape(shapeName, Shape.params));
     AtImageView.waitForImage();
     AtSidebar.seeRegions(0);
     await AtImageView.lookForStage();
+    const naturalSize = await AtImageView.getNaturalSize();
     const canvasSize = await AtImageView.getCanvasSize();
+    // region sizes are relative (0 to 100) so we have to convert sizes we use for them...
+    // ...relatively to displayed image size, which is canvas size when we open the page
     const convertToImageSize = Helpers.getSizeConvertor(canvasSize.width, canvasSize.height);
 
     // Draw a region in bbox {x1:50,y1:50,x2:150,y2:150}
@@ -274,26 +279,22 @@ Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMoveToolTransfor
 
     assert.strictEqual(isTransformerExist, true);
 
-    AtImageView.setZoom(3, 0, 0);
+    // we display an image to fit to canvas size on page load, so initial zoom is not 1;
+    // to do an x3 zoom we have to calculate current zoom and multiply it by 3
+    AtImageView.setZoom(3 * canvasSize.width / naturalSize.width, 0, 0);
 
     // Transform the shape
     AtImageView.drawByDrag(150, 150, -150, -150);
-    I.wait(1);
 
     AtImageView.drawByDrag(0, 0, -300, -100);
-    I.wait(1);
 
     AtImageView.drawByDrag(0, 0, 150, 150);
-    I.wait(1);
 
     // Check resulting sizes
     const rectangleResult = await LabelStudio.serialize();
-
-    I.wait(10);
-
     const exceptedResult = Shape.byBBox(50, 50, 300, 300).result;
 
-    Asserts.deepEqualWithTolerance(rectangleResult[0].value, convertToImageSize(exceptedResult), 0);
+    Asserts.deepEqualWithTolerance(rectangleResult[0].value, convertToImageSize(exceptedResult), 2);
   });
 
 Data(shapesTable.filter(({ shapeName }) => shapes[shapeName].hasMultiSelectionRotator))
