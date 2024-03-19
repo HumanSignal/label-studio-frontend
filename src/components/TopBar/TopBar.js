@@ -1,15 +1,17 @@
 import { observer } from 'mobx-react';
+
+import { IconViewAll, LsPlus } from '../../assets/icons';
+import { Button } from '../../common/Button/Button';
+import { Tooltip } from '../../common/Tooltip/Tooltip';
 import { Block, Elem } from '../../utils/bem';
+import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
+import { AnnotationsCarousel } from '../AnnotationsCarousel/AnnotationsCarousel';
 import { DynamicPreannotationsToggle } from '../AnnotationTab/DynamicPreannotationsToggle';
 import { Actions } from './Actions';
 import { Annotations } from './Annotations';
 import { Controls } from './Controls';
 import { CurrentTask } from './CurrentTask';
-import { FF_DEV_3873, isFF } from '../../utils/feature-flags';
-import { Button } from '../../common/Button/Button';
-import { Tooltip } from '../../common/Tooltip/Tooltip';
-import { IconViewAll, LsPlus } from '../../assets/icons';
-import { AnnotationsCarousel } from '../AnnotationsCarousel/AnnotationsCarousel';
+
 import './TopBar.styl';
 
 export const TopBar = observer(({ store }) => {
@@ -31,7 +33,7 @@ export const TopBar = observer(({ store }) => {
                 icon={<IconViewAll />}
                 type="text"
                 aria-label="View All"
-                onClick={() => annotationStore.toggleViewingAllAnnotations()}
+                onClick={annotationStore.toggleViewingAllAnnotations}
                 primary={ isViewAll }
                 style={{
                   height: 36,

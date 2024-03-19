@@ -159,7 +159,7 @@ const createAddEventListenerScript = (eventName, callback) => {
  * Wait for the main Image object to be loaded
  */
 const waitForImage = () => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = document.querySelector('[alt=LS]');
 
     if (!img || img.complete) return resolve();
@@ -167,6 +167,8 @@ const waitForImage = () => {
     img.onload = () => {
       setTimeout(resolve, 100);
     };
+    // if image is not loaded in 10 seconds, reject
+    setTimeout(reject, 10000);
   });
 };
 
@@ -234,7 +236,7 @@ const convertToFixed = (data, fractionDigits = 2) => {
   if (['string', 'number'].includes(typeof data)) {
     const n = Number(data);
 
-    return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +Number(n).toFixed(fractionDigits);
+    return Number.isNaN(n) ? data : Number.isInteger(n) ? n : +n.toFixed(fractionDigits);
   }
   if (Array.isArray(data)) {
     return data.map(n => convertToFixed(n, fractionDigits));
@@ -533,6 +535,14 @@ async function generateImageUrl({ width, height }) {
   return canvas.toDataURL();
 }
 
+const getNaturalSize = () => {
+  const imageObject = window.Htx.annotationStore.selected.objects.find(o => o.type === 'image');
+
+  return {
+    width: imageObject.naturalWidth,
+    height: imageObject.naturalHeight,
+  };
+};
 const getCanvasSize = () => {
   const imageObject = window.Htx.annotationStore.selected.objects.find(o => o.type === 'image');
 
@@ -870,6 +880,7 @@ module.exports = {
   areEqualRGB,
   hasKonvaPixelColorAtPoint,
   getKonvaPixelColorFromPoint,
+  getNaturalSize,
   getCanvasSize,
   getImageSize,
   getImageFrameSize,

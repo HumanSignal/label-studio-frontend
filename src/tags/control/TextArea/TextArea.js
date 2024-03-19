@@ -3,7 +3,7 @@ import Button from 'antd/lib/button/index';
 import Form from 'antd/lib/form/index';
 import Input from 'antd/lib/input/index';
 import { observer } from 'mobx-react';
-import { destroy, getRoot, isAlive, types } from 'mobx-state-tree';
+import { destroy, isAlive, types } from 'mobx-state-tree';
 
 import InfoModal from '../../../components/Infomodal/Infomodal';
 import Registry from '../../../core/Registry';
@@ -78,6 +78,7 @@ const { TextArea } = Input;
  * @param {boolean=} [editable=false]      - Whether to display an editable textarea
  * @param {boolean} [skipDuplicates=false] - Prevent duplicates in textarea inputs[^FF_LSDV_4659][^FF_LSDV_4712] (see example below)
  * @param {boolean=} [transcription=false] - If false, always show editor
+ * @param {tag|region-list} [displayMode=tag] - Display mode for the textarea; region-list shows it for every region in regions list
  * @param {number} [rows]                  - Number of rows in the textarea
  * @param {boolean} [required=false]       - Validate whether content in textarea is required
  * @param {string} [requiredMessage]       - Message to show if validation fails
@@ -235,15 +236,11 @@ const Model = types.model({
     onChange(area) {
       self.updateResult();
       const currentArea = (area ?? self.result?.area);
-
-      if (getRoot(self).autoAnnotation) {
-        currentArea.makeDynamic();
-      }
       
       currentArea?.notifyDrawingFinished();
     },
 
-    validateValue(text) {
+    validateText(text) {
       if (isFF(FF_LSDV_4659) && self.skipduplicates && self.hasResult(text)) {
         self.uniqueModal();
         return false;
@@ -252,7 +249,7 @@ const Model = types.model({
     },
 
     addText(text, pid) {
-      if (!self.validateValue(text)) return;
+      if (!self.validateText(text)) return;
 
       self.createRegion(text, pid, self.leadTime);
       // actually creates a new result
@@ -284,7 +281,7 @@ const Model = types.model({
     },
 
     addTextToResult(text, result) {
-      if (!self.validateValue(text)) return;
+      if (!self.validateText(text)) return;
 
       const newValue = result.mainValue.toJSON();
 

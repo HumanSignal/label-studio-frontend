@@ -92,6 +92,8 @@ const _Tool = types
     unselectRegionOnToolChange: false,
   })
   .volatile(() => ({
+    canInteractWithRegions: false,
+
     currentThreshold: null,
     mask: null,
 
@@ -250,7 +252,7 @@ const _Tool = types
           msg = 'The Magic Wand is not supported on rotated images';
         } else {
           msg = 'The Magic Wand is not supported if the crosshair is turned on';
-        } 
+        }
 
         alert(msg);
         throw msg;
