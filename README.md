@@ -1,3 +1,15 @@
+---------------
+
+# This repository is deprecated 
+
+This repository has been deprecated in favor of
+https://github.com/HumanSignal/label-studio/tree/develop/web/libs/editor
+
+Now it's read-only. Address all your issues and PRs to https://github.com/HumanSignal/label-studio/.
+
+---------------
+
+
 # Label Studio Frontend &middot; ![GitHub](https://img.shields.io/github/license/heartexlabs/label-studio?logo=heartex) ![build](https://github.com/heartexlabs/label-studio-frontend/workflows/Build%20and%20Test/badge.svg) ![npm audit](https://github.com/heartexlabs/label-studio-frontend/actions/workflows/npm_audit.yml/badge.svg)
  ![GitHub release](https://img.shields.io/github/v/release/heartexlabs/label-studio-frontend?include_prereleases) &middot; :sunny:
 
