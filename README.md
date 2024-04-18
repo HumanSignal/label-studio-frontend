@@ -5,6 +5,8 @@
 This repository has been deprecated in favor of
 https://github.com/HumanSignal/label-studio/tree/develop/web/libs/editor
 
+Now it's read-only. 
+
 ---------------
 
 
