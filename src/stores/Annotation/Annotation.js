@@ -726,6 +726,7 @@ export const Annotation = types
 
     beforeDestroy() {
       self.autosave && self.autosave.cancel && self.autosave.cancel();
+      hotkeys.unbindAll();
     },
 
     setDraftId(id) {
