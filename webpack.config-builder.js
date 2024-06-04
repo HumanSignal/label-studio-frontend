@@ -283,7 +283,7 @@ module.exports = ({ withDevServer = true } = {}) => ({
   ...(withDevServer ? devServer() : {}),
   entry: {
     main: [
-      path.resolve(__dirname, "src/index.js"),
+      path.resolve(__dirname, "src/index.ts"),
     ],
   },
   output: {
