@@ -825,7 +825,7 @@ export default observer(
         const { item } = this.props;
         const stage = item.stageRef;
 
-        item.handleZoom(e.evt.deltaY, stage.getPointerPosition());
+        item.handleZoom(-e.evt.deltaY, stage.getPointerPosition());
       }
     };
 
